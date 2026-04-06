@@ -1,5 +1,5 @@
 #include "Parse_Osm_Xml.hpp"
-#include <Mlib/Assert.hpp>
+#include <Mlib/Compression/Compressed_File.hpp>
 #include <Mlib/Geography/Geographic_Coordinates.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Orderable_Fixed_Array.hpp>
@@ -7,11 +7,12 @@
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Osm_Map_Resource_Helpers.hpp>
 #include <Mlib/Regex/Regex_Select.hpp>
 #include <Mlib/Stats/Min_Max.hpp>
-#include <Mlib/Strings/To_Number.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
+#include <Mlib/Strings/String_View_To_Number.hpp>
+#include <Mlib/Testing/Assert.hpp>
 #include <fstream>
 #include <iomanip>
 #include <iostream>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -25,7 +26,7 @@ OsmBounds::OsmBounds(double scale)
 void OsmBounds::extend(const FixedArray<double, 2>& bounds_min, const FixedArray<double, 2>& bounds_max)
 {
     if (result_obtained_) {
-        THROW_OR_ABORT("OSM bounds extended after results were obtained");
+        throw std::runtime_error("OSM bounds extended after results were obtained");
     }
     bounds_merged_.min = minimum(bounds_min, bounds_merged_.min);
     bounds_merged_.max = maximum(bounds_max, bounds_merged_.max);
@@ -50,7 +51,7 @@ void OsmBounds::extend(const FixedArray<double, 2>& bounds_min, const FixedArray
 
 const NormalizedPointsFixed<double>& OsmBounds::normalized_points() const {
     if (!normalization_matrix_.has_value()) {
-        THROW_OR_ABORT("Normalization-matrix undefined. Bounds-section missing?");
+        throw std::runtime_error("Normalization-matrix undefined. Bounds-section missing?");
     }
     result_obtained_ = true;
     return normalized_points_;
@@ -58,7 +59,7 @@ const NormalizedPointsFixed<double>& OsmBounds::normalized_points() const {
 
 const TransformationMatrix<double, double, 2>& OsmBounds::normalization_matrix() const {
     if (!normalization_matrix_.has_value()) {
-        THROW_OR_ABORT("Normalization-matrix undefined. Bounds-section missing?");
+        throw std::runtime_error("Normalization-matrix undefined. Bounds-section missing?");
     }
     result_obtained_ = true;
     return *normalization_matrix_;
@@ -70,10 +71,10 @@ void Mlib::parse_osm_xml(
     std::map<std::string, Node>& nodes,
     std::map<std::string, Way>& ways)
 {
-    auto ifs_p = create_ifstream(filename);
-    auto& ifs = *ifs_p;
-    if (ifs.fail()) {
-        THROW_OR_ABORT("Could not open OSM XML-file \"" + filename + '"');
+    auto compressed_file = CompressedFile{filename};
+    auto ifs = compressed_file.decompressed_ifstream();
+    if (ifs->fail()) {
+        throw std::runtime_error("Could not open OSM XML-file \"" + filename + '"');
     }
     static const DECLARE_REGEX(node_reg, "^ +<node id=[\"'](-?\\w+)[\"'](?: action=[\"']([^\"']+)[\"'])? .*visible=[\"'](true|false)[\"'].* lat=[\"']([\\w.-]+)[\"'] lon=[\"']([\\w.-]+)[\"'].*>$");
     static const DECLARE_REGEX(node_end_reg, " +</node>");
@@ -99,7 +100,7 @@ void Mlib::parse_osm_xml(
     uint32_t nduplicates_remaining = 20;
 
     std::string line;
-    while(std::getline(ifs, line)) {
+    while(std::getline(*ifs, line)) {
         if (line.length() > 0 && line[line.length() - 1] == '\r') {
             line = line.substr(0, line.length() - 1);
         }
@@ -111,7 +112,7 @@ void Mlib::parse_osm_xml(
             // do nothing
         } else if (Mlib::re::regex_match(line, match, bounds_reg)) {
             if (!nodes.empty()) {
-                THROW_OR_ABORT("Found bounds section, but nodes were already computed");
+                throw std::runtime_error("Found bounds section, but nodes were already computed");
             }
             FixedArray<double, 2> bounds_min{
                 safe_stod(match[1].str()),
@@ -129,7 +130,7 @@ void Mlib::parse_osm_xml(
                 std::string lat = match[4].str();
                 std::string lon = match[5].str();
                 if (nodes.find(current_node) != nodes.end()) {
-                    THROW_OR_ABORT("Found duplicate node id: " + current_node);
+                    throw std::runtime_error("Found duplicate node id: " + current_node);
                 }
                 current_node_position = FixedArray<double, 2>{
                     safe_stod(lat),
@@ -158,17 +159,17 @@ void Mlib::parse_osm_xml(
         } else if (Mlib::re::regex_match(line, match, node_end_reg)) {
             if ((current_node != "<none>") && !nodes.at(current_node).tags.contains("height_reference", "water")) {
                 if (any(isnan(current_node_position))) {
-                    THROW_OR_ABORT("Closing node tag with NAN position");
+                    throw std::runtime_error("Closing node tag with NAN position");
                 }
                 if (any(current_node_position < bounds.aabb().min - FixedArray<double, 2>{0.01, 0.01})) {
                     std::stringstream sstr;
                     sstr << "Node with ID " << current_node << " and coordinates " << current_node_position << " is out of minimum bounds " << bounds.aabb().min;
-                    THROW_OR_ABORT(sstr.str());
+                    throw std::runtime_error(sstr.str());
                 }
                 if (any(current_node_position > bounds.aabb().max + FixedArray<double, 2>{0.01, 0.01})) {
                     std::stringstream sstr;
                     sstr << "Node with ID " << current_node << " and coordinates " << current_node_position << " is out of maximum bounds " << bounds.aabb().max;
-                    THROW_OR_ABORT(sstr.str());
+                    throw std::runtime_error(sstr.str());
                 }
             }
         } else if (Mlib::re::regex_match(line, match, way_reg)) {
@@ -184,12 +185,12 @@ void Mlib::parse_osm_xml(
             }
         } else if (Mlib::re::regex_match(line, match, node_ref_reg)) {
             if (current_way == "<none>") {
-                THROW_OR_ABORT("No current way");
+                throw std::runtime_error("No current way");
             }
             if (current_way != "<invisible>") {
                 auto it = ways.find(current_way);
                 if (it == ways.end()) {
-                    THROW_OR_ABORT("Could not find way with ID " + current_way);
+                    throw std::runtime_error("Could not find way with ID " + current_way);
                 }
                 it->second.nd.push_back(match[1].str());
             }
@@ -199,31 +200,31 @@ void Mlib::parse_osm_xml(
             if (current_node != "<none>") {
                 auto it = nodes.find(current_node);
                 if (it == nodes.end()) {
-                    THROW_OR_ABORT("Could not find node with ID " + current_node);
+                    throw std::runtime_error("Could not find node with ID " + current_node);
                 }
                 if (!it->second.tags.insert(tag).second) {
-                    THROW_OR_ABORT("Duplicate node tag " + tag.first + " for node with ID " + current_node);
+                    throw std::runtime_error("Duplicate node tag " + tag.first + " for node with ID " + current_node);
                 }
             }
             if (current_way != "<none>") {
                 if (current_way != "<invisible>") {
                     auto it = ways.find(current_way);
                     if (it == ways.end()) {
-                        THROW_OR_ABORT("Could not find way with ID " + current_way);
+                        throw std::runtime_error("Could not find way with ID " + current_way);
                     }
                     if (!it->second.tags.insert(tag).second) {
-                        THROW_OR_ABORT("Duplicate way tag " + tag.first);
+                        throw std::runtime_error("Duplicate way tag " + tag.first);
                     }
                 }
             }
         } else if (Mlib::re::regex_match(line, way_end_reg)) {
             current_way = "<none>";
         } else {
-            THROW_OR_ABORT("Could not parse line " + line);
+            throw std::runtime_error("Could not parse line " + line);
         }
     }
 
-    if (!ifs.eof() && ifs.fail()) {
-        THROW_OR_ABORT("Parse OSM XML: Error reading from file \"" + filename + '"');
+    if (!ifs->eof() && ifs->fail()) {
+        throw std::runtime_error("Parse OSM XML: Error reading from file \"" + filename + '"');
     }
 }

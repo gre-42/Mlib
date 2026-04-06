@@ -4,9 +4,9 @@
 #include <Mlib/Geometry/Mesh/Save_Mtllib.hpp>
 #include <Mlib/Math/Funpack.hpp>
 #include <Mlib/Regex/Regex_Select.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
 #include <filesystem>
 #include <fstream>
+#include <stdexcept>
 #include <string>
 
 namespace Mlib {
@@ -27,7 +27,7 @@ void save_obj(
     static const DECLARE_REGEX(filename_re, "^(.*)\\.obj$");
     Mlib::re::cmatch match;
     if (!Mlib::re::regex_match(filename, match, filename_re)) {
-        THROW_OR_ABORT("OBJ filename does not have \".obj\" extension: " + filename);
+        throw std::runtime_error("OBJ filename does not have \".obj\" extension: " + filename);
     }
     std::ofstream ostr{ filename };
     if constexpr (std::is_same_v<funpack_t<TPos>, double>) {
@@ -35,7 +35,7 @@ void save_obj(
     } else if constexpr (std::is_same_v<funpack_t<TPos>, float>) {
         ostr.precision(7);
     } else {
-        THROW_OR_ABORT("Unsupported floating point type");
+        throw std::runtime_error("Unsupported floating point type");
     }
     ostr << std::scientific;
     if (materials != nullptr) {
@@ -77,7 +77,7 @@ void save_obj(
     }
     ostr.flush();
     if (ostr.fail()) {
-        THROW_OR_ABORT("Could not write to file \"" + filename + '"');
+        throw std::runtime_error("Could not write to file \"" + filename + '"');
     }
 }
 

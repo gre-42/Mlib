@@ -1,5 +1,5 @@
 #pragma once
-#include <Mlib/Billboard_Id.hpp>
+#include <Mlib/Geometry/Billboard_Id.hpp>
 #include <Mlib/Geometry/Material/Aggregate_Mode.hpp>
 #include <Mlib/Geometry/Material/Billboard_Atlas_Instance.hpp>
 #include <Mlib/Geometry/Material/Blend_Map_Texture.hpp>
@@ -13,9 +13,11 @@
 #include <Mlib/Geometry/Material/Texture_Descriptor.hpp>
 #include <Mlib/Geometry/Material/Transformation_Mode.hpp>
 #include <Mlib/Math/Orderable_Fixed_Array.hpp>
+#include <Mlib/Misc/FPath.hpp>
 #include <Mlib/Scene_Config/Scene_Precision.hpp>
 #include <compare>
 #include <cstddef>
+#include <cstdint>
 #include <string>
 #include <vector>
 
@@ -45,7 +47,7 @@ struct Material {
     // As the name suggests, this flag shall only affect
     // continuously blended materials and therefore
     // has a lower priority than the blending mode.
-    int continuous_blending_z_order = 0;
+    int32_t continuous_blending_z_order = 0;
     // Third element to support sorting.
     DepthFunc depth_func = DepthFunc::LESS;
     bool depth_test = true;
@@ -53,8 +55,8 @@ struct Material {
     std::vector<BlendMapTexture> textures_color;
     std::vector<BlendMapTexture> textures_alpha;
     float period_world = 0.f;
-    VariableAndHash<std::string> reflection_map;
-    VariableAndHash<std::string> dirt_texture;
+    FPath reflection_map;
+    FPath dirt_texture;
     InteriorTextures interior_textures;
     std::vector<float> continuous_layer_x;
     std::vector<float> continuous_layer_y;

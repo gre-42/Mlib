@@ -2,6 +2,7 @@
 #include <Mlib/Geometry/Mesh/Triangle_List.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>
 #include <Mlib/Geometry/Static_Face_Lighting.hpp>
+#include <Mlib/Map/Try_Find.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Steiner_Point_Info.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Subdivided_Way.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Subdivided_Way_Vertex.hpp>
@@ -10,9 +11,8 @@
 #include <Mlib/Scene_Graph/Resources/Parsed_Resource_Name.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
 #include <Mlib/Strings/String.hpp>
-#include <Mlib/Strings/To_Number.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
-#include <Mlib/Try_Find.hpp>
+#include <Mlib/Strings/String_View_To_Number.hpp>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -20,7 +20,7 @@ using namespace Mlib;
 //     std::map<OrderableFixedArray<float, 3>, SteinerPointInfo*> steiner_point_map;
 //     for (auto& p : steiner_points) {
 //         if (!steiner_point_map.insert({make_orderable(p.position), &p}).second) {
-//             THROW_OR_ABORT("Could not generate steiner point map");
+//             throw std::runtime_error("Could not generate steiner point map");
 //         }
 //     }
 //     return steiner_point_map;
@@ -30,7 +30,7 @@ using namespace Mlib;
 //     std::map<OrderableFixedArray<float, 3>, const SteinerPointInfo*> steiner_point_map;
 //     for (auto& p : steiner_points) {
 //         if (!steiner_point_map.insert({make_orderable(p.position), &p}).second) {
-//             THROW_OR_ABORT("Could not generate const steiner point map");
+//             throw std::runtime_error("Could not generate const steiner point map");
 //         }
 //     }
 //     return steiner_point_map;
@@ -78,7 +78,7 @@ void Mlib::draw_nodes(
     for (const auto& way : ways) {
         for (const auto& nd : way.second) {
             if (nodes.find(nd) == nodes.end()) {
-                THROW_OR_ABORT("Way " + way.first + " could not find node with ID " + nd);
+                throw std::runtime_error("Way " + way.first + " could not find node with ID " + nd);
             }
             FixedArray<CompressedScenePos, 2> pos2d = nodes.at(nd).position;
             draw_node(triangles, pos2d);
@@ -105,7 +105,7 @@ void Mlib::draw_nodes(
 //         width,
 //         width))
 //     {
-//         THROW_OR_ABORT("from_line failed");
+//         throw std::runtime_error("from_line failed");
 //     }
 //     rect.draw_z0(tl);
 //     if (!Rectangle::from_line(
@@ -122,7 +122,7 @@ void Mlib::draw_nodes(
 //         width,
 //         width));
 //     {
-//         THROW_OR_ABORT("from_line failed");
+//         throw std::runtime_error("from_line failed");
 //     }
 //     rect.draw_z0(tl);
 // }
@@ -152,7 +152,7 @@ T Mlib::parse_meters(
     static const DECLARE_REGEX(re, "^([\\d.-]+) *(m|'|ft)?");
     Mlib::re::cmatch match;
     if (!Mlib::re::regex_match(*value, match, re)) {
-        THROW_OR_ABORT("Could not parse \"" + key + "\" value: \"" + *value + '"');
+        throw std::runtime_error("Could not parse \"" + key + "\" value: \"" + *value + '"');
     }
     T res = safe_sto<T>(match[1].str());
     if ((match[2].str() == "'") ||
@@ -175,7 +175,7 @@ float Mlib::parse_radians(
     static const DECLARE_REGEX(re, "^([\\d.-]+) *(?:°)?");
     Mlib::re::cmatch match;
     if (!Mlib::re::regex_match(*value, match, re)) {
-        THROW_OR_ABORT("Could not parse \"" + key + "\" value: \"" + *value + '"');
+        throw std::runtime_error("Could not parse \"" + key + "\" value: \"" + *value + '"');
     }
     return safe_stof(match[1].str()) * float(M_PI / 180.);
 }
@@ -191,7 +191,7 @@ FixedArray<float, 3> Mlib::parse_color(
     }
     auto l = string_to_vector(*rgb, safe_stof);
     if (l.size() != 3) {
-        THROW_OR_ABORT("\"color\" tag does not have 3 values");
+        throw std::runtime_error("\"color\" tag does not have 3 values");
     }
     return { l[0], l[1], l[2] };
 }
@@ -367,7 +367,7 @@ void Mlib::add_beacons_to_raceways(
 //                 break;
 //             default:
 //                 continue;
-//                 // THROW_OR_ABORT("Internal error");
+//                 // throw std::runtime_error("Internal error");
 //         }
 //         auto center = (t(0).position + t(1).position + t(2).position) / 3.f;
 //         tls.back()->draw_rectangle_wo_normals(
@@ -412,7 +412,7 @@ public:
             triangle(2).position};
         auto it = tags_.find(key);
         if (it != tags_.end()) {
-            THROW_OR_ABORT("Tag already set");
+            throw std::runtime_error("Tag already set");
             tags_.insert(key, tag);
         }
     }
@@ -494,13 +494,13 @@ std::list<SteinerPointInfo> Mlib::removed_duplicates(
 
 void Mlib::check_curb_validity(float curb_alpha, float curb2_alpha) {
     if (curb_alpha > curb2_alpha) {
-        THROW_OR_ABORT("curb_alpha > curb2_alpha");
+        throw std::runtime_error("curb_alpha > curb2_alpha");
     }
     if (curb_alpha <= 0) {
-        THROW_OR_ABORT("curb_alpha <= 0");
+        throw std::runtime_error("curb_alpha <= 0");
     }
     if (curb2_alpha > 1) {
-        THROW_OR_ABORT("curb2_alpha > 1");
+        throw std::runtime_error("curb2_alpha > 1");
     }
 }
 

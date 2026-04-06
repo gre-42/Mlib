@@ -1,10 +1,10 @@
 #pragma once
 #include <Mlib/Images/Flip_Mode.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
 #include <cstddef>
 #include <cstdint>
 #include <memory>
 #include <stb/stb_image.h>
+#include <stdexcept>
 #include <string>
 #include <variant>
 #include <vector>
@@ -35,17 +35,17 @@ public:
         , data_{ nullptr, &stbi_image_free }
     {
         if ((width < 0) || (width > 16'000)) {
-            THROW_OR_ABORT("StbInfo: width negative or too large");
+            throw std::runtime_error("StbInfo: width negative or too large");
         }
         if ((height < 0) || (height > 16'000)) {
-            THROW_OR_ABORT("StbInfo: height negative or too large");
+            throw std::runtime_error("StbInfo: height negative or too large");
         }
         if ((nrChannels < 0) || (nrChannels > 4)) {
-            THROW_OR_ABORT("StbInfo: nrChannels negative or too large");
+            throw std::runtime_error("StbInfo: nrChannels negative or too large");
         }
         data_.reset((TData*)::malloc(size_t(width * height * nrChannels) * sizeof(TData)));
         if (data_ == nullptr) {
-            THROW_OR_ABORT("StbInfo: Cannot allocate image");
+            throw std::runtime_error("StbInfo: Cannot allocate image");
         }
     }
     StbInfo(StbInfo&& other) = default;

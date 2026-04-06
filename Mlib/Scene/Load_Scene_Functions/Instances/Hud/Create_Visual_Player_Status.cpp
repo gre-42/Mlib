@@ -1,5 +1,4 @@
 #include "Create_Visual_Player_Status.hpp"
-#include <Mlib/Argument_List.hpp>
 #include <Mlib/Components/Status_Writer.hpp>
 #include <Mlib/Layout/Layout_Constraints.hpp>
 #include <Mlib/Layout/Widget.hpp>
@@ -8,12 +7,13 @@
 #include <Mlib/Macro_Executor/Focus_Filter.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Memory/Object_Pool.hpp>
+#include <Mlib/Misc/Argument_List.hpp>
+#include <Mlib/OpenGL/Render_Logics/Render_Logics.hpp>
+#include <Mlib/OpenGL/Text/Charsets.hpp>
 #include <Mlib/Physics/Containers/Advance_Times.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Engine.hpp>
 #include <Mlib/Players/Advance_Times/Player.hpp>
 #include <Mlib/Players/Containers/Players.hpp>
-#include <Mlib/Render/Render_Logics/Render_Logics.hpp>
-#include <Mlib/Render/Text/Charsets.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Load_Scene_Funcs.hpp>
 #include <Mlib/Scene/Render_Logics/Visual_Movable_Circular_Logger.hpp>
@@ -23,7 +23,7 @@
 #include <Mlib/Scene_Graph/Interfaces/Scene_Node/IAbsolute_Movable.hpp>
 #include <Mlib/Scene_Graph/Status_Writer.hpp>
 #include <Mlib/Strings/String.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -71,9 +71,9 @@ void CreateVisualPlayerStatus::execute(const LoadSceneJsonUserFunctionArgs& args
 
     auto player = players.get_player(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::player), CURRENT_SOURCE_LOCATION);
     DanglingBaseClassRef<SceneNode> node = player->scene_node();
-    auto lo = &get_status_writer(node);
+    auto lo = get_status_writer(node.get(), CURRENT_SOURCE_LOCATION).ptr();
     if (args.arguments.contains(KnownArgs::child)) {
-        lo = &lo->child_status_writer(args.arguments.at<std::vector<VariableAndHash<std::string>>>(KnownArgs::child));
+        lo = lo->child_status_writer(args.arguments.at<std::vector<VariableAndHash<std::string>>>(KnownArgs::child)).ptr();
     }
     StatusComponents log_components = status_components_from_string(args.arguments.at<std::string>(KnownArgs::format));
     auto& logger = object_pool.create<VisualMovableLogger>(
@@ -99,7 +99,7 @@ void CreateVisualPlayerStatus::execute(const LoadSceneJsonUserFunctionArgs& args
             args.arguments.at<std::string>(KnownArgs::charset),
             args.arguments.path(KnownArgs::ttf_file),
             ColormapWithModifiers{
-                .filename = VariableAndHash{c->path(CircularArgs::pointer)},
+                .filename = c->path_or_variable(CircularArgs::pointer),
                 .color_mode = ColorMode::RGBA,
                 .mipmap_mode = MipmapMode::WITH_MIPMAPS
             }.compute_hash(),

@@ -1,6 +1,6 @@
 #include "Set_Node_Bone.hpp"
-#include <Mlib/Argument_List.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
+#include <Mlib/Misc/Argument_List.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
@@ -29,7 +29,7 @@ SetNodeBone::SetNodeBone(PhysicsScene& physics_scene)
 
 void SetNodeBone::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::node), DP_LOC)
+    scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::node), CURRENT_SOURCE_LOCATION)
         ->set_bone(SceneNodeBone{
             .name = args.arguments.at<VariableAndHash<std::string>>(KnownArgs::bone),
             .smoothness = args.arguments.at<float>(KnownArgs::smoothness),

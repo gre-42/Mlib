@@ -1,8 +1,9 @@
+
 #include "Smoke_Particle_Generator.hpp"
-#include <Mlib/Argument_List.hpp>
 #include <Mlib/Geometry/Instance/Rendering_Dynamics.hpp>
 #include <Mlib/Json/Json_View.hpp>
 #include <Mlib/Math/Transformation/Tait_Bryan_Angles.hpp>
+#include <Mlib/Misc/Argument_List.hpp>
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Animation_State.hpp>
@@ -20,7 +21,7 @@ using namespace Mlib;
 
 void Mlib::from_json(const nlohmann::json& j, ParticleContainer& pc) {
     if (j.type() != nlohmann::detail::value_t::string) {
-        THROW_OR_ABORT("Particle container is not of type string");
+        throw std::runtime_error("Particle container is not of type string");
     }
     static const std::map<std::string, ParticleContainer> m{
         {"physics", ParticleContainer::PHYSICS},
@@ -29,7 +30,7 @@ void Mlib::from_json(const nlohmann::json& j, ParticleContainer& pc) {
     auto s = j.get<std::string>();
     auto it = m.find(s);
     if (it == m.end()) {
-        THROW_OR_ABORT("Unknown particle container: \"" + s + '"');
+        throw std::runtime_error("Unknown particle container: \"" + s + '"');
     }
     pc = it->second;
 }
@@ -91,7 +92,7 @@ void SmokeParticleGenerator::generate_root(
             static_world);
         return;
     }
-    THROW_OR_ABORT("Unknown particle type");
+    throw std::runtime_error("Unknown particle type");
 }
 
 void SmokeParticleGenerator::generate_instance(
@@ -204,7 +205,7 @@ void SmokeParticleGenerator::generate_child_node(
             .interpolation_mode = PoseInterpolationMode::DISABLED,
             .renderable_resource_filter = RenderableResourceFilter{}});
     auto child_node_ref = child_node.ref(CURRENT_SOURCE_LOCATION);
-    parent->add_child(child_node_name, std::move(child_node), ChildRegistrationState::REGISTERED);
+    parent->add_child(child_node_name, std::move(child_node), ChildRegistrationState::IS_REGISTERED);
     scene_.register_node(child_node_name, child_node_ref);
 }
 
@@ -214,7 +215,7 @@ std::string SmokeParticleGenerator::generate_suffix() {
 
 void SmokeParticleGenerator::set_bullet_generator(BulletGenerator& bullet_generator) {
     if (bullet_generator_ != nullptr) {
-        THROW_OR_ABORT("Bullet generator already set");
+        throw std::runtime_error("Bullet generator already set");
     }
     bullet_generator_ = &bullet_generator;
 }

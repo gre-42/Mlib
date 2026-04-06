@@ -1,8 +1,9 @@
+
 #include "Rigid_Body_Vehicle_Flags.hpp"
 #include <Mlib/Regex/Regex_Select.hpp>
 #include <Mlib/Strings/String.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
 #include <map>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -15,7 +16,7 @@ RigidBodyVehicleFlags single_rigid_body_vehicle_flags_from_string(const std::str
     };
     auto it = m.find(s);
     if (it == m.end()) {
-        THROW_OR_ABORT("Unknown vehicle flags: \"" + s + '"');
+        throw std::runtime_error("Unknown vehicle flags: \"" + s + '"');
     }
     return it->second;
 }

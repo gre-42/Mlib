@@ -1,6 +1,6 @@
 #include "Vehicle_Movement.hpp"
-#include <Mlib/Throw_Or_Abort.hpp>
 #include <cmath>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -17,11 +17,11 @@ void VehicleMovement::set_control_parameters(
     float surface_power_backward)
 {
     if (!std::isnan(surface_power_forward_)) {
-        THROW_OR_ABORT("surface_power_forward already set");
+        throw std::runtime_error("surface_power_forward already set");
     }
     surface_power_forward_ = surface_power_forward;
     if (!std::isnan(surface_power_backward_)) {
-        THROW_OR_ABORT("surface_power_backward already set");
+        throw std::runtime_error("surface_power_backward already set");
     }
     surface_power_backward_ = surface_power_backward;
 }

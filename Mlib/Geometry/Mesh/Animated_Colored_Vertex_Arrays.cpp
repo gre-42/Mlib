@@ -1,5 +1,5 @@
+
 #include "Animated_Colored_Vertex_Arrays.hpp"
-#include <Mlib/Assert.hpp>
 #include <Mlib/Geometry/Colored_Vertex.hpp>
 #include <Mlib/Geometry/Mesh/Barrier_Triangle_Hitbox.hpp>
 #include <Mlib/Geometry/Mesh/Bone.hpp>
@@ -9,6 +9,7 @@
 #include <Mlib/Geometry/Mesh/Smoothness_Target.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Transformation/Quaternion.hpp>
+#include <Mlib/Testing/Assert.hpp>
 
 using namespace Mlib;
 
@@ -38,10 +39,10 @@ AnimatedColoredVertexArrays::~AnimatedColoredVertexArrays() = default;
 
 void AnimatedColoredVertexArrays::insert(const AnimatedColoredVertexArrays& other) {
     if (!bone_indices.empty() || !other.bone_indices.empty()) {
-        THROW_OR_ABORT("Merging AnimatedColoredVertexArrays does not support bone indices");
+        throw std::runtime_error("Merging AnimatedColoredVertexArrays does not support bone indices");
     }
     if ((skeleton != nullptr) || (other.skeleton != nullptr)) {
-        THROW_OR_ABORT("Merging AnimatedColoredVertexArrays does not support skeleton");
+        throw std::runtime_error("Merging AnimatedColoredVertexArrays does not support skeleton");
     }
     scvas.insert(scvas.end(), other.scvas.begin(), other.scvas.end());
     dcvas.insert(dcvas.end(), other.dcvas.begin(), other.dcvas.end());
@@ -63,7 +64,7 @@ UUVector<OffsetAndQuaternion<float, float>> AnimatedColoredVertexArrays::vectori
 #ifndef NDEBUG
     for (const auto& m : ms) {
         if (any(Mlib::isnan(m.t))) {
-            THROW_OR_ABORT("Pose contains NAN values or was not set");
+            throw std::runtime_error("Pose contains NAN values or was not set");
         }
     }
 #endif
@@ -98,7 +99,7 @@ void AnimatedColoredVertexArrays::create_barrier_triangle_hitboxes(
 {
     for (const auto& t : scvas) {
         if (filter.matches(*t)) {
-            THROW_OR_ABORT("Single-precision array matches terrain convex decomposition filter");
+            throw std::runtime_error("Single-precision array matches terrain convex decomposition filter");
         }
     }
     std::list<std::shared_ptr<ColoredVertexArray<CompressedScenePos>>> new_dvcas;
@@ -127,14 +128,14 @@ void AnimatedColoredVertexArrays::smoothen_edges(
     if (target == SmoothnessTarget::PHYSICS) {
         std::list<std::shared_ptr<ColoredVertexArray<CompressedScenePos>>> new_dvcas;
         for (const auto& l : dcvas) {
-            if (!any(l->morphology.physics_material & PhysicsMaterial::ATTR_COLLIDE)) {
+            if (!any(l->meta.morphology.physics_material & PhysicsMaterial::ATTR_COLLIDE)) {
                 continue;
             }
             new_dvcas.emplace_back(std::make_shared<ColoredVertexArray<CompressedScenePos>>(
-                l->name + "_smooth",
-                l->material,
-                l->morphology - PhysicsMaterial::ATTR_VISIBLE,
-                l->modifier_backlog,
+                l->meta.name + "_smooth",
+                l->meta.material,
+                l->meta.morphology - PhysicsMaterial::ATTR_VISIBLE,
+                l->meta.modifier_backlog,
                 UUVector<FixedArray<ColoredVertex<CompressedScenePos>, 4>>{},
                 UUVector<FixedArray<ColoredVertex<CompressedScenePos>, 3>>{l->triangles},
                 UUVector<FixedArray<ColoredVertex<CompressedScenePos>, 2>>{},
@@ -145,12 +146,12 @@ void AnimatedColoredVertexArrays::smoothen_edges(
                 std::vector<UUVector<FixedArray<float, 3>>>{},
                 UUVector<FixedArray<float, 3>>{},
                 UUVector<FixedArray<float, 4>>{}));
-            l->morphology.physics_material &= ~PhysicsMaterial::ATTR_COLLIDE;
+            l->meta.morphology.physics_material &= ~PhysicsMaterial::ATTR_COLLIDE;
         }
         Mlib::smoothen_edges(new_dvcas, {}, smoothness, niterations, decay);
         dcvas.insert(dcvas.end(), new_dvcas.begin(), new_dvcas.end());
     } else {
-        THROW_OR_ABORT("Only physics smoothness-target is implemented");
+        throw std::runtime_error("Only physics smoothness-target is implemented");
     }
 }
 
@@ -195,17 +196,17 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>>& AnimatedColoredVertexArray
     } else if constexpr (std::is_same_v<TPos, CompressedScenePos>) {
         return dcvas;
     } else {
-        THROW_OR_ABORT("Unknown mesh precision");
+        throw std::runtime_error("Unknown mesh precision");
     }
 }
 
-void AnimatedColoredVertexArrays::print(std::ostream& ostr) const {
+void AnimatedColoredVertexArrays::print_stats(std::ostream& ostr) const {
     ostr << "AnimatedColoredVertexArrays\n";
     for (const auto& cva : scvas) {
-        cva->print(ostr);
+        cva->print_stats(ostr);
     }
     for (const auto& cva : dcvas) {
-        cva->print(ostr);
+        cva->print_stats(ostr);
     }
 }
 

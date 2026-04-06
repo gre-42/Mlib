@@ -1,8 +1,8 @@
 #include "Console_Log.hpp"
-#include <Mlib/Argument_List.hpp>
 #include <Mlib/Components/Status_Writer.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Memory/Object_Pool.hpp>
+#include <Mlib/Misc/Argument_List.hpp>
 #include <Mlib/Physics/Advance_Times/Movable_Logger.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Engine.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
@@ -10,7 +10,7 @@
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Interfaces/Scene_Node/IAbsolute_Movable.hpp>
 #include <Mlib/Scene_Graph/Status_Writer.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -29,13 +29,13 @@ LoadSceneJsonUserFunction ConsoleLog::json_user_function = [](const LoadSceneJso
 };
 
 ConsoleLog::ConsoleLog(PhysicsScene& physics_scene) 
-: LoadPhysicsSceneInstanceFunction{ physics_scene }
+    : LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
 void ConsoleLog::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    DanglingBaseClassRef<SceneNode> node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::node), DP_LOC);
-    auto& lo = get_status_writer(node);
+    DanglingBaseClassRef<SceneNode> node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::node), CURRENT_SOURCE_LOCATION);
+    auto lo = get_status_writer(node.get(), CURRENT_SOURCE_LOCATION);
     StatusComponents log_components = status_components_from_string(args.arguments.at<std::string>(KnownArgs::format));
     auto& logger = global_object_pool.create<MovableLogger>(
         CURRENT_SOURCE_LOCATION,

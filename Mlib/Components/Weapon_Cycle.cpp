@@ -1,20 +1,28 @@
+
 #include "Weapon_Cycle.hpp"
 #include <Mlib/Physics/Misc/Weapon_Cycle.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
+#include <stdexcept>
 
 using namespace Mlib;
 
-const WeaponCycle& Mlib::get_weapon_cycle(const DanglingBaseClassRef<const SceneNode>& node) {
-    auto wc = dynamic_cast<WeaponCycle*>(&node->get_node_modifier());
-    if (wc == nullptr) {
-        THROW_OR_ABORT("Node modifier is not a list of weapon cycles");
-    }
-    return *wc;
+DanglingBaseClassRef<const WeaponCycle> Mlib::get_weapon_cycle(
+    const SceneNode& node,
+    SourceLocation loc)
+{
+    return get_weapon_cycle(const_cast<SceneNode&>(node), loc);
 }
 
-WeaponCycle& Mlib::get_weapon_cycle(const DanglingBaseClassRef<SceneNode>& node) {
-    return const_cast<WeaponCycle&>(get_weapon_cycle((const DanglingBaseClassRef<const SceneNode>&)node));
+DanglingBaseClassRef<WeaponCycle> Mlib::get_weapon_cycle(
+    SceneNode& node,
+    SourceLocation loc)
+{
+    auto nm = node.get_node_modifier(CURRENT_SOURCE_LOCATION);
+    auto wc = dynamic_cast<WeaponCycle*>(&nm.get());
+    if (wc == nullptr) {
+        throw std::runtime_error("Node modifier is not a list of weapon cycles");
+    }
+    return {*wc, CURRENT_SOURCE_LOCATION};
 }
 
 bool Mlib::has_weapon_cycle(const DanglingBaseClassRef<const SceneNode>& node) {

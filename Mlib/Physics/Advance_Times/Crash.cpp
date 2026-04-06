@@ -8,12 +8,12 @@
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Scene_Graph/Base_Log.hpp>
 #include <Mlib/Scene_Graph/Log_Entry_Severity.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
+#include <stdexcept>
 
 using namespace Mlib;
 
 Crash::Crash(
-    RigidBodyVehicle& rigid_body,
+    const DanglingBaseClassRef<RigidBodyVehicle>& rigid_body,
     float damage)
     : rigid_body_{ rigid_body }
     , damage_{ damage }
@@ -45,9 +45,9 @@ void Crash::notify_impact(
             auto d = dynamic_cast<Crash*>(v.get());
             if (d != nullptr) {
                 if (!std::isnan(damage0)) {
-                    THROW_OR_ABORT("List contains multiple crashes");
+                    throw std::runtime_error("List contains multiple crashes");
                 }
-                damage0 = calculate_damage(rigid_body_, d->damage_, normal, lambda_final);
+                damage0 = calculate_damage(rigid_body_.get(), d->damage_, normal, lambda_final);
             }
         }
         if (!std::isnan(damage0)) {
@@ -57,7 +57,7 @@ void Crash::notify_impact(
             damage1 -= min_damage;
             if (base_log != nullptr) {
                 std::stringstream sstr;
-                auto driver0 = rigid_body_.drivers_.try_get("driver");
+                auto driver0 = rigid_body_->drivers_.try_get("driver");
                 auto driver1 = rigid_body.drivers_.try_get("driver");
                 if ((driver0 != nullptr) && (driver1 != nullptr)) {
                     if (damage0 != 0) {
@@ -73,21 +73,21 @@ void Crash::notify_impact(
                     base_log->log(sstr.str(), LogEntrySeverity::CRITICAL);
                 }
             }
-            if ((rigid_body_.damageable_ != nullptr) && (rigid_body_.damageable_->health() > 0)) {
-                rigid_body_.damageable_->damage(damage0, DamageSource::CRASH);
-                if (rigid_body_.damageable_->health() <= 0) {
+            if ((rigid_body_->damageable_ != nullptr) && (rigid_body_->damageable_->health() > 0)) {
+                rigid_body_->damageable_->damage(damage0, DamageSource::CRASH);
+                if (rigid_body_->damageable_->health() <= 0) {
                     auto driver = rigid_body.drivers_.try_get("driver");
                     if (driver != nullptr) {
-                        driver->notify_kill(rigid_body_);
+                        driver->notify_kill(rigid_body_.get());
                     }
                 }
             }
             if ((rigid_body.damageable_ != nullptr) && (rigid_body.damageable_->health() > 0)) {
                 rigid_body.damageable_->damage(damage1, DamageSource::CRASH);
                 if (rigid_body.damageable_->health() <= 0) {
-                    auto driver = rigid_body_.drivers_.try_get("driver");
+                    auto driver = rigid_body_->drivers_.try_get("driver");
                     if (driver != nullptr) {
-                        driver->notify_kill(rigid_body_);
+                        driver->notify_kill(rigid_body_.get());
                     }
                 }
             }

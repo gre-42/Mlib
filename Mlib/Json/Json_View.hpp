@@ -2,13 +2,13 @@
 #include <Mlib/Json/Json_Key.hpp>
 #include <Mlib/Json/Misc.hpp>
 #include <Mlib/Strings/Join_Arguments.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
 #include <functional>
 #include <iosfwd>
 #include <list>
 #include <map>
 #include <optional>
 #include <set>
+#include <stdexcept>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -40,7 +40,7 @@ public:
     nlohmann::json resolve_j(TKeys... path) const {
         auto res = try_resolve(path...);
         if (!res.has_value()) {
-            THROW_OR_ABORT("Cannot resolve JSON-path \"" + join_arguments("/", path...) + '"');
+            throw std::runtime_error("Cannot resolve JSON-path \"" + join_arguments("/", path...) + '"');
         } else {
             return *res;
         }
@@ -49,7 +49,7 @@ public:
     TValue resolve_t(TKeys... path) const {
         auto res = try_resolve(path...);
         if (!res.has_value()) {
-            THROW_OR_ABORT("Cannot resolve JSON-path \"" + join_arguments("/", path...) + '"');
+            throw std::runtime_error("Cannot resolve JSON-path \"" + join_arguments("/", path...) + '"');
         } else {
             return res->template get<TValue>();
         }
@@ -98,7 +98,7 @@ public:
     template <class T, JsonKey Key>
     T at(const Key& name) const {
         if (j_.type() == nlohmann::detail::value_t::null) {
-            THROW_OR_ABORT("Attempt to retrieve value for key on null object: \"" + std::string{ name } + '"');
+            throw std::runtime_error("Attempt to retrieve value for key on null object: \"" + std::string{ name } + '"');
         }
         auto o = at(name);
         try {
@@ -133,7 +133,7 @@ public:
     auto at_vector(const Key& name, const TOperation& op) const {
         const auto& val = j_.at(name);
         if (val.type() != nlohmann::detail::value_t::array) {
-            THROW_OR_ABORT("Type is not array for key \"" + std::string{ name } + '"');
+            throw std::runtime_error("Type is not array for key \"" + std::string{ name } + '"');
         }
         return Mlib::get_vector<TData>(val, op);
     }
@@ -151,7 +151,7 @@ public:
         if ((val.type() != nlohmann::detail::value_t::array) &&
             (val.type() != nlohmann::detail::value_t::null))
         {
-            THROW_OR_ABORT("Type is not array or null for key \"" + std::string{ name } + '"');
+            throw std::runtime_error("Type is not array or null for key \"" + std::string{ name } + '"');
         }
         return Mlib::get_vector_non_null<TData>(val, op);
     }

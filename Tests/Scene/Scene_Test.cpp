@@ -2,8 +2,6 @@
 #include "Create_Scene_Rod.hpp"
 #include "Create_Scene_Slide.hpp"
 #include <Mlib/Audio/One_Shot_Audio.hpp>
-#include <Mlib/Env.hpp>
-#include <Mlib/Floating_Point_Exceptions.hpp>
 #include <Mlib/Geometry/Cameras/Perspective_Camera.hpp>
 #include <Mlib/Geometry/Colored_Vertex.hpp>
 #include <Mlib/Geometry/Material/Particle_Type.hpp>
@@ -17,6 +15,37 @@
 #include <Mlib/Math/Pi.hpp>
 #include <Mlib/Memory/Destruction_Guard.hpp>
 #include <Mlib/Memory/Object_Pool.hpp>
+#include <Mlib/Misc/Floating_Point_Exceptions.hpp>
+#include <Mlib/OpenGL/Batch_Renderers/Particle_Renderer.hpp>
+#include <Mlib/OpenGL/Batch_Renderers/Trail_Renderer.hpp>
+#include <Mlib/OpenGL/Clear_Wrapper.hpp>
+#include <Mlib/OpenGL/Deallocate/Render_Allocator.hpp>
+#include <Mlib/OpenGL/Input_Config.hpp>
+#include <Mlib/OpenGL/Key_Bindings/Key_Configuration.hpp>
+#include <Mlib/OpenGL/Key_Bindings/Lockable_Key_Configurations.hpp>
+#include <Mlib/OpenGL/OpenGL_Object_Factory.hpp>
+#include <Mlib/OpenGL/Render.hpp>
+#include <Mlib/OpenGL/Render_Config.hpp>
+#include <Mlib/OpenGL/Render_Logics/Clear_Mode.hpp>
+#include <Mlib/OpenGL/Render_Logics/Flying_Camera_Logic.hpp>
+#include <Mlib/OpenGL/Render_Logics/Lambda_Render_Logic.hpp>
+#include <Mlib/OpenGL/Render_Logics/Lightmap_Logic.hpp>
+#include <Mlib/OpenGL/Render_Logics/Read_Pixels_Logic.hpp>
+#include <Mlib/OpenGL/Render_Logics/Render_Logics.hpp>
+#include <Mlib/OpenGL/Render_Logics/Standard_Camera_Logic.hpp>
+#include <Mlib/OpenGL/Render_Logics/Standard_Render_Logic.hpp>
+#include <Mlib/OpenGL/Render_Results.hpp>
+#include <Mlib/OpenGL/Renderables/OpenGL_Vertex_Array_Renderer.hpp>
+#include <Mlib/OpenGL/Rendering_Context.hpp>
+#include <Mlib/OpenGL/Resource_Managers/Particle_Resources.hpp>
+#include <Mlib/OpenGL/Resource_Managers/Rendering_Resources.hpp>
+#include <Mlib/OpenGL/Resource_Managers/Trail_Resources.hpp>
+#include <Mlib/OpenGL/Resources/Colored_Vertex_Array_Resource.hpp>
+#include <Mlib/OpenGL/Resources/Obj_File_Resource.hpp>
+#include <Mlib/OpenGL/Selected_Cameras/Selected_Cameras.hpp>
+#include <Mlib/OpenGL/Ui/Button_States.hpp>
+#include <Mlib/OpenGL/Ui/Cursor_States.hpp>
+#include <Mlib/Os/Env.hpp>
 #include <Mlib/Physics/Bullets/Bullet_Property_Db.hpp>
 #include <Mlib/Physics/Collision/Collidable_Mode.hpp>
 #include <Mlib/Physics/Collision/Power_To_Force.hpp>
@@ -29,35 +58,7 @@
 #include <Mlib/Physics/Smoke_Generation/Contact_Smoke_Generator.hpp>
 #include <Mlib/Physics/Smoke_Generation/Smoke_Particle_Generator.hpp>
 #include <Mlib/Physics/Smoke_Generation/Surface_Contact_Db.hpp>
-#include <Mlib/Render/Batch_Renderers/Particle_Renderer.hpp>
-#include <Mlib/Render/Batch_Renderers/Trail_Renderer.hpp>
-#include <Mlib/Render/Clear_Wrapper.hpp>
-#include <Mlib/Render/Deallocate/Render_Allocator.hpp>
-#include <Mlib/Render/Input_Config.hpp>
-#include <Mlib/Render/Key_Bindings/Key_Configuration.hpp>
-#include <Mlib/Render/Key_Bindings/Lockable_Key_Configurations.hpp>
-#include <Mlib/Render/Render.hpp>
-#include <Mlib/Render/Render_Config.hpp>
-#include <Mlib/Render/Render_Logics/Clear_Mode.hpp>
-#include <Mlib/Render/Render_Logics/Flying_Camera_Logic.hpp>
-#include <Mlib/Render/Render_Logics/Lambda_Render_Logic.hpp>
-#include <Mlib/Render/Render_Logics/Lightmap_Logic.hpp>
-#include <Mlib/Render/Render_Logics/Read_Pixels_Logic.hpp>
-#include <Mlib/Render/Render_Logics/Render_Logics.hpp>
-#include <Mlib/Render/Render_Logics/Standard_Camera_Logic.hpp>
-#include <Mlib/Render/Render_Logics/Standard_Render_Logic.hpp>
-#include <Mlib/Render/Render_Results.hpp>
-#include <Mlib/Render/Rendering_Context.hpp>
-#include <Mlib/Render/Resource_Managers/Particle_Resources.hpp>
-#include <Mlib/Render/Resource_Managers/Rendering_Resources.hpp>
-#include <Mlib/Render/Resource_Managers/Trail_Resources.hpp>
-#include <Mlib/Render/Resources/Colored_Vertex_Array_Resource.hpp>
-#include <Mlib/Render/Resources/Obj_File_Resource.hpp>
-#include <Mlib/Render/Selected_Cameras/Selected_Cameras.hpp>
-#include <Mlib/Render/Ui/Button_States.hpp>
-#include <Mlib/Render/Ui/Cursor_States.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
-#include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
 #include <Mlib/Scene_Graph/Elements/Absolute_Movable_Setter.hpp>
 #include <Mlib/Scene_Graph/Elements/Light.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
@@ -119,18 +120,17 @@ void test_physics_engine(unsigned int seed) {
         .dt = getenv_default_float("DT", 0.01667f) * seconds,
         .stiction_coefficient = getenv_default_float("FRICTION", 1.f),
         .friction_coefficient = getenv_default_float("FRICTION", 1.f),
-        .nsubsteps = getenv_default_size_t("NSUBSTEPS", 8),
-        .enable_ridge_map = true
+        .nsubsteps = getenv_default_size_t("NSUBSTEPS", 8)
     };
     // SceneNode destructors require that physics engine is destroyed after scene,
     // => Create PhysicsEngine before Scene
     PhysicsEngine pe{ physics_cfg };
 
-    SceneNodeResources scene_node_resources;
+    OpenGLObjectFactory gpu_object_factory;
+    SceneNodeResources scene_node_resources{gpu_object_factory};
     ParticleResources particle_resources;
     TrailResources trail_resources;
-    DeleteNodeMutex delete_node_mutex;
-    Scene scene{ "main_scene", delete_node_mutex };
+    Scene scene{ "main_scene" };
     DestructionGuard scene_destruction_guard{[&](){
         scene.shutdown();
     }};
@@ -158,11 +158,14 @@ void test_physics_engine(unsigned int seed) {
     pe.set_surface_contact_db(surface_contact_db);
     pe.set_contact_smoke_generator(contact_smoke_generator);
     pe.set_trail_renderer(trail_renderer);
+    OpenGLVertexArrayRenderer gpu_vertex_array_renderer{rendering_resources, rendering_resources};
     RenderingContext primary_rendering_context{
         .scene_node_resources = scene_node_resources,
         .particle_resources = particle_resources,
         .trail_resources = trail_resources,
         .rendering_resources = rendering_resources,
+        .gpu_object_factory = gpu_object_factory,
+        .gpu_vertex_array_renderer = gpu_vertex_array_renderer,
         .z_order = 0};
     RenderingContextGuard rcg{ primary_rendering_context };
 
@@ -186,7 +189,7 @@ void test_physics_engine(unsigned int seed) {
             pe,
             selected_cameras);
     } else {
-        THROW_OR_ABORT("Unknown scene name");
+        throw std::runtime_error("Unknown scene name");
     }
 
     GravityEfp gefp{ pe };
@@ -214,9 +217,7 @@ void test_physics_engine(unsigned int seed) {
         dynamic_world,
         pe,
         send_and_receive,
-        delete_node_mutex,
         physics_cfg };
-    delete_node_mutex.clear_deleter_thread();
     PhysicsLoop pl{
         "Physics",
         ThreadAffinity::POOL,
@@ -257,7 +258,6 @@ void test_physics_engine(unsigned int seed) {
         .wire_frame = render_config.wire_frame,
         .depth_test = render_config.depth_test,
         .cull_faces = render_config.cull_faces,
-        .delete_node_mutex = delete_node_mutex,
         .physics_set_fps = &physics_set_fps};
     RenderLogics render_logics{ui_focus};
     ObjectPool object_pool{ InObjectPoolDestructor::CLEAR };
@@ -274,7 +274,7 @@ void test_physics_engine(unsigned int seed) {
         key_configurations,
         ReadPixelsRole::INTERMEDIATE | ReadPixelsRole::SCREENSHOT);
     auto append_lightmap_logic = [&](){
-        DanglingBaseClassRef<SceneNode> light_node = scene.get_node(VariableAndHash<std::string>{"light_node"}, DP_LOC);
+        DanglingBaseClassRef<SceneNode> light_node = scene.get_node(VariableAndHash<std::string>{"light_node"}, CURRENT_SOURCE_LOCATION);
         // Light without shadow
         light_node->add_light(std::make_unique<Light>(Light{
             .shadow_render_pass = ExternalRenderPassType::NONE}));

@@ -1,12 +1,12 @@
 #include "Playback_Waypoints.hpp"
-#include <Mlib/Assert.hpp>
 #include <Mlib/Os/Os.hpp>
 #include <Mlib/Physics/Misc/Track_Element.hpp>
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Players/Advance_Times/Player.hpp>
 #include <Mlib/Scene_Graph/Way_Point_Location.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
+#include <Mlib/Testing/Assert.hpp>
 #include <fstream>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -24,7 +24,7 @@ bool PlaybackWaypoints::has_waypoints() const {
 
 void PlaybackWaypoints::select_next_waypoint() {
     if (track_.empty()) {
-        THROW_OR_ABORT("Track is empty, cannot select next waypoint");
+        throw std::runtime_error("Track is empty, cannot select next waypoint");
     }
     if (!player_.single_waypoint().has_waypoint()) {
         current_track_element_ = track_.begin();
@@ -56,13 +56,13 @@ void PlaybackWaypoints::set_waypoints(
 {
     auto ifstr = create_ifstream(playback_filename);
     if (ifstr->fail()) {
-        THROW_OR_ABORT("Could not open waypoint file \"" + playback_filename + '"');
+        throw std::runtime_error("Could not open waypoint file \"" + playback_filename + '"');
     }
     while (true) {
         TrackElement te = TrackElement::from_stream(*ifstr, inverse_geographic_mapping, 1);
         if (ifstr->fail()) {
             if (!ifstr->eof()) {
-                THROW_OR_ABORT("Could not read from file \"" + playback_filename + '"');
+                throw std::runtime_error("Could not read from file \"" + playback_filename + '"');
             }
             break;
         }

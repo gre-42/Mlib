@@ -1,3 +1,4 @@
+
 #include "Read_Grs.hpp"
 #include <Mlib/Io/Binary.hpp>
 #include <Mlib/Os/Os.hpp>
@@ -26,11 +27,11 @@ static_assert(sizeof(ResourceGroupBuffers) == 8 * sizeof(ResourceGroupBuffer));
 Model Mlib::Grs::load_grs(std::istream& istr, IoVerbosity verbosity) {
     Model result;
     if (auto magic7 = read_binary<uint32_t>(istr, "magic7", verbosity); magic7 != 7) {
-        THROW_OR_ABORT("Invalid magic number 7 in grs-file: " + std::to_string(magic7));
+        throw std::runtime_error("Invalid magic number 7 in grs-file: " + std::to_string(magic7));
     }
     auto magic68 = read_binary<uint32_t>(istr, "magic6/8", verbosity);
     if ((magic68 != 6) && (magic68 != 8)) {
-        THROW_OR_ABORT("Invalid magic number 6 or 8 in grs-file: " + std::to_string(magic68));
+        throw std::runtime_error("Invalid magic number 6 or 8 in grs-file: " + std::to_string(magic68));
     }
     seek_relative_positive(istr, 2408, verbosity);
     auto resource_group_buffers = read_binary<ResourceGroupBuffers>(istr, "resource groups", verbosity);
@@ -58,7 +59,7 @@ Model Mlib::Grs::load_grs(std::istream& istr, IoVerbosity verbosity) {
         }
     }
     if (auto magic68_2 = read_binary<uint32_t>(istr, "magic6/8 2", verbosity); magic68_2 != magic68) {
-        THROW_OR_ABORT(std::format(
+        throw std::runtime_error(std::format(
             "Invalid repeated magic number 6 or 8 in grs-file. "
             "First: {}, second: {}", magic68, magic68_2));
     }
@@ -66,7 +67,7 @@ Model Mlib::Grs::load_grs(std::istream& istr, IoVerbosity verbosity) {
         auto cell0_address = read_binary<uint32_t>(istr, "address of cell 0", verbosity);
         auto current_positon = istr.tellg();
         if (cell0_address < current_positon) {
-            THROW_OR_ABORT("Address of cell 0 is behind current read position");
+            throw std::runtime_error("Address of cell 0 is behind current read position");
         }
         seek_relative_positive(istr, cell0_address - current_positon, verbosity);
     }
@@ -80,7 +81,7 @@ Model Mlib::Grs::load_grs(std::istream& istr, IoVerbosity verbosity) {
         }
         seek_relative_positive(istr, 12, verbosity);
         if (cells.size() > (size_t)1e6) {
-            THROW_OR_ABORT("Too many cells");
+            throw std::runtime_error("Too many cells");
         }
         auto& cell = cells.emplace_back(uninitialized);
         {
@@ -112,7 +113,7 @@ Model Mlib::Grs::load_grs(std::istream& istr, IoVerbosity verbosity) {
         auto alignment = (std::streampos)0xF;
         auto next_position = (current_positon + alignment) & (~alignment);
         if (next_position < current_positon) {
-            THROW_OR_ABORT("Seekg integer overflow");
+            throw std::runtime_error("Seekg integer overflow");
         }
         if (any(verbosity & IoVerbosity::METADATA)) {
             linfo() << "Seek 0x" << std::hex << current_positon << " -> 0x" << std::hex << next_position;
@@ -126,7 +127,7 @@ Model Mlib::Grs::load_grs(std::istream& istr, IoVerbosity verbosity) {
 Model Mlib::Grs::load_grs(const std::string& filename, IoVerbosity verbosity) {
     auto f = create_ifstream(filename, std::ios::binary);
     if (f->fail()) {
-        THROW_OR_ABORT("Could not open \"" + filename + '"');
+        throw std::runtime_error("Could not open \"" + filename + '"');
     }
     try {
         return load_grs(*f, verbosity);

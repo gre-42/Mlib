@@ -1,6 +1,6 @@
 #pragma once
+#include <Mlib/Json/Base.hpp>
 #include <chrono>
-#include <nlohmann/json.hpp>
 
 // duration[s]
 namespace nlohmann

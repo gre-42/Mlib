@@ -1,13 +1,13 @@
 #include "Set_Rigid_Body_Door_Distance.hpp"
-#include <Mlib/Argument_List.hpp>
 #include <Mlib/Components/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
+#include <Mlib/Misc/Argument_List.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -31,10 +31,10 @@ SetRigidBodyDoorDistance::SetRigidBodyDoorDistance(PhysicsScene& physics_scene)
 
 void SetRigidBodyDoorDistance::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    DanglingBaseClassRef<SceneNode> node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::node), DP_LOC);
-    auto& rb = get_rigid_body_vehicle(node);
-    if (!std::isnan(rb.door_distance_)) {
-        THROW_OR_ABORT("Rigid body door distance already set");
+    DanglingBaseClassRef<SceneNode> node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::node), CURRENT_SOURCE_LOCATION);
+    auto rb = get_rigid_body_vehicle(node.get(), CURRENT_SOURCE_LOCATION);
+    if (!std::isnan(rb->door_distance_)) {
+        throw std::runtime_error("Rigid body door distance already set");
     }
-    rb.door_distance_ = args.arguments.at<float>(KnownArgs::door_distance) * meters;
+    rb->door_distance_ = args.arguments.at<float>(KnownArgs::door_distance) * meters;
 }

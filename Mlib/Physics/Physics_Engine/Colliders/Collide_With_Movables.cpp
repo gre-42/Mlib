@@ -1,3 +1,4 @@
+
 #include "Collide_With_Movables.hpp"
 #include <Mlib/Geometry/Physics_Material.hpp>
 #include <Mlib/Iterator/Enumerate.hpp>
@@ -8,7 +9,7 @@
 #include <Mlib/Physics/Physics_Engine/Colliders/Collide_Convex_Meshes.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Phase.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -18,7 +19,7 @@ static void collide_objects(
     const CollisionHistory& history)
 {
     if (&o0.rigid_body == &o1.rigid_body) {
-        THROW_OR_ABORT("Cannot collide identical objects");
+        throw std::runtime_error("Cannot collide identical objects");
     }
     if ((o0.rigid_body->mass() == INFINITY) && (o1.rigid_body->mass() == INFINITY)) {
         return;

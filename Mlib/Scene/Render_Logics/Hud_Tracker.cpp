@@ -1,14 +1,13 @@
 #include "Hud_Tracker.hpp"
-#include <Mlib/Assert.hpp>
 #include <Mlib/Geometry/Cameras/Camera.hpp>
 #include <Mlib/Geometry/Coordinates/Homogeneous.hpp>
 #include <Mlib/Layout/Layout_Constraint_Parameters.hpp>
-#include <Mlib/Render/CHK.hpp>
-#include <Mlib/Render/Render_Logic.hpp>
-#include <Mlib/Render/Render_Logics/Clear_Mode.hpp>
-#include <Mlib/Render/Render_Setup.hpp>
-#include <Mlib/Render/Rendering_Context.hpp>
-#include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
+#include <Mlib/OpenGL/CHK.hpp>
+#include <Mlib/OpenGL/Render_Logic.hpp>
+#include <Mlib/OpenGL/Render_Logics/Clear_Mode.hpp>
+#include <Mlib/OpenGL/Render_Setup.hpp>
+#include <Mlib/OpenGL/Rendering_Context.hpp>
+#include <Mlib/Testing/Assert.hpp>
 
 using namespace Mlib;
 
@@ -18,7 +17,7 @@ HudErrorBehavior Mlib::hud_error_behavior_from_string(const std::string& s) {
         {"center", HudErrorBehavior::CENTER} };
     auto it = m.find(s);
     if (it == m.end()) {
-        THROW_OR_ABORT("Unknown HUD error behavior: \"" + s + '"');
+        throw std::runtime_error("Unknown HUD error behavior: \"" + s + '"');
     }
     return it->second;
 }
@@ -93,7 +92,7 @@ HudTracker::HudTracker(
 #pragma GCC diagnostic pop
         for (const auto& element : *exclusive_nodes) {
             if (!exclusive_nodes_->emplace(element, CURRENT_SOURCE_LOCATION).second) {
-                THROW_OR_ABORT("Duplicate exclusive nodes");
+                throw std::runtime_error("Duplicate exclusive nodes");
             }
         }
     }
@@ -147,7 +146,7 @@ void HudTracker::render(
             } else if (hud_error_behavior_ == HudErrorBehavior::CENTER) {
                 offset = smooth_offset_(fixed_zeros<float, 2>());
             } else {
-                THROW_OR_ABORT("Unknown HUD error behavior");
+                throw std::runtime_error("Unknown HUD error behavior");
             }
         } else {
             offset = smooth_offset_(offset_);

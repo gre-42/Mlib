@@ -1,20 +1,17 @@
 #include "Scene_Vehicle.hpp"
 #include <Mlib/Memory/Object_Pool.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
-#include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
+#include <stdexcept>
 
 using namespace Mlib;
 
 SceneVehicle::SceneVehicle(
-    DeleteNodeMutex& delete_node_mutex,
     VariableAndHash<std::string> scene_node_name,
     const DanglingBaseClassRef<SceneNode>& scene_node,
     const DanglingBaseClassRef<RigidBodyVehicle>& rb)
-    : delete_node_mutex_{ delete_node_mutex }
-    , on_scene_node_destroyed_{ scene_node->on_destroy, CURRENT_SOURCE_LOCATION }
-    , on_rigid_body_destroyed_{ rb->on_destroy, CURRENT_SOURCE_LOCATION }
+    : on_scene_node_destroyed_{ scene_node->on_destroy.deflt, CURRENT_SOURCE_LOCATION }
+    , on_rigid_body_destroyed_{ rb->on_destroy.deflt, CURRENT_SOURCE_LOCATION }
     , scene_node_name_{ std::move(scene_node_name) }
     , scene_node_{ scene_node.ptr().set_loc(CURRENT_SOURCE_LOCATION) }
     , rb_{ rb.ptr().set_loc(CURRENT_SOURCE_LOCATION) }
@@ -34,7 +31,7 @@ void SceneVehicle::create_vehicle_externals(
     ExternalsMode externals_mode) const
 {
     if (!create_vehicle_externals_) {
-        THROW_OR_ABORT("create_vehicle_externals not set");
+        throw std::runtime_error("create_vehicle_externals not set");
     }
     create_vehicle_externals_(player, externals_mode);
 }
@@ -44,7 +41,7 @@ void SceneVehicle::create_vehicle_internals(
     const InternalsMode& internals_mode) const
 {
     if (!create_vehicle_internals_) {
-        THROW_OR_ABORT("create_vehicle_internals not set");
+        throw std::runtime_error("create_vehicle_internals not set");
     }
     create_vehicle_internals_(player, internals_mode);
 }
@@ -53,7 +50,7 @@ void SceneVehicle::set_create_vehicle_externals(
     const CreateVehicleExternals& create_vehicle_externals)
 {
     if (create_vehicle_externals_) {
-        THROW_OR_ABORT("create_vehicle_externals already set");
+        throw std::runtime_error("create_vehicle_externals already set");
     }
     create_vehicle_externals_ = create_vehicle_externals;
 }
@@ -62,7 +59,7 @@ void SceneVehicle::set_create_vehicle_internals(
     const CreateRoleExternals& create_vehicle_internals)
 {
     if (create_vehicle_internals_) {
-        THROW_OR_ABORT("create_vehicle_internals already set");
+        throw std::runtime_error("create_vehicle_internals already set");
     }
     create_vehicle_internals_ = create_vehicle_internals;
 }

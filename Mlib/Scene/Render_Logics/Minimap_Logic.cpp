@@ -1,5 +1,4 @@
 #include "Minimap_Logic.hpp"
-#include <Mlib/Assert.hpp>
 #include <Mlib/Geometry/Cameras/Camera.hpp>
 #include <Mlib/Geometry/Material/Color_Mode.hpp>
 #include <Mlib/Geometry/Material/Cull_Face_Mode.hpp>
@@ -8,19 +7,21 @@
 #include <Mlib/Layout/Screen_Units.hpp>
 #include <Mlib/Layout/Widget.hpp>
 #include <Mlib/Memory/Object_Pool.hpp>
+#include <Mlib/Misc/Log.hpp>
+#include <Mlib/OpenGL/CHK.hpp>
+#include <Mlib/OpenGL/Render_Logics/Clear_Mode.hpp>
+#include <Mlib/OpenGL/Render_Logics/Render_Logics.hpp>
+#include <Mlib/OpenGL/Render_Logics/Resource_Update_Cycle.hpp>
+#include <Mlib/OpenGL/Render_Setup.hpp>
+#include <Mlib/OpenGL/Rendering_Context.hpp>
+#include <Mlib/OpenGL/Resource_Managers/Rendering_Resources.hpp>
+#include <Mlib/OpenGL/Viewport_Guard.hpp>
 #include <Mlib/Physics/Containers/Advance_Times.hpp>
 #include <Mlib/Players/Advance_Times/Player.hpp>
-#include <Mlib/Render/CHK.hpp>
-#include <Mlib/Render/Render_Logics/Clear_Mode.hpp>
-#include <Mlib/Render/Render_Logics/Render_Logics.hpp>
-#include <Mlib/Render/Render_Logics/Resource_Update_Cycle.hpp>
-#include <Mlib/Render/Render_Setup.hpp>
-#include <Mlib/Render/Rendering_Context.hpp>
-#include <Mlib/Render/Resource_Managers/Rendering_Resources.hpp>
-#include <Mlib/Render/Viewport_Guard.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
+#include <Mlib/Testing/Assert.hpp>
 #include <sstream>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -30,8 +31,8 @@ MinimapLogic::MinimapLogic(
     RenderLogics& render_logics,
     const DanglingBaseClassRef<Player>& player,
     const DanglingBaseClassRef<SceneNode>& node,
-    const VariableAndHash<std::string>& map_image_resource_name,
-    const VariableAndHash<std::string>& locator_image_resource_name,
+    const FPath& map_image_resource_name,
+    const FPath& locator_image_resource_name,
     std::unique_ptr<IWidget>&& widget,
     const ILayoutPixels& locator_size,
     float pointer_reference_length,

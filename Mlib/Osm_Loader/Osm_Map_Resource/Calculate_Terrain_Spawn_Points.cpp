@@ -21,7 +21,7 @@ void Mlib::calculate_terrain_spawn_points(
     const Sample_SoloMesh* ssm)
 {
     if (!ssm != !to_meters) {
-        THROW_OR_ABORT("Inconsistent to-meters mapping and navmesh parameters");
+        throw std::runtime_error("Inconsistent to-meters mapping and navmesh parameters");
     }
     for (const Building& bu : spawn_lines) {
         auto team = bu.way.tags.get("spawn:team", "");

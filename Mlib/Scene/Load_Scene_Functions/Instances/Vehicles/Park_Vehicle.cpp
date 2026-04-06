@@ -1,7 +1,7 @@
 #include "Park_Vehicle.hpp"
-#include <Mlib/Argument_List.hpp>
 #include <Mlib/Components/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
+#include <Mlib/Misc/Argument_List.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Load_Scene_Funcs.hpp>
@@ -22,9 +22,9 @@ ParkVehicle::ParkVehicle(PhysicsScene& physics_scene)
 void ParkVehicle::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     args.arguments.validate(KnownArgs::options);
-    DanglingBaseClassRef<SceneNode> node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::rigid_body), DP_LOC);
-    auto& rb = get_rigid_body_vehicle(node);
-    rb.park_vehicle();
+    DanglingBaseClassRef<SceneNode> node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::rigid_body), CURRENT_SOURCE_LOCATION);
+    auto rb = get_rigid_body_vehicle(node.get(), CURRENT_SOURCE_LOCATION);
+    rb->park_vehicle();
 }
 
 namespace {

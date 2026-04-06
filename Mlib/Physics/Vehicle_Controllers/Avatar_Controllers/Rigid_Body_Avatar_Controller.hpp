@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
+#include <Mlib/Memory/Dangling_Base_Class.hpp>
 
 namespace Mlib {
 
@@ -7,7 +8,7 @@ class RigidBodyVehicle;
 template <typename TData, size_t... tshape>
 class FixedArray;
 
-class RigidBodyAvatarController {
+class RigidBodyAvatarController: public virtual DanglingBaseClass {
 public:
     RigidBodyAvatarController();
     virtual ~RigidBodyAvatarController();

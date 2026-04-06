@@ -1,6 +1,6 @@
 #include "Create_Child_Node.hpp"
-#include <Mlib/Argument_List.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
+#include <Mlib/Misc/Argument_List.hpp>
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Regex/Regex_Select.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
@@ -8,7 +8,7 @@
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Make_Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -54,16 +54,16 @@ void CreateChildNode::operator () (
         rotation,
         scale,
         interpolation);
-    DanglingBaseClassRef<SceneNode> nparent = scene.get_node(parent, DP_LOC);
+    DanglingBaseClassRef<SceneNode> nparent = scene.get_node(parent, CURRENT_SOURCE_LOCATION);
     auto node_ref = node.ref(CURRENT_SOURCE_LOCATION);
     if (type == "aggregate") {
-        nparent->add_aggregate_child(name, std::move(node), ChildRegistrationState::REGISTERED);
+        nparent->add_aggregate_child(name, std::move(node), ChildRegistrationState::IS_REGISTERED);
     } else if (type == "instances") {
-        nparent->add_instances_child(name, std::move(node), ChildRegistrationState::REGISTERED);
+        nparent->add_instances_child(name, std::move(node), ChildRegistrationState::IS_REGISTERED);
     } else if (type == "dynamic") {
-        nparent->add_child(name, std::move(node), ChildRegistrationState::REGISTERED);
+        nparent->add_child(name, std::move(node), ChildRegistrationState::IS_REGISTERED);
     } else {
-        THROW_OR_ABORT("Unknown non-root node type: " + type);
+        throw std::runtime_error("Unknown non-root node type: " + type);
     }
     scene.register_node(name, node_ref);
 }

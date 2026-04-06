@@ -1,25 +1,23 @@
+
 #include "Keep_Offset_From_Movable.hpp"
 #include <Mlib/Memory/Object_Pool.hpp>
-#include <Mlib/Physics/Containers/Advance_Times.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 
 using namespace Mlib;
 
 KeepOffsetFromMovable::KeepOffsetFromMovable(
-    AdvanceTimes& advance_times,
     Scene& scene,
     VariableAndHash<std::string> follower_name,
-    DanglingBaseClassRef<SceneNode> followed_node,
-    IAbsoluteMovable& followed,
+    const DanglingBaseClassRef<SceneNode>& followed_node,
+    const DanglingBaseClassRef<IAbsoluteMovable>& followed,
     const FixedArray<float, 3>& offset)
     : set_follower{ *this }
     , set_followed{ *this }
-    , advance_times_{ advance_times }
     , scene_{ scene }
     , follower_name_{ std::move(follower_name) }
     , followed_node_{ followed_node.ptr() }
-    , followed_{ &followed }
+    , followed_{ followed.ptr() }
     , offset_{ offset }
     , transformation_matrix_{ fixed_nans<float, 3, 3>(), fixed_nans<ScenePos, 3>() }
 {}
@@ -47,8 +45,7 @@ void KeepOffsetFromMovable::notify_destroyed(SceneNode& destroyed_object) {
         followed_node_ = nullptr;
         followed_ = nullptr;
         if (!follower_name_->empty()) {
-            VariableAndHash<std::string> fn = follower_name_;
-            follower_name_ = VariableAndHash<std::string>();
+            VariableAndHash<std::string> fn = std::move(follower_name_);
             scene_.delete_root_node(fn);
         }
     } else {
@@ -68,7 +65,7 @@ void KeepOffsetFromMovableFollowerNodeSetter::set_scene_node(
     VariableAndHash<std::string> node_name,
     SourceLocation loc)
 {
-    removal_tokens_.set(node->on_clear, loc);
+    removal_tokens_.set(node->on_clear.early, loc);
     removal_tokens_.add([this, node](){
         keep_offset_.notify_destroyed(node.get());
     }, loc);
@@ -86,7 +83,7 @@ void KeepOffsetFromMovableFollowedNodeSetter::set_scene_node(
     VariableAndHash<std::string> node_name,
     SourceLocation loc)
 {
-    removal_tokens_.set(node->on_clear, loc);
+    removal_tokens_.set(node->on_clear.early, loc);
     removal_tokens_.add([this, node](){
         keep_offset_.notify_destroyed(node.get());
     }, loc);

@@ -1,7 +1,7 @@
+
 #include "Physics_Material.hpp"
 #include <Mlib/Json/Base.hpp>
 #include <Mlib/Strings/String.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
 #include <stdexcept>
 
 using namespace Mlib;
@@ -15,7 +15,6 @@ static PhysicsMaterial single_physics_material_from_string(const std::string& s)
         {"attr_align_strict", PhysicsMaterial::ATTR_ALIGN_STRICT},
         {"attr_convex", PhysicsMaterial::ATTR_CONVEX},
         {"attr_concave", PhysicsMaterial::ATTR_CONCAVE},
-        {"attr_round", PhysicsMaterial::ATTR_ROUND},
         {"attr_contains_skidmarks", PhysicsMaterial::ATTR_CONTAINS_SKIDMARKS},
         {"attr_slippery", PhysicsMaterial::ATTR_SLIPPERY},
         {"attr_liquid", PhysicsMaterial::ATTR_LIQUID},
@@ -53,7 +52,7 @@ static PhysicsMaterial single_physics_material_from_string(const std::string& s)
     };
     auto it = m.find(s);
     if (it == m.end()) {
-        THROW_OR_ABORT("Unknown physics material: \"" + s + '"');
+        throw std::runtime_error("Unknown physics material: \"" + s + '"');
     }
     return it->second;
 }
@@ -75,7 +74,6 @@ static std::string physics_material_modifiers_to_string(PhysicsMaterial p) {
         { PhysicsMaterial::ATTR_ALIGN_STRICT, "attr_align_strict" },
         { PhysicsMaterial::ATTR_CONVEX, "attr_convex" },
         { PhysicsMaterial::ATTR_CONCAVE, "attr_concave" },
-        { PhysicsMaterial::ATTR_ROUND, "attr_round" },
         { PhysicsMaterial::ATTR_CONTAINS_SKIDMARKS, "attr_contains_skidmarks" },
         { PhysicsMaterial::ATTR_SLIPPERY, "attr_slippery" },
         { PhysicsMaterial::ATTR_LIQUID, "attr_liquid" },
@@ -106,7 +104,7 @@ static std::string physics_material_modifiers_to_string(PhysicsMaterial p) {
     }
     p &= ~PhysicsMaterial::SURFACE_BASE_MASK;
     if (any(p)) {
-        THROW_OR_ABORT("Unknown modifiers in physics material: " + std::to_string((int)p));
+        throw std::runtime_error("Unknown modifiers in physics material: " + std::to_string((int)p));
     }
     return result;
 }

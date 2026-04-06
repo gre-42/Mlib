@@ -1,5 +1,5 @@
 #pragma once
-#include <Mlib/Render/Renderables/Resource_Cycle.hpp>
+#include <Mlib/OpenGL/Renderables/Resource_Cycle.hpp>
 #include <map>
 
 namespace Mlib {

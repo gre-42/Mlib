@@ -1,24 +1,24 @@
 #include "Create_Scene_Flat.hpp"
-#include <Mlib/Env.hpp>
 #include <Mlib/Geometry/Cameras/Perspective_Camera.hpp>
 #include <Mlib/Geometry/Colored_Vertex.hpp>
 #include <Mlib/Geometry/Instance/Rendering_Dynamics.hpp>
-#include <Mlib/Geometry/Intersection/Intersectors/Swept_Sphere_Aabb.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
 #include <Mlib/Geometry/Mesh/Load/Load_Mesh_Config.hpp>
 #include <Mlib/Geometry/Mesh/Load/Load_Obj.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>
+#include <Mlib/Geometry/Primitives/Intersectors/Swept_Sphere_Aabb.hpp>
 #include <Mlib/Geometry/Rectangle_Triangulation_Mode.hpp>
 #include <Mlib/Math/Fixed_Test.hpp>
+#include <Mlib/OpenGL/Rendering_Context.hpp>
+#include <Mlib/OpenGL/Resources/Colored_Vertex_Array_Resource.hpp>
+#include <Mlib/OpenGL/Resources/Obj_File_Resource.hpp>
+#include <Mlib/Os/Env.hpp>
 #include <Mlib/Physics/Collision/Collidable_Mode.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Engine.hpp>
-#include <Mlib/Physics/Physics_Engine/Physics_Engine_Config.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Primitives.hpp>
 #include <Mlib/Physics/Units.hpp>
-#include <Mlib/Render/Rendering_Context.hpp>
-#include <Mlib/Render/Resources/Colored_Vertex_Array_Resource.hpp>
-#include <Mlib/Render/Resources/Obj_File_Resource.hpp>
+#include <Mlib/Scene_Config/Physics_Engine_Config.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Absolute_Movable_Setter.hpp>
 #include <Mlib/Scene_Graph/Elements/Light.hpp>
@@ -211,19 +211,19 @@ void Mlib::create_scene_flat(
     scene.auto_add_root_node(OBJ, std::move(scene_nodeR), RenderingDynamics::MOVING);
     scene.add_root_node(VariableAndHash<std::string>{"follower_camera_0"}, make_unique_scene_node(), RenderingDynamics::MOVING, RenderingStrategies::OBJECT);
     scene.add_root_node(VariableAndHash<std::string>{"light_node"}, std::move(scene_nodeL), RenderingDynamics::MOVING, RenderingStrategies::OBJECT);
-    scene.get_node(VariableAndHash<std::string>{"follower_camera_0"}, DP_LOC)->set_camera(std::make_unique<PerspectiveCamera>(
+    scene.get_node(VariableAndHash<std::string>{"follower_camera_0"}, CURRENT_SOURCE_LOCATION)->set_camera(std::make_unique<PerspectiveCamera>(
         PerspectiveCameraConfig(),
         PerspectiveCamera::Postprocessing::ENABLED));
-    scene.get_node(VariableAndHash<std::string>{"light_node"}, DP_LOC)->set_camera(std::make_unique<PerspectiveCamera>(
+    scene.get_node(VariableAndHash<std::string>{"light_node"}, CURRENT_SOURCE_LOCATION)->set_camera(std::make_unique<PerspectiveCamera>(
         PerspectiveCameraConfig(),
         PerspectiveCamera::Postprocessing::ENABLED));
 
     // Must be done when node is already linked to its parents.
     {
-        AbsoluteMovableSetter<RigidBodyVehicle> ams0{scene, scene.get_node(N0, DP_LOC), N0, std::move(rb0), CURRENT_SOURCE_LOCATION};
-        AbsoluteMovableSetter<RigidBodyVehicle> ams1_0{scene, scene.get_node(N1_0, DP_LOC), N1_0, std::move(rb1_0), CURRENT_SOURCE_LOCATION};
-        AbsoluteMovableSetter<RigidBodyVehicle> ams1_1{scene, scene.get_node(N1_1, DP_LOC), N1_1, std::move(rb1_1), CURRENT_SOURCE_LOCATION};
-        AbsoluteMovableSetter<RigidBodyVehicle> ams1_2{scene, scene.get_node(N1_2, DP_LOC), N1_2, std::move(rb1_2), CURRENT_SOURCE_LOCATION};
+        AbsoluteMovableSetter<RigidBodyVehicle> ams0{scene, scene.get_node(N0, CURRENT_SOURCE_LOCATION), N0, std::move(rb0), CURRENT_SOURCE_LOCATION};
+        AbsoluteMovableSetter<RigidBodyVehicle> ams1_0{scene, scene.get_node(N1_0, CURRENT_SOURCE_LOCATION), N1_0, std::move(rb1_0), CURRENT_SOURCE_LOCATION};
+        AbsoluteMovableSetter<RigidBodyVehicle> ams1_1{scene, scene.get_node(N1_1, CURRENT_SOURCE_LOCATION), N1_1, std::move(rb1_1), CURRENT_SOURCE_LOCATION};
+        AbsoluteMovableSetter<RigidBodyVehicle> ams1_2{scene, scene.get_node(N1_2, CURRENT_SOURCE_LOCATION), N1_2, std::move(rb1_2), CURRENT_SOURCE_LOCATION};
 
         pe.rigid_bodies_.add_rigid_body(*ams0.absolute_movable, { triangles0 }, {}, {}, CollidableMode::COLLIDE);
         pe.rigid_bodies_.add_rigid_body(*ams1_0.absolute_movable, quads1, {}, {}, CollidableMode::COLLIDE | CollidableMode::MOVE);
@@ -237,7 +237,7 @@ void Mlib::create_scene_flat(
 
     // Check if the initialization does not change the node positions.
     // Not that only "physics advance time" can change the positions.
-    assert_allclose(scene.get_node(OBJ, DP_LOC)->get_child(N0)->position(), fixed_zeros<ScenePos, 3>());
+    assert_allclose(scene.get_node(OBJ, CURRENT_SOURCE_LOCATION)->get_child(N0)->position(), fixed_zeros<ScenePos, 3>());
     scene.move(physics_cfg.dt, std::chrono::steady_clock::now());
-    assert_allclose(scene.get_node(OBJ, DP_LOC)->get_child(N0)->position(), fixed_zeros<ScenePos, 3>());
+    assert_allclose(scene.get_node(OBJ, CURRENT_SOURCE_LOCATION)->get_child(N0)->position(), fixed_zeros<ScenePos, 3>());
 }

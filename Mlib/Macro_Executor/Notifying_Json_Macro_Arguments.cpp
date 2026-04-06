@@ -1,3 +1,4 @@
+
 #include "Notifying_Json_Macro_Arguments.hpp"
 #include <Mlib/Memory/Destruction_Guard.hpp>
 #include <mutex>
@@ -167,21 +168,21 @@ JsonMacroArgumentsAndLock::~JsonMacroArgumentsAndLock() = default;
 
 const JsonMacroArguments* JsonMacroArgumentsAndLock::operator -> () const {
     if (!lock_.owns_lock()) {
-        THROW_OR_ABORT("JsonMacroArgumentsAndLock not locked");
+        throw std::runtime_error("JsonMacroArgumentsAndLock not locked");
     }
     return &args_.json_macro_arguments_;
 }
 
 JsonMacroArgumentsAndLock::operator const JsonMacroArguments&() const {
     if (!lock_.owns_lock()) {
-        THROW_OR_ABORT("JsonMacroArgumentsAndLock not locked");
+        throw std::runtime_error("JsonMacroArgumentsAndLock not locked");
     }
     return args_.json_macro_arguments_;
 }
 
 JsonMacroArgumentsAndLock::operator const nlohmann::json&() const {
     if (!lock_.owns_lock()) {
-        THROW_OR_ABORT("JsonMacroArgumentsAndLock not locked");
+        throw std::runtime_error("JsonMacroArgumentsAndLock not locked");
     }
     return args_.json_macro_arguments_.json();
 }
@@ -208,21 +209,21 @@ WritableJsonMacroArgumentsAndLock::~WritableJsonMacroArgumentsAndLock() {
 
 JsonMacroArguments* WritableJsonMacroArgumentsAndLock::operator -> () {
     if (!lock_.owns_lock()) {
-        THROW_OR_ABORT("WritableJsonMacroArgumentsAndLock not locked");
+        throw std::runtime_error("WritableJsonMacroArgumentsAndLock not locked");
     }
     return &args_.json_macro_arguments_;
 }
 
 WritableJsonMacroArgumentsAndLock::operator JsonMacroArguments&() {
     if (!lock_.owns_lock()) {
-        THROW_OR_ABORT("WritableJsonMacroArgumentsAndLock not locked");
+        throw std::runtime_error("WritableJsonMacroArgumentsAndLock not locked");
     }
     return args_.json_macro_arguments_;
 }
 
 void WritableJsonMacroArgumentsAndLock::unlock_and_notify() {
     if (!lock_.owns_lock()) {
-        THROW_OR_ABORT("WritableJsonMacroArgumentsAndLock not locked");
+        throw std::runtime_error("WritableJsonMacroArgumentsAndLock not locked");
     }
     lock_.unlock();
     {

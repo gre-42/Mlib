@@ -1,6 +1,7 @@
+
 #include "Texture_Target.hpp"
-#include <Mlib/Throw_Or_Abort.hpp>
 #include <ostream>
+#include <stdexcept>
 #include <string>
 
 using namespace Mlib;
@@ -20,5 +21,5 @@ std::ostream& Mlib::operator << (std::ostream& ostr, TextureTarget target) {
     case TextureTarget::ONE_LAYER_MASK:
         return ostr << "one_layer_mask";
     }
-    THROW_OR_ABORT("Unknown texture type: " + std::to_string((int)target));
+    throw std::runtime_error("Unknown texture type: " + std::to_string((int)target));
 }

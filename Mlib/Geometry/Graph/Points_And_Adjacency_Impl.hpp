@@ -1,12 +1,12 @@
 #pragma once
 #include "Points_And_Adjacency.hpp"
-#include <Mlib/Assert.hpp>
-#include <Mlib/Geometry/Intersection/Bvh.hpp>
-#include <Mlib/Geometry/Intersection/Fuzzy_Set_Of_Points_impl.hpp>
+#include <Mlib/Geometry/Primitives/Bvh.hpp>
+#include <Mlib/Testing/Assert.hpp>
+#include <Mlib/Geometry/Point_Cloud/Fuzzy_Set_Of_Points_impl.hpp>
 #include <Mlib/Images/Svg.hpp>
 #include <Mlib/Iterator/Enumerate.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
+#include <stdexcept>
 
 namespace Mlib {
 
@@ -210,7 +210,7 @@ void PointsAndAdjacency<TPoint>::plot(const std::string& filename, float width, 
     svg.finish();
     ofstr.flush();
     if (ofstr.fail()) {
-        THROW_OR_ABORT("Could not save to file " + filename);
+        throw std::runtime_error("Could not save to file: \"" + filename + '"');
     }
 }
 

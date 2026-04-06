@@ -1,6 +1,5 @@
 #include "Os.hpp"
-#include <Mlib/Threads/Containers/Thread_Safe_String.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
+#include <Mlib/Os/Weakly_Canonical_Preserve_Symlinks.hpp>
 #include <filesystem>
 #include <fstream>
 #include <map>
@@ -9,15 +8,12 @@
 #include <string>
 
 #ifdef __ANDROID__
-#include <Mlib/Android/ndk_helper/AUi.hpp>
-#include <Mlib/Android/ndk_helper/NDKHelper.h>
+#include <Mlib/Os/ndk_helper/AUi.hpp>
+#include <Mlib/Os/ndk_helper/NDKHelper.h>
 #else
-#include <Mlib/Env.hpp>
 #include <Mlib/Os/Set_Thread_Name_Native.hpp>
 #include <iostream>
 #endif
-
-namespace fs = std::filesystem;
 
 using namespace Mlib;
 
@@ -31,7 +27,7 @@ LogLevel Mlib::log_level_from_string(const std::string& s) {
     };
     auto it = m.find(s);
     if (it == m.end()) {
-        THROW_OR_ABORT("Unknown log level: \"" + s + '"');
+        throw std::runtime_error("Unknown log level: \"" + s + '"');
     }
     return it->second;
 }
@@ -84,7 +80,7 @@ std::ostream& LLog::ref() const {
 
 #ifdef __ANDROID__
 
-static std::string get_path_in_files_dir(
+static std::filesystem::path get_path_in_files_dir(
     const std::initializer_list<std::string>& child_path,
     FileStorageType storage_type)
 {
@@ -95,13 +91,13 @@ static std::string get_path_in_files_dir(
         case FileStorageType::CACHE:
             return ndk_helper::StorageType::CACHE;
         }
-        THROW_OR_ABORT("Unknown storage type");
+        throw std::runtime_error("Unknown storage type");
     }();
     std::string res = AUi::GetFilesDir(st);
     for (const auto& s : child_path) {
         res += '/' + s;
     }
-    return std::filesystem::weakly_canonical(res);
+    return weakly_canonical_preserve_symlinks(res);
 }
 
 LLog Mlib::linfo(LogFlags flags) {
@@ -153,7 +149,7 @@ LLog Mlib::lerr(LogFlags flags) {
 
 LLog Mlib::lraw(LogFlags flags) {
     if (any(flags & LogFlags::SUPPRESS_DUPLICATES)) {
-        THROW_OR_ABORT("Raw logger cannot suppress duplicates");
+        throw std::runtime_error("Raw logger cannot suppress duplicates");
     }
     return LLog{
         flags,
@@ -164,7 +160,7 @@ LLog Mlib::lraw(LogFlags flags) {
 
 LLog Mlib::lout(LogFlags flags) {
     if (any(flags & LogFlags::SUPPRESS_DUPLICATES)) {
-        THROW_OR_ABORT("Out logger cannot suppress duplicates");
+        throw std::runtime_error("Out logger cannot suppress duplicates");
     }
     return LLog{
         flags,
@@ -202,8 +198,8 @@ void Mlib::remove_path(
     FileStorageType storage_type)
  {
     std::error_code ec;
-    if (!fs::remove(get_path_in_files_dir({path}, storage_type), ec)) {
-        THROW_OR_ABORT("Could not delete path \"" + path.string() + "\". " + ec.message());
+    if (!std::filesystem::remove(get_path_in_files_dir({path}, storage_type), ec)) {
+        throw std::runtime_error("Could not delete path \"" + path.string() + "\". " + ec.message());
     }
 }
 
@@ -213,12 +209,12 @@ void Mlib::rename_path(
     FileStorageType storage_type)
 {
     std::error_code ec;
-    fs::rename(
+    std::filesystem::rename(
         get_path_in_files_dir({from}, storage_type),
         get_path_in_files_dir({to}, storage_type),
         ec);
     if (ec) {
-        THROW_OR_ABORT("Could not rename path \"" + from.string() + "\" to " + to.string() + ". " + ec.message());
+        throw std::runtime_error("Could not rename path \"" + from.string() + "\" to " + to.string() + ". " + ec.message());
     }
 }
 
@@ -227,9 +223,9 @@ void Mlib::create_directories(
     FileStorageType storage_type)
 {
     std::error_code ec;
-    fs::create_directories(get_path_in_files_dir({dirname}, storage_type), ec);
+    std::filesystem::create_directories(get_path_in_files_dir({dirname}, storage_type), ec);
     if (ec) {
-        THROW_OR_ABORT("Could not create directories \"" + dirname.string() + "\". " + ec.message());
+        throw std::runtime_error("Could not create directories \"" + dirname.string() + "\". " + ec.message());
     }
 }
 
@@ -292,7 +288,7 @@ LLog Mlib::lerr(LogFlags flags) {
 
 LLog Mlib::lraw(LogFlags flags) {
     if (any(flags & LogFlags::SUPPRESS_DUPLICATES)) {
-        THROW_OR_ABORT("Raw logger cannot suppress duplicates");
+        throw std::runtime_error("Raw logger cannot suppress duplicates");
     }
     return LLog{
         flags,
@@ -303,7 +299,7 @@ LLog Mlib::lraw(LogFlags flags) {
 
 LLog Mlib::lout(LogFlags flags) {
     if (any(flags & LogFlags::SUPPRESS_DUPLICATES)) {
-        THROW_OR_ABORT("Out logger cannot suppress duplicates");
+        throw std::runtime_error("Out logger cannot suppress duplicates");
     }
     return LLog{
         flags,
@@ -322,7 +318,7 @@ std::unique_ptr<std::istream> Mlib::create_ifstream(
 std::vector<uint8_t> Mlib::read_file_bytes(const std::filesystem::path& filename) {
     std::ifstream f{filename, std::ios::binary};
     if (f.fail()) {
-        THROW_OR_ABORT("Could not open file for read: \"" + filename.string() + '"');
+        throw std::runtime_error("Could not open file for read: \"" + filename.string() + '"');
     }
     f.seekg(0, std::ifstream::end);
     std::streamoff file_size = f.tellg();
@@ -332,7 +328,7 @@ std::vector<uint8_t> Mlib::read_file_bytes(const std::filesystem::path& filename
     res.assign(std::istreambuf_iterator<char>(f),
                std::istreambuf_iterator<char>());
     if (f.fail() && !f.eof()) {
-        THROW_OR_ABORT("Could not read from file: \"" + filename.string() + '"');
+        throw std::runtime_error("Could not read from file: \"" + filename.string() + '"');
     }
     return res;
 }
@@ -347,9 +343,9 @@ std::unique_ptr<std::ostream> Mlib::create_ofstream(
 
 bool Mlib::path_exists(const std::filesystem::path& path) {
     std::error_code ec;
-    bool exists = fs::exists(path, ec);
+    bool exists = std::filesystem::exists(path, ec);
     if (ec) {
-        THROW_OR_ABORT("Could not check if path \"" + path.string() + "\" exists. " + ec.message());
+        throw std::runtime_error("Could not check if path \"" + path.string() + "\" exists. " + ec.message());
     }
     return exists;
 }
@@ -359,8 +355,8 @@ void Mlib::remove_path(
     FileStorageType storage_type)
 {
     std::error_code ec;
-    if (!fs::remove(path, ec)) {
-        THROW_OR_ABORT("Could not delete path \"" + path.string() + "\". " + ec.message());
+    if (!std::filesystem::remove(path, ec)) {
+        throw std::runtime_error("Could not delete path \"" + path.string() + "\". " + ec.message());
     }
 }
 
@@ -370,9 +366,9 @@ void Mlib::rename_path(
     FileStorageType storage_type)
 {
     std::error_code ec;
-    fs::rename(from, to, ec);
+    std::filesystem::rename(from, to, ec);
     if (ec) {
-        THROW_OR_ABORT("Could not rename path \"" + from.string() + "\" to " + to.string() + ". " + ec.message());
+        throw std::runtime_error("Could not rename path \"" + from.string() + "\" to " + to.string() + ". " + ec.message());
     }
 }
 
@@ -381,10 +377,14 @@ void Mlib::create_directories(
     FileStorageType storage_type)
 {
     std::error_code ec;
-    fs::create_directories(dirname, ec);
+    std::filesystem::create_directories(dirname, ec);
     if (ec) {
-        THROW_OR_ABORT("Could not create directories \"" + dirname.string() + "\". " + ec.message());
+        throw std::runtime_error("Could not create directories \"" + dirname.string() + "\". " + ec.message());
     }
+}
+
+std::filesystem::recursive_directory_iterator Mlib::list_dir_recursive(const std::filesystem::path& path) {
+    return std::filesystem::recursive_directory_iterator(path);
 }
 
 std::filesystem::directory_iterator Mlib::list_dir(const std::filesystem::path& path) {
@@ -395,7 +395,7 @@ bool Mlib::is_listable(const std::filesystem::directory_entry& entry) {
     std::error_code ec;
     bool is_directory = entry.is_directory(ec);
     if (ec) {
-        THROW_OR_ABORT("Could not check if path \"" + entry.path().string() + "\" is a directory. " + ec.message());
+        throw std::runtime_error("Could not check if path \"" + entry.path().string() + "\" is a directory. " + ec.message());
     }
     return is_directory;
 }

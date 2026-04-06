@@ -1,5 +1,6 @@
+
 #include "Depth_Func.hpp"
-#include <Mlib/Throw_Or_Abort.hpp>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -11,5 +12,5 @@ DepthFunc Mlib::depth_func_from_string(const std::string& str) {
     } else if (str == "less_equal") {
         return DepthFunc::LESS_EQUAL;
     }
-    THROW_OR_ABORT("Unknown depth func: \"" + str + '"');
+    throw std::runtime_error("Unknown depth func: \"" + str + '"');
 }

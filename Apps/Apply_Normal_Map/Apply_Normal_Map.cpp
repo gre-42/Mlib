@@ -1,31 +1,32 @@
-#include <Mlib/Arg_Parser.hpp>
 #include <Mlib/Geometry/Cameras/Ortho_Camera.hpp>
 #include <Mlib/Geometry/Coordinates/Gl_Look_At.hpp>
 #include <Mlib/Geometry/Instance/Rendering_Dynamics.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_List.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>
 #include <Mlib/Images/StbImage3.hpp>
+#include <Mlib/Io/Arg_Parser.hpp>
 #include <Mlib/Iterator/Enumerate.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
+#include <Mlib/OpenGL/Input_Config.hpp>
+#include <Mlib/OpenGL/Key_Bindings/Lockable_Key_Configurations.hpp>
+#include <Mlib/OpenGL/OpenGL_Object_Factory.hpp>
+#include <Mlib/OpenGL/Render.hpp>
+#include <Mlib/OpenGL/Render_Config.hpp>
+#include <Mlib/OpenGL/Render_Logics/Clear_Mode.hpp>
+#include <Mlib/OpenGL/Render_Logics/Read_Pixels_Logic.hpp>
+#include <Mlib/OpenGL/Render_Logics/Standard_Camera_Logic.hpp>
+#include <Mlib/OpenGL/Render_Logics/Standard_Render_Logic.hpp>
+#include <Mlib/OpenGL/Render_Results.hpp>
+#include <Mlib/OpenGL/Renderables/OpenGL_Vertex_Array_Renderer.hpp>
+#include <Mlib/OpenGL/Rendering_Context.hpp>
+#include <Mlib/OpenGL/Resource_Managers/Particle_Resources.hpp>
+#include <Mlib/OpenGL/Resource_Managers/Rendering_Resources.hpp>
+#include <Mlib/OpenGL/Resource_Managers/Trail_Resources.hpp>
+#include <Mlib/OpenGL/Resources/Colored_Vertex_Array_Resource.hpp>
+#include <Mlib/OpenGL/Selected_Cameras/Selected_Cameras.hpp>
+#include <Mlib/OpenGL/Ui/Button_States.hpp>
 #include <Mlib/Physics/Units.hpp>
-#include <Mlib/Render/Input_Config.hpp>
-#include <Mlib/Render/Key_Bindings/Lockable_Key_Configurations.hpp>
-#include <Mlib/Render/Render.hpp>
-#include <Mlib/Render/Render_Config.hpp>
-#include <Mlib/Render/Render_Logics/Clear_Mode.hpp>
-#include <Mlib/Render/Render_Logics/Read_Pixels_Logic.hpp>
-#include <Mlib/Render/Render_Logics/Standard_Camera_Logic.hpp>
-#include <Mlib/Render/Render_Logics/Standard_Render_Logic.hpp>
-#include <Mlib/Render/Render_Results.hpp>
-#include <Mlib/Render/Rendering_Context.hpp>
-#include <Mlib/Render/Resource_Managers/Particle_Resources.hpp>
-#include <Mlib/Render/Resource_Managers/Rendering_Resources.hpp>
-#include <Mlib/Render/Resource_Managers/Trail_Resources.hpp>
-#include <Mlib/Render/Resources/Colored_Vertex_Array_Resource.hpp>
-#include <Mlib/Render/Selected_Cameras/Selected_Cameras.hpp>
-#include <Mlib/Render/Ui/Button_States.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
-#include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
 #include <Mlib/Scene_Graph/Elements/Light.hpp>
 #include <Mlib/Scene_Graph/Elements/Make_Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Elements/Rendering_Strategies.hpp>
@@ -102,37 +103,42 @@ int main(int argc, char** argv) {
 
         render.print_hardware_info(linfo(LogFlags::NO_APPEND_NEWLINE).ref());
 
-        SceneNodeResources scene_node_resources;
+        OpenGLObjectFactory gpu_object_factory;
+        SceneNodeResources scene_node_resources{gpu_object_factory};
         ParticleResources particle_resources;
         TrailResources trail_resources;
         RenderingResources rendering_resources{
             "primary_rendering_resources",
             16 };
+        OpenGLVertexArrayRenderer gpu_vertex_array_renderer{rendering_resources, rendering_resources};
         RenderingContext primary_rendering_context{
             .scene_node_resources = scene_node_resources,
             .particle_resources = particle_resources,
             .trail_resources = trail_resources,
             .rendering_resources = rendering_resources,
+            .gpu_object_factory = gpu_object_factory,
+            .gpu_vertex_array_renderer = gpu_vertex_array_renderer,
             .z_order = 0 };
         RenderingContextGuard rcg{ primary_rendering_context };
-        DeleteNodeMutex delete_node_mutex;
-        Scene scene{ "main_scene", delete_node_mutex };
+        Scene scene{ "main_scene" };
         std::string light_configuration = args.named_value("--light_configuration", "one");
         auto scene_node = make_unique_scene_node();
         {
+            const auto* histogram = args.try_named_value("--histogram");
             TriangleList<float> tl{
                 "tl",
                 Material{
                     .textures_color{ BlendMapTexture{.texture_descriptor = TextureDescriptor{
                         .color = ColormapWithModifiers{
-                            .filename = VariableAndHash{args.named_value("--color")},
-                            .histogram = args.named_value("--histogram", ""),
+                            .filename = FPath::from_local_path(args.named_value("--color")),
+                            .histogram = histogram ? FPath::from_local_path(*histogram) : FPath{},
                             .color_mode = ColorMode::RGB}.compute_hash(),
                         .normal = ColormapWithModifiers{
-                            .filename = VariableAndHash{args.named_value("--normal")},
+                            .filename = FPath::from_local_path(args.named_value("--normal")),
                             .color_mode = ColorMode::RGB}.compute_hash()}}}
                     },
-                Morphology{ .physics_material = PhysicsMaterial::ATTR_VISIBLE } };
+                Morphology{ .physics_material = PhysicsMaterial::ATTR_VISIBLE },
+                ModifierBacklog{}};
             tl.draw_rectangle_wo_normals(
                 FixedArray<float, 3>{-1.f, -1.f, -10.f},
                 FixedArray<float, 3>{1.f, -1.f, -10.f},
@@ -177,7 +183,7 @@ int main(int argc, char** argv) {
             auto light = std::make_unique<Light>(Light{
                 .shadow_render_pass = ExternalRenderPassType::NONE});
             lights.push_back(light.get());
-            scene.get_node(VariableAndHash<std::string>{ "light_node0" }, DP_LOC)->add_light(std::move(light));
+            scene.get_node(VariableAndHash<std::string>{ "light_node0" }, CURRENT_SOURCE_LOCATION)->add_light(std::move(light));
         } else if (light_configuration == "circle" || light_configuration == "shifted_circle") {
             size_t n = 10;
             float r = 50;
@@ -192,10 +198,10 @@ int main(int argc, char** argv) {
             for (const auto& [i, a] : enumerate(Linspace<float>(0.f, 2.f * float(M_PI), n))) {
                 auto name = VariableAndHash<std::string>{ "light" + std::to_string(i) };
                 auto R = gl_lookat_absolute(
-                    scene.get_node(name, DP_LOC)->position(),
-                    scene.get_node(VariableAndHash<std::string>{ "obj" }, DP_LOC)->position());
+                    scene.get_node(name, CURRENT_SOURCE_LOCATION)->position(),
+                    scene.get_node(VariableAndHash<std::string>{ "obj" }, CURRENT_SOURCE_LOCATION)->position());
                 if (!R.has_value()) {
-                    THROW_OR_ABORT("Lookat failed for light " + std::to_string(i));
+                    throw std::runtime_error("Lookat failed for light " + std::to_string(i));
                 }
                 scene.add_root_node(
                     name,
@@ -211,7 +217,7 @@ int main(int argc, char** argv) {
                 auto light = std::make_unique<Light>(Light{
                     .shadow_render_pass = ExternalRenderPassType::NONE});
                 lights.push_back(light.get());
-                scene.get_node(name, DP_LOC)->add_light(std::move(light));
+                scene.get_node(name, CURRENT_SOURCE_LOCATION)->add_light(std::move(light));
                 lights.back()->ambient *= 2.f / float(n);
                 lights.back()->diffuse *= 2.f / float(n);
                 lights.back()->specular *= 2.f / float(n);
@@ -225,7 +231,7 @@ int main(int argc, char** argv) {
             make_unique_scene_node(),
             RenderingDynamics::MOVING,
             RenderingStrategies::OBJECT);
-        scene.get_node(VariableAndHash<std::string>{ "follower_camera_0" }, DP_LOC)->set_camera(std::make_unique<OrthoCamera>(
+        scene.get_node(VariableAndHash<std::string>{ "follower_camera_0" }, CURRENT_SOURCE_LOCATION)->set_camera(std::make_unique<OrthoCamera>(
             OrthoCameraConfig{.left_plane = -1, .right_plane = 1, .bottom_plane = -1, .top_plane = 1},
             OrthoCamera::Postprocessing::ENABLED));
         

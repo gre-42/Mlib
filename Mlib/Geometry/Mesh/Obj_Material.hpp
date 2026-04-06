@@ -5,9 +5,10 @@
 namespace Mlib {
 
 struct ObjMaterial {
-    std::string color_texture;
-    std::string specular_texture;
-    std::string bump_texture;
+    std::filesystem::path diffuse_texture;
+    std::filesystem::path diffuse_chrominance_texture;
+    std::filesystem::path specular_texture;
+    std::filesystem::path bump_texture;
     float alpha = 1.f;
     bool has_alpha_texture = false;
     FixedArray<float, 3> emissive = fixed_zeros<float, 3>();    // Defaults to zero because it is non-standard and therefore absent in most files

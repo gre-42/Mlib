@@ -1,14 +1,14 @@
 #include "Create_Crash.hpp"
-#include <Mlib/Argument_List.hpp>
 #include <Mlib/Components/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
+#include <Mlib/Misc/Argument_List.hpp>
 #include <Mlib/Physics/Advance_Times/Crash.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Load_Scene_Funcs.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -25,12 +25,12 @@ CreateCrash::CreateCrash(PhysicsScene& physics_scene)
 void CreateCrash::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     args.arguments.validate(KnownArgs::options);
-    DanglingBaseClassRef<SceneNode> node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::node), DP_LOC);
-    auto& rb = get_rigid_body_vehicle(node);
+    DanglingBaseClassRef<SceneNode> node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::node), CURRENT_SOURCE_LOCATION);
+    auto rb = get_rigid_body_vehicle(node.get(), CURRENT_SOURCE_LOCATION);
     auto d = std::make_unique<Crash>(
         rb,
         args.arguments.at<float>(KnownArgs::damage));
-    rb.collision_observers_.emplace_back(std::move(d));
+    rb->collision_observers_.emplace_back(std::move(d));
 }
 
 namespace {

@@ -2,16 +2,17 @@
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Interfaces/Scene_Node/IAbsolute_Movable.hpp>
 #include <Mlib/Scene_Graph/Status_Writer.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
+#include <stdexcept>
 
 namespace Mlib {
 
-inline StatusWriter& get_status_writer(const DanglingBaseClassRef<SceneNode>& node) {
-    auto sw = dynamic_cast<StatusWriter*>(&node->get_absolute_movable());
+inline DanglingBaseClassRef<StatusWriter> get_status_writer(SceneNode& node, SourceLocation loc) {
+    auto am = node.get_absolute_movable(loc);
+    auto sw = dynamic_cast<StatusWriter*>(&am.get());
     if (sw == nullptr) {
-        THROW_OR_ABORT("Absolute movable is not a status-writer");
+        throw std::runtime_error("Absolute movable is not a status-writer");
     }
-    return *sw;
+    return {*sw, loc};
 }
 
 }

@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Array/Non_Copying_Vector.hpp>
+#include <Mlib/Hashing/Variable_And_Hash.hpp>
 #include <Mlib/Map/Verbose_Map.hpp>
 #include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/Memory/Dangling_Value_Unordered_Map.hpp>
@@ -8,7 +9,6 @@
 #include <Mlib/Remote/Remote_Params.hpp>
 #include <Mlib/Remote/Remote_Site_Id.hpp>
 #include <Mlib/Threads/Safe_Recursive_Shared_Mutex.hpp>
-#include <Mlib/Variable_And_Hash.hpp>
 #include <atomic>
 #include <cstdint>
 #include <functional>

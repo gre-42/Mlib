@@ -1,10 +1,10 @@
 #include "Set_Bounds.hpp"
-#include <Mlib/Argument_List.hpp>
-#include <Mlib/Geometry/Intersection/Axis_Aligned_Bounding_Box.hpp>
-#include <Mlib/Geometry/Intersection/Bounding_Sphere.hpp>
 #include <Mlib/Geometry/Mesh/Set_Bounds.hpp>
+#include <Mlib/Geometry/Primitives/Axis_Aligned_Bounding_Box.hpp>
+#include <Mlib/Geometry/Primitives/Bounding_Sphere.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
-#include <Mlib/Render/Rendering_Context.hpp>
+#include <Mlib/Misc/Argument_List.hpp>
+#include <Mlib/OpenGL/Rendering_Context.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Interfaces/IScene_Node_Resource.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>

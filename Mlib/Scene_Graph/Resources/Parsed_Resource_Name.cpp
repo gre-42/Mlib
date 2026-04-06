@@ -1,12 +1,13 @@
+
 #include "Parsed_Resource_Name.hpp"
 #include <Mlib/Array/Fixed_Array.hpp>
-#include <Mlib/Billboard_Id.hpp>
+#include <Mlib/Geometry/Billboard_Id.hpp>
 #include <Mlib/Geometry/Material/Aggregate_Mode.hpp>
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Regex/Regex_Select.hpp>
 #include <Mlib/Scene_Graph/Descriptors/Resource_Instance_Descriptor.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -38,11 +39,11 @@ ParsedResourceName Mlib::parse_resource_name(
         "(?:\\s*\\(hitbox:(\\w+)\\))?$");
     Mlib::re::cmatch match;
     if (!Mlib::re::regex_match(name, match, re)) {
-        THROW_OR_ABORT("Could not parse: " + name);
+        throw std::runtime_error("Could not parse: " + name);
     }
     ParsedResourceName result{
         .name = VariableAndHash{ match[NAME].str() },
-        .billboard_id = match[BILLBOARD_ID].matched ? safe_stox<BillboardId>(match[BILLBOARD_ID].str()) : BILLBOARD_ID_NONE,
+        .billboard_id = match[BILLBOARD_ID].matched ? safe_sto<BillboardId>(match[BILLBOARD_ID].str()) : BILLBOARD_ID_NONE,
         .yangle = match[YANGLE].matched ? safe_stof(match[YANGLE].str()) * degrees : 0.f,
         .probability = match[PROBABILITY].matched ? safe_stof(match[PROBABILITY].str()) : 1.f,
         .probability1 = match[PROBABILITY1].matched ? safe_stof(match[PROBABILITY1].str()) : 1.f,
@@ -54,10 +55,10 @@ ParsedResourceName Mlib::parse_resource_name(
         .hitbox = VariableAndHash<std::string>{ match[HITBOX].str() },
         .supplies_cooldown = NAN};
     if (result.probability < 1e-7) {
-        THROW_OR_ABORT("ResourceNameCycle: threshold too small");
+        throw std::runtime_error("ResourceNameCycle: threshold too small");
     }
     if (result.probability > 1) {
-        THROW_OR_ABORT("ResourceNameCycle: threshold too large");
+        throw std::runtime_error("ResourceNameCycle: threshold too large");
     }
     return result;
 }

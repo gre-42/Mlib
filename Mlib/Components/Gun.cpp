@@ -1,14 +1,19 @@
+
 #include "Gun.hpp"
 #include <Mlib/Physics/Advance_Times/Gun.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
+#include <stdexcept>
 
 using namespace Mlib;
 
-Gun& Mlib::get_gun(const DanglingBaseClassRef<SceneNode>& node) {
-    auto gun = dynamic_cast<Gun*>(&node->get_absolute_observer());
+DanglingBaseClassRef<Gun> Mlib::get_gun(
+    SceneNode& node,
+    SourceLocation loc)
+{
+    auto ao = node.get_absolute_observer();
+    auto gun = dynamic_cast<Gun*>(&ao.get());
     if (gun == nullptr) {
-        THROW_OR_ABORT("Absolute observer is not a gun");
+        throw std::runtime_error("Absolute observer is not a gun");
     }
-    return *gun;
+    return {*gun, loc};
 }

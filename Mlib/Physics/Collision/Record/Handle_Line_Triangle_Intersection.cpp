@@ -1,23 +1,24 @@
+
 #include "Handle_Line_Triangle_Intersection.hpp"
-#include <Mlib/Assert.hpp>
-#include <Mlib/Geometry/Intersection/Intersectors/Intersection_Info.hpp>
-#include <Mlib/Geometry/Intersection/Intersectors/Polygon_Line_Intersector.hpp>
 #include <Mlib/Geometry/Mesh/IIntersectable_Mesh.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>
+#include <Mlib/Geometry/Primitives/Intersectors/Intersection_Info.hpp>
+#include <Mlib/Geometry/Primitives/Intersectors/Polygon_Line_Intersector.hpp>
 #include <Mlib/Physics/Collision/Grind_Info.hpp>
 #include <Mlib/Physics/Collision/Record/Collision_History.hpp>
 #include <Mlib/Physics/Collision/Record/Handle_Reflection.hpp>
 #include <Mlib/Physics/Collision/Record/Intersection_Scene.hpp>
 #include <Mlib/Physics/Containers/Collision_Group.hpp>
 #include <Mlib/Physics/Interfaces/Collision_Observer.hpp>
-#include <Mlib/Physics/Physics_Engine/Physics_Engine_Config.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Phase.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Physics/Rigid_Body/Vehicle_Domain.hpp>
 #include <Mlib/Physics/Smoke_Generation/Contact_Smoke_Generator.hpp>
 #include <Mlib/Physics/Smoke_Generation/Surface_Contact_Info.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
+#include <Mlib/Scene_Config/Physics_Engine_Config.hpp>
+#include <Mlib/Testing/Assert.hpp>
 #include <format>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -29,36 +30,36 @@ using namespace Mlib;
 void Mlib::handle_line_triangle_intersection(const IntersectionScene& c)
 {
     if (&c.o0 == &c.o1) {
-        THROW_OR_ABORT("Collision of identical objects");
+        throw std::runtime_error("Collision of identical objects");
     }
     if (int(c.q0.has_value()) + int(c.t0.has_value()) + int(c.i0 != nullptr) != 1) {
-        THROW_OR_ABORT("handle_line_triangle_intersection: Not exactly one of q0/t0/i0 are set");
+        throw std::runtime_error("handle_line_triangle_intersection: Not exactly one of q0/t0/i0 are set");
     }
     if (int(c.l1.has_value()) + int(c.r1.has_value()) + int(c.i1 != nullptr) != 1) {
-        THROW_OR_ABORT("handle_line_triangle_intersection: Not exactly one of l1/r1/i1 are set");
+        throw std::runtime_error("handle_line_triangle_intersection: Not exactly one of l1/r1/i1 are set");
     }
     if (((c.history.phase.group.penetration_class == PenetrationClass::BULLET_LINE) ==
         any(c.mesh0_material & PhysicsMaterial::OBJ_BULLET_LINE_SEGMENT)) &&
         (c.o0.mass() != INFINITY) &&
         !c.history.phase.group.rigid_bodies.contains(&c.o0.rbp_))
     {
-        THROW_OR_ABORT("Non-static rigid body \"" + c.o0.name() + "\" is not in the collision group (0)");
+        throw std::runtime_error("Non-static rigid body \"" + c.o0.name() + "\" is not in the collision group (0)");
     }
     if (((c.history.phase.group.penetration_class == PenetrationClass::BULLET_LINE) ==
         any(c.mesh1_material & PhysicsMaterial::OBJ_BULLET_LINE_SEGMENT)) &&
         (c.o1.mass() != INFINITY) &&
         !c.history.phase.group.rigid_bodies.contains(&c.o1.rbp_))
     {
-        THROW_OR_ABORT("Non-static rigid body \"" + c.o1.name() + "\" is not in the collision group (1)");
+        throw std::runtime_error("Non-static rigid body \"" + c.o1.name() + "\" is not in the collision group (1)");
     }
     if (c.o0.is_deactivated_avatar()) {
-        THROW_OR_ABORT("Attempt to collide deactivated avatar (0): \"" + c.o0.name() + '"');
+        throw std::runtime_error("Attempt to collide deactivated avatar (0): \"" + c.o0.name() + '"');
     }
     if (c.o1.is_deactivated_avatar()) {
-        THROW_OR_ABORT("Attempt to collide deactivated avatar (1): \"" + c.o1.name() + '"');
+        throw std::runtime_error("Attempt to collide deactivated avatar (1): \"" + c.o1.name() + '"');
     }
     if ((c.i0 != nullptr) && any(c.mesh1_material & PhysicsMaterial::OBJ_BULLET_LINE_SEGMENT)) {
-        THROW_OR_ABORT("Intersectable \"" + c.o0.name() + "\" unexpectedly collides with bullet line segment \"" + c.o1.name() + '"');
+        throw std::runtime_error("Intersectable \"" + c.o0.name() + "\" unexpectedly collides with bullet line segment \"" + c.o1.name() + '"');
     }
     IntersectionInfo iinfo;
     try {
@@ -76,7 +77,7 @@ void Mlib::handle_line_triangle_intersection(const IntersectionScene& c)
                     return;
                 }
             } else {
-                THROW_OR_ABORT("Unexpected intersection object (0)");
+                throw std::runtime_error("Unexpected intersection object (0)");
             }
         } else if (c.t0.has_value()) {
             if (c.l1.has_value()) {
@@ -92,7 +93,7 @@ void Mlib::handle_line_triangle_intersection(const IntersectionScene& c)
                     return;
                 }
             } else {
-                THROW_OR_ABORT("Unexpected intersection object (1)");
+                throw std::runtime_error("Unexpected intersection object (1)");
             }
         } else if (c.i0 != nullptr) {
             if (c.l1.has_value()) {
@@ -108,10 +109,10 @@ void Mlib::handle_line_triangle_intersection(const IntersectionScene& c)
                     return;
                 }
             } else {
-                THROW_OR_ABORT("Unexpected intersection object (2)");
+                throw std::runtime_error("Unexpected intersection object (2)");
             }
         } else {
-            THROW_OR_ABORT("Unexpected intersection object (3)");
+            throw std::runtime_error("Unexpected intersection object (3)");
         }
     } catch (const std::runtime_error& e) {
         throw std::runtime_error(std::format(
@@ -139,7 +140,7 @@ void Mlib::handle_line_triangle_intersection(const IntersectionScene& c)
     if (any(c.mesh1_material & PhysicsMaterial::OBJ_BULLET_LINE_SEGMENT) &&
         !c.l1_is_normal)
     {
-        THROW_OR_ABORT("Unexpected c.l1_is_normal value");
+        throw std::runtime_error("Unexpected c.l1_is_normal value");
     }
     c.o0.next_vehicle_domain_ = VehicleDomain::GROUND;
     c.o1.next_vehicle_domain_ = VehicleDomain::GROUND;
@@ -155,7 +156,7 @@ void Mlib::handle_line_triangle_intersection(const IntersectionScene& c)
         auto res = c.history.raycast_intersections.try_emplace(make_orderable(c.l1->line), std::move(cc));
         if (!res.second) {
             if (!cc.iinfo.ray_t.has_value()) {
-                THROW_OR_ABORT("l1_is_normal but ray_t not given");
+                throw std::runtime_error("l1_is_normal but ray_t not given");
             }
             if (*cc.iinfo.ray_t < *res.first->second.iinfo.ray_t) {
                 c.history.raycast_intersections.erase(res.first);
@@ -207,10 +208,10 @@ void Mlib::handle_line_triangle_intersection(
             return;
         }
         if (N0 == nullptr) {
-            THROW_OR_ABORT("Grind collision requires a plane normal");
+            throw std::runtime_error("Grind collision requires a plane normal");
         }
         if (X1 == nullptr) {
-            THROW_OR_ABORT("Grind collision requires a ray");
+            throw std::runtime_error("Grind collision requires a ray");
         }
         FixedArray<float, 3> d3 = (iinfo.intersection_point - c.o0.abs_grind_point()).casted<float>();
         if (std::abs(dot0d(X1->direction, N0->normal)) < c.history.cfg.max_grind_cos) {
@@ -246,7 +247,7 @@ void Mlib::handle_line_triangle_intersection(
             }
         }
     } else {
-        THROW_OR_ABORT("Unknown collision type");
+        throw std::runtime_error("Unknown collision type");
     }
 }
 

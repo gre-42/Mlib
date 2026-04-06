@@ -1,5 +1,7 @@
+
 #include "Bone.hpp"
 #include <Mlib/Math/Fixed_Math.hpp>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -20,7 +22,7 @@ UUVector<OffsetAndQuaternion<float, float>> Bone::rebase_to_initial_absolute_tra
 #ifndef NDEBUG
     for (const OffsetAndQuaternion<float, float>& r : result) {
         if (any(Mlib::isnan(r.t))) {
-            THROW_OR_ABORT("Bone transformation contains NAN values");
+            throw std::runtime_error("Bone transformation contains NAN values");
         }
     }
 #endif
@@ -34,10 +36,10 @@ void Bone::rebase_to_initial_absolute_transform(
 {
 #ifndef NDEBUG
     if (index >= result.size()) {
-        THROW_OR_ABORT("Bone index too large for result array");
+        throw std::runtime_error("Bone index too large for result array");
     }
     if (index >= transformations.size()) {
-        THROW_OR_ABORT("Bone index too large for transformations");
+        throw std::runtime_error("Bone index too large for transformations");
     }
 #endif
     const OffsetAndQuaternion<float, float>& m = initial_absolute_transformation;

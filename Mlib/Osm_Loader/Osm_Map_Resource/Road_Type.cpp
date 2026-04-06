@@ -1,5 +1,5 @@
 #include "Road_Type.hpp"
-#include <Mlib/Throw_Or_Abort.hpp>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -22,7 +22,7 @@ std::string Mlib::road_type_to_string(RoadType st) {
     case RoadType::ANY_PLANE_ROAD:
         return "any_plane_road";
     }
-    THROW_OR_ABORT("Unknown street type");
+    throw std::runtime_error("Unknown street type");
 }
 
 std::string Mlib::to_string(RoadType st) {

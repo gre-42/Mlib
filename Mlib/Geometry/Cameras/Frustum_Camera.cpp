@@ -1,6 +1,7 @@
+
 #include "Frustum_Camera.hpp"
 #include <Mlib/Array/Fixed_Array.hpp>
-#include <Mlib/Render/linmath.hpp>
+#include <Mlib/Geometry/linmath.hpp>
 #include <mutex>
 
 using namespace Mlib;
@@ -78,5 +79,5 @@ FixedArray<float, 4, 4> FrustumCamera::projection_matrix() const {
 }
 
 FixedArray<float, 2> FrustumCamera::dpi(const FixedArray<float, 2>& texture_size) const {
-    THROW_OR_ABORT("DPI computation not implemented for FrustumCamera");
+    throw std::runtime_error("DPI computation not implemented for FrustumCamera");
 }

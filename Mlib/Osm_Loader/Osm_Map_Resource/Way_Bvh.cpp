@@ -1,8 +1,8 @@
 #include "Way_Bvh.hpp"
 #include <Mlib/Geometry/Exceptions/Point_Exception.hpp>
-#include <Mlib/Geometry/Intersection/Distance/Distance_Point_Line.hpp>
+#include <Mlib/Geometry/Primitives/Distance/Distance_Point_Line.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Osm_Map_Resource_Helpers.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -71,7 +71,7 @@ FixedArray<CompressedScenePos, 2> WayBvh::project_onto_way(
         if (!nearest_way(node.position, (CompressedScenePos)(2.f * wanted_distance), dir, distance)) {
             throw PointException<CompressedScenePos, 2>(node.position, "Could not find way for node \"" + node_id + '"');
         } else if (distance == (CompressedScenePos)0.f) {
-            THROW_OR_ABORT("Node \"" + node_id + "\" is on a way");
+            throw std::runtime_error("Node \"" + node_id + "\" is on a way");
         } else {
             return node.position + (dir * (wanted_distance - funpack(distance))).casted<CompressedScenePos>();
         }

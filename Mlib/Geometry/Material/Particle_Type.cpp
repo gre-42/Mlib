@@ -1,6 +1,7 @@
+
 #include "Particle_Type.hpp"
-#include <Mlib/Throw_Or_Abort.hpp>
 #include <map>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -14,7 +15,7 @@ ParticleType Mlib::particle_type_from_string(const std::string& s) {
     };
     auto it = m.find(s);
     if (it == m.end()) {
-        THROW_OR_ABORT("Unknown particle type: \"" + s + '"');
+        throw std::runtime_error("Unknown particle type: \"" + s + '"');
     }
     return it->second;
 }
@@ -32,5 +33,5 @@ std::string Mlib::particle_type_to_string(ParticleType s) {
     case ParticleType::SEA_SPRAY:
         return "sea_spray";
     }
-    THROW_OR_ABORT("Unknown particle type: " + std::to_string((int)s));
+    throw std::runtime_error("Unknown particle type: " + std::to_string((int)s));
 }

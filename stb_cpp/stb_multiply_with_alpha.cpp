@@ -1,6 +1,6 @@
-#include <Mlib/Throw_Or_Abort.hpp>
 #include <cmath>
 #include <stb_cpp/stb_image_load.hpp>
+#include <stdexcept>
 
 StbInfo<unsigned char> stb_multiply_with_alpha(
     unsigned char* data,
@@ -9,7 +9,7 @@ StbInfo<unsigned char> stb_multiply_with_alpha(
     int nrChannels)
 {
     if (nrChannels != 4) {
-        THROW_OR_ABORT("nrChannels is not 4");
+        throw std::runtime_error("nrChannels is not 4");
     }
     auto result = StbInfo<unsigned char>(width, height, nrChannels - 1);
     for (int r = 0; r < height; ++r) {

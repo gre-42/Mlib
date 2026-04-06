@@ -6,9 +6,9 @@
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Osm_Limits.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Osm_Map_Resource_Helpers.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Osm_Map_Resource_Rectangle_2D.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
 #include <map>
 #include <set>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -35,7 +35,7 @@ NodesAndWays Mlib::indent_buildings(
                 return false;
             }
             if ((way.nd.size() < 2) || (way.nd.front() != way.nd.back())) {
-                THROW_OR_ABORT("Building contour not closed: \"" + way_id + '"');
+                throw std::runtime_error("Building contour not closed: \"" + way_id + '"');
             }
             if (amount == (CompressedScenePos)0.f) {
                 return false;
@@ -89,7 +89,7 @@ NodesAndWays Mlib::indent_buildings(
                     2.f * amount,
                     2.f * amount))
             {
-                THROW_OR_ABORT("Error computing building indentation for node \"" + *b + '"');
+                throw std::runtime_error("Error computing building indentation for node \"" + *b + '"');
             }
             auto indented_node_id = way_id + INDENT_INFIX + *b;
             indented_way_nd.emplace_back(indented_node_id);
@@ -99,7 +99,7 @@ NodesAndWays Mlib::indent_buildings(
             indented_nodes.add(indented_node_id, rect.p01_, naws.nodes.at(*b).tags);
         }
         if (indented_contour.size() != way.nd.size() - 1) {
-            THROW_OR_ABORT("Error indenting building \"" + way_id + '"');
+            throw std::runtime_error("Error indenting building \"" + way_id + '"');
         }
         // plot_mesh_svg(
         //     "/tmp/building_" + way_id + ".svg",
@@ -115,7 +115,7 @@ NodesAndWays Mlib::indent_buildings(
         } else {
             result.nodes.merge(indented_nodes);
             if (!indented_nodes.empty()) {
-                THROW_OR_ABORT("Could not add indented nodes");
+                throw std::runtime_error("Could not add indented nodes");
             }
             result.ways.add(way_id, std::move(indented_way_nd), way.tags);
 

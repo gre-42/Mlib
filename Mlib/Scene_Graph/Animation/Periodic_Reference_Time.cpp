@@ -1,6 +1,7 @@
+
 #include "Periodic_Reference_Time.hpp"
 #include <Mlib/Memory/Integral_To_Float.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -19,7 +20,7 @@ float PeriodicReferenceTime::phase01(
     std::chrono::steady_clock::time_point time) const
 {
     if (period_duration_.count() <= 0) {
-        THROW_OR_ABORT("PeriodicReferenceTime::phase01 on object with period duration <= 0");
+        throw std::runtime_error("PeriodicReferenceTime::phase01 on object with period duration <= 0");
     }
     auto num = integral_to_float<double>(((time - reference_) % period_duration_).count());
     auto denom = integral_to_float<double>(period_duration_.count());

@@ -1,12 +1,12 @@
 #include "Triangulate_Entity_List.hpp"
-#include <Mlib/Geometry/Intersection/Bvh.hpp>
-#include <Mlib/Geometry/Intersection/Contour_Intersections.hpp>
-#include <Mlib/Geometry/Intersection/Intersect_Lines.hpp>
 #include <Mlib/Geometry/Mesh/Indexed_Face_Set.hpp>
 #include <Mlib/Geometry/Mesh/Plot.hpp>
 #include <Mlib/Geometry/Mesh/Save_Obj.hpp>
+#include <Mlib/Geometry/Primitives/Bvh.hpp>
+#include <Mlib/Geometry/Primitives/Contour_Intersections.hpp>
+#include <Mlib/Geometry/Primitives/Intersect_Lines.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Osm_Limits.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
+#include <stdexcept>
 #include <vector>
 
 using namespace Mlib;
@@ -109,10 +109,10 @@ void Mlib::check_contour(const std::vector<p2t::Point*>& contour) {
     if ((contour.front()->x == contour.back()->x) &&
         (contour.front()->y == contour.back()->y))
     {
-        THROW_OR_ABORT("Triangulation boundary contour is closed");
+        throw std::runtime_error("Triangulation boundary contour is closed");
     }
     if (compute_area_ccw(contour, 1.f) < 0.f) {
-        THROW_OR_ABORT("Contour is not counterclockwise");
+        throw std::runtime_error("Contour is not counterclockwise");
     }
 }
 

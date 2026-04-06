@@ -1,7 +1,7 @@
-#include <Mlib/Throw_Or_Abort.hpp>
 #include <algorithm>
 #include <cmath>
 #include <iostream>
+#include <stdexcept>
 
 void stb_desaturate(
     unsigned char* data,
@@ -12,7 +12,7 @@ void stb_desaturate(
     float exponent)
 {
     if (nrChannels != 3 && nrChannels != 4) {
-        THROW_OR_ABORT("nrChannels is not 3 or 4");
+        throw std::runtime_error("nrChannels is not 3 or 4");
     }
     for (int r = 0; r < height; ++r) {
         for (int c = 0; c < width; ++c) {

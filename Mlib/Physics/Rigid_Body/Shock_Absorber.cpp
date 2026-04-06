@@ -1,5 +1,6 @@
+
 #include "Shock_Absorber.hpp"
-#include <Mlib/Throw_Or_Abort.hpp>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -33,7 +34,7 @@ void ShockAbsorber::advance_time(float dt, IntegrationMode integration_mode) {
             position_ = -((Ks_ * dt - 2 * Ka_) * position_ - 2 * F_ * dt) / (Ks_ * dt + 2 * Ka_);
             break;
         default:
-            THROW_OR_ABORT("Unknown integration mode");
+            throw std::runtime_error("Unknown integration mode");
     }
     F_ = 0;
 }

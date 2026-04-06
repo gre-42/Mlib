@@ -15,14 +15,14 @@ class SceneNode;
 class MovableLogger: public DestructionObserver<SceneNode&>, public IAdvanceTime, public virtual DanglingBaseClass {
 public:
     MovableLogger(
-        DanglingBaseClassRef<SceneNode> scene_node,
-        StatusWriter& status_writer,
+        const DanglingBaseClassRef<SceneNode>& scene_node,
+        const DanglingBaseClassRef<StatusWriter>& status_writer,
         StatusComponents log_components);
     ~MovableLogger();
     virtual void notify_destroyed(SceneNode& destroyed_object) override;
     virtual void advance_time(float dt, const StaticWorld& world) override;
 private:
-    StatusWriter& status_writer_;
+    const DanglingBaseClassRef<StatusWriter> status_writer_;
     StatusComponents log_components_;
 };
 

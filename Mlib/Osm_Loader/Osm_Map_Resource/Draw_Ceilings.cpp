@@ -3,13 +3,13 @@
 #include <Mlib/Geometry/Material_Configuration/Material_Colors.hpp>
 #include <Mlib/Geometry/Morphology.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>
+#include <Mlib/OpenGL/Rendering_Context.hpp>
+#include <Mlib/OpenGL/Resource_Managers/Rendering_Resources.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Draw_Building_Part_Type.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Draw_Buildings_Ceiling_Or_Ground.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Osm_Map_Resource_Helpers.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Osm_Resource_Config.hpp>
-#include <Mlib/Render/Rendering_Context.hpp>
-#include <Mlib/Render/Resource_Managers/Rendering_Resources.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -25,20 +25,20 @@ void Mlib::draw_ceilings(
     const std::string& triangle_filename,
     ContourDetectionStrategy contour_detection_strategy)
 {
-    if (config.ceiling_texture->empty()) {
-        THROW_OR_ABORT("Ceiling texture empty");
+    if (config.ceiling_texture.empty()) {
+        throw std::runtime_error("Ceiling texture empty");
     }
     auto& primary_rendering_resources = RenderingContextStack::primary_rendering_resources();
     draw_buildings_ceiling_or_ground(
         tls_buildings,
         &displacements,
         Material{
-            .textures_color = { { primary_rendering_resources.get_texture_descriptor(config.ceiling_texture) } },
+            .textures_color = { { primary_rendering_resources.get_texture_descriptor(config.ceiling_texture.variable_and_hash()) } },
             .occluder_pass = ExternalRenderPassType::LIGHTMAP_BLACK_GLOBAL_STATIC,
             .aggregate_mode = (config.object_cluster_width == 0)
                 ? AggregateMode::SORTED_CONTINUOUSLY
                 : AggregateMode::NODE_OBJECT,
-            .shading = material_shading(RawShading::CEILING, config),
+            .shading = material_shading(RawShading::CEILING, config.shading_factors),
             .draw_distance_noperations = 1000}.compute_color_mode(),
         morphology,
         buildings,

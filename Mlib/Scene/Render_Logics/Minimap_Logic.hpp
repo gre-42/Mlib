@@ -1,12 +1,12 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Memory/Dangling_Base_Class.hpp>
-#include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
+#include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/Memory/Destruction_Functions.hpp>
+#include <Mlib/OpenGL/Data_Display/Centered_Texture_Image_Logic.hpp>
+#include <Mlib/OpenGL/Render_Logic.hpp>
+#include <Mlib/OpenGL/Render_Logics/Fill_With_Texture_Logic.hpp>
 #include <Mlib/Physics/Interfaces/IAdvance_Time.hpp>
-#include <Mlib/Render/Data_Display/Centered_Texture_Image_Logic.hpp>
-#include <Mlib/Render/Render_Logic.hpp>
-#include <Mlib/Render/Render_Logics/Fill_With_Texture_Logic.hpp>
 #include <Mlib/Threads/Fast_Mutex.hpp>
 #include <mutex>
 
@@ -19,6 +19,7 @@ class AdvanceTimes;
 class RenderLogics;
 class Player;
 class ObjectPool;
+class FPath;
 
 class MinimapLogic:
     public RenderLogic,
@@ -31,8 +32,8 @@ public:
         RenderLogics& render_logics,
         const DanglingBaseClassRef<Player>& player,
         const DanglingBaseClassRef<SceneNode>& node,
-        const VariableAndHash<std::string>& map_image_resource_name,
-        const VariableAndHash<std::string>& locator_image_resource_name,
+        const FPath& map_image_resource_name,
+        const FPath& locator_image_resource_name,
         std::unique_ptr<IWidget>&& widget,
         const ILayoutPixels& locator_size,
         float pointer_reference_length,

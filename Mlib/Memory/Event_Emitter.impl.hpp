@@ -1,7 +1,7 @@
 #pragma once
 #include "Event_Emitter.hpp"
 #include <Mlib/Os/Os.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
+#include <stdexcept>
 
 namespace Mlib {
 
@@ -56,7 +56,7 @@ void EventEmitter<Args...>::insert(
         on_insert_(f);
     }
     if (!functions_.try_emplace(&deletion_token, std::move(f)).second) {
-        THROW_OR_ABORT("Deletion token already exists");
+        throw std::runtime_error("Deletion token already exists");
     }
 }
 

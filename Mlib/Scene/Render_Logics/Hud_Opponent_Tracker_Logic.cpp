@@ -1,16 +1,15 @@
 #include "Hud_Opponent_Tracker_Logic.hpp"
 #include <Mlib/Geometry/Cameras/Camera.hpp>
-#include <Mlib/Log.hpp>
 #include <Mlib/Memory/Object_Pool.hpp>
+#include <Mlib/Misc/Log.hpp>
+#include <Mlib/OpenGL/Render_Logics/Render_Logics.hpp>
+#include <Mlib/OpenGL/Render_Setup.hpp>
 #include <Mlib/Physics/Containers/Advance_Times.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Players/Advance_Times/Player.hpp>
-#include <Mlib/Players/Containers/Players.hpp>
-#include <Mlib/Render/Render_Logics/Render_Logics.hpp>
-#include <Mlib/Render/Render_Setup.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
 #include <sstream>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -18,7 +17,6 @@ HudOpponentTrackerLogic::HudOpponentTrackerLogic(
     ObjectPool& object_pool,
     RenderLogic& scene_logic,
     RenderLogics& render_logics,
-    Players& players,
     const DanglingBaseClassRef<Player>& player,
     const std::optional<std::vector<DanglingBaseClassPtr<const SceneNode>>>& exclusive_nodes,
     AdvanceTimes& advance_times,
@@ -26,8 +24,7 @@ HudOpponentTrackerLogic::HudOpponentTrackerLogic(
     const FixedArray<float, 2>& center,
     const FixedArray<float, 2>& size,
     HudErrorBehavior hud_error_behavior)
-    : players_{ players }
-    , player_{ player }
+    : player_{ player }
     , scene_logic_{ scene_logic }
     , hud_tracker_{
         exclusive_nodes,

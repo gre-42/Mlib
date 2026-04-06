@@ -1,9 +1,11 @@
 #include "Create_Engine.hpp"
-#include <Mlib/Argument_List.hpp>
 #include <Mlib/Components/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Geometry/Material/Particle_Type.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix_Json.hpp>
+#include <Mlib/Misc/Argument_List.hpp>
+#include <Mlib/OpenGL/Batch_Renderers/Particle_Renderer.hpp>
+#include <Mlib/OpenGL/Rendering_Context.hpp>
 #include <Mlib/Physics/Actuators/Engine_Event_Listeners.hpp>
 #include <Mlib/Physics/Actuators/Engine_Exhaust.hpp>
 #include <Mlib/Physics/Actuators/Engine_Power.hpp>
@@ -11,15 +13,13 @@
 #include <Mlib/Physics/Physics_Engine/Physics_Engine.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Physics/Units.hpp>
-#include <Mlib/Render/Batch_Renderers/Particle_Renderer.hpp>
-#include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Scene/Audio/Engine_Audio.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Scene_Particles.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Strings/String.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -78,8 +78,8 @@ static inline float stop(float v) {
 void CreateEngine::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     args.arguments.validate(KnownArgs::options);
-    DanglingBaseClassRef<SceneNode> node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::rigid_body), DP_LOC);
-    auto& rb = get_rigid_body_vehicle(node);
+    DanglingBaseClassRef<SceneNode> node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::rigid_body), CURRENT_SOURCE_LOCATION);
+    auto rb = get_rigid_body_vehicle(node.get(), CURRENT_SOURCE_LOCATION);
     std::optional<EnginePower> engine_power;
     if (args.arguments.contains(KnownArgs::angular_vels) ||
         args.arguments.contains(KnownArgs::powers) ||
@@ -117,7 +117,7 @@ void CreateEngine::execute(const LoadSceneJsonUserFunctionArgs& args)
     }
     if (auto engine_exhausts = args.arguments.try_at_non_null<std::vector<nlohmann::json>>(KnownArgs::exhaust); engine_exhausts.has_value()) {
         if (engine_exhausts->empty()) {
-            THROW_OR_ABORT("Engine exhaust array is empty");
+            throw std::runtime_error("Engine exhaust array is empty");
         }
         auto particle_renderer = std::make_shared<ParticleRenderer>(particle_resources, ParticleType::SMOKE);
         node->add_renderable(
@@ -141,7 +141,7 @@ void CreateEngine::execute(const LoadSceneJsonUserFunctionArgs& args)
                 jv.at<float>(Exhaust::p_reference) * hp));
         }
     }
-    rb.engines_.add(
+    rb->engines_.add(
         args.arguments.at<VariableAndHash<std::string>>(KnownArgs::name),
         engine_power,
         engine_listeners);

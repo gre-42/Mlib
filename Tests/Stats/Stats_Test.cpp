@@ -1,4 +1,4 @@
-#include <Mlib/Floating_Point_Exceptions.hpp>
+#include <Mlib/Misc/Floating_Point_Exceptions.hpp>
 #include <Mlib/Stats/Cdf.hpp>
 #include <Mlib/Stats/Halton_Sequence.hpp>
 #include <Mlib/Stats/Histogram.hpp>
@@ -141,22 +141,22 @@ void test_cdf() {
 
 void test_histogram_matching() {
     assert_allclose(
-        histogram_matching(
+        HistogramMatching<float, float, float>(
             Array<float>{1.f, 2.f, 3.f, 3.f, 4.f, 5.f, 6.f},
             Array<float>{1.f, 2.f, 3.f, 3.f, 4.f, 5.f, 6.f},
-            6),
+            6).y(),
         Array<float>{1.f, 2.f, 3.f, 3.f, 4.f, 5.f, 6.f});
     assert_allclose(
-        histogram_matching(
+        HistogramMatching<float, float, float>(
             Array<float>{1.f, 2.f, 3.f, 3.f, 4.f, 5.f, 6.f},
             Array<float>{1.f, 2.f, 3.f, 3.f, 4.f, 5.f, 6.f} * 10.f,
-            10),
+            10).y(),
         Array<float>{1.f, 2.f, 3.f, 3.f, 4.f, 5.f, 6.f} * 10.f);
     assert_allclose(
-        histogram_matching<unsigned char, unsigned char, float>(
+        HistogramMatching<unsigned char, unsigned char, float>(
             Array<unsigned char>{1, 2, 3, 3, 4, 5, 6},
             Array<unsigned char>{1, 2, 3, 3, 4, 5, 6} * (unsigned char)1,
-            10).casted<float>(),
+            10).y().casted<float>(),
         Array<float>{1.f, 2.f, 3.f, 3.f, 4.f, 5.f, 6.f} * 1.f);
 }
 

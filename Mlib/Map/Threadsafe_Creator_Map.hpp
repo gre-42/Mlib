@@ -20,10 +20,10 @@ public:
     {
         std::scoped_lock lock{mutex_};
         if (elements_.contains(name)) {
-            THROW_OR_ABORT("Element with name \"" + name + "\" already exists");
+            throw std::runtime_error("Element with name \"" + name + "\" already exists");
         }
         if (!creators_.insert({name, creator}).second) {
-            THROW_OR_ABORT("Element creator with name \"" + name + "\" already exists");
+            throw std::runtime_error("Element creator with name \"" + name + "\" already exists");
         }
     }
 
@@ -42,13 +42,13 @@ public:
             if (it != creators_.end()) {
                 auto iit = elements_.insert({name, std::move(it->second())});
                 if (!iit.second) {
-                    THROW_OR_ABORT("Recursive dependency: Element and with name \"" + name + "\" exists");
+                    throw std::runtime_error("Recursive dependency: Element and with name \"" + name + "\" exists");
                 }
                 creators_.erase(it);
                 return *iit.first->second;
             }
         }
-        THROW_OR_ABORT("Could not find element or creator with name \"" + name + '"');
+        throw std::runtime_error("Could not find element or creator with name \"" + name + '"');
     }
 
     decltype(auto) begin() { return elements_.begin(); }

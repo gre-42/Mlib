@@ -1,12 +1,12 @@
 #include "Player_Set_Playback_Waypoints.hpp"
-#include <Mlib/Argument_List.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
+#include <Mlib/Misc/Argument_List.hpp>
 #include <Mlib/Players/Advance_Times/Player.hpp>
 #include <Mlib/Players/Containers/Players.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -34,7 +34,7 @@ void PlayerSetPlaybackWaypoints::execute(const LoadSceneJsonUserFunctionArgs& ar
     auto player = players.get_player(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::player), CURRENT_SOURCE_LOCATION);
     auto* inverse_geographic_mapping = scene_node_resources.get_geographic_mapping(VariableAndHash<std::string>{"world.inverse"});
     if (inverse_geographic_mapping == nullptr) {
-        THROW_OR_ABORT("Could not find geographic mapping with name \"world.inverse\"");
+        throw std::runtime_error("Could not find geographic mapping with name \"world.inverse\"");
     }
     player->playback_waypoints().set_waypoints(
         *inverse_geographic_mapping, args.arguments.path(KnownArgs::filename),

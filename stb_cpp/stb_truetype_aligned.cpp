@@ -1,9 +1,9 @@
 #include "stb_truetype_aligned.hpp"
 #include <Mlib/Memory/Integral_Cast.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
 #include <algorithm>
 #include <cassert>
 #include <stb/stb_truetype.h>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -22,7 +22,7 @@ float stbtt_BakeFontBitmap_get_y0(
     stbtt_fontinfo f;
     f.userdata = nullptr;
     if (!stbtt_InitFont(&f, data, offset)) {
-        THROW_OR_ABORT("Could not initialize font");
+        throw std::runtime_error("Could not initialize font");
     }
     // background of 0 around pixels
     std::fill(pixels, pixels + pw * ph, 0);
@@ -41,7 +41,7 @@ float stbtt_BakeFontBitmap_get_y0(
         if (x + gw + 1 >= pw)
             y = bottom_y, x = 1; // advance to next row
         if (y + gh + 1 >= ph) {// check if it fits vertically AFTER potentially moving to next row
-            THROW_OR_ABORT("Bitmap too small for font and size");
+            throw std::runtime_error("Bitmap too small for font and size");
         }
         assert(x + gw < pw);
         assert(y + gh < ph);

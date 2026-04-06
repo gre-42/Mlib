@@ -1,9 +1,10 @@
+
 #include "Dependent_Sleeper.hpp"
 #include <Mlib/Os/Os.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
 #include <Mlib/Time/Fps/Set_Fps.hpp>
 #include <mutex>
 #include <shared_mutex>
+#include <stdexcept>
 #include <thread>
 
 using namespace Mlib;
@@ -33,7 +34,7 @@ bool DependentSleeper::is_up_to_date() const {
 void DependentSleeper::register_busy_state_provider(const SetFps& busy_state_provider) {
     std::scoped_lock lock{mutex_};
     if (!busy_state_providers_.insert(&busy_state_provider).second) {
-        THROW_OR_ABORT("Busy state provider already registered");
+        throw std::runtime_error("Busy state provider already registered");
     }
 }
 

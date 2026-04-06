@@ -1,8 +1,8 @@
 #include "Create_Avatar_As_Car_Controller.hpp"
-#include <Mlib/Argument_List.hpp>
 #include <Mlib/Components/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Components/Yaw_Pitch_Look_At_Nodes.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
+#include <Mlib/Misc/Argument_List.hpp>
 #include <Mlib/Physics/Advance_Times/Movables/Yaw_Pitch_Look_At_Nodes.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Physics/Vehicle_Controllers/Car_Controllers/Avatar_As_Car_Controller.hpp>
@@ -10,7 +10,7 @@
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -34,13 +34,13 @@ CreateAvatarAsCarController::CreateAvatarAsCarController(PhysicsScene& physics_s
 
 void CreateAvatarAsCarController::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    DanglingBaseClassRef<SceneNode> node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::node), DP_LOC);
-    auto& rb = get_rigid_body_vehicle(node);
-    if (rb.vehicle_controller_ != nullptr) {
-        THROW_OR_ABORT("Avatar controller already set");
+    DanglingBaseClassRef<SceneNode> node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::node), CURRENT_SOURCE_LOCATION);
+    auto rb = get_rigid_body_vehicle(node.get(), CURRENT_SOURCE_LOCATION);
+    if (rb->vehicle_controller_ != nullptr) {
+        throw std::runtime_error("Avatar controller already set");
     }
-    auto& ypln = get_yaw_pitch_look_at_nodes(node);
-    rb.vehicle_controller_ = std::make_unique<AvatarAsCarController>(
+    auto ypln = get_yaw_pitch_look_at_nodes(node.get(), CURRENT_SOURCE_LOCATION);
+    rb->vehicle_controller_ = std::make_unique<AvatarAsCarController>(
         rb,
         ypln,
         args.arguments.at<float>(KnownArgs::steering_multiplier));

@@ -1,6 +1,4 @@
 #include "Create_Rigid_Cuboid.hpp"
-#include <Mlib/Argument_List.hpp>
-#include <Mlib/Env.hpp>
 #include <Mlib/Geometry/Exceptions/Polygon_Edge_Exception.hpp>
 #include <Mlib/Geometry/Exceptions/Triangle_Exception.hpp>
 #include <Mlib/Geometry/Mesh/Animated_Colored_Vertex_Arrays.hpp>
@@ -8,6 +6,8 @@
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array_Filter.hpp>
 #include <Mlib/Geometry/Mesh/Save_Polygon_To_Obj.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
+#include <Mlib/Misc/Argument_List.hpp>
+#include <Mlib/Os/Env.hpp>
 #include <Mlib/Physics/Collision/Collidable_Mode.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Engine.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
@@ -73,7 +73,7 @@ void CreateRigidCuboid::execute(const LoadSceneJsonUserFunctionArgs& args) const
         collidable_mode_from_string(args.arguments.at<std::string>(KnownArgs::collidable_mode))});
 }
 
-RigidBodyVehicle& CreateRigidCuboid::operator () (const CreateRigidCuboidArgs& args) const
+DanglingBaseClassRef<RigidBodyVehicle> CreateRigidCuboid::operator () (const CreateRigidCuboidArgs& args) const
 {
     auto radius = std::sqrt(sum(squared(abs(args.size / 2.f))));
     auto pl = PenetrationLimitsFactory{
@@ -111,8 +111,8 @@ RigidBodyVehicle& CreateRigidCuboid::operator () (const CreateRigidCuboidArgs& a
         intersectables = scene_node_resources.get_intersectables(*args.hitboxes);
     }
     // 1. Set movable, which updates the transformation-matrix.
-    auto& result = *rb;
-    AbsoluteMovableSetter ams{ scene, scene.get_node(args.node, DP_LOC), args.node, std::move(rb), CURRENT_SOURCE_LOCATION };
+    auto result = DanglingBaseClassRef<RigidBodyVehicle>{*rb, CURRENT_SOURCE_LOCATION};
+    AbsoluteMovableSetter ams{ scene, scene.get_node(args.node, CURRENT_SOURCE_LOCATION), args.node, std::move(rb), CURRENT_SOURCE_LOCATION };
     // 2. Add to physics engine.
     try {
         physics_engine.rigid_bodies_.add_rigid_body(

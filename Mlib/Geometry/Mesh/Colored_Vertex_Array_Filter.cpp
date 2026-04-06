@@ -1,7 +1,8 @@
+
 #include "Colored_Vertex_Array_Filter.hpp"
-#include <Mlib/Argument_List.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
 #include <Mlib/Json/Json_View.hpp>
+#include <Mlib/Misc/Argument_List.hpp>
 #include <Mlib/Scene_Config/Scene_Precision.hpp>
 
 using namespace Mlib;
@@ -16,14 +17,18 @@ DECLARE_ARGUMENT(excluded_names);
 
 ColoredVertexArrayFilter::~ColoredVertexArrayFilter() = default;
 
-template <class TPos>
-bool ColoredVertexArrayFilter::matches(const ColoredVertexArray<TPos>& cva) const {
-    auto n = cva.name.name();
+bool ColoredVertexArrayFilter::matches(const MeshMeta& meta) const {
+    auto n = meta.name.name();
     return
-        !any(~cva.morphology.physics_material & included_tags) &&
-        !any(cva.morphology.physics_material & excluded_tags) &&
+        !any(~meta.morphology.physics_material & included_tags) &&
+        !any(meta.morphology.physics_material & excluded_tags) &&
         Mlib::re::regex_search(n.data(), n.data() + n.size(), included_names) &&
         !Mlib::re::regex_search(n.data(), n.data() + n.size(), excluded_names);
+}
+
+template <class TPos>
+bool ColoredVertexArrayFilter::matches(const ColoredVertexArray<TPos>& cva) const {
+    return matches(cva.meta);
 }
 
 void Mlib::from_json(const nlohmann::json& j, ColoredVertexArrayFilter& filter) {
@@ -51,19 +56,23 @@ ColoredVertexArrayFilters::ColoredVertexArrayFilters(std::vector<ColoredVertexAr
     : filters_{ std::move(filters) }
 {}
 
-template <class TPos>
-bool ColoredVertexArrayFilters::matches(const ColoredVertexArray<TPos>& cva) const {
+bool ColoredVertexArrayFilters::matches(const MeshMeta& meta) const {
     for (const auto& f : filters_) {
-        if (f.matches(cva)) {
+        if (f.matches(meta)) {
             return true;
         }
     }
     return false;
 }
 
+template <class TPos>
+bool ColoredVertexArrayFilters::matches(const ColoredVertexArray<TPos>& cva) const {
+    return matches(cva.meta);
+}
+
 void Mlib::from_json(const nlohmann::json& j, ColoredVertexArrayFilters& filters) {
     if (j.type() != nlohmann::detail::value_t::array) {
-        THROW_OR_ABORT("Type is not array for ColoredVertexArrayFilters");
+        throw std::runtime_error("Type is not array for ColoredVertexArrayFilters");
     }
     filters = ColoredVertexArrayFilters{ j.get<std::vector<ColoredVertexArrayFilter>>() };
 }

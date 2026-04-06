@@ -1,17 +1,17 @@
 #include "Late_Join_Player_Factory.hpp"
-#include <Mlib/Argument_List.hpp>
 #include <Mlib/Json/Misc.hpp>
 #include <Mlib/Macro_Executor/Asset_Group_Replacement_Parameters.hpp>
 #include <Mlib/Macro_Executor/Asset_References.hpp>
 #include <Mlib/Macro_Executor/Macro_Keys.hpp>
 #include <Mlib/Macro_Executor/Macro_Line_Executor.hpp>
 #include <Mlib/Macro_Executor/Replacement_Parameter.hpp>
+#include <Mlib/Misc/Argument_List.hpp>
 #include <Mlib/Players/Containers/Remote_Sites.hpp>
 #include <Mlib/Regex/Regex_Select.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Load_Scene_Funcs.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
 #include <fstream>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -130,11 +130,11 @@ LateJoinPlayerFactory::LateJoinPlayerFactory(
         {
             auto f = create_ifstream(filename);
             if (f->fail()) {
-                THROW_OR_ABORT("Could not open players JSON file \"" + filename + '"');
+                throw std::runtime_error("Could not open players JSON file \"" + filename + '"');
             }
             *f >> j;
             if (f->fail()) {
-                THROW_OR_ABORT("Could not read from \"" + filename + '"');
+                throw std::runtime_error("Could not read from \"" + filename + '"');
             }
         }
         JsonView jv{ j };
@@ -158,7 +158,7 @@ LateJoinPlayerFactory::LateJoinPlayerFactory(
                 if (defaults.contains(name)) {
                     return defaults.at(name);
                 }
-                THROW_OR_ABORT("Could not find key \"" + std::string{ name } + "\" in player or defaults");
+                throw std::runtime_error("Could not find key \"" + std::string{ name } + "\" in player or defaults");
             };
             auto get_skill = [&default_skillsv, &player](std::string_view source, std::string_view name){
                 auto player_skill = player.try_resolve(PlayerKeys::skills, source, name);
@@ -203,7 +203,7 @@ LateJoinPlayerFactory::LateJoinPlayerFactory(
                 if (*controller == "pc") {
                     auto user = player.try_at(PlayerKeys::user);
                     if (!user.has_value()) {
-                        THROW_OR_ABORT("\"pc\" controller requires \"user\"");
+                        throw std::runtime_error("\"pc\" controller requires \"user\"");
                     }
                     u = remote_sites.get_user_by_rank(JsonView{*user}.at<uint32_t>("rank")).ptr();
                     let["full_user_name"] = u->full_name;
@@ -215,7 +215,7 @@ LateJoinPlayerFactory::LateJoinPlayerFactory(
                         let["user_is_local"] = false;
                     }
                 } else if (*controller != "npc") {
-                    THROW_OR_ABORT("Unknown controller: \"" + *controller + "\". Known controllers: \"pc\", \"npc\"");
+                    throw std::runtime_error("Unknown controller: \"" + *controller + "\". Known controllers: \"pc\", \"npc\"");
                 }
                 let["spawner_name"] = spawner_name;
                 let["player_name"] = spawner_name;

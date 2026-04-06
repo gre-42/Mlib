@@ -1,11 +1,11 @@
-#include <Mlib/Argument_List.hpp>
 #include <Mlib/Geometry/Material/Color_Mode.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
-#include <Mlib/Render/Render_Logic_Gallery.hpp>
-#include <Mlib/Render/Render_Logics/Fill_With_Texture_Logic.hpp>
-#include <Mlib/Render/Render_Logics/Resource_Update_Cycle.hpp>
-#include <Mlib/Render/Rendering_Context.hpp>
-#include <Mlib/Render/Resource_Managers/Rendering_Resources.hpp>
+#include <Mlib/Misc/Argument_List.hpp>
+#include <Mlib/OpenGL/Render_Logic_Gallery.hpp>
+#include <Mlib/OpenGL/Render_Logics/Fill_With_Texture_Logic.hpp>
+#include <Mlib/OpenGL/Render_Logics/Resource_Update_Cycle.hpp>
+#include <Mlib/OpenGL/Rendering_Context.hpp>
+#include <Mlib/OpenGL/Resource_Managers/Rendering_Resources.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Load_Scene_Funcs.hpp>
 
@@ -33,7 +33,7 @@ struct RegisterJsonUserFunction {
                     std::make_unique<FillWithTextureLogic>(
                         RenderingContextStack::primary_rendering_resources().get_texture_lazy(
                             ColormapWithModifiers{
-                                .filename = VariableAndHash{ args.arguments.path_or_variable(KnownArgs::resource).path },
+                                .filename = args.arguments.path_or_variable(KnownArgs::resource),
                                 .color_mode = color_mode_from_string(args.arguments.at<std::string>(KnownArgs::color_mode)),
                                 .mipmap_mode = MipmapMode::WITH_MIPMAPS
                             }.compute_hash(),

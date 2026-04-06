@@ -1,5 +1,5 @@
 #pragma once
-#include <Mlib/Throw_Or_Abort.hpp>
+#include <stdexcept>
 
 namespace Mlib {
 
@@ -10,7 +10,7 @@ void remove_from_map_recursively_if(TContainer& elements, const TPredicate& pred
         if (predicate(*it)) {
             auto node = elements.extract(it++);
             if (!map2.insert(std::move(node)).inserted) {
-                THROW_OR_ABORT("Map element added during deletion, and deleted right again");
+                throw std::runtime_error("Map element added during deletion, and deleted right again");
             }
         } else {
             ++it;

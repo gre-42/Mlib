@@ -1,8 +1,8 @@
 #include "Add_Weapon_To_Cycle.hpp"
-#include <Mlib/Argument_List.hpp>
 #include <Mlib/Components/Weapon_Cycle.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Macro_Executor/Macro_Line_Executor.hpp>
+#include <Mlib/Misc/Argument_List.hpp>
 #include <Mlib/Physics/Bullets/Bullet_Property_Db.hpp>
 #include <Mlib/Physics/Misc/Weapon_Cycle.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle_Flags.hpp>
@@ -14,7 +14,7 @@
 #include <Mlib/Scene/Load_Scene_Funcs.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -40,9 +40,9 @@ AddWeaponToInventory::AddWeaponToInventory(
 void AddWeaponToInventory::operator () (const JsonView& args) {
     args.validate(KnownArgs::options);
 
-    DanglingBaseClassRef<SceneNode> cycle_node = scene.get_node(args.at<VariableAndHash<std::string>>(KnownArgs::cycle_node), DP_LOC);
+    DanglingBaseClassRef<SceneNode> cycle_node = scene.get_node(args.at<VariableAndHash<std::string>>(KnownArgs::cycle_node), CURRENT_SOURCE_LOCATION);
     auto entry_name = args.at<std::string>(KnownArgs::entry_name);
-    WeaponCycle& wc = get_weapon_cycle(cycle_node);
+    auto wc = get_weapon_cycle(cycle_node.get(), CURRENT_SOURCE_LOCATION);
     auto ammo_type = args.at<InventoryItem>(KnownArgs::ammo_type);
     auto bullet_type = args.at<std::string>(KnownArgs::bullet_type);
     float cool_down = args.at<float>(KnownArgs::cool_down);
@@ -88,7 +88,7 @@ void AddWeaponToInventory::operator () (const JsonView& args) {
             macro_line_executor.inserted_block_arguments(std::move(let))(create, nullptr);
         };
     }
-    wc.add_weapon(
+    wc->add_weapon(
         entry_name,
         WeaponInfo{
             .create_weapon = std::move(create_weapon),

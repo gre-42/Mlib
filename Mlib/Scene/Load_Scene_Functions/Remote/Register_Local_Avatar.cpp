@@ -1,8 +1,9 @@
 #include "Register_Local_Avatar.hpp"
-#include <Mlib/Argument_List.hpp>
 #include <Mlib/Components/Rigid_Body_Vehicle.hpp>
+#include <Mlib/Hashing/Variable_And_Hash.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Macro_Executor/Notifying_Json_Macro_Arguments.hpp>
+#include <Mlib/Misc/Argument_List.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Load_Scene_Funcs.hpp>
 #include <Mlib/Scene/Physics_Scene.hpp>
@@ -10,7 +11,6 @@
 #include <Mlib/Scene/Remote/Remote_Scene.hpp>
 #include <Mlib/Scene/Remote/Remote_Scene_Object_Type.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
-#include <Mlib/Variable_And_Hash.hpp>
 
 using namespace Mlib;
 
@@ -54,19 +54,21 @@ RegisterLocalAvatar::RegisterLocalAvatar(
 void RegisterLocalAvatar::execute(const JsonView& args) {
     args.validate(KnownArgs::options);
     if (remote_scene == nullptr) {
-        THROW_OR_ABORT("Remote scene is null");
+        throw std::runtime_error("Remote scene is null");
     }
     auto suffix = args.at<std::string>(KnownArgs::suffix);
     auto name = VariableAndHash<std::string>{"human_node" + suffix};
-    auto& rb = get_rigid_body_vehicle(scene.get_node(name, CURRENT_SOURCE_LOCATION));
-    rb.remote_object_id_ = remote_scene->create_local<RemoteRigidBodyVehicle>(
+    auto rb = get_rigid_body_vehicle(
+        scene.get_node(name, CURRENT_SOURCE_LOCATION).get(),
+        CURRENT_SOURCE_LOCATION);
+    rb->remote_object_id_ = remote_scene->create_local<RemoteRigidBodyVehicle>(
         CURRENT_SOURCE_LOCATION,
         RemoteSceneObjectType::RIGID_BODY_AVATAR,
         args.json().dump(),
         suffix,
-        DanglingBaseClassRef<RigidBodyVehicle>{rb, CURRENT_SOURCE_LOCATION},
+        rb.set_loc(CURRENT_SOURCE_LOCATION),
         DanglingBaseClassRef<PhysicsScene>{physics_scene, CURRENT_SOURCE_LOCATION});
-    rb.owner_site_id_ = remote_scene->local_site_id();
+    rb->owner_site_id_ = remote_scene->local_site_id();
 }
 
 namespace {

@@ -6,6 +6,9 @@
 #include <Mlib/Iterator/Enumerate.hpp>
 #include <Mlib/Iterator/Reverse_Iterator.hpp>
 #include <Mlib/Memory/Float_To_Integral.hpp>
+#include <Mlib/OpenGL/Renderables/Color_Cycle.hpp>
+#include <Mlib/OpenGL/Rendering_Context.hpp>
+#include <Mlib/OpenGL/Resource_Managers/Rendering_Resources.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Building.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Draw_Building_Part_Type.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Get_Smooth_Building_Levels.hpp>
@@ -13,9 +16,6 @@
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Osm_Resource_Config.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Steiner_Point_Info.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Vertex_Height_Binding.hpp>
-#include <Mlib/Render/Renderables/Color_Cycle.hpp>
-#include <Mlib/Render/Rendering_Context.hpp>
-#include <Mlib/Render/Resource_Managers/Rendering_Resources.hpp>
 
 using namespace Mlib;
 
@@ -70,8 +70,9 @@ void Mlib::draw_building_walls(
             const auto& tl = tls.emplace_back(std::make_shared<TriangleList<CompressedScenePos>>(
                 "building_walls_" + std::to_string(mid++),
                 material,
-                morphology + bl.facade_texture_descriptor.material + BASE_VISIBLE_TERRAIN_MATERIAL));
-            tl->material.shading = material_shading(bl.facade_texture_descriptor.material, config);
+                morphology + bl.facade_texture_descriptor.material + BASE_VISIBLE_TERRAIN_MATERIAL,
+                ModifierBacklog{}));
+            tl->meta.material.shading = material_shading(bl.facade_texture_descriptor.material, config.shading_factors);
             FixedArray<float, 3> bottom_height_color = height_colors(bl.bottom);
             FixedArray<float, 3> top_height_color = height_colors(bl.top);
             float bottom_ambient_occlusion;
@@ -80,12 +81,12 @@ void Mlib::draw_building_walls(
             } else {
                 bottom_ambient_occlusion = 0.f;
             }
-            tl->material.textures_color.reserve(bl.facade_texture_descriptor.names.size());
+            tl->meta.material.textures_color.reserve(bl.facade_texture_descriptor.names.size());
             for (const auto& name : bl.facade_texture_descriptor.names) {
-                tl->material.textures_color.push_back(primary_rendering_resources.get_blend_map_texture(name));
+                tl->meta.material.textures_color.push_back(primary_rendering_resources.get_blend_map_texture(name));
             }
-            tl->material.interior_textures = bl.facade_texture_descriptor.interior_textures;
-            tl->material.compute_color_mode();
+            tl->meta.material.interior_textures = bl.facade_texture_descriptor.interior_textures;
+            tl->meta.material.compute_color_mode();
             auto get_uv_ratio = [&bl, &scale](const std::list<BuildingSegment>& sw){
                 double w = 0.f;
                 for (const auto& we : sw) {
@@ -105,18 +106,18 @@ void Mlib::draw_building_walls(
             auto swg = smooth_building_level(bu, nodes, max_width, bl.extra_width, bl.extra_width, scale);
             auto swl = straight_building_level(swg, snap_length_angle);
             if (swl.empty()) {
-                THROW_OR_ABORT("Building straight segment list empty");
+                throw std::runtime_error("Building straight segment list empty");
             }
             for (const auto& sw : swl) {
                 if (sw.empty()) {
-                    THROW_OR_ABORT("Building straight segment empty");
+                    throw std::runtime_error("Building straight segment empty");
                 }
                 FixedArray<float, 2> uv = 1.f / scale * uv_scale * fixed_ones<float, 2>();
                 std::optional<float> interiormap_uscale;
-                if (!tl->material.interior_textures.empty()) {
+                if (!tl->meta.material.interior_textures.empty()) {
                     interiormap_uscale = get_uv_ratio(sw);
                     if (!std::isfinite(*interiormap_uscale)) {
-                        THROW_OR_ABORT("Building wall length ratio not finite");
+                        throw std::runtime_error("Building wall length ratio not finite");
                     }
                     // uv(0) *= *interiormap_uscale;
                 }

@@ -1,14 +1,15 @@
 #pragma once
+#include <Mlib/Memory/Dangling_Base_Class.hpp>
 
 namespace Mlib {
 
 class RigidBodyVehicle;
 enum class SteeringType;
 
-class RigidBodyPlaneController {
+class RigidBodyPlaneController: public virtual DanglingBaseClass {
 public:
     RigidBodyPlaneController(
-        RigidBodyVehicle& rb,
+        const DanglingBaseClassRef<RigidBodyVehicle>& rb,
         SteeringType steering_type);
     virtual ~RigidBodyPlaneController();
     void brake(float amount, float relaxation);
@@ -30,7 +31,7 @@ public:
     virtual void apply() = 0;
     const SteeringType steering_type;
 protected:
-    RigidBodyVehicle& rb_;
+    DanglingBaseClassRef<RigidBodyVehicle> rb_;
     float turbine_power_;
     float brake_amount_;
     float throttle_relaxation_;

@@ -17,7 +17,7 @@ class RigidBodyVehicle;
 class Wheel: public DestructionObserver<SceneNode&>, public IRelativeMovable, public IAdvanceTime, public virtual DanglingBaseClass {
 public:
     explicit Wheel(
-        RigidBodyVehicle& rigid_body,
+        const DanglingBaseClassRef<RigidBodyVehicle>& rigid_body,
         AdvanceTimes& advance_times,
         size_t tire_id,
         float radius);
@@ -28,7 +28,7 @@ public:
     virtual TransformationMatrix<float, ScenePos, 3> get_new_relative_model_matrix() const override;
     virtual void advance_time(float dt, const StaticWorld& world) override;
     virtual void notify_destroyed(SceneNode& destroyed_object) override;
-    RigidBodyVehicle& rigid_body_;
+    DanglingBaseClassRef<RigidBodyVehicle> rigid_body_;
     AdvanceTimes& advance_times_;
     TransformationMatrix<float, ScenePos, 3> transformation_matrix_;
     size_t tire_id_;

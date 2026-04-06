@@ -1,6 +1,7 @@
+
 #include "Projection_Matrix_Camera.hpp"
 #include <Mlib/Array/Fixed_Array.hpp>
-#include <Mlib/Render/linmath.hpp>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -19,5 +20,5 @@ FixedArray<float, 4, 4> ProjectionMatrixCamera::projection_matrix() const {
 }
 
 FixedArray<float, 2> ProjectionMatrixCamera::dpi(const FixedArray<float, 2>& texture_size) const {
-    THROW_OR_ABORT("DPI computation not implemented for ProjectionMatrixCamera");
+    throw std::runtime_error("DPI computation not implemented for ProjectionMatrixCamera");
 }

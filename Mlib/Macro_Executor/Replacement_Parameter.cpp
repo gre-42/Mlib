@@ -1,10 +1,11 @@
+
 #include "Replacement_Parameter.hpp"
-#include <Mlib/Argument_List.hpp>
 #include <Mlib/Json/Json_View.hpp>
+#include <Mlib/Misc/Argument_List.hpp>
 #include <Mlib/Os/Os.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
 #include <filesystem>
 #include <fstream>
+#include <stdexcept>
 
 namespace fs = std::filesystem;
 
@@ -34,11 +35,11 @@ ReplacementParameterAndFilename ReplacementParameterAndFilename::from_json(const
         auto ifs_p = create_ifstream(filename);
         auto& ifs = *ifs_p;
         if (ifs.fail()) {
-            THROW_OR_ABORT("Could not open replacement parameter entry file \"" + filename + '"');
+            throw std::runtime_error("Could not open replacement parameter entry file \"" + filename + '"');
         }
         ifs >> j;
         if (!ifs.eof() && ifs.fail()) {
-            THROW_OR_ABORT("Error reading from file: \"" + filename + '"');
+            throw std::runtime_error("Error reading from file: \"" + filename + '"');
         }
         return ReplacementParameterAndFilename{
             .rp = j.get<ReplacementParameter>(),

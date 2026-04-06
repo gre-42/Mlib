@@ -1,5 +1,5 @@
-#include <Mlib/Arg_Parser.hpp>
 #include <Mlib/Images/Svg.hpp>
+#include <Mlib/Io/Arg_Parser.hpp>
 #include <Mlib/Os/Os.hpp>
 #include <Mlib/Physics/Collision/Pacejkas_Magic_Formula.hpp>
 #include <Mlib/Stats/Linspace.hpp>
@@ -21,7 +21,7 @@ int main(int argc, char** argv) {
         float height = 600.f;
         std::ofstream ostr{ destination };
         if (ostr.fail()) {
-            THROW_OR_ABORT("Could not open \"" + destination + "\" for write");
+            throw std::runtime_error("Could not open \"" + destination + "\" for write");
         }
         std::vector<std::vector<float>> X;
         std::vector<std::vector<float>> Y;
@@ -43,7 +43,7 @@ int main(int argc, char** argv) {
         svg.finish();
         ostr.flush();
         if (ostr.fail()) {
-            THROW_OR_ABORT("Could write to file \"" + destination + '"');
+            throw std::runtime_error("Could write to file \"" + destination + '"');
         }
     } catch (const std::exception& e) {
         lerr() << e.what();

@@ -1,3 +1,4 @@
+#pragma once
 #include <Mlib/Threads/Containers/Thread_Safe_String.hpp>
 #include <nlohmann/json_fwd.hpp>
 

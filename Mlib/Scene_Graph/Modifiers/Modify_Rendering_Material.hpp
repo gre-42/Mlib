@@ -11,6 +11,7 @@ struct ColoredVertexArrayFilter;
 enum class BlendMode;
 enum class InterpolationMode;
 enum class ExternalRenderPassType;
+class FPath;
 
 void modify_rendering_material(
     const VariableAndHash<std::string>& resource_name,
@@ -20,6 +21,6 @@ void modify_rendering_material(
     std::optional<ExternalRenderPassType> occluded_pass,
     std::optional<ExternalRenderPassType> occluder_pass,
     std::optional<InterpolationMode> magnifying_interpolation_mode,
-    std::optional<std::string> histogram);
+    const FPath& histogram);
 
 }

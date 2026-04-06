@@ -10,7 +10,7 @@ add_compiler_color()
 ddebug()
 set_stack_size()
 if (NOT ANDROID)
-    optional_omp()
+    enable_omp()
 endif()
 if (ANDROID)
     enable_cross_compiling()
@@ -27,18 +27,20 @@ set(CMAKE_POSITION_INDEPENDENT_CODE TRUE)
 
 option(BUILD_TRIANGLE "Build the Triangle library" OFF)
 option(BUILD_CORK "Build the Cork Boolean/CSG library" OFF)
-option(BUILD_SFM "Build the structure from motion library" ON)
-option(BUILD_CV "Build the computer vision library" ON)
-option(BUILD_OPENCV "Build the Open Computer Vision Library" ON)
 option(BUILD_SCENE "Build the scene library" ON)
 option(WITH_OPENSSL "Build against OpenSSL" ON)
 option(WITH_ZLIB "Build aganst zlib" ON)
+if (ANDROID)
+    option(WITH_LAME "Build aganst LAME" OFF)
+else()
+    option(WITH_LAME "Build aganst LAME" ON)
+endif()
 
 ####################
 # Add dependencies #
 ####################
 
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/Modules")
 
 # Replaced with MSYS2 package
 # if (MINGW)
@@ -58,17 +60,6 @@ endif()
 set(MlibCereal_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/cereal/include)
 set(MlibCereal_FOUND true)
 
-find_package(SDL2)
-# MlibRender contains glad_gl.cpp and glad_vulkan.cpp
-find_package(Vulkan)
-find_package(OpenCV OPTIONAL_COMPONENTS features2d)
-# The "system" component was required by Asio, but it is header-only now.
-find_package(Boost CONFIG REQUIRED)
-if (WITH_OPENSSL)
-	find_package(OpenSSL REQUIRED)
-endif()
-set(MlibEve_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/eve/include)
-set(MlibEve_FOUND true)
 if (MSVC)
     # Alternative OpenAL-implementation: openal.org
     # find_package(OpenAL REQUIRED)
@@ -101,6 +92,9 @@ elseif(ANDROID)
         set(ZLIB_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/Android/zlib)
         find_package(ZLIB REQUIRED)
     endif()
+    file(GLOB Boost_CMake_Directory ${CMAKE_SOURCE_DIR}/Android/Boost-for-Android/build/out/${ANDROID_ABI}/lib/cmake/Boost-*.*.*)
+    list(APPEND CMAKE_PREFIX_PATH ${Boost_CMake_Directory})
+    set(BOOST_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/Android/Boost-for-Android/build/out/${ANDROID_ABI})
     set(RECAST_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/Android/recastnavigation/Recast/Include)
     set(RecastNavitation_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/Android/recastnavigation/build-${ANDROID_ABI})
     find_package(RecastNavigation REQUIRED)
@@ -114,14 +108,22 @@ else()
     set(RecastNavitation_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/RecastBuild)
     find_package(RecastNavigation REQUIRED)
 endif()
+if (WITH_LAME)
+    find_package(LAME REQUIRED)
+endif()
+find_package(SDL2)
+# MlibOpenGL contains glad_gl.cpp and glad_vulkan.cpp
+find_package(Vulkan)
+find_package(OpenCV OPTIONAL_COMPONENTS features2d)
+# The "system" component was required by Asio, but it is header-only now.
+find_package(Boost CONFIG REQUIRED)
+if (WITH_OPENSSL)
+    find_package(OpenSSL REQUIRED)
+endif()
 
 ###########################
 # Add compile definitions #
 ###########################
-
-if (NOT (BUILD_OPENCV AND OpenCV_FOUND))
-    add_compile_definitions(WITHOUT_OPENCV)
-endif()
 
 if (NOT OPENSSL_FOUND)
     add_compile_definitions(WITHOUT_OPENSSL)
@@ -149,6 +151,10 @@ endif()
 
 if (NOT ZLIB_FOUND)
     add_compile_definitions(WITHOUT_ZLIB)
+endif()
+
+if (NOT LAME_FOUND)
+    add_compile_definitions(WITHOUT_LAME)
 endif()
 
 #####################
@@ -189,9 +195,10 @@ endif()
 add_subdirectory(cpp-httplib)
 add_subdirectory(glad)
 add_subdirectory(half)
-add_subdirectory(Mlib)
+add_subdirectory(minimp3)
 add_subdirectory(nv_dds)
 add_subdirectory(poly2tri)
+add_subdirectory(proctree)
 add_subdirectory(stb)
 add_subdirectory(stb_cpp)
 if (NOT ANDROID)
@@ -200,3 +207,4 @@ endif()
 if (BUILD_TRIANGLE)
     add_subdirectory(Triangle)
 endif()
+add_subdirectory(Mlib)

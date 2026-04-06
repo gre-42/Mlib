@@ -1,3 +1,4 @@
+
 #include "Cluster_Meshes.hpp"
 #include <Mlib/Geometry/Colored_Vertex.hpp>
 #include <Mlib/Geometry/Material.hpp>
@@ -29,10 +30,19 @@ std::list<PositionAndMeshes<TPos>> Mlib::cluster_meshes(
         for (const auto& [m, grouped_cvas] : group_meshes_by_material(cvas)) {
             auto& res = c.cvas[m.material.continuous_blending_z_order]
                 .emplace_back(merge_meshes(grouped_cvas, prefix + std::to_string(i++), m.material, m.morphology));
-            if (res->material.aggregate_mode != AggregateMode::NODE_OBJECT) {
-                THROW_OR_ABORT("cluster_meshes: aggregate mode is not \"NODE_OBJECT\"");
+            if (res->meta.material.aggregate_mode != AggregateMode::NODE_OBJECT) {
+                throw std::runtime_error("cluster_meshes: Aggregate mode is not \"NODE_OBJECT\"");
             }
-            res->material.aggregate_mode = AggregateMode::NONE;
+            {
+                auto nelements = res->nelements();
+                if (nelements > 1'000'000) {
+                    for (const auto& cva : grouped_cvas) {
+                        cva->print_stats(lerr().ref());
+                    }
+                    throw std::runtime_error("cluster_meshes: Too many elements. \"" + m.material.identifier() + "\" " + std::to_string(nelements));
+                }
+            }
+            res->meta.material.aggregate_mode = AggregateMode::NONE;
         }
     }
     return result;

@@ -1,9 +1,10 @@
 #include "Blend_Map_Texture_Json.hpp"
-#include <Mlib/Argument_List.hpp>
 #include <Mlib/Geometry/Material/Blend_Map_Texture.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
-#include <Mlib/Render/Rendering_Context.hpp>
-#include <Mlib/Render/Resource_Managers/Rendering_Resources.hpp>
+#include <Mlib/Misc/Argument_List.hpp>
+#include <Mlib/Misc/FPath.hpp>
+#include <Mlib/OpenGL/Rendering_Context.hpp>
+#include <Mlib/OpenGL/Resource_Managers/Rendering_Resources.hpp>
 
 using namespace Mlib;
 
@@ -32,9 +33,9 @@ BlendMapTexture Mlib::blend_map_texture_from_json(const JsonMacroArguments& j)
     auto& rr = RenderingContextStack::primary_rendering_resources();
     auto tex = j.path_or_variable(KnownArgs::texture);
     return {
-        .texture_descriptor = tex.is_variable
-            ? rr.get_texture_descriptor(VariableAndHash{tex.path})
-            : TextureDescriptor{ .color = {.filename = VariableAndHash{tex.path}} },
+        .texture_descriptor = tex.type() == PathType::VARIABLE
+            ? rr.get_texture_descriptor(VariableAndHash{tex.variable()})
+            : TextureDescriptor{ .color = {.filename = tex} },
         .min_height = j.at<float>(KnownArgs::min_height),
         .max_height = j.at<float>(KnownArgs::max_height),
         .distances = j.at<EOrderableFixedArray<float, 4>>(KnownArgs::distances),
@@ -59,7 +60,7 @@ std::vector<BlendMapTexture> Mlib::blend_map_textures_from_json(
     auto& rr = RenderingContextStack::primary_rendering_resources();
     return j.at_vector_non_null_optional<nlohmann::json>(name, [&](const auto& c){
         if (c.type() == nlohmann::detail::value_t::string) {
-            return rr.get_blend_map_texture(c.template get<VariableAndHash<std::string>>());
+            return rr.get_blend_map_texture(FPath{c.template get<std::string>()});
         } else {
             return blend_map_texture_from_json(j.as_child(c));
         }

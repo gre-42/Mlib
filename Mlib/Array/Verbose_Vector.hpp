@@ -1,6 +1,6 @@
 #pragma once
-#include <Mlib/Throw_Or_Abort.hpp>
 #include <cstddef>
+#include <stdexcept>
 #include <string>
 #include <vector>
 
@@ -21,7 +21,7 @@ public:
     }
     decltype(auto) get(size_t i) {
         if (i >= data_.size()) {
-            THROW_OR_ABORT(
+            throw std::runtime_error(
                 name_ + ": index (" + std::to_string(i) +
                 ") is out of bounds (" + std::to_string(data_.size()) + ')');
         }

@@ -1,9 +1,9 @@
-#include <Mlib/Arg_Parser.hpp>
 #include <Mlib/Images/Filters/Gaussian_Filter.hpp>
 #include <Mlib/Images/Make_Seamless.hpp>
 #include <Mlib/Images/Normalize.hpp>
 #include <Mlib/Images/StbImage1.hpp>
-#include <Mlib/Strings/To_Number.hpp>
+#include <Mlib/Io/Arg_Parser.hpp>
+#include <Mlib/Strings/String_View_To_Number.hpp>
 #include <siv/PerlinNoise.hpp>
 
 using namespace Mlib;

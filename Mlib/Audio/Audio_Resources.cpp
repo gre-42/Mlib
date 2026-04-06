@@ -1,12 +1,13 @@
+
 #include "Audio_Resources.hpp"
 #include <Mlib/Audio/Audio_Buffer.hpp>
 #include <Mlib/Audio/Audio_Buffer_Sequence_With_Hysteresis.hpp>
 #include <Mlib/Audio/Audio_Equalizer.hpp>
 #include <Mlib/Audio/Audio_File_Sequence.hpp>
 #include <Mlib/Audio/Audio_Lowpass.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
 #include <list>
 #include <mutex>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -71,7 +72,7 @@ std::shared_ptr<AudioBuffer> AudioResources::get_buffer(const VariableAndHash<st
         return *it;
     }
     auto& fit = buffer_filenames_.get(name);
-    return buffers_.add(name, AudioBuffer::from_wave(fit.filename));
+    return buffers_.add(name, AudioBuffer::from_file(fit.filename));
 }
 
 void AudioResources::preload_buffer(const VariableAndHash<std::string>& name) const {
@@ -86,10 +87,10 @@ void AudioResources::add_buffer_sequence(
     float hysteresis_step)
 {
     if (gain < 0.f) {
-        THROW_OR_ABORT("Attempt to set negative buffer sequence gain");
+        throw std::runtime_error("Attempt to set negative buffer sequence gain");
     }
     if (gain > 1.f) {
-        THROW_OR_ABORT("Attempt to set buffer sequence gain greater than 1");
+        throw std::runtime_error("Attempt to set buffer sequence gain greater than 1");
     }
     std::unique_lock lock{mutex_};
     buffer_sequence_filenames_.add(name, filename, gain, distance_clamping, hysteresis_step);
@@ -116,7 +117,7 @@ std::shared_ptr<AudioBufferSequenceWithHysteresis> AudioResources::get_buffer_se
     std::list<AudioBufferAndFrequency> buffers;
     for (const auto& i : items) {
         buffers.push_back(AudioBufferAndFrequency{
-            .buffer = AudioBuffer::from_wave(i.filename),
+            .buffer = AudioBuffer::from_file(i.filename),
             .frequency = i.frequency});
     }
     auto seq = std::make_shared<AudioBufferSequenceWithHysteresis>(std::vector(buffers.begin(), buffers.end()), it.hysteresis_step);

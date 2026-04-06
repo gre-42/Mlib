@@ -1,10 +1,10 @@
 #pragma once
-#include <Mlib/Default_Uninitialized_Vector.hpp>
-#include <Mlib/Geometry/Intersection/Bounding_Sphere.hpp>
 #include <Mlib/Geometry/Mesh/Load/IRaster.hpp>
 #include <Mlib/Geometry/Mesh/Load/Palette.hpp>
+#include <Mlib/Geometry/Primitives/Bounding_Sphere.hpp>
+#include <Mlib/Hashing/Variable_And_Hash.hpp>
+#include <Mlib/Initialization/Default_Uninitialized_Vector.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
-#include <Mlib/Variable_And_Hash.hpp>
 #include <filesystem>
 #include <iosfwd>
 #include <map>
@@ -18,7 +18,7 @@ namespace Mlib {
 namespace Dff {
 
 #ifdef BIGENDIAN
-#define ASSERTLITTLE THROW_OR_ABORT("Unsafe code on big-endian")
+#define ASSERTLITTLE throw std::runtime_error("Unsafe code on big-endian")
 #else
 #define ASSERTLITTLE
 #endif

@@ -4,13 +4,13 @@
 
 namespace Mlib {
 
-struct OsmResourceConfig;
+struct ShadingFactors;
 enum class PhysicsMaterial: uint32_t;
 
 // See the "plot_fresnel.py" script for tuning these parameters.
 
-Shading material_shading(PhysicsMaterial material, const OsmResourceConfig& config);
-Shading material_shading(const Shading& shading, const OsmResourceConfig& config);
+Shading material_shading(PhysicsMaterial material, const ShadingFactors& factors);
+Shading material_shading(const Shading& shading, const ShadingFactors& factors);
 
 namespace RawShading {
     using O = OrderableFixedArray<float, 3>;

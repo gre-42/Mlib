@@ -1,13 +1,13 @@
 #include "Merge_Textures.hpp"
-#include <Mlib/Argument_List.hpp>
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Geometry/Colored_Vertex.hpp>
 #include <Mlib/Geometry/Mesh/Animated_Colored_Vertex_Arrays.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
-#include <Mlib/Render/Modifiers/Merge_Textures.hpp>
-#include <Mlib/Render/Modifiers/Merged_Textures_Config.hpp>
-#include <Mlib/Render/Rendering_Context.hpp>
+#include <Mlib/Misc/Argument_List.hpp>
+#include <Mlib/OpenGL/Modifiers/Merge_Textures.hpp>
+#include <Mlib/OpenGL/Modifiers/Merged_Textures_Config.hpp>
+#include <Mlib/OpenGL/Rendering_Context.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Interfaces/IScene_Node_Resource.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
@@ -46,7 +46,7 @@ LoadSceneJsonUserFunction MergeBlendedMaterials::json_user_function = [](const L
             .resource_name = args.arguments.at<VariableAndHash<std::string>>(KnownArgs::merged_resource_name),
             .array_name = args.arguments.at<std::string>(KnownArgs::merged_array_name),
             .texture_name = ColormapWithModifiers{
-                .filename = args.arguments.at<VariableAndHash<std::string>>(KnownArgs::merged_texture_name),
+                .filename = FPath::from_variable(args.arguments.at<std::string>(KnownArgs::merged_texture_name)),
                 .color_mode = ColorMode::RGBA,
                 .mipmap_mode = MipmapMode::WITH_MIPMAPS,
                 .magnifying_interpolation_mode = InterpolationMode::LINEAR,

@@ -1,7 +1,7 @@
 #pragma once
-#include <Mlib/Default_Uninitialized_Vector.hpp>
 #include <Mlib/Geometry/Colored_Vertex.hpp>
 #include <Mlib/Geometry/Mesh/Vertex_Normals.hpp>
+#include <Mlib/Initialization/Default_Uninitialized_Vector.hpp>
 #include <Mlib/Math/Orderable_Fixed_Array.hpp>
 #include <list>
 #include <string>

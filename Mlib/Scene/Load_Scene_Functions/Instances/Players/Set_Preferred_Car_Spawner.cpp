@@ -1,16 +1,16 @@
 #include "Set_Preferred_Car_Spawner.hpp"
-#include <Mlib/Argument_List.hpp>
 #include <Mlib/Geometry/Coordinates/Homogeneous.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Macro_Executor/Macro_Line_Executor.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
+#include <Mlib/Misc/Argument_List.hpp>
+#include <Mlib/OpenGL/Rendering_Context.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Engine.hpp>
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Players/Containers/Vehicle_Spawners.hpp>
 #include <Mlib/Players/Scene_Vehicle/Vehicle_Spawner.hpp>
 #include <Mlib/Regex/Regex_Select.hpp>
-#include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Load_Scene_Funcs.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
@@ -92,10 +92,10 @@ void SetPreferredCarSpawner::execute(const LoadSceneJsonUserFunctionArgs& args)
                 return true;
             }
             if (g.action != SpawnAction::DO_IT) {
-                THROW_OR_ABORT("Unknown spawn action: " + std::to_string((int)g.action));
+                throw std::runtime_error("Unknown spawn action: " + std::to_string((int)g.action));
             }
             if (n == nullptr) {
-                THROW_OR_ABORT("Node geometry not set");
+                throw std::runtime_error("Node geometry not set");
             }
             auto z = z3_from_3x3(trafo.R);
             auto rotation = matrix_2_tait_bryan_angles(g.spawn_point.R);

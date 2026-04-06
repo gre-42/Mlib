@@ -14,10 +14,21 @@ public:
         return Mlib::read_string(istr_, len, message, verbosity_);
     }
     template <class T>
-    inline T read_binary(const char* message) {
+    T read_binary(const char* message) {
         return Mlib::read_binary<T>(istr_, message, verbosity_);
     }
-    void seek_relative_positive(std::streamoff amount) {
+    template <class TData>
+    void read_vector(const std::span<TData>& vec, const char* msg, IoVerbosity verbosity) {
+        Mlib::read_vector(istr_, vec, msg, verbosity);
+    }
+    template <class TVec>
+    void read_vector(TVec& vec, const char* msg, IoVerbosity verbosity) {
+        Mlib::read_vector(istr_, vec, msg, verbosity);
+    }
+    inline std::vector<std::byte> read_all_vector(const char* msg) {
+        return Mlib::read_all_vector(istr_, msg, verbosity_);
+    }
+    inline void seek_relative_positive(std::streamoff amount) {
         Mlib::seek_relative_positive(istr_, amount, verbosity_);
     }
 

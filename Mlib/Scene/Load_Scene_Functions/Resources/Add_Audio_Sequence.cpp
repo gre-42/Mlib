@@ -1,11 +1,11 @@
 #include "Add_Audio_Sequence.hpp"
-#include <Mlib/Argument_List.hpp>
 #include <Mlib/Audio/Audio_Resource_Context.hpp>
 #include <Mlib/Audio/Audio_Resources.hpp>
-#include <Mlib/Geometry/Intersection/Interval_Json.hpp>
+#include <Mlib/Geometry/Primitives/Interval_Json.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
+#include <Mlib/Misc/Argument_List.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
-#include <Mlib/Strings/To_Number.hpp>
+#include <Mlib/Strings/String_View_To_Number.hpp>
 
 using namespace Mlib;
 

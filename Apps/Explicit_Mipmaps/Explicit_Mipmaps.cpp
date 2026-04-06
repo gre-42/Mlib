@@ -4,7 +4,7 @@
 #define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h>
 
-#include <Mlib/Render/CHK.hpp>
+#include <Mlib/OpenGL/CHK.hpp>
 #include <iostream>
 
 const GLchar* VERTEX_SHADER_SOURCE =
@@ -43,10 +43,10 @@ int main() {
     GLFW_CHK(glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3));
     GLFW_CHK(glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE));
     GLFW_CHK(glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE));
-    GLFW_CHK(GLFWwindow* window = glfwCreateWindow(size, size, "", nullptr, nullptr));
+    GLFWwindow* window = GLFW_CHK_X(glfwCreateWindow(size, size, "", nullptr, nullptr));
     GLFW_CHK(glfwMakeContextCurrent(window));
     if (int version = gladLoadGL(glfwGetProcAddress); version == 0) {
-        THROW_OR_ABORT("gladLoadGL failed");
+        throw std::runtime_error("gladLoadGL failed");
     }
     CHK(glViewport(0, 0, size, size));
 

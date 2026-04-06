@@ -1,6 +1,6 @@
 #include "Osm_Map_Resource_Rectangle_2D.hpp"
-#include <Mlib/Geometry/Mesh/Lines_To_Rectangles.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_List.hpp>
+#include <Mlib/Geometry/Primitives/Lines_To_Rectangles.hpp>
 #include <Mlib/Math/Lerp.hpp>
 #include <Mlib/Math/Math.hpp>
 #include <Mlib/Os/Os.hpp>
@@ -171,7 +171,7 @@ void OsmRectangle2D::draw_z0(
             RectangleTriangulationMode::DELAUNAY);
     }
     if (b_entrance_type != EntranceType::NONE && c_entrance_type != EntranceType::NONE) {
-        THROW_OR_ABORT("Detected duplicate entrance types");
+        throw std::runtime_error("Detected duplicate entrance types");
     }
     if (tl_entrance != nullptr) {
         if ((b_entrance_type == EntranceType::TUNNEL) ||
@@ -316,11 +316,11 @@ void OsmRectangle2D::draw(
             // } else {
             //     std::stringstream sstr;
             //     sstr << "Position.y not -1 or +1: " << t(i).position;
-            //     THROW_OR_ABORT(sstr.str());
+            //     throw std::runtime_error(sstr.str());
             // }
         }
         if (std::isnan(uv0_y) != std::isnan(uv1_y)) {
-            THROW_OR_ABORT("Inconsistent UV NaN-ness");
+            throw std::runtime_error("Inconsistent UV NaN-ness");
         }
         {
             FixedArray<float, 3, 2> uv = uninitialized;
@@ -335,7 +335,7 @@ void OsmRectangle2D::draw(
                     if ((x < 0) || (x > 1)) {
                         std::stringstream sstr;
                         sstr << "uv.y not between 0 and 1: " << x;
-                        THROW_OR_ABORT(sstr.str());
+                        throw std::runtime_error(sstr.str());
                     }
                     uv(i, 1) = (1.f - x) * uv0_y + x * uv1_y;
                     // if (t(i).uv(1) == 0) {
@@ -345,7 +345,7 @@ void OsmRectangle2D::draw(
                     // } else {
                     //     std::stringstream sstr;
                     //     sstr << "uv.y not 0 or 1: " << t(i).uv;
-                    //     THROW_OR_ABORT(sstr.str());
+                    //     throw std::runtime_error(sstr.str());
                     // }
                 }
             }
@@ -371,7 +371,7 @@ void OsmRectangle2D::draw(
                 std::isnan(racing_line_uv0_dx) ||
                 std::isnan(racing_line_uv1_dx))
             {
-                THROW_OR_ABORT("UV NaN despite racing line");
+                throw std::runtime_error("UV NaN despite racing line");
             }
             FixedArray<float, 3, 2> uv = uninitialized;
             FixedArray<float, 3, 3> color = uninitialized;
@@ -380,7 +380,7 @@ void OsmRectangle2D::draw(
                 if (std::abs(x) > 1) {
                     std::stringstream sstr;
                     sstr << "Position.y not between -1 and +1: " << x;
-                    THROW_OR_ABORT(sstr.str());
+                    throw std::runtime_error(sstr.str());
                 }
                 uv(i, 0) = float(
                     ((1. - x) / 2.) * (0.5 * (1. + t(i).position(0)) * racing_line_uv0_sx + racing_line_uv0_dx) +
@@ -399,7 +399,7 @@ void OsmRectangle2D::draw(
                 // } else {
                 //     std::stringstream sstr;
                 //     sstr << "Position.y not -1 or 1: " << t(i).uv;
-                //     THROW_OR_ABORT(sstr.str());
+                //     throw std::runtime_error(sstr.str());
                 // }
             }
             if (flip_racing_line) {
@@ -479,7 +479,7 @@ FixedArray<CompressedScenePos, 3> WarpedSegment2D::warp(const FixedArray<double,
     if (std::abs(x) > 1) {
         std::stringstream sstr;
         sstr << "Position.y not between -1 and +1: " << x;
-        THROW_OR_ABORT(sstr.str());
+        throw std::runtime_error(sstr.str());
     }
     auto a0 = warp_0(p, scale, width, height);
     auto a1 = warp_1(p, scale, width, height);

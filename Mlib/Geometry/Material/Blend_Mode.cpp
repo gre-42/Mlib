@@ -1,6 +1,7 @@
+
 #include "Blend_Mode.hpp"
-#include <Mlib/Throw_Or_Abort.hpp>
 #include <map>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -18,7 +19,7 @@ BlendMode Mlib::blend_mode_from_string(const std::string& str) {
     };
     auto it = m.find(str);
     if (it == m.end()) {
-        THROW_OR_ABORT("Unknown blend mode: \"" + str + '"');
+        throw std::runtime_error("Unknown blend mode: \"" + str + '"');
     }
     return it->second;
 }

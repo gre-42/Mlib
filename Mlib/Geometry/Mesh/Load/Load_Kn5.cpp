@@ -1,13 +1,14 @@
+
 #include "Load_Kn5.hpp"
 #include <Mlib/Geometry/Mesh/Load/Kn5_Elements.hpp>
 #include <Mlib/Images/Image_Info.hpp>
 #include <Mlib/Io/Binary.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Os/Os.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
 #include <cstdint>
 #include <sstream>
 #include <stb_cpp/stb_image_load.hpp>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -117,7 +118,7 @@ static void readNodes(
 
                 size_t indexCount = ReadUInt32(modelStream);
                 if (indexCount % 3 != 0) {
-                    THROW_OR_ABORT("Index-count not divisible by 3");
+                    throw std::runtime_error("Index-count not divisible by 3");
                 }
                 newNode.triangles.resize(indexCount / 3);
                 ReadVector(modelStream, newNode.triangles, "triangles");
@@ -153,7 +154,7 @@ static void readNodes(
 
                 size_t indexCount = ReadUInt32(modelStream);
                 if (indexCount % 3 != 0) {
-                    THROW_OR_ABORT("Index-count not divisible by 3");
+                    throw std::runtime_error("Index-count not divisible by 3");
                 }
                 newNode.triangles.resize(indexCount / 3);
                 ReadVector(modelStream, newNode.triangles, "triangles");
@@ -260,7 +261,7 @@ kn5Model Mlib::load_kn5(
 {
     auto binStream = create_ifstream(filename, std::ios::binary);
     if (binStream->fail()) {
-        THROW_OR_ABORT("Could not open file \"" + filename + '"');
+        throw std::runtime_error("Could not open file \"" + filename + '"');
     }
     return load_kn5(*binStream, verbose, opts);
 }
@@ -272,7 +273,7 @@ kn5Model Mlib::load_kn5(
 {
     std::string magicNumber = ReadStr(binStream, 6, "magic number");
     if (magicNumber != "sc6969") {
-        THROW_OR_ABORT("Magic number mismatch");
+        throw std::runtime_error("Magic number mismatch");
     }
     kn5Model newModel;
     newModel.version = ReadInt32(binStream);

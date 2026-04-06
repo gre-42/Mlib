@@ -1,6 +1,6 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
-#include <Mlib/Type_Traits/HigherPrecision.hpp>
+#include <Mlib/Type_Traits/Higher_Precision.hpp>
 
 namespace Mlib {
 

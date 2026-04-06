@@ -1,6 +1,7 @@
+
 #include "Frame_Time.hpp"
-#include <Mlib/Throw_Or_Abort.hpp>
 #include <cmath>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -38,7 +39,7 @@ bool FrameTime::is_up_to_date() const {
 
 std::chrono::steady_clock::time_point FrameTime::frame_time() const {
     if (smooth_time_ == std::chrono::steady_clock::time_point()) {
-        THROW_OR_ABORT("FrameTime::frame_time on uninitialized object");
+        throw std::runtime_error("FrameTime::frame_time on uninitialized object");
     }
     return smooth_time_ - delay_;
 }

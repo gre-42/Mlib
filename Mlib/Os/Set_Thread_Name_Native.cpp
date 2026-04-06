@@ -1,5 +1,5 @@
+
 #include "Set_Thread_Name_Native.hpp"
-#include <Mlib/Throw_Or_Abort.hpp>
 #include <stdexcept>
 
 #ifdef __linux__
@@ -10,7 +10,7 @@
 // void Mlib::set_thread_name_native(const std::string& name) {
 //     int rc = pthread_setname_np(pthread_self(), name.c_str());
 //     if (rc != 0) {
-//         THROW_OR_ABORT(std::string("Could not set thread name: ") + strerror(rc));
+//         throw std::runtime_error(std::string("Could not set thread name: ") + strerror(rc));
 //     }
 // }
 
@@ -21,7 +21,7 @@
 
 void Mlib::set_thread_name_native(const std::string& name) {
     if (prctl(PR_SET_NAME, name.c_str()) != 0) {
-        THROW_OR_ABORT(std::string("Could not set thread name: ") + strerror(errno));
+        throw std::runtime_error("Could not set thread name: \"" + name + "\": " + strerror(errno));
     }
 }
 
@@ -39,7 +39,7 @@ void Mlib::set_thread_name_native(const std::string& name) {
         wname.c_str()
     );
     if (FAILED(hr)) {
-        THROW_OR_ABORT("Could not set thread name \"" + name + '"');
+        throw std::runtime_error("Could not set thread name \"" + name + '"');
     }
 }
 

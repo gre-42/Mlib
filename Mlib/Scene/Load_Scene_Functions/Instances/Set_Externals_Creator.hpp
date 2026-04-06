@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Scene/Load_Physics_Scene_Instance_Function.hpp>
+#include <nlohmann/json_fwd.hpp>
 
 namespace Mlib {
 

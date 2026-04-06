@@ -1,6 +1,4 @@
 #include "Create_Visual_Global_Log.hpp"
-#include <Mlib/Argument_List.hpp>
-#include <Mlib/FPath.hpp>
 #include <Mlib/Layout/Layout_Constraints.hpp>
 #include <Mlib/Layout/Widget.hpp>
 #include <Mlib/Macro_Executor/Expression_Watcher.hpp>
@@ -8,13 +6,15 @@
 #include <Mlib/Macro_Executor/Focus_Filter.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Memory/Object_Pool.hpp>
-#include <Mlib/Render/Data_Display/Visual_Global_Log.hpp>
-#include <Mlib/Render/Render_Logics/Render_Logics.hpp>
+#include <Mlib/Misc/Argument_List.hpp>
+#include <Mlib/Misc/FPath.hpp>
+#include <Mlib/OpenGL/Data_Display/Visual_Global_Log.hpp>
+#include <Mlib/OpenGL/Render_Logics/Render_Logics.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Load_Scene_Funcs.hpp>
 #include <Mlib/Scene_Graph/Log_Entry_Severity.hpp>
 #include <Mlib/Strings/String.hpp>
-#include <Mlib/Strings/To_Number.hpp>
+#include <Mlib/Strings/String_View_To_Number.hpp>
 
 using namespace Mlib;
 

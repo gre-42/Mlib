@@ -12,13 +12,12 @@ public:
     : Array<FixedArray<TData, tdata_dimension>>{shape}
     {}
 
-    explicit VectorialPixels(const Array<TData>& ar)
-    : Array<FixedArray<TData, tdata_dimension>>{ar.shape().erased_first()}
-    {
+    static VectorialPixels from_array(const Array<TData>& ar) {
+        auto result = VectorialPixels(ar.shape().erased_first());
         assert(ar.shape(0) == tdata_dimension);
         for (size_t d = 0; d < tdata_dimension; ++d) {
             auto a_fi = ar[d].flat_iterable();
-            auto fi = this->flat_iterable();
+            auto fi = result.flat_iterable();
             auto a_it = a_fi.begin();
             auto it = fi.begin();
             while(a_it != a_fi.end()) {
@@ -27,6 +26,20 @@ public:
                 ++it;
             }
         }
+        return result;
+    }
+
+    static VectorialPixels from_vector(const Array<TData>& ar) {
+        if (ar.ndim() < 1) {
+            throw std::runtime_error("VectorialPixels dimensionality too low");
+        }
+        if (ar.shape(ar.ndim() - 1) != tdata_dimension) {
+            throw std::runtime_error("VectorialPixels data dimension incorrect");
+        }
+        static_assert(sizeof(FixedArray<TData, tdata_dimension>) == tdata_dimension * sizeof(TData));
+        auto result = VectorialPixels(ar.shape().erased_last());
+        std::copy(ar.flat_begin(), ar.flat_end(), (TData*)result.flat_begin());
+        return result;
     }
 
     Array<TData> to_array() const {

@@ -1,5 +1,5 @@
 #pragma once
-#include <Mlib/Geometry/Intersection/Bvh.hpp>
+#include <Mlib/Geometry/Primitives/Bvh.hpp>
 #include <cstdint>
 #include <memory>
 

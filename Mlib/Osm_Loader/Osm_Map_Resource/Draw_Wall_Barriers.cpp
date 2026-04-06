@@ -2,6 +2,8 @@
 #include <Mlib/Geometry/Material.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_List.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>
+#include <Mlib/OpenGL/Rendering_Context.hpp>
+#include <Mlib/OpenGL/Resource_Managers/Rendering_Resources.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Barrier_Style.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Building.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Osm_Map_Resource_Helpers.hpp>
@@ -12,9 +14,7 @@
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Subdivided_Way_Vertex.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Vertex_Height_Binding.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Visit_Line_Segments.hpp>
-#include <Mlib/Render/Rendering_Context.hpp>
-#include <Mlib/Render/Resource_Managers/Rendering_Resources.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
+#include <stdexcept>
 #include <vector>
 
 using namespace Mlib;
@@ -50,12 +50,12 @@ void Mlib::draw_wall_barriers(
             auto get_style = [&]() -> const BarrierStyle& {
                 if (bu.style.empty()) {
                     if (barrier_styles.empty()) {
-                        THROW_OR_ABORT("Barrier textures empty");
+                        throw std::runtime_error("Barrier textures empty");
                     }
                     return barrier_styles_vector.at(bid % barrier_styles.size());
                 } else {
                     if (barrier_styles.find(bu.style) == barrier_styles.end()) {
-                        THROW_OR_ABORT("Could not find barrier style with name \"" + bu.style + '"');
+                        throw std::runtime_error("Could not find barrier style with name \"" + bu.style + '"');
                     }
                     return barrier_styles.at(bu.style);
                 }
@@ -68,16 +68,17 @@ void Mlib::draw_wall_barriers(
                     PhysicsMaterial::ATTR_VISIBLE |
                     PhysicsMaterial::ATTR_COLLIDE |
                     PhysicsMaterial::ATTR_CONCAVE |
-                    PhysicsMaterial::OBJ_CHASSIS)));
+                    PhysicsMaterial::OBJ_CHASSIS),
+                ModifierBacklog{}));
             if (!bs.cull_faces) {
-                tl.morphology += PhysicsMaterial::ATTR_TWO_SIDED;
+                tl.meta.morphology += PhysicsMaterial::ATTR_TWO_SIDED;
             }
-            tl.material.textures_color = { primary_rendering_resources.get_blend_map_texture(bs.texture) };
-            tl.material.blend_mode = bs.blend_mode;
-            tl.material.cull_faces = bs.cull_faces;
-            tl.material.reorient_uv0 = bs.reorient_uv0;
-            tl.material.shading = bs.shading;
-            tl.material.compute_color_mode();
+            tl.meta.material.textures_color = { primary_rendering_resources.get_blend_map_texture(bs.texture) };
+            tl.meta.material.blend_mode = bs.blend_mode;
+            tl.meta.material.cull_faces = bs.cull_faces;
+            tl.meta.material.reorient_uv0 = bs.reorient_uv0;
+            tl.meta.material.shading = bs.shading;
+            tl.meta.material.compute_color_mode();
             FixedArray<float, 3> color = parse_color(bu.way.tags, "color", building_color);
             auto sw = subdivided_way(nodes, bu.way.nd, scale, max_width);
             if (bs.depth == 0.f) {
@@ -198,7 +199,7 @@ void Mlib::draw_wall_barriers(
                                     auto dist = sum(squared(addr2 - source));
                                     auto deviation = std::abs(dist - squared(bs.depth / 2.f));
                                     if (deviation > 1e-2) {
-                                        THROW_OR_ABORT("Incorrect vertex height binding. Deviation: " + std::to_string(deviation));
+                                        throw std::runtime_error("Incorrect vertex height binding. Deviation: " + std::to_string(deviation));
                                     }
                                     vertex_height_bindings[&addr] = source;
                                 };

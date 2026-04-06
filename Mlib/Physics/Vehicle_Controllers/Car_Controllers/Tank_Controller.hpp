@@ -8,7 +8,7 @@ namespace Mlib {
 class TankController final: public RigidBodyVehicleController {
 public:
     explicit TankController(
-        RigidBodyVehicle& rb,
+        const DanglingBaseClassRef<RigidBodyVehicle>& rb,
         const std::vector<size_t>& left_tires,
         const std::vector<size_t>& right_tires,
         float delta_power);

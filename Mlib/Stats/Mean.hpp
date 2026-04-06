@@ -1,9 +1,9 @@
 #pragma once
 #include <Mlib/Array/Consteval_Workaround.hpp>
-#include <Mlib/Assert.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Math.hpp>
 #include <Mlib/Memory/Integral_To_Float.hpp>
+#include <Mlib/Testing/Assert.hpp>
 #include <Mlib/Type_Traits/Get_Scalar.hpp>
 #include <Mlib/Type_Traits/Operand.hpp>
 

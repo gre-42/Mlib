@@ -1,16 +1,17 @@
+
 #include "Collide_Triangle_And_Triangles.hpp"
 #include <Mlib/Geometry/Interfaces/IIntersectable.hpp>
-#include <Mlib/Geometry/Intersection/Collision_Polygon.hpp>
-#include <Mlib/Geometry/Intersection/Collision_Ridge.hpp>
 #include <Mlib/Geometry/Mesh/IIntersectable_Mesh.hpp>
 #include <Mlib/Geometry/Mesh/Typed_Mesh.hpp>
+#include <Mlib/Geometry/Primitives/Collision_Polygon.hpp>
+#include <Mlib/Geometry/Primitives/Collision_Ridge.hpp>
 #include <Mlib/Math/Orderable_Fixed_Array.hpp>
+#include <Mlib/Misc/Pointer_To_Optional.hpp>
 #include <Mlib/Physics/Collision/Collision_Type.hpp>
 #include <Mlib/Physics/Collision/Record/Collision_History.hpp>
 #include <Mlib/Physics/Collision/Record/Handle_Line_Triangle_Intersection.hpp>
 #include <Mlib/Physics/Collision/Record/Intersection_Scene.hpp>
 #include <Mlib/Physics/Smoke_Generation/Surface_Contact_Db.hpp>
-#include <Mlib/Pointer_To_Optional.hpp>
 
 using namespace Mlib;
 
@@ -36,8 +37,8 @@ void Mlib::collide_triangle_and_triangles(
         if ((plane0 != nullptr) && !msh1.mesh->intersects(*plane0)) {
             return;
         }
-        for (const auto& r1 : msh1.mesh->get_ridges_sphere()) {
-            if (!r1.bounding_sphere.intersects(bounding_sphere0)) {
+        for (const auto& e1 : msh1.mesh->get_edges_sphere()) {
+            if (!e1.bounding_sphere.intersects(bounding_sphere0)) {
                 continue;
             }
             handle_line_triangle_intersection(IntersectionScene{
@@ -45,8 +46,8 @@ void Mlib::collide_triangle_and_triangles(
                 .o1 = o1,
                 .mesh0 = msh0,
                 .mesh1 = msh1.mesh.get(),
-                .l1 = std::nullopt,
-                .r1 = r1,
+                .l1 = e1,
+                .r1 = std::nullopt,
                 .q0 = pointer_to_optional(q0),
                 .t0 = pointer_to_optional(t0),
                 .tire_id1 = SIZE_MAX,

@@ -1,6 +1,6 @@
 #include "Clear_Renderable_Instance.hpp"
-#include <Mlib/Argument_List.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
+#include <Mlib/Misc/Argument_List.hpp>
 #include <Mlib/Regex/Regex_Select.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
@@ -29,6 +29,6 @@ ClearRenderableInstance::ClearRenderableInstance(PhysicsScene& physics_scene)
 void ClearRenderableInstance::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     scene
-    .get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::node), DP_LOC)
+    .get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::node), CURRENT_SOURCE_LOCATION)
     ->clear_renderable_instance(VariableAndHash{ args.arguments.at<std::string>(KnownArgs::name) });
 }

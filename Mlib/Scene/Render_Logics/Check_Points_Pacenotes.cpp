@@ -1,5 +1,6 @@
 #include "Check_Points_Pacenotes.hpp"
 #include <Mlib/Geometry/Cameras/Camera.hpp>
+#include <Mlib/Hashing/Variable_And_Hash.hpp>
 #include <Mlib/Layout/ILayout_Pixels.hpp>
 #include <Mlib/Layout/IWidget.hpp>
 #include <Mlib/Layout/Screen_Units.hpp>
@@ -7,12 +8,11 @@
 #include <Mlib/Macro_Executor/Expression_Watcher.hpp>
 #include <Mlib/Macro_Executor/Focus.hpp>
 #include <Mlib/Memory/Object_Pool.hpp>
+#include <Mlib/OpenGL/Render_Setup.hpp>
+#include <Mlib/OpenGL/Text/Charsets.hpp>
+#include <Mlib/OpenGL/Text/Text_Interpolation_Mode.hpp>
 #include <Mlib/Physics/Advance_Times/Check_Points.hpp>
-#include <Mlib/Render/Render_Setup.hpp>
-#include <Mlib/Render/Text/Charsets.hpp>
-#include <Mlib/Render/Text/Text_Interpolation_Mode.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
-#include <Mlib/Variable_And_Hash.hpp>
 #include <mutex>
 
 using namespace Mlib;
@@ -47,7 +47,7 @@ CheckPointsPacenotes::CheckPointsPacenotes(
     , text_{ ascii, std::move(ttf_filename), font_color }
     , display_{ gallery, text_, pictures_left, pictures_right }
     , focus_filter_{ std::move(focus_filter) }
-    , on_destroy_check_points_{ check_points->on_destroy, CURRENT_SOURCE_LOCATION }
+    , on_destroy_check_points_{ check_points->on_destroy.deflt, CURRENT_SOURCE_LOCATION }
 {
     pacenotes_.reserve(pacenotes_maximum_number);
     on_destroy_check_points_.add([this](){ global_object_pool.remove(this); }, CURRENT_SOURCE_LOCATION);

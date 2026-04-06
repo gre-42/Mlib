@@ -12,7 +12,7 @@ enum class SteeringType;
 class RigidBodyVehicleController: public virtual DanglingBaseClass, public virtual DestructionNotifier {
 public:
     RigidBodyVehicleController(
-        RigidBodyVehicle& rb,
+        const DanglingBaseClassRef<RigidBodyVehicle>& rb,
         SteeringType steering_type);
     virtual ~RigidBodyVehicleController();
     void step_on_brakes(float relaxation);
@@ -32,7 +32,7 @@ public:
     virtual void apply();
     const SteeringType steering_type;
 protected:
-    RigidBodyVehicle& rb_;
+    DanglingBaseClassRef<RigidBodyVehicle> rb_;
     float surface_power_;
     float drive_relaxation_;
     float steer_angle_;

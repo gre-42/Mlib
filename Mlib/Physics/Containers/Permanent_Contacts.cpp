@@ -1,7 +1,8 @@
+
 #include "Permanent_Contacts.hpp"
 #include <Mlib/Os/Os.hpp>
 #include <Mlib/Physics/Collision/Record/IPermanent_Contact.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -11,7 +12,7 @@ PermanentContacts::~PermanentContacts() = default;
 
 void PermanentContacts::insert(std::unique_ptr<IPermanentContact>&& permanent_contact) {
     if (!permanent_contacts_.insert(std::move(permanent_contact)).second) {
-        THROW_OR_ABORT("Could not insert permanent contact");
+        throw std::runtime_error("Could not insert permanent contact");
     }
 }
 
@@ -25,9 +26,10 @@ void PermanentContacts::remove(const IPermanentContact& permanent_contact) {
 
 void PermanentContacts::extend_contact_infos(
     const PhysicsEngineConfig& cfg,
+    const PhysicsPhase& phase,
     std::list<std::unique_ptr<IContactInfo>>& contact_infos) const
 {
     for (const auto& pc : permanent_contacts_) {
-        pc->extend_contact_infos(cfg, contact_infos);
+        pc->extend_contact_infos(cfg, phase, contact_infos);
     }
 }

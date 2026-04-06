@@ -1,9 +1,10 @@
+
 #include "Transformed_IIntersectable.hpp"
-#include <Mlib/Geometry/Intersection/Aabb_Sphere_Intersection.hpp>
-#include <Mlib/Geometry/Intersection/Bounding_Sphere.hpp>
-#include <Mlib/Geometry/Intersection/Collision_Line.hpp>
-#include <Mlib/Geometry/Intersection/Collision_Polygon.hpp>
-#include <Mlib/Geometry/Intersection/Collision_Ridge.hpp>
+#include <Mlib/Geometry/Primitives/Bounding_Sphere.hpp>
+#include <Mlib/Geometry/Primitives/Collision_Line.hpp>
+#include <Mlib/Geometry/Primitives/Collision_Polygon.hpp>
+#include <Mlib/Geometry/Primitives/Collision_Ridge.hpp>
+#include <Mlib/Geometry/Primitives/Intersectors/Aabb_Sphere_Intersection.hpp>
 
 #ifdef __GNUC__
     #pragma GCC push_options
@@ -30,7 +31,7 @@ AxisAlignedBoundingBox<CompressedScenePos, 3> TransformedIntersectable::aabb() c
 std::shared_ptr<IIntersectable> TransformedIntersectable::sweep(
     const AxisAlignedBoundingBox<CompressedScenePos, 3>& aabb) const
 {
-    THROW_OR_ABORT("TransformedIntersectable cannot sweep");
+    throw std::runtime_error("TransformedIntersectable cannot sweep");
 }
 
 bool TransformedIntersectable::touches(
@@ -78,7 +79,7 @@ bool TransformedIntersectable::touches(
 {
     auto* o = dynamic_cast<const TransformedIntersectable*>(&intersectable);
     if (o == nullptr) {
-        THROW_OR_ABORT("TransformedIntersectable can only intersect children of the same type (0)");
+        throw std::runtime_error("TransformedIntersectable can only intersect children of the same type (0)");
     }
     ScenePos c_overlap;
     FixedArray<ScenePos, 3> c_intersection_point = uninitialized;
@@ -105,7 +106,7 @@ bool TransformedIntersectable::touches(
     FixedArray<ScenePos, 3>& intersection_point,
     FixedArray<SceneDir, 3>& normal) const
 {
-    THROW_OR_ABORT("TransformedIIntersectable received additional transformation matrix (0)");
+    throw std::runtime_error("TransformedIIntersectable received additional transformation matrix (0)");
 }
 
 bool TransformedIntersectable::can_spawn_at(
@@ -125,7 +126,7 @@ bool TransformedIntersectable::can_spawn_at(
 {
     auto* o = dynamic_cast<const TransformedIntersectable*>(&intersectable);
     if (o == nullptr) {
-        THROW_OR_ABORT("TransformedIntersectable can only intersect children of the same type (1)");
+        throw std::runtime_error("TransformedIntersectable can only intersect children of the same type (1)");
     }
     return child_->can_spawn_at(
         *o->child_,
@@ -136,7 +137,7 @@ bool TransformedIntersectable::can_spawn_at(
     const IIntersectable& intersectable,
     const TransformationMatrix<float, ScenePos, 3>& trafo) const
 {
-    THROW_OR_ABORT("TransformedIIntersectable received additional transformation matrix (1)");
+    throw std::runtime_error("TransformedIIntersectable received additional transformation matrix (1)");
 }
 
 template <class TOther>

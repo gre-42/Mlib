@@ -1,5 +1,5 @@
 #pragma once
-#include <Mlib/Geometry/Intersection/Bvh.hpp>
+#include <Mlib/Geometry/Primitives/Bvh.hpp>
 #include <Mlib/Map/String_With_Hash_Unordered_Map.hpp>
 #include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/Regex/Regex_Select.hpp>
@@ -11,7 +11,6 @@
 namespace Mlib {
 
 class SceneNode;
-class DeleteNodeMutex;
 class Scene;
 struct RootNodeInfo;
 enum class SceneNodeState;
@@ -26,7 +25,7 @@ class RootNodes {
     RootNodes& operator = (const RootNodes&) = delete;
 public:
     using DefaultNodeMapValueType = DefaultNodesMap::value_type;
-    explicit RootNodes(Scene& scene);
+    explicit RootNodes(const DanglingBaseClassRef<Scene>& scene);
     ~RootNodes();
     DefaultNodesMap& default_nodes();
     bool visit_all(const std::function<bool(const DanglingBaseClassRef<const SceneNode>&)>& op) const;
@@ -49,7 +48,7 @@ public:
     void print_trash_can_references() const;
     void print(std::ostream& ostr) const;
 private:
-    Scene& scene_;
+    DanglingBaseClassRef<Scene> scene_;
     DefaultNodesMap invisible_static_nodes_;
     DefaultNodesMap default_nodes_map_;             // Contains nodes that are large or moving
     SmallStaticNodesBvh small_static_nodes_bvh_;    // Contains nodes that are small and static

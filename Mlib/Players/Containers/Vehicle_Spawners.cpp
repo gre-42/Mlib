@@ -1,8 +1,8 @@
 #include "Vehicle_Spawners.hpp"
 #include <Mlib/Players/Advance_Times/Player.hpp>
 #include <Mlib/Players/Scene_Vehicle/Vehicle_Spawner.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
 #include <iomanip>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -15,14 +15,14 @@ VehicleSpawners::~VehicleSpawners() = default;
 VehicleSpawner& VehicleSpawners::get(const VariableAndHash<std::string>& name) {
     auto it = spawners_.find(name);
     if (it == spawners_.end()) {
-        THROW_OR_ABORT("Could not find vehicle spawner with name \"" + *name + '"');
+        throw std::runtime_error("Could not find vehicle spawner with name \"" + *name + '"');
     }
     return *it->second;
 }
 
 void VehicleSpawners::set(const VariableAndHash<std::string>& name, std::unique_ptr<VehicleSpawner>&& spawner) {
     if (!spawners_.try_emplace(name, std::move(spawner)).second) {
-        THROW_OR_ABORT("Vehicle spawner with name \"" + *name + "\" already exists");
+        throw std::runtime_error("Vehicle spawner with name \"" + *name + "\" already exists");
     }
 }
 

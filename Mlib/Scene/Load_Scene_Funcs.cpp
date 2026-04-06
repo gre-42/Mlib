@@ -1,5 +1,5 @@
 #include "Load_Scene_Funcs.hpp"
-#include <Mlib/Throw_Or_Abort.hpp>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -10,6 +10,6 @@ std::map<std::string, LoadSceneJsonUserFunction>& Mlib::LoadSceneFuncs::json_use
 
 void Mlib::LoadSceneFuncs::register_json_user_function(std::string key, LoadSceneJsonUserFunction function) {
     if (!json_user_functions().try_emplace(std::move(key), std::move(function)).second) {
-        THROW_OR_ABORT("Multiple functions with name \"" + key + "\" exist");
+        throw std::runtime_error("Multiple functions with name \"" + key + "\" exist");
     }
 }

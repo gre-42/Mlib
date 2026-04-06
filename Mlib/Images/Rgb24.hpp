@@ -1,6 +1,5 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
 #include <cmath>
 #include <stdexcept>
 #include <string>
@@ -9,7 +8,7 @@ namespace Mlib {
 
 #pragma warning( push )
 #pragma warning( disable : 4103 )
-#include <Mlib/Packed_Begin.hpp>
+#include <Mlib/Misc/Packed_Begin.hpp>
 // 24-bit, 3 * 8 bits
 struct Rgb24 {
     unsigned char r;
@@ -54,10 +53,10 @@ struct Rgb24 {
         }
         // consider using grayscale.clip(0, 1) if this fails
         if (grayscale < 0) {
-            THROW_OR_ABORT("PpmImage::from_float_grayscale received " + std::to_string(grayscale) + "<0");
+            throw std::runtime_error("from_float_grayscale received " + std::to_string(grayscale) + "<0");
         }
         if (grayscale > 1) {
-            THROW_OR_ABORT("PpmImage::from_float_grayscale received " + std::to_string(grayscale) + ">1");
+            throw std::runtime_error("from_float_grayscale received " + std::to_string(grayscale) + ">1");
         }
         return Rgb24{
             (unsigned char)(std::round(grayscale * 255)),
@@ -67,15 +66,15 @@ struct Rgb24 {
     static inline Rgb24 from_float_rgb(float r, float g, float b) {
         if (std::isnan(r) || std::isnan(g) || std::isnan(b)) {
             if (!std::isnan(r) || !std::isnan(g) || !std::isnan(b)) {
-                THROW_OR_ABORT("PpmImage::from_float_rgb received inconsistent NANs");
+                throw std::runtime_error("from_float_rgb received inconsistent NANs");
             }
             return Rgb24::nan();
         }
         if (r < 0.f || g < 0.f || b < 0.f) {
-            THROW_OR_ABORT("PpmImage::from_float_rgb received value < 0");
+            throw std::runtime_error("from_float_rgb received value < 0");
         }
         if (r > 1.f || g > 1.f || b > 1.f) {
-            THROW_OR_ABORT("PpmImage::from_float_rgb received value > 1");
+            throw std::runtime_error("from_float_rgb received value > 1");
         }
         return Rgb24{
             (unsigned char)(std::round(r * 255)),
@@ -86,7 +85,7 @@ struct Rgb24 {
         return from_float_rgb(rgb(0), rgb(1), rgb(2));
     }
 } PACKED;
-#include <Mlib/Packed_End.hpp>
+#include <Mlib/Misc/Packed_End.hpp>
 #pragma warning ( pop )
 
 static_assert(sizeof(Rgb24) == 3);

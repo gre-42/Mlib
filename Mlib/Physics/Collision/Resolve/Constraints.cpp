@@ -1,17 +1,18 @@
 #include "Constraints.hpp"
 #include <Mlib/Geometry/Arbitrary_Orthogonal.hpp>
-#include <Mlib/Geometry/Vector_At_Position.hpp>
-#include <Mlib/Math/Signed_Min.hpp>
+#include <Mlib/Geometry/Primitives/Vector_At_Position.hpp>
+#include <Mlib/Math/Sigmoid/Signed_Min.hpp>
 #include <Mlib/Physics/Actuators/Tire.hpp>
 #include <Mlib/Physics/Actuators/Velocity_Classification.hpp>
 #include <Mlib/Physics/Collision/Pacejkas_Magic_Formula.hpp>
 #include <Mlib/Physics/Collision/Power_To_Force.hpp>
 #include <Mlib/Physics/Collision/Resolve/Handle_Tire_Triangle_Intersection.hpp>
-#include <Mlib/Physics/Physics_Engine/Physics_Engine_Config.hpp>
+#include <Mlib/Physics/Collision/Resolve/Tire_Contact_Slip.hpp>
 #include <Mlib/Physics/Rigid_Body/Attached_Wheel.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Pulses.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
+#include <Mlib/Scene_Config/Physics_Engine_Config.hpp>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -230,7 +231,7 @@ void FrictionContactInfo1::solve(float dt, float relaxation, size_t iteration, s
                     ortho_clamping_max_l2_);
         }
         if (std::isnan(stiction_coefficient_) != std::isnan(friction_coefficient_)) {
-            THROW_OR_ABORT("Differing stiction/friction NaN-ness");
+            throw std::runtime_error("Differing stiction/friction NaN-ness");
         }
         if (!std::isnan(stiction_coefficient_)) {
             if (float ll2 = sum(squared(lambda_total_)); ll2 > squared(max_impulse_stiction())) {
@@ -268,7 +269,7 @@ void FrictionContactInfo1::set_clamping(
         (std::abs(clamping_min) > float{ 1e4 }) ||
         (std::abs(clamping_max) > float{ 1e4 }))
     {
-        THROW_OR_ABORT("FrictionContactInfo1::set_clamping: clamping out of bounds");
+        throw std::runtime_error("FrictionContactInfo1::set_clamping: clamping out of bounds");
     }
     clamping_direction_ = clamping_direction;
     clamping_min_ = clamping_min;
@@ -357,7 +358,7 @@ TireContactInfo1::TireContactInfo1(
     , rb_{ rb }
     , P_{ rb.consume_tire_surface_power(
         tire_id,
-        std::abs(v0) > cfg.hand_brake_velocity
+        std::abs(v0) > cfg.parking_brake_velocity
             ? VelocityClassification::FAST
             : VelocityClassification::SLOW) }
     , tire_id_{ tire_id }
@@ -376,7 +377,7 @@ void TireContactInfo1::solve(float dt, float relaxation, size_t iteration, size_
     }
     const auto& tire = rb_.tires_.get(tire_id_);
 
-    if (tire.rbp != nullptr) {
+    if (tire.rb != nullptr) {
         rb_.update_tire_angular_velocity(tire_id_);
     }
     float force_min;
@@ -396,8 +397,7 @@ void TireContactInfo1::solve(float dt, float relaxation, size_t iteration, size_
         force_min,
         force_max);
 
-    float tv_len = rb_.get_tire_angular_velocity(tire_id_) * rb_.get_tire_radius(tire_id_);
-    FixedArray<float, 3> tv = n3_ * tv_len;
+    TireContactSlip tcs{rb_, tire_id_, fci_.normal_impulse().normal.casted<float>(), n3_, b0_};
 
     // {
     //     FixedArray<float, 3> v3 = rb_.rbp_.velocity_at_position(rb_.get_abs_tire_contact_position(tire_id_)) - v;
@@ -411,33 +411,11 @@ void TireContactInfo1::solve(float dt, float relaxation, size_t iteration, size_
     // x3 -= fci_.normal_impulse().normal * dot0d(fci_.normal_impulse().normal, x3);
     // x3 /= std::sqrt(sum(squared(x3)));
     // fci_.set_b(v - 1000.f * x3 * tire.accel_x * cfg_.dt_substeps());
-    if (tire.rbp == nullptr) {
-        fci_.set_b(b0_ - tv);
+    if (tire.rb == nullptr) {
+        fci_.set_b(b0_ - tcs.tv);
     }
-    FixedArray<float, 3> vv = rb_.get_velocity_at_tire_contact(fci_.normal_impulse().normal.casted<float>(), tire_id_) - b0_;
-    float slip;
-    {
-        // slip = ((vehicle velocity=vvx) + (tire velocity=tvx)) / (vehicle velocity=vvx)
-        float vvx = dot0d(vv, n3_);
-        float tvx = dot0d(tv, n3_);
-        slip = (vvx + tvx) / std::max(cfg_.hand_brake_velocity, std::abs(vvx));
-    }
-    float sin_lateral_slip_angle;
-    // Reference implementation (sin_lateral_slip_angle):
-    // {
-    //     float vvx = dot0d(vv, n3_);
-    //     auto vvt = vv - n3_ * vvx;
-    //     auto vvv = vvt + n3_ * (std::abs(vvx) + std::max(0.f, cfg_.hand_brake_velocity - std::abs(vvx)));
-    //     auto vvn = vvv / std::sqrt(sum(squared(vvv)));
-    //     sin_lateral_slip_angle = std::sqrt(std::max(0.f, 1 - squared(dot0d(vvn, n3_))));
-    // }
-    // Optimized implementation (sin_lateral_slip_angle):
-    {
-        float vvx = dot0d(vv, n3_);
-        auto ccc = std::max(0.f, sum(squared(vv)) - squared(vvx));
-        auto bbb = squared(std::abs(vvx) + std::max(0.f, cfg_.hand_brake_velocity - std::abs(vvx)));
-        sin_lateral_slip_angle = std::sqrt(std::max(0.f, 1 - bbb / (ccc + bbb)));
-    }
+    float slip = tcs.slip(cfg_.parking_brake_velocity);
+    float sin_lateral_slip_angle = tcs.sin_lateral_slip_angle(cfg_.parking_brake_velocity);
     {
         float ef = std::min(cfg_.max_extra_friction, sin_lateral_slip_angle);
         float ew = std::min(cfg_.max_extra_w, sin_lateral_slip_angle);
@@ -448,19 +426,20 @@ void TireContactInfo1::solve(float dt, float relaxation, size_t iteration, size_
         tire.stiction_coefficient(
             -fci_.normal_impulse().lambda_total / cfg_.dt_substeps(phase_)) *
         surface_stiction_factor_;
-    FixedArray<float, 2> r = tire.magic_formula(
+    FixedArray<float, 2> r01 = tire.magic_formula(
         {
             slip,
             std::asin(sin_lateral_slip_angle)},
-        cfg_.no_slip ? PacejkasMagicFormulaMode::NO_SLIP : PacejkasMagicFormulaMode::STANDARD) * lambda_max;
-    // lerr() << tire_id_ << " | " << r;
+        cfg_.no_slip ? PacejkasMagicFormulaMode::NO_SLIP : PacejkasMagicFormulaMode::STANDARD);
+    FixedArray<float, 2> r = r01 * lambda_max;
+    // linfo() << "rb " << &rb_ << " tire " << tire_id_ << " r01 " << r01 << " - r " << r << " | Fmin " << force_min << " | Fmax " << force_max;
     fci_.set_clamping(
         n3_,
         signed_min(force_min * cfg_.dt_substeps(phase_), std::abs(r(0))),
         signed_min(force_max * cfg_.dt_substeps(phase_), std::abs(r(0))),
         std::abs(r(1)));
     fci_.solve(dt, relaxation, iteration, niterations);
-    if (tire.rbp != nullptr) {
+    if (tire.rb != nullptr) {
         rb_.update_tire_angular_velocity(tire_id_);
     }
 }

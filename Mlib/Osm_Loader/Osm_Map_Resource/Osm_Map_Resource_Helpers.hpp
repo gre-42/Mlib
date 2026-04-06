@@ -1,16 +1,16 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
-#include <Mlib/Default_Uninitialized_Vector.hpp>
 #include <Mlib/Geometry/Material/Aggregate_Mode.hpp>
+#include <Mlib/Initialization/Default_Uninitialized_Vector.hpp>
 #include <Mlib/Math/Interp_Fwd.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Elements.hpp>
 #include <Mlib/Scene_Config/Scene_Precision.hpp>
 #include <Mlib/Stats/Random_Number_Generators.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
 #include <cstdint>
 #include <list>
 #include <map>
 #include <set>
+#include <stdexcept>
 
 namespace Mlib {
 
@@ -166,7 +166,7 @@ public:
             triangle(2).position};
         auto it = tags_.find(key);
         if (it != tags_.end()) {
-            THROW_OR_ABORT("Tag already set");
+            throw std::runtime_error("Tag already set");
             tags_.insert(key, tag);
         }
     }

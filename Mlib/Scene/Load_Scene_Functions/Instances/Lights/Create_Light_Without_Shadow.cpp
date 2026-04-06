@@ -1,13 +1,12 @@
 #include "Create_Light_Without_Shadow.hpp"
-#include <Mlib/Argument_List.hpp>
 #include <Mlib/Geometry/Material/Render_Pass.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
+#include <Mlib/Misc/Argument_List.hpp>
+#include <Mlib/OpenGL/Render_Logics/Lightmap_Logic.hpp>
+#include <Mlib/OpenGL/Render_Logics/Render_Logics.hpp>
 #include <Mlib/Regex/Regex_Select.hpp>
-#include <Mlib/Render/Render_Logics/Lightmap_Logic.hpp>
-#include <Mlib/Render/Render_Logics/Render_Logics.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
-#include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
 #include <Mlib/Scene_Graph/Elements/Light.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 
@@ -38,7 +37,7 @@ CreateLightWithoutShadow::CreateLightWithoutShadow(PhysicsScene& physics_scene)
 void CreateLightWithoutShadow::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     auto node_name = args.arguments.at<VariableAndHash<std::string>>(KnownArgs::node);
-    DanglingBaseClassRef<SceneNode> node = scene.get_node(node_name, DP_LOC);
+    DanglingBaseClassRef<SceneNode> node = scene.get_node(node_name, CURRENT_SOURCE_LOCATION);
     node->add_light(std::make_unique<Light>(Light{
         .ambient = args.arguments.at<EFixedArray<float, 3>>(KnownArgs::ambient),
         .diffuse = args.arguments.at<EFixedArray<float, 3>>(KnownArgs::diffuse),

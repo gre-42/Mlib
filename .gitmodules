@@ -7,6 +7,3 @@
 [submodule "zlib"]
 	path = zlib
 	url = https://github.com/madler/zlib.git
-[submodule "eve"]
-	path = eve
-	url = https://github.com/gre-42/eve.git

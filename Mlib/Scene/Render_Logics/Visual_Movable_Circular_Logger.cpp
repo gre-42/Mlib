@@ -1,24 +1,24 @@
 #include "Visual_Movable_Circular_Logger.hpp"
 #include <Mlib/Geometry/Cameras/Camera.hpp>
+#include <Mlib/Hashing/Variable_And_Hash.hpp>
 #include <Mlib/Layout/ILayout_Pixels.hpp>
 #include <Mlib/Layout/IWidget.hpp>
 #include <Mlib/Layout/Screen_Units.hpp>
-#include <Mlib/Log.hpp>
 #include <Mlib/Macro_Executor/Expression_Watcher.hpp>
-#include <Mlib/Render/Render_Config.hpp>
-#include <Mlib/Render/Render_Setup.hpp>
-#include <Mlib/Render/Rendering_Context.hpp>
-#include <Mlib/Render/Resource_Managers/Rendering_Resources.hpp>
-#include <Mlib/Render/Text/Charsets.hpp>
-#include <Mlib/Render/Text/Text_Interpolation_Mode.hpp>
+#include <Mlib/Misc/Log.hpp>
+#include <Mlib/OpenGL/Render_Config.hpp>
+#include <Mlib/OpenGL/Render_Setup.hpp>
+#include <Mlib/OpenGL/Rendering_Context.hpp>
+#include <Mlib/OpenGL/Resource_Managers/Rendering_Resources.hpp>
+#include <Mlib/OpenGL/Text/Charsets.hpp>
+#include <Mlib/OpenGL/Text/Text_Interpolation_Mode.hpp>
 #include <Mlib/Scene_Graph/Rendered_Scene_Descriptor.hpp>
 #include <Mlib/Scene_Graph/Status_Writer.hpp>
-#include <Mlib/Variable_And_Hash.hpp>
 
 using namespace Mlib;
 
 VisualMovableCircularLogger::VisualMovableCircularLogger(
-    StatusWriter& status_writer,
+    const DanglingBaseClassRef<StatusWriter>& status_writer,
     StatusComponents log_components,
     std::unique_ptr<ExpressionWatcher>&& ew,
     std::string charset,
@@ -47,12 +47,16 @@ VisualMovableCircularLogger::VisualMovableCircularLogger(
     , pointer_length_{ pointer_length }
     , widget_{ std::move(widget) }
     , value_{ NAN }
-{}
+{
+    if (!contains_all(status_writer_->status_component(), log_components_)) {
+        throw std::runtime_error("Status component not supported: " + std::to_string((int)log_components_));
+    }
+}
 
 VisualMovableCircularLogger::~VisualMovableCircularLogger() = default;
 
 void VisualMovableCircularLogger::advance_time(float dt, const StaticWorld& world) {
-    value_ = status_writer_.get_value(log_components_);
+    value_ = status_writer_->get_value(log_components_);
 }
 
 void VisualMovableCircularLogger::render(

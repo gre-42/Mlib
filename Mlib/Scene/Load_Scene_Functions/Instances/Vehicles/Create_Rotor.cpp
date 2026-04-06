@@ -1,8 +1,8 @@
 #include "Create_Rotor.hpp"
-#include <Mlib/Argument_List.hpp>
 #include <Mlib/Components/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
+#include <Mlib/Misc/Argument_List.hpp>
 #include <Mlib/Physics/Actuators/Rotor.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Physics/Units.hpp>
@@ -11,7 +11,7 @@
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Strings/String.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -69,18 +69,18 @@ CreateRotor::CreateRotor(PhysicsScene& physics_scene)
 
 void CreateRotor::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    DanglingBaseClassRef<SceneNode> vehicle_node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::vehicle), DP_LOC);
-    auto& vehicle_rb = get_rigid_body_vehicle(vehicle_node);
+    DanglingBaseClassRef<SceneNode> vehicle_node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::vehicle), CURRENT_SOURCE_LOCATION);
+    auto vehicle_rb = get_rigid_body_vehicle(vehicle_node.get(), CURRENT_SOURCE_LOCATION);
     FixedArray<float, 3> vehicle_mount_0(NAN);
     FixedArray<float, 3> vehicle_mount_1(NAN);
     FixedArray<float, 3> blades_mount_0(NAN);
     FixedArray<float, 3> blades_mount_1(NAN);
-    RigidBodyVehicle* blades_rb = nullptr;
+    DanglingBaseClassPtr<RigidBodyVehicle> blades_rb = nullptr;
     if (args.arguments.contains(KnownArgs::blades)) {
         auto c = args.arguments.child(KnownArgs::blades);
         auto blades_node_name = c.at<VariableAndHash<std::string>>(BladesArgs::node);
-        DanglingBaseClassRef<SceneNode> blades_node = scene.get_node(blades_node_name, DP_LOC);
-        blades_rb = &get_rigid_body_vehicle(blades_node);
+        DanglingBaseClassRef<SceneNode> blades_node = scene.get_node(blades_node_name, CURRENT_SOURCE_LOCATION);
+        blades_rb = get_rigid_body_vehicle(blades_node.get(), CURRENT_SOURCE_LOCATION).ptr();
         vehicle_mount_0 = c.at<EFixedArray<float, 3>>(BladesArgs::vehicle_mount_0);
         vehicle_mount_1 = c.at<EFixedArray<float, 3>>(BladesArgs::vehicle_mount_1);
         blades_mount_0 = c.at<EFixedArray<float, 3>>(BladesArgs::blades_mount_0);
@@ -112,7 +112,7 @@ void CreateRotor::execute(const LoadSceneJsonUserFunctionArgs& args)
         pid_params(1),
         pid_params(2),
         pid_child.has_value() ? pid_child->at<float>(PidArgs::alpha) : NAN};
-    vehicle_rb.rotors_.add(
+    vehicle_rb->rotors_.add(
         rotor_id,
         std::make_unique<Rotor>(
             engine,
@@ -135,5 +135,5 @@ void CreateRotor::execute(const LoadSceneJsonUserFunctionArgs& args)
             vehicle_mount_1,
             blades_mount_0,
             blades_mount_1,
-            (blades_rb == nullptr) ? nullptr : &blades_rb->rbp_));
+            blades_rb));
 }

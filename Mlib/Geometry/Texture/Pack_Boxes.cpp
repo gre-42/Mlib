@@ -1,11 +1,12 @@
+
 #include "Pack_Boxes.hpp"
 
 using namespace Mlib;
 
-using NamedSize = std::pair<const VariableAndHash<std::string>*, const FixedArray<int, 2>*>;
+using NamedSize = std::pair<const FPath*, const FixedArray<int, 2>*>;
 
 std::list<std::list<NameAndBoxPosition>> Mlib::pack_boxes(
-    const std::unordered_map<VariableAndHash<std::string>, FixedArray<int, 2>>& box_sizes,
+    const std::unordered_map<FPath, FixedArray<int, 2>>& box_sizes,
     const FixedArray<int, 2>& container_size)
 {
     if (box_sizes.empty()) {
@@ -26,10 +27,10 @@ std::list<std::list<NameAndBoxPosition>> Mlib::pack_boxes(
         const auto& name = *name_ptr;
         const auto& size = *size_ptr;
         if (size(0) > container_size(0)) {
-            THROW_OR_ABORT("Width of box is too large");
+            throw std::runtime_error("Width of box is too large");
         }
         if (size(1) > container_size(1)) {
-            THROW_OR_ABORT("Height of box is too large");
+            throw std::runtime_error("Height of box is too large");
         }
         if (left + size(0) > container_size(0)) {
             left = 0;

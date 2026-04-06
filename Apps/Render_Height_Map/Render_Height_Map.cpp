@@ -1,22 +1,24 @@
-#include <Mlib/Arg_Parser.hpp>
 #include <Mlib/Geography/Heightmaps/Load_Heightmap_From_File.hpp>
 #include <Mlib/Geometry/Coordinates/Normalized_Points_Fixed.hpp>
 #include <Mlib/Images/Coordinates.hpp>
 #include <Mlib/Images/Pgm_Image.hpp>
-#include <Mlib/Images/Resample/Pyramid.hpp>
 #include <Mlib/Images/StbImage3.hpp>
+#include <Mlib/Images/Transform/Downsample.hpp>
+#include <Mlib/Io/Arg_Parser.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
-#include <Mlib/Render/Input_Config.hpp>
-#include <Mlib/Render/Normal_Type.hpp>
-#include <Mlib/Render/Render.hpp>
-#include <Mlib/Render/Render_Config.hpp>
-#include <Mlib/Render/Render_Height_Map.hpp>
-#include <Mlib/Render/Rendering_Context.hpp>
-#include <Mlib/Render/Resource_Managers/Particle_Resources.hpp>
-#include <Mlib/Render/Resource_Managers/Rendering_Resources.hpp>
-#include <Mlib/Render/Resource_Managers/Trail_Resources.hpp>
+#include <Mlib/OpenGL/Input_Config.hpp>
+#include <Mlib/OpenGL/Normal_Type.hpp>
+#include <Mlib/OpenGL/OpenGL_Object_Factory.hpp>
+#include <Mlib/OpenGL/Render.hpp>
+#include <Mlib/OpenGL/Render_Config.hpp>
+#include <Mlib/OpenGL/Render_Height_Map.hpp>
+#include <Mlib/OpenGL/Renderables/OpenGL_Vertex_Array_Renderer.hpp>
+#include <Mlib/OpenGL/Rendering_Context.hpp>
+#include <Mlib/OpenGL/Resource_Managers/Particle_Resources.hpp>
+#include <Mlib/OpenGL/Resource_Managers/Rendering_Resources.hpp>
+#include <Mlib/OpenGL/Resource_Managers/Trail_Resources.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
-#include <Mlib/Strings/To_Number.hpp>
+#include <Mlib/Strings/String_View_To_Number.hpp>
 #include <Mlib/Threads/Realtime_Threads.hpp>
 #include <Mlib/Threads/Termination_Manager.hpp>
 #include <Mlib/Time/Fps/Fixed_Time_Sleeper.hpp>
@@ -67,17 +69,21 @@ int main(int argc, char** argv) {
             set_fps,
             []() { return std::chrono::steady_clock::now(); }
         };
-        SceneNodeResources scene_node_resources;
+        OpenGLObjectFactory gpu_object_factory;
+        SceneNodeResources scene_node_resources{gpu_object_factory};
         ParticleResources particle_resources;
         TrailResources trail_resources;
         RenderingResources rendering_resources{
             "primary_rendering_resources",
             16 };
+        OpenGLVertexArrayRenderer gpu_vertex_array_renderer{rendering_resources, rendering_resources};
         RenderingContext primary_rendering_context{
             .scene_node_resources = scene_node_resources,
             .particle_resources = particle_resources,
             .trail_resources = trail_resources,
             .rendering_resources = rendering_resources,
+            .gpu_object_factory = gpu_object_factory,
+            .gpu_vertex_array_renderer = gpu_vertex_array_renderer,
             .z_order = 0 };
         RenderingContextGuard rcg{ primary_rendering_context };
         render_height_map(

@@ -1,6 +1,6 @@
 #pragma once
-#include <Mlib/Throw_Or_Abort.hpp>
 #include <chrono>
+#include <stdexcept>
 
 namespace Mlib {
 
@@ -21,19 +21,19 @@ public:
         , status_{ status }
     {
         if (!initialized()) {
-            THROW_OR_ABORT("TimeAndPause not initialized");
+            throw std::runtime_error("TimeAndPause not initialized");
         }
     }
     ~TimeAndPause() = default;
     std::chrono::steady_clock::time_point time() const {
         if (!initialized()) {
-            THROW_OR_ABORT("TimeAndPause not initialized");
+            throw std::runtime_error("TimeAndPause not initialized");
         }
         return time_;
     }
     PauseStatus status() const {
         if (!initialized()) {
-            THROW_OR_ABORT("TimeAndPause not initialized");
+            throw std::runtime_error("TimeAndPause not initialized");
         }
         return status_;
     }

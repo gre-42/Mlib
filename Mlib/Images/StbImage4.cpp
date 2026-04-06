@@ -1,11 +1,12 @@
+
 #include "StbImage4.hpp"
 #include <Mlib/Images/Draw_Generic.hpp>
 #include <Mlib/Images/StbImage3.hpp>
 #include <Mlib/Stats/Min_Max.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
 #include <fstream>
 #include <stb/stb_image_write.h>
 #include <stb_cpp/stb_image_load.hpp>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -29,7 +30,7 @@ StbImage4::StbImage4(const ArrayShape& shape)
 
 StbImage4::StbImage4(const StbInfo<uint8_t>& stb_info) {
     if (stb_info.nrChannels != 4) {
-        THROW_OR_ABORT("Image does not have 4 channels");
+        throw std::runtime_error("Image does not have 4 channels");
     }
     resize((size_t)stb_info.height, (size_t)stb_info.width);
     memcpy(flat_begin(), stb_info.data(), nbytes());
@@ -117,7 +118,7 @@ void StbImage4::draw_streamline(
 StbImage4 StbImage4::load_from_file(const std::string& filename) {
     auto image = stb_load8(filename, FlipMode::NONE);
     if (image.nrChannels != 4) {
-        THROW_OR_ABORT("Image does not have 4 channels: \"" + filename + '"');
+        throw std::runtime_error("Image does not have 4 channels: \"" + filename + '"');
     }
     return StbImage4{image};
 }
@@ -125,19 +126,19 @@ StbImage4 StbImage4::load_from_file(const std::string& filename) {
 void StbImage4::save_to_file(const std::string& filename, int jpg_quality) const {
     if (filename.ends_with(".png")) {
         if (!stbi_write_png(filename.c_str(), (int)shape(1), (int)shape(0), 4, flat_begin(), 0)) {
-            THROW_OR_ABORT("Could not save to file " + filename);
+            throw std::runtime_error("Could not save to file: \"" + filename + '"');
         }
     } else {
-        THROW_OR_ABORT("Filename does not have png extension: \"" + filename + '"');
+        throw std::runtime_error("Filename does not have png extension: \"" + filename + '"');
     }
 }
 
 StbImage4 StbImage4::from_float_rgba(const Array<float>& rgba) {
     if (rgba.ndim() != 3) {
-        THROW_OR_ABORT("from_float: rgba image does not have ndim=4, but " + rgba.shape().str());
+        throw std::runtime_error("from_float: rgba image does not have ndim=4, but " + rgba.shape().str());
     }
     if (rgba.shape(0) != 4) {
-        THROW_OR_ABORT("from_float: rgba image does not have shape(0)=4, but " + rgba.shape().str());
+        throw std::runtime_error("from_float: rgba image does not have shape(0)=4, but " + rgba.shape().str());
     }
     StbImage4 result(rgba.shape().erased_first());
     Array<Rgba32> f = result.flattened();
@@ -170,10 +171,10 @@ Array<float> StbImage4::to_float_rgba() const {
 
 StbImage3 StbImage4::to_rgb() const {
     if (!initialized()) {
-        THROW_OR_ABORT("RGBA image not initialized");
+        throw std::runtime_error("RGBA image not initialized");
     }
     if (ndim() != 2) {
-        THROW_OR_ABORT("RGBA image does not have 2 dimensions");
+        throw std::runtime_error("RGBA image does not have 2 dimensions");
     }
     StbImage3 result(FixedArray<size_t, 2>{ shape(0), shape(1) });
     Array<Rgba32> t = flattened();

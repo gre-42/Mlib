@@ -1,19 +1,20 @@
+
 #include "Collide_Triangle_And_Intersectables.hpp"
 #include <Mlib/Geometry/Interfaces/IIntersectable.hpp>
-#include <Mlib/Geometry/Intersection/Collision_Line.hpp>
-#include <Mlib/Geometry/Intersection/Collision_Polygon.hpp>
 #include <Mlib/Geometry/Mesh/IIntersectable_Mesh.hpp>
 #include <Mlib/Geometry/Mesh/Typed_Mesh.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>
+#include <Mlib/Geometry/Primitives/Collision_Line.hpp>
+#include <Mlib/Geometry/Primitives/Collision_Polygon.hpp>
 #include <Mlib/Iterator/Enumerate.hpp>
+#include <Mlib/Misc/Pointer_To_Optional.hpp>
 #include <Mlib/Physics/Collision/Collision_Type.hpp>
 #include <Mlib/Physics/Collision/Record/Collision_History.hpp>
 #include <Mlib/Physics/Collision/Record/Handle_Line_Triangle_Intersection.hpp>
 #include <Mlib/Physics/Collision/Record/Intersection_Scene.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Physics/Smoke_Generation/Surface_Contact_Db.hpp>
-#include <Mlib/Pointer_To_Optional.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
+#include <stdexcept>
 
 using namespace Mlib;
 

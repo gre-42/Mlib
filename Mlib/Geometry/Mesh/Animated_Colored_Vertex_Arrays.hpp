@@ -1,5 +1,5 @@
 #pragma once
-#include <Mlib/Default_Uninitialized_Vector.hpp>
+#include <Mlib/Initialization/Default_Uninitialized_Vector.hpp>
 #include <Mlib/Map/String_With_Hash_Unordered_Map.hpp>
 #include <Mlib/Scene_Config/Scene_Precision.hpp>
 #include <cstddef>
@@ -57,7 +57,7 @@ struct AnimatedColoredVertexArrays {
         RectangleTriangulationMode mode,
         DelaunayErrorBehavior error_behavior) const;
     void check_consistency() const;
-    void print(std::ostream& ostr) const;
+    void print_stats(std::ostream& ostr) const;
 
     template <class Archive>
     void serialize(Archive& archive) {

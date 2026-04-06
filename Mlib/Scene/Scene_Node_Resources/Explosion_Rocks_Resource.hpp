@@ -1,7 +1,7 @@
 #pragma once
 #include <Mlib/Array/Array_Forward.hpp>
-#include <Mlib/Geometry/Intersection/Interval.hpp>
-#include <Mlib/Render/Renderables/Resource_Cycle.hpp>
+#include <Mlib/Geometry/Primitives/Interval.hpp>
+#include <Mlib/OpenGL/Renderables/Resource_Cycle.hpp>
 #include <Mlib/Scene_Graph/Interfaces/IScene_Node_Resource.hpp>
 #include <Mlib/Stats/Fast_Random_Number_Generators.hpp>
 #include <Mlib/Stats/Random_Unit_Vector_Generator.hpp>

@@ -1,7 +1,6 @@
 #pragma once
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Orderable_Fixed_Array.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
 #include <cmath>
 #include <compare>
 #include <stdexcept>
@@ -20,17 +19,17 @@ public:
     {}
     VertexHeightBinding& operator = (const FixedArray<TPos, 2>& v) {
         if (!is_undefined()) {
-            THROW_OR_ABORT("Height binding already set");
+            throw std::runtime_error("Height binding already set");
         }
         if (any(v == UNDEFINED)) {
-            THROW_OR_ABORT("Height binding value forbidden");
+            throw std::runtime_error("Height binding value forbidden");
         }
         value_ = v;
         return *this;
     }
     std::strong_ordering operator <=> (const FixedArray<TPos, 2>& v) const {
         if (is_undefined()) {
-            THROW_OR_ABORT("Height binding undefined");
+            throw std::runtime_error("Height binding undefined");
         }
         return make_orderable(value_) <=> make_orderable(v);
     }

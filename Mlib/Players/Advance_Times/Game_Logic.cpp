@@ -1,10 +1,11 @@
 #include "Game_Logic.hpp"
-#include <Mlib/Env.hpp>
+#include <Mlib/Os/Env.hpp>
 #include <Mlib/Physics/Containers/Advance_Times.hpp>
 #include <Mlib/Players/Containers/Players.hpp>
 #include <Mlib/Players/Containers/Vehicle_Spawners.hpp>
 #include <Mlib/Players/Game_Logic/Game_Logic_Config.hpp>
 #include <Mlib/Players/Game_Logic/Supply_Depots.hpp>
+#include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <iostream>
 
 using namespace Mlib;
@@ -17,13 +18,12 @@ GameLogic::GameLogic(
     VehicleSpawners& vehicle_spawners,
     Players& players,
     SupplyDepots& supply_depots,
-    DeleteNodeMutex& delete_node_mutex,
     std::function<void()> setup_new_round)
-    : spawner{ vehicle_spawners, players, cfg, delete_node_mutex, scene }
+    : spawner{ vehicle_spawners, players, cfg, scene }
     , supply_depots_waypoints_collection{ supply_depots, navigate }
-    , bystanders{ vehicle_spawners, players, scene, spawner, cfg }
+    , bystanders{ vehicle_spawners, players, spawner, cfg }
     , team_deathmatch{ vehicle_spawners, players, spawner, std::move(setup_new_round) }
-    , vehicle_changer{ vehicle_spawners, delete_node_mutex }
+    , vehicle_changer{ vehicle_spawners, scene.delete_node_mutex }
     , vehicle_spawners_{ vehicle_spawners }
     , players_{ players }
     , supply_depots_{ supply_depots }

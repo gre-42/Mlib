@@ -1,5 +1,5 @@
 #pragma once
-#include <Mlib/Geometry/Intersection/Bvh_Fwd.hpp>
+#include <Mlib/Geometry/Primitives/Bvh_Fwd.hpp>
 #include <Mlib/Scene_Config/Scene_Precision.hpp>
 #include <cstddef>
 #include <functional>
@@ -23,7 +23,6 @@ struct GameLogicConfig;
 class Scene;
 class SceneNode;
 class TeamDeathmatch;
-class DeleteNodeMutex;
 template <class TDir, class TPos, size_t n>
 class TransformationMatrix;
 template <class TData, size_t tndim>
@@ -38,7 +37,6 @@ public:
         VehicleSpawners& vehicle_spawners,
         Players& players,
         GameLogicConfig& cfg,
-        DeleteNodeMutex& delete_node_mutex,
         Scene& scene);
     ~Spawner();
     void set_spawn_points(
@@ -62,7 +60,6 @@ private:
     VehicleSpawners& vehicle_spawners_;
     Players& players_;
     GameLogicConfig& cfg_;
-    DeleteNodeMutex& delete_node_mutex_;
     Scene& scene_;
     size_t ntry_spawns_;
     size_t ndelete_;

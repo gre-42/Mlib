@@ -16,7 +16,7 @@ using namespace Mlib;
 Gun::Gun(
     AdvanceTimes& advance_times,
     float cool_down,
-    RigidBodyVehicle& parent_rb,
+    const DanglingBaseClassRef<RigidBodyVehicle>& parent_rb,
     const DanglingBaseClassRef<SceneNode>& node,
     const DanglingBaseClassPtr<SceneNode>& punch_angle_node,
     const BulletProperties& bullet_properties,
@@ -32,8 +32,7 @@ Gun::Gun(
     std::function<FixedArray<float, 3>(bool shooting)> punch_angle_rng,
     std::function<void(const StaticWorld&)> generate_muzzle_flash)
     : advance_times_{ advance_times }
-    , parent_rb_{ parent_rb }
-    , node_{ node.ptr() }
+    , parent_rb_{ parent_rb.ptr() }
     , punch_angle_node_{ punch_angle_node }
     , ypln_node_{ nullptr }
     , bullet_properties_{ bullet_properties }
@@ -50,20 +49,25 @@ Gun::Gun(
     , punch_angle_{ 0.f, 0.f, 0.f }
     , punch_angle_rng_{ std::move(punch_angle_rng) }
     , generate_muzzle_flash_{ std::move(generate_muzzle_flash) }
-    , node_on_clear_{ node->on_clear, CURRENT_SOURCE_LOCATION }
+    , node_on_clear_{ node->on_clear.early, CURRENT_SOURCE_LOCATION }
 {
-    if (punch_angle_node != nullptr) {
-        punch_angle_node_on_clear_.emplace(punch_angle_node->on_clear, CURRENT_SOURCE_LOCATION);
-        punch_angle_node_on_clear_->add(
-            [this]() { punch_angle_node_ = nullptr; },
+    try {
+        if (punch_angle_node != nullptr) {
+            punch_angle_node_on_clear_.emplace(punch_angle_node->on_clear.early, CURRENT_SOURCE_LOCATION);
+            punch_angle_node_on_clear_->add(
+                [this]() { punch_angle_node_ = nullptr; },
+                CURRENT_SOURCE_LOCATION);
+        }
+        node->set_absolute_observer({*this, CURRENT_SOURCE_LOCATION});
+        dgs_.add([node]() { if (node->has_absolute_observer()) { node->clear_absolute_observer(); }});
+        advance_times_.add_advance_time({ *this, CURRENT_SOURCE_LOCATION }, CURRENT_SOURCE_LOCATION);
+        node_on_clear_.add(
+            [this]() { parent_rb_ = nullptr; global_object_pool.remove(this); },
             CURRENT_SOURCE_LOCATION);
+    } catch (...) {
+        on_destroy.clear();
+        throw;
     }
-    node->set_absolute_observer(*this);
-    dgs_.add([node]() { if (node->has_absolute_observer()) { node->clear_absolute_observer(); }});
-    advance_times_.add_advance_time({ *this, CURRENT_SOURCE_LOCATION }, CURRENT_SOURCE_LOCATION);
-    node_on_clear_.add(
-        [this]() { node_ = nullptr; global_object_pool.remove(this); },
-        CURRENT_SOURCE_LOCATION);
 }
 
 Gun::~Gun() {
@@ -81,10 +85,16 @@ void Gun::advance_time(float dt, const StaticWorld& world) {
 }
 
 size_t Gun::nbullets_available() const {
-    return parent_rb_.inventory_.navailable(ammo_type_);
+    if (parent_rb_ == nullptr) {
+        throw std::runtime_error("Gun::nbullets_available called on destroyed object");
+    }
+    return parent_rb_->inventory_.navailable(ammo_type_);
 }
 
 bool Gun::maybe_generate_bullet(const StaticWorld& world) {
+    if (parent_rb_ == nullptr) {
+        throw std::runtime_error("Gun::maybe_generate_bullet called on destroyed object");
+    }
     if (is_none_gun()) {
         return false;
     }
@@ -103,7 +113,7 @@ bool Gun::maybe_generate_bullet(const StaticWorld& world) {
     {
         return false;
     }
-    parent_rb_.inventory_.take(ammo_type_, 1);
+    parent_rb_->inventory_.take(ammo_type_, 1);
     time_since_last_shot_ = 0;
     generate_bullet();
     if (generate_muzzle_flash_) {
@@ -119,13 +129,16 @@ bool Gun::maybe_generate_bullet(const StaticWorld& world) {
 }
 
 void Gun::generate_bullet() {
+    if (parent_rb_ == nullptr) {
+        throw std::runtime_error("Gun::generate_bullet called on destroyed object");
+    }
     auto bullet_velocity =
         - bullet_properties_.velocity * z3_from_3x3(absolute_model_matrix_.R)
-        + parent_rb_.velocity_at_position(absolute_model_matrix_.t);
+        + parent_rb_->velocity_at_position(absolute_model_matrix_.t);
     bullet_generator_.generate_bullet(
         bullet_properties_,
         generate_smart_bullet_,
-        &parent_rb_,
+        parent_rb_,
         absolute_model_matrix_,
         bullet_velocity,
         fixed_zeros<float, 3>(), // angular_velocities
@@ -135,18 +148,21 @@ void Gun::generate_bullet() {
 
 void Gun::generate_muzzle_flash(const StaticWorld& world) {
     if (!generate_muzzle_flash_) {
-        THROW_OR_ABORT("Muzzle flash hider not set");
+        throw std::runtime_error("Muzzle flash hider not set");
     }
     generate_muzzle_flash_(world);
 }
 
 void Gun::generate_shot_audio() {
+    if (parent_rb_ == nullptr) {
+        throw std::runtime_error("Gun::generate_shot_audio called on destroyed object");
+    }
     if (!generate_shot_audio_) {
-        THROW_OR_ABORT("Shot audio not set");
+        throw std::runtime_error("Shot audio not set");
     }
     generate_shot_audio_({
         absolute_model_matrix_.t,
-        parent_rb_.velocity_at_position(absolute_model_matrix_.t)});
+        parent_rb_->velocity_at_position(absolute_model_matrix_.t)});
 }
 
 void Gun::set_absolute_model_matrix(const TransformationMatrix<float, ScenePos, 3>& absolute_model_matrix)
@@ -154,7 +170,10 @@ void Gun::set_absolute_model_matrix(const TransformationMatrix<float, ScenePos, 
     absolute_model_matrix_ = absolute_model_matrix;
 }
 
-void Gun::trigger(IPlayer* player, ITeam* team) {
+void Gun::trigger(
+    const DanglingBaseClassPtr<IPlayer>& player,
+    const DanglingBaseClassPtr<ITeam>& team)
+{
     triggered_ = true;
     player_ = player;
     team_ = team;
@@ -182,10 +201,10 @@ float Gun::bullet_damage() const {
 
 void Gun::set_ypln_node(const DanglingBaseClassRef<SceneNode>& node) {
     if (ypln_node_ != nullptr) {
-        THROW_OR_ABORT("YPLN node already set");
+        throw std::runtime_error("YPLN node already set");
     }
     ypln_node_ = node.ptr();
-    ypln_node_on_clear_.emplace(ypln_node_->on_clear, CURRENT_SOURCE_LOCATION);
+    ypln_node_on_clear_.emplace(ypln_node_->on_clear.early, CURRENT_SOURCE_LOCATION);
     punch_angle_node_on_clear_->add(
         [this]() { ypln_node_ = nullptr; },
         CURRENT_SOURCE_LOCATION);

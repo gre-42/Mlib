@@ -1,11 +1,11 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Array/Fixed_Array_Hash.hpp>
-#include <Mlib/Default_Uninitialized.hpp>
-#include <Mlib/Default_Uninitialized_Element.hpp>
-#include <Mlib/Hash.hpp>
+#include <Mlib/Hashing/Hash.hpp>
+#include <Mlib/Hashing/Std_Hash.hpp>
+#include <Mlib/Initialization/Default_Uninitialized.hpp>
+#include <Mlib/Initialization/Default_Uninitialized_Element.hpp>
 #include <Mlib/Math/Math.hpp>
-#include <Mlib/Std_Hash.hpp>
 #include <compare>
 #include <concepts>
 
@@ -76,6 +76,12 @@ public:
     bool all_equal(const TData& d) const {
         const Base& a = *this;
         return all(a == d);
+    }
+    FixedArray<TData, tshape0, tshape...>& array() {
+        return *this;
+    }
+    const FixedArray<TData, tshape0, tshape...>& array() const {
+        return *this;
     }
 };
 

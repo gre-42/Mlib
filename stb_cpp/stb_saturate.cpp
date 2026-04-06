@@ -1,3 +1,4 @@
+
 void stb_saturate(
     unsigned char* grayscale,
     unsigned char* colored,

@@ -1,11 +1,11 @@
-#include <Mlib/Argument_List.hpp>
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Geometry/Colored_Vertex.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array_Filter.hpp>
 #include <Mlib/Geometry/Mesh/Up_Axis.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
-#include <Mlib/Render/Modifiers/Replace_Terrain_Material.hpp>
-#include <Mlib/Render/Rendering_Context.hpp>
+#include <Mlib/Misc/Argument_List.hpp>
+#include <Mlib/OpenGL/Modifiers/Replace_Terrain_Material.hpp>
+#include <Mlib/OpenGL/Rendering_Context.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Load_Scene_Funcs.hpp>
 #include <Mlib/Scene_Graph/Interfaces/IScene_Node_Resource.hpp>
@@ -35,12 +35,9 @@ struct RegisterJsonUserFunction {
 
                 auto& scene_node_resources = RenderingContextStack::primary_scene_node_resources();
                 auto& rendering_resources = RenderingContextStack::primary_rendering_resources();
-                auto fpathps = [&args](std::string_view name){
-                    return args.arguments.pathes_or_variables(name, [](const FPath& v) { return VariableAndHash{ v.path }; });
-                };
                 replace_terrain_material(
                     args.arguments.at<VariableAndHash<std::string>>(KnownArgs::resource_name),
-                    fpathps(KnownArgs::textures),
+                    args.arguments.pathes_or_variables(KnownArgs::textures),
                     args.arguments.at<double>(KnownArgs::scale, 1.),
                     args.arguments.at<double>(KnownArgs::uv_scale),
                     args.arguments.at<double>(KnownArgs::uv_period),

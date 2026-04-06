@@ -1,7 +1,7 @@
 #pragma once
-#include <Mlib/FPath.hpp>
 #include <Mlib/Json/Json_View.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
+#include <Mlib/Misc/FPath.hpp>
+#include <filesystem>
 #include <functional>
 #include <iosfwd>
 #include <list>
@@ -15,7 +15,7 @@
 
 namespace Mlib {
 
-struct FPath;
+class FPath;
 class AssetReferences;
 
 enum class SubstitutionMode {
@@ -45,10 +45,10 @@ public:
     void insert_json(const nlohmann::json& j, Filter::With, const std::set<std::string>& with);
     void insert_json(const nlohmann::json& j, Filter::Without, const std::set<std::string>& without);
     void insert_json(std::string_view key, nlohmann::json j);
-    void set_fpathes(std::function<std::list<std::string>(const std::filesystem::path& f)> fpathes);
+    void set_fpathes(std::function<std::list<std::filesystem::path>(const std::filesystem::path& f)> fpathes);
     void set_fpath(std::function<FPath(const std::filesystem::path& f)> fpath);
-    void set_spath(std::function<std::string(const std::filesystem::path& f)> spath);
-    std::list<std::string> fpathes(const std::filesystem::path& f) const;
+    void set_spath(std::function<std::filesystem::path(const std::filesystem::path& f)> spath);
+    std::list<std::filesystem::path> fpathes(const std::filesystem::path& f) const;
     FPath fpath(const std::filesystem::path& f) const;
     std::string spath(const std::filesystem::path& f) const;
     std::string get_multiline_string() const;
@@ -64,18 +64,25 @@ public:
     auto pathes_or_variables(std::string_view name, const TOperation& op) const {
         auto el = at(name);
         if (el.type() != nlohmann::detail::value_t::array) {
-            THROW_OR_ABORT("Not an array: \"" + std::string{ name } + '"');
+            throw std::runtime_error("Not an array: \"" + std::string{ name } + '"');
         }
-        return Mlib::get_vector<std::string>(el, [this, &op](std::string_view s){return op(fpath_(s));});
+        return Mlib::get_vector<std::string>(el, [this, &op](const std::string& s){return op(fpath_(s));});
     }
-    std::list<std::string> path_list(std::string_view name) const;
+    template <class TOperation>
+    auto try_pathes_or_variables(std::string_view name, const TOperation& op) const {
+        if (!contains(name)) {
+            return decltype(pathes_or_variables(name, op)){};
+        }
+        return pathes_or_variables(name, op);
+    }
+    std::list<std::filesystem::path> path_list(std::string_view name) const;
     std::string spath(std::string_view name) const;
     std::vector<JsonMacroArguments> children(std::string_view name) const;
     template <class TOperation>
     auto children(std::string_view name, const TOperation& op) const {
         auto el = at(name);
         if (el.type() != nlohmann::detail::value_t::array) {
-            THROW_OR_ABORT("Not an array: \"" + std::string{ name } + '"');
+            throw std::runtime_error("Not an array: \"" + std::string{ name } + '"');
         }
         try {
             return Mlib::get_vector<nlohmann::json>(el, [this, &op](const nlohmann::json& c){return op(as_child(c));});
@@ -113,9 +120,9 @@ private:
     template <JsonKey Key>
     void set_generic(const Key& key, nlohmann::json value);
     nlohmann::json j_;
-    std::function<std::list<std::string>(const std::filesystem::path& f)> fpathes_;
+    std::function<std::list<std::filesystem::path>(const std::filesystem::path& f)> fpathes_;
     std::function<FPath(const std::filesystem::path& f)> fpath_;
-    std::function<std::string(const std::filesystem::path& f)> spath_;
+    std::function<std::filesystem::path(const std::filesystem::path& f)> spath_;
 };
 
 }

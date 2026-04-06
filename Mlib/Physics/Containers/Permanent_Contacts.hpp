@@ -8,6 +8,7 @@ namespace Mlib {
 class IPermanentContact;
 class IContactInfo;
 struct PhysicsEngineConfig;
+struct PhysicsPhase;
 
 struct PermanentContactComparator {
     using is_transparent = void;
@@ -30,6 +31,7 @@ public:
     void remove(const IPermanentContact& permanent_contact);
     void extend_contact_infos(
         const PhysicsEngineConfig& cfg,
+        const PhysicsPhase& phase,
         std::list<std::unique_ptr<IContactInfo>>& contact_infos) const;
 private:
     std::set<std::unique_ptr<IPermanentContact>, PermanentContactComparator> permanent_contacts_;

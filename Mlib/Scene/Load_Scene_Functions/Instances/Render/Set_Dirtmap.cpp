@@ -1,9 +1,9 @@
 #include "Set_Dirtmap.hpp"
-#include <Mlib/Argument_List.hpp>
 #include <Mlib/Geometry/Material/Wrap_Mode.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
-#include <Mlib/Render/Render_Logic.hpp>
-#include <Mlib/Render/Resource_Managers/Rendering_Resources.hpp>
+#include <Mlib/Misc/Argument_List.hpp>
+#include <Mlib/OpenGL/Render_Logic.hpp>
+#include <Mlib/OpenGL/Resource_Managers/Rendering_Resources.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 
 using namespace Mlib;
@@ -25,14 +25,14 @@ LoadSceneJsonUserFunction SetDirtmap::json_user_function = [](const LoadSceneJso
 };
 
 SetDirtmap::SetDirtmap(PhysicsScene& physics_scene) 
-: LoadPhysicsSceneInstanceFunction{ physics_scene }
+    : LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
 static const auto dirtmap_name = VariableAndHash<std::string>("dirtmap");
 
 void SetDirtmap::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    rendering_resources.set_alias(dirtmap_name, VariableAndHash{ args.arguments.path_or_variable(KnownArgs::filename).path });
+    rendering_resources.set_alias(dirtmap_name, args.arguments.path_or_variable(KnownArgs::filename));
     rendering_resources.set_offset(dirtmap_name, args.arguments.at<float>(KnownArgs::offset));
     rendering_resources.set_discreteness(dirtmap_name, args.arguments.at<float>(KnownArgs::discreteness));
     rendering_resources.set_scale(dirtmap_name, args.arguments.at<float>(KnownArgs::scale));

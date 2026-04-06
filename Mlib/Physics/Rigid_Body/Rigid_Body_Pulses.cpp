@@ -1,6 +1,7 @@
+
 #include "Rigid_Body_Pulses.hpp"
 #include <Mlib/Geometry/Coordinates/Homogeneous.hpp>
-#include <Mlib/Geometry/Vector_At_Position.hpp>
+#include <Mlib/Geometry/Primitives/Vector_At_Position.hpp>
 #include <Mlib/Math/Fixed_Cholesky.hpp>
 #include <Mlib/Math/Fixed_Inverse.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
@@ -9,7 +10,7 @@
 #include <Mlib/Physics/Physics_Engine/Penetration_Limits.hpp>
 #include <Mlib/Physics/Rotating_Frame.hpp>
 #include <Mlib/Physics/Units.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -171,7 +172,7 @@ void RigidBodyPulses::integrate_impulse(const VectorAtPosition<float, ScenePos, 
 {
     auto thr = 10e3f * kg * 1000.f * kph;
     if (any(abs(J.vector) > thr)) {
-        THROW_OR_ABORT((std::stringstream() << "J.vector out of bounds: " << J.vector << ". Threshold: " << thr).str());
+        throw std::runtime_error((std::stringstream() << "J.vector out of bounds: " << J.vector << ". Threshold: " << thr).str());
     }
     integrate_delta_v(J.vector / mass_, dt);
     integrate_delta_angular_momentum(cross((J.position - abs_com_).casted<float>(), J.vector), extra_w, dt);

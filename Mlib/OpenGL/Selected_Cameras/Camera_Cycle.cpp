@@ -1,0 +1,46 @@
+
+#include "Camera_Cycle.hpp"
+#include <Mlib/OpenGL/Selected_Cameras/Selected_Cameras.hpp>
+#include <mutex>
+#include <stdexcept>
+
+using namespace Mlib;
+
+CameraCycle::CameraCycle(
+    SelectedCameras& selected_cameras,
+    std::vector<VariableAndHash<std::string>> camera_names)
+    : selected_cameras_{ selected_cameras }
+    , camera_names_{ std::move(camera_names) }
+{}
+
+CameraCycle::~CameraCycle() = default;
+
+bool CameraCycle::contains(const VariableAndHash<std::string>& name) const {
+    std::shared_lock lock{ mutex_ };
+    return std::find(camera_names_.begin(), camera_names_.end(), name) != camera_names_.end();
+}
+
+void CameraCycle::set_camera_names(std::vector<VariableAndHash<std::string>> cameras) {
+    std::scoped_lock lock{ mutex_ };
+    camera_names_ = std::move(cameras);
+}
+
+void CameraCycle::cycle_camera() {
+    std::shared_lock cycle_lock{ mutex_ };
+    if (camera_names_.empty()) {
+        // throw std::runtime_error("Camera cycle is empty");
+        return;
+    }
+    auto it = std::find(camera_names_.begin(), camera_names_.end(), selected_cameras_.camera_node_name());
+    if (it == camera_names_.end() || ++it == camera_names_.end()) {
+        it = camera_names_.begin();
+    }
+    selected_cameras_.set_camera_node_name(*it);
+}
+
+void CameraCycle::print(std::ostream& ostr) const {
+    std::shared_lock cycle_lock{ mutex_ };
+    for (const auto& n : camera_names_)     {
+        ostr << "- " << *n << '\n';
+    }
+}

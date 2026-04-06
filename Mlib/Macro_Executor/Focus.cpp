@@ -1,3 +1,4 @@
+
 #include "Focus.hpp"
 #include <Mlib/Iterator/Enumerate.hpp>
 #include <Mlib/Json/Base.hpp>
@@ -6,9 +7,9 @@
 #include <Mlib/Regex/Regex_Select.hpp>
 #include <Mlib/Strings/String.hpp>
 #include <Mlib/Threads/Containers/Thread_Safe_String_Json.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
 #include <algorithm>
 #include <iostream>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -65,7 +66,7 @@ void Focuses::replace(Focus old, Focus new_) {
     mutex.is_owner();
     auto it = std::find(focus_stack_.begin(), focus_stack_.end(), old);
     if (it == focus_stack_.end()) {
-        THROW_OR_ABORT("Could not find focus with value \"" + focus_to_string(old) + '"');
+        throw std::runtime_error("Could not find focus with value \"" + focus_to_string(old) + '"');
     }
     *it = new_;
     compute_focus_merge();
@@ -81,7 +82,7 @@ void Focuses::remove(Focus focus) {
     mutex.is_owner();
     auto it = std::find(focus_stack_.begin(), focus_stack_.end(), focus);
     if (it == focus_stack_.end()) {
-        THROW_OR_ABORT("Could not find focus with value \"" + focus_to_string(focus) + '"');
+        throw std::runtime_error("Could not find focus with value \"" + focus_to_string(focus) + '"');
     }
     focus_stack_.erase(it);
     compute_focus_merge();
@@ -90,7 +91,7 @@ void Focuses::remove(Focus focus) {
 void Focuses::pop_back() {
     mutex.is_owner();
     if (focus_stack_.empty()) {
-        THROW_OR_ABORT("pop_back called on empty focuses");
+        throw std::runtime_error("pop_back called on empty focuses");
     }
     focus_stack_.pop_back();
     compute_focus_merge();
@@ -99,7 +100,7 @@ void Focuses::pop_back() {
 void Focuses::force_push_back(Focus focus) {
     mutex.is_owner();
     if (any(focus_merge_ & focus)) {
-        THROW_OR_ABORT("Duplicate focus: " + focus_to_string(focus));
+        throw std::runtime_error("Duplicate focus: " + focus_to_string(focus));
     }
     focus_stack_.push_back(focus);
     compute_focus_merge();
@@ -147,7 +148,7 @@ SubmenuHeader& UiFocus::insert_submenu(
     size_t default_selection)
 {
     if (!submenu_numbers.try_emplace(id, submenu_headers.size()).second) {
-        THROW_OR_ABORT("Submenu with ID \"" + id + "\" already exists");
+        throw std::runtime_error("Submenu with ID \"" + id + "\" already exists");
     }
     auto& res = submenu_headers.emplace_back(header);
     focus_filters.emplace_back(std::move(focus_filter));
@@ -171,7 +172,7 @@ bool UiFocus::has_focus(const FocusFilter& focus_filter) const {
         for (const std::string& submenu_id : focus_filter.submenu_ids) {
             auto it = submenu_numbers.find(submenu_id);
             if (it == submenu_numbers.end()) {
-                THROW_OR_ABORT("Could not find submenu with ID " + submenu_id);
+                throw std::runtime_error("Could not find submenu with ID " + submenu_id);
             }
             // Has focus if it is selected in at least one tab menu
             for (const auto& [_, n] : menu_selection_ids) {
@@ -232,7 +233,7 @@ nlohmann::json UiFocus::get_persisted_selection_id(const std::string& submenu) c
     auto c = current_persistent_selection_ids.json_macro_arguments();
     auto it = c->try_at(submenu);
     if (!it.has_value()) {
-        THROW_OR_ABORT("Could not find persisted submenu \"" + submenu + '"');
+        throw std::runtime_error("Could not find persisted submenu \"" + submenu + '"');
     }
     return *it;
 }
@@ -298,7 +299,7 @@ bool UiFocus::get_has_changes() const {
 void UiFocus::load() {
     auto f = create_ifstream(filename_);
     if (f->fail()) {
-        THROW_OR_ABORT("Could not open file \"" + filename_ + "\" for read");
+        throw std::runtime_error("Could not open file \"" + filename_ + "\" for read");
     }
     nlohmann::json j;
     *f >> j;
@@ -310,13 +311,13 @@ void UiFocus::load() {
 void UiFocus::save() {
     auto f = create_ofstream(filename_);
     if (f->fail()) {
-        THROW_OR_ABORT("Could not open file \"" + filename_ + "\" for write");
+        throw std::runtime_error("Could not open file \"" + filename_ + "\" for write");
     }
     auto c = current_persistent_selection_ids.json_macro_arguments();
     nlohmann::json j = c;
     *f << j;
     if (f->fail()) {
-        THROW_OR_ABORT("Could not write to file \"" + filename_ + '"');
+        throw std::runtime_error("Could not write to file \"" + filename_ + '"');
     }
     loaded_persistent_selection_ids.assign_and_notify(c);
 }
@@ -334,7 +335,7 @@ void UiFocus::pop_invalid_focuses() {
                         "Pop invalid focus because of \"" << submenu_headers.at(i).title <<
                         "\": " << focuses;
                     if (focuses.size() <= 1) {
-                        THROW_OR_ABORT("Cannot remove focus layer after invalidation");
+                        throw std::runtime_error("Cannot remove focus layer after invalidation");
                     }
                     focuses.pop_back();
                     retry = true;
@@ -440,7 +441,7 @@ Focus Mlib::single_focus_from_string(const std::string& str) {
     };
     auto it = m.find(str);
     if (it == m.end()) {
-        THROW_OR_ABORT("Unknown focus name \"" + str + '"');
+        throw std::runtime_error("Unknown focus name \"" + str + '"');
     }
     return it->second;
 }

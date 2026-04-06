@@ -1,8 +1,8 @@
 #include "Fit_Canvas_To_Renderables.hpp"
-#include <Mlib/Argument_List.hpp>
 #include <Mlib/Geometry/Cameras/Ortho_Camera.hpp>
 #include <Mlib/Geometry/Material/Render_Pass.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
+#include <Mlib/Misc/Argument_List.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
@@ -29,11 +29,11 @@ FitCanvasToRenderables::FitCanvasToRenderables(PhysicsScene& physics_scene)
 
 void FitCanvasToRenderables::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    auto node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::node), DP_LOC);
-    auto camera = node->get_camera(DP_LOC);
+    auto node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::node), CURRENT_SOURCE_LOCATION);
+    auto camera = node->get_camera(CURRENT_SOURCE_LOCATION);
     auto* ortho_camera = dynamic_cast<OrthoCamera*>(&camera.get());
     if (ortho_camera == nullptr) {
-        THROW_OR_ABORT("Camera is not an ortho-camera");
+        throw std::runtime_error("Camera is not an ortho-camera");
     }
     fit_canvas_to_renderables(
         scene,

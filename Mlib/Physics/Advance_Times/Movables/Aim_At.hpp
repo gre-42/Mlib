@@ -2,10 +2,9 @@
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
 #include <Mlib/Memory/Dangling_Base_Class.hpp>
-#include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
 #include <Mlib/Memory/Destruction_Functions.hpp>
 #include <Mlib/Memory/Destruction_Guards.hpp>
-#include <Mlib/Object.hpp>
+#include <Mlib/Misc/Object.hpp>
 #include <Mlib/Physics/Interfaces/IAdvance_Time.hpp>
 #include <Mlib/Scene_Graph/Interfaces/Scene_Node/IAbsolute_Observer.hpp>
 #include <functional>
@@ -18,7 +17,7 @@ struct PhysicsEngineConfig;
 class SceneNode;
 class RigidBodyVehicle;
 
-class AimAt: public IAbsoluteObserver, public IAdvanceTime, public virtual DanglingBaseClass {
+class AimAt final: public IAbsoluteObserver, public IAdvanceTime, public virtual DanglingBaseClass {
 public:
     AimAt(
         AdvanceTimes& advance_times,
@@ -49,8 +48,8 @@ private:
     FixedArray<ScenePos, 3> relative_point_to_aim_at_;
     DanglingBaseClassPtr<SceneNode> followed_node_;
     DanglingBaseClassPtr<SceneNode> gun_node_;
-    const RigidBodyVehicle& follower_;
-    const RigidBodyVehicle* followed_;
+    DanglingBaseClassPtr<const RigidBodyVehicle> follower_;
+    DanglingBaseClassPtr<const RigidBodyVehicle> followed_;
     float bullet_start_offset_;
     float bullet_velocity_;
     bool bullet_feels_gravity_;

@@ -1,8 +1,9 @@
+
 #include "Concrete_Layout_Pixels.hpp"
 #include <Mlib/Layout/Layout_Constraint_Parameters.hpp>
 #include <Mlib/Layout/Screen_Units.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
 #include <cmath>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -11,7 +12,7 @@ float MinimumConstraint::to_pixels(
     PixelsRoundMode round_mode) const
 {
     if (std::isnan(params.min_pixel)) {
-        THROW_OR_ABORT("Minimum pixel requested, but min_pixel is NAN");
+        throw std::runtime_error("Minimum pixel requested, but min_pixel is NAN");
     }
     return ::Mlib::round(params.min_pixel, round_mode);
 }
@@ -21,7 +22,7 @@ float EndConstraint::to_pixels(
     PixelsRoundMode round_mode) const
 {
     if (std::isnan(params.end_pixel)) {
-        THROW_OR_ABORT("End pixel requested, but max_pixel is NAN");
+        throw std::runtime_error("End pixel requested, but max_pixel is NAN");
     }
     return ::Mlib::round(params.end_pixel, round_mode);
 }

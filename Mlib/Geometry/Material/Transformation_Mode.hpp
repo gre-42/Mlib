@@ -1,5 +1,5 @@
 #pragma once
-#include <Mlib/Throw_Or_Abort.hpp>
+#include <stdexcept>
 #include <string>
 
 namespace Mlib {
@@ -13,5 +13,6 @@ enum class TransformationMode {
 };
 
 TransformationMode transformation_mode_from_string(const std::string& str);
+std::string transformation_mode_to_string(TransformationMode mode);
 
 }

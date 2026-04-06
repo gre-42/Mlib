@@ -1,7 +1,7 @@
-#include <Mlib/Arg_Parser.hpp>
 #include <Mlib/Geometry/Mesh/Load/Img_Reader.hpp>
 #include <Mlib/Geometry/Mesh/Load/Load_Dff.hpp>
 #include <Mlib/Geometry/Mesh/Load/Raster_Config.hpp>
+#include <Mlib/Io/Arg_Parser.hpp>
 #include <Mlib/Io/Folder_IStream_Dictionary.hpp>
 #include <Mlib/Os/Os.hpp>
 #include <Mlib/Regex/Regex_Select.hpp>
@@ -28,7 +28,7 @@ static void add_resource(
             nullptr,
             IoVerbosity::METADATA);
     } else {
-        THROW_OR_ABORT("Unknown resource type: \"" + *name + "\". Extension: \"" + extension + '"');
+        throw std::runtime_error("Unknown resource type: \"" + *name + "\". Extension: \"" + extension + '"');
     }
 }
 

@@ -1,7 +1,7 @@
 #include "Create_Tank_Controller.hpp"
-#include <Mlib/Argument_List.hpp>
 #include <Mlib/Components/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
+#include <Mlib/Misc/Argument_List.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Physics/Vehicle_Controllers/Car_Controllers/Tank_Controller.hpp>
@@ -10,7 +10,7 @@
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Strings/String.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -36,14 +36,14 @@ CreateTankController::CreateTankController(PhysicsScene& physics_scene)
 
 void CreateTankController::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    DanglingBaseClassRef<SceneNode> node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::node), DP_LOC);
-    auto& rb = get_rigid_body_vehicle(node);
-    if (rb.vehicle_controller_ != nullptr) {
-        THROW_OR_ABORT("Tank controller already set");
+    DanglingBaseClassRef<SceneNode> node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::node), CURRENT_SOURCE_LOCATION);
+    auto rb = get_rigid_body_vehicle(node.get(), CURRENT_SOURCE_LOCATION);
+    if (rb->vehicle_controller_ != nullptr) {
+        throw std::runtime_error("Tank controller already set");
     }
     std::vector<size_t> left_tire_ids = args.arguments.at<std::vector<size_t>>(KnownArgs::left_tire_ids);
     std::vector<size_t> right_tire_ids = args.arguments.at<std::vector<size_t>>(KnownArgs::right_tire_ids);
-    rb.vehicle_controller_ = std::make_unique<TankController>(
+    rb->vehicle_controller_ = std::make_unique<TankController>(
         rb,
         left_tire_ids,
         right_tire_ids,

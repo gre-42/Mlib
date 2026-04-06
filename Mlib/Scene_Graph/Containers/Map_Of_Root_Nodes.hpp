@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Map/String_With_Hash_Unordered_Map.hpp>
+#include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <iosfwd>
 #include <string>
 
@@ -10,7 +11,7 @@ class Scene;
 
 class MapOfRootNodes {
 public:
-    explicit MapOfRootNodes(Scene& scene);
+    explicit MapOfRootNodes(const DanglingBaseClassRef<Scene>& scene);
     RootNodes& create(VariableAndHash<std::string> name);
     void shutdown();
     size_t try_empty_the_trash_can();
@@ -18,7 +19,7 @@ public:
     void print(std::ostream& ostr) const;
 private:
     StringWithHashUnorderedMap<RootNodes> root_nodes_;
-    Scene& scene_;
+    DanglingBaseClassRef<Scene> scene_;
 };
 
 std::ostream& operator << (std::ostream& ostr, const MapOfRootNodes& map_of_root_nodes);

@@ -15,10 +15,10 @@ class FlyingMissileAi final: public IVehicleAi {
     FlyingMissileAi& operator = (const FlyingMissileAi&) = delete;
 public:
     explicit FlyingMissileAi(
-        RigidBodyVehicle& rigid_body,
+        const DanglingBaseClassRef<RigidBodyVehicle>& rigid_body,
         Interp<float, float> dy,
         double eta_max,
-        RigidBodyMissileController& controller,
+        const DanglingBaseClassRef<RigidBodyMissileController>& controller,
         float waypoint_reached_radius,
         float resting_position_reached_radius,
         float maximum_velocity);
@@ -35,8 +35,8 @@ private:
     double eta_max_;
     float waypoint_reached_radius_squared_;
     float resting_position_reached_radius_squared_;
-    RigidBodyMissileController& controller_;
-    RigidBodyVehicle& rigid_body_;
+    DanglingBaseClassRef<RigidBodyMissileController> controller_;
+    DanglingBaseClassRef<RigidBodyVehicle> rigid_body_;
     float maximum_velocity_;
 };
 

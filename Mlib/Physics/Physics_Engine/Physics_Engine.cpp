@@ -1,7 +1,6 @@
+
 #include "Physics_Engine.hpp"
-#include <Mlib/Assert.hpp>
-#include <Mlib/Geometry/Intersection/Intersectors/Intersection_Info.hpp>
-#include <Mlib/Geometry/Mesh/Sat_Normals.hpp>
+#include <Mlib/Geometry/Primitives/Intersectors/Intersection_Info.hpp>
 #include <Mlib/Memory/Destruction_Functions_Removeal_Tokens_Ref.hpp>
 #include <Mlib/Physics/Actuators/Engine_Power_Intent.hpp>
 #include <Mlib/Physics/Actuators/Rigid_Body_Engine.hpp>
@@ -21,7 +20,8 @@
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Physics/Smoke_Generation/Contact_Smoke_Generator.hpp>
 #include <Mlib/Scene_Graph/Interfaces/ITrail_Renderer.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
+#include <Mlib/Testing/Assert.hpp>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -72,26 +72,24 @@ void PhysicsEngine::collide(
         co->notify_reset(cfg_, phase);
     }
     std::list<std::unique_ptr<IContactInfo>> contact_infos;
-    permanent_contacts_.extend_contact_infos(cfg_, contact_infos);
+    permanent_contacts_.extend_contact_infos(cfg_, phase, contact_infos);
     std::unordered_map<OrderableFixedArray<CompressedScenePos, 2, 3>, IntersectionSceneAndContact> raycast_intersections;
     std::unordered_map<RigidBodyVehicle*, std::list<IntersectionSceneAndContact>> concave_t0_intersections;
     std::unordered_map<RigidBodyVehicle*, GrindInfo> grind_infos;
     std::unordered_map<RigidBodyVehicle*, std::list<FixedArray<ScenePos, 3>>> ridge_intersection_points;
-    SatTracker st;
     if (surface_contact_db_ == nullptr) {
-        THROW_OR_ABORT("surface_contact_db not set");
+        throw std::runtime_error("surface_contact_db not set");
     }
     if (contact_smoke_generator_ == nullptr) {
-        THROW_OR_ABORT("contact_smoke_generator not set");
+        throw std::runtime_error("contact_smoke_generator not set");
     }
     if (trail_renderer_ == nullptr) {
-        THROW_OR_ABORT("trail_renderer not set");
+        throw std::runtime_error("trail_renderer not set");
     }
     CollisionHistory history{
         .cfg = cfg_,
         .phase = phase,
         .world = world,
-        .st = st,
         .surface_contact_db = *surface_contact_db_,
         .csg = *contact_smoke_generator_,
         .tr = *trail_renderer_,
@@ -100,8 +98,6 @@ void PhysicsEngine::collide(
         .raycast_intersections = raycast_intersections,
         .concave_t0_intersections = concave_t0_intersections,
         .grind_infos = grind_infos,
-        .ridge_intersection_points = ridge_intersection_points,
-        .ridge_map = rigid_bodies_.ridge_map(),
         .base_log = base_log
     };
     for (const auto& efp : external_force_providers_) {
@@ -147,7 +143,7 @@ void PhysicsEngine::move_rigid_bodies(
         assert_true(rb->mass() != INFINITY);
         rb->advance_time(cfg_, world, beacons, phase);
         if (contact_smoke_generator_ == nullptr) {
-            THROW_OR_ABORT("contact_smoke_generator not set");
+            throw std::runtime_error("contact_smoke_generator not set");
         }
         contact_smoke_generator_->advance_time(rb.get(), cfg_, phase);
     }
@@ -212,21 +208,21 @@ void PhysicsEngine::burn_in(
 
 void PhysicsEngine::set_surface_contact_db(SurfaceContactDb& surface_contact_db) {
     if (surface_contact_db_ != nullptr) {
-        THROW_OR_ABORT("Surface contact DB already set");
+        throw std::runtime_error("Surface contact DB already set");
     }
     surface_contact_db_ = &surface_contact_db;
 }
 
 void PhysicsEngine::set_contact_smoke_generator(ContactSmokeGenerator& contact_smoke_generator) {
     if (contact_smoke_generator_ != nullptr) {
-        THROW_OR_ABORT("Contact smoke generator already set");
+        throw std::runtime_error("Contact smoke generator already set");
     }
     contact_smoke_generator_ = &contact_smoke_generator;
 }
 
 void PhysicsEngine::set_trail_renderer(ITrailRenderer& trail_renderer) {
     if (trail_renderer_ != nullptr) {
-        THROW_OR_ABORT("Trail renderer already set");
+        throw std::runtime_error("Trail renderer already set");
     }
     trail_renderer_ = &trail_renderer;
 }
@@ -245,12 +241,12 @@ void PhysicsEngine::remove_external_force_provider(IExternalForceProvider& efp) 
 void PhysicsEngine::add_controllable(IControllable& co)
 {
     if (!controllables_.insert(&co).second) {
-        THROW_OR_ABORT("IControllable already added");
+        throw std::runtime_error("IControllable already added");
     }
 }
 
 void PhysicsEngine::remove_controllable(IControllable& co) {
     if (controllables_.erase(&co) != 1) {
-        THROW_OR_ABORT("IControllable does not exist");
+        throw std::runtime_error("IControllable does not exist");
     }
 }

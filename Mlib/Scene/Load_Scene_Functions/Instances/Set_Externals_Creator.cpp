@@ -14,7 +14,8 @@
 #include <Mlib/Players/Scene_Vehicle/Vehicle_Spawner.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Load_Scene_Funcs.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
+#include <nlohmann/json.hpp>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -72,7 +73,7 @@ void SetExternalsCreator::execute_unsafe(
             ExternalsMode externals_mode)
         {
             if (externals_mode == ExternalsMode::NONE) {
-                THROW_OR_ABORT("Invalid externals mode");
+                throw std::runtime_error("Invalid externals mode");
             }
             auto user_info = player.user_info();
             nlohmann::json let{
@@ -95,7 +96,7 @@ void SetExternalsCreator::execute_unsafe(
             const InternalsMode& internals_mode)
         {
             if (player.externals_mode() == ExternalsMode::NONE) {
-                THROW_OR_ABORT("Invalid externals mode");
+                throw std::runtime_error("Invalid externals mode");
             }
             auto user_info = player.user_info();
             nlohmann::json let{
@@ -139,7 +140,7 @@ void SetExternalsCreator::execute_unsafe(const LoadSceneJsonUserFunctionArgs& ar
     auto spawner_name = args.arguments.at<VariableAndHash<std::string>>(KnownArgsUnsafe::spawner);
     auto& spawner = vehicle_spawners.get(spawner_name);
     if (!spawner.has_scene_vehicle()) {
-        THROW_OR_ABORT("Spawner \"" + *spawner_name + "\" has no vehicle");
+        throw std::runtime_error("Spawner \"" + *spawner_name + "\" has no vehicle");
     }
     execute_unsafe(
         spawner.get_primary_scene_vehicle().get(),
@@ -152,7 +153,7 @@ void SetExternalsCreator::execute_safe(const LoadSceneJsonUserFunctionArgs& args
     auto spawner_name = args.arguments.at<VariableAndHash<std::string>>(KnownArgsUnsafe::spawner);
     auto& spawner = vehicle_spawners.get(spawner_name);
     if (!spawner.has_scene_vehicle()) {
-        THROW_OR_ABORT("Spawner \"" + *spawner_name + "\" has no vehicle");
+        throw std::runtime_error("Spawner \"" + *spawner_name + "\" has no vehicle");
     }
     execute_safe(
         spawner.get_primary_scene_vehicle().get(),

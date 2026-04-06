@@ -1,6 +1,7 @@
+
 #include "Wrap_Mode.hpp"
-#include <Mlib/Throw_Or_Abort.hpp>
 #include <map>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -12,7 +13,16 @@ WrapMode Mlib::wrap_mode_from_string(const std::string& str) {
     };
     auto it = m.find(str);
     if (it == m.end()) {
-        THROW_OR_ABORT("Unknown wrap mode: \"" + str + '"');
+        throw std::runtime_error("Unknown wrap mode: \"" + str + '"');
     }
     return it->second;
+}
+
+std::string Mlib::wrap_mode_to_string(WrapMode wrap_mode) {
+    switch (wrap_mode) {
+        case WrapMode::REPEAT: return "repeat";
+        case WrapMode::CLAMP_TO_EDGE: return "clamp_to_edge";
+        case WrapMode::CLAMP_TO_BORDER: return "clamp_to_border";
+    }
+    throw std::runtime_error("Unknown wrap mode: " + std::to_string((int)wrap_mode));
 }

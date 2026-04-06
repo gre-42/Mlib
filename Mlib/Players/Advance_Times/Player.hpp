@@ -1,13 +1,13 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
-#include <Mlib/Default_Uninitialized_Vector.hpp>
 #include <Mlib/Geometry/Graph/Point_And_Flags.hpp>
 #include <Mlib/Geometry/Graph/Points_And_Adjacency.hpp>
+#include <Mlib/Hashing/Variable_And_Hash.hpp>
+#include <Mlib/Initialization/Default_Uninitialized_Vector.hpp>
 #include <Mlib/Memory/Dangling_Base_Class.hpp>
-#include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
 #include <Mlib/Memory/Destruction_Functions.hpp>
 #include <Mlib/Memory/Destruction_Observers.hpp>
-#include <Mlib/Object.hpp>
+#include <Mlib/Misc/Object.hpp>
 #include <Mlib/Physics/Ai/Skill_Map.hpp>
 #include <Mlib/Physics/Ai/Skills.hpp>
 #include <Mlib/Physics/Interfaces/IAdvance_Time.hpp>
@@ -25,13 +25,12 @@
 #include <Mlib/Remote/Events/Times_And_Events.hpp>
 #include <Mlib/Scene_Config/Scene_Precision.hpp>
 #include <Mlib/Threads/Recursive_Shared_Mutex.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
-#include <Mlib/Variable_And_Hash.hpp>
 #include <chrono>
 #include <cstdint>
 #include <list>
 #include <mutex>
 #include <optional>
+#include <stdexcept>
 #include <string>
 
 namespace Mlib {
@@ -49,7 +48,6 @@ class AimAt;
 class Gun;
 class Navigate;
 class SupplyDepotsWaypointsCollection;
-class DeleteNodeMutex;
 class Bystanders;
 class WeaponCycle;
 class Inventory;
@@ -102,7 +100,7 @@ enum class PlayerSitePrivileges;
 
 struct PlayerControlled {
     bool has_aim_at() const;
-    AimAt& aim_at();
+    DanglingBaseClassRef<AimAt> aim_at();
     DanglingBaseClassPtr<SceneNode> gun_node;
 };
 
@@ -149,7 +147,7 @@ public:
         UnstuckMode unstuck_mode,
         std::string behavior,
         DrivingDirection driving_direction,
-        DeleteNodeMutex& delete_node_mutex,
+        SafeAtomicRecursiveSharedMutex& delete_node_mutex,
         const CountdownPhysics& countdown_start);
     virtual ~Player() override;
     void set_skills(ControlSource control_source, const Skills& skills);
@@ -216,8 +214,8 @@ public:
     FixedArray<float, 3> punch_angle() const;
     bool has_weapon() const;
     bool has_gun_node() const;
-    const Gun& gun() const;
-    Gun& gun();
+    DanglingBaseClassRef<const Gun> gun() const;
+    DanglingBaseClassRef<Gun> gun();
     void trigger_gun();
     bool has_gun_yaw() const;
     float get_gun_yaw() const;
@@ -228,8 +226,8 @@ public:
     bool has_weapon_cycle() const;
     Inventory& inventory();
     const Inventory& inventory() const;
-    WeaponCycle& weapon_cycle();
-    const WeaponCycle& weapon_cycle() const;
+    DanglingBaseClassRef<WeaponCycle> weapon_cycle();
+    DanglingBaseClassRef<const WeaponCycle> weapon_cycle() const;
     void set_desired_weapon(const std::string& name, WhenToEquip when_to_equip);
     bool needs_supplies() const;
     size_t nbullets_available() const;
@@ -349,7 +347,7 @@ private:
     DrivingDirection driving_direction_;
     size_t nunstucked_;
     SkillMap skills_;
-    DeleteNodeMutex& delete_node_mutex_;
+    SafeAtomicRecursiveSharedMutex& delete_node_mutex_;
     DanglingBaseClassPtr<VehicleSpawner> next_scene_vehicle_;
     bool reset_vehicle_to_last_checkpoint_requested_;
     std::string next_seat_;

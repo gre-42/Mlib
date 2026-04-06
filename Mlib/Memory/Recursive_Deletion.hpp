@@ -42,10 +42,10 @@ void clear_set_recursively_with_lock(
 template <class TContainer, class TFunction>
 void clear_list_recursively(TContainer& elements, const TFunction& deleter) {
     while (!elements.empty()) {
-        auto it_second = elements.begin();
-        ++it_second;
+        auto it_last = elements.end();
+        --it_last;
         TContainer list2;
-        list2.splice(list2.begin(), elements, elements.begin(), it_second);
+        list2.splice(list2.begin(), elements, it_last, elements.end());
         deleter(list2.front());
     }
 }
@@ -57,10 +57,10 @@ void clear_list_recursively_with_lock(
     const TFunction& deleter)
 {
     while (!elements.empty()) {
-        auto it_second = elements.begin();
-        ++it_second;
+        auto it_last = elements.end();
+        --it_last;
         TContainer list2;
-        list2.splice(list2.begin(), elements, elements.begin(), it_second);
+        list2.splice(list2.begin(), elements, it_last, elements.end());
         UnlockGuard ulock{ lock };
         deleter(list2.front());
         list2.clear();

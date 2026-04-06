@@ -10,7 +10,7 @@ HeightReference Mlib::parse_height_reference(const std::string& s) {
     };
     auto it = m.find(s);
     if (it == m.end()) {
-        THROW_OR_ABORT("Unknown height reference: \"" + s + '"');
+        throw std::runtime_error("Unknown height reference: \"" + s + '"');
     }
     return it->second;
 }
@@ -25,12 +25,12 @@ std::optional<HeightWithReference> Mlib::parse_height_with_reference(
     auto ref_it = tags.find(reference_key);
     if (std::isnan(height)) {
         if (ref_it != tags.end()) {
-            THROW_OR_ABORT(object_name + ": Key \"" + reference_key + "\" requires \"" + height_key + '"');
+            throw std::runtime_error(object_name + ": Key \"" + reference_key + "\" requires \"" + height_key + '"');
         }
         return std::nullopt;
     }
     if (ref_it == tags.end()) {
-        THROW_OR_ABORT(object_name + ": Key \"" + height_key + "\" requires \"" + reference_key + '"');
+        throw std::runtime_error(object_name + ": Key \"" + height_key + "\" requires \"" + reference_key + '"');
     }
     if (std::isnan(height)) {
         return std::nullopt;

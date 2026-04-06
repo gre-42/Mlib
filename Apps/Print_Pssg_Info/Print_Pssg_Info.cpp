@@ -1,10 +1,10 @@
-#include <Mlib/Arg_Parser.hpp>
 #include <Mlib/Geometry/Material/Billboard_Atlas_Instance.hpp>
 #include <Mlib/Geometry/Mesh/Load/Load_Mesh_Config.hpp>
 #include <Mlib/Geometry/Mesh/Load/Load_Pssg.hpp>
 #include <Mlib/Geometry/Mesh/Load/Load_Pssg_Arrays.hpp>
 #include <Mlib/Geometry/Mesh/Load/Pssg_Elements.hpp>
 #include <Mlib/Images/Dds_Info.hpp>
+#include <Mlib/Io/Arg_Parser.hpp>
 #include <Mlib/Io/Binary.hpp>
 #include <Mlib/Os/Os.hpp>
 #include <Mlib/Regex/Regex_Select.hpp>
@@ -39,18 +39,18 @@ int main(int argc, char **argv) {
                     }
                     auto node_id = node.get_attribute("id", model.schema).string();
                     if (node_id.length() > 1'000) {
-                        THROW_OR_ABORT("Node ID too long");
+                        throw std::runtime_error("Node ID too long");
                     }
                     if (!Mlib::re::regex_search(node_id, re)) {
                         return true;
                     }
                     auto width = node.get_attribute("width", model.schema).uint32();
                     if (width > 10'000) {
-                        THROW_OR_ABORT("Width too large");
+                        throw std::runtime_error("Width too large");
                     }
                     auto height = node.get_attribute("height", model.schema).uint32();
                     if (height > 10'000) {
-                        THROW_OR_ABORT("Height too large");
+                        throw std::runtime_error("Height too large");
                     }
                     std::replace_if(node_id.begin(), node_id.end(), [](auto c) {
                         if ((c >= '0') && (c <= '9')) {
@@ -74,12 +74,12 @@ int main(int argc, char **argv) {
                     auto tex_filename = std::filesystem::path{ "textures" } / (node_id + ".dds");
                     auto f = create_ofstream(tex_filename, std::ios::binary);
                     if (f->fail()) {
-                        THROW_OR_ABORT("Could not open file for write: \"" + tex_filename.string() + '"');
+                        throw std::runtime_error("Could not open file for write: \"" + tex_filename.string() + '"');
                     }
                     f->write((const char*)data.data(), integral_cast<std::streamsize>(data.size()));
                     f->flush();
                     if (f->fail()) {
-                        THROW_OR_ABORT("Could not write to file: \"" + tex_filename.string() + '"');
+                        throw std::runtime_error("Could not write to file: \"" + tex_filename.string() + '"');
                     }
                     return true;
                 });

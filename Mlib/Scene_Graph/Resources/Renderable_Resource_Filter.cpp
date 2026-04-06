@@ -1,18 +1,22 @@
+
 #include "Renderable_Resource_Filter.hpp"
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>
 
 using namespace Mlib;
 
-RenderableResourceFilter::~RenderableResourceFilter()
-{}
+RenderableResourceFilter::~RenderableResourceFilter() = default;
 
-template <class TPos>
-bool RenderableResourceFilter::matches(size_t num, const ColoredVertexArray<TPos>& cva) const {
+bool RenderableResourceFilter::matches(size_t num, const MeshMeta &meta) const {
     return
         (num >= min_num) &&
         (num <= max_num) &&
-        cva_filter.matches(cva);
+        cva_filter.matches(meta);
+}
+
+template <class TPos>
+bool RenderableResourceFilter::matches(size_t num, const ColoredVertexArray<TPos>& cva) const {
+    return matches(num, cva.meta);
 }
 
 std::ostream& Mlib::operator << (std::ostream& ostr, const RenderableResourceFilter& filter) {

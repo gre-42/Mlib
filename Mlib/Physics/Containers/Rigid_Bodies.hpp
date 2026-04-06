@@ -1,10 +1,9 @@
 #pragma once
-#include <Mlib/Geometry/Intersection/Bvh.hpp>
-#include <Mlib/Geometry/Intersection/Bvh_Grid.hpp>
-#include <Mlib/Geometry/Intersection/Collision_Line.hpp>
-#include <Mlib/Geometry/Intersection/Collision_Ridge.hpp>
-#include <Mlib/Geometry/Mesh/Collision_Ridges_Rigid_Body.hpp>
 #include <Mlib/Geometry/Mesh/Typed_Mesh.hpp>
+#include <Mlib/Geometry/Primitives/Bvh.hpp>
+#include <Mlib/Geometry/Primitives/Bvh_Grid.hpp>
+#include <Mlib/Geometry/Primitives/Collision_Line.hpp>
+#include <Mlib/Geometry/Primitives/Collision_Ridge.hpp>
 #include <Mlib/Iterator/Iterable_Wrapper.hpp>
 #include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/Physics/Containers/Elements/Collision_Line_Sphere.hpp>
@@ -105,8 +104,6 @@ public:
     IterableWrapper<std::list<RigidBodyAndIntersectableMeshes>> transformed_objects() const;
     const ConvexMeshBvh& convex_mesh_bvh() const;
     const TriangleBvh& triangle_bvh() const;
-    const RidgeBvh& ridge_bvh() const;
-    RidgeMap& ridge_map();
     const LineBvh& line_bvh() const;
     bool empty() const;
     std::vector<CollisionGroup> collision_groups();
@@ -114,8 +111,6 @@ public:
     void notify_colliding_end();
 private:
     void transform_object_and_add(const RigidBodyAndMeshes& o);
-    void bake_collision_ridges() const;
-    void bake_collision_ridges_if_necessary() const;
     const PhysicsEngineConfig& cfg_;
     std::unordered_map<const RigidBodyVehicle*, DestructionFunctionsTokensRef<RigidBodyVehicle>> rigid_bodies_;
     std::list<RigidBodyAndMeshes> objects_;
@@ -125,11 +120,7 @@ private:
     // BVHs. Do not forget to .clear() the BVHs in the "delete_rigid_body" method.
     ConvexMeshBvh convex_mesh_bvh_;
     TriangleBvh triangle_bvh_;
-    mutable RidgeBvh ridge_bvh_;
-    mutable RidgeMap ridge_map_;
     LineBvh line_bvh_;
-    mutable CollisionRidgesRigidBody collision_ridges_;
-    mutable CollisionRidgeBakingStatus collision_ridges_baking_status_;
 };
 
 }

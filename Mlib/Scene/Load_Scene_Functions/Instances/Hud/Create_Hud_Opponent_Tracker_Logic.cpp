@@ -1,18 +1,18 @@
 #include "Create_Hud_Opponent_Tracker_Logic.hpp"
-#include <Mlib/Argument_List.hpp>
-#include <Mlib/FPath.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Memory/Object_Pool.hpp>
+#include <Mlib/Misc/Argument_List.hpp>
+#include <Mlib/Misc/FPath.hpp>
+#include <Mlib/OpenGL/Rendering_Context.hpp>
+#include <Mlib/OpenGL/Resource_Managers/Rendering_Resources.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Engine.hpp>
 #include <Mlib/Players/Advance_Times/Player.hpp>
 #include <Mlib/Players/Containers/Players.hpp>
-#include <Mlib/Render/Rendering_Context.hpp>
-#include <Mlib/Render/Resource_Managers/Rendering_Resources.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Render_Logics/Hud_Opponent_Tracker_Logic.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -44,7 +44,7 @@ void CreateHudOpponentTracker::execute(const LoadSceneJsonUserFunctionArgs& args
     if (args.arguments.contains_non_null(KnownArgs::exclusive_nodes)) {
         exclusive_nodes = args.arguments.at_vector<VariableAndHash<std::string>>(
             KnownArgs::exclusive_nodes,
-            [&scene=scene](const auto& n){ return (const DanglingBaseClassPtr<const SceneNode>&)scene.get_node(n, DP_LOC).ptr(); });
+            [&scene=scene](const auto& n){ return (const DanglingBaseClassPtr<const SceneNode>&)scene.get_node(n, CURRENT_SOURCE_LOCATION).ptr(); });
     }
     auto player = players.get_player(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::player), CURRENT_SOURCE_LOCATION);
     object_pool.create<HudOpponentTrackerLogic>(
@@ -52,13 +52,12 @@ void CreateHudOpponentTracker::execute(const LoadSceneJsonUserFunctionArgs& args
         object_pool,
         scene_logic,
         render_logics,
-        players,
         player,
         exclusive_nodes,
         physics_engine.advance_times_,
         RenderingContextStack::primary_rendering_resources().get_texture_lazy(
             ColormapWithModifiers{
-                .filename = VariableAndHash{ args.arguments.path(KnownArgs::filename) },
+                .filename = args.arguments.path_or_variable(KnownArgs::filename),
                 .color_mode = ColorMode::RGBA
             }.compute_hash(),
             TextureRole::COLOR_FROM_DB),

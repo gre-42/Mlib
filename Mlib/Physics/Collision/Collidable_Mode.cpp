@@ -1,6 +1,7 @@
+
 #include "Collidable_Mode.hpp"
-#include <Mlib/Throw_Or_Abort.hpp>
 #include <map>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -12,7 +13,7 @@ CollidableMode Mlib::collidable_mode_from_string(const std::string& mode) {
     };
     auto it = m.find(mode);
     if (it == m.end()) {
-        THROW_OR_ABORT("Unknown collidable mode: " + mode);
+        throw std::runtime_error("Unknown collidable mode: " + mode);
     }
     return it->second;
 }

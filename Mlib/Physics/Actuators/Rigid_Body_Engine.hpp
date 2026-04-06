@@ -37,9 +37,10 @@ public:
     ~RigidBodyEngine();
 
     // StatusWriter
+    virtual StatusComponents status_component() const override;
     virtual void write_status(std::ostream& ostr, StatusComponents status_components, const StaticWorld& world) const override;
     virtual float get_value(StatusComponents status_components) const override;
-    virtual StatusWriter& child_status_writer(const std::vector<VariableAndHash<std::string>>& name) override;
+    virtual DanglingBaseClassRef<StatusWriter> child_status_writer(const std::vector<VariableAndHash<std::string>>& name) override;
 
     // Misc
     float surface_power() const;

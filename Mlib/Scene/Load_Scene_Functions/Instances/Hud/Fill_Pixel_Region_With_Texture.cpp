@@ -1,5 +1,4 @@
 #include "Fill_Pixel_Region_With_Texture.hpp"
-#include <Mlib/Argument_List.hpp>
 #include <Mlib/Geometry/Material/Color_Mode.hpp>
 #include <Mlib/Layout/Layout_Constraints.hpp>
 #include <Mlib/Layout/Screen_Units.hpp>
@@ -7,10 +6,11 @@
 #include <Mlib/Macro_Executor/Focus.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Memory/Object_Pool.hpp>
+#include <Mlib/Misc/Argument_List.hpp>
+#include <Mlib/OpenGL/Render_Logics/Delay_Load_Policy.hpp>
+#include <Mlib/OpenGL/Render_Logics/Fill_Pixel_Region_With_Texture_Logic.hpp>
+#include <Mlib/OpenGL/Render_Logics/Fill_With_Texture_Logic.hpp>
 #include <Mlib/Regex/Regex_Select.hpp>
-#include <Mlib/Render/Render_Logics/Delay_Load_Policy.hpp>
-#include <Mlib/Render/Render_Logics/Fill_Pixel_Region_With_Texture_Logic.hpp>
-#include <Mlib/Render/Render_Logics/Fill_With_Texture_Logic.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Physics_Scene.hpp>
 #include <Mlib/Scene/Renderable_Scene.hpp>
@@ -55,7 +55,7 @@ void FillPixelRegionWithTexture::execute(const LoadSceneJsonUserFunctionArgs& ar
         std::make_shared<FillWithTextureLogic>(
             rs.physics_scene_->rendering_resources_.get_texture_lazy(
                 ColormapWithModifiers{
-                    .filename = args.arguments.at<VariableAndHash<std::string>>(KnownArgs::texture),
+                    .filename = args.arguments.path_or_variable(KnownArgs::texture),
                     .color_mode = ColorMode::RGBA,
                     .mipmap_mode = MipmapMode::NO_MIPMAPS
                 }.compute_hash()),

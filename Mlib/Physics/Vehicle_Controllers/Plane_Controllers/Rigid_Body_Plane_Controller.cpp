@@ -1,10 +1,11 @@
+
 #include "Rigid_Body_Plane_Controller.hpp"
 #include <cmath>
 
 using namespace Mlib;
 
 RigidBodyPlaneController::RigidBodyPlaneController(
-    RigidBodyVehicle& rb,
+    const DanglingBaseClassRef<RigidBodyVehicle>& rb,
     SteeringType steering_type)
     : steering_type{ steering_type }
     , rb_{ rb }

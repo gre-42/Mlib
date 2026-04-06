@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/Scene_Config/Scene_Precision.hpp>
 #include <cstddef>
 
@@ -7,7 +8,7 @@ namespace Mlib {
 template <class TDir, class TPos, size_t n>
 class TransformationMatrix;
 
-class IAbsoluteObserver {
+class IAbsoluteObserver: public virtual DanglingBaseClass {
 public:
     virtual ~IAbsoluteObserver() = default;
     virtual void set_absolute_model_matrix(const TransformationMatrix<float, ScenePos, 3>& absolute_model_matrix) = 0;

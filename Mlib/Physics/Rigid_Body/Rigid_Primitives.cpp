@@ -1,3 +1,4 @@
+
 #include "Rigid_Primitives.hpp"
 #include <Mlib/Geometry/Fixed_Cross.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
@@ -17,17 +18,17 @@ FixedArray<float, 3, 3> permuted_diagonal_matrix(
         return I;
     }
     if (any(abs(I) == INFINITY)) {
-        THROW_OR_ABORT("INF not supported yet for permuted matrices");
+        throw std::runtime_error("INF not supported yet for permuted matrices");
     }
     auto R = tait_bryan_angles_2_matrix(rotation);
     auto Rr = R.applied([](float v){ return std::round(v); });
     if (any(abs(Rr - R) > 1e-12f)) {
-        THROW_OR_ABORT("Rotation cannot be rounded without error");
+        throw std::runtime_error("Rotation cannot be rounded without error");
     }
     auto m = dot2d(R, dot2d(I, R.T()));
     bool is_diagonal = all(abs((1.f - fixed_identity_array<float, 3>()) * m) == 0.f);
     if (!is_diagonal) {
-        THROW_OR_ABORT("Permuted matrix is not diagonal");
+        throw std::runtime_error("Permuted matrix is not diagonal");
     }
     return m;
 }

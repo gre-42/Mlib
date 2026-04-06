@@ -1,10 +1,12 @@
+
 #include "Import_Bone_Weights.hpp"
-#include <Mlib/Assert.hpp>
 #include <Mlib/Geometry/Colored_Vertex.hpp>
-#include <Mlib/Geometry/Intersection/Bvh.hpp>
 #include <Mlib/Geometry/Mesh/Animated_Colored_Vertex_Arrays.hpp>
 #include <Mlib/Geometry/Mesh/Bone_Weight.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
+#include <Mlib/Geometry/Primitives/Bvh.hpp>
+#include <Mlib/Testing/Assert.hpp>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -19,7 +21,7 @@ void Mlib::import_bone_weights(
     float max_distance)
 {
     if (!source.dcvas.empty()) {
-        THROW_OR_ABORT("import_bone_weights not implemented for double precision");
+        throw std::runtime_error("import_bone_weights not implemented for double precision");
     }
     source.check_consistency();
     Bvh<float, 3, VertexAndWeights> bvh{{max_distance / 10, max_distance / 10, max_distance / 10}, 10};
@@ -38,7 +40,7 @@ void Mlib::import_bone_weights(
     }
     for (const std::shared_ptr<ColoredVertexArray<float>>& cva : dest.scvas) {
         if (!cva->triangle_bone_weights.empty()) {
-            THROW_OR_ABORT("import_bone_weights requires empty triangle bone weights");
+            throw std::runtime_error("import_bone_weights requires empty triangle bone weights");
         }
         cva->triangle_bone_weights.reserve(cva->triangles.size());
         for (const auto& t : cva->triangles) {
@@ -59,7 +61,7 @@ void Mlib::import_bone_weights(
                     return true;
                 });
                 if (best_weights == nullptr) {
-                    THROW_OR_ABORT("Could not find weight");
+                    throw std::runtime_error("Could not find weight");
                 }
                 *wn_it = *best_weights;
                 ++wn_it;

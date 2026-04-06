@@ -1,11 +1,10 @@
-#pragma once
 
 /// @file     jacobi.hpp
 /// @brief    Calculate the eigenvalues and eigevectors of a symmetric matrix
 ///           using the Jacobi eigenvalue algorithm.
 /// @author   Andrew Jewett
 /// @license  CC0-1.0
-
+#pragma once
 #include <algorithm>
 #include <cmath>
 //#include <cassert>

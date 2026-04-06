@@ -1,6 +1,7 @@
+
 #include "Mipmap_Level.hpp"
-#include <Mlib/Throw_Or_Abort.hpp>
 #include <list>
+#include <stdexcept>
 
 #define GL_COMPRESSED_RGB_S3TC_DXT1_EXT                   0x83F0
 #define GL_COMPRESSED_RGBA_S3TC_DXT1_EXT                  0x83F1
@@ -37,7 +38,7 @@ std::vector<MipmapLevel> MipmapLevel::compute(
         }
         };
     if (max_num_levels == 0) {
-        THROW_OR_ABORT("Number of mipmap levels cannot be zero");
+        throw std::runtime_error("Number of mipmap levels cannot be zero");
     }
     append_level();
     for (uint32_t i = 0; ((width > min_dim) || (height > min_dim)) && (i < max_num_levels); i++) {

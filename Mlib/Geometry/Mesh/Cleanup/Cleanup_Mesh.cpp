@@ -23,7 +23,7 @@ void CleanupMesh<TPos>::operator () (
     bool modulo_uv)
 {
     if ((min_vertex_distance != (TPos)0.f) &&
-        ((cva.morphology.physics_material & min_distance_material_filter) == min_distance_material_filter))
+        ((cva.meta.morphology.physics_material & min_distance_material_filter) == min_distance_material_filter))
     {
         merge_neighboring_points<TPos>(cva, bvh_, min_vertex_distance);
     }

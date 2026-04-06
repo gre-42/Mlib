@@ -1,19 +1,19 @@
 #include <Mlib/Array/Chunked_Array.hpp>
-#include <Mlib/Assert.hpp>
-#include <Mlib/Floating_Point_Exceptions.hpp>
 #include <Mlib/List/Thread_Safe_List.hpp>
+#include <Mlib/Map/Try_Find.hpp>
 #include <Mlib/Math/Math.hpp>
 #include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
 #include <Mlib/Memory/Destruction_Functions.hpp>
 #include <Mlib/Memory/Object_Pool.hpp>
 #include <Mlib/Memory/Resource_Ptr.hpp>
+#include <Mlib/Misc/Floating_Point_Exceptions.hpp>
 #include <Mlib/Os/Os.hpp>
 #include <Mlib/Regex/Misc.hpp>
 #include <Mlib/Regex/Template_Regex.hpp>
+#include <Mlib/Testing/Assert.hpp>
 #include <Mlib/Threads/Dispatcher.hpp>
 #include <Mlib/Threads/Recursive_Shared_Mutex.hpp>
-#include <Mlib/Try_Find.hpp>
 #include <iostream>
 
 using namespace Mlib;
@@ -57,8 +57,8 @@ void test_dangling_unique() {
     std::list<DanglingPtr<IntShutdown>> lst;
     {
         auto a = make_dunique<IntShutdown>(5);
-        auto b = a.get(DP_LOC);
-        lst.push_back(a.get(DP_LOC));
+        auto b = a.get(CURRENT_SOURCE_LOCATION);
+        lst.push_back(a.get(CURRENT_SOURCE_LOCATION));
         lst.clear();
         assert_true(b->value == 5);
     }
@@ -80,9 +80,9 @@ struct D {
 void test_dangling_unique2() {
     for (size_t i = 0; i < 1000; ++i) {
         auto n = make_dunique<Ads>(5);
-        D n0(DanglingRef<Ads>::from_object(*n->ptr(), DP_LOC));
-        D n1(DanglingRef<Ads>::from_object(*n->ptr(), DP_LOC));
-        n.get(DP_LOC);
+        D n0(DanglingRef<Ads>::from_object(*n->ptr(), CURRENT_SOURCE_LOCATION));
+        D n1(DanglingRef<Ads>::from_object(*n->ptr(), CURRENT_SOURCE_LOCATION));
+        n.get(CURRENT_SOURCE_LOCATION);
     }
 }
 

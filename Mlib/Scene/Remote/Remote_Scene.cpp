@@ -6,7 +6,7 @@
 #include <Mlib/Remote/Sockets/Udp_Node.hpp>
 #include <Mlib/Scene/Remote/Remote_Countdown.hpp>
 #include <Mlib/Scene/Remote/Remote_Users.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -52,7 +52,7 @@ RemoteScene::RemoteScene(
             proxies_.send_and_receive(TransmissionType::HANDSHAKE);
             return;
         }
-        THROW_OR_ABORT("Unkown remote role: " + std::to_string((int)remote_params.role));
+        throw std::runtime_error("Unkown remote role: " + std::to_string((int)remote_params.role));
     }();
     objects_.add_local_object({
             global_object_pool.create<RemoteUsers>(

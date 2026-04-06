@@ -1,10 +1,10 @@
 #include "Add_Bridge_Piers.hpp"
-#include <Mlib/Geometry/Intersection/Interval.hpp>
 #include <Mlib/Geometry/Material.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array_Filter.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_List.hpp>
 #include <Mlib/Geometry/Morphology.hpp>
+#include <Mlib/Geometry/Primitives/Interval.hpp>
 #include <Mlib/Math/Fixed_Rotation_2D.hpp>
 #include <Mlib/Math/Lerp.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Ground_Bvh.hpp>
@@ -33,7 +33,8 @@ void Mlib::add_bridge_piers(
         std::make_shared<TriangleList<CompressedScenePos>>(
             "bridge_piers",
             material,
-            morphology
+            morphology,
+            ModifierBacklog{}
     ));
     for (const auto& [_, w] : ways) {
         for (const auto& node_id : w.nd) {
@@ -68,20 +69,20 @@ void Mlib::add_bridge_piers(
                     float uv_scale_y = 1.f;
                     auto uv_scale = FixedArray<float, 2>{1.f, uv_scale_y * (float)in.length()};
                     for (const auto& cva : model_triangles) {
-                        if (cva->name.name() != "bridge_pier") {
-                            THROW_OR_ABORT(
+                        if (cva->meta.name.name() != "bridge_pier") {
+                            throw std::runtime_error(
                                 (std::stringstream() << "Object name should be \"bridge_pier\", but is \"" <<
-                                    cva->name.name() << '"').str());
+                                    cva->meta.name.name() << '"').str());
                         }
                         if (!cva->quads.empty()) {
-                            THROW_OR_ABORT(
+                            throw std::runtime_error(
                                 (std::stringstream() << "Quads are not supported for bridge piers: \"" <<
-                                    cva->name.name() << '"').str());
+                                    cva->meta.name.name() << '"').str());
                         }
                         for (const auto& t : cva->triangles) {
                             for (size_t i = 0; i < 3; ++i) {
                                 if (std::abs(t(i).position(2)) != 1.f) {
-                                    THROW_OR_ABORT("Bridge pier z-coordinate is not +1 or -1");
+                                    throw std::runtime_error("Bridge pier z-coordinate is not +1 or -1");
                                 }
                             }
                         }

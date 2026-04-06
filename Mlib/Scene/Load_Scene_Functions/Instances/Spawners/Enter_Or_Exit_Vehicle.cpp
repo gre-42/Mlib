@@ -1,6 +1,6 @@
 #include "Enter_Or_Exit_Vehicle.hpp"
-#include <Mlib/Argument_List.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
+#include <Mlib/Misc/Argument_List.hpp>
 #include <Mlib/Players/Advance_Times/Game_Logic.hpp>
 #include <Mlib/Players/Advance_Times/Player.hpp>
 #include <Mlib/Players/Containers/Players.hpp>
@@ -9,7 +9,7 @@
 #include <Mlib/Players/Scene_Vehicle/Vehicle_Spawner.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Load_Scene_Funcs.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -27,7 +27,7 @@ EnterOrExitVehicle::EnterOrExitVehicle(PhysicsScene& physics_scene)
 void EnterOrExitVehicle::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     if (game_logic == nullptr) {
-        THROW_OR_ABORT("Game logic not set");
+        throw std::runtime_error("Game logic not set");
     }
     auto player_name = args.arguments.at<VariableAndHash<std::string>>(KnownArgs::player);
     auto destination_name = args.arguments.at<VariableAndHash<std::string>>(KnownArgs::destination);
@@ -36,7 +36,7 @@ void EnterOrExitVehicle::execute(const LoadSceneJsonUserFunctionArgs& args)
     auto seat = args.arguments.at<std::string>(KnownArgs::seat);
     player->set_next_vehicle(destination, destination.get_primary_scene_vehicle().get(), seat);
     if (!game_logic->vehicle_changer.change_vehicle(player->vehicle_spawner().get())) {
-        THROW_OR_ABORT("Player \"" + *player_name + "\" could not enter \"" + *destination_name + '"');
+        throw std::runtime_error("Player \"" + *player_name + "\" could not enter \"" + *destination_name + '"');
     }
 }
 

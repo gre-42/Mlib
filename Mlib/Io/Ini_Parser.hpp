@@ -1,5 +1,5 @@
 #pragma once
-#include <Mlib/Strings/To_Number.hpp>
+#include <Mlib/Strings/String_View_To_Number.hpp>
 #include <filesystem>
 #include <iosfwd>
 #include <list>
@@ -15,7 +15,7 @@ public:
     const std::string& get(const std::string& section, const std::string& key) const;
     template <class T>
     T get(const std::string& section, const std::string& key) const {
-        return safe_stox<T>(get(section, key));
+        return safe_sto<T>(get(section, key));
     }
     std::optional<std::string> try_get(const std::string& section, const std::string& key) const;
     template <class T>
@@ -24,7 +24,7 @@ public:
         if (!s.has_value()) {
             return std::nullopt;
         }
-        return safe_stox<T>(*s);
+        return safe_sto<T>(*s);
     }
     const std::map<std::string, std::map<std::string, std::string>>& sections() const;
     const std::map<std::string, std::list<std::map<std::string, std::string>>>& lists() const;

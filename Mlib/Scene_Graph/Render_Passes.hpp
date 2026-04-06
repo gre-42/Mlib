@@ -1,8 +1,8 @@
 #pragma once
+#include <Mlib/Geometry/Material/Render_Pass.hpp>
+#include <Mlib/Hashing/Variable_And_Hash.hpp>
 #include <Mlib/Memory/Dangling_Base_Class.hpp>
-#include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
 #include <Mlib/Scene_Graph/Remote_User_Filter.hpp>
-#include <Mlib/Variable_And_Hash.hpp>
 #include <chrono>
 #include <compare>
 #include <cstdint>
@@ -15,7 +15,7 @@ class IRenderableScene;
 
 struct ExternalRenderPass {
     RemoteObserver observer = RemoteObserver::all();
-    ExternalRenderPassType pass;
+    ExternalRenderPassType pass = ExternalRenderPassType::NONE;
     std::chrono::steady_clock::time_point time;
     VariableAndHash<std::string> black_node_name;
     DanglingBaseClassPtr<SceneNode> singular_node = nullptr;
@@ -31,7 +31,7 @@ enum class InternalRenderPass {
     BLENDED_LATE = 1 << 2,
     AGGREGATE = 1 << 3,
     PARTICLES = 1 << 4,
-    PRELOADED = AGGREGATE | PARTICLES,
+    PRELOADED = AGGREGATE,
     ANY_BLENDED = BLENDED_EARLY | BLENDED_LATE
 };
 

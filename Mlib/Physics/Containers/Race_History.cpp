@@ -1,9 +1,10 @@
+
 #include "Race_History.hpp"
-#include <Mlib/Default_Uninitialized_Vector.hpp>
-#include <Mlib/Env.hpp>
+#include <Mlib/Initialization/Default_Uninitialized_Vector.hpp>
 #include <Mlib/Iterator/Enumerate.hpp>
 #include <Mlib/Json/Misc.hpp>
 #include <Mlib/Macro_Executor/Translator.hpp>
+#include <Mlib/Os/Env.hpp>
 #include <Mlib/Physics/Containers/Race_Configuration.hpp>
 #include <Mlib/Physics/Containers/Race_Identifier.hpp>
 #include <Mlib/Physics/Containers/Race_State.hpp>
@@ -11,12 +12,12 @@
 #include <Mlib/Physics/Misc/Track_Writer.hpp>
 #include <Mlib/Physics/Score_Board_Configuration.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
 #include <Mlib/Time/Format.hpp>
 #include <filesystem>
 #include <fstream>
 #include <mutex>
 #include <sstream>
+#include <stdexcept>
 
 namespace fs = std::filesystem;
 
@@ -70,7 +71,7 @@ static void save_json(
         *fstr << j.dump(4);
         fstr->flush();
         if (fstr->fail()) {
-            THROW_OR_ABORT("Could not save temporary file \"" + tmp_filename + '"');
+            throw std::runtime_error("Could not save temporary file \"" + tmp_filename + '"');
         }
     }
     if (path_exists(dst_filename)) {
@@ -133,7 +134,7 @@ void RaceHistory::set_race_identifier_and_reload(const RaceIdentifier& race_iden
             throw std::runtime_error("Could not parse file \"" + fn + "\": " + p.what());
         }
         if (fstr->fail()) {
-            THROW_OR_ABORT("Could not load \"" + fn + '"');
+            throw std::runtime_error("Could not load \"" + fn + '"');
         }
         try {
             lap_time_events_ = j.get<std::list<LapTimeEventAndId>>();
@@ -165,7 +166,7 @@ void RaceHistory::start_race(const RaceConfiguration& race_configuration) {
             }
             try {
                 if (j.get<RaceConfiguration>().readonly) {
-                    THROW_OR_ABORT("Attempt to restart readonly race");
+                    throw std::runtime_error("Attempt to restart readonly race");
                 }
             } catch (const nlohmann::json::exception& e) {
                 throw std::runtime_error("Error in file \"" + cn + "\": " + e.what());
@@ -187,7 +188,7 @@ void RaceHistory::save_and_discard() {
                 if (l.playback_exists) {
                     remove_path(fn);
                 } else if (path_exists(fn)) {
-                    THROW_OR_ABORT("Did not expect playback \"" + fn + "\" to exist");
+                    throw std::runtime_error("Did not expect playback \"" + fn + "\" to exist");
                 }
                 return true;
             }
@@ -207,7 +208,7 @@ RaceState RaceHistory::notify_lap_finished(
 {
     std::scoped_lock lock{ mutex_ };
     if (lap_times_seconds.size() > race_identifier_.laps) {
-        THROW_OR_ABORT(
+        throw std::runtime_error(
             "Counted number of laps is " +
             std::to_string(lap_times_seconds.size()) +
             ", but race only consists of " +
@@ -264,7 +265,7 @@ uint32_t RaceHistory::rank(float race_time_seconds) const {
             break;
         }
         if (rank == UINT32_MAX) {
-            THROW_OR_ABORT("Too many ranks");
+            throw std::runtime_error("Too many ranks");
         }
         ++rank;
     }

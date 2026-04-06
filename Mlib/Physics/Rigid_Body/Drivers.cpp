@@ -1,7 +1,8 @@
+
 #include "Drivers.hpp"
 #include <Mlib/Memory/Recursive_Deletion.hpp>
 #include <Mlib/Physics/Interfaces/IPlayer.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -20,7 +21,7 @@ bool Drivers::seat_exists(const std::string& seat) const {
 
 bool Drivers::seat_is_free(const std::string& seat) {
     if (!seats_set_.contains(seat)) {
-        THROW_OR_ABORT("Unknown seat: \"" + seat + '"');
+        throw std::runtime_error("Unknown seat: \"" + seat + '"');
     }
     return !players_.contains(seat);
 }
@@ -31,11 +32,11 @@ void Drivers::add(
     SourceLocation loc)
 {
     if (!seats_set_.contains(seat)) {
-        THROW_OR_ABORT("Unknown seat: \"" + seat + '"');
+        throw std::runtime_error("Unknown seat: \"" + seat + '"');
     }
     auto it = players_.try_emplace(std::move(seat), player, player->on_clear_vehicle(), loc);
     if (!it.second) {
-        THROW_OR_ABORT("Player with seat \"" + seat + "\" already exists");
+        throw std::runtime_error("Player with seat \"" + seat + "\" already exists");
     }
     it.first->second.on_destroy(
         [this, it](){ players_.erase(it.first); },
@@ -44,7 +45,7 @@ void Drivers::add(
 
 DanglingBaseClassPtr<IPlayer> Drivers::try_get(const std::string& seat) const {
     if (!seats_set_.contains(seat)) {
-        THROW_OR_ABORT("Unknown seat: \"" + seat + '"');
+        throw std::runtime_error("Unknown seat: \"" + seat + '"');
     }
     auto it = players_.find(seat);
     if (it == players_.end()) {

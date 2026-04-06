@@ -1,3 +1,4 @@
+
 #include "Read_Ipl.hpp"
 #include <Mlib/Geometry/Instance/Instance_Information.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
@@ -7,7 +8,7 @@
 #include <Mlib/Stats/Mean.hpp>
 #include <Mlib/Strings/RGetline.hpp>
 #include <Mlib/Strings/String_View_To_Number.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
+#include <stdexcept>
 
 using namespace Mlib;
 using namespace Mlib::TemplateRegex;
@@ -29,7 +30,7 @@ std::list<InstanceInformation<ScenePos>> Mlib::read_ipl(
 {
     auto istr = create_ifstream(filename, std::ios::binary);
     if (istr->fail()) {
-        THROW_OR_ABORT("Could not open \"" + filename.string() + '"');
+        throw std::runtime_error("Could not open \"" + filename.string() + '"');
     }
     try {
         return read_ipl(*istr, rendering_dynamics);
@@ -46,20 +47,20 @@ std::list<InstanceInformation<ScenePos>> Mlib::read_ipl(
         std::string header;
         rgetline(istr, header);
         if (istr.fail()) {
-            THROW_OR_ABORT("Could not read ipl header");
+            throw std::runtime_error("Could not read ipl header");
         }
         if (!header.starts_with("#")) {
-            THROW_OR_ABORT("Unexpected ipl header");
+            throw std::runtime_error("Unexpected ipl header");
         }
     }
     {
         std::string inst;
         rgetline(istr, inst);
         if (istr.fail()) {
-            THROW_OR_ABORT("Could not read ipl inst");
+            throw std::runtime_error("Could not read ipl inst");
         }
         if (inst != "inst") {
-            THROW_OR_ABORT("Unexpected ipl type");
+            throw std::runtime_error("Unexpected ipl type");
         }
     }
     std::list<InstanceInformation<ScenePos>> result;
@@ -67,7 +68,7 @@ std::list<InstanceInformation<ScenePos>> Mlib::read_ipl(
         std::string line;
         rgetline(istr, line);
         if (istr.fail()) {
-            THROW_OR_ABORT("Could not read line");
+            throw std::runtime_error("Could not read line");
         }
         if (line.empty()) {
             continue;
@@ -81,13 +82,13 @@ std::list<InstanceInformation<ScenePos>> Mlib::read_ipl(
 
         SMatch<13> match;
         if (!regex_match(line, match, reg)) {
-            THROW_OR_ABORT("Could not parse line \"" + line + '"');
+            throw std::runtime_error("Could not parse line \"" + line + '"');
         }
         std::string name{ match[2].str() };
         FixedArray<ScenePos, 3> t{
-            safe_stox<ScenePos>(match[3].str()),
-            safe_stox<ScenePos>(match[4].str()),
-            safe_stox<ScenePos>(match[5].str()) };
+            safe_sto<ScenePos>(match[3].str()),
+            safe_sto<ScenePos>(match[4].str()),
+            safe_sto<ScenePos>(match[5].str()) };
         FixedArray<float, 3> scale{
             safe_stof(match[6].str()),
             safe_stof(match[7].str()),

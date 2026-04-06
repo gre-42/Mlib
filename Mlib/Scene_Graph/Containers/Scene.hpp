@@ -20,7 +20,6 @@
 
 namespace Mlib {
 
-class DeleteNodeMutex;
 template <typename TData, size_t... tshape>
 class FixedArray;
 template <class TDir, class TPos, size_t n>
@@ -45,13 +44,12 @@ template <class T>
 class VariableAndHash;
 enum class AnimationStateAlreadyExistsBehavior;
 
-class Scene {
+class Scene: public virtual DanglingBaseClass {
     friend RootNodes;
 public:
     // Noncopyable because of mutex_
     explicit Scene(
         std::string name,
-        DeleteNodeMutex& delete_node_mutex,
         SceneNodeResources* scene_node_resources = nullptr,
         ITrailRenderer* trail_renderer = nullptr,
         IDynamicLights* dynamic_lights = nullptr);
@@ -111,6 +109,7 @@ public:
     void register_node(
         const VariableAndHash<std::string>& name,
         const DanglingBaseClassRef<SceneNode>& scene_node);
+    bool try_unregister_node(const VariableAndHash<std::string>& name);
     void unregister_node(const VariableAndHash<std::string>& name);
     void unregister_nodes(const Mlib::re::cregex& regex);
     DanglingBaseClassRef<SceneNode> get_node(const VariableAndHash<std::string>& name, SourceLocation loc) const;
@@ -144,10 +143,8 @@ public:
     void wait_for_cleanup() const;
     void notify_cleanup_required();
     void notify_cleanup_done();
-    DeleteNodeMutex& delete_node_mutex() const;
-    void set_this_thread_as_render_thread();
-    void clear_render_thread();
-    void assert_this_thread_is_render_thread() const;
+    SafeAtomicRecursiveSharedMutex delete_node_mutex;
+    SafeAtomicRecursiveSharedMutex render_mutex;
 private:
     // Must be above garbage-collected members for
     // deregistration of child nodes in SceneNode
@@ -159,8 +156,6 @@ private:
     // |Static   |x     |x      |x    |x    |    |
     // |Aggregate|      |       |x    |x    |    |
     // |Instances|      |       |x    |x    |    |
-    DeleteNodeMutex& delete_node_mutex_;
-    std::thread::id render_thread_id_;
     MapOfRootNodes morn_;
     RootNodes& root_nodes_;
     RootNodes& static_root_nodes_;
@@ -183,7 +178,7 @@ private:
     SceneNodeResources* scene_node_resources_;
     ITrailRenderer* trail_renderer_;
     IDynamicLights* dynamic_lights_;
-    mutable std::atomic_uint32_t ncleanups_required_;
+    mutable std::atomic<std::uint32_t> ncleanups_required_;
     std::list<std::unique_ptr<DanglingBaseClass>> trash_can_obj_;
     std::list<std::unique_ptr<SceneNode>> trash_can_child_nodes_;
 };

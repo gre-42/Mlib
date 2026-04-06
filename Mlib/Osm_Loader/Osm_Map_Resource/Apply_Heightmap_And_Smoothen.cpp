@@ -6,7 +6,7 @@
 #include <Mlib/Images/Filters/Maximum_Filter.hpp>
 #include <Mlib/Images/Pgm_Image.hpp>
 #include <Mlib/Images/StbImage3.hpp>
-#include <Mlib/Log.hpp>
+#include <Mlib/Misc/Log.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Apply_Heightmap.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Height_Sampler.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Node_Height_Binding.hpp>
@@ -20,9 +20,9 @@
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Vertex_Height_Binding.hpp>
 #include <Mlib/Scene_Graph/Resources/Batch_Resource_Instantiator.hpp>
 #include <Mlib/Threads/Thread_Top.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
 #include <list>
 #include <memory>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -138,7 +138,7 @@ void Mlib::apply_heightmap_and_smoothen(
         {
             std::set<FixedArray<CompressedScenePos, 3>*> svs(smoothed_vertices.begin(), smoothed_vertices.end());
             if (svs.size() != smoothed_vertices.size()) {
-                THROW_OR_ABORT("Found duplicate smoothed vertices");
+                throw std::runtime_error("Found duplicate smoothed vertices");
             }
         }
     };
@@ -208,7 +208,7 @@ void Mlib::apply_heightmap_and_smoothen(
                     });
                 }
             } else {
-                THROW_OR_ABORT("Unknown vertex out of heightmap behavior");
+                throw std::runtime_error("Unknown vertex out of heightmap behavior");
             }
         }
         bri.remove(vertices_to_delete);

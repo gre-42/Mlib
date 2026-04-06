@@ -8,8 +8,8 @@
 #include <Mlib/Players/Scene_Vehicle/Vehicle_Spawner.hpp>
 #include <Mlib/Players/Team/Team.hpp>
 #include <Mlib/Scene_Graph/Spawn_Point.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
 #include <set>
+#include <stdexcept>
 #include <string>
 
 using namespace Mlib;
@@ -45,7 +45,7 @@ void TeamDeathmatch::handle_respawn() {
         handle_last_team_standing_objective();
         return;
     }
-    THROW_OR_ABORT("Unknown objective");
+    throw std::runtime_error("Unknown objective");
 }
 
 void TeamDeathmatch::respawn_individually() {

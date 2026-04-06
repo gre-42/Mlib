@@ -5,7 +5,7 @@
 #include <Mlib/Math/Orderable_Fixed_Array.hpp>
 #include <Mlib/Navigation/Sample_SoloMesh.hpp>
 #include <Mlib/Stats/Min_Max.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -24,11 +24,11 @@ UUVector<FixedArray<CompressedScenePos, 3>> ShortestPathIntermediatePointsCreato
 {
     auto lp0_it = poly_refs_.find(make_orderable(p0));
     if (lp0_it == poly_refs_.end()) {
-        THROW_OR_ABORT2((PointException{ p0, "Could not find poly for start" }));
+        throw PointException{ p0, "Could not find poly for start" };
     }
     auto lp1_it = poly_refs_.find(make_orderable(p1));
     if (lp1_it == poly_refs_.end()) {
-        THROW_OR_ABORT2((PointException{ p1, "Could not find poly for end" }));
+        throw PointException{ p1, "Could not find poly for end" };
     }
     try {
         auto sresult = ssm_.shortest_path(
@@ -40,9 +40,9 @@ UUVector<FixedArray<CompressedScenePos, 3>> ShortestPathIntermediatePointsCreato
                 .polyRef = lp1_it->second},
                 step_size_);
         if (sresult.empty()) {
-            THROW_OR_ABORT("Empty shortest path");
+            throw std::runtime_error("Empty shortest path");
         } else if (sresult.size() == 1) {
-            // THROW_OR_ABORT2((EdgeException{p0, p1, "Unexpected path length"}));
+            // throw EdgeException{p0, p1, "Unexpected path length"};
             lwarn() << "Shortest path consists of a single point, probably due to duplicate points";
             return {};
         } else if (sresult.size() == 2) {
@@ -55,8 +55,8 @@ UUVector<FixedArray<CompressedScenePos, 3>> ShortestPathIntermediatePointsCreato
         }
         return result;
     } catch (const EdgeException<float>& e) {
-        THROW_OR_ABORT2((EdgeException<CompressedScenePos>{e.a.casted<CompressedScenePos>(), e.b.casted<CompressedScenePos>(), e.what()}));
+        throw EdgeException<CompressedScenePos>{e.a.casted<CompressedScenePos>(), e.b.casted<CompressedScenePos>(), e.what()};
     } catch (const PointException<float, 3>& e) {
-        THROW_OR_ABORT2((PointException<CompressedScenePos, 3>{e.point.casted<CompressedScenePos>(), e.what()}));
+        throw PointException<CompressedScenePos, 3>{e.point.casted<CompressedScenePos>(), e.what()};
     }
 }

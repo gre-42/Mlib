@@ -1,7 +1,8 @@
 #pragma once
 #include <Mlib/Math/Math.hpp>
+#include <Mlib/Memory/Float_To_Integral.hpp>
 #include <Mlib/Stats/Sort.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
+#include <stdexcept>
 
 namespace Mlib {
 
@@ -9,17 +10,23 @@ template <class TDataX>
 class Quantiles {
 public:
     explicit Quantiles(const Array<TDataX>& x)
-    : sx_(sorted(x))
+        : sx_(sorted(x))
     {
         if (x.length() == 0) {
-            THROW_OR_ABORT("Cannot compute quantiles for an empty array");
+            throw std::runtime_error("Cannot compute quantiles for an empty array");
         }
     }
     template <class TDataQ>
-    const TDataX& operator () (const TDataQ& q, const TDataQ& offset = TDataQ(0.5)) {
-        assert(q >= 0);
-        assert(q <= 1);
-        return sx_(size_t(q * TDataQ(sx_.length() - 1) + offset));
+    const TDataX& operator () (const TDataQ& q) const {
+        auto findex = std::floor(q * TDataQ(sx_.length() - 1));
+        if (findex < 0) {
+            throw std::runtime_error("Quantile too low");
+        }
+        auto index = float_to_integral<size_t>(findex);
+        if (index >= sx_.length()) {
+            throw std::runtime_error("Quantile too large");
+        }
+        return sx_(index);
     }
 private:
     Array<TDataX> sx_;

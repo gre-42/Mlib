@@ -1,3 +1,4 @@
+
 #include "Tire.hpp"
 #include <Mlib/Geometry/Angle.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
@@ -7,7 +8,7 @@ using namespace Mlib;
 Tire::Tire(
     const VariableAndHash<std::string>& engine,
     std::optional<VariableAndHash<std::string>> delta_engine,
-    RigidBodyPulses* rbp,
+    const DanglingBaseClassPtr<RigidBodyVehicle>& rb,
     float brake_force,
     float brake_torque,
     float sKs,
@@ -18,7 +19,7 @@ Tire::Tire(
     const FixedArray<float, 3>& vehicle_mount_0,
     const FixedArray<float, 3>& vehicle_mount_1,
     float radius)
-    : BaseRotor{ engine, std::move(delta_engine), rbp, brake_torque }
+    : BaseRotor{ engine, std::move(delta_engine), rb, brake_torque }
     , magic_formula{ magic_formula }
     , shock_absorber_position{ 0 }
     , angle_x{ 0 }
@@ -38,7 +39,7 @@ Tire::Tire(
     vertical_line = (vehicle_mount_1 - vehicle_mount_0);
     auto len2 = sum(squared(vertical_line));
     if (len2 < 1e-12) {
-        THROW_OR_ABORT("Tire vehicle mount points are identical");
+        throw std::runtime_error("Tire vehicle mount points are identical");
     }
     vertical_line /= std::sqrt(len2);
 }

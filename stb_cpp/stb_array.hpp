@@ -1,17 +1,21 @@
 #pragma once
 #include <Mlib/Array/Array.hpp>
-#include <Mlib/Assert.hpp>
+#include <Mlib/Memory/Integral_Cast.hpp>
+#include <Mlib/Testing/Assert.hpp>
 #include <stb_cpp/stb_image_load.hpp>
 
 namespace Mlib {
 
 template <class TData>
 Array<TData> stb_image_2_array(const TData* data, int width, int height, int nrChannels) {
-    Array<TData> result{ArrayShape{(size_t)nrChannels, (size_t)height, (size_t)width}};
-    for (size_t r = 0; r < (size_t)height; ++r) {
-        for (size_t c = 0; c < (size_t)width; ++c) {
-            for (size_t d = 0; d < (size_t)nrChannels; ++d) {
-                result(d, r, c) = data[(r * (size_t)width  + c) * (size_t)nrChannels + d];
+    auto w = integral_cast<size_t>(width);
+    auto h = integral_cast<size_t>(height);
+    auto ch = integral_cast<size_t>(nrChannels);
+    Array<TData> result{ArrayShape{ch, h, w}};
+    for (size_t r = 0; r < h; ++r) {
+        for (size_t c = 0; c < w; ++c) {
+            for (size_t d = 0; d < ch; ++d) {
+                result(d, r, c) = data[(r * w  + c) * ch + d];
             }
         }
     }

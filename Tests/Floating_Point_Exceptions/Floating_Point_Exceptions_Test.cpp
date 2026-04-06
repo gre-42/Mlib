@@ -1,4 +1,4 @@
-#include <Mlib/Floating_Point_Exceptions.hpp>
+#include <Mlib/Misc/Floating_Point_Exceptions.hpp>
 #include <Mlib/Os/Os.hpp>
 
 using namespace Mlib;

@@ -1,6 +1,7 @@
+
 #include "Rendering_Strategies.hpp"
-#include <Mlib/Throw_Or_Abort.hpp>
 #include <map>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -19,7 +20,7 @@ static std::string rendering_strategy_to_string(RenderingStrategies rendering_st
     case RenderingStrategies::OBJECT:
         return "object";
     }
-    THROW_OR_ABORT("Unknown rendering strategy: " + std::to_string((int)rendering_strategy));
+    throw std::runtime_error("Unknown rendering strategy: " + std::to_string((int)rendering_strategy));
 }
 
 std::string Mlib::rendering_strategies_to_string(RenderingStrategies rendering_strategies) {
@@ -51,7 +52,7 @@ RenderingStrategies Mlib::rendering_strategy_from_string(const std::string& s) {
         {"object", RenderingStrategies::OBJECT}};
     auto it = m.find(s);
     if (it == m.end()) {
-        THROW_OR_ABORT("Unknown rendering strategy: \"" + s + '"');
+        throw std::runtime_error("Unknown rendering strategy: \"" + s + '"');
     }
     return it->second;
 }

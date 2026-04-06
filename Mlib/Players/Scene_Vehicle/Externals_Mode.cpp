@@ -1,5 +1,5 @@
 #include "Externals_Mode.hpp"
-#include <Mlib/Throw_Or_Abort.hpp>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -9,6 +9,6 @@ ExternalsMode Mlib::externals_mode_from_string(const std::string& externals_mode
     } else if (externals_mode == "npc") {
         return ExternalsMode::NPC;
     } else {
-        THROW_OR_ABORT("Unknown externals mode: " + externals_mode);
+        throw std::runtime_error("Unknown externals mode: " + externals_mode);
     }
 }

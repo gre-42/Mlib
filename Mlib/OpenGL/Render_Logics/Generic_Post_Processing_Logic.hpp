@@ -1,0 +1,21 @@
+#pragma once
+#include <Mlib/OpenGL/Instance_Handles/Buffer_Background_Copy.hpp>
+#include <Mlib/OpenGL/Instance_Handles/Vertex_Array.hpp>
+#include <Mlib/OpenGL/Render_Logics/Textured_Quad_Style.hpp>
+
+namespace Mlib {
+
+class GenericPostProcessingLogic {
+public:
+    explicit GenericPostProcessingLogic(const float* quad_vertices = standard_quad_vertices);
+    ~GenericPostProcessingLogic();
+protected:
+    static const char* simple_vertex_shader_text_;
+    BufferForegroundCopy vertices_;
+    VertexArray& va();
+private:
+    VertexArray va_;
+    const float* quad_vertices_;
+};
+
+}

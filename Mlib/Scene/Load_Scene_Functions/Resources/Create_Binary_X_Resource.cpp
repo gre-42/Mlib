@@ -1,14 +1,14 @@
 #include "Create_Binary_X_Resource.hpp"
-#include <Mlib/Argument_List.hpp>
-#include <Mlib/FPath.hpp>
 #include <Mlib/Geometry/Material.hpp>
 #include <Mlib/Geometry/Morphology.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
+#include <Mlib/Misc/Argument_List.hpp>
+#include <Mlib/Misc/FPath.hpp>
+#include <Mlib/OpenGL/Rendering_Context.hpp>
+#include <Mlib/OpenGL/Resource_Managers/Rendering_Resources.hpp>
+#include <Mlib/OpenGL/Resources/Binary_X_Resource.hpp>
 #include <Mlib/Physics/Units.hpp>
-#include <Mlib/Render/Rendering_Context.hpp>
-#include <Mlib/Render/Resource_Managers/Rendering_Resources.hpp>
-#include <Mlib/Render/Resources/Binary_X_Resource.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
 
@@ -67,8 +67,8 @@ LoadSceneJsonUserFunction CreateBinaryXResource::json_user_function = [](const L
     };
     Material material_0{material};
     Material material_90{material};
-    material_0.textures_color = { primary_rendering_resources.get_blend_map_texture(VariableAndHash{args.arguments.path_or_variable(KnownArgs::texture_filename_0).path}) };
-    material_90.textures_color = { primary_rendering_resources.get_blend_map_texture(VariableAndHash{args.arguments.path_or_variable(KnownArgs::texture_filename_90).path}) };
+    material_0.textures_color = { primary_rendering_resources.get_blend_map_texture(args.arguments.path_or_variable(KnownArgs::texture_filename_0)) };
+    material_90.textures_color = { primary_rendering_resources.get_blend_map_texture(args.arguments.path_or_variable(KnownArgs::texture_filename_90)) };
     material_0.compute_color_mode();
     material_90.compute_color_mode();
     RenderingContextStack::primary_scene_node_resources().add_resource_loader(

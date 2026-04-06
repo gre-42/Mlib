@@ -1,3 +1,4 @@
+
 #include "Audio_Context.hpp"
 #include <Mlib/Audio/Audio_Device.hpp>
 #include <Mlib/Audio/OpenALSoft_efx.h>
@@ -5,7 +6,6 @@
 #include <Mlib/Audio/OpenAL_alc.h>
 #include <Mlib/Memory/Integral_Cast.hpp>
 #include <Mlib/Os/Os.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
 #include <iostream>
 #include <stdexcept>
 
@@ -17,7 +17,7 @@ AudioContext::AudioContext(
     unsigned int max_auxiliary_sends)
 {
     if (alcIsExtensionPresent(device.device_, "ALC_EXT_EFX") == AL_FALSE) {
-        THROW_OR_ABORT("OpenAL effects extension not present");
+        throw std::runtime_error("OpenAL effects extension not present");
     }
     ALCint attrlist[] = {
         ALC_FREQUENCY,
@@ -27,7 +27,7 @@ AudioContext::AudioContext(
         integral_cast<ALCint>(max_auxiliary_sends)};
     auto *context = alcCreateContext(device.device_, frequency == 0 ? nullptr : attrlist);
     if (context == nullptr) {
-        THROW_OR_ABORT("Could not create audio context, code: " +
+        throw std::runtime_error("Could not create audio context, code: " +
                        std::to_string(alcGetError(device.device_)));
     }
     dgs_.add([context, d = device.device_]() {
@@ -37,7 +37,7 @@ AudioContext::AudioContext(
         }
     });
     if (!alcMakeContextCurrent(context)) {
-        THROW_OR_ABORT("Could not make context current, code: " +
+        throw std::runtime_error("Could not make context current, code: " +
                        std::to_string(alcGetError(device.device_)));
     }
     dgs_.add([d = device.device_]() {

@@ -1,6 +1,5 @@
 #pragma once
 #include <Mlib/Images/StbImage3.hpp>
-#include <cmath>
 
 namespace Mlib {
 

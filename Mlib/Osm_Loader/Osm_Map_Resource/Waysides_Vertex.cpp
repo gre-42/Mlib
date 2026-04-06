@@ -1,7 +1,7 @@
 #include "Waysides_Vertex.hpp"
-#include <Mlib/Argument_List.hpp>
 #include <Mlib/Json/Json_View.hpp>
-#include <Mlib/Render/Rendering_Context.hpp>
+#include <Mlib/Misc/Argument_List.hpp>
+#include <Mlib/OpenGL/Rendering_Context.hpp>
 #include <Mlib/Scene_Graph/Resources/Parsed_Resource_Name.hpp>
 
 using namespace Mlib;

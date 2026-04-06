@@ -41,7 +41,7 @@ public:
     }
     inline double progress() const {
         if (!has_value()) {
-            THROW_OR_ABORT("TrackReader::progress called on uninitialized object");
+            throw std::runtime_error("TrackReader::progress called on uninitialized object");
         }
         return track_element_.progress(interpolation_key_);
     }

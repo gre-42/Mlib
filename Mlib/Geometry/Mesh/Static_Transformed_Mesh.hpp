@@ -1,7 +1,7 @@
 #pragma once
-#include <Mlib/Geometry/Intersection/Axis_Aligned_Bounding_Box.hpp>
-#include <Mlib/Geometry/Intersection/Bounding_Sphere.hpp>
 #include <Mlib/Geometry/Mesh/IIntersectable_Mesh.hpp>
+#include <Mlib/Geometry/Primitives/Axis_Aligned_Bounding_Box.hpp>
+#include <Mlib/Geometry/Primitives/Bounding_Sphere.hpp>
 #include <vector>
 
 namespace Mlib {
@@ -14,8 +14,6 @@ template <class TPosition, size_t tnvertices>
 struct CollisionPolygonSphere;
 template <class TPosition>
 struct CollisionLineSphere;
-template <class TPosition>
-struct CollisionRidgeSphere;
 
 class StaticTransformedMesh: public IIntersectableMesh {
     StaticTransformedMesh(const StaticTransformedMesh&) = delete;
@@ -29,7 +27,6 @@ public:
         std::vector<CollisionPolygonSphere<CompressedScenePos, 3>>&& triangles,
         std::vector<CollisionLineSphere<CompressedScenePos>>&& lines,
         std::vector<CollisionLineSphere<CompressedScenePos>>&& edges,
-        std::vector<CollisionRidgeSphere<CompressedScenePos>>&& ridges,
         std::vector<TypedMesh<std::shared_ptr<IIntersectable>>>&& intersectables);
     ~StaticTransformedMesh();
     virtual std::string name() const override;
@@ -39,7 +36,6 @@ public:
     virtual const std::vector<CollisionPolygonSphere<CompressedScenePos, 3>>& get_triangles_sphere() const override;
     virtual const std::vector<CollisionLineSphere<CompressedScenePos>>& get_lines_sphere() const override;
     virtual const std::vector<CollisionLineSphere<CompressedScenePos>>& get_edges_sphere() const override;
-    virtual const std::vector<CollisionRidgeSphere<CompressedScenePos>>& get_ridges_sphere() const override;
     virtual const std::vector<TypedMesh<std::shared_ptr<IIntersectable>>>& get_intersectables() const override;
     virtual BoundingSphere<CompressedScenePos, 3> bounding_sphere() const override;
     virtual AxisAlignedBoundingBox<CompressedScenePos, 3> aabb() const override;
@@ -51,7 +47,6 @@ private:
     std::vector<CollisionPolygonSphere<CompressedScenePos, 3>> triangles_;
     std::vector<CollisionLineSphere<CompressedScenePos>> lines_;
     std::vector<CollisionLineSphere<CompressedScenePos>> edges_;
-    std::vector<CollisionRidgeSphere<CompressedScenePos>> ridges_;
     std::vector<TypedMesh<std::shared_ptr<IIntersectable>>> intersectables_;
 };
 

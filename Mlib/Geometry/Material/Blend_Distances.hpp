@@ -78,7 +78,7 @@ SquaredStepDistances::SquaredStepDistances(const FixedArray<float, 2>& d1)
     : distances2_{ uninitialized }
 {
     if (!all(d1 >= 0.f)) {
-        THROW_OR_ABORT("SquaredStepDistances received negative values");
+        throw std::runtime_error("SquaredStepDistances received negative values");
     }
     distances2_ = squared(d1);
 }

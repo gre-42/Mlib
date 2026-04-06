@@ -1,16 +1,13 @@
 #pragma once
-#include <Mlib/Default_Uninitialized_Vector.hpp>
-#include <Mlib/Geometry/Intersection/Extremal_Axis_Aligned_Bounding_Box.hpp>
-#include <Mlib/Geometry/Intersection/Extremal_Bounding_Sphere.hpp>
-#include <Mlib/Geometry/Material.hpp>
 #include <Mlib/Geometry/Mesh/Bone_Weight.hpp>
-#include <Mlib/Geometry/Modifier_Backlog.hpp>
-#include <Mlib/Geometry/Morphology.hpp>
-#include <Mlib/Geometry/Primitive_Dimensions.hpp>
+#include <Mlib/Geometry/Mesh/Mesh_Meta.hpp>
+#include <Mlib/Geometry/Primitives/Extremal_Axis_Aligned_Bounding_Box.hpp>
+#include <Mlib/Geometry/Primitives/Extremal_Bounding_Sphere.hpp>
+#include <Mlib/Geometry/Primitives/Primitive_Dimensions.hpp>
+#include <Mlib/Initialization/Default_Uninitialized_Vector.hpp>
+#include <Mlib/Misc/To_Underlying.hpp>
 #include <Mlib/Scene_Config/Scene_Precision.hpp>
-#include <Mlib/Strings/Group_And_Name.hpp>
 #include <Mlib/Threads/Recursive_Shared_Mutex.hpp>
-#include <Mlib/To_Underlying.hpp>
 #include <atomic>
 #include <cereal/access.hpp>
 #include <cstdint>
@@ -64,10 +61,7 @@ public:
         const ExtremalAxisAlignedBoundingBox<TPos, 3>* aabb = nullptr,
         const ExtremalBoundingSphere<TPos, 3>* bounding_sphere = nullptr);
     ~ColoredVertexArray();
-    GroupAndName name;
-    Material material;
-    Morphology morphology;
-    ModifierBacklog modifier_backlog;
+    MeshMeta meta;
     UUVector<FixedArray<ColoredVertex<TPos>, to_underlying(PrimitiveDimensions::QUAD)>> quads;
     UUVector<FixedArray<ColoredVertex<TPos>, to_underlying(PrimitiveDimensions::TRIANGLE)>> triangles;
     UUVector<FixedArray<ColoredVertex<TPos>, to_underlying(PrimitiveDimensions::LINE)>> lines;
@@ -95,10 +89,16 @@ public:
     const UUVector<FixedArray<ColoredVertex<TPos>, to_underlying(tdims)>>& primitives() const {
         return const_cast<ColoredVertexArray*>(this)->primitives<tdims>();
     }
+    size_t nelements() const;
     bool empty() const;
     UUVector<FixedArray<TPos, 3>> vertices() const;
     const ExtremalAxisAlignedBoundingBox<TPos, 3>& aabb() const;
     const ExtremalBoundingSphere<TPos, 3>& bounding_sphere() const;
+    void extend_aabb(ExtremalAxisAlignedBoundingBox<CompressedScenePos, 3>& aabb) const;
+    void extend_bounding_sphere(ExtremalBoundingSphere<CompressedScenePos, 3>& bounding_sphere) const;
+    void extend_aabb(
+        const TransformationMatrix<SceneDir, ScenePos, 3>& mv,
+        AxisAlignedBoundingBox<CompressedScenePos, 3>& aabb) const;
     TPos radius(const FixedArray<TPos, 3>& center) const;
     void set_bounds(
         const AxisAlignedBoundingBox<TPos, 3>& aabb,
@@ -144,13 +144,10 @@ public:
         float depth,
         PhysicsMaterial destination_physics_material) const;
     std::string identifier() const;
-    void print(std::ostream& ostr) const;
+    void print_stats(std::ostream& ostr) const;
     template <class Archive>
     void serialize(Archive& archive) {
-        archive(name);
-        archive(material);
-        archive(morphology);
-        archive(modifier_backlog);
+        archive(meta);
         archive(quads);
         archive(triangles);
         archive(lines);
@@ -168,10 +165,7 @@ public:
         Archive& archive,
         cereal::construct<ColoredVertexArray>& construct)
     {
-        std::string name;
-        Material material;
-        Morphology morphology;
-        ModifierBacklog modifier_backlog;
+        MeshMeta meta;
         UUVector<FixedArray<ColoredVertex<TPos>, 4>> quads;
         UUVector<FixedArray<ColoredVertex<TPos>, 3>> triangles;
         UUVector<FixedArray<ColoredVertex<TPos>, 2>> lines;
@@ -183,10 +177,7 @@ public:
         UUVector<FixedArray<float, 3>> alpha;
         UUVector<FixedArray<float, 4>> interiormap_uvmaps;
 
-        archive(name);
-        archive(material);
-        archive(morphology);
-        archive(modifier_backlog);
+        archive(meta);
         archive(quads);
         archive(triangles);
         archive(lines);
@@ -199,10 +190,10 @@ public:
         archive(interiormap_uvmaps);
 
         construct(
-            name,
-            material,
-            morphology,
-            modifier_backlog,
+            std::move(meta.name),
+            std::move(meta.material),
+            std::move(meta.morphology),
+            std::move(meta.modifier_backlog),
             std::move(quads),
             std::move(triangles),
             std::move(lines),
@@ -215,6 +206,8 @@ public:
             std::move(interiormap_uvmaps));
     }
 private:
+    template <PrimitiveDimensions tfirst_dim>
+    size_t nelements_from() const;
     template <PrimitiveDimensions tfirst_dim>
     bool empty_from() const;
     mutable std::optional<ExtremalAxisAlignedBoundingBox<TPos, 3>> aabb_;

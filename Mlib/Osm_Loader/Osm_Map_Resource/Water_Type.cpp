@@ -1,5 +1,5 @@
 #include "Water_Type.hpp"
-#include <Mlib/Throw_Or_Abort.hpp>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -13,7 +13,7 @@ WaterType Mlib::water_type_from_string(const std::string& wt) {
     } else if (wt == "shallow_lake") {
         return WaterType::SHALLOW_LAKE;
     } else {
-        THROW_OR_ABORT("Unknown water type");
+        throw std::runtime_error("Unknown water type");
     }
 }
 
@@ -27,7 +27,7 @@ std::string Mlib::water_type_to_string(WaterType wt) {
     } else if (wt == WaterType::SHALLOW_LAKE) {
         return "shallow_lake";
     } else {
-        THROW_OR_ABORT("Unknown water type");
+        throw std::runtime_error("Unknown water type");
     }
 }
 

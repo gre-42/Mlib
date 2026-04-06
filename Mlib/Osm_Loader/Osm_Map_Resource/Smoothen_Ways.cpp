@@ -1,12 +1,12 @@
 #include "Smoothen_Ways.hpp"
 #include <Mlib/Math/Fixed_Math.hpp>
-#include <Mlib/Math/Sigmoid.hpp>
+#include <Mlib/Math/Sigmoid/Sigmoid.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Get_Way_Width.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Nodes_And_Ways.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Osm_Map_Resource_Helpers.hpp>
 #include <Mlib/Stats/Linspace.hpp>
 #include <Mlib/Strings/String.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -70,7 +70,7 @@ private:
         if (*v == "no") {
             return false;
         }
-        THROW_OR_ABORT("Unsupported smoothing mode");
+        throw std::runtime_error("Unsupported smoothing mode");
     }
     bool force_include_;
     bool include_way_;
@@ -163,7 +163,7 @@ NodesAndWays Mlib::smoothen_ways(
                     }
                     return false;
                 } else {
-                    THROW_OR_ABORT(
+                    throw std::runtime_error(
                         "Number of ways neither 1 or 2 despite number of neighbors check at node \"" + i +
                         "\". Neighbors: " + Mlib::join(", ", node_neighbors.at(i)) +
                         ". Ways: " + Mlib::join(", ", iways));

@@ -1,7 +1,6 @@
 #pragma once
 #include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/Memory/Destruction_Functions.hpp>
-#include <Mlib/Object.hpp>
 #include <Mlib/Physics/Interfaces/IAdvance_Time.hpp>
 #include <memory>
 

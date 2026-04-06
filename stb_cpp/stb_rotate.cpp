@@ -49,5 +49,5 @@ StbInfo<unsigned char> stb_rotate(
         case 180: return stb_rotate_180(data);
         case 270: return stb_rotate_270(data);
     }
-    THROW_OR_ABORT("Can only rotate by 90, 180 or 270 degrees. Requested: " + std::to_string(degrees));
+    throw std::runtime_error("Can only rotate by 90, 180 or 270 degrees. Requested: " + std::to_string(degrees));
 }

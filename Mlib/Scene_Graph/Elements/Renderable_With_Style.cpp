@@ -1,5 +1,6 @@
+
 #include "Renderable_With_Style.hpp"
-#include <Mlib/Hash.hpp>
+#include <Mlib/Hashing/Hash.hpp>
 #include <shared_mutex>
 
 using namespace Mlib;
@@ -30,7 +31,7 @@ const ColorStyle* RenderableWithStyle::style(
         std::shared_lock lock{ style_hash_mutex_ };
         if (hasher0 == style_hash_) {
             if (!style_.has_value()) {
-                THROW_OR_ABORT("Style hash collision (0)");
+                throw std::runtime_error("Style hash collision (0)");
             }
             return &*style_;
         }
@@ -39,7 +40,7 @@ const ColorStyle* RenderableWithStyle::style(
         std::scoped_lock lock{ style_hash_mutex_ };
         if (hasher0 == style_hash_) {
             if (!style_.has_value()) {
-                THROW_OR_ABORT("Style hash collision (1)");
+                throw std::runtime_error("Style hash collision (1)");
             }
             return &*style_;
         }

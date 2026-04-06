@@ -4,6 +4,7 @@
 #include <Mlib/Geometry/Material_Configuration/Base_Materials.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_List.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>
+#include <Mlib/OpenGL/Renderables/Triangle_Sampler/Terrain_Type.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Bounding_Info.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Building.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Compute_Area.hpp>
@@ -14,10 +15,9 @@
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Region_With_Margin.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Steiner_Point_Info.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Triangulate_Terrain_Or_Ceilings.hpp>
-#include <Mlib/Render/Renderables/Triangle_Sampler/Terrain_Type.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
 #include <iostream>
 #include <poly2tri/point_exception.hpp>
+#include <stdexcept>
 #include <vector>
 
 using namespace Mlib;
@@ -47,7 +47,7 @@ void Mlib::draw_buildings_ceiling_or_ground(
             continue;
         }
         if (bu.way.nd.front() != bu.way.nd.back()) {
-            THROW_OR_ABORT("Cannot draw ceiling or ground of building " + bu.id + ": outline not closed");
+            throw std::runtime_error("Cannot draw ceiling or ground of building " + bu.id + ": outline not closed");
         }
         if ((tpe == DrawBuildingPartType::GROUND) &&
             bu.way.tags.contains("layer") &&
@@ -57,12 +57,12 @@ void Mlib::draw_buildings_ceiling_or_ground(
         }
         auto sw = smooth_building_level_outline(bu, nodes, scale, max_width, tpe, BuildingDetailType::COMBINED);
         if (sw.outline.empty()) {
-            THROW_OR_ABORT("Smoothed outline is empty");
+            throw std::runtime_error("Smoothed outline is empty");
         }
         auto gz = (CompressedScenePos)0.f;
         if (tpe == DrawBuildingPartType::CEILING) {
             if (displacements == nullptr) {
-                THROW_OR_ABORT("Ceiling requires displacements");
+                throw std::runtime_error("Ceiling requires displacements");
             }
             auto max_height = std::numeric_limits<CompressedScenePos>::lowest();
             if (displacements != nullptr) {
@@ -92,16 +92,18 @@ void Mlib::draw_buildings_ceiling_or_ground(
                 case DrawBuildingPartType::CEILING: return "ceiling_";
                 case DrawBuildingPartType::GROUND: return "building_ground_";
             }
-            THROW_OR_ABORT("Unknown building part type");
+            throw std::runtime_error("Unknown building part type");
         }();
         auto& tl = tls.emplace_back(std::make_shared<TriangleList<CompressedScenePos>>(
             prefix + std::to_string(mid++),
             material,
-            morphology + BASE_VISIBLE_TERRAIN_MATERIAL));
+            morphology + BASE_VISIBLE_TERRAIN_MATERIAL,
+            ModifierBacklog{}));
         auto tl_undefined = std::make_shared<TriangleList<CompressedScenePos>>(
             "undefined",
             material,
-            morphology + BASE_VISIBLE_TERRAIN_MATERIAL);
+            morphology + BASE_VISIBLE_TERRAIN_MATERIAL,
+            ModifierBacklog{});
         TerrainTypeTriangleList tl_terrain;
         tl_terrain.insert(TerrainType::UNDEFINED, tl_undefined);
         tl_terrain.insert(TerrainType::FLOWERS, tl);
@@ -148,7 +150,7 @@ void Mlib::draw_buildings_ceiling_or_ground(
                 bu.id << "\". " <<
                 "#nodes = " << bu.way.nd.size() <<
                 ", #outline = " << sw.outline.size();
-            THROW_OR_ABORT(sstr.str());
+            throw std::runtime_error(sstr.str());
         }
     }
 }

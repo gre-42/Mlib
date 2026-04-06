@@ -114,10 +114,9 @@ void triangulate_entity_list(
                                 { make_orderable(v.position) });
                         }
                     }
-                    auto exception = PointException<CompressedScenePos, 2>{
+                    throw PointException<CompressedScenePos, 2>{
                         {v.position(0), v.position(1)},
                         "Detected near-duplicate point"};
-                    THROW_OR_ABORT2(exception);
                 }
             }
             {
@@ -128,10 +127,9 @@ void triangulate_entity_list(
                 };
                 auto tlc = triangle_largest_cosine(funpack(vt));
                 if (std::isnan(tlc) || (tlc > BAD_TRIANGLE_COS)) {
-                    auto exception = TriangleException<CompressedScenePos>{
+                    throw TriangleException<CompressedScenePos>{
                         vt[0], vt[1], vt[2],
                         "Detected bad triangle in hole \"" + to_string(hole.hole_type) + '"'};
-                    THROW_OR_ABORT2(exception);
                 }
             }
         }
@@ -256,10 +254,9 @@ void triangulate_entity_list(
             {
                 auto tlc = triangle_largest_cosine(funpack(vt));
                 if (std::isnan(tlc) || (tlc > BAD_TRIANGLE_COS)) {
-                    auto exception = TriangleException<CompressedScenePos>{
+                    throw TriangleException<CompressedScenePos>{
                         vt[0], vt[1], vt[2],
                         "Detected bad triangle"};
-                    THROW_OR_ABORT2(exception);
                 }
             }
             auto uv = terrain_uv<CompressedScenePos, double>(
@@ -285,7 +282,7 @@ void triangulate_entity_list(
         draw_tris(tl_terrain[default_terrain_type], tris);
     } else {
         if (inner_triangles.empty()) {
-            THROW_OR_ABORT("Triangulate internal error");
+            throw std::runtime_error("Triangulate internal error");
         }
         for (size_t i = 0; i < inner_triangles.size() - 1; ++i) {
             if (!excluded_entitities.contains(p2t_region_types[i])) {

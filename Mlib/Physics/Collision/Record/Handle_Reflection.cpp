@@ -1,20 +1,19 @@
+
 #include "Handle_Reflection.hpp"
-#include <Mlib/Assert.hpp>
-#include <Mlib/Geometry/Intersection/Intersectors/Intersection_Info.hpp>
-#include <Mlib/Geometry/Mesh/Farthest_Distances.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>
+#include <Mlib/Geometry/Primitives/Intersectors/Intersection_Info.hpp>
 #include <Mlib/Math/Orderable_Fixed_Array.hpp>
 #include <Mlib/Physics/Actuators/Tire.hpp>
 #include <Mlib/Physics/Collision/Record/Collision_History.hpp>
-#include <Mlib/Physics/Collision/Record/Compute_Edge_Overlap.hpp>
 #include <Mlib/Physics/Collision/Record/Intersection_Scene.hpp>
 #include <Mlib/Physics/Collision/Resolve/Constraints.hpp>
 #include <Mlib/Physics/Physics_Engine/Colliders/Jump.hpp>
-#include <Mlib/Physics/Physics_Engine/Physics_Engine_Config.hpp>
 #include <Mlib/Physics/Rigid_Body/Attached_Wheel.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Physics/Smoke_Generation/Surface_Contact_Info.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
+#include <Mlib/Scene_Config/Physics_Engine_Config.hpp>
+#include <Mlib/Testing/Assert.hpp>
+#include <stdexcept>
 
 #ifdef __GNUC__
     #pragma GCC push_options
@@ -122,11 +121,11 @@ static void handle_extended_reflection(
                 jump(c.o0.rbp_, c.o1.rbp_, c.o1.jump_dv_, { .vector = normal.casted<float>(), .position = intersection_point }, c.history.cfg.dt_substeps(c.history.phase));
             }
             auto& tire = c.o1.tires_.get(c.tire_id1);
-            if (tire.rbp != nullptr) {
-                float fsap = -(float)dot0d(tire.rbp->abs_position() - intersection_point, c.l1->ray.direction.casted<ScenePos>()) - tire.radius;
+            if (tire.rb != nullptr) {
+                float fsap = -(float)dot0d(tire.rb->rbp_.abs_position() - intersection_point, c.l1->ray.direction.casted<ScenePos>()) - tire.radius;
                 if (fsap < 0.f) {
                     auto ci = std::make_unique<AttachedWheelNormalContactInfo1>(
-                        AttachedWheel{ c.o1.rbp_, *tire.rbp, tire.vertical_line },
+                        AttachedWheel{ c.o1.rbp_, tire.rb->rbp_, tire.vertical_line },
                         BoundedPlaneInequalityConstraint{
                             .constraint{
                                 .normal_impulse{.normal = normal},
@@ -141,7 +140,7 @@ static void handle_extended_reflection(
                     c.history.contact_infos.push_back(std::move(ci));
                 }
                 if (tire.normal_impulse == nullptr) {
-                    THROW_OR_ABORT("Tire normal_impulse not set");
+                    throw std::runtime_error("Tire normal_impulse not set");
                 }
                 normal_impulse = tire.normal_impulse;
             } else {
@@ -199,9 +198,9 @@ static void handle_extended_reflection(
                     auto& tire = c.o1.tires_.get(c.tire_id1);
                     c.history.contact_infos.push_back(std::unique_ptr<IContactInfo>(new TireContactInfo1{
                         FrictionContactInfo1{
-                            (tire.rbp == nullptr)
+                            (tire.rb == nullptr)
                                 ? c.o1.rbp_
-                                : *tire.rbp,
+                                : tire.rb->rbp_,
                             *normal_impulse,
                             contact_position,
                             NAN, // clamping handled by "TireContactInfo1" // c.o1.tires_.at(c.tire_id1).stiction_coefficient(-force_n1),
@@ -268,7 +267,7 @@ void Mlib::handle_reflection(
             return;
         }
         if (N0 == nullptr) {
-            THROW_OR_ABORT("Alignment object has no plane normal");
+            throw std::runtime_error("Alignment object has no plane normal");
         }
         if ((dot0d(N0->normal.casted<float>(), c.o1.rbp_.rotation_.column(1)) < c.history.cfg.alignment_plane_cos) ||
             !std::isnan(c.o1.fly_forward_state_.wants_to_fly_forward_factor_))
@@ -278,7 +277,7 @@ void Mlib::handle_reflection(
     }
     if (any(c.mesh1_material & PhysicsMaterial::OBJ_ALIGNMENT_CONTACT)) {
         if (N0 == nullptr) {
-            THROW_OR_ABORT("Alignment contact touches an object without a plane normal");
+            throw std::runtime_error("Alignment contact touches an object without a plane normal");
         }
         if (c.o1.align_to_surface_state_.align_to_surface_relaxation_ != 0.f) {
             if (any(c.mesh0_material & PhysicsMaterial::OBJ_ALIGNMENT_PLANE)) {
@@ -320,39 +319,13 @@ void Mlib::handle_reflection(
         overlap = iinfo.no->overlap;
         normal = iinfo.no->normal;
     } else if (!c.l1_is_normal) {
-        assert_true(c.r1.has_value());
-        IntersectionScene cf{ c };
-        std::optional<CollisionPolygonSphere<CompressedScenePos, 4>> q0f;
-        std::optional<CollisionPolygonSphere<CompressedScenePos, 3>> t0f;
-        if (any(c.mesh0_material & PhysicsMaterial::ATTR_TWO_SIDED)) {
-            if (!any(c.mesh1_material & PhysicsMaterial::ATTR_CONVEX)) {
-                THROW_OR_ABORT("Two-sided materials require a convex collision partner (case 0). Consider using collision-normals.");
-            }
-            if (N0 == nullptr) {
-                THROW_OR_ABORT("Two-sided materials require a collision partner with an plane normal");
-            }
-            auto dist = get_farthest_distances(*c.mesh1, *N0);
-            // (dist.min + dist.max) / 2. < 0  =>  dist.min < -dist.max
-            if (dist.min < -dist.max) {
-                if (c.q0.has_value()) {
-                    q0f = -(*c.q0);
-                    cf.q0 = *q0f;
-                }
-                if (c.t0.has_value()) {
-                    t0f = -(*c.t0);
-                    cf.t0 = *t0f;
-                }
-            }
-        }
-        if (!compute_edge_overlap(cf, iinfo.intersection_point, sat_used, overlap, normal)) {
-            return;
-        }
+        throw std::runtime_error("Mesh-based reflection only supported for normals");
     } else {
         if (!c.l1.has_value()) {
-            THROW_OR_ABORT("handle_reflection: l1 not set");
+            throw std::runtime_error("handle_reflection: l1 not set");
         }
         if (N0 == nullptr) {
-            THROW_OR_ABORT("Lines require a collision partner with either normals or plane normals");
+            throw std::runtime_error("Lines require a collision partner with either normals or plane normals");
         }
         normal = N0->normal;
         overlap = -(dot0d(c.l1->line[1].casted<ScenePos>(), normal.casted<ScenePos>()) + (ScenePos)N0->intercept);
@@ -372,61 +345,15 @@ void Mlib::handle_reflection(
     // }
     if (overlap < -1e-3) {
         if (sat_used) {
-            THROW_OR_ABORT(
+            throw std::runtime_error(
                 "Line and triangle do not overlap. "
                 "Are the objects non-convex? Gap: " +
                 std::to_string(-overlap));
         } else {
-            THROW_OR_ABORT(
+            throw std::runtime_error(
                 "Line and triangle do not overlap. "
                 "Gap: " +
                 std::to_string(-overlap));
-        }
-    }
-    if (!c.l1_is_normal) {
-        if (any(c.mesh0_material & PhysicsMaterial::ATTR_ROUND) ||
-            any(c.mesh1_material & PhysicsMaterial::ATTR_ROUND))
-        {
-            FixedArray<SceneDir, 3> round_normal = uninitialized;
-            assert_true(c.r1.has_value());
-            if (any(c.mesh0_material & PhysicsMaterial::ATTR_ROUND) &&
-                any(c.mesh1_material & PhysicsMaterial::ATTR_ROUND))
-            {
-                if (N0 == nullptr) {
-                    THROW_OR_ABORT("Round materials require a plane normal (0)");
-                }
-                round_normal = N0->normal - c.r1->normal;
-                SceneDir nl2 = sum(squared(round_normal));
-                if (nl2 < 1e-12) {
-                    THROW_OR_ABORT("Normal is too small in collision of round objects (objects might be unseparated)");
-                }
-                round_normal /= std::sqrt(nl2);
-            } else if (any(c.mesh0_material & PhysicsMaterial::ATTR_ROUND)) {
-                if (N0 == nullptr) {
-                    THROW_OR_ABORT("Round materials require a plane normal (1)");
-                }
-                round_normal = N0->normal;
-            } else {
-                round_normal = -c.r1->normal;
-            }
-            if (dot0d(round_normal, normal) < c.history.cfg.max_cos_round_normal) {
-                normal = round_normal;
-            }
-        } else {
-            // auto dv = c.o0.velocity_at_position(iinfo.intersection_point) - c.o1.velocity_at_position(iinfo.intersection_point);
-            // float vn = dot0d(normal.casted<float>(), dv);
-            // // if (vn > c.history.cfg.min_skip_velocity) {
-            // //     float ds = vn * c.history.cfg.dt_substeps();
-            // //     if (overlap < ds * c.history.cfg.slide_factor)
-            // //        (overlap > ds * c.history.cfg.ignore_factor))
-            // //     {
-            // //         return;
-            // //     }
-            // // }
-            // float ds = vn * c.history.cfg.dt_substeps(c.history.phase);
-            // if (overlap < ds * c.history.cfg.slide_factor) {
-            //     return;
-            // }
         }
     }
     if ((c.o0.mass() != INFINITY) && (c.o1.mass() == INFINITY)) {

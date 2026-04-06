@@ -1,11 +1,11 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
-#include <Mlib/Cached_Hash.hpp>
 #include <Mlib/Geometry/Material/Fresnel.hpp>
+#include <Mlib/Hashing/Cached_Hash.hpp>
+#include <Mlib/Hashing/Variable_And_Hash.hpp>
 #include <Mlib/Map/Threadsafe_Default_Map.hpp>
 #include <Mlib/Regex/Regex_Select.hpp>
 #include <Mlib/Threads/Fast_Mutex.hpp>
-#include <Mlib/Variable_And_Hash.hpp>
 #include <optional>
 #include <unordered_map>
 

@@ -1,7 +1,7 @@
 #include "Save_To_Obj_File.hpp"
-#include <Mlib/Argument_List.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
-#include <Mlib/Render/Rendering_Context.hpp>
+#include <Mlib/Misc/Argument_List.hpp>
+#include <Mlib/OpenGL/Rendering_Context.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
@@ -39,7 +39,7 @@ SaveToObjFile::SaveToObjFile(PhysicsScene& physics_scene)
 
 void SaveToObjFile::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    auto node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::node), DP_LOC);
+    auto node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::node), CURRENT_SOURCE_LOCATION);
     scene_node_resources.save_to_obj_file(
         args.arguments.at<VariableAndHash<std::string>>(KnownArgs::resource),
         args.arguments.at<std::string>(KnownArgs::prefix),

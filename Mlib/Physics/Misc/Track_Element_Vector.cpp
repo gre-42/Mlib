@@ -1,3 +1,4 @@
+
 #include "Track_Element_Vector.hpp"
 #include <Mlib/Physics/Misc/Track_Element_Extended.hpp>
 
@@ -20,7 +21,7 @@ TrackElementExtended TrackElementVector::read(
         return TrackElementExtended{};
     }
     if (i_ > track_.size()) {
-        THROW_OR_ABORT("Attempt to read past the end of the track");
+        throw std::runtime_error("Attempt to read past the end of the track");
     }
     return TrackElementExtended::create(
         predecessor,

@@ -1,14 +1,13 @@
 #pragma once
 #include <Mlib/Geometry/Material/Blend_Distances.hpp>
+#include <Mlib/Geometry/Physics_Material.hpp>
 #include <Mlib/Math/Orderable_Fixed_Array.hpp>
 #include <compare>
 
 namespace Mlib {
 
-enum class PhysicsMaterial: uint32_t;
-
 struct Morphology {
-    PhysicsMaterial physics_material;
+    PhysicsMaterial physics_material = PhysicsMaterial::NONE;
     SquaredStepDistances center_distances2 = default_step_distances2;
     float max_triangle_distance = INFINITY;
     float object_cluster_width = 0.f;

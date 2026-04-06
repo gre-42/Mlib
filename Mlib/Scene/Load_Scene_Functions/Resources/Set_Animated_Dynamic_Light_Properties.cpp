@@ -1,7 +1,7 @@
 #include "Set_Animated_Dynamic_Light_Properties.hpp"
-#include <Mlib/Argument_List.hpp>
-#include <Mlib/Default_Uninitialized_Vector.hpp>
+#include <Mlib/Initialization/Default_Uninitialized_Vector.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
+#include <Mlib/Misc/Argument_List.hpp>
 #include <Mlib/Physics/Dynamic_Lights/Animated_Dynamic_Light.hpp>
 #include <Mlib/Physics/Dynamic_Lights/Constant_Dynamic_Light.hpp>
 #include <Mlib/Physics/Dynamic_Lights/Dynamic_Light_Db.hpp>

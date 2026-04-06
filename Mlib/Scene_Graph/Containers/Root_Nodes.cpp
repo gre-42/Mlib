@@ -1,12 +1,13 @@
+
 #include "Root_Nodes.hpp"
-#include <Mlib/Geometry/Intersection/Intersectable_Point.hpp>
+#include <Mlib/Geometry/Primitives/Intersectable_Point.hpp>
 #include <Mlib/Memory/Recursive_Deletion.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
-#include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
+#include <Mlib/Threads/Throwing_Lock_Guard.hpp>
 #include <Mlib/Threads/Unlock_Guard.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
 #include <iostream>
+#include <stdexcept>
 
 namespace Mlib {
 
@@ -19,7 +20,7 @@ struct RootNodeInfo {
 
 using namespace Mlib;
 
-RootNodes::RootNodes(Scene& scene)
+RootNodes::RootNodes(const DanglingBaseClassRef<Scene>& scene)
     : scene_{ scene }
     , invisible_static_nodes_{ "Invisible static nodes" }
     , default_nodes_map_{ "Default nodes" }
@@ -72,7 +73,7 @@ bool RootNodes::visit(
 }
 
 void RootNodes::clear() {
-    scene_.delete_node_mutex_.assert_this_thread_is_deleter_thread();
+    ThrowingLockGuard delete_lock{scene_->delete_node_mutex};
     small_static_nodes_bvh_.clear();
     invisible_static_nodes_.clear();
     default_nodes_map_.clear();
@@ -83,7 +84,7 @@ void RootNodes::clear() {
                 verbose_abort("Node \"" + *node.key() + "\" already shutting down");
             }
             node.mapped().ptr->shutdown();
-            scene_.unregister_node(node.key());
+            scene_->unregister_node(node.key());
             trash_can_.push_back(std::move(node.mapped()));
             // linfo() << "add " << node.key();
         });
@@ -95,10 +96,10 @@ void RootNodes::add_root_node(
     SceneNodeState scene_node_state)
 {
     if (node_container_.contains(name)) {
-        THROW_OR_ABORT("Node \"" + *name + "\" already exists");
+        throw std::runtime_error("Node \"" + *name + "\" already exists");
     }
     if (scene_node == nullptr) {
-        THROW_OR_ABORT("add_root_node received nullptr");
+        throw std::runtime_error("add_root_node received nullptr");
     }
     bool is_static;
     switch (scene_node_state) {
@@ -109,15 +110,15 @@ void RootNodes::add_root_node(
         is_static = false;
         break;
     default:
-        THROW_OR_ABORT("Unsupported scene node state: " + std::to_string(int(scene_node_state)));
+        throw std::runtime_error("Unsupported scene node state: " + std::to_string(int(scene_node_state)));
     }
     auto ref = DanglingBaseClassRef<SceneNode>{*scene_node, CURRENT_SOURCE_LOCATION};
     auto md2 = scene_node->max_center_distance2(BILLBOARD_ID_NONE);
-    scene_.register_node(name, ref);
+    scene_->register_node(name, ref);
     try {
         scene_node->set_scene_and_state(scene_, scene_node_state);
     } catch (const std::runtime_error& e) {
-        scene_.unregister_node(name);
+        scene_->unregister_node(name);
         throw;
     }
     if (!node_container_.try_emplace(name, std::move(scene_node)).second) {
@@ -139,16 +140,16 @@ void RootNodes::add_root_node(
 void RootNodes::move_node_to_bvh(const VariableAndHash<std::string>& name) {
     auto m = invisible_static_nodes_.extract(name);
     if (m.empty()) {
-        THROW_OR_ABORT("Could not find non-BVH node with name \"" + *name + '"');
+        throw std::runtime_error("Could not find non-BVH node with name \"" + *name + '"');
     }
     if (m.mapped()->state() != SceneNodeState::STATIC) {
         invisible_static_nodes_.insert(std::move(m));
-        THROW_OR_ABORT("Node \"" + *name + "\" is not static");
+        throw std::runtime_error("Node \"" + *name + "\" is not static");
     }
     auto md2 = m.mapped()->max_center_distance2(BILLBOARD_ID_NONE);
     if (md2 == 0.f) {
         invisible_static_nodes_.insert(std::move(m));
-        THROW_OR_ABORT("Node \"" + *name + "\" has radius=0");
+        throw std::runtime_error("Node \"" + *name + "\" has radius=0");
     }
     small_static_nodes_bvh_.insert(
         AxisAlignedBoundingBox<ScenePos, 3>::from_center_and_radius(m.mapped()->position(), std::sqrt(md2)),
@@ -156,7 +157,7 @@ void RootNodes::move_node_to_bvh(const VariableAndHash<std::string>& name) {
 }
 
 bool RootNodes::contains(const VariableAndHash<std::string>& name) const {
-    scene_.delete_node_mutex_.assert_this_thread_is_deleter_thread(); 
+    ThrowingLockGuard delete_lock{scene_->delete_node_mutex}; 
     return node_container_.contains(name);
 }
 
@@ -164,7 +165,7 @@ std::optional<DanglingBaseClassRef<SceneNode>> RootNodes::try_get(
     const VariableAndHash<std::string>& name,
     SourceLocation loc)
 {
-    std::shared_lock lock{ scene_.mutex_ };
+    std::shared_lock lock{ scene_->mutex_ };
     auto it = node_container_.try_get(name);
     if (it == nullptr) {
         return std::nullopt;
@@ -173,9 +174,9 @@ std::optional<DanglingBaseClassRef<SceneNode>> RootNodes::try_get(
 }
 
 size_t RootNodes::try_empty_the_trash_can() {
-    scene_.delete_node_mutex_.assert_this_thread_is_deleter_thread();
+    ThrowingLockGuard delete_lock{scene_->delete_node_mutex};
     if (emptying_trash_can_) {
-        THROW_OR_ABORT("Trash can is already being emptied");
+        throw std::runtime_error("Trash can is already being emptied");
     }
     emptying_trash_can_ = true;
     default_map_trash_can_.clear();
@@ -196,17 +197,17 @@ void RootNodes::print_trash_can_references() const {
 }
 
 void RootNodes::delete_root_node(const VariableAndHash<std::string>& name) {
-    scene_.delete_node_mutex_.assert_this_thread_is_deleter_thread();
-    if (scene_.mutex_.is_owner()) {
+    ThrowingLockGuard delete_lock{scene_->delete_node_mutex};
+    if (scene_->mutex_.is_owner()) {
         verbose_abort("Node deleter already owns the lock. The UnlockGuard will have no effect");;
     }
-    std::unique_lock lock{ scene_.mutex_ };
+    std::unique_lock lock{ scene_->mutex_ };
     auto it = node_container_.try_extract(name);
     if (it.empty()) {
         verbose_abort("RootNodes::delete_root_node: Could not find root node with name \"" + *name + '"');
     }
     if (it.mapped().ptr->shutdown_phase() == ShutdownPhase::NONE) {
-        scene_.unregister_node(name);
+        scene_->unregister_node(name);
         {
             auto dit = default_nodes_map_.try_extract(name);
             if (!dit.empty()) {
@@ -222,12 +223,12 @@ void RootNodes::delete_root_node(const VariableAndHash<std::string>& name) {
 }
 
 void RootNodes::delete_root_nodes(const Mlib::re::cregex& regex) {
-    scene_.delete_node_mutex_.assert_this_thread_is_deleter_thread();
-    if (scene_.mutex_.is_owner()) {
+    ThrowingLockGuard delete_lock{scene_->delete_node_mutex};
+    if (scene_->mutex_.is_owner()) {
         verbose_abort("Node deleter already owns the lock. The UnlockGuard will have no effect");;
     }
-    std::unique_lock lock{ scene_.mutex_ };
-    scene_.unregister_nodes(regex);
+    std::unique_lock lock{ scene_->mutex_ };
+    scene_->unregister_nodes(regex);
     node_container_.erase_if([&](auto& n){
         if (Mlib::re::regex_match(*n.first, regex)) {
             if (default_nodes_map_.erase(n.first) == 0) {
@@ -235,7 +236,7 @@ void RootNodes::delete_root_nodes(const Mlib::re::cregex& regex) {
             }
             UnlockGuard ulock{ lock };
             n.second.ptr->shutdown();
-            // linfo() << "add " << n.second.ptr.get(DP_LOC).get() << " " << n.first;
+            // linfo() << "add " << n.second.ptr.get(CURRENT_SOURCE_LOCATION).get() << " " << n.first;
             trash_can_.push_back(std::move(n.second));
             return true;
         }

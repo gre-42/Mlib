@@ -1,6 +1,7 @@
+
 #include "Audio_Buffer_Sequence.hpp"
-#include <Mlib/Throw_Or_Abort.hpp>
 #include <algorithm>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -14,7 +15,7 @@ PitchAdjustmentStrategy Mlib::pitch_adjustment_strategy_from_string(const std::s
     if (s == "down_sampling") {
         return PitchAdjustmentStrategy::DOWN_SAMPLING;
     }
-    THROW_OR_ABORT("Unknown pitch adjustment strategy: \"" + s + '"');
+    throw std::runtime_error("Unknown pitch adjustment strategy: \"" + s + '"');
 }
 
 AudioBufferSequence::AudioBufferSequence(std::vector<AudioBufferAndFrequency> buffers)
@@ -26,7 +27,7 @@ const AudioBufferAndFrequency& AudioBufferSequence::get_buffer_and_frequency(
     PitchAdjustmentStrategy strategy) const
 {
     if (buffers_.empty()) {
-        THROW_OR_ABORT("Audio buffer vector is empty");
+        throw std::runtime_error("Audio buffer vector is empty");
     }
     auto it = std::lower_bound(
         buffers_.begin(),
@@ -54,5 +55,5 @@ const AudioBufferAndFrequency& AudioBufferSequence::get_buffer_and_frequency(
     if (strategy == PitchAdjustmentStrategy::DOWN_SAMPLING) {
         return *(it - 1);
     }
-    THROW_OR_ABORT("Unknown pitch adjustment strategy");
+    throw std::runtime_error("Unknown pitch adjustment strategy");
 }

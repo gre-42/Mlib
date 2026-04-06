@@ -1,12 +1,19 @@
 #pragma once
 #include <Mlib/Scene_Config/Remote_Event_History_Duration.hpp>
+#include <cstddef>
 #include <map>
 
 namespace Mlib {
 
 template <class TTime, class TEvent>
 class TimesAndEvents {
+    TimesAndEvents(const TimesAndEvents&) = delete;
+    TimesAndEvents& operator = (const TimesAndEvents&) = delete;
 public:
+    TimesAndEvents() = default;
+    ~TimesAndEvents() = default;
+    TimesAndEvents(TimesAndEvents&&) = default;
+    TimesAndEvents& operator = (TimesAndEvents&& other) = default;
     template <class K, class... Args>
     decltype(auto) try_emplace(K&& k, Args&&... args) {
         return events_.try_emplace(std::forward<K>(k), std::forward<Args...>(args...));

@@ -1,10 +1,10 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Memory/Dangling_Base_Class.hpp>
-#include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
+#include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/Memory/Destruction_Functions.hpp>
+#include <Mlib/OpenGL/Render_Logic.hpp>
 #include <Mlib/Physics/Interfaces/IAdvance_Time.hpp>
-#include <Mlib/Render/Render_Logic.hpp>
 #include <Mlib/Scene/Render_Logics/Hud_Tracker.hpp>
 #include <mutex>
 #include <optional>
@@ -14,7 +14,6 @@ namespace Mlib {
 
 class AdvanceTimes;
 class Player;
-class Players;
 enum class ResourceUpdateCycle;
 class RenderLogics;
 class ObjectPool;
@@ -28,7 +27,6 @@ public:
         ObjectPool& object_pool,
         RenderLogic& scene_logic,
         RenderLogics& render_logics,
-        Players& players,
         const DanglingBaseClassRef<Player>& player,
         const std::optional<std::vector<DanglingBaseClassPtr<const SceneNode>>>& exclusive_nodes,
         AdvanceTimes& advance_times,
@@ -57,7 +55,6 @@ public:
     virtual void print(std::ostream& ostr, size_t depth) const override;
 
 private:
-    Players& players_;
     DanglingBaseClassRef<Player> player_;
     RenderLogic& scene_logic_;
     HudTracker hud_tracker_;

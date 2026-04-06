@@ -1,19 +1,20 @@
 #include "Facade_Texture_Cycle.hpp"
+#include <Mlib/Misc/FPath.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Building.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Facade_Texture.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
+#include <stdexcept>
 
 using namespace Mlib;
 
 FacadeTextureCycle::FacadeTextureCycle(const std::vector<FacadeTexture>& names)
-: ResourceCycle{ names }
+    : ResourceCycle{ names }
 {
     for (const auto& n : names) {
         if (n.selector.empty()) {
             continue;
         }
         if (!ftm_.insert({n.selector, &n}).second) {
-            THROW_OR_ABORT("Found duplicate facade style \"" + n.selector + '"');
+            throw std::runtime_error("Found duplicate facade style \"" + n.selector + '"');
         }
     }
 }
@@ -32,7 +33,7 @@ const FacadeTexture& FacadeTextureCycle::operator () (
         }
     } else {
         if (empty()) {
-            THROW_OR_ABORT("Facade textures empty");
+            throw std::runtime_error("Facade textures empty");
         }
         return from_building_top(building_top);
     }

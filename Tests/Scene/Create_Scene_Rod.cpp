@@ -1,5 +1,4 @@
 #include "Create_Scene_Rod.hpp"
-#include <Mlib/Env.hpp>
 #include <Mlib/Geometry/Cameras/Perspective_Camera.hpp>
 #include <Mlib/Geometry/Colored_Vertex.hpp>
 #include <Mlib/Geometry/Instance/Rendering_Dynamics.hpp>
@@ -8,14 +7,15 @@
 #include <Mlib/Geometry/Mesh/Load/Load_Obj.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>
 #include <Mlib/Geometry/Rectangle_Triangulation_Mode.hpp>
+#include <Mlib/OpenGL/Rendering_Context.hpp>
+#include <Mlib/OpenGL/Resources/Colored_Vertex_Array_Resource.hpp>
+#include <Mlib/OpenGL/Resources/Obj_File_Resource.hpp>
+#include <Mlib/Os/Env.hpp>
 #include <Mlib/Physics/Collision/Collidable_Mode.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Engine.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Primitives.hpp>
 #include <Mlib/Physics/Units.hpp>
-#include <Mlib/Render/Rendering_Context.hpp>
-#include <Mlib/Render/Resources/Colored_Vertex_Array_Resource.hpp>
-#include <Mlib/Render/Resources/Obj_File_Resource.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Absolute_Movable_Setter.hpp>
 #include <Mlib/Scene_Graph/Elements/Light.hpp>
@@ -123,17 +123,17 @@ void Mlib::create_scene_rod(
     scene.auto_add_root_node(OBJ, std::move(scene_nodeR), RenderingDynamics::MOVING);
     scene.add_root_node(VariableAndHash<std::string>{"follower_camera_0"}, make_unique_scene_node(), RenderingDynamics::MOVING, RenderingStrategies::OBJECT);
     scene.add_root_node(VariableAndHash<std::string>{"light_node"}, std::move(scene_nodeL), RenderingDynamics::MOVING, RenderingStrategies::OBJECT);
-    scene.get_node(VariableAndHash<std::string>{"follower_camera_0"}, DP_LOC)->set_camera(std::make_unique<PerspectiveCamera>(
+    scene.get_node(VariableAndHash<std::string>{"follower_camera_0"}, CURRENT_SOURCE_LOCATION)->set_camera(std::make_unique<PerspectiveCamera>(
         PerspectiveCameraConfig(),
         PerspectiveCamera::Postprocessing::ENABLED));
-    scene.get_node(VariableAndHash<std::string>{"light_node"}, DP_LOC)->set_camera(std::make_unique<PerspectiveCamera>(
+    scene.get_node(VariableAndHash<std::string>{"light_node"}, CURRENT_SOURCE_LOCATION)->set_camera(std::make_unique<PerspectiveCamera>(
         PerspectiveCameraConfig(),
         PerspectiveCamera::Postprocessing::ENABLED));
 
     // Must be done when node is already linked to its parents.
     {
-        AbsoluteMovableSetter ams0{scene, scene.get_node(OBJ, DP_LOC)->get_child(N0), N0, std::move(rb0), CURRENT_SOURCE_LOCATION};
-        AbsoluteMovableSetter ams1_0{scene, scene.get_node(OBJ, DP_LOC)->get_child(N1_0), N1_0, std::move(rb1_0), CURRENT_SOURCE_LOCATION};
+        AbsoluteMovableSetter ams0{scene, scene.get_node(OBJ, CURRENT_SOURCE_LOCATION)->get_child(N0), N0, std::move(rb0), CURRENT_SOURCE_LOCATION};
+        AbsoluteMovableSetter ams1_0{scene, scene.get_node(OBJ, CURRENT_SOURCE_LOCATION)->get_child(N1_0), N1_0, std::move(rb1_0), CURRENT_SOURCE_LOCATION};
 
         pe.rigid_bodies_.add_rigid_body(*ams0.absolute_movable, triangles01, {}, {}, CollidableMode::COLLIDE);
         pe.rigid_bodies_.add_rigid_body(*ams1_0.absolute_movable, triangles1, {}, {}, CollidableMode::COLLIDE | CollidableMode::MOVE);

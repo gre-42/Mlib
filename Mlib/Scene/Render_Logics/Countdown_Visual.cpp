@@ -1,20 +1,20 @@
 #include "Countdown_Visual.hpp"
 #include <Mlib/Geometry/Cameras/Camera.hpp>
+#include <Mlib/Hashing/Variable_And_Hash.hpp>
 #include <Mlib/Layout/ILayout_Pixels.hpp>
 #include <Mlib/Layout/Layout_Constraint_Parameters.hpp>
 #include <Mlib/Layout/Screen_Units.hpp>
-#include <Mlib/Log.hpp>
 #include <Mlib/Macro_Executor/Expression_Watcher.hpp>
-#include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
+#include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/Memory/Object_Pool.hpp>
+#include <Mlib/Misc/Log.hpp>
+#include <Mlib/OpenGL/Render_Config.hpp>
+#include <Mlib/OpenGL/Render_Setup.hpp>
+#include <Mlib/OpenGL/Text/Align_Text.hpp>
+#include <Mlib/OpenGL/Text/Charsets.hpp>
+#include <Mlib/OpenGL/Text/Renderable_Text.hpp>
+#include <Mlib/OpenGL/Text/Text_Interpolation_Mode.hpp>
 #include <Mlib/Physics/Advance_Times/Countdown_Physics.hpp>
-#include <Mlib/Render/Render_Config.hpp>
-#include <Mlib/Render/Render_Setup.hpp>
-#include <Mlib/Render/Text/Align_Text.hpp>
-#include <Mlib/Render/Text/Charsets.hpp>
-#include <Mlib/Render/Text/Renderable_Text.hpp>
-#include <Mlib/Render/Text/Text_Interpolation_Mode.hpp>
-#include <Mlib/Variable_And_Hash.hpp>
 
 using namespace Mlib;
 
@@ -34,7 +34,7 @@ CountdownVisual::CountdownVisual(
         color,
         font_height,
         line_distance }
-    , on_destroy_countdown_physics_{ physics->on_destroy, CURRENT_SOURCE_LOCATION }
+    , on_destroy_countdown_physics_{ physics->on_destroy.deflt, CURRENT_SOURCE_LOCATION }
     , physics_{ physics }
     , ew_{ std::move(ew) }
     , charset_{ std::move(charset) }

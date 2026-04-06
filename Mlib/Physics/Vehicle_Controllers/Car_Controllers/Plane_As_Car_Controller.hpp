@@ -9,7 +9,7 @@ namespace Mlib {
 class PlaneAsCarController final: public RigidBodyVehicleController {
 public:
     PlaneAsCarController(
-        RigidBodyVehicle& rb,
+        const DanglingBaseClassRef<RigidBodyVehicle>& rb,
         const std::map<size_t, float>& tire_angles);
     virtual ~PlaneAsCarController() override;
     virtual void apply() override;

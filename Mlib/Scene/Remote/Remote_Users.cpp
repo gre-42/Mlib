@@ -24,7 +24,7 @@ RemoteUsers::RemoteUsers(
     , local_scene_level_selector_{ local_scene_level_selector }
     , verbosity_{ verbosity }
     , site_id_{ site_id }
-    , physics_scene_on_destroy_{ physics_scene->on_destroy, CURRENT_SOURCE_LOCATION }
+    , physics_scene_on_destroy_{ physics_scene->on_destroy.deflt, CURRENT_SOURCE_LOCATION }
 {
     if (any(verbosity_ & IoVerbosity::METADATA)) {
         linfo() << "Create RemoteUsers";
@@ -67,7 +67,7 @@ void RemoteUsers::read(
 {
     auto type = read_binary<RemoteSceneObjectType>(istr, "scene object type", verbosity_);
     if (type != RemoteSceneObjectType::REMOTE_USERS) {
-        THROW_OR_ABORT("RemoteUsers::read: Unexpected scene object type");
+        throw std::runtime_error("RemoteUsers::read: Unexpected scene object type");
     }
     read_data(istr, proxy_tasks, transmission_history_reader);
 }
@@ -81,7 +81,7 @@ void RemoteUsers::read_data(
     auto user_count = reader.read_binary<uint32_t>("user count");
     physics_scene_->remote_sites_->set_user_count(site_id_, user_count);
     if (!physics_scene_->remote_sites_->get_local_site_id().has_value()) {
-        THROW_OR_ABORT("Local site ID not set");
+        throw std::runtime_error("Local site ID not set");
     }
     auto local_site_id = *physics_scene_->remote_sites_->get_local_site_id();
     {
@@ -122,7 +122,7 @@ void RemoteUsers::read_data(
                         return status;
                     }
                 }
-                THROW_OR_ABORT("Unknown user status");
+                throw std::runtime_error("Unknown user status");
             }();
             user->set_status(final_status);
         } else if (site_id_ != local_site_id) {
@@ -131,7 +131,7 @@ void RemoteUsers::read_data(
     }
     auto end = reader.read_binary<uint32_t>("inverted remote users");
     if (end != ~(uint32_t)RemoteSceneObjectType::REMOTE_USERS) {
-        THROW_OR_ABORT("Invalid remote users end");
+        throw std::runtime_error("Invalid remote users end");
     }
 }
 

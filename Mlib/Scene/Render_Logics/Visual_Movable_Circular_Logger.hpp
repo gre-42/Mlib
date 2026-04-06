@@ -1,8 +1,9 @@
 #pragma once
+#include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/Memory/Destruction_Observer.hpp>
-#include <Mlib/Render/Data_Display/Circular_Data_Display.hpp>
-#include <Mlib/Render/Data_Display/Pointer_Image_Logic.hpp>
-#include <Mlib/Render/Text/Renderable_Text.hpp>
+#include <Mlib/OpenGL/Data_Display/Circular_Data_Display.hpp>
+#include <Mlib/OpenGL/Data_Display/Pointer_Image_Logic.hpp>
+#include <Mlib/OpenGL/Text/Renderable_Text.hpp>
 #include <Mlib/Scene/Render_Logics/Visual_Movable_Logger_View.hpp>
 #include <atomic>
 #include <cstddef>
@@ -19,7 +20,7 @@ class ExpressionWatcher;
 class VisualMovableCircularLogger: public VisualMovableLoggerView {
 public:
     VisualMovableCircularLogger(
-        StatusWriter& status_writer,
+        const DanglingBaseClassRef<StatusWriter>& status_writer,
         StatusComponents log_components,
         std::unique_ptr<ExpressionWatcher>&& ew,
         std::string charset,
@@ -50,7 +51,7 @@ public:
 private:
     std::unique_ptr<ExpressionWatcher> ew_;
     std::string charset_;
-    StatusWriter& status_writer_;
+    DanglingBaseClassRef<StatusWriter> status_writer_;
     StatusComponents log_components_;
     TextResource tick_text_;
     PointerImageLogic pointer_image_logic_;

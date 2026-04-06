@@ -1,5 +1,5 @@
 #pragma once
-#include <Mlib/Default_Uninitialized_Vector.hpp>
+#include <Mlib/Initialization/Default_Uninitialized_Vector.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
 #include <Mlib/Physics/Containers/Race_Identifier.hpp>
 #include <Mlib/Threads/Recursive_Shared_Mutex.hpp>

@@ -1,7 +1,8 @@
+
 #include "Renderable.hpp"
-#include <Mlib/Geometry/Intersection/Axis_Aligned_Bounding_Box.hpp>
-#include <Mlib/Geometry/Intersection/Bounding_Sphere.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
+#include <Mlib/Geometry/Primitives/Axis_Aligned_Bounding_Box.hpp>
+#include <Mlib/Geometry/Primitives/Bounding_Sphere.hpp>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -56,7 +57,7 @@ void Renderable::append_sorted_instances_to_queue(
 
 void Renderable::append_large_instances_to_queue(
     const FixedArray<ScenePos, 4, 4>& mvp,
-    const TransformationMatrix<float, ScenePos, 3>& m,
+    const TransformationMatrix<SceneDir, ScenePos, 3>& m,
     const FixedArray<ScenePos, 3>& offset,
     BillboardId billboard_id,
     const SceneGraphConfig& scene_graph_config,
@@ -68,17 +69,17 @@ void Renderable::extend_aabb(
     ExternalRenderPassType render_pass,
     AxisAlignedBoundingBox<CompressedScenePos, 3>& aabb) const
 {
-    THROW_OR_ABORT("Renderable::extend_aabb not implemented");
+    throw std::runtime_error("Renderable::extend_aabb not implemented");
 }
 
 ExtremalAxisAlignedBoundingBox<CompressedScenePos, 3> Renderable::aabb() const {
-    THROW_OR_ABORT("Renderable::aabb not implemented");
+    throw std::runtime_error("Renderable::aabb not implemented");
 }
 
 ExtremalBoundingSphere<CompressedScenePos, 3> Renderable::bounding_sphere() const {
-    THROW_OR_ABORT("Renderable::bounding_sphere not implemented");
+    throw std::runtime_error("Renderable::bounding_sphere not implemented");
 }
 
 ScenePos Renderable::max_center_distance2(BillboardId billboard_id) const {
-    THROW_OR_ABORT("Renderable::max_center_distance2 not implemented");
+    throw std::runtime_error("Renderable::max_center_distance2 not implemented");
 }

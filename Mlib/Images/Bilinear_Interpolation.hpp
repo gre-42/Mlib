@@ -7,7 +7,7 @@ template <class TData>
 class BilinearInterpolator {
 public:
     template <typename... TDimensions>
-    TData operator () (const Array<TData>& im, TDimensions... dim) {
+    TData operator () (const Array<TData>& im, TDimensions... dim) const {
         TData v00 = ((1 - a0) * im(dim..., r0, c0) + a0 * im(dim..., r1, c0));
         TData v01 = ((1 - a0) * im(dim..., r0, c1) + a0 * im(dim..., r1, c1));
         return (1 - a1) * v00 + a1 * v01;

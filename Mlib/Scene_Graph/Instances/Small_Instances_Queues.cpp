@@ -1,17 +1,25 @@
+
 #include "Small_Instances_Queues.hpp"
-#include <Mlib/Assert.hpp>
 #include <Mlib/Geometry/Material/Render_Pass.hpp>
-#include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
-#include <Mlib/Geometry/Mesh/Transformed_Colored_Vertex_Array.hpp>
-#include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
+#include <Mlib/Geometry/Mesh/Mesh_Meta.hpp>
+#include <Mlib/Math/Transformation/Transformation_Variant.hpp>
+#include <Mlib/Math/Transformation/Translation_Matrix.hpp>
 #include <Mlib/Scene_Graph/Culling/Visibility_Check.hpp>
+#include <Mlib/Scene_Graph/Instances/Billboard_Container.hpp>
+#include <Mlib/Scene_Graph/Instances/Deferred_Vertex_Arrays_And_Instances.hpp>
+#include <Mlib/Scene_Graph/Instances/Extendable_Sortable_Vertex_Array_Instances.hpp>
+#include <Mlib/Scene_Graph/Instances/Extendable_Vertex_Array_Instances.hpp>
+#include <Mlib/Scene_Graph/Instances/Vertex_Data_And_Sorted_Instances.hpp>
+#include <Mlib/Scene_Graph/Render/IGpu_Vertex_Data.hpp>
+#include <Mlib/Scene_Graph/Render/Sortable_Deferred_Gpu_Vertex_Data.hpp>
+#include <Mlib/Testing/Assert.hpp>
 
 using namespace Mlib;
 
 SmallInstancesQueues::SmallInstancesQueues(
     ExternalRenderPassType main_render_pass,
     const std::set<ExternalRenderPassType>& black_render_passes)
-: main_render_pass_{main_render_pass}
+    : main_render_pass_{main_render_pass}
 {
     for (const auto& r : black_render_passes) {
         assert_true(!any(r & ExternalRenderPassType::STANDARD_MASK));
@@ -19,70 +27,72 @@ SmallInstancesQueues::SmallInstancesQueues(
     }
 }
 
-SmallInstancesQueues::~SmallInstancesQueues()
-{}
+SmallInstancesQueues::~SmallInstancesQueues() = default;
 
 void SmallInstancesQueues::insert(
-    const std::list<std::shared_ptr<ColoredVertexArray<float>>>& scvas,
+    const std::list<std::shared_ptr<IGpuVertexData>>& scvas,
     const FixedArray<ScenePos, 4, 4>& mvp,
-    const TransformationMatrix<float, ScenePos, 3>& m,
+    const TransformationMatrix<SceneDir, ScenePos, 3>& m,
     const FixedArray<ScenePos, 3>& offset,
     BillboardId billboard_id,
     const SceneGraphConfig& scene_graph_config)
 {
-    TransformationMatrix<float, float, 3> m_shifted{m.R, (m.t - offset).casted<float>()};
+    auto m_shifted = TranslationMatrix<ScenePos, 3>{-offset} * m;
     VisibilityCheck vc{ mvp };
     for (const auto& scva : scvas) {
-        if (vc.is_visible(scva->name.full_name(), scva->material, scva->morphology, billboard_id, scene_graph_config, main_render_pass_))
+        const auto& meta = scva->mesh_meta();
+        if (vc.is_visible(meta.name.full_name_and_hash(), meta.material, meta.morphology, billboard_id, scene_graph_config, main_render_pass_))
         {
-            TransformedColoredVertexArray* tcva;
-            if (scva->material.blend_mode == BlendMode::INVISIBLE) {
-                tcva = &invisible_queue_.emplace_back(TransformedColoredVertexArray{
-                    .scva = scva,
-                    .trafo = TransformationAndBillboardId{
-                        .transformation_matrix = m_shifted,
-                        .billboard_id = billboard_id}});
+            auto m_shifted_i = instance_location_from_transformation(m_shifted, meta.material.transformation_mode);
+            if (meta.material.blend_mode == BlendMode::INVISIBLE) {
+                invisible_queue_[scva].insert(m_shifted_i, billboard_id);
             } else {
-                tcva = &standard_queue_.emplace_back(
-                    (float)vc.sorting_key(scva->material),
-                    TransformedColoredVertexArray{
-                        .scva = scva,
-                        .trafo = TransformationAndBillboardId{
-                            .transformation_matrix = m_shifted,
-                            .billboard_id = billboard_id}}).second;
+                auto key = SortableDeferredVertexData{
+                    meta.material.continuous_blending_z_order,
+                    scva};
+                standard_queue_[key].insert(m_shifted_i, (float)vc.sorting_key(meta.material), billboard_id);
             }
             for (auto& [rp, instances] : black_queues_) {
                 assert_true(rp != main_render_pass_);
                 if (vc.black_is_visible(
-                    scva->name.full_name(),
-                    scva->material,
+                    meta.name.full_name_and_hash(),
+                    meta.material,
                     billboard_id,
                     scene_graph_config,
                     rp))
                 {
-                    instances.push_back(tcva);
+                    instances[scva].insert(m_shifted_i, billboard_id);
                 }
             }
         }
     }
 }
 
-std::map<ExternalRenderPassType, std::list<TransformedColoredVertexArray>> SmallInstancesQueues::sorted_instances()
+std::map<ExternalRenderPassType, VertexDatasAndSortedInstances> SmallInstancesQueues::sorted_instances() const
 {
-    std::map<ExternalRenderPassType, std::list<TransformedColoredVertexArray>> results;
+    std::map<ExternalRenderPassType, VertexDatasAndSortedInstances> results;
     for (auto& [rp, lst] : black_queues_) {
         assert_true(rp != main_render_pass_);
         auto& dlst = results[rp];
-        for (const auto& e : lst) {
-            dlst.push_back(*e);
+        for (const auto& [a, instances] : lst) {
+            auto& darray = dlst.emplace_back(a);
+            darray.instances = instances.vectorized();
         }
     }
     {
-        standard_queue_.sort([](auto& a, auto& b){ return a.first < b.first; });
         auto& dlst = results[main_render_pass_];
-        for (auto& [_, e] : standard_queue_) {
-            dlst.push_back(e);
+        for (const auto& [a, instances] : standard_queue_) {
+            auto& darray = dlst.emplace_back(a.vertex_array);
+            darray.instances = instances.sorted();
         }
+    }
+    for (auto& [rp, data] : results) {
+        data.sort([](
+            const VertexDataAndSortedInstances& a,
+            const VertexDataAndSortedInstances& b)
+            {
+                return a.vertex_data->mesh_meta().material.rendering_sorting_key() < b.vertex_data->mesh_meta().material.rendering_sorting_key();
+            });
     }
     return results;
 }

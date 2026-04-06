@@ -41,7 +41,7 @@ enum class SmoothnessTarget;
 
 class ISceneNodeResource {
 public:
-    ISceneNodeResource();
+    explicit ISceneNodeResource(std::string name);
     virtual ~ISceneNodeResource();
     // Misc
     virtual void preload(const RenderableResourceFilter& filter) const;
@@ -97,6 +97,8 @@ public:
         float averaged_normal_angle,
         const ColoredVertexArrayFilter& filter) const;
     virtual std::shared_ptr<ISceneNodeResource> generate_contour_edges() const;
+private:
+    std::string name_;
 };
 
 }

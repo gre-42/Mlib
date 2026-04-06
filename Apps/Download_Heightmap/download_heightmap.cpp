@@ -1,12 +1,12 @@
-#include <Mlib/Arg_Parser.hpp>
 #include <Mlib/Geography/Heightmaps/Cities_Skylines.hpp>
 #include <Mlib/Geography/Heightmaps/Terrarium.hpp>
 #include <Mlib/Images/Bilinear_Interpolation.hpp>
 #include <Mlib/Images/Draw_Bmp.hpp>
 #include <Mlib/Images/Pgm_Image.hpp>
+#include <Mlib/Io/Arg_Parser.hpp>
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Stats/Min_Max.hpp>
-#include <Mlib/Strings/To_Number.hpp>
+#include <Mlib/Strings/String_View_To_Number.hpp>
 #include <cpp-httplib/httplib.h>
 #include <stb/stb_image_write.h>
 #include <stb_cpp/stb_image_load.hpp>
@@ -247,7 +247,7 @@ int main(int argc, char** argv) {
         }
         if (args.has_named_value("--stitched_png")) {
             if (any(stitched.shape() > INT_MAX)) {
-                THROW_OR_ABORT("Stitched image too large");
+                throw std::runtime_error("Stitched image too large");
             }
             if (!stbi_write_png(args.named_value("--stitched_png").c_str(), (int)stitched.shape(1), (int)stitched.shape(0), 3, stitched_rgb.data(), 0)) {
                 throw std::runtime_error("Could not write \"" + args.named_value("--stitched_png") + '"');

@@ -1,5 +1,5 @@
 #pragma once
-#include <Mlib/Billboard_Id.hpp>
+#include <Mlib/Geometry/Billboard_Id.hpp>
 #include <Mlib/Physics/Misc/Inventory_Item.hpp>
 #include <cstdint>
 #include <list>

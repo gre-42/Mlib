@@ -1,4 +1,5 @@
-#include <Mlib/Geometry/Intersection/Bvh.hpp>
+#pragma once
+#include <Mlib/Geometry/Primitives/Bvh.hpp>
 #include <Mlib/Scene_Config/Scene_Precision.hpp>
 #include <Mlib/Scene_Graph/Interfaces/Way_Points_Fwd.hpp>
 #include <cstddef>

@@ -1,9 +1,10 @@
+
 #include "Pacenote_Reader.hpp"
 #include <Mlib/Json/Misc.hpp>
 #include <Mlib/Os/Os.hpp>
 #include <Mlib/Physics/Misc/Pacenote.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
 #include <fstream>
+#include <stdexcept>
 
 using json = nlohmann::json;
 
@@ -36,26 +37,26 @@ PacenoteReader::PacenoteReader(
   minimum_covered_meters_{minimum_covered_meters}
 {
     if (nlaps == 0) {
-        THROW_OR_ABORT("Number of laps must be at least 1");
+        throw std::runtime_error("Number of laps must be at least 1");
     }
     auto ifstr = create_ifstream(filename);
     if (ifstr->fail()) {
-        THROW_OR_ABORT("Could not open pacenote reader file \"" + filename + '"');
+        throw std::runtime_error("Could not open pacenote reader file \"" + filename + '"');
     }
     nlohmann::json j;
     *ifstr >> j;
     if (!ifstr->eof() && ifstr->fail()) {
-        THROW_OR_ABORT("Error reading from file: \"" + filename + '"');
+        throw std::runtime_error("Error reading from file: \"" + filename + '"');
     }
     nframes_ = j.at("frames").get<size_t>();
     length_in_meters_ = j.at("length_in_meters").get<double>();
     pacenotes_ = j.at("pacenotes").get<std::vector<Pacenote>>();
     if ((nlaps > 1) && !pacenotes_.empty()) {
         if (pacenotes_.back().i1 < nframes_) {
-            THROW_OR_ABORT("Last pacenote index too small");
+            throw std::runtime_error("Last pacenote index too small");
         }
         if (pacenotes_.back().meters_to_start1 < length_in_meters_) {
-            THROW_OR_ABORT("Last pacenote distance too small");
+            throw std::runtime_error("Last pacenote distance too small");
         }
     }
 }
@@ -68,10 +69,10 @@ void PacenoteReader::read(
     std::vector<const Pacenote*>& pacenotes)
 {
     if (!pacenotes.empty()) {
-        THROW_OR_ABORT("Active pacenotes not empty");
+        throw std::runtime_error("Active pacenotes not empty");
     }
     if (pacenotes.capacity() == 0) {
-        THROW_OR_ABORT("Active pacenotes have capacity zero");
+        throw std::runtime_error("Active pacenotes have capacity zero");
     }
     if (meters_read_ahead_ >= length_in_meters_) {
         return;

@@ -1,95 +1,98 @@
 #include "Macro_Line_Executor.hpp"
-#include <Mlib/Env.hpp>
-#include <Mlib/FPath.hpp>
 #include <Mlib/Macro_Executor/Boolean_Expression.hpp>
 #include <Mlib/Macro_Executor/Json_Expression.hpp>
 #include <Mlib/Macro_Executor/Macro_Keys.hpp>
 #include <Mlib/Macro_Executor/Macro_Recorder.hpp>
 #include <Mlib/Macro_Executor/Notifying_Json_Macro_Arguments.hpp>
-#include <Mlib/Os/Os.hpp>
+#include <Mlib/Misc/FPath.hpp>
+#include <Mlib/Os/Env.hpp>
+#include <Mlib/Os/Weakly_Canonical_Preserve_Symlinks.hpp>
 #include <Mlib/Regex/Misc.hpp>
 #include <Mlib/Regex/Regex_Select.hpp>
-#include <Mlib/Strings/To_Number.hpp>
+#include <Mlib/Strings/String_View_To_Number.hpp>
 #include <Mlib/Threads/Recursion_Guard.hpp>
 #include <Mlib/Threads/Thread_Local.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
 #include <Mlib/Time/Fps/Object_Life_Time.hpp>
 #include <filesystem>
 #include <fstream>
 #include <iostream>
-
-namespace fs = std::filesystem;
+#include <stdexcept>
 
 using namespace Mlib;
 
 class PathResolver {
 public:
     explicit PathResolver(
-        const std::list<std::string>* search_path,
+        const std::vector<std::filesystem::path>& search_path,
         std::string script_filename)
     : search_path_{search_path},
       script_filename_{std::move(script_filename)}
     {}
-    std::list<std::string> fpathes(const std::filesystem::path& f) const {
+    std::list<std::filesystem::path> fpathes(const std::filesystem::path& f) const {
         if (f.is_absolute()) {
-            return { f.string() };
+            return { f };
         } else {
-            std::list<std::string> result;
-            for (const std::string& wdir : *search_path_) {
-                auto path = fs::weakly_canonical(fs::path(wdir) / f);
+            std::list<std::filesystem::path> result;
+            for (const auto& wdir : search_path_) {
+                auto path = weakly_canonical_preserve_symlinks(wdir / f);
                 if (path_exists(path)) {
-                    result.push_back(path.string());
+                    result.push_back(path);
                 }
             }
             if (result.empty()) {
-                THROW_OR_ABORT("Could not find a single relative path \"" + f.string() + "\" in search directories");
+                throw std::runtime_error("Could not find a single relative path \"" + f.string() + "\" in search directories");
             }
             return result;
         }
     }
-    FPath fpath(const std::filesystem::path& f) const {
-        if (f.empty()) {
-            return FPath{.is_variable = false, .path = ""};
-        } else if (f.string()[0] == '#') {
-            return FPath{.is_variable = true, .path = f.string().substr(1)};
-        } else {
-            if (f.is_absolute()) {
-                return FPath{.is_variable = false, .path = f.string()};
-            } else {
-                for (const std::string& wdir : *search_path_) {
-                    auto path = fs::weakly_canonical(fs::path(wdir) / f);
+    FPath fpath(const std::string& f) const {
+        auto result = FPath{f};
+        switch (result.type()) {
+        case PathType::EMPTY:
+            throw std::runtime_error("Path is empty");
+        case PathType::LOCAL_PATH:
+            {
+                auto filename = result.local_path();
+                if (filename.is_absolute()) {
+                    return result;
+                }
+                for (const auto& parent : search_path_) {
+                    auto path = weakly_canonical_preserve_symlinks(parent / filename);
                     if (path_exists(path)) {
-                        return FPath{.is_variable = false, .path = path.string()};
+                        return FPath::from_local_path(path);
                     }
                 }
-                THROW_OR_ABORT("Could not find relative path \"" + f.string() + "\" in search directories");
+                throw std::runtime_error("Could not find relative path \"" + f + "\" in search directories");
             }
+        case PathType::VARIABLE:
+            return result;
         }
+        throw std::runtime_error("Unknown path type: " + std::to_string((int)result.type()));
     }
     std::string spath(const std::filesystem::path& f) const {
         if (f.empty()) {
-            THROW_OR_ABORT("Received empty script path");
+            throw std::runtime_error("Received empty script path");
         } else if (f.is_absolute()) {
             return f.string();
         } else {
             {
-                auto local_path = fs::weakly_canonical(fs::path(script_filename_).parent_path() / f);
+                auto local_path = weakly_canonical_preserve_symlinks(script_filename_.parent_path() / f);
                 if (path_exists(local_path)) {
                     return local_path.string();
                 }
             }
-            for (const std::string& wdir : *search_path_) {
-                auto path = fs::weakly_canonical(fs::path(wdir) / f);
+            for (const auto& wdir : search_path_) {
+                auto path = weakly_canonical_preserve_symlinks(wdir / f);
                 if (path_exists(path)) {
                     return path.string();
                 }
             }
-            THROW_OR_ABORT("Could not find relative path \"" + f.string() + "\" in script directory or search directories. Script: \"" + script_filename_ + '"');
+            throw std::runtime_error("Could not find relative path \"" + f.string() + "\" in script directory or search directories. Script: \"" + script_filename_.string() + '"');
         }
     }
 private:
-    const std::list<std::string>* search_path_;
-    std::string script_filename_;
+    const std::vector<std::filesystem::path>& search_path_;
+    std::filesystem::path script_filename_;
 };
 
 namespace DeclareMacroArgs {
@@ -104,7 +107,7 @@ DECLARE_ARGUMENT(let);
 MacroLineExecutor::MacroLineExecutor(
     MacroRecorder& macro_recorder,
     std::string script_filename,
-    const std::list<std::string>* search_path,
+    const std::vector<std::filesystem::path>& search_path,
     JsonUserFunction json_user_function,
     std::string context,
     nlohmann::json block_arguments,
@@ -230,7 +233,7 @@ void MacroLineExecutor::operator () (
         {
             std::stringstream msg;
             msg << j;
-            THROW_OR_ABORT("Could not find exactly one out of call/declare_macro/playback/include/comment in \"" + msg.str() + '"');
+            throw std::runtime_error("Could not find exactly one out of call/declare_macro/playback/include/comment in \"" + msg.str() + '"');
         }
         auto global_args = global_json_macro_arguments_.json_macro_arguments();
         bool include = true;
@@ -262,7 +265,7 @@ void MacroLineExecutor::operator () (
             } else {
                 context = context_;
             }
-            merged_args.insert_json("__DIR__", fs::path(script_filename_).parent_path().string());
+            merged_args.insert_json("__DIR__", script_filename_.parent_path().string());
             merged_args.insert_json("__APPDATA__", get_appdata_directory());
             PathResolver path_resolver{ search_path_, script_filename_ };
             auto insert_let = [&](JsonMacroArguments& let){
@@ -286,7 +289,7 @@ void MacroLineExecutor::operator () (
                 if (jv.contains(MacroKeys::with)) {
                     std::stringstream msg;
                     msg << "\"with\" not supported for \"playback\": " << std::setw(2) << j;
-                    THROW_OR_ABORT(msg.str());
+                    throw std::runtime_error(msg.str());
                 }
                 auto without = jv.at<std::set<std::string>>(MacroKeys::without, std::set<std::string>());
                 JsonMacroArguments let{ block_arguments_, Filter::without, without };
@@ -311,7 +314,7 @@ void MacroLineExecutor::operator () (
                 // BENCHMARK short_description = name;
                 auto macro_it = macro_recorder_.json_macros_.find(name);
                 if (macro_it == macro_recorder_.json_macros_.end()) {
-                    THROW_OR_ABORT("No JSON macro with name " + name + " exists");
+                    throw std::runtime_error("No JSON macro with name " + name + " exists");
                 }
                 try {
                     let.insert_json(macro_it->second.block_arguments, Filter::without, without);
@@ -342,7 +345,7 @@ void MacroLineExecutor::operator () (
                 if (jv.contains(MacroKeys::with)) {
                     std::stringstream msg;
                     msg << "\"with\" not supported for \"call\": " << std::setw(2) << j;
-                    THROW_OR_ABORT(msg.str());
+                    throw std::runtime_error(msg.str());
                 }
                 auto without = jv.at<std::set<std::string>>(MacroKeys::without, std::set<std::string>());
                 JsonMacroArguments let{ block_arguments_, Filter::without, without };
@@ -394,20 +397,20 @@ void MacroLineExecutor::operator () (
                     if (verbose_) {
                         linfo() << msg.str();
                     }
-                    THROW_OR_ABORT(msg.str());
+                    throw std::runtime_error(msg.str());
                 }
             } else if (jv.contains(MacroKeys::execute)) {
                 if (jv.contains(MacroKeys::with)) {
                     std::stringstream msg;
                     msg << "\"with\" not supported for \"execute\": " << std::setw(2) << j;
-                    THROW_OR_ABORT(msg.str());
+                    throw std::runtime_error(msg.str());
                 }
                 auto without = jv.at<std::set<std::string>>(MacroKeys::without, std::set<std::string>());
                 JsonMacroArguments let{ block_arguments_, Filter::without, without };
                 insert_let(let);
                 global_args.unlock();
                 if (jv.contains(MacroKeys::arguments)) {
-                    THROW_OR_ABORT("\"execute\" does not support \"arguments\", use \"let\" instead");
+                    throw std::runtime_error("\"execute\" does not support \"arguments\", use \"let\" instead");
                 }
                 auto mle2 = changed_context(context, let.json());
                 // BENCHMARK times.emplace_back("execute fork", ot.elapsed());
@@ -416,14 +419,14 @@ void MacroLineExecutor::operator () (
                 if (jv.contains(MacroKeys::with)) {
                     std::stringstream msg;
                     msg << "\"with\" not supported for \"include\": " << std::setw(2) << j;
-                    THROW_OR_ABORT(msg.str());
+                    throw std::runtime_error(msg.str());
                 }
                 auto without = jv.at<std::set<std::string>>(MacroKeys::without, std::set<std::string>());
                 JsonMacroArguments let{ block_arguments_, Filter::without, without };
                 insert_let(let);
                 global_args.unlock();
                 if (jv.contains(MacroKeys::arguments)) {
-                    THROW_OR_ABORT("\"include\" does not support \"arguments\", use \"let\" instead");
+                    throw std::runtime_error("\"include\" does not support \"arguments\", use \"let\" instead");
                 }
                 auto mle2 = changed_script_filename_and_context(
                     path_resolver.spath(jv.at<std::string>(MacroKeys::include)),
@@ -435,14 +438,14 @@ void MacroLineExecutor::operator () (
                 if (jv.contains(MacroKeys::without)) {
                     std::stringstream msg;
                     msg << "\"without\" not supported for \"declare_macro\": " << std::setw(2) << j;
-                    THROW_OR_ABORT(msg.str());
+                    throw std::runtime_error(msg.str());
                 }
                 auto with = jv.at<std::set<std::string>>(MacroKeys::with, std::set<std::string>());
                 JsonMacroArguments let{ block_arguments_, Filter::with, with };
                 insert_let(let);
                 global_args.unlock();
                 if (jv.contains(MacroKeys::arguments)) {
-                    THROW_OR_ABORT("\"declare_macro\" does not support \"arguments\", use \"let\" instead");
+                    throw std::runtime_error("\"declare_macro\" does not support \"arguments\", use \"let\" instead");
                 }
                 try {
                     jv.validate(DeclareMacroArgs::options);
@@ -461,14 +464,14 @@ void MacroLineExecutor::operator () (
                         .block_arguments = let.json()
                     }).second)
                 {
-                    THROW_OR_ABORT("Macro with name \"" + name + "\" already exists");
+                    throw std::runtime_error("Macro with name \"" + name + "\" already exists");
                 }
             } else if (jv.contains(MacroKeys::comment)) {
                 // Do nothing
             } else {
                 std::stringstream msg;
                 msg << j;
-                THROW_OR_ABORT("Cannot interpret " + msg.str());
+                throw std::runtime_error("Cannot interpret " + msg.str());
             }
         }
     } else if (j.type() == nlohmann::detail::value_t::array) {
@@ -479,7 +482,7 @@ void MacroLineExecutor::operator () (
     } else {
         std::stringstream msg;
         msg << j;
-        THROW_OR_ABORT("Not object or array: \"" + msg.str() + '"');
+        throw std::runtime_error("Not object or array: \"" + msg.str() + '"');
     }
 }
 

@@ -1,7 +1,7 @@
 #pragma once
 #include <Mlib/Memory/Destruction_Functions.hpp>
 #include <Mlib/Memory/Destruction_Functions_Removeal_Tokens_Ref.hpp>
-#include <Mlib/Source_Location.hpp>
+#include <Mlib/Misc/Source_Location.hpp>
 #include <vector>
 
 namespace Mlib {
@@ -22,7 +22,7 @@ public:
     DanglingValueGenericMap(const DanglingValueGenericMap&) = default;
     ~DanglingValueGenericMap() = default;
     decltype(auto) emplace(const key_type& key, const DanglingBaseClassRef<base_mapped_type>& element, SourceLocation loc) {
-        auto it = elements_.try_emplace(key, element, element->on_destroy, loc);
+        auto it = elements_.try_emplace(key, element, element->on_destroy.deflt, loc);
         if (it.second) {
             it.first->second.on_destroy([this, it=it.first](){ elements_.extract(it); }, loc);
         }

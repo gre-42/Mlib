@@ -1,5 +1,6 @@
 #pragma once
-#include <Mlib/Default_Uninitialized_Vector.hpp>
+#include <Mlib/Initialization/Default_Uninitialized_Vector.hpp>
+#include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/Scene_Config/Scene_Precision.hpp>
 #include <chrono>
 #include <cstdint>
@@ -46,7 +47,7 @@ inline SelectNextVehicleQuery operator | (SelectNextVehicleQuery a, SelectNextVe
     return (SelectNextVehicleQuery)((int)a | (int)b);
 }
 
-class IPlayer {
+class IPlayer: public virtual DanglingBaseClass {
 public:
     virtual const VariableAndHash<std::string>& id() const = 0;
     virtual std::string title() const = 0;

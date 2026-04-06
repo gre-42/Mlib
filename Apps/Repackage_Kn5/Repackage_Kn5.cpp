@@ -1,12 +1,12 @@
-#include <Mlib/Arg_Parser.hpp>
 #include <Mlib/Geometry/Material/Texture_Descriptor.hpp>
 #include <Mlib/Geometry/Mesh/Load/Load_Kn5.hpp>
 #include <Mlib/Geometry/Mesh/Load/Save_Kn5.hpp>
+#include <Mlib/Io/Arg_Parser.hpp>
 #include <Mlib/Memory/Destruction_Guard.hpp>
-#include <Mlib/Render/CHK.hpp>
-#include <Mlib/Render/Gl_Context_Guard.hpp>
-#include <Mlib/Render/Resource_Managers/Rendering_Resources.hpp>
-#include <Mlib/Render/Window.hpp>
+#include <Mlib/OpenGL/CHK.hpp>
+#include <Mlib/OpenGL/Gl_Context_Guard.hpp>
+#include <Mlib/OpenGL/Resource_Managers/Rendering_Resources.hpp>
+#include <Mlib/OpenGL/Window.hpp>
 #include <Mlib/Threads/Realtime_Threads.hpp>
 #include <stb/stb_image_write.h>
 #include <stb_cpp/stb_encode.hpp>
@@ -53,7 +53,7 @@ int main(int argc, char** argv) {
             0};         // fullscreen_refresh_rate
         GlContextGuard gcg{ window };
         if (int version = gladLoadGL(glfwGetProcAddress); version == 0) {
-            THROW_OR_ABORT("gladLoadGL failed");
+            throw std::runtime_error("gladLoadGL failed");
         }
 
         // Resources
@@ -69,14 +69,14 @@ int main(int argc, char** argv) {
         const auto& source_filename = args.unnamed_value(0);
         auto source = create_ifstream(source_filename, std::ios::binary);
         if (source->fail()) {
-            THROW_OR_ABORT("Could not open file for read: \"" + source_filename + '"');
+            throw std::runtime_error("Could not open file for read: \"" + source_filename + '"');
         }
         auto kn5 = load_kn5(*source, false /* verbose */, kn5LoadOptions::MATERIALS);
         std::map<std::string, kn5Texture> destination_textures;
         for (auto& [dds_name, t] : kn5.textures) {
             auto png_name = gen_png_name(dds_name);
             auto colormap = ColormapWithModifiers{
-                .filename = dds_name,
+                .filename = FPath::from_variable_and_hash(dds_name),
                 .color_mode = ColorMode::RGBA,
                 .mipmap_mode = MipmapMode::WITH_MIPMAPS
             }.compute_hash();
@@ -91,12 +91,12 @@ int main(int argc, char** argv) {
             if (args.has_named("--explode")) {
                 auto o = create_ofstream(*png_name, std::ios::binary);
                 if (o->fail()) {
-                    THROW_OR_ABORT("Could not open \"" + *png_name + '"');
+                    throw std::runtime_error("Could not open \"" + *png_name + '"');
                 }
                 o->write((const char*)dest.data.data(), integral_cast<std::streamsize>(dest.data.size()));
                 o->flush();
                 if (o->fail()) {
-                    THROW_OR_ABORT("Could not write to \"" + *png_name + '"');
+                    throw std::runtime_error("Could not write to \"" + *png_name + '"');
                 }
             }
         }

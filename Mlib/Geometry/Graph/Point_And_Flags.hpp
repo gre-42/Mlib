@@ -1,6 +1,6 @@
 #pragma once
+#include <Mlib/Initialization/Uninitialized.hpp>
 #include <Mlib/Math/Funpack.hpp>
-#include <Mlib/Uninitialized.hpp>
 #include <concepts>
 #include <ostream>
 #include <utility>

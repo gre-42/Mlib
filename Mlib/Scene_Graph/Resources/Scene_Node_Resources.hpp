@@ -1,11 +1,12 @@
 #pragma once
 #include <Mlib/Map/String_With_Hash_Unordered_Map.hpp>
-#include <Mlib/Map/String_With_Hash_Unordered_Map.hpp>
 #include <Mlib/Map/Threadsafe_String_With_Hash_Unordered_Map.hpp>
+#include <Mlib/Map/Verbose_Unordered_Map.hpp>
 #include <Mlib/Scene_Config/Scene_Precision.hpp>
 #include <Mlib/Scene_Graph/Interfaces/Way_Points_Fwd.hpp>
 #include <Mlib/Scene_Graph/Preload_Behavior.hpp>
 #include <Mlib/Threads/Recursive_Shared_Mutex.hpp>
+#include <Mlib/Threads/Safe_Atomic_Shared_Mutex.hpp>
 #include <cstdint>
 #include <functional>
 #include <iosfwd>
@@ -42,6 +43,9 @@ struct ChildInstantiationOptions;
 struct RootInstantiationOptions;
 template <class TPosition>
 struct InstanceInformation;
+struct GpuVertexDatas;
+class IGpuObjectFactory;
+class IGpuVertexData;
 
 enum class AggregateMode;
 enum class PhysicsMaterial: uint32_t;
@@ -49,7 +53,7 @@ enum class SmoothnessTarget;
 
 class SceneNodeResources {
 public:
-    SceneNodeResources();
+    explicit SceneNodeResources(IGpuObjectFactory& gpu_object_factory);
     ~SceneNodeResources();
 
     // Preload
@@ -118,8 +122,15 @@ public:
     void save_to_obj_file(
         const VariableAndHash<std::string>& resource_name,
         const std::string& prefix,
-        const TransformationMatrix<float, ScenePos, 3>* model_matrix) const;
+        const TransformationMatrix<SceneDir, ScenePos, 3>* model_matrix) const;
     void print(const VariableAndHash<std::string>& name, std::ostream& ostr) const;
+
+    // Render
+    const GpuVertexDatas& get_gpu_vertex_data_group(
+        const VariableAndHash<std::string>& name) const;
+    std::shared_ptr<IGpuVertexData> get_gpu_vertex_data(
+        const std::shared_ptr<ColoredVertexArray<float>>& scva,
+        const std::shared_ptr<AnimatedColoredVertexArrays>& acvas) const;
 
     // Animation
     std::shared_ptr<AnimatedColoredVertexArrays> get_arrays(
@@ -190,6 +201,12 @@ private:
     mutable StringWithHashUnorderedMap<std::list<std::function<void(ISceneNodeResource&)>>> modifiers_;
     mutable SafeAtomicRecursiveSharedMutex mutex_;
     mutable SafeAtomicRecursiveSharedMutex companion_mutex_;
+
+    IGpuObjectFactory& gpu_object_factory_;
+    mutable StringWithHashUnorderedMap<GpuVertexDatas> gpu_vertex_data_groups_;
+    mutable SafeAtomicSharedMutex gpu_vertex_data_groups_mutex_;
+    mutable VerboseUnorderedMap<std::shared_ptr<ColoredVertexArray<float>>, std::shared_ptr<IGpuVertexData>> gpu_vertex_datas_;
+    mutable SafeAtomicSharedMutex gpu_vertex_datas_mutex_;
 };
 
 }

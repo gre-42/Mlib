@@ -1,10 +1,10 @@
 #include "Instantiate_Statics.hpp"
-#include <Mlib/Argument_List.hpp>
 #include <Mlib/Geometry/Mesh/Cleanup/Cleanup_Mesh.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array_Filter.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Memory/Object_Pool.hpp>
+#include <Mlib/Misc/Argument_List.hpp>
 #include <Mlib/Physics/Collision/Collidable_Mode.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Engine.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
@@ -47,19 +47,19 @@ void InstantiateStatics::execute(const LoadSceneJsonUserFunctionArgs &args) {
         auto modulo_uv = false;
         CleanupMesh<CompressedScenePos> cleanup;
         for (const auto& [t, q] : float_queue) {
-            FunctionGuard fg{ "Instantiate \"" + q->name.full_name() + '"' };
+            FunctionGuard fg{ "Instantiate \"" + q->meta.name.full_name() + '"' };
             auto cva = q->transformed<CompressedScenePos>(t, "_ipl_float");
             cleanup(*cva, filter, min_vertex_distance, modulo_uv);
             if (!cva->empty()) {
-                add_rigid_cuboid(cva, "ipl_static_float_" + q->name.full_name());
+                add_rigid_cuboid(cva, "ipl_static_float_" + q->meta.name.full_name());
             }
         }
         for (const auto& [t, q] : double_queue) {
-            FunctionGuard fg{ "Instantiate \"" + q->name.full_name() + '"' };
+            FunctionGuard fg{ "Instantiate \"" + q->meta.name.full_name() + '"' };
             auto cva = q->transformed<CompressedScenePos>(t, "_ipl_double");
             cleanup(*cva, filter, min_vertex_distance, modulo_uv);
             if (!cva->empty()) {
-                add_rigid_cuboid(cva, "ipl_static_double_" + q->name.full_name());
+                add_rigid_cuboid(cva, "ipl_static_double_" + q->meta.name.full_name());
             }
         }
     }

@@ -1,17 +1,17 @@
 #include "Set_Animation_State.hpp"
-#include <Mlib/Argument_List.hpp>
 #include <Mlib/Json/Chrono_Duration.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
+#include <Mlib/Misc/Argument_List.hpp>
+#include <Mlib/OpenGL/Rendering_Context.hpp>
 #include <Mlib/Physics/Units.hpp>
-#include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Load_Scene_Funcs.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Animation_State.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
 #include <Mlib/Time/Fps/Set_Fps.hpp>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -40,16 +40,16 @@ void SetAnimationState::execute(const LoadSceneJsonUserFunctionArgs& args)
     args.arguments.validate(KnownArgs::options);
     for (const auto& node_name : args.arguments.try_at_vector<VariableAndHash<std::string>>(KnownArgs::nodes))
     {
-        DanglingBaseClassRef<SceneNode> node = scene.get_node(node_name, DP_LOC);
+        DanglingBaseClassRef<SceneNode> node = scene.get_node(node_name, CURRENT_SOURCE_LOCATION);
         float animation_loop_end;
         if (args.arguments.contains(KnownArgs::animation_loop_end)) {
             auto le = args.arguments.at(KnownArgs::animation_loop_end);
             if (le.type() == nlohmann::json::value_t::string) {
                 if (le.get<std::string>() != "full") {
-                    THROW_OR_ABORT("Unsupported value for \"" + std::string{ KnownArgs::animation_loop_end } + "\": " + le.get<std::string>());
+                    throw std::runtime_error("Unsupported value for \"" + std::string{ KnownArgs::animation_loop_end } + "\": " + le.get<std::string>());
                 }
                 if (!args.arguments.contains(KnownArgs::animation_loop_name)) {
-                    THROW_OR_ABORT("Periodic animation end set to \"full\", but animation is not set");
+                    throw std::runtime_error("Periodic animation end set to \"full\", but animation is not set");
                 }
                 animation_loop_end = RenderingContextStack::primary_scene_node_resources()
                     .get_animation_duration(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::animation_loop_name));
@@ -76,7 +76,7 @@ void SetAnimationState::execute(const LoadSceneJsonUserFunctionArgs& args)
         auto pd = args.arguments.try_at<std::chrono::steady_clock::duration>(KnownArgs::periodic_reference_time_duration);
         auto ad = args.arguments.try_at<std::chrono::steady_clock::duration>(KnownArgs::aperiodic_reference_time_duration);
         if (pd.has_value() && ad.has_value()) {
-            THROW_OR_ABORT("Both, periodic and aperiodic reference duration were given");
+            throw std::runtime_error("Both, periodic and aperiodic reference duration were given");
         }
         if (pd.has_value()) {
             animation_state->reference_time = PeriodicReferenceTime{

@@ -40,8 +40,9 @@ public:
     WeaponCycle();
     virtual ~WeaponCycle() override;
     virtual void modify_node() override;
-    void create_externals(const VariableAndHash<std::string>& player_name);
     void add_weapon(std::string weapon_name, const WeaponInfo& weapon_info);
+    void clear_player();
+    void set_player(const VariableAndHash<std::string>& player_name);
     void set_desired_weapon(
         std::optional<VariableAndHash<std::string>> player_name,
         std::string weapon_name,

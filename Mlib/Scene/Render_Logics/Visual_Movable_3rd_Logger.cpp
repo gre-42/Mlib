@@ -4,17 +4,17 @@
 #include <Mlib/Layout/ILayout_Pixels.hpp>
 #include <Mlib/Layout/Layout_Constraint_Parameters.hpp>
 #include <Mlib/Layout/Screen_Units.hpp>
-#include <Mlib/Log.hpp>
 #include <Mlib/Macro_Executor/Expression_Watcher.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Memory/Object_Pool.hpp>
+#include <Mlib/Misc/Log.hpp>
+#include <Mlib/OpenGL/Render_Logics/Render_Logics.hpp>
+#include <Mlib/OpenGL/Render_Setup.hpp>
+#include <Mlib/OpenGL/Text/Align_Text.hpp>
+#include <Mlib/OpenGL/Text/Charsets.hpp>
+#include <Mlib/OpenGL/Text/Renderable_Text.hpp>
+#include <Mlib/OpenGL/Text/Text_Interpolation_Mode.hpp>
 #include <Mlib/Physics/Containers/Advance_Times.hpp>
-#include <Mlib/Render/Render_Logics/Render_Logics.hpp>
-#include <Mlib/Render/Render_Setup.hpp>
-#include <Mlib/Render/Text/Align_Text.hpp>
-#include <Mlib/Render/Text/Charsets.hpp>
-#include <Mlib/Render/Text/Renderable_Text.hpp>
-#include <Mlib/Render/Text/Text_Interpolation_Mode.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <sstream>
 
@@ -25,7 +25,7 @@ VisualMovable3rdLogger::VisualMovable3rdLogger(
     const DanglingBaseClassRef<SceneNode>& scene_node,
     RenderLogics& render_logics,
     AdvanceTimes& advance_times,
-    StatusWriter& status_writer,
+    const DanglingBaseClassRef<StatusWriter>& status_writer,
     StatusComponents log_components,
     std::unique_ptr<ExpressionWatcher>&& ew,
     std::string charset,
@@ -34,7 +34,7 @@ VisualMovable3rdLogger::VisualMovable3rdLogger(
     const FixedArray<float, 3>& font_color,
     const ILayoutPixels& font_height,
     const ILayoutPixels& line_distance)
-    : on_node_clear{ scene_node->on_clear, CURRENT_SOURCE_LOCATION }
+    : on_node_clear{ scene_node->on_clear.early, CURRENT_SOURCE_LOCATION }
     , scene_logic_{ scene_logic }
     , scene_node_{ scene_node.ptr() }
     , status_writer_{ status_writer }
@@ -47,9 +47,17 @@ VisualMovable3rdLogger::VisualMovable3rdLogger(
     , ttf_filename_{ std::move(ttf_filename) }
     , font_height_{ font_height }
 {
-    on_node_clear.add([this]() { global_object_pool.remove(this); }, CURRENT_SOURCE_LOCATION);
-    render_logics.append({ *this, CURRENT_SOURCE_LOCATION }, 0 /* z_order */, CURRENT_SOURCE_LOCATION);
-    advance_times.add_advance_time({ *this, CURRENT_SOURCE_LOCATION }, CURRENT_SOURCE_LOCATION);
+    try {
+        if (!contains_all(status_writer_->status_component(), log_components_)) {
+            throw std::runtime_error("Status component not supported: " + std::to_string((int)log_components_));
+        }
+        on_node_clear.add([this]() { global_object_pool.remove(this); }, CURRENT_SOURCE_LOCATION);
+        render_logics.append({ *this, CURRENT_SOURCE_LOCATION }, 0 /* z_order */, CURRENT_SOURCE_LOCATION);
+        advance_times.add_advance_time({ *this, CURRENT_SOURCE_LOCATION }, CURRENT_SOURCE_LOCATION);
+    } catch (...) {
+        on_destroy.clear();
+        throw;
+    }
 }
 
 VisualMovable3rdLogger::~VisualMovable3rdLogger() {
@@ -63,7 +71,7 @@ void VisualMovable3rdLogger::notify_destroyed(SceneNode& destroyed_object) {
 
 void VisualMovable3rdLogger::advance_time(float dt, const StaticWorld& world) {
     std::stringstream sstr;
-    status_writer_.write_status(sstr, log_components_, world);
+    status_writer_->write_status(sstr, log_components_, world);
     text_ = sstr.str();
 }
 

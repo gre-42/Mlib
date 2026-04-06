@@ -1,6 +1,7 @@
+
 #include "Rectangle_Triangulation_Mode.hpp"
-#include <Mlib/Throw_Or_Abort.hpp>
 #include <map>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -12,7 +13,7 @@ RectangleTriangulationMode Mlib::rectangle_triangulation_mode_from_string(const 
     };
     auto it = m.find(s);
     if (it == m.end()) {
-        THROW_OR_ABORT("Unknown triangulation mode: \"" + s + '"');
+        throw std::runtime_error("Unknown triangulation mode: \"" + s + '"');
     }
     return it->second;
 }

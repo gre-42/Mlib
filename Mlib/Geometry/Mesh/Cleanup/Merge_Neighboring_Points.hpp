@@ -1,5 +1,5 @@
 #pragma once
-#include <Mlib/Geometry/Intersection/Bvh_Fwd.hpp>
+#include <Mlib/Geometry/Primitives/Bvh_Fwd.hpp>
 #include <cstddef>
 
 namespace Mlib {

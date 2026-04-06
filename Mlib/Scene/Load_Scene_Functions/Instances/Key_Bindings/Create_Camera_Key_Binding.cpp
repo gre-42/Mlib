@@ -1,8 +1,8 @@
 #include "Create_Camera_Key_Binding.hpp"
-#include <Mlib/Argument_List.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
-#include <Mlib/Render/Key_Bindings/Camera_Key_Binding.hpp>
-#include <Mlib/Render/Selected_Cameras/Camera_Cycle_Type.hpp>
+#include <Mlib/Misc/Argument_List.hpp>
+#include <Mlib/OpenGL/Key_Bindings/Camera_Key_Binding.hpp>
+#include <Mlib/OpenGL/Selected_Cameras/Camera_Cycle_Type.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Load_Scene_Funcs.hpp>
 #include <Mlib/Scene/Render_Logics/Key_Bindings.hpp>

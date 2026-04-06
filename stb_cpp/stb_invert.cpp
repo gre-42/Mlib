@@ -1,3 +1,4 @@
+
 void stb_invert(
     unsigned char* data,
     int width,

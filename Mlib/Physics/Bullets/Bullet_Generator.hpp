@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/Scene_Config/Scene_Precision.hpp>
 #include <cstddef>
 #include <cstdint>
@@ -62,15 +63,16 @@ public:
         std::function<UpdateAudioSourceState(
             const AudioSourceState<ScenePos>& state,
             const VariableAndHash<std::string>& audio_resource)> generate_bullet_engine_audio);
+    ~BulletGenerator();
     void generate_bullet(
         const BulletProperties& bullet_properties,
         const GenerateSmartBullet& generate_smart_bullet,
-        RigidBodyVehicle* non_collider,
+        const DanglingBaseClassPtr<RigidBodyVehicle>& non_collider,
         const TransformationMatrix<SceneDir, ScenePos, 3>& location,
         const FixedArray<SceneDir, 3>& velocity,
         const FixedArray<SceneDir, 3>& angular_velocity,
-        IPlayer* player,
-        ITeam* team) const;
+        const DanglingBaseClassPtr<IPlayer>& player,
+        const DanglingBaseClassPtr<ITeam>& team) const;
     void preload(
         const BulletProperties& bullet_properties,
         const RenderableResourceFilter& filter) const;

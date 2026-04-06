@@ -9,9 +9,10 @@ namespace Mlib {
 
 class JsonMacroArguments;
 enum class PhysicsMaterial: uint32_t;
+class FPath;
 
 struct FacadeTextureDescriptor {
-    std::vector<VariableAndHash<std::string>> names;
+    std::vector<FPath> names;
     PhysicsMaterial material;
     InteriorTextures interior_textures;
 };

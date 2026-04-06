@@ -1,7 +1,7 @@
-#include <Mlib/Argument_List.hpp>
 #include <Mlib/Macro_Executor/Focus.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Macro_Executor/Notifying_Json_Macro_Arguments.hpp>
+#include <Mlib/Misc/Argument_List.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Load_Scene_Funcs.hpp>
 
@@ -24,7 +24,7 @@ struct RegisterJsonUserFunction {
                 auto local_user_id = args.arguments.at<uint32_t>(KnownArgs::local_user_id);
                 auto variables = args.arguments.at(KnownArgs::variables);
                 if (variables.type() != nlohmann::detail::value_t::object) {
-                    THROW_OR_ABORT("Variables not of type \"object\"");
+                    throw std::runtime_error("Variables not of type \"object\"");
                 }
                 JsonMacroArguments a;
                 for (const auto& [k, v] : variables.items()) {

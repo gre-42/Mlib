@@ -2,8 +2,8 @@
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Positive_Modulo.hpp>
 #include <Mlib/Os/Os.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
 #include <algorithm>
+#include <stdexcept>
 
 namespace Mlib {
 
@@ -42,10 +42,10 @@ public:
     Interpolator interpolator(std::chrono::steady_clock::time_point time) const {
         static_assert(length > 0);
         if (last_ == SIZE_MAX) {
-            THROW_OR_ABORT("TimePointSeries::interpolator called on empty sequence");
+            throw std::runtime_error("TimePointSeries::interpolator called on empty sequence");
         }
         if (time == std::chrono::steady_clock::time_point()) {
-            THROW_OR_ABORT("TimePointSeries::interpolator received uninitialized time");
+            throw std::runtime_error("TimePointSeries::interpolator received uninitialized time");
         }
         if (times_(last_) <= time) {
             return Interpolator{
@@ -96,7 +96,7 @@ public:
     std::chrono::steady_clock::time_point clamped(std::chrono::steady_clock::time_point time) const {
         static_assert(length > 0);
         if (last_ == SIZE_MAX) {
-            THROW_OR_ABORT("TimePointSeries::clamped called on empty sequence");
+            throw std::runtime_error("TimePointSeries::clamped called on empty sequence");
         }
         auto min = times_(last_);
         auto max = times_(last_);

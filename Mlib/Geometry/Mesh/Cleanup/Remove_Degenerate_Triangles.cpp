@@ -13,7 +13,7 @@ void Mlib::remove_degenerate_triangles(ColoredVertexArray<TPos>& cva) {
     triangles.reserve(cva.triangles.size());
     alpha.reserve(cva.alpha.size());
     if (!cva.alpha.empty() && (cva.alpha.size() != cva.triangles.size())) {
-        THROW_OR_ABORT("Conflicting number of alphas");
+        throw std::runtime_error("Conflicting number of alphas");
     }
     for (size_t i = 0; i < cva.triangles.size(); ++i) {
         const auto& tri = cva.triangles[i];

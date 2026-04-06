@@ -1,10 +1,11 @@
+
 #include "Translators.hpp"
+#include <Mlib/Hashing/Variable_And_Hash.hpp>
 #include <Mlib/Macro_Executor/Asset_Group_And_Id.hpp>
 #include <Mlib/Macro_Executor/Asset_Group_Replacement_Parameters.hpp>
 #include <Mlib/Macro_Executor/Asset_References.hpp>
 #include <Mlib/Macro_Executor/Notifying_Json_Macro_Arguments.hpp>
 #include <Mlib/Macro_Executor/Replacement_Parameter.hpp>
-#include <Mlib/Variable_And_Hash.hpp>
 
 using namespace Mlib;
 
@@ -34,7 +35,7 @@ Translators::Translators(
 void Translators::set_language_variable(VariableAndHash<std::string> var) {
     std::scoped_lock lock{ mutex_ };
     if (!language_variable_->empty()) {
-        THROW_OR_ABORT("Language variable already set");
+        throw std::runtime_error("Language variable already set");
     }
     language_variable_ = std::move(var);
 }

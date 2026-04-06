@@ -1,5 +1,3 @@
-#include <Mlib/Argument_List.hpp>
-#include <Mlib/FPath.hpp>
 #include <Mlib/Geometry/Material.hpp>
 #include <Mlib/Geometry/Material/Billboard_Atlas_Instance_Json.hpp>
 #include <Mlib/Geometry/Morphology.hpp>
@@ -7,14 +5,16 @@
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
+#include <Mlib/Misc/Argument_List.hpp>
+#include <Mlib/Misc/FPath.hpp>
+#include <Mlib/OpenGL/Rendering_Context.hpp>
+#include <Mlib/OpenGL/Resource_Managers/Rendering_Resources.hpp>
+#include <Mlib/OpenGL/Resources/Square_Resource.hpp>
 #include <Mlib/Physics/Units.hpp>
-#include <Mlib/Render/Rendering_Context.hpp>
-#include <Mlib/Render/Resource_Managers/Rendering_Resources.hpp>
-#include <Mlib/Render/Resources/Square_Resource.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Load_Scene_Funcs.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
+#include <stdexcept>
 #include <vector>
 
 using namespace Mlib;
@@ -77,7 +77,7 @@ struct RegisterJsonUserFunction {
                         ? depth_func_from_string(args.arguments.at<std::string>(KnownArgs::depth_func))
                         : DepthFunc::LESS,
                     .depth_test = args.arguments.at<bool>(KnownArgs::depth_test, true),
-                    .textures_color = { primary_rendering_resources.get_blend_map_texture(VariableAndHash{args.arguments.path_or_variable(KnownArgs::texture_filename).path}) },
+                    .textures_color = { primary_rendering_resources.get_blend_map_texture(args.arguments.path_or_variable(KnownArgs::texture_filename)) },
                     .occluded_pass = external_render_pass_type_from_string(args.arguments.at<std::string>(KnownArgs::occluded_pass)),
                     .occluder_pass = external_render_pass_type_from_string(args.arguments.at<std::string>(KnownArgs::occluder_pass)),
                     .alpha_distances = args.arguments.at<EOrderableFixedArray<float, 4>>(KnownArgs::alpha_distances),

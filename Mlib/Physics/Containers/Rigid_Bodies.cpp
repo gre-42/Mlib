@@ -1,25 +1,24 @@
+
 #include "Rigid_Bodies.hpp"
-#include <Mlib/Assert.hpp>
 #include <Mlib/Geometry/Colored_Vertex.hpp>
 #include <Mlib/Geometry/Graph/Cluster_By_Flood_Fill.hpp>
 #include <Mlib/Geometry/Interfaces/IIntersectable.hpp>
-#include <Mlib/Geometry/Intersection/Welzl.hpp>
-#include <Mlib/Geometry/Mesh/Collision_Edges.hpp>
 #include <Mlib/Geometry/Mesh/Collision_Mesh.hpp>
-#include <Mlib/Geometry/Mesh/Collision_Ridges.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
 #include <Mlib/Geometry/Mesh/Lazy_Transformed_Mesh.hpp>
 #include <Mlib/Geometry/Mesh/Static_Transformed_Mesh.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>
+#include <Mlib/Geometry/Welzl.hpp>
 #include <Mlib/Images/Svg.hpp>
 #include <Mlib/Math/Power_Of_Two_Divider.hpp>
 #include <Mlib/Memory/Destruction_Functions_Removeal_Tokens_Ref.hpp>
 #include <Mlib/Memory/Float_To_Integral.hpp>
 #include <Mlib/Physics/Collision/Collidable_Mode.hpp>
 #include <Mlib/Physics/Containers/Collision_Group.hpp>
-#include <Mlib/Physics/Physics_Engine/Physics_Engine_Config.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
+#include <Mlib/Scene_Config/Physics_Engine_Config.hpp>
+#include <Mlib/Testing/Assert.hpp>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -40,9 +39,7 @@ RigidBodies::RigidBodies(const PhysicsEngineConfig& cfg)
         cfg.ncells,
         fixed_full<CompressedScenePos, 3>(cfg.dilation_radius)
     }
-    , ridge_bvh_{ {cfg.bvh_max_size, cfg.bvh_max_size, cfg.bvh_max_size}, cfg.bvh_levels }
     , line_bvh_{ {cfg.bvh_max_size, cfg.bvh_max_size, cfg.bvh_max_size}, cfg.bvh_levels }
-    , collision_ridges_baking_status_{ CollisionRidgeBakingStatus::NOT_BAKED }
 {}
 
 RigidBodies::~RigidBodies() {
@@ -74,15 +71,15 @@ void RigidBodies::add_rigid_body(
     CollidableMode collidable_mode)
 {
     if (is_colliding_ && any(collidable_mode & CollidableMode::COLLIDE)) {
-        THROW_OR_ABORT("Attempt to add rigid body during collision-phase (0)");
+        throw std::runtime_error("Attempt to add rigid body during collision-phase (0)");
     }
     auto& rb = rigid_body;
     bool has_meshes_or_intersectables = !s_hitboxes.empty() || !d_hitboxes.empty() || !intersectables.empty();
     if (!any(collidable_mode & CollidableMode::COLLIDE) && has_meshes_or_intersectables) {
-        THROW_OR_ABORT("Non-collidable has meshes or intersectables: \"" + rb.name() + '"');
+        throw std::runtime_error("Non-collidable has meshes or intersectables: \"" + rb.name() + '"');
     }
     if (any(collidable_mode & CollidableMode::COLLIDE) && !has_meshes_or_intersectables) {
-        THROW_OR_ABORT("Collidable has no meshes or intersectables: \"" + rb.name() + '"');
+        throw std::runtime_error("Collidable has no meshes or intersectables: \"" + rb.name() + '"');
     }
     {
         auto rit = rigid_bodies_.try_emplace(&rb, DanglingBaseClassRef<RigidBodyVehicle>{ rb, CURRENT_SOURCE_LOCATION }, CURRENT_SOURCE_LOCATION);
@@ -97,32 +94,40 @@ void RigidBodies::add_rigid_body(
     auto rng = welzl_rng();
     if (collidable_mode == CollidableMode::COLLIDE) {
         if (rb.mass() != INFINITY) {
-            THROW_OR_ABORT("Terrain requires infinite mass");
+            throw std::runtime_error("Terrain requires infinite mass");
         }
         if (!intersectables.empty()) {
-            THROW_OR_ABORT("Intersectables only supported for moving objects");
+            throw std::runtime_error("Intersectables only supported for moving objects");
         }
         // if (!tirelines.empty()) {
-        //     THROW_OR_ABORT("static rigid body has tirelines");
+        //     throw std::runtime_error("static rigid body has tirelines");
         // }
         auto add_hitboxes = [&]<typename TPos>(const std::list<std::shared_ptr<ColoredVertexArray<TPos>>>& hitboxes) {
             for (auto& m : hitboxes) {
-                if (any(m->morphology.physics_material & PhysicsMaterial::OBJ_GRIND_LINE)) {
+                auto add_to_line_bvh = [&](){
                     for (const auto& t : m->transformed_lines_bbox(rb.get_new_absolute_model_matrix())) {
                         line_bvh_.insert(t.aabb, RigidBodyAndCollisionLineSphere<CompressedScenePos>{ rb, t.base });
                     }
+                };
+                if (any(m->meta.morphology.physics_material & PhysicsMaterial::OBJ_GRIND_LINE)) {
+                    if (!m->quads.empty()) {
+                        throw std::runtime_error("Grind line has quads");
+                    }
+                    if (!m->triangles.empty()) {
+                        throw std::runtime_error("Grind line has triangles");
+                    }
+                    add_to_line_bvh();
                 } else {
-                    bool is_convex = any(m->morphology.physics_material & PhysicsMaterial::ATTR_CONVEX);
-                    bool is_concave = any(m->morphology.physics_material & PhysicsMaterial::ATTR_CONCAVE);
+                    bool is_convex = any(m->meta.morphology.physics_material & PhysicsMaterial::ATTR_CONVEX);
+                    bool is_concave = any(m->meta.morphology.physics_material & PhysicsMaterial::ATTR_CONCAVE);
                     if (is_convex == is_concave) {
-                        THROW_OR_ABORT(
+                        throw std::runtime_error(
                             "Physics material is neither obj_grind_line, nor convex xor concave. Object: \"" + rb.name() +
-                            "\", mesh \"" + m->name.full_name() +
+                            "\", mesh \"" + m->meta.name.full_name() +
                             " convex: " + std::to_string(int(is_convex)) +
                             ", concave: " + std::to_string(int(is_concave)));
                     }
-                    if (any(m->morphology.physics_material & PhysicsMaterial::ATTR_CONVEX)) {
-                        CollisionRidges<CompressedScenePos> collision_ridges;
+                    if (any(m->meta.morphology.physics_material & PhysicsMaterial::ATTR_CONVEX)) {
                         std::set<OrderableFixedArray<ScenePos, 3>> vertex_set;
                         std::vector<const FixedArray<ScenePos, 3>*> vertex_vector;
                         vertex_vector.reserve(4 * m->quads.size() + 3 * m->triangles.size());
@@ -140,17 +145,11 @@ void RigidBodies::add_rigid_body(
                                         vertex_vector.push_back(&*it.first);
                                     }
                                 }
-                                collision_ridges.insert(
-                                    t.corners,
-                                    t.polygon.plane.normal,
-                                    cfg_.max_min_cos_ridge,
-                                    t.physics_material);
                             }
                             return bases;
                         };
                         std::vector<CollisionPolygonSphere<CompressedScenePos, 4>> quads = get_transformed.template operator()<4>();
                         std::vector<CollisionPolygonSphere<CompressedScenePos, 3>> triangles = get_transformed.template operator()<3>();
-                        std::vector<CollisionRidgeSphere<CompressedScenePos>> ridges;
                         std::vector<CollisionLineSphere<CompressedScenePos>> lines;
                         std::vector<TypedMesh<std::shared_ptr<IIntersectable>>> intersectables;
 
@@ -161,11 +160,10 @@ void RigidBodies::add_rigid_body(
                             welzl_from_vector<ScenePos, 3>(vertex_vector, rng)
                             .casted<CompressedScenePos>();
 
-                        ridges.reserve(collision_ridges.size());
-                        for (const auto& e : collision_ridges) {
-                            if (e.collision_ridge_sphere.is_touchable(SingleFaceBehavior::UNTOUCHABLE)) {
-                                ridges.emplace_back(e.collision_ridge_sphere).finalize();
-                            }
+                        auto lines_bbox = m->transformed_lines_bbox(rb.get_new_absolute_model_matrix());
+                        lines.reserve(lines_bbox.size());
+                        for (const auto& e : lines_bbox) {
+                            lines.emplace_back(e.base);
                         }
 
                         convex_mesh_bvh_.root_bvh.insert(
@@ -173,42 +171,28 @@ void RigidBodies::add_rigid_body(
                             RigidBodyAndIntersectableMesh{
                                 .rb = { rb, CURRENT_SOURCE_LOCATION },
                                 .mesh = {
-                                    .physics_material = m->morphology.physics_material,
+                                    .physics_material = m->meta.morphology.physics_material,
                                     .mesh = std::make_shared<StaticTransformedMesh>(
-                                        m->name.full_name(),
+                                        m->meta.name.full_name(),
                                         aabb,
                                         bounding_sphere,
                                         std::move(quads),
                                         std::move(triangles),
                                         std::move(lines),
                                         std::vector<CollisionLineSphere<CompressedScenePos>>{},
-                                        std::move(ridges),
                                         std::move(intersectables))}});
                     } else {
-                        if (collision_ridges_baking_status_ != CollisionRidgeBakingStatus::NOT_BAKED) {
-                            THROW_OR_ABORT("Collision ridges already baked, or previous baking failed");
-                        }
                         auto add = [&]<size_t tnvertices>(){
                             auto transformed = m->template transformed_polygon_bbox<tnvertices>(
                                 rb.get_new_absolute_model_matrix());
                             for (const auto& t : transformed) {
                                 triangle_bvh_.root_bvh.insert(t.aabb, RigidBodyAndCollisionTriangleSphere<CompressedScenePos>{ rb, t.base });
                             }
-                            if (collision_ridges_baking_status_ == CollisionRidgeBakingStatus::BAKED) {
-                                THROW_OR_ABORT("Collision ridges already baked");
-                            }
-                            for (const auto& t : transformed) {
-                                collision_ridges_.insert(
-                                    t.base.corners,
-                                    t.base.polygon.plane.normal,
-                                    cfg_.max_min_cos_ridge,
-                                    t.base.physics_material,
-                                    rb);
-                            }
                         };
                         // From: https://stackoverflow.com/a/77429864/2292832
                         add.template operator()<4>();
                         add.template operator()<3>();
+                        add_to_line_bvh();
                     }
                 }
             }
@@ -220,7 +204,7 @@ void RigidBodies::add_rigid_body(
                (collidable_mode == CollidableMode::NONE))
     {
         if (!std::isfinite(rb.mass())) {
-            THROW_OR_ABORT("Moving object requires finite mass");
+            throw std::runtime_error("Moving object requires finite mass");
         }
         RigidBodyAndMeshes& rbm = objects_.emplace_back(RigidBodyAndMeshes{ .rigid_body = { rb, CURRENT_SOURCE_LOCATION } });
         auto add_hitboxes = [&]<typename TPos>(
@@ -228,11 +212,11 @@ void RigidBodies::add_rigid_body(
             std::list<TypedMesh<std::pair<BoundingSphere<CompressedScenePos, 3>, std::shared_ptr<CollisionMesh>>>>& meshes)
         {
             for (auto& cva : hitboxes) {
-                if (any(cva->morphology.physics_material & PhysicsMaterial::ATTR_CONCAVE)) {
-                    THROW_OR_ABORT("Moving objects cannot be concave (due to ridge_map_)");
+                if (any(cva->meta.morphology.physics_material & PhysicsMaterial::ATTR_CONCAVE)) {
+                    throw std::runtime_error("Moving objects cannot be concave (due to ridge_map_)");
                 }
-                if (any(cva->morphology.physics_material & PhysicsMaterial::OBJ_ALIGNMENT_PLANE)) {
-                    THROW_OR_ABORT("Alignment planes only supported for terrain");
+                if (any(cva->meta.morphology.physics_material & PhysicsMaterial::OBJ_ALIGNMENT_PLANE)) {
+                    throw std::runtime_error("Alignment planes only supported for terrain");
                 }
                 auto any_line_only_mask =
                     PhysicsMaterial::OBJ_TIRE_LINE |
@@ -242,22 +226,22 @@ void RigidBodies::add_rigid_body(
                     PhysicsMaterial::OBJ_GRIND_CONTACT |
                     PhysicsMaterial::OBJ_BULLET_MESH;
                 auto any_mask = PhysicsMaterial::OBJ_HITBOX;
-                if (any(cva->morphology.physics_material & any_line_only_mask)) {
+                if (any(cva->meta.morphology.physics_material & any_line_only_mask)) {
                     assert_true(cva->triangles.empty());
                     assert_true(cva->quads.empty());
                     assert_true(!cva->lines.empty());
-                } else if (any(cva->morphology.physics_material & any_mesh_only_mask)) {
+                } else if (any(cva->meta.morphology.physics_material & any_mesh_only_mask)) {
                     assert_true(!cva->triangles.empty() || !cva->quads.empty());
                     assert_true(cva->lines.empty());
-                } else if (any(cva->morphology.physics_material & any_mask)) {
+                } else if (any(cva->meta.morphology.physics_material & any_mask)) {
                     // Do nothing
                 } else if (
-                    any(cva->morphology.physics_material & PhysicsMaterial::ATTR_CONVEX) ==
-                    any(cva->morphology.physics_material & PhysicsMaterial::ATTR_CONCAVE))
+                    any(cva->meta.morphology.physics_material & PhysicsMaterial::ATTR_CONVEX) ==
+                    any(cva->meta.morphology.physics_material & PhysicsMaterial::ATTR_CONCAVE))
                 {
-                    THROW_OR_ABORT(
+                    throw std::runtime_error(
                         "Physics material is not convex xor concave for movable object \"" +
-                        rb.name() + "\" and mesh \"" + cva->name.full_name() +
+                        rb.name() + "\" and mesh \"" + cva->meta.name.full_name() +
                         "\" (neither obj_grind_line nor convex or concave)");
                 }
                 auto vertices = cva->vertices();
@@ -266,7 +250,7 @@ void RigidBodies::add_rigid_body(
                         welzl_from_iterator<TPos, 3>(vertices.begin(), vertices.end(), rng)
                         .template casted<CompressedScenePos>();
                     meshes.push_back({
-                        .physics_material = cva->morphology.physics_material,
+                        .physics_material = cva->meta.morphology.physics_material,
                         .mesh = std::make_pair(bs, std::make_shared<CollisionMesh>(*cva))});
                 }
             }
@@ -286,26 +270,22 @@ void RigidBodies::add_rigid_body(
             transform_object_and_add(rbm);
         }
     } else {
-        THROW_OR_ABORT("Unknown collidable mode");
+        throw std::runtime_error("Unknown collidable mode");
     }
 }
 
 void RigidBodies::delete_rigid_body(const RigidBodyVehicle& rigid_body) {
     auto it = collidable_modes_.find(&rigid_body);
     if (it == collidable_modes_.end()) {
-        THROW_OR_ABORT("Could not find rigid body for deletion (collidable mode)");
+        throw std::runtime_error("Could not find rigid body for deletion (collidable mode)");
     }
     if (rigid_body.mass() == INFINITY) {
         if (it->second == CollidableMode::COLLIDE) {
             convex_mesh_bvh_.clear();
             triangle_bvh_.clear();
-            ridge_bvh_.clear();
-            ridge_map_.clear();
             line_bvh_.clear();
-            collision_ridges_.clear();
-            collision_ridges_baking_status_ = CollisionRidgeBakingStatus::NOT_BAKED;
         } else {
-            THROW_OR_ABORT("Could not delete rigid body (3)");
+            throw std::runtime_error("Could not delete rigid body (3)");
         }
     } else if ((it->second == (CollidableMode::COLLIDE | CollidableMode::MOVE)) ||
                (it->second == CollidableMode::MOVE) ||
@@ -314,7 +294,7 @@ void RigidBodies::delete_rigid_body(const RigidBodyVehicle& rigid_body) {
         {
             auto it2 = std::find_if(objects_.begin(), objects_.end(), [&rigid_body](const auto& e){ return &e.rigid_body.get() == &rigid_body; });
             if (it2 == objects_.end()) {
-                THROW_OR_ABORT("Could not delete dynamic rigid body (4)");
+                throw std::runtime_error("Could not delete dynamic rigid body (4)");
             }
             objects_.erase(it2);
         }
@@ -322,7 +302,7 @@ void RigidBodies::delete_rigid_body(const RigidBodyVehicle& rigid_body) {
             return (&rbtm.rigid_body.get() == &rigid_body);
         });
     } else {
-        THROW_OR_ABORT("Could not delete rigid body (5)");
+        throw std::runtime_error("Could not delete rigid body (5)");
     }
     collidable_modes_.erase(it);
     rigid_bodies_.erase(&rigid_body);
@@ -330,10 +310,10 @@ void RigidBodies::delete_rigid_body(const RigidBodyVehicle& rigid_body) {
 
 void RigidBodies::transform_object_and_add(const RigidBodyAndMeshes& o) {
     if (!o.has_meshes()) {
-        THROW_OR_ABORT("Attempt to add rigid body \"" + o.rigid_body->name() + "\" without meshes");
+        throw std::runtime_error("Attempt to add rigid body \"" + o.rigid_body->name() + "\" without meshes");
     }
     if (is_colliding_) {
-        THROW_OR_ABORT("Attempt to add rigid body during collision-phase (1)");
+        throw std::runtime_error("Attempt to add rigid body during collision-phase (1)");
     }
     auto m = o.rigid_body->get_new_absolute_model_matrix();
     std::list<TypedMesh<std::shared_ptr<IIntersectableMesh>>> transformed_meshes;
@@ -344,8 +324,7 @@ void RigidBodies::transform_object_and_add(const RigidBodyAndMeshes& o) {
                 .mesh = std::make_shared<LazyTransformedMesh>(
                     m,
                     msh.mesh.first,
-                    msh.mesh.second,
-                    cfg_.max_min_cos_ridge)});
+                    msh.mesh.second)});
         }
     };
     add_meshes(o.meshes);
@@ -359,8 +338,6 @@ void RigidBodies::optimize_search_time(std::ostream& ostr) const {
     convex_mesh_bvh_.root_bvh.optimize_search_time(BvhDataRadiusType::NONZERO, ostr);
     ostr << "Triangle BVH optimization" << std::endl;
     triangle_bvh_.root_bvh.optimize_search_time(BvhDataRadiusType::NONZERO, ostr);
-    ostr << "Ridge BVH optimization" << std::endl;
-    ridge_bvh_.optimize_search_time(BvhDataRadiusType::NONZERO, ostr);
     ostr << "Line BVH optimization" << std::endl;
     line_bvh_.optimize_search_time(BvhDataRadiusType::NONZERO, ostr);
 }
@@ -368,7 +345,6 @@ void RigidBodies::optimize_search_time(std::ostream& ostr) const {
 void RigidBodies::print_search_time() const {
     linfo() << "Convex mesh search time: " << convex_mesh_bvh_.root_bvh.search_time(BvhDataRadiusType::NONZERO);
     linfo() << "Triangle search time: " << triangle_bvh_.root_bvh.search_time(BvhDataRadiusType::NONZERO);
-    linfo() << "Ridge search time: " << ridge_bvh_.search_time(BvhDataRadiusType::NONZERO);
     linfo() << "Line search time: " << line_bvh_.search_time(BvhDataRadiusType::NONZERO);
 }
 
@@ -423,62 +399,6 @@ const RigidBodies::LineBvh& RigidBodies::line_bvh() const {
     return line_bvh_;
 }
 
-void RigidBodies::bake_collision_ridges_if_necessary() const {
-    if (collision_ridges_baking_status_ == CollisionRidgeBakingStatus::BAKING) {
-        THROW_OR_ABORT("Previous collision ridges baking failed");
-    }
-    if (collision_ridges_baking_status_ == CollisionRidgeBakingStatus::NOT_BAKED) {
-        collision_ridges_baking_status_ = CollisionRidgeBakingStatus::BAKING;
-        bake_collision_ridges();
-        collision_ridges_baking_status_ = CollisionRidgeBakingStatus::BAKED;
-    }
-}
-
-const RigidBodies::RidgeBvh& RigidBodies::ridge_bvh() const {
-    bake_collision_ridges_if_necessary();
-    return ridge_bvh_;
-}
-
-RidgeMap& RigidBodies::ridge_map() {
-    bake_collision_ridges_if_necessary();
-    return ridge_map_;
-}
-
-void RigidBodies::bake_collision_ridges() const
-{
-    while (!collision_ridges_.empty()) {
-        auto node = collision_ridges_.extract(collision_ridges_.begin());
-        const auto& e = node.value();
-        if (!e.collision_ridge_sphere.is_touchable(SingleFaceBehavior::UNTOUCHABLE)) {
-            continue;
-        }
-        RigidBodyAndCollisionRidgeSphere<CompressedScenePos> rcs{
-            .rb = e.rb,
-            .crp = e.collision_ridge_sphere};
-        rcs.crp.finalize();
-        ridge_bvh_.insert(
-            AxisAlignedBoundingBox<CompressedScenePos, 3>::from_points(e.collision_ridge_sphere.edge),
-            rcs);
-        if (cfg_.enable_ridge_map) {
-            auto a = make_orderable(e.collision_ridge_sphere.edge[0]);
-            auto b = make_orderable(e.collision_ridge_sphere.edge[1]);
-            if (a < b) {
-                if (auto it = ridge_map_.try_emplace({a, b}, rcs); !it.second) {
-                    std::stringstream sstr;
-                    sstr << "Could not insert into ridge-map. Edge: " << a << " <-> " << b << "; Rigid bodies: \"" << e.rb.name() << "\", \"" << it.first->second.rb.name() << '"';
-                    THROW_OR_ABORT(sstr.str());
-                }
-            } else {
-                if (auto it = ridge_map_.try_emplace({b, a}, rcs); !it.second) {
-                    std::stringstream sstr;
-                    sstr << "Could not insert into ridge-map. Edge: " << b << " <-> " << a << "; Rigid bodies: \"" << e.rb.name() << "\", \"" << it.first->second.rb.name() << '"';
-                    THROW_OR_ABORT(sstr.str());
-                }
-            }
-        }
-    }
-}
-
 bool RigidBodies::empty() const {
     return objects_.empty();
 }
@@ -511,7 +431,9 @@ std::vector<CollisionGroup> RigidBodies::collision_groups() {
     auto clusters = cluster_by_flood_fill(
         standard_movables,
         [this](RigidBodyAndMesh& a, RigidBodyAndMesh& b){
-            return a.mesh_sphere.intersects(b.mesh_sphere, (CompressedScenePos)cfg_.max_penetration);
+            return
+                a.mesh_sphere.intersects(b.mesh_sphere, (CompressedScenePos)cfg_.max_penetration) ||
+                a.rb.collides_permanently(b.rb);
         });
     PowerOfTwoDivider<size_t> p2d{ cfg_.nsubsteps };
     std::vector<CollisionGroup> result;
@@ -525,7 +447,7 @@ std::vector<CollisionGroup> RigidBodies::collision_groups() {
     for (auto& m : objects_) {
         auto it = collidable_modes_.find(&m.rigid_body.get());
         if (it == collidable_modes_.end()) {
-            THROW_OR_ABORT("Could not determine collidable mode");
+            throw std::runtime_error("Could not determine collidable mode");
         }
         if (it->second == CollidableMode::MOVE) {
             non_colliders_group.rigid_bodies.insert(&m.rigid_body->rbp_);
@@ -548,7 +470,7 @@ std::vector<CollisionGroup> RigidBodies::collision_groups() {
         // linfo() << "g";
         for (const auto& e : c) {
             if (bullet_line_group.rigid_bodies.contains(&e->rb.rbp_)) {
-                THROW_OR_ABORT(
+                throw std::runtime_error(
                     "Rigid body \"" + e->rb.name() + "\" contains both, bullet "
                     "line segments and standard meshes, which is not supported");
             }
@@ -566,7 +488,7 @@ std::vector<CollisionGroup> RigidBodies::collision_groups() {
             if (nf - 1e-6 > integral_to_float<float>(cfg_.nsubsteps)) {
                 throw std::runtime_error(
                     "Velocity or angular velocity of rigid body \"" + e->rb.name() +
-                    "\", out of bounds. " +
+                    "\" out of bounds. " +
                     "n (float): " + std::to_string(nf));
             }
             auto ni = p2d.greatest_divider(
@@ -580,7 +502,7 @@ std::vector<CollisionGroup> RigidBodies::collision_groups() {
         }
         g.divider = cfg_.nsubsteps / g.nsubsteps;
         if (g.divider * g.nsubsteps != cfg_.nsubsteps) {
-            THROW_OR_ABORT("Error computing collision group substep divider");
+            throw std::runtime_error("Error computing collision group substep divider");
         }
         // linfo() << "  n: " << g.nsubsteps;
         result.push_back(std::move(g));
@@ -590,14 +512,14 @@ std::vector<CollisionGroup> RigidBodies::collision_groups() {
 
 void RigidBodies::notify_colliding_start() {
     if (is_colliding_) {
-        THROW_OR_ABORT("Collision phase already started");
+        throw std::runtime_error("Collision phase already started");
     }
     is_colliding_ = true;
 }
 
 void RigidBodies::notify_colliding_end() {
     if (!is_colliding_) {
-        THROW_OR_ABORT("Collision phase already ended");
+        throw std::runtime_error("Collision phase already ended");
     }
     is_colliding_ = false;
 }

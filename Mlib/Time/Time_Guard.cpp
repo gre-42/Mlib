@@ -1,3 +1,4 @@
+
 #include "Time_Guard.hpp"
 #include <Mlib/Images/Svg.hpp>
 #include <fstream>
@@ -24,11 +25,11 @@ void TimeGuard::initialize(
 void TimeGuard::write_svg(const std::thread::id& tid, const std::string& filename) {
     const auto& t = thread_time_infos_.find(tid);
     if (t == thread_time_infos_.end()) {
-        THROW_OR_ABORT("No events recorder");
+        throw std::runtime_error("No events recorder");
     }
     std::ofstream ostr{ filename };
     if (ostr.fail()) {
-        THROW_OR_ABORT("Could not open file " + filename);
+        throw std::runtime_error("Could not open file " + filename);
     }
     Svg<double> svg{ ostr, 800, 600 };
     // if (false) {
@@ -66,7 +67,7 @@ void TimeGuard::write_svg(const std::thread::id& tid, const std::string& filenam
     svg.finish();
     ostr.flush();
     if (ostr.fail()) {
-        THROW_OR_ABORT("Could not write " + filename);
+        throw std::runtime_error("Could not write " + filename);
     }
 }
 
@@ -107,7 +108,7 @@ void TimeGuard::insert_event(const TimeEvent& e) {
     if (ar.event_id < max_log_length_) {
         ar.events.push_back(e);
     } else if (max_log_length_exceeded_behavior_ == MaxLogLengthExceededBehavior::THROW_EXCEPTION) {
-        THROW_OR_ABORT("Max log length exceeded");
+        throw std::runtime_error("Max log length exceeded");
     } else {
         ar.events[ar.event_id % max_log_length_] = e;
     }
@@ -119,7 +120,7 @@ void TimeGuard::insert_called_function(const CalledFunction& called_function) {
     if (ar.called_function_id < max_log_length_) {
         ar.called_functions.push_back(called_function);
     } else if (max_log_length_exceeded_behavior_ == MaxLogLengthExceededBehavior::THROW_EXCEPTION) {
-        THROW_OR_ABORT("Max log length exceeded");
+        throw std::runtime_error("Max log length exceeded");
     } else {
         ar.called_functions[ar.called_function_id % max_log_length_] = called_function;
     }
@@ -134,7 +135,7 @@ TimeGuard::TimeGuard(const char* message, const std::string& group)
     .stack_size = thread_time_infos_[std::this_thread::get_id()].stack_size}
 {
     if (max_log_length_ == 0) {
-        THROW_OR_ABORT("Please call \"TimeGuard::initialize\"");
+        throw std::runtime_error("Please call \"TimeGuard::initialize\"");
     }
     auto& ar = thread_time_infos_[std::this_thread::get_id()];
     if (ar.events.capacity() == 0) {

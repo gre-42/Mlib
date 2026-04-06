@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/Os/Os.hpp>
 #include <optional>
+#include <vector>
 
 namespace Mlib {
 
@@ -10,15 +11,18 @@ class ChunkedArray;
 template <class TOuterIterator>
 class UnNestedIterator {
 public:
+    using difference_type = std::size_t;
     using value_type = std::remove_reference_t<decltype(*TOuterIterator()->begin())>;
     UnNestedIterator(
         const TOuterIterator& outer_begin,
-        const TOuterIterator& outer_end)
+        const TOuterIterator& outer_end,
+        std::size_t index)
         : outer_{ outer_begin }
         , outer_end_{ outer_end }
         , inner_{ outer_begin == outer_end
             ? std::nullopt
             : std::optional{ outer_begin->begin() } }
+        , index_{ index }
     {}
     ~UnNestedIterator() = default;
     UnNestedIterator& operator ++ () {
@@ -29,7 +33,11 @@ public:
                 inner_ = outer_->begin();
             }
         }
+        ++index_;
         return *this;
+    }
+    std::size_t operator - (const UnNestedIterator& rhs) const {
+        return index_ - rhs.index_;
     }
     bool operator == (const UnNestedIterator& other) const {
         if (other.inner_.has_value()) {
@@ -40,23 +48,24 @@ public:
     bool operator != (const UnNestedIterator& other) const {
         return !(*this == other);
     }
-    value_type& operator * () {
+    value_type& operator * () const {
         return **inner_;
     }
-    value_type& operator -> () {
+    value_type& operator -> () const {
         return **inner_;
     }
 private:
     TOuterIterator outer_;
     TOuterIterator outer_end_;
     std::optional<decltype(TOuterIterator()->begin())> inner_;
+    std::size_t index_;
 };
 
 template <class TContainer>
 class ChunkedArray {
 public:
     using value_type = TContainer::value_type::value_type;
-    explicit ChunkedArray(size_t chunk_size)
+    explicit ChunkedArray(std::size_t chunk_size)
         : chunk_size_{ chunk_size }
     {}
     ~ChunkedArray() = default;
@@ -68,17 +77,36 @@ public:
         return last.emplace_back(std::forward<Args>(args)...);
     }
     auto begin() {
-        return UnNestedIterator{ container_.begin(), container_.end() };
+        return UnNestedIterator{ container_.begin(), container_.end(), 0 };
     }
     auto end() {
-        return UnNestedIterator{ container_.end(), container_.end() };
+        return UnNestedIterator{ container_.end(), container_.end(), size() };
     }
     auto begin() const {
-        return UnNestedIterator{ container_.begin(), container_.end() };
+        return UnNestedIterator{ container_.begin(), container_.end(), 0 };
     }
     auto end() const {
-        return UnNestedIterator{ container_.end(), container_.end() };
+        return UnNestedIterator{ container_.end(), container_.end(), size() };
     }
+    bool empty() const {
+        return container_.empty();
+    }
+    std::size_t size() const {
+        if (container_.empty()) {
+            return 0;
+        }
+        return (container_.size() - 1) * chunk_size_ + container_.back().size();
+    }
+    template <class TResult = std::vector<value_type>>
+    auto to_vector() const {
+        // return TResult(begin(), end());
+        TResult result;
+        result.reserve(size());
+        for (const auto& v : *this) {
+            result.emplace_back(v);
+        }
+        return result;
+    };
 private:
     auto& create_new_chunk() {
         auto& res = container_.emplace_back();
@@ -86,7 +114,7 @@ private:
         return res;
     }
     TContainer container_;
-    size_t chunk_size_;
+    std::size_t chunk_size_;
 };
 
 }

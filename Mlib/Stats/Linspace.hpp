@@ -21,7 +21,7 @@ public:
     {}
     TData operator [] (size_t i) const {
         if (count_ == 0) {
-            THROW_OR_ABORT("Linspace called, but count == 0");
+            throw std::runtime_error("Linspace called, but count == 0");
         }
         if (count_ == 1) {
             return (from_ + to_) / TData(2);

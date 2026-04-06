@@ -30,6 +30,16 @@ public:
         ++count_;
         return true;
     }
+    bool must_lock() {
+        if (!is_owner()) {
+            if (!mutex_.must_lock()) {
+                return false;
+            }
+            owner_ = std::this_thread::get_id();
+        }
+        ++count_;
+        return true;
+    }
     void unlock() {
         --count_;
         if (count_ == 0) {

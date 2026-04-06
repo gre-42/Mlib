@@ -1,10 +1,10 @@
 #pragma once
+#include <Mlib/Hashing/Variable_And_Hash.hpp>
 #include <Mlib/Iterator/Guarded_Iterable.hpp>
 #include <Mlib/Threads/Recursive_Shared_Mutex.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
-#include <Mlib/Variable_And_Hash.hpp>
 #include <functional>
 #include <mutex>
+#include <stdexcept>
 #include <string>
 #include <unordered_map>
 
@@ -23,7 +23,7 @@ public:
     void insert(const VariableAndHash<std::string>& name, const T& value) {
         std::scoped_lock lock{mutex_};
         if (!elements_.insert({name, value}).second) {
-            THROW_OR_ABORT("Element with name \"" + *name + "\" already exists");
+            throw std::runtime_error("Element with name \"" + *name + "\" already exists");
         }
     }
 
@@ -42,7 +42,7 @@ public:
         }
         auto iit = elements_.insert({name, default_(name)});
         if (!iit.second) {
-            THROW_OR_ABORT("Recursive insertion: Element with name \"" + *name + "\" already exists");
+            throw std::runtime_error("Recursive insertion: Element with name \"" + *name + "\" already exists");
         }
         return iit.first->second;
     }

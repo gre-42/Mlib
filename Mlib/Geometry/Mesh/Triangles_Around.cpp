@@ -1,7 +1,7 @@
 #include "Triangles_Around.hpp"
 #include <Mlib/Geometry/Colored_Vertex.hpp>
-#include <Mlib/Geometry/Intersection/Point_Triangle_Intersection.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_List.hpp>
+#include <Mlib/Geometry/Primitives/Point_Triangle_Intersection.hpp>
 
 using namespace Mlib;
 

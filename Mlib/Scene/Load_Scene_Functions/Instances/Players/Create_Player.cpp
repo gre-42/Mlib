@@ -1,9 +1,9 @@
 #include "Create_Player.hpp"
-#include <Mlib/Argument_List.hpp>
 #include <Mlib/Macro_Executor/Focus.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Macro_Executor/Macro_Line_Executor.hpp>
 #include <Mlib/Memory/Object_Pool.hpp>
+#include <Mlib/Misc/Argument_List.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Engine.hpp>
 #include <Mlib/Players/Advance_Times/Game_Logic.hpp>
 #include <Mlib/Players/Advance_Times/Player.hpp>
@@ -19,8 +19,8 @@
 #include <Mlib/Scene/Scene_Config.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Driving_Direction.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
 #include <cstdint>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -47,7 +47,7 @@ void CreatePlayer::execute(const JsonView& args, PlayerCreator creator)
 {
     args.validate(KnownArgs::options);
     if (game_logic == nullptr) {
-        THROW_OR_ABORT("Game logic is null, cannot create player");
+        throw std::runtime_error("Game logic is null, cannot create player");
     }
     std::shared_ptr<UserAccount> user_account;
     if (auto user_account_key = args.try_at_non_null<std::string>(KnownArgs::user_account_key);

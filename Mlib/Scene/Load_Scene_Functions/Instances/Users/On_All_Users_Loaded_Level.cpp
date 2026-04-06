@@ -1,7 +1,7 @@
 #include "On_All_Users_Loaded_Level.hpp"
-#include <Mlib/Argument_List.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Macro_Executor/Macro_Line_Executor.hpp>
+#include <Mlib/Misc/Argument_List.hpp>
 #include <Mlib/Players/Containers/Remote_Sites.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Load_Scene_Funcs.hpp>
@@ -21,7 +21,7 @@ void OnAllUsersLoadedLevel::execute(const LoadSceneJsonUserFunctionArgs& args) {
     args.arguments.validate(KnownArgs::options);
     auto l = args.arguments.at(KnownArgs::content);
     if (on_all_users_loaded_level_token.has_value()) {
-        THROW_OR_ABORT("on_all_users_loaded_level_token already set");
+        throw std::runtime_error("on_all_users_loaded_level_token already set");
     }
     on_all_users_loaded_level_token.emplace(
         remote_sites.on_all_users_loaded_level,

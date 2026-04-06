@@ -2,9 +2,9 @@
 #define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h>
 
-#include <Mlib/Render/Ui/Button_Press.hpp>
-#include <Mlib/Render/Ui/Button_States.hpp>
-#include <Mlib/Render/CHK.hpp>
+#include <Mlib/OpenGL/Ui/Button_Press.hpp>
+#include <Mlib/OpenGL/Ui/Button_States.hpp>
+#include <Mlib/OpenGL/CHK.hpp>
 #include <Mlib/Time/Sleep.hpp>
 #include <chrono>
 #include <thread>
@@ -18,7 +18,7 @@ int main(int argc, char** argv) {
     }
     GLFW_CHK(glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE));
 
-    GLFW_CHK(GLFWwindow* window = glfwCreateWindow(640, 480, "Gamepad buttons", NULL, NULL));
+    GLFWwindow* window = GLFW_CHK_X(glfwCreateWindow(640, 480, "Gamepad buttons", NULL, NULL));
 
     if (!window) {
         GLFW_CHK(glfwTerminate());

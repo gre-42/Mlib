@@ -1,3 +1,4 @@
+#pragma once
 #include <Mlib/Map/Generic_Map.hpp>
 #include <map>
 

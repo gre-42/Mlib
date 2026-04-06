@@ -1,6 +1,8 @@
 #include "P2t_Point_Set.hpp"
 #include <Mlib/Math/Orderable_Fixed_Array.hpp>
 #include <poly2tri/common/shapes.h>
+#include <sstream>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -31,7 +33,7 @@ std::unique_ptr<p2t::Point> P2tPointSet::gen_point(
     auto res = std::make_unique<p2t::Point>(sc(0), sc(1));
     auto rc = compute_coords(res.get());
     if (any(rc != c)) {
-        THROW_OR_ABORT((std::stringstream() << "Cannot map point: " << c << " != " << rc).str());
+        throw std::runtime_error((std::stringstream() << "Cannot map point: " << c << " != " << rc).str());
     }
     return res;
 }

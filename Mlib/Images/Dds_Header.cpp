@@ -1,5 +1,6 @@
+
 #include "Dds_Header.hpp"
-#include <Mlib/Throw_Or_Abort.hpp>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -18,6 +19,6 @@ std::string Mlib::dds_pixel_format_flags_to_string(DdsPixelFormatFlags size) {
     case DdsPixelFormatFlags::LUMINANCE:
         return "luminance";
     default:
-        THROW_OR_ABORT("Unknown DDS pixel format size: " + std::to_string((uint32_t)size));
+        throw std::runtime_error("Unknown DDS pixel format size: " + std::to_string((uint32_t)size));
     }
 }

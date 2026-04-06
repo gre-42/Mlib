@@ -1,5 +1,5 @@
 #pragma once
-#include <Mlib/Default_Uninitialized.hpp>
+#include <Mlib/Initialization/Default_Uninitialized.hpp>
 
 namespace Mlib {
 

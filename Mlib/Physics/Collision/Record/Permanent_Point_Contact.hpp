@@ -5,24 +5,23 @@
 
 namespace Mlib {
 
-class RigidBodyPulses;
+class RigidBodyVehicle;
 class PermanentContacts;
-class SceneNode;
 
-class PermanentPointContact: public PermanentNodeContact {
+class PermanentPointContact final: public PermanentNodeContact {
 public:
     PermanentPointContact(
         PermanentContacts& permanent_contacts,
-        DanglingBaseClassRef<SceneNode> scene_node0,
-        DanglingBaseClassRef<SceneNode> scene_node1,
-        RigidBodyPulses& rbp0,
-        RigidBodyPulses& rbp1,
+        const DanglingBaseClassRef<RigidBodyVehicle>& rb0,
+        const DanglingBaseClassRef<RigidBodyVehicle>& rb1,
         const FixedArray<ScenePos, 3>& p0,
         const FixedArray<ScenePos, 3>& p1);
+    ~PermanentPointContact();
     
     // IPermanentContact
     virtual void extend_contact_infos(
         const PhysicsEngineConfig& cfg,
+        const PhysicsPhase& phase,
         std::list<std::unique_ptr<IContactInfo>>& contact_infos) override;
 private:
     FixedArray<ScenePos, 3> p0_;

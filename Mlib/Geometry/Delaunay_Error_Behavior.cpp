@@ -1,6 +1,7 @@
+
 #include "Delaunay_Error_Behavior.hpp"
-#include <Mlib/Throw_Or_Abort.hpp>
 #include <map>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -14,7 +15,7 @@ DelaunayErrorBehavior Mlib::delaunay_error_behavior_from_string(
     };
     auto it = m.find(s);
     if (it == m.end()) {
-        THROW_OR_ABORT("Unknown Delaunay error behavior: \"" + s + '"');
+        throw std::runtime_error("Unknown Delaunay error behavior: \"" + s + '"');
     }
     return it->second;
 }

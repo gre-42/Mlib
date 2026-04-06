@@ -1,7 +1,8 @@
+
 #include "Relative_Transformer.hpp"
 #include <Mlib/Geometry/Coordinates/Homogeneous.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
-#include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
+#include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/Memory/Object_Pool.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 
@@ -49,7 +50,7 @@ void RelativeTransformer::advance_time(float dt, const StaticWorld& world) {
 
 void RelativeTransformer::notify_destroyed(SceneNode& destroyed_object) {
     if (destroyed_object.has_relative_movable()) {
-        if (&destroyed_object.get_relative_movable() != this) {
+        if (&destroyed_object.get_relative_movable(CURRENT_SOURCE_LOCATION).get() != this) {
             verbose_abort("Unexpected relative movable");
         }
         destroyed_object.clear_relative_movable();

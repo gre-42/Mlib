@@ -15,8 +15,8 @@
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Street_Way_Point.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Terrain_Way_Points.hpp>
 #include <Mlib/Scene_Graph/Way_Point_Location.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
 #include <set>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -54,9 +54,9 @@ void Mlib::calculate_waypoint_adjacency(
                 it.first->second.second |= WayPointLocation::AIRWAY;
                 continue;
             case WayPointsClass::NONE:
-                THROW_OR_ABORT("Waypoint-class is NONE");
+                throw std::runtime_error("Waypoint-class is NONE");
             }
-            THROW_OR_ABORT("Unknown waypoint-class");
+            throw std::runtime_error("Unknown waypoint-class");
         }
     }
     std::map<OrderableFixedArray<CompressedScenePos, 3>, std::pair<size_t, WayPointLocation>> indices_street_wpts;
@@ -83,7 +83,7 @@ void Mlib::calculate_waypoint_adjacency(
             if (ground_bvh.max_height(height, p2)) {
                 if (hwr.has_value()) {
                     if (hwr.value().reference != HeightReference::GROUND) {
-                        THROW_OR_ABORT(osm_id + ": Unknown height reference, expected \"ground\"");
+                        throw std::runtime_error(osm_id + ": Unknown height reference, expected \"ground\"");
                     }
                     way_points.points[adjacency_id.first] = WayPoint{
                         FixedArray<CompressedScenePos, 3>{ p2(0), p2(1), height + (CompressedScenePos)(hwr.value().height * scale) },
@@ -114,11 +114,11 @@ void Mlib::calculate_waypoint_adjacency(
         auto insert_edge_1_lane = [&](const std::string& a, const std::string& b, const TerrainWayPoints& wps) {
             CompressedScenePos dist = (CompressedScenePos)std::sqrt(sum(squared(nodes.at(a).position - nodes.at(b).position)));
             if (!way_points.adjacency.column(indices_terrain_wpts.at(a).first).insert({indices_terrain_wpts.at(b).first, dist}).second) {
-                THROW_OR_ABORT("Could not insert waypoint (0)");
+                throw std::runtime_error("Could not insert waypoint (0)");
             }
             if (wps.orientation == WayPointsOrientation::BIDIRECTIONAL) {
                 if (!way_points.adjacency.column(indices_terrain_wpts.at(b).first).insert({indices_terrain_wpts.at(a).first, dist}).second) {
-                    THROW_OR_ABORT("Could not insert waypoint (1)");
+                    throw std::runtime_error("Could not insert waypoint (1)");
                 }
             }
         };
@@ -133,7 +133,7 @@ void Mlib::calculate_waypoint_adjacency(
         }
         for (size_t i = 0; i < indices_terrain_wpts.size(); ++i) {
             if (!way_points.adjacency.column(i).insert({i, (CompressedScenePos)0.f}).second) {
-                THROW_OR_ABORT("Could not insert waypoint (2)");
+                throw std::runtime_error("Could not insert waypoint (2)");
             }
         }
     }
@@ -145,12 +145,12 @@ void Mlib::calculate_waypoint_adjacency(
             size_t col_id_0 = indices_terrain_wpts.size() + indices_street_wpts.at(make_orderable(p0)).first;
             size_t col_id_1 = indices_terrain_wpts.size() + indices_street_wpts.at(make_orderable(p1)).first;
             if (!way_points.adjacency.column(col_id_0).insert({ col_id_1, dist }).second) {
-                THROW_OR_ABORT("Could not insert waypoint (3)");
+                throw std::runtime_error("Could not insert waypoint (3)");
             }
         }
         for (size_t i = 0; i < indices_street_wpts.size(); ++i) {
             if (!way_points.adjacency.column(indices_terrain_wpts.size() + i).insert({indices_terrain_wpts.size() + i, (CompressedScenePos)0.f}).second) {
-                THROW_OR_ABORT("Could not insert waypoint (4)");
+                throw std::runtime_error("Could not insert waypoint (4)");
             }
         }
     }
@@ -171,7 +171,7 @@ void Mlib::calculate_waypoint_adjacency(
         return res;
     };
     if (!ssm != !to_meters) {
-        THROW_OR_ABORT("Inconsistent to-meters mapping an navmesh parameters");
+        throw std::runtime_error("Inconsistent to-meters mapping an navmesh parameters");
     }
     auto idef = interpolate_default<WayPoint>;
     InterpolatedIntermediatePointsCreator<WayPoint, decltype(idef)> default_iipc{

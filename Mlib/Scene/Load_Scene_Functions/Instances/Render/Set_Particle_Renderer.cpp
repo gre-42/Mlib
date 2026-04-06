@@ -1,9 +1,9 @@
 #include "Set_Particle_Renderer.hpp"
-#include <Mlib/Argument_List.hpp>
 #include <Mlib/Geometry/Material/Particle_Type.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
+#include <Mlib/Misc/Argument_List.hpp>
+#include <Mlib/OpenGL/Batch_Renderers/Particle_Renderer.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Engine.hpp>
-#include <Mlib/Render/Batch_Renderers/Particle_Renderer.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Load_Scene_Funcs.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
@@ -36,7 +36,7 @@ void SetParticleRenderer::operator () (
     auto particle_renderer = std::make_shared<ParticleRenderer>(
         particle_resources,
         ParticleType::SMOKE);
-    scene.get_node(node, DP_LOC)->set_particle_renderer(renderable, particle_renderer);
+    scene.get_node(node, CURRENT_SOURCE_LOCATION)->set_particle_renderer(renderable, particle_renderer);
     physics_engine.advance_times_.add_advance_time(
         DanglingBaseClassRef<ParticleRenderer>{
             *particle_renderer,

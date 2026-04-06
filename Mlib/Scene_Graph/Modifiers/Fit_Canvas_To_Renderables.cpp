@@ -1,10 +1,11 @@
 #include "Fit_Canvas_To_Renderables.hpp"
 #include <Mlib/Geometry/Cameras/Ortho_Camera.hpp>
-#include <Mlib/Geometry/Intersection/Axis_Aligned_Bounding_Box.hpp>
+#include <Mlib/Geometry/Primitives/Axis_Aligned_Bounding_Box.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Renderable.hpp>
 #include <Mlib/Scene_Graph/Elements/Renderable_With_Style.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -30,7 +31,7 @@ void Mlib::fit_canvas_to_renderables(
         return true;
     });
     if (any(aabb.min >= aabb.max)) {
-        THROW_OR_ABORT("Scene AABB not positive");
+        throw std::runtime_error("Scene AABB not positive");
     }
     camera.set_left_plane((float)aabb.min(0));
     camera.set_right_plane((float)aabb.max(0));

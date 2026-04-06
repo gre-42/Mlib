@@ -1,5 +1,4 @@
 #pragma once
-#include <Mlib/Variable_And_Hash.hpp>
 #include <cstdint>
 #include <string>
 #include <vector>
@@ -8,9 +7,10 @@ namespace Mlib {
 
 class JsonMacroArguments;
 enum class PhysicsMaterial: uint32_t;
+class FPath;
 
 struct SocleTexture {
-    std::vector<VariableAndHash<std::string>> textures;
+    std::vector<FPath> textures;
     PhysicsMaterial material;
 };
 

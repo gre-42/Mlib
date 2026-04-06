@@ -1,8 +1,8 @@
 #include "Emit_Child_Particle.hpp"
-#include <Mlib/Argument_List.hpp>
 #include <Mlib/Json/Chrono_Time_Point.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix_Json.hpp>
+#include <Mlib/Misc/Argument_List.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Load_Scene_Funcs.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
@@ -40,7 +40,7 @@ void EmitChildParticle::operator () (
     std::chrono::steady_clock::time_point time_point,
     const TransformationMatrix<SceneDir, ScenePos, 3>& location) const
 {
-    scene.get_node(node, DP_LOC)->
+    scene.get_node(node, CURRENT_SOURCE_LOCATION)->
         get_particle_renderer()->
         get_instantiator(resource).add_particle(
             time_point,

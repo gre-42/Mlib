@@ -31,7 +31,10 @@ public:
         return true;
     }
     inline bool try_lock() {
-        if (!mutex_.try_lock()) {
+        return must_lock();
+    }
+    inline bool must_lock() {
+        if (!mutex_.must_lock()) {
             return false;
         }
         if (locked_ || (nlocked_shared_ != 0)) {

@@ -1,8 +1,8 @@
 #pragma once
 #include <Mlib/Threads/Safe_Atomic_Shared_Mutex.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
 #include <mutex>
 #include <shared_mutex>
+#include <stdexcept>
 
 namespace Mlib {
 
@@ -48,7 +48,7 @@ public:
     {
         LockExclusive result{ o_, mutex_, std::defer_lock };
         if (!result.try_lock_for(duration)) {
-            THROW_OR_ABORT(message + " object is already locked");
+            throw std::runtime_error(message + " object is already locked");
         }
         return result;
     }
@@ -59,7 +59,7 @@ public:
     {
         ConstLockExclusive result{ o_, mutex_, std::defer_lock };
         if (!result.try_lock_for(duration)) {
-            THROW_OR_ABORT(message + " object is already locked");
+            throw std::runtime_error(message + " object is already locked");
         }
         return result;
     }

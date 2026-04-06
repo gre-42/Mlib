@@ -1,6 +1,7 @@
+
 #include "Actor_Type.hpp"
-#include <Mlib/Throw_Or_Abort.hpp>
 #include <map>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -12,7 +13,7 @@ ActorType Mlib::actor_type_from_string(const std::string& str) {
     };
     auto it = m.find(str);
     if (it == m.end()) {
-        THROW_OR_ABORT("Unknown actor type: \"" + str + '"');
+        throw std::runtime_error("Unknown actor type: \"" + str + '"');
     }
     return it->second;
 }
@@ -28,5 +29,5 @@ std::string Mlib::actor_type_to_string(ActorType actor_type) {
     case ActorType::END:
         ; // Fall through
     }
-    THROW_OR_ABORT("Unknown actor type: " + std::to_string((int)actor_type));
+    throw std::runtime_error("Unknown actor type: " + std::to_string((int)actor_type));
 }

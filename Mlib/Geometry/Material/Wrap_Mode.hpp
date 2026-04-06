@@ -10,5 +10,6 @@ enum class WrapMode {
 };
 
 WrapMode wrap_mode_from_string(const std::string& str);
+std::string wrap_mode_to_string(WrapMode wrap_mode);
 
 }

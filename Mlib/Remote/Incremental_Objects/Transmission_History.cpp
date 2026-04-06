@@ -22,7 +22,7 @@ RemoteObjectId TransmissionHistoryReader::read_remote_object_id(
 {
     if (!any(transmitted_fields & TransmittedFields::SITE_ID)) {
         if (!site_id_.has_value()) {
-            THROW_OR_ABORT("Site ID neither set in history nor in current transmission");
+            throw std::runtime_error("Site ID neither set in history nor in current transmission");
         }
         return RemoteObjectId{
             *site_id_,
@@ -40,11 +40,11 @@ std::chrono::steady_clock::time_point TransmissionHistoryReader::read_time(
     IoVerbosity verbosity) const
 {
     if (base_time_ == std::chrono::steady_clock::time_point()) {
-        THROW_OR_ABORT("Attempt to read time, but no base time was set");
+        throw std::runtime_error("Attempt to read time, but no base time was set");
     }
     auto offset = read_binary<RemoteEventHistoryOffset>(istr, "remote time offset", verbosity);
     if (offset >= base_time_.time_since_epoch()) {
-        THROW_OR_ABORT("Time offset larger or equal the time since epoch");
+        throw std::runtime_error("Time offset larger or equal the time since epoch");
     }
     return base_time_ - offset;
 }
@@ -63,7 +63,7 @@ void TransmissionHistoryWriter::write_remote_object_id(
     TransmittedFields transmitted_fields)
 {
     if (any(transmitted_fields & TransmittedFields::SITE_ID)) {
-        THROW_OR_ABORT("Transmitted fields unexpectedly have the SITE_ID flag set");
+        throw std::runtime_error("Transmitted fields unexpectedly have the SITE_ID flag set");
     }
     if (any(history_ & TransmissionHistory::SITE_ID)) {
         write_binary(ostr, transmitted_fields, "transmitted fields");
@@ -80,14 +80,14 @@ void TransmissionHistoryWriter::write_time(
     std::chrono::steady_clock::time_point time) const
 {
     if (base_time_ == std::chrono::steady_clock::time_point()) {
-        THROW_OR_ABORT("Attempt to write time, but no base time was set");
+        throw std::runtime_error("Attempt to write time, but no base time was set");
     }
     auto offset = base_time_ - time;
     if (offset.count() < 0) {
-        THROW_OR_ABORT("Time is later than base time");
+        throw std::runtime_error("Time is later than base time");
     }
     if (offset > REMOTE_EVENT_HISTORY_DURATION) {
-        THROW_OR_ABORT("Time offset is larger than the maximum event history duration");
+        throw std::runtime_error("Time offset is larger than the maximum event history duration");
     }
     auto remote_offset = std::chrono::duration_cast<RemoteEventHistoryOffset>(offset);
     write_binary(ostr, remote_offset.count(), "remote time offset");

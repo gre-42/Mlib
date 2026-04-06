@@ -1,5 +1,5 @@
 #include "Load_Obj.hpp"
-#include <Mlib/Assert.hpp>
+#include <Mlib/Compression/Compressed_File.hpp>
 #include <Mlib/Geometry/Mesh/Ambient_Occlusion_By_Curvature.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
 #include <Mlib/Geometry/Mesh/Load/Load_Material.hpp>
@@ -14,9 +14,11 @@
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Os/Os.hpp>
+#include <Mlib/Os/Weakly_Canonical_Preserve_Symlinks.hpp>
 #include <Mlib/Regex/Regex_Select.hpp>
 #include <Mlib/Regex/Template_Regex.hpp>
 #include <Mlib/Strings/String_View_To_Scene_Pos.hpp>
+#include <Mlib/Testing/Assert.hpp>
 #include <filesystem>
 #include <vector>
 
@@ -47,6 +49,7 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_obj(
 
     std::string prefix = std::filesystem::path{ filename }.stem().string() + "/";
     std::map<std::string, ObjMaterial> mtllib;
+    std::filesystem::path mtllib_path;
     std::vector<ColoredVertexX<TPos>> obj_vertices;
     UUVector<FixedArray<float, 2>> obj_uvs;
     UUVector<FixedArray<float, 3>> obj_normals;
@@ -71,14 +74,16 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_obj(
             .physics_material = cfg.physics_material,
             .center_distances2 = SquaredStepDistances::from_distances(cfg.center_distances),
             .max_triangle_distance = cfg.max_triangle_distance,
-            } };
-    tl.material.compute_color_mode();
+            },
+        ModifierBacklog{}};
+    tl.meta.material.compute_color_mode();
     StaticFaceLighting sfl;
 
-    auto ifs_p = create_ifstream(filename);
+    auto compressed_file = CompressedFile{filename};
+    auto ifs_p = compressed_file.decompressed_ifstream();
     auto& ifs = *ifs_p;
     if (ifs.fail()) {
-        THROW_OR_ABORT("Could not open OBJ file \"" + filename + '"');
+        throw std::runtime_error("Could not open OBJ file \"" + filename + '"');
     }
 
     static const auto sl = chr('/');
@@ -175,13 +180,13 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_obj(
             if (SMatch<8> match; regex_match(line, match, vertex_reg)) {
                 float a = match[7].matched() ? safe_stof(match[7].str()) : 1;
                 if (a != 1) {
-                    THROW_OR_ABORT("vertex a != 1");
+                    throw std::runtime_error("vertex a != 1");
                 }
                 obj_vertices.push_back({
                     .position = {
-                        safe_stox<TPos>(match[1].str()),
-                        safe_stox<TPos>(match[2].str()),
-                        safe_stox<TPos>(match[3].str())},
+                        safe_sto<TPos>(match[1].str()),
+                        safe_sto<TPos>(match[2].str()),
+                        safe_sto<TPos>(match[3].str())},
                     .color = {
                         match[4].matched() ? safe_stof(match[4].str()) : 1.f,
                         match[5].matched() ? safe_stof(match[5].str()) : 1.f,
@@ -339,18 +344,25 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_obj(
                     result.push_back(tl.triangle_array());
                     tl.triangles.clear();
                 }
-                tl.name = { prefix, std::string{ match[1].str() } };
+                tl.meta.name = { prefix, std::string{ match[1].str() } };
             } else if (SMatch<2> match; regex_match(line, match, mtllib_reg)) {
-                std::string p = fs::path(filename).parent_path().string();
-                mtllib = load_mtllib(p == "" ? std::string{match[1].str()} : p + "/" + std::string{match[1].str()}, cfg.werror);
+                mtllib_path = compressed_file.sibling(match[1].str()).path();
+                mtllib = load_mtllib(mtllib_path, cfg.werror);
             } else if (SMatch<2> match; regex_match(line, match, usemtl_reg)) {
                 auto material_name = std::string{ match[1].str() };
                 current_mtl = mtllib.at(material_name);
                 TextureDescriptor td;
-                if (!current_mtl.color_texture.empty()) {
-                    fs::path p = fs::path(filename).parent_path();
+                auto gen_texture_path = [&mtllib_path](const std::filesystem::path& child){
+                    if (child.empty()) {
+                        return FPath{};
+                    }
+                    fs::path p = fs::path(mtllib_path).parent_path();
+                    return FPath::from_local_path(p.empty() ? child : weakly_canonical_preserve_symlinks(p / child));
+                };
+                if (!current_mtl.diffuse_texture.empty()) {
                     td.color = ColormapWithModifiers{
-                        .filename = VariableAndHash{ p.empty() ? current_mtl.color_texture : fs::weakly_canonical(p / current_mtl.color_texture).string() },
+                        .filename = gen_texture_path(current_mtl.diffuse_texture),
+                        .chrominance = gen_texture_path(current_mtl.diffuse_chrominance_texture),
                         .desaturate = cfg.desaturate,
                         .desaturation_exponent = cfg.desaturation_exponent,
                         .histogram = cfg.histogram,
@@ -360,71 +372,69 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_obj(
                         .anisotropic_filtering_level = cfg.anisotropic_filtering_level }.compute_hash();
                 }
                 if (!current_mtl.specular_texture.empty()) {
-                    fs::path p = fs::path(filename).parent_path();
                     td.specular = ColormapWithModifiers{
-                        .filename = VariableAndHash{ p.empty() ? current_mtl.specular_texture : fs::weakly_canonical(p / current_mtl.specular_texture).string() },
+                        .filename = gen_texture_path(current_mtl.specular_texture),
                         .color_mode = ColorMode::RGB,
                         .mipmap_mode = cfg.mipmap_mode,
                         .magnifying_interpolation_mode = cfg.magnifying_interpolation_mode,
                         .anisotropic_filtering_level = cfg.anisotropic_filtering_level}.compute_hash();
                 }
                 if (!current_mtl.bump_texture.empty()) {
-                    fs::path p = fs::path(filename).parent_path();
                     td.normal = ColormapWithModifiers{
-                        .filename = VariableAndHash{ p.empty() ? current_mtl.bump_texture : fs::weakly_canonical(p / current_mtl.bump_texture).string() },
+                        .filename = gen_texture_path(current_mtl.bump_texture),
                         .color_mode = ColorMode::RGB,
                         .mipmap_mode = cfg.mipmap_mode,
                         .magnifying_interpolation_mode = cfg.magnifying_interpolation_mode,
                         .anisotropic_filtering_level = cfg.anisotropic_filtering_level}.compute_hash();
                 }
-                if (!td.color.filename->empty() || !td.specular.filename->empty() || !td.normal.filename->empty()) {
-                    tl.material.textures_color = { {.texture_descriptor = td } };
+                if (!td.color.filename.empty() || !td.specular.filename.empty() || !td.normal.filename.empty()) {
+                    tl.meta.material.textures_color = { {.texture_descriptor = td } };
                     has_alpha_texture = current_mtl.has_alpha_texture;
                 } else {
-                    tl.material.textures_color = cfg.textures;
+                    tl.meta.material.textures_color = cfg.textures;
                     has_alpha_texture = cfg_has_alpha_texture;
                 }
                 if (has_alpha_texture || (current_mtl.alpha != 1.f)) {
-                    tl.material.blend_mode = cfg.blend_mode;
-                    tl.material.cull_faces = cfg.cull_faces_alpha;
+                    tl.meta.material.blend_mode = cfg.blend_mode;
+                    tl.meta.material.cull_faces = cfg.cull_faces_alpha;
                 } else {
-                    tl.material.blend_mode = BlendMode::OFF;
-                    tl.material.cull_faces = cfg.cull_faces_default && !contains_tag(material_name, "NoCullFaces");
+                    tl.meta.material.blend_mode = BlendMode::OFF;
+                    tl.meta.material.cull_faces = cfg.cull_faces_default && !contains_tag(material_name, "NoCullFaces");
                 }
                 if (contains_tag(material_name, "OccludedTypeColor")) {
-                    tl.material.occluded_pass = ExternalRenderPassType::LIGHTMAP_BLACK_NODE;
+                    tl.meta.material.occluded_pass = ExternalRenderPassType::LIGHTMAP_BLACK_NODE;
                 } else {
-                    tl.material.occluded_pass = cfg.occluded_pass;
+                    tl.meta.material.occluded_pass = cfg.occluded_pass;
                 }
                 if (contains_tag(material_name, "OccluderTypeWhite")) {
-                    tl.material.occluder_pass = ExternalRenderPassType::NONE;
+                    tl.meta.material.occluder_pass = ExternalRenderPassType::NONE;
                 } else {
-                    tl.material.occluder_pass = cfg.occluder_pass;
+                    tl.meta.material.occluder_pass = cfg.occluder_pass;
                 }
-                tl.material.shading.emissive = current_mtl.emissive;
-                tl.material.shading.ambient = current_mtl.ambient;
-                tl.material.shading.diffuse = current_mtl.diffuse;
-                tl.material.shading.specular = current_mtl.specular;
-                tl.material.shading.specular_exponent = current_mtl.specular_exponent;
-                tl.material.alpha = current_mtl.alpha;
-                tl.material.compute_color_mode();
+                tl.meta.material.shading.emissive = current_mtl.emissive;
+                tl.meta.material.shading.ambient = current_mtl.ambient;
+                tl.meta.material.shading.diffuse = current_mtl.diffuse;
+                tl.meta.material.shading.specular = current_mtl.specular;
+                tl.meta.material.shading.specular_exponent = current_mtl.specular_exponent;
+                tl.meta.material.alpha = current_mtl.alpha;
+                tl.meta.material.compute_color_mode();
             } else if (SMatch<1> match; regex_match(line, match, smooth_shading_reg)) {
                 // do nothing
             } else {
                 if (cfg.werror) {
-                    THROW_OR_ABORT("Could not parse line");
+                    throw std::runtime_error("Could not parse line");
                 } else {
                     lerr() << "WARNING: Could not parse line: " + line;
                 }
             }
         } catch (const std::runtime_error& e) {
-            THROW_OR_ABORT("Error in line: \"" + line + "\", " + e.what());
+            throw std::runtime_error("Error in line: \"" + line + "\", " + e.what());
         } catch (const std::out_of_range& e) {
-            THROW_OR_ABORT("Error in line: \"" + line + "\", " + e.what());
+            throw std::runtime_error("Error in line: \"" + line + "\", " + e.what());
         }
     }
     if (!ifs.eof() && ifs.fail()) {
-        THROW_OR_ABORT("Error reading from file " + filename);
+        throw std::runtime_error("Error reading from file " + filename);
     }
     result.push_back(tl.triangle_array());
     VertexTransformation<TPos> vtrafo{
@@ -448,10 +458,10 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_obj(
                     TriangleTangentErrorBehavior::ZERO);
             }
         }
-        l->material.shading.emissive *= cfg.emissive_factor;
-        l->material.shading.ambient *= cfg.ambient_factor;
-        l->material.shading.diffuse *= cfg.diffuse_factor;
-        l->material.shading.specular *= cfg.specular_factor;
+        l->meta.material.shading.emissive *= cfg.emissive_factor;
+        l->meta.material.shading.ambient *= cfg.ambient_factor;
+        l->meta.material.shading.diffuse *= cfg.diffuse_factor;
+        l->meta.material.shading.specular *= cfg.specular_factor;
     }
     ambient_occlusion_by_curvature(result, cfg.laplace_ao_strength);
     return result;

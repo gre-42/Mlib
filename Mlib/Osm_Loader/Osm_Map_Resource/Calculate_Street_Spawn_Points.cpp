@@ -5,7 +5,7 @@
 #include <Mlib/Scene_Graph/Driving_Direction.hpp>
 #include <Mlib/Scene_Graph/Spawn_Point.hpp>
 #include <Mlib/Scene_Graph/Way_Point_Location.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -71,7 +71,7 @@ void Mlib::calculate_street_spawn_points(
                 create_spawn_point(SpawnPointType::ROAD, 0.5 + 0.125, r1);
                 create_spawn_point(SpawnPointType::PARKING, 0.5 + 0.25 + 0.125, r1);
             } else {
-                THROW_OR_ABORT("Unsupported number of lanes: " + std::to_string(r.road_properties.nlanes));
+                throw std::runtime_error("Unsupported number of lanes: " + std::to_string(r.road_properties.nlanes));
             }
         } else if (driving_direction == DrivingDirection::RIGHT) {
             if (r.road_properties.nlanes == 1) {
@@ -85,10 +85,10 @@ void Mlib::calculate_street_spawn_points(
                 create_spawn_point(SpawnPointType::ROAD, 0.5 - 0.125, r1);
                 create_spawn_point(SpawnPointType::PARKING, 0.5 - 0.25 - 0.125, r1);
             } else {
-                THROW_OR_ABORT("Unsupported number of lanes: " + std::to_string(r.road_properties.nlanes));
+                throw std::runtime_error("Unsupported number of lanes: " + std::to_string(r.road_properties.nlanes));
             }
         } else {
-            THROW_OR_ABORT("Unknown driving direction");
+            throw std::runtime_error("Unknown driving direction");
         }
     }
 }

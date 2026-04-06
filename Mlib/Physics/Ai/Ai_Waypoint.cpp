@@ -1,9 +1,10 @@
+
 #include "Ai_Waypoint.hpp"
 #include <Mlib/Geometry/Graph/Point_And_Flags.hpp>
-#include <Mlib/Geometry/Intersection/Ray_Sphere_Intersection.hpp>
-#include <Mlib/Geometry/Ray_Segment_3D.hpp>
+#include <Mlib/Geometry/Primitives/Ray_Segment_3D.hpp>
+#include <Mlib/Geometry/Primitives/Ray_Sphere_Intersection.hpp>
 #include <Mlib/Scene_Graph/Way_Point_Location.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -24,7 +25,7 @@ FixedArray<CompressedScenePos, 3> AiWaypoint::interpolated_position(
     CompressedScenePos dy) const
 {
     if (!position_of_destination_.has_value()) {
-        THROW_OR_ABORT("Position of desination is undefined");
+        throw std::runtime_error("Position of desination is undefined");
     }
     auto& pod = position_of_destination_->position;
     FixedArray<CompressedScenePos, 3> dy3{ (CompressedScenePos)0.f, dy, (CompressedScenePos)0.f };
@@ -60,7 +61,7 @@ bool AiWaypoint::has_position_of_destination() const {
 
 FixedArray<CompressedScenePos, 3> AiWaypoint::position_of_destination(CompressedScenePos dy) const {
     if (!position_of_destination_.has_value()) {
-        THROW_OR_ABORT("Position of desintation not defined");
+        throw std::runtime_error("Position of desintation not defined");
     }
     auto res = position_of_destination_->position;
     res(1) += dy;
@@ -69,7 +70,7 @@ FixedArray<CompressedScenePos, 3> AiWaypoint::position_of_destination(Compressed
 
 WayPointLocation AiWaypoint::flags() const {
     if (!position_of_destination_.has_value()) {
-        THROW_OR_ABORT("Position of desintation not defined");
+        throw std::runtime_error("Position of desintation not defined");
     }
     return position_of_destination_->flags;
 }
@@ -84,7 +85,7 @@ FixedArray<float, 3> AiWaypoint::velocity_at_destination(const FixedArray<float,
 
 WayPointLocation AiWaypoint::latest_history_flags() const {
     if (waypoint_history_ == nullptr) {
-        THROW_OR_ABORT("Waypoint history is null");
+        throw std::runtime_error("Waypoint history is null");
     }
     if (waypoint_history_->empty()) {
         return WayPointLocation::NONE;
@@ -98,7 +99,7 @@ bool AiWaypoint::has_velocity_at_destination() const {
 
 FixedArray<float, 3> AiWaypoint::velocity_at_destination() const {
     if (!velocity_at_destination_.has_value()) {
-        THROW_OR_ABORT("Velocity at destination is undefined");
+        throw std::runtime_error("Velocity at destination is undefined");
     }
     return *velocity_at_destination_;
 }

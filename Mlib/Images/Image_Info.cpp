@@ -1,8 +1,9 @@
+
 #include "Image_Info.hpp"
 #include <Mlib/Images/Dds_Info.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
 #include <algorithm>
 #include <stb_cpp/stb_image_load.hpp>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -23,11 +24,11 @@ ImageInfo ImageInfo::load(const std::string& filename, const std::vector<std::by
         int comp;
         if (data == nullptr) {
             if (stbi_info(filename.c_str(), &width, &height, &comp) == 0) {
-                THROW_OR_ABORT("Could not load image info from file \"" + filename + '"');
+                throw std::runtime_error("Could not load image info from file \"" + filename + '"');
             }
         } else {
             if (stbi_info_from_memory((uint8_t*)data->data(), integral_cast<int>(data->size()), &width, &height, &comp) == 0) {
-                THROW_OR_ABORT("Could not load image info from file \"" + filename + '"');
+                throw std::runtime_error("Could not load image info from file \"" + filename + '"');
             }
         }
         result.size = {
@@ -55,7 +56,7 @@ ImageInfo ImageInfo::load(const std::string& filename, const std::vector<std::by
             integral_cast<size_t>(info.width),
             integral_cast<size_t>(info.height)};
     } else {
-        THROW_OR_ABORT("Unknown texture file extension: \"" + filename + '"');
+        throw std::runtime_error("Unknown texture file extension: \"" + filename + '"');
     }
     return result;
 }

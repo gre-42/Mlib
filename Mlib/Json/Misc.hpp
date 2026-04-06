@@ -1,8 +1,8 @@
 #pragma once
+#include <Mlib/Hashing/Variable_And_Hash.hpp>
 #include <Mlib/Json/Base.hpp>
 #include <Mlib/Math/Fixed_Point_Number.hpp>
 #include <Mlib/Math/Orderable_Fixed_Array.hpp>
-#include <Mlib/Variable_And_Hash.hpp>
 #include <map>
 #include <string_view>
 #include <unordered_map>
@@ -37,7 +37,7 @@ T json_get(const nlohmann::json& j) {
             } else if (v == "-inf") {
                 return -INFINITY;
             } else {
-                THROW_OR_ABORT("Unknown number string: \"" + v + '"');
+                throw std::runtime_error("Unknown number string: \"" + v + '"');
             }
         }
     }
@@ -52,10 +52,10 @@ void from_json(const nlohmann::json& j, FixedArray<TData>& v) {
 template <typename TData, size_t tsize0, size_t... tshape>
 void from_json(const nlohmann::json& j, FixedArray<TData, tsize0, tshape...>& v) {
     if (j.type() != nlohmann::detail::value_t::array) {
-        THROW_OR_ABORT("JSON -> FixedArray received non-array type");
+        throw std::runtime_error("JSON -> FixedArray received non-array type");
     }
     if (j.size() != tsize0) {
-        THROW_OR_ABORT("JSON -> FixedArray received array of incorrect length");
+        throw std::runtime_error("JSON -> FixedArray received array of incorrect length");
     }
     for (size_t i = 0; i < tsize0; ++i) {
         v[i] = j[i].get<EFixedArray<TData, tshape...>>();
@@ -87,7 +87,7 @@ void from_json(const nlohmann::json& j, FixedPointNumber<TInt, denominator>& v) 
 template <class TData, class TOperation>
 auto get_vector(const nlohmann::json& j, const TOperation& op) {
     if (j.type() != nlohmann::detail::value_t::array) {
-        THROW_OR_ABORT("JSON -> vector received non-array type");
+        throw std::runtime_error("JSON -> vector received non-array type");
     }
     std::vector<decltype(op(j.get<TData>()))> result;
     result.reserve(j.size());

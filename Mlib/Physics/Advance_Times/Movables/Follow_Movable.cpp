@@ -1,22 +1,21 @@
+
 #include "Follow_Movable.hpp"
 #include <Mlib/Geometry/Coordinates/Gl_Look_At.hpp>
 #include <Mlib/Geometry/Coordinates/Homogeneous.hpp>
 #include <Mlib/Geometry/Fixed_Cross.hpp>
-#include <Mlib/Geometry/Vector_At_Position.hpp>
+#include <Mlib/Geometry/Primitives/Vector_At_Position.hpp>
 #include <Mlib/Math/Fixed_Cholesky.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Memory/Object_Pool.hpp>
-#include <Mlib/Physics/Containers/Advance_Times.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
+#include <stdexcept>
 
 using namespace Mlib;
 
 FollowMovable::FollowMovable(
-    AdvanceTimes& advance_times,
     const DanglingBaseClassRef<const SceneNode>& followed_node,
-    IAbsoluteMovable& followed,
+    const DanglingBaseClassRef<IAbsoluteMovable>& followed,
     float attachment_distance,
     const FixedArray<float, 3>& node_displacement,
     const FixedArray<float, 3>& look_at_displacement,
@@ -27,9 +26,8 @@ FollowMovable::FollowMovable(
     float dt_ref)
     : set_follower{ *this }
     , set_followed{ *this }
-    , advance_times_{ advance_times }
     , followed_node_{ followed_node.ptr() }
-    , followed_{ &followed }
+    , followed_{ followed.ptr() }
     , attachment_distance_{ attachment_distance }
     , attachment_position_{ fixed_nans<ScenePos, 2>() }
     , node_displacement_{ node_displacement }
@@ -70,10 +68,10 @@ void FollowMovable::advance_time(float dt) {
         return;
     }
     if (any(Mlib::isnan(attachment_position_))) {
-        THROW_OR_ABORT("Attachment position is NAN, set_absolute_model_matrix not called?");
+        throw std::runtime_error("Attachment position is NAN, set_absolute_model_matrix not called?");
     }
     if (!initialized_) {
-        THROW_OR_ABORT("FollowMovable not initialized");
+        throw std::runtime_error("FollowMovable not initialized");
     }
     FixedArray<ScenePos, 3> dpos3 = followed_->get_new_absolute_model_matrix().t;
     FixedArray<ScenePos, 2> dpos2{dpos3(0), dpos3(2)};
@@ -101,7 +99,7 @@ void FollowMovable::advance_time(float dt) {
 
 void FollowMovable::set_absolute_model_matrix(const TransformationMatrix<float, ScenePos, 3>& absolute_model_matrix) {
     if (std::abs(absolute_model_matrix.get_scale2() - 1) > 1e-6) {
-        THROW_OR_ABORT("FollowMovable does not support scaling");
+        throw std::runtime_error("FollowMovable does not support scaling");
     }
     transformation_matrix_ = absolute_model_matrix;
     attachment_position_(0) = transformation_matrix_.t(0) - node_displacement_(0);
@@ -118,7 +116,7 @@ void FollowMovable::notify_destroyed(SceneNode& destroyed_object) {
         followed_ = nullptr;
     } else {
         if (destroyed_object.has_absolute_movable()) {
-            if (&destroyed_object.get_absolute_movable() != this) {
+            if (&destroyed_object.get_absolute_movable(CURRENT_SOURCE_LOCATION).get() != this) {
                 verbose_abort("Unexpected absolute movable");
             }
             destroyed_object.clear_absolute_movable();
@@ -138,7 +136,7 @@ void FollowerMovableNodeSetter::set_scene_node(
     VariableAndHash<std::string> node_name,
     SourceLocation loc)
 {
-    removal_tokens_.set(node->on_destroy, CURRENT_SOURCE_LOCATION);
+    removal_tokens_.set(node->on_destroy.deflt, CURRENT_SOURCE_LOCATION);
     removal_tokens_.add([this, node](){
         follow_.notify_destroyed(node.get());
     }, loc);
@@ -157,7 +155,7 @@ void FollowedMovableNodeSetter::set_scene_node(
     VariableAndHash<std::string> node_name,
     SourceLocation loc)
 {
-    removal_tokens_.set(node->on_destroy, CURRENT_SOURCE_LOCATION);
+    removal_tokens_.set(node->on_destroy.deflt, CURRENT_SOURCE_LOCATION);
     removal_tokens_.add([this, node](){
         follow_.notify_destroyed(node.get());
     }, loc);

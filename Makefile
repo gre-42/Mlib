@@ -1,70 +1,60 @@
-.PHONY: all test_debug test_release distclean recastnavigation
+.PHONY: all recastnavigation cmake build
 
 CMAKE_BUILD_TYPE ?= Release
+MAKE_TARGET ?= build
 
-all: recastnavigation build
+all: recastnavigation cmake build
+
+cmake:
+	cmake -G Ninja -DCMAKE_BUILD_TYPE="${CMAKE_BUILD_TYPE}" -B "${BUILD_PREFIX}U${CMAKE_BUILD_TYPE}"
 
 build:
-	./build.sh ${CMAKE_BUILD_TYPE}
-
-test:
-	./build.sh ${CMAKE_BUILD_TYPE} test
+	cmake --build "${BUILD_PREFIX}U${CMAKE_BUILD_TYPE}" --verbose
 
 debug:
-	make build CMAKE_BUILD_TYPE=Debug
+	make ${MAKE_TARGET} CMAKE_BUILD_TYPE=Debug
 
 release:
-	make build CMAKE_BUILD_TYPE=Release
-
-test_debug: debug
-	make test CMAKE_BUILD_TYPE=Debug
-
-test_release: release
-	make test CMAKE_BUILD_TYPE=Release
+	make ${MAKE_TARGET} CMAKE_BUILD_TYPE=Release
 
 release_dbg:
-	make build CMAKE_BUILD_TYPE=RelWithDebInfo
+	make ${MAKE_TARGET} CMAKE_BUILD_TYPE=RelWithDebInfo
 
 build_clang:
-	CC=clang CXX=clang++ BUILD_PREFIX=L${BUILD_PREFIX} \
-		make build CMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+	CC=clang-20 CXX=clang++-20 \
+		make ${MAKE_TARGET} CMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE} BUILD_PREFIX=L${BUILD_PREFIX}
 
 build_clang_libcpp:
-	CXXFLAGS=-stdlib=libc++ CC=clang CXX=clang++ BUILD_PREFIX=C${BUILD_PREFIX} \
-		 make build CMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+	CXXFLAGS=-stdlib=libc++ CC=clang-20 CXX=clang++-20 \
+		 make ${MAKE_TARGET} CMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE} BUILD_PREFIX=C${BUILD_PREFIX}
 
 build_asan:
-	CFLAGS=-fsanitize=address CXXFLAGS=-fsanitize=address LDFLAGS=-fsanitize=address BUILD_PREFIX=A${BUILD_PREFIX} \
-		make build CMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+	CFLAGS=-fsanitize=address CXXFLAGS=-fsanitize=address LDFLAGS=-fsanitize=address \
+		make ${MAKE_TARGET} CMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE} BUILD_PREFIX=A${BUILD_PREFIX}
 
 build_tsan:
-	CFLAGS=-fsanitize=thread CXXFLAGS=-fsanitize=thread LDFLAGS=-fsanitize=thread BUILD_PREFIX=T${BUILD_PREFIX} \
-		make build CMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+	CFLAGS=-fsanitize=thread CXXFLAGS=-fsanitize=thread LDFLAGS=-fsanitize=thread \
+		make ${MAKE_TARGET} CMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE} BUILD_PREFIX=T${BUILD_PREFIX}
 
 build_ubsan:
-	CFLAGS=-fsanitize=undefined CXXFLAGS=-fsanitize=undefined LDFLAGS=-fsanitize=undefined BUILD_PREFIX=B${BUILD_PREFIX} \
-                make build CMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+	CFLAGS=-fsanitize=undefined CXXFLAGS=-fsanitize=undefined LDFLAGS=-fsanitize=undefined \
+                make ${MAKE_TARGET} CMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE} BUILD_PREFIX=B${BUILD_PREFIX}
 
 build_asan_clang:
-	CC=clang CXX=clang++ \
-	CFLAGS=-fsanitize=address CXXFLAGS=-fsanitize=address LDFLAGS=-fsanitize=address BUILD_PREFIX=LA${BUILD_PREFIX} \
-		make build CMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+	CC=clang-20 CXX=clang++-20 \
+	CFLAGS=-fsanitize=address CXXFLAGS=-fsanitize=address LDFLAGS=-fsanitize=address \
+		make ${MAKE_TARGET} CMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE} BUILD_PREFIX=LA${BUILD_PREFIX}
 
 build_tsan_clang:
-	CC=clang CXX=clang++ \
-	CFLAGS=-fsanitize=thread CXXFLAGS=-fsanitize=thread LDFLAGS=-fsanitize=thread BUILD_PREFIX=LT${BUILD_PREFIX} \
-		make build CMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
-
-distclean:
-	./build.sh Debug distclean
-	./build.sh Release distclean
-	./build.sh RelWithDebInfo distclean
+	CC=clang-20 CXX=clang++-20 \
+	CFLAGS=-fsanitize=thread CXXFLAGS=-fsanitize=thread LDFLAGS=-fsanitize=thread \
+		make ${MAKE_TARGET} CMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE} BUILD_PREFIX=LT${BUILD_PREFIX}
 
 clang-tidy:
 	find Mlib -iname "*.cpp" -exec clang-tidy '{}' -checks=-clang-diagnostic-gnu-designator -- -I. ';'
 
 cppcheck:
-	cppcheck . -i Mlib/Geometry/Intersection/Triangle_Triangle_Intersection.cpp
+	cppcheck . -i Mlib/Geometry/Primitives/Triangle_Triangle_Intersection.cpp
 
 recastnavigation:
 	mkdir -p RecastBuild

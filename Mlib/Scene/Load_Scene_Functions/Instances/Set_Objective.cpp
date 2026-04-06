@@ -1,6 +1,6 @@
 #include "Set_Objective.hpp"
-#include <Mlib/Argument_List.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
+#include <Mlib/Misc/Argument_List.hpp>
 #include <Mlib/Players/Advance_Times/Game_Logic.hpp>
 #include <Mlib/Players/Game_Logic/Objective.hpp>
 #include <Mlib/Regex/Regex_Select.hpp>
@@ -28,7 +28,7 @@ SetObjective::SetObjective(PhysicsScene& physics_scene)
 void SetObjective::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     if (game_logic == nullptr) {
-        THROW_OR_ABORT("Scene has no game logic");
+        throw std::runtime_error("Scene has no game logic");
     }
     game_logic->team_deathmatch.set_objective(
         objective_from_string(args.arguments.at<std::string>(KnownArgs::objective)));

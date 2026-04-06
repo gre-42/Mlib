@@ -1,8 +1,8 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
-#include <Mlib/Geometry/Intersection/Bounding_Sphere.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
 #include <Mlib/Geometry/Mesh/Modifiers/Point_To_Grid_Center.hpp>
+#include <Mlib/Geometry/Primitives/Bounding_Sphere.hpp>
 #include <Mlib/Iterator/Mapped_Iterator.hpp>
 #include <functional>
 #include <list>
@@ -26,7 +26,7 @@ inline std::function<FixedArray<TPos, 3>(const FixedArray<ColoredVertex<TPos>, 3
 {
     return [width](const FixedArray<ColoredVertex<TPos>, 3>& triangle){
         if (any(width == (TWidth)0.f)) {
-            THROW_OR_ABORT("Cluster width is zero (1)");
+            throw std::runtime_error("Cluster width is zero (1)");
         }
         auto m = [](const ColoredVertex<TPos>& e){ return &e.position; };
         auto s = BoundingSphere<TPos, 3>::from_iterator(
@@ -42,7 +42,7 @@ std::unordered_map<float, std::list<std::shared_ptr<ColoredVertexArray<TPos>>>>
 {
     std::unordered_map<float, std::list<std::shared_ptr<ColoredVertexArray<TPos>>>> result;
     for (const auto& cva : cvas) {
-        result[cva->morphology.triangle_cluster_width].push_back(cva);
+        result[cva->meta.morphology.triangle_cluster_width].push_back(cva);
     }
     return result;
 }

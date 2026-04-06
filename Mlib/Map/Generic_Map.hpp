@@ -1,6 +1,5 @@
 #pragma once
 #include <Mlib/Os/Os.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
 #include <compare>
 #include <map>
 #include <sstream>
@@ -43,7 +42,7 @@ public:
     mapped_type& get(const key_type& key) {
         auto it = this->find(key);
         if (it == this->end()) {
-            THROW_OR_ABORT((std::stringstream() << "Could not find entry with key \"" << key << '"').str());
+            throw std::runtime_error((std::stringstream() << "Could not find entry with key \"" << key << '"').str());
         }
         return it->second;
     }
@@ -68,7 +67,7 @@ public:
     mapped_type& add(const key_type& key, Args&&... args) {
         auto res = this->try_emplace(key, std::forward<Args>(args)...);
         if (!res.second) {
-            THROW_OR_ABORT("Could not insert into map");
+            throw std::runtime_error("Could not insert into map");
         }
         return res.first->second;
     }

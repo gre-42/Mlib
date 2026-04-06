@@ -3,6 +3,7 @@
 #include <Mlib/Geometry/Instance/Rendering_Dynamics.hpp>
 #include <Mlib/Io/Binary_Reader.hpp>
 #include <Mlib/Io/Binary_Writer.hpp>
+#include <Mlib/Json/Base.hpp>
 #include <Mlib/Json/Json_View.hpp>
 #include <Mlib/Memory/Object_Pool.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
@@ -20,7 +21,6 @@
 #include <Mlib/Scene_Graph/Elements/Make_Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Elements/Rendering_Strategies.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
-#include <nlohmann/json.hpp>
 
 using namespace Mlib;
 
@@ -66,7 +66,7 @@ RemoteRigidBodyVehicle::RemoteRigidBodyVehicle(
     , rb_{ rb.ptr() }
     , physics_scene_{ physics_scene }
     , verbosity_{ verbosity }
-    , rb_on_destroy_{ rb->on_destroy, CURRENT_SOURCE_LOCATION }
+    , rb_on_destroy_{ rb->on_destroy.deflt, CURRENT_SOURCE_LOCATION }
 {
     if (any(verbosity_ & IoVerbosity::METADATA)) {
         linfo() << "Create RemoteRigidBodyVehicle";
@@ -109,7 +109,7 @@ DanglingBaseClassPtr<RemoteRigidBodyVehicle> RemoteRigidBodyVehicle::try_create_
         RigidBodyTransmittedFields::INITIAL |
         RigidBodyTransmittedFields::OWNERSHIP)))
     {
-        THROW_OR_ABORT("RemoteRigidBodyVehicle::try_create_from_stream: Unknown transmitted fields");
+        throw std::runtime_error("RemoteRigidBodyVehicle::try_create_from_stream: Unknown transmitted fields");
     }
     auto initial_str = std::string("");
     if (any(transmitted_fields & RigidBodyTransmittedFields::INITIAL)) {
@@ -126,15 +126,15 @@ DanglingBaseClassPtr<RemoteRigidBodyVehicle> RemoteRigidBodyVehicle::try_create_
     }
     auto end = reader.read_binary<uint32_t>("inverted scene object type");
     if (end != ~(uint32_t)type) {
-        THROW_OR_ABORT("Invalid rigid body vehicle end (0)");
+        throw std::runtime_error("Invalid rigid body vehicle end (0)");
     }
     if ((type != RemoteSceneObjectType::RIGID_BODY_CAR) &&
         (type != RemoteSceneObjectType::RIGID_BODY_AVATAR))
     {
-        THROW_OR_ABORT("RemoteRigidBodyVehicle: Unexpected remote scene object type");
+        throw std::runtime_error("RemoteRigidBodyVehicle: Unexpected remote scene object type");
     }
     if (physics_scene.remote_scene_ == nullptr) {
-        THROW_OR_ABORT("RemoteRigidBodyVehicle: Remote scene is null");
+        throw std::runtime_error("RemoteRigidBodyVehicle: Remote scene is null");
     }
     auto local_site_id = physics_scene.remote_scene_->local_site_id();
     if (!any(transmitted_fields & RigidBodyTransmittedFields::INITIAL) ||
@@ -168,9 +168,9 @@ DanglingBaseClassPtr<RemoteRigidBodyVehicle> RemoteRigidBodyVehicle::try_create_
         case RemoteSceneObjectType::REMOTE_USERS:
         case RemoteSceneObjectType::PLAYER:
         case RemoteSceneObjectType::COUNTDOWN:
-            THROW_OR_ABORT("RemoteRigidBodyVehicle: Unexpected object type");
+            throw std::runtime_error("RemoteRigidBodyVehicle: Unexpected object type");
         }
-        THROW_OR_ABORT("RemoteRigidBodyVehicle: Unknown scene object type");
+        throw std::runtime_error("RemoteRigidBodyVehicle: Unknown scene object type");
     }();
     physics_scene.scene_.add_root_node(
         node_name,
@@ -201,17 +201,17 @@ DanglingBaseClassPtr<RemoteRigidBodyVehicle> RemoteRigidBodyVehicle::try_create_
         case RemoteSceneObjectType::REMOTE_USERS:
         case RemoteSceneObjectType::PLAYER:
         case RemoteSceneObjectType::COUNTDOWN:
-            THROW_OR_ABORT("RemoteRigidBodyVehicle: Unexpected object type");
+            throw std::runtime_error("RemoteRigidBodyVehicle: Unexpected object type");
         }
-        THROW_OR_ABORT("RemoteRigidBodyVehicle: Unknown scene object type");
+        throw std::runtime_error("RemoteRigidBodyVehicle: Unknown scene object type");
     }();
-    auto& rb = get_rigid_body_vehicle(pnode);
-    rb.rbp_.v_com_ = v_com;
-    rb.rbp_.w_ = w;
-    rb.flags_ = flags;
-    rb.remote_object_id_ = remote_object_id;
+    auto rb = get_rigid_body_vehicle(pnode.get(), CURRENT_SOURCE_LOCATION);
+    rb->rbp_.v_com_ = v_com;
+    rb->rbp_.w_ = w;
+    rb->flags_ = flags;
+    rb->remote_object_id_ = remote_object_id;
     if (owner_site_id.has_value()) {
-        rb.owner_site_id_ = *owner_site_id;
+        rb->owner_site_id_ = *owner_site_id;
     }
     return {
         global_object_pool.create<RemoteRigidBodyVehicle>(
@@ -220,7 +220,7 @@ DanglingBaseClassPtr<RemoteRigidBodyVehicle> RemoteRigidBodyVehicle::try_create_
             type,
             std::move(initial_str),
             std::move(node_suffix),
-            DanglingBaseClassRef<RigidBodyVehicle>{get_rigid_body_vehicle(pnode), CURRENT_SOURCE_LOCATION},
+            rb.set_loc(CURRENT_SOURCE_LOCATION),
             DanglingBaseClassRef<PhysicsScene>{physics_scene, CURRENT_SOURCE_LOCATION}),
         CURRENT_SOURCE_LOCATION};
 }
@@ -233,15 +233,15 @@ void RemoteRigidBodyVehicle::read(
     TransmissionHistoryReader& transmission_history_reader)
 {
     if (rb_ == nullptr) {
-        THROW_OR_ABORT("RemoteRigidBodyVehicle::read: Rigid body is destroyed");
+        throw std::runtime_error("RemoteRigidBodyVehicle::read: Rigid body is destroyed");
     }
     if (rb_->scene_node_ == nullptr) {
-        THROW_OR_ABORT("RemoteRigidBodyVehicle::read: Scene node is destroyed");
+        throw std::runtime_error("RemoteRigidBodyVehicle::read: Scene node is destroyed");
     }
     auto reader = BinaryReader{istr, verbosity_};
     auto type = reader.read_binary<RemoteSceneObjectType>("scene object type");
     if (type != type_) {
-        THROW_OR_ABORT("RemoteRigidBodyVehicle::read: Unexpected scene object type");
+        throw std::runtime_error("RemoteRigidBodyVehicle::read: Unexpected scene object type");
     }
     if (any(transmitted_fields & RigidBodyTransmittedFields::INITIAL)) {
         auto initial_len = reader.read_binary<uint32_t>("initial rigid body length");
@@ -257,13 +257,13 @@ void RemoteRigidBodyVehicle::read(
     }
     auto end = reader.read_binary<uint32_t>("inverted scene object type");
     if (end != ~(uint32_t)type_) {
-        THROW_OR_ABORT("Invalid rigid body vehicle end (1)");
+        throw std::runtime_error("Invalid rigid body vehicle end (1)");
     }
     if (physics_scene_->remote_scene_ == nullptr) {
-        THROW_OR_ABORT("RemoteRigidBodyVehicle: Remote scene is null");
+        throw std::runtime_error("RemoteRigidBodyVehicle: Remote scene is null");
     }
     if (!rb_->owner_site_id_.has_value()) {
-        THROW_OR_ABORT("RemoteRigidBodyVehicle: Owner site ID not set");
+        throw std::runtime_error("RemoteRigidBodyVehicle: Owner site ID not set");
     }
     bool is_manager = (remote_object_id.site_id == physics_scene_->remote_scene_->local_site_id());
     bool is_owner = (*rb_->owner_site_id_ == physics_scene_->remote_scene_->local_site_id());
@@ -308,7 +308,7 @@ void RemoteRigidBodyVehicle::write(
     TransmissionHistoryWriter& transmission_history_writer)
 {
     if (rb_ == nullptr) {
-        THROW_OR_ABORT("RemoteRigidBodyVehicle::write: Rigid body is destroyed");
+        throw std::runtime_error("RemoteRigidBodyVehicle::write: Rigid body is destroyed");
     }
     auto transmitted_fields = TransmittedFields::NONE;
     if (!any(known_fields & RigidBodyKnownFields::INITIAL)) {
@@ -330,7 +330,7 @@ void RemoteRigidBodyVehicle::write(
     writer.write_binary(rb_->flags_, "rigid body flags");
     if (any(transmitted_fields & RigidBodyTransmittedFields::OWNERSHIP)) {
         if (!rb_->owner_site_id_.has_value()) {
-            THROW_OR_ABORT("Owner site ID not set");
+            throw std::runtime_error("Owner site ID not set");
         }
         writer.write_binary(*rb_->owner_site_id_, "owner site ID");
     }
@@ -339,7 +339,7 @@ void RemoteRigidBodyVehicle::write(
 
 DanglingBaseClassRef<RigidBodyVehicle> RemoteRigidBodyVehicle::rb() {
     if (rb_ == nullptr) {
-        THROW_OR_ABORT("RemoteRigidBodyVehicle::rb: Rigid body is destroyed");
+        throw std::runtime_error("RemoteRigidBodyVehicle::rb: Rigid body is destroyed");
     }
     return *rb_;
 }

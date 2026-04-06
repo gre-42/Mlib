@@ -1,8 +1,8 @@
 #include "stb_blend.hpp"
-#include <Mlib/Assert.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
+#include <Mlib/Testing/Assert.hpp>
 #include <algorithm>
 #include <cmath>
+#include <stdexcept>
 
 void stb_average(
     const unsigned char* src0,
@@ -17,13 +17,13 @@ void stb_average(
     int nrChannelsDest)
 {
     if (nrChannels0 != 3) {
-        THROW_OR_ABORT("nrChannels0 is not 3");
+        throw std::runtime_error("nrChannels0 is not 3");
     }
     if (nrChannels1 != 3) {
-        THROW_OR_ABORT("nrChannels1 is not 3");
+        throw std::runtime_error("nrChannels1 is not 3");
     }
     if (nrChannelsDest != 3) {
-        THROW_OR_ABORT("nrChannels0 differst from nrChannelsDest");
+        throw std::runtime_error("nrChannels0 differst from nrChannelsDest");
     }
     stb_blend(
         src0,
@@ -57,13 +57,13 @@ void stb_multiply_color(
     int nrChannelsDest)
 {
     if ((nrChannels0 != 3) && (nrChannels0 != 4)) {
-        THROW_OR_ABORT("nrChannels0 is not 3 or 4");
+        throw std::runtime_error("nrChannels0 is not 3 or 4");
     }
     if (nrChannels1 != 3) {
-        THROW_OR_ABORT("nrChannels1 is not 3");
+        throw std::runtime_error("nrChannels1 is not 3");
     }
     if (nrChannels0 != nrChannelsDest) {
-        THROW_OR_ABORT("nrChannels0 differst from nrChannelsDest");
+        throw std::runtime_error("nrChannels0 differst from nrChannelsDest");
     }
     stb_blend(
         src0,
@@ -100,13 +100,13 @@ void stb_alpha_blend(
     int nrChannelsDest)
 {
     if ((nrChannels0 != 3) && (nrChannels0 != 4)) {
-        THROW_OR_ABORT("nrChannels0 is not 3 or 4");
+        throw std::runtime_error("nrChannels0 is not 3 or 4");
     }
     if (nrChannels1 != 4) {
-        THROW_OR_ABORT("nrChannels1 is not 4");
+        throw std::runtime_error("nrChannels1 is not 4");
     }
     if (nrChannels0 != nrChannelsDest) {
-        THROW_OR_ABORT("nrChannels0 differst from nrChannelsDest");
+        throw std::runtime_error("nrChannels0 differst from nrChannelsDest");
     }
     stb_blend(
         src0,

@@ -1,11 +1,11 @@
 #include "Playback_Track.hpp"
-#include <Mlib/Argument_List.hpp>
 #include <Mlib/Iterator/Enumerate.hpp>
 #include <Mlib/Macro_Executor/Asset_Group_Replacement_Parameters.hpp>
 #include <Mlib/Macro_Executor/Asset_References.hpp>
 #include <Mlib/Macro_Executor/Focus.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Macro_Executor/Replacement_Parameter.hpp>
+#include <Mlib/Misc/Argument_List.hpp>
 #include <Mlib/Physics/Advance_Times/Movables/Rigid_Body_Playback.hpp>
 #include <Mlib/Physics/Misc/Track_Element_File.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Engine.hpp>
@@ -56,7 +56,7 @@ void PlaybackTrack::execute(const LoadSceneJsonUserFunctionArgs& args)
 
     auto suffix = args.arguments.at<std::string>(KnownArgs::suffix);
     for (const auto& [i, prefix] : enumerate(node_prefixes)) {
-        DanglingBaseClassRef<SceneNode> node = scene.get_node(VariableAndHash<std::string>{prefix + suffix}, DP_LOC);
+        DanglingBaseClassRef<SceneNode> node = scene.get_node(VariableAndHash<std::string>{prefix + suffix}, CURRENT_SOURCE_LOCATION);
         node->clearing_pointers.add(playback);
         auto playback_object = playback->get_playback_object(i);
         node->set_absolute_movable(playback_object);

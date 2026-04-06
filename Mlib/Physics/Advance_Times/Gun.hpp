@@ -1,16 +1,16 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
+#include <Mlib/Hashing/Variable_And_Hash.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
 #include <Mlib/Memory/Dangling_Base_Class.hpp>
-#include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
+#include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/Memory/Destruction_Functions.hpp>
 #include <Mlib/Memory/Destruction_Guards.hpp>
-#include <Mlib/Object.hpp>
+#include <Mlib/Misc/Object.hpp>
 #include <Mlib/Physics/Interfaces/IAdvance_Time.hpp>
 #include <Mlib/Physics/Misc/Inventory_Item.hpp>
 #include <Mlib/Scene_Graph/Interfaces/Scene_Node/IAbsolute_Observer.hpp>
 #include <Mlib/Stats/Random_Number_Generators.hpp>
-#include <Mlib/Variable_And_Hash.hpp>
 #include <functional>
 #include <mutex>
 #include <optional>
@@ -35,7 +35,7 @@ class Gun final: public IAbsoluteObserver, public IAdvanceTime, public virtual D
 public:
     Gun(AdvanceTimes& advance_times,
         float cool_down,
-        RigidBodyVehicle& parent_rb,
+        const DanglingBaseClassRef<RigidBodyVehicle>& parent_rb,
         const DanglingBaseClassRef<SceneNode>& node,
         const DanglingBaseClassPtr<SceneNode>& punch_angle_node,
         const BulletProperties& bullet_properties,
@@ -54,8 +54,8 @@ public:
     virtual void advance_time(float dt, const StaticWorld& world) override;
     virtual void set_absolute_model_matrix(const TransformationMatrix<float, ScenePos, 3>& absolute_model_matrix) override;
     void trigger(
-        IPlayer* player = nullptr,
-        ITeam* team = nullptr);
+        const DanglingBaseClassPtr<IPlayer>& player = nullptr,
+        const DanglingBaseClassPtr<ITeam>& team = nullptr);
     const TransformationMatrix<float, ScenePos, 3>& absolute_model_matrix() const;
     bool is_none_gun() const;
     const FixedArray<float, 3>& punch_angle() const;
@@ -70,8 +70,7 @@ private:
     void generate_muzzle_flash(const StaticWorld& world);
     void generate_shot_audio();
     AdvanceTimes& advance_times_;
-    RigidBodyVehicle& parent_rb_;
-    DanglingBaseClassPtr<SceneNode> node_;
+    DanglingBaseClassPtr<RigidBodyVehicle> parent_rb_;
     DanglingBaseClassPtr<SceneNode> punch_angle_node_;
     DanglingBaseClassPtr<SceneNode> ypln_node_;
     const BulletProperties& bullet_properties_;
@@ -85,8 +84,8 @@ private:
     const BulletGenerator& bullet_generator_;
     InventoryItem ammo_type_;
     bool triggered_;
-    IPlayer* player_;
-    ITeam* team_;
+    DanglingBaseClassPtr<IPlayer> player_;
+    DanglingBaseClassPtr<ITeam> team_;
     float cool_down_;
     float time_since_last_shot_;
     TransformationMatrix<float, ScenePos, 3> absolute_model_matrix_;

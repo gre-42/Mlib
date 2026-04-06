@@ -45,7 +45,7 @@ public:
         }
         auto l2 = sum(squared(result));
         if (l2 < 1e-12) {
-            THROW_OR_ABORT("VertexNormalsWithSeams: Could not find a single normal, or normals are opposing");
+            throw std::runtime_error("VertexNormalsWithSeams: Could not find a single normal, or normals are opposing");
         }
         return result / std::sqrt(l2);
     }

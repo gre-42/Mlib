@@ -1,10 +1,10 @@
 #include "Facade_Texture.hpp"
-#include <Mlib/Argument_List.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
+#include <Mlib/Misc/Argument_List.hpp>
 #include <Mlib/Regex/Regex_Select.hpp>
-#include <Mlib/Strings/To_Number.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
+#include <Mlib/Strings/String_View_To_Number.hpp>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -46,22 +46,22 @@ FacadeTexture Mlib::parse_facade_texture(const JsonMacroArguments& args) {
         itx.facade_inner_size = i.at<EOrderableFixedArray<float, 2>>(InteriorArgs::facade_inner_size);
         itx.interior_size = i.at<EOrderableFixedArray<float, 3>>(InteriorArgs::interior_size);
         itx.assign(
-            i.at<VariableAndHash<std::string>>(InteriorArgs::left),
-            i.at<VariableAndHash<std::string>>(InteriorArgs::right),
-            i.at<VariableAndHash<std::string>>(InteriorArgs::floor),
-            i.at<VariableAndHash<std::string>>(InteriorArgs::ceiling),
-            i.at<VariableAndHash<std::string>>(InteriorArgs::back),
-            i.at<VariableAndHash<std::string>>(InteriorArgs::back_specular, VariableAndHash<std::string>{}),
-            i.at<VariableAndHash<std::string>>(InteriorArgs::front, VariableAndHash<std::string>{}),
-            i.at<VariableAndHash<std::string>>(InteriorArgs::front_alpha, VariableAndHash<std::string>{}),
-            i.at<VariableAndHash<std::string>>(InteriorArgs::front_specular, VariableAndHash<std::string>{}));
+            i.path_or_variable(InteriorArgs::left),
+            i.path_or_variable(InteriorArgs::right),
+            i.path_or_variable(InteriorArgs::floor),
+            i.path_or_variable(InteriorArgs::ceiling),
+            i.path_or_variable(InteriorArgs::back),
+            i.try_path_or_variable(InteriorArgs::back_specular),
+            i.try_path_or_variable(InteriorArgs::front),
+            i.try_path_or_variable(InteriorArgs::front_alpha),
+            i.try_path_or_variable(InteriorArgs::front_specular));
     }
     return FacadeTexture{
         .selector = args.at<std::string>(KnownArgs::selector, ""),
         .min_height = args.at<float>(KnownArgs::min_height, -INFINITY),
         .max_height = args.at<float>(KnownArgs::max_height, INFINITY),
         .descriptor = FacadeTextureDescriptor{
-            .names = args.at<std::vector<VariableAndHash<std::string>>>(KnownArgs::facade),
+            .names = args.pathes_or_variables(KnownArgs::facade),
             .material = physics_material_from_string(args.at<std::string>(KnownArgs::material)),
             .interior_textures = std::move(itx)}};
 }

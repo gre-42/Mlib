@@ -1,5 +1,5 @@
 #pragma once
-#include <Mlib/Billboard_Id.hpp>
+#include <Mlib/Geometry/Billboard_Id.hpp>
 #include <cstddef>
 #include <cstdint>
 #include <string>
@@ -16,13 +16,15 @@ template <class TData, size_t tndim>
 class ExtremalAxisAlignedBoundingBox;
 template <class TData>
 class Frustum3;
+template <class T>
+class VariableAndHash;
 
 template <class TData>
 class FrustumVisibilityCheck {
 public:
     explicit FrustumVisibilityCheck(const VisibilityCheck<TData>& vc);
     bool is_visible(
-        const std::string& object_name,
+        const VariableAndHash<std::string>& object_name,
         const Material& material,
         const Morphology& morphology,
         BillboardId billboard_id,

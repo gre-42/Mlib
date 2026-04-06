@@ -1,7 +1,8 @@
+
 #include "Wheel.hpp"
 #include <Mlib/Geometry/Coordinates/Homogeneous.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
-#include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
+#include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/Memory/Object_Pool.hpp>
 #include <Mlib/Physics/Actuators/Tire.hpp>
 #include <Mlib/Physics/Containers/Advance_Times.hpp>
@@ -11,7 +12,7 @@
 using namespace Mlib;
 
 Wheel::Wheel(
-    RigidBodyVehicle& rigid_body,
+    const DanglingBaseClassRef<RigidBodyVehicle>& rigid_body,
     AdvanceTimes& advance_times,
     size_t tire_id,
     float radius)
@@ -53,7 +54,7 @@ TransformationMatrix<float, ScenePos, 3> Wheel::get_new_relative_model_matrix() 
 
 void Wheel::advance_time(float dt, const StaticWorld& world) {
     FixedArray<float, 3> tire_angles{fixed_zeros<float, 3>()};
-    if (auto t = rigid_body_.tires_.try_get(tire_id_); t != nullptr) {
+    if (auto t = rigid_body_->tires_.try_get(tire_id_); t != nullptr) {
         tire_angles(1) = t->angle_y;
         transformation_matrix_.t(1) = y0_ + t->shock_absorber_position;
         angle_x_ = t->angle_x;
@@ -64,7 +65,7 @@ void Wheel::advance_time(float dt, const StaticWorld& world) {
 
 void Wheel::notify_destroyed(SceneNode& destroyed_object) {
     if (destroyed_object.has_relative_movable()) {
-        if (&destroyed_object.get_relative_movable() != this) {
+        if (&destroyed_object.get_relative_movable(CURRENT_SOURCE_LOCATION).get() != this) {
             verbose_abort("Unexpected relative movable");
         }
         destroyed_object.clear_relative_movable();

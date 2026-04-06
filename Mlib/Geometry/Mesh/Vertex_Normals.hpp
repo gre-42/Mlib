@@ -39,7 +39,7 @@ public:
                     zb = NormalVectorErrorBehavior::ZERO;
                 }
                 if (any(zb & NormalVectorErrorBehavior::THROW)) {
-                    THROW_OR_ABORT("Normal is zero");
+                    throw std::runtime_error("Normal is zero");
                 }
                 n = 0.f;
             } else {

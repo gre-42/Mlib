@@ -15,8 +15,8 @@
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Subdivided_Way_Vertex.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Visit_Line_Segments.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
 #include <iostream>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -48,7 +48,7 @@ void Mlib::draw_roofs(
             continue;
         }
         if (bu.way.nd.front() != bu.way.nd.back()) {
-            THROW_OR_ABORT("Cannot draw roof of building " + bu.id + ": outline not closed");
+            throw std::runtime_error("Cannot draw roof of building " + bu.id + ": outline not closed");
         }
         auto draw = [&](BuildingDetailType tpe){
             std::shared_ptr<TriangleList<CompressedScenePos>> tl_roof_var = nullptr;
@@ -57,7 +57,8 @@ void Mlib::draw_roofs(
                     tl_roof_var = tls.emplace_back(std::make_shared<TriangleList<CompressedScenePos>>(
                         "roof_" + std::to_string(number),
                         roof_material,
-                        get_morphology[tpe] + BASE_VISIBLE_TERRAIN_MATERIAL));
+                        get_morphology[tpe] + BASE_VISIBLE_TERRAIN_MATERIAL,
+                        ModifierBacklog{}));
                 }
                 return tl_roof_var;
             };
@@ -67,7 +68,8 @@ void Mlib::draw_roofs(
                     tl_rail_var = tls.emplace_back(std::make_shared<TriangleList<CompressedScenePos>>(
                         "roof_rail_" + std::to_string(number),
                         rail_material,
-                        get_morphology[BuildingDetailType::HIGH] + BASE_VISIBLE_TERRAIN_MATERIAL));
+                        get_morphology[BuildingDetailType::HIGH] + BASE_VISIBLE_TERRAIN_MATERIAL,
+                        ModifierBacklog{}));
                 }
                 return tl_rail_var;
             };
@@ -81,7 +83,7 @@ void Mlib::draw_roofs(
                 scale,
                 max_length);
             if (bu.levels.empty()) {
-                THROW_OR_ABORT("Building has no levels");
+                throw std::runtime_error("Building has no levels");
             }
             auto max_height = std::numeric_limits<CompressedScenePos>::lowest();
             for (const auto& v : sw) {
@@ -187,7 +189,7 @@ void Mlib::draw_roofs(
                                             tt(i, 2) += max_height + CompressedScenePos(zz0 * scale);
                                         }
                                     }
-                                    if (cva->name.name() == "roof") {
+                                    if (cva->meta.name.name() == "roof") {
                                         auto sc = FixedArray<float, 2>{
                                             width / scale * uv_scale,
                                             uwidth / scale * uv_scale
@@ -208,7 +210,7 @@ void Mlib::draw_roofs(
                                             {},
                                             NormalVectorErrorBehavior::WARN | NormalVectorErrorBehavior::SKIP,
                                             TriangleTangentErrorBehavior::WARN);
-                                    } else if (cva->name.name() == "rail") {
+                                    } else if (cva->meta.name.name() == "rail") {
                                         get_tl_rail()->draw_triangle_wo_normals(
                                             tt[0],
                                             tt[1],
@@ -226,7 +228,7 @@ void Mlib::draw_roofs(
                                             NormalVectorErrorBehavior::WARN | NormalVectorErrorBehavior::SKIP,
                                             TriangleTangentErrorBehavior::WARN);
                                     } else {
-                                        THROW_OR_ABORT("Unknown mesh name: \"" + cva->name.full_name() + '"');
+                                        throw std::runtime_error("Unknown mesh name: \"" + cva->meta.name.full_name() + '"');
                                     }
                                 }
                             }

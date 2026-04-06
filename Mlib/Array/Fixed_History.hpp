@@ -1,8 +1,8 @@
 #pragma once
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Os/Os.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
 #include <algorithm>
+#include <stdexcept>
 
 namespace Mlib {
 
@@ -40,7 +40,7 @@ private:
 template <class TData, size_t length>
 TData max(const FixedHistory<TData, length>& b) {
     if (b.empty()) {
-        THROW_OR_ABORT("Cannot compute maximum of empty history");
+        throw std::runtime_error("Cannot compute maximum of empty history");
     }
     TData result = b.data(0);
     for (size_t i = 1; i < b.length(); ++i) {

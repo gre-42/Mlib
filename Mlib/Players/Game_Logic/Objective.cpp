@@ -1,6 +1,6 @@
 #include "Objective.hpp"
-#include <Mlib/Throw_Or_Abort.hpp>
 #include <map>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -11,7 +11,7 @@ Objective Mlib::objective_from_string(const std::string& s) {
     };
     auto it = m.find(s);
     if (it == m.end()) {
-        THROW_OR_ABORT("Unknown objective: \"" + s + '"');
+        throw std::runtime_error("Unknown objective: \"" + s + '"');
     }
     return it->second;
 }

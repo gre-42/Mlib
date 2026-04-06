@@ -1,6 +1,7 @@
+
 #include "Blend_Map_Texture.hpp"
 #include <Mlib/Math/Orderable_Fixed_Array_Hash.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
+#include <stdexcept>
 
 using namespace std::string_view_literals;
 using namespace Mlib;
@@ -16,7 +17,7 @@ BlendMapRole Mlib::blend_map_role_from_string(std::string_view s) {
         {"detail_color"sv, BlendMapRole::DETAIL_COLOR}};
     auto it = m.find(s);
     if (it == m.end()) {
-        THROW_OR_ABORT("Unknown blend map role: \"" + std::string{ s } + '"');
+        throw std::runtime_error("Unknown blend map role: \"" + std::string{ s } + '"');
     }
     return it->second;
 }
@@ -34,7 +35,7 @@ BlendMapUvSource Mlib::blend_map_uv_source_from_string(std::string_view s) {
     };
     auto it = m.find(s);
     if (it == m.end()) {
-        THROW_OR_ABORT("Unknown UV source: \"" + std::string{ s } + '"');
+        throw std::runtime_error("Unknown UV source: \"" + std::string{ s } + '"');
     }
     return it->second;
 }
@@ -52,7 +53,7 @@ BlendMapReductionOperation Mlib::blend_map_reduction_operation_from_string(std::
     };
     auto it = m.find(s);
     if (it == m.end()) {
-        THROW_OR_ABORT("Unknown blend map reduction operation: \"" + std::string{ s } + '"');
+        throw std::runtime_error("Unknown blend map reduction operation: \"" + std::string{ s } + '"');
     }
     return it->second;
 }
@@ -65,16 +66,16 @@ BlendMapReweightMode Mlib::blend_map_reweight_mode_from_string(std::string_view 
     };
     auto it = m.find(s);
     if (it == m.end()) {
-        THROW_OR_ABORT("Unknown blend map reweight mode: \"" + std::string{ s } + '"');
+        throw std::runtime_error("Unknown blend map reweight mode: \"" + std::string{ s } + '"');
     }
     return it->second;
 }
 
 size_t BlendMapTexture::modifiers_hash() const {
     return hash_combine(
-        texture_descriptor.color.filename->empty(),
-        texture_descriptor.specular.filename->empty(),
-        texture_descriptor.normal.filename->empty(),
+        texture_descriptor.color.filename.empty(),
+        texture_descriptor.specular.filename.empty(),
+        texture_descriptor.normal.filename.empty(),
         texture_descriptor.color.color_mode,
         texture_descriptor.specular.color_mode,
         texture_descriptor.normal.color_mode,

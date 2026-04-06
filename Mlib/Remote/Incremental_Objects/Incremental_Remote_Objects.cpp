@@ -3,7 +3,7 @@
 #include <Mlib/Remote/Incremental_Objects/IIncremental_Object.hpp>
 #include <Mlib/Remote/Incremental_Objects/Scene_Level.hpp>
 #include <Mlib/Scene_Config/Remote_Event_History_Duration.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -52,7 +52,7 @@ RemoteObjectId IncrementalRemoteObjects::add_local_object(
         case RemoteObjectVisibility::PUBLIC:
             return public_local_objects_;
         }
-        THROW_OR_ABORT("Unknown local object visibility");
+        throw std::runtime_error("Unknown local object visibility");
     }();
     if (!objects.emplace(
         next_local_object_id_,
@@ -70,7 +70,7 @@ void IncrementalRemoteObjects::add_remote_object(
     RemoteObjectVisibility visibility)
 {
     if (id.site_id == local_site_id_) {
-        THROW_OR_ABORT("Attempt to add a local object as remote");
+        throw std::runtime_error("Attempt to add a local object as remote");
     }
     auto& objects = [&]() -> RemoteObjects& {
         switch (visibility) {
@@ -79,10 +79,10 @@ void IncrementalRemoteObjects::add_remote_object(
         case RemoteObjectVisibility::PUBLIC:
             return public_remote_objects_;
         }
-        THROW_OR_ABORT("Unknown remote object visibility");
+        throw std::runtime_error("Unknown remote object visibility");
     }();
     if (!objects.emplace(id, object, CURRENT_SOURCE_LOCATION).second) {
-        THROW_OR_ABORT("Could not add remote object: " + id.to_displayname());
+        throw std::runtime_error("Could not add remote object: " + id.to_displayname());
     }
 }
 

@@ -1,7 +1,7 @@
 #pragma once
 #include <Mlib/Geometry/Fixed_Cross.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
+#include <stdexcept>
 
 namespace Mlib {
 
@@ -17,7 +17,7 @@ struct RotatingFrame {
             auto dph = (position - location.t).template casted<High>();
             return v + cross(wh, dph).template casted<TDir>();
         } else {
-            THROW_OR_ABORT("velocity_at_position not implemented for dimension \"" + std::to_string(n) + '"');
+            throw std::runtime_error("velocity_at_position not implemented for dimension \"" + std::to_string(n) + '"');
         }
     }
 };

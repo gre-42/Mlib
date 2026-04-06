@@ -1,18 +1,15 @@
+
 #include "Scene.hpp"
 #include <Mlib/Array/Chunked_Array.hpp>
 #include <Mlib/Geometry/Coordinates/Homogeneous.hpp>
 #include <Mlib/Geometry/Instance/Rendering_Dynamics.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
-#include <Mlib/Geometry/Mesh/Transformed_Colored_Vertex_Array.hpp>
-#include <Mlib/Log.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Memory/Recursive_Deletion.hpp>
-#include <Mlib/Scene_Graph/Batch_Renderers/IAggregate_Renderer.hpp>
-#include <Mlib/Scene_Graph/Batch_Renderers/IInstances_Renderer.hpp>
-#include <Mlib/Scene_Graph/Batch_Renderers/Task_Location.hpp>
+#include <Mlib/Misc/Log.hpp>
+#include <Mlib/Scene_Config/Scene_Graph_Config.hpp>
 #include <Mlib/Scene_Graph/Containers/List_Of_Blended.hpp>
 #include <Mlib/Scene_Graph/Containers/Root_Nodes.hpp>
-#include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
 #include <Mlib/Scene_Graph/Elements/Blended.hpp>
 #include <Mlib/Scene_Graph/Elements/Color_Style.hpp>
 #include <Mlib/Scene_Graph/Elements/Light.hpp>
@@ -20,16 +17,20 @@
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Instances/Large_Instances_Queue.hpp>
 #include <Mlib/Scene_Graph/Instances/Small_Instances_Queues.hpp>
+#include <Mlib/Scene_Graph/Instances/Vertex_Data_And_Sorted_Instances.hpp>
 #include <Mlib/Scene_Graph/Interfaces/IDynamic_Lights.hpp>
 #include <Mlib/Scene_Graph/Interfaces/ITrail_Renderer.hpp>
+#include <Mlib/Scene_Graph/Render/Batch_Renderers/IAggregate_Renderer.hpp>
+#include <Mlib/Scene_Graph/Render/Batch_Renderers/IInstances_Renderer.hpp>
+#include <Mlib/Scene_Graph/Render/Batch_Renderers/Task_Location.hpp>
 #include <Mlib/Scene_Graph/Render_Pass.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
-#include <Mlib/Scene_Graph/Scene_Graph_Config.hpp>
 #include <Mlib/Threads/Background_Loop.hpp>
+#include <Mlib/Threads/Throwing_Lock_Guard.hpp>
 #include <Mlib/Threads/Unlock_Guard.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
 #include <Mlib/Time/Fps/Lag_Finder.hpp>
 #include <mutex>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -40,13 +41,11 @@ static const size_t CHUNK_SIZE = 1000;
 
 Scene::Scene(
     std::string name,
-    DeleteNodeMutex& delete_node_mutex,
     SceneNodeResources* scene_node_resources,
     ITrailRenderer* trail_renderer,
     IDynamicLights* dynamic_lights)
     : nodes_{ "Scene node" }
-    , delete_node_mutex_{ delete_node_mutex }
-    , morn_{ *this }
+    , morn_{ {*this, CURRENT_SOURCE_LOCATION} }
     , root_nodes_{ morn_.create(VariableAndHash<std::string>{"root_nodes"}) }
     , static_root_nodes_{ morn_.create(VariableAndHash<std::string>{"static_root_nodes"}) }
     , root_aggregate_once_nodes_{ morn_.create(VariableAndHash<std::string>{"root_aggregate_once_nodes"}) }
@@ -157,7 +156,7 @@ void Scene::add_root_node(
             add_moving_root_physics_node(name, std::move(scene_node));
             return;
         }
-        THROW_OR_ABORT(
+        throw std::runtime_error(
             "Unknown rendering dynamics: " + std::to_string((int)rendering_dynamics));
     case RenderingStrategies::OBJECT:
         switch (rendering_dynamics) {
@@ -168,34 +167,34 @@ void Scene::add_root_node(
             add_moving_root_node(name, std::move(scene_node));
             return;
         }
-        THROW_OR_ABORT(
+        throw std::runtime_error(
             "Unknown rendering dynamics: " + std::to_string((int)rendering_dynamics));
     case RenderingStrategies::MESH_ONCE:
         if (rendering_dynamics != RenderingDynamics::STATIC) {
-            THROW_OR_ABORT("Mesh aggregation requires static rendering dynamics");
+            throw std::runtime_error("Mesh aggregation requires static rendering dynamics");
         }
         add_root_aggregate_once_node(name, std::move(scene_node));
         return;
     case RenderingStrategies::MESH_SORTED_CONTINUOUSLY:
         if (rendering_dynamics != RenderingDynamics::STATIC) {
-            THROW_OR_ABORT("Mesh aggregation requires static rendering dynamics");
+            throw std::runtime_error("Mesh aggregation requires static rendering dynamics");
         }
         add_root_aggregate_always_node(name, std::move(scene_node));
         return;
     case RenderingStrategies::INSTANCES_ONCE:
         if (rendering_dynamics != RenderingDynamics::STATIC) {
-            THROW_OR_ABORT("Instances require static rendering dynamics");
+            throw std::runtime_error("Instances require static rendering dynamics");
         }
         add_root_instances_once_node(name, std::move(scene_node));
         return;
     case RenderingStrategies::INSTANCES_SORTED_CONTINUOUSLY:
         if (rendering_dynamics != RenderingDynamics::STATIC) {
-            THROW_OR_ABORT("Instances require static rendering dynamics");
+            throw std::runtime_error("Instances require static rendering dynamics");
         }
         add_root_instances_always_node(name, std::move(scene_node));
         return;
     }
-    THROW_OR_ABORT(
+    throw std::runtime_error(
         "Unknown singular rendering strategy: \"" +
         rendering_strategies_to_string(rendering_strategy) + '"');
 }
@@ -205,13 +204,13 @@ void Scene::add_root_imposter_node(
     const DanglingBaseClassRef<SceneNode>& scene_node)
 {
     if (scene_node->domain() != SceneNodeDomain::RENDER) {
-        THROW_OR_ABORT("Imposter node domain is not \"render\"");
+        throw std::runtime_error("Imposter node domain is not \"render\"");
     }
     std::scoped_lock lock{ mutex_ };
-    scene_node->set_scene_and_state(*this, SceneNodeState::DYNAMIC);
+    scene_node->set_scene_and_state({*this, CURRENT_SOURCE_LOCATION}, SceneNodeState::DYNAMIC);
     if (!root_imposter_nodes_[renderable_scene].insert(scene_node.ptr()).second)
     {
-        THROW_OR_ABORT("Root imposter node already exists");
+        throw std::runtime_error("Root imposter node already exists");
     }
 }
 
@@ -271,14 +270,14 @@ void Scene::delete_root_nodes(const Mlib::re::cregex& regex) {
 }
 
 void Scene::try_delete_node(const VariableAndHash<std::string>& name) {
-    delete_node_mutex_.assert_this_thread_is_deleter_thread();
+    ThrowingLockGuard delete_lock{ delete_node_mutex };
     if (nodes_.contains(name)) {
         delete_node(name);
     }
 }
 
 void Scene::delete_node(const VariableAndHash<std::string>& name) {
-    delete_node_mutex_.assert_this_thread_is_deleter_thread();
+    ThrowingLockGuard delete_lock{ delete_node_mutex };
     try {
         DanglingBaseClassPtr<SceneNode> node = get_node(name, CURRENT_SOURCE_LOCATION).ptr();
         if (node->shutdown_phase() != ShutdownPhase::FINISHED) {
@@ -297,7 +296,7 @@ void Scene::delete_node(const VariableAndHash<std::string>& name) {
 }
 
 void Scene::delete_nodes(const Mlib::re::cregex& regex) {
-    delete_node_mutex_.assert_this_thread_is_deleter_thread();
+    ThrowingLockGuard delete_lock{ delete_node_mutex };
     std::unique_lock lock{ mutex_ };
     for (auto it = nodes_.begin(); it != nodes_.end(); ) {
         auto n = it++;
@@ -313,11 +312,10 @@ Scene::~Scene() {
 }
 
 void Scene::shutdown() {
+    ThrowingLockGuard delete_lock{ delete_node_mutex };
     if (shutting_down_) {
         return;
     }
-    delete_node_mutex_.clear_deleter_thread();
-    delete_node_mutex_.set_deleter_thread();
     shutting_down_ = true;
     morn_.shutdown();
     if (!nodes_.empty()) {
@@ -348,17 +346,17 @@ bool Scene::contains_node(const VariableAndHash<std::string>& name) const {
 }
 
 void Scene::add_to_trash_can(std::unique_ptr<SceneNode>&& node) {
-    delete_node_mutex_.assert_this_thread_is_deleter_thread();
+    ThrowingLockGuard delete_lock{ delete_node_mutex };
     trash_can_child_nodes_.emplace_back(std::move(node));
 }
 
 void Scene::add_to_trash_can(std::unique_ptr<DanglingBaseClass>&& obj) {
-    delete_node_mutex_.assert_this_thread_is_deleter_thread();
+    ThrowingLockGuard delete_lock{ delete_node_mutex };
     trash_can_obj_.push_back(std::move(obj));
 }
 
 size_t Scene::try_empty_the_trash_can() {
-    delete_node_mutex_.assert_this_thread_is_deleter_thread();
+    ThrowingLockGuard delete_lock{ delete_node_mutex };
     for (auto it = trash_can_obj_.begin(); it != trash_can_obj_.end();) {
         auto c = it++;
         if ((*c)->nreferences() == 0) {
@@ -380,24 +378,28 @@ void Scene::register_node(
 {
     std::scoped_lock lock{ mutex_ };
     if (name->empty()) {
-        THROW_OR_ABORT("register_node received empty name");
+        throw std::runtime_error("register_node received empty name");
     }
     if (!nodes_.try_emplace(name, scene_node.ptr()).second) {
-        THROW_OR_ABORT("Scene node with name \"" + *name + "\" already exists");
+        throw std::runtime_error("Scene node with name \"" + *name + "\" already exists");
     }
 }
 
-void Scene::unregister_node(const VariableAndHash<std::string>& name) {
+bool Scene::try_unregister_node(const VariableAndHash<std::string>& name) {
+    ThrowingLockGuard delete_lock{ delete_node_mutex };
     std::scoped_lock lock{ mutex_ };
-    delete_node_mutex_.assert_this_thread_is_deleter_thread();
-    if (nodes_.erase(name) != 1) {
+    return nodes_.erase(name) == 1;
+}
+
+void Scene::unregister_node(const VariableAndHash<std::string>& name) {
+    if (!try_unregister_node(name)) {
         verbose_abort("Could not find node with name (0) \"" + *name + '"');
     }
 }
 
 void Scene::unregister_nodes(const Mlib::re::cregex& regex) {
+    ThrowingLockGuard delete_lock{ delete_node_mutex };
     std::scoped_lock lock{ mutex_ };
-    delete_node_mutex_.assert_this_thread_is_deleter_thread();
     for (auto it = nodes_.begin(); it != nodes_.end(); ) {
         auto n = *it++;
         if (Mlib::re::regex_match(*n.first, regex)) {
@@ -412,7 +414,7 @@ DanglingBaseClassRef<SceneNode> Scene::get_node(const VariableAndHash<std::strin
     std::shared_lock lock{ mutex_ };
     auto it = nodes_.try_get(name);
     if (it == nullptr) {
-        THROW_OR_ABORT("Could not find node with name (2) \"" + *name + '"');
+        throw std::runtime_error("Could not find node with name (2) \"" + *name + '"');
     }
     // Only for debugging purposes, as it
     // overwrites the debug-message with each call.
@@ -482,7 +484,9 @@ void Scene::render(
 {
     // AperiodicLagFinder lag_finder{ "Render: ", std::chrono::milliseconds{5} };
     LOG_FUNCTION("Scene::render");
-    assert_this_thread_is_render_thread();
+    if (frame_id.external_render_pass.pass == ExternalRenderPassType::NONE) {
+        throw std::runtime_error("Scene::render: External render pass is NONE");
+    }
     std::list<std::pair<TransformationMatrix<float, ScenePos, 3>, std::shared_ptr<Light>>> lights;
     std::list<std::pair<TransformationMatrix<float, ScenePos, 3>, std::shared_ptr<Skidmark>>> skidmarks;
     ListsOfBlended blended;
@@ -500,9 +504,9 @@ void Scene::render(
     if (frame_id.external_render_pass.pass == ExternalRenderPassType::LIGHTMAP_BLACK_NODE) {
         DanglingBaseClassRef<SceneNode> node = [this, &frame_id](){
             std::shared_lock lock{ mutex_ };
-            auto res = root_nodes_.try_get(frame_id.external_render_pass.black_node_name, DP_LOC);
+            auto res = root_nodes_.try_get(frame_id.external_render_pass.black_node_name, CURRENT_SOURCE_LOCATION);
             if (!res.has_value()) {
-                THROW_OR_ABORT("Could not find black node with name \"" + *frame_id.external_render_pass.black_node_name + '"');
+                throw std::runtime_error("Could not find black node with name \"" + *frame_id.external_render_pass.black_node_name + '"');
             }
             return *res;
         }();
@@ -523,7 +527,7 @@ void Scene::render(
         }
     } else {
         if (!frame_id.external_render_pass.black_node_name->empty()) {
-            THROW_OR_ABORT("Expected empty black node");
+            throw std::runtime_error("Expected empty black node");
         }
         // |         |Lights|Blended|Large|Small|Move|
         // |---------|------|-------|-----|-----|----|
@@ -557,7 +561,7 @@ void Scene::render(
         }
         if (any(frame_id.external_render_pass.pass & ExternalRenderPassType::IMPOSTER_OR_ZOOM_NODE)) {
             if (frame_id.external_render_pass.singular_node == nullptr) {
-                THROW_OR_ABORT("Imposter or singular node pass without a singular node");
+                throw std::runtime_error("Imposter or singular node pass without a singular node");
             }
             auto parent_m = frame_id.external_render_pass.singular_node->has_parent()
                 ? frame_id.external_render_pass.singular_node->parent()->absolute_model_matrix()
@@ -591,10 +595,10 @@ void Scene::render(
                 }
             }
             {
-                bool is_foreground_task = any(frame_id.external_render_pass.pass & ExternalRenderPassType::IS_GLOBAL_MASK);
+                bool is_foreground_task = any(frame_id.external_render_pass.pass & (ExternalRenderPassType::IS_GLOBAL_MASK | ExternalRenderPassType::BILLBOARD_SCENE_MASK));
                 bool is_background_task = any(frame_id.external_render_pass.pass & ExternalRenderPassType::STANDARD_MASK);
                 if (is_foreground_task && is_background_task) {
-                    THROW_OR_ABORT("Scene::render has both foreground and background task");
+                    throw std::runtime_error("Scene::render has both foreground and background task");
                 }
 
                 std::shared_ptr<IAggregateRenderer> large_aggregate_renderer = IAggregateRenderer::large_aggregate_renderer();
@@ -620,11 +624,11 @@ void Scene::render(
                     } else if (is_background_task) {
                         auto* worker = IAggregateRenderer::large_aggregate_bg_worker();
                         if (worker == nullptr) {
-                            THROW_OR_ABORT("Scene::render: large_aggregate_bg_worker not set");
+                            throw std::runtime_error("Scene::render: large_aggregate_bg_worker not set");
                         }
                         if (!large_aggregate_renderer->is_initialized()) {
                             worker->wait_until_done();
-                            large_aggregate_renderer_update_func(TaskLocation::FOREGROUND)();
+                            large_aggregate_renderer_update_func(TaskLocation::BACKGROUND)();
                         } else if (worker->done()) {
                             auto dist = sum(squared(large_aggregate_renderer->offset() - iv.t));
                             if (dist > squared(scene_graph_config.large_max_offset_deviation)) {
@@ -670,11 +674,11 @@ void Scene::render(
                     } else if (is_background_task) {
                         auto* worker = IInstancesRenderer::large_instances_bg_worker();
                         if (worker == nullptr) {
-                            THROW_OR_ABORT("Scene::render: large_instances_bg_worker not set");
+                            throw std::runtime_error("Scene::render: large_instances_bg_worker not set");
                         }
                         if (!large_instances_renderer->is_initialized()) {
                             worker->wait_until_done();
-                            large_instances_renderer_update_func(TaskLocation::FOREGROUND)();
+                            large_instances_renderer_update_func(TaskLocation::BACKGROUND)();
                         } else if (worker->done()) {
                             auto dist = sum(squared(large_instances_renderer->offset() - iv.t));
                             if (dist > squared(scene_graph_config.large_max_offset_deviation)) {
@@ -726,11 +730,11 @@ void Scene::render(
                     } else if (is_background_task) {
                         auto* worker = IAggregateRenderer::small_aggregate_bg_worker();
                         if (worker == nullptr) {
-                            THROW_OR_ABORT("Scene::render: large_instances_bg_worker not set");
+                            throw std::runtime_error("Scene::render: large_instances_bg_worker not set");
                         }
                         if (!small_sorted_aggregate_renderer->is_initialized()) {
                             worker->wait_until_done();
-                            small_sorted_aggregate_renderer_update_func(TaskLocation::FOREGROUND)();
+                            small_sorted_aggregate_renderer_update_func(TaskLocation::BACKGROUND)();
                         } else if (worker->done()) {
                             WorkerStatus status = worker->tick(scene_graph_config.small_aggregate_update_interval);
                             if (status == WorkerStatus::IDLE) {
@@ -756,7 +760,8 @@ void Scene::render(
                 std::shared_ptr<IInstancesRenderers> small_sorted_instances_renderers = IInstancesRenderer::small_sorted_instances_renderers();
                 if (small_sorted_instances_renderers != nullptr) {
                     if (any(frame_id.external_render_pass.pass & ExternalRenderPassType::STANDARD_MASK) ||
-                        any(frame_id.external_render_pass.pass & ExternalRenderPassType::IS_GLOBAL_MASK))
+                        any(frame_id.external_render_pass.pass & ExternalRenderPassType::IS_GLOBAL_MASK) ||
+                        (frame_id.external_render_pass.pass == ExternalRenderPassType::BILLBOARD_SCENE))
                     {
                         auto small_instances_renderer_update_func = [&](TaskLocation task_location){
                             std::set<ExternalRenderPassType> black_render_passes;
@@ -770,7 +775,7 @@ void Scene::render(
                             // copy "vp" and "scene_graph_config"
                             return run_in_background([this, vp, iv, scene_graph_config, external_render_pass_type=frame_id.external_render_pass.pass,
                                                       small_sorted_instances_renderers, task_location,
-                                                      black_render_passes]()
+                                                      black_render_passes=std::move(black_render_passes)]()
                             {
                                 NodeRawPtrs nodes{ CHUNK_SIZE };
                                 {
@@ -790,12 +795,12 @@ void Scene::render(
                                 auto sorted_instances = instances_queues.sorted_instances();
                                 small_sorted_instances_renderers->get_instances_renderer(external_render_pass_type)->update_instances(
                                     iv.t,
-                                    sorted_instances.at(main_render_pass),
+                                    std::move(sorted_instances.at(main_render_pass)),
                                     task_location);
                                 for (auto rp : black_render_passes) {
                                     small_sorted_instances_renderers->get_instances_renderer(rp)->update_instances(
                                         iv.t,
-                                        sorted_instances.at(rp),
+                                        std::move(sorted_instances.at(rp)),
                                         task_location);
                                 }
                                 // lerr() << this << " " << external_render_pass_type << ", elapsed time: " << std::chrono::duration<float>(std::chrono::steady_clock::now() - start_time).count() << " s";
@@ -806,11 +811,11 @@ void Scene::render(
                         } else if (is_background_task) {
                             auto* worker = IInstancesRenderer::small_instances_bg_worker();
                             if (worker == nullptr) {
-                                THROW_OR_ABORT("Scene::render: small_instances_bg_worker not set");
+                                throw std::runtime_error("Scene::render: small_instances_bg_worker not set");
                             }
                             if (!small_sorted_instances_renderers->get_instances_renderer(frame_id.external_render_pass.pass)->is_initialized()) {
                                 worker->wait_until_done();
-                                small_instances_renderer_update_func(TaskLocation::FOREGROUND)();
+                                small_instances_renderer_update_func(TaskLocation::BACKGROUND)();
                             } else if (worker->done()) {
                                 WorkerStatus status = worker->tick(scene_graph_config.small_aggregate_update_interval);
                                 if (status == WorkerStatus::IDLE) {
@@ -854,7 +859,7 @@ void Scene::render(
 
 void Scene::move(float dt, std::chrono::steady_clock::time_point time) {
     LOG_FUNCTION("Scene::move");
-    delete_node_mutex_.assert_this_thread_is_deleter_thread();
+    ThrowingLockGuard delete_lock{ delete_node_mutex };
     {
         std::unique_lock lock{mutex_};
         {
@@ -877,7 +882,7 @@ void Scene::move(float dt, std::chrono::steady_clock::time_point time) {
                         scene_node_resources_,
                         nullptr);  // animation_state
                 } catch (const std::runtime_error& e) {
-                    THROW_OR_ABORT("Error moving node \"" + *it->first + "\": " + e.what());
+                    throw std::runtime_error("Error moving node \"" + *it->first + "\": " + e.what());
                 }
                 if ((it->second->shutdown_phase() != ShutdownPhase::FINISHED) && it->second->to_be_deleted(time)) {
                     UnlockGuard ug{lock};
@@ -981,12 +986,12 @@ void Scene::set_animation_state(
     std::unique_ptr<AnimationState>&& animation_state,
     AnimationStateAlreadyExistsBehavior already_exists_behavior)
 {
-    delete_node_mutex_.assert_this_thread_is_deleter_thread();
+    ThrowingLockGuard delete_lock{ delete_node_mutex };
     std::scoped_lock lock{ mutex_ };
     if ((already_exists_behavior == AnimationStateAlreadyExistsBehavior::THROW) &&
         (animation_state_ != nullptr))
     {
-        THROW_OR_ABORT("Animation state already set");
+        throw std::runtime_error("Animation state already set");
     }
     animation_state_ = std::move(animation_state);
 }
@@ -998,33 +1003,6 @@ void Scene::add_color_style(std::unique_ptr<ColorStyle>&& color_style) {
 
 void Scene::clear_color_styles() {
     color_styles_.clear();
-}
-
-DeleteNodeMutex& Scene::delete_node_mutex() const {
-    return delete_node_mutex_;
-}
-
-void Scene::set_this_thread_as_render_thread() {
-    if (render_thread_id_ != std::thread::id()) {
-        verbose_abort("Render thread already set");
-    }
-    render_thread_id_ = std::this_thread::get_id();
-}
-
-void Scene::clear_render_thread() {
-    if (render_thread_id_ == std::thread::id()) {
-        verbose_abort("Render thread not set");
-    }
-    render_thread_id_ = std::thread::id();
-}
-
-void Scene::assert_this_thread_is_render_thread() const {
-    auto id = std::this_thread::get_id();
-    if (id != render_thread_id_) {
-        std::stringstream sstr;
-        sstr << "Thread \"" << id << "\" is not the render thread \"" << render_thread_id_ << '"';
-        verbose_abort(sstr.str());
-    }
 }
 
 void Scene::wait_for_cleanup() const {

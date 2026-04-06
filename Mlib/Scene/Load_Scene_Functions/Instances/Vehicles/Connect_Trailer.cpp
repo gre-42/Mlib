@@ -1,7 +1,7 @@
 #include "Connect_Trailer.hpp"
-#include <Mlib/Argument_List.hpp>
 #include <Mlib/Components/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
+#include <Mlib/Misc/Argument_List.hpp>
 #include <Mlib/Physics/Collision/Record/Permanent_Point_Contact.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Engine.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
@@ -9,7 +9,7 @@
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -33,17 +33,15 @@ ConnectTrailer::ConnectTrailer(PhysicsScene& physics_scene)
 
 void ConnectTrailer::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    DanglingBaseClassRef<SceneNode> car_node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::car), DP_LOC);
-    auto& car_rb = get_rigid_body_vehicle(car_node);
-    DanglingBaseClassRef<SceneNode> trailer_node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::trailer), DP_LOC);
-    auto& trailer_rb = get_rigid_body_vehicle(trailer_node);
+    DanglingBaseClassRef<SceneNode> car_node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::car), CURRENT_SOURCE_LOCATION);
+    auto car_rb = get_rigid_body_vehicle(car_node.get(), CURRENT_SOURCE_LOCATION);
+    DanglingBaseClassRef<SceneNode> trailer_node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::trailer), CURRENT_SOURCE_LOCATION);
+    auto trailer_rb = get_rigid_body_vehicle(trailer_node.get(), CURRENT_SOURCE_LOCATION);
     physics_engine.permanent_contacts_.insert(std::make_unique<PermanentPointContact>(
         physics_engine.permanent_contacts_,
-        car_node,
-        trailer_node,
-        car_rb.rbp_,
-        trailer_rb.rbp_,
-        car_rb.trailer_hitches_.get_position_male().casted<ScenePos>(),
-        trailer_rb.trailer_hitches_.get_position_female().casted<ScenePos>()));
-    car_rb.vehicle_controller().set_trailer({ trailer_rb.vehicle_controller(), CURRENT_SOURCE_LOCATION });
+        car_rb,
+        trailer_rb,
+        car_rb->trailer_hitches_.get_position_male().casted<ScenePos>(),
+        trailer_rb->trailer_hitches_.get_position_female().casted<ScenePos>()));
+    car_rb->vehicle_controller(CURRENT_SOURCE_LOCATION)->set_trailer(trailer_rb->vehicle_controller(CURRENT_SOURCE_LOCATION));
 }

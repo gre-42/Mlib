@@ -1,14 +1,15 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
+#include <Mlib/Hashing/Variable_And_Hash.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
 #include <Mlib/Memory/Dangling_Base_Class.hpp>
-#include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
+#include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/Memory/Destruction_Observer.hpp>
 #include <Mlib/Physics/Advance_Times/Respawn_Config.hpp>
 #include <Mlib/Physics/Interfaces/IAdvance_Time.hpp>
 #include <Mlib/Physics/Misc/Track_Reader.hpp>
 #include <Mlib/Scene_Graph/Remote_User_Filter.hpp>
-#include <Mlib/Variable_And_Hash.hpp>
+#include <Mlib/Threads/Recursive_Shared_Mutex.hpp>
 #include <fstream>
 #include <mutex>
 
@@ -21,7 +22,6 @@ class SceneNode;
 class IPlayer;
 class SceneNodeResources;
 class Scene;
-class DeleteNodeMutex;
 struct BeaconNode;
 enum class RaceState;
 class RenderingResources;
@@ -63,7 +63,7 @@ public:
         RenderingResources* rendering_resources,
         SceneNodeResources& scene_node_resources,
         Scene& scene,
-        DeleteNodeMutex& delete_node_mutex,
+        SafeAtomicRecursiveSharedMutex& delete_node_mutex,
         const CountdownPhysics* countdown_start,
         bool enable_height_changed_mode = false,
         const FixedArray<float, 3>& selection_emissive = { -1.f, -1.f, -1.f },
@@ -83,7 +83,7 @@ private:
     size_t nlaps_;
     std::string asset_id_;
     std::vector<DanglingBaseClassPtr<SceneNode>> moving_nodes_;
-    std::vector<IAbsoluteMovable*> movings_;
+    std::vector<DanglingBaseClassPtr<IAbsoluteMovable>> movings_;
     std::vector<BeaconNode> beacon_nodes_;
     VariableAndHash<std::string> resource_name_;
     ViewableRemoteObject remote_viewable_;
@@ -99,7 +99,7 @@ private:
     RenderingResources* rendering_resources_;
     SceneNodeResources& scene_node_resources_;
     Scene& scene_;
-    DeleteNodeMutex& delete_node_mutex_;
+    SafeAtomicRecursiveSharedMutex& delete_node_mutex_;
     const CountdownPhysics* countdown_start_;
     float total_elapsed_seconds_;
     float lap_elapsed_seconds_;

@@ -53,7 +53,7 @@ public:
         , buffer_(buffer_size)
     {
         if (buffer_size == 0) {
-            THROW_OR_ABORT("Buffer size is zero");
+            throw std::runtime_error("Buffer size is zero");
         }
         this->seed(seed);
     }

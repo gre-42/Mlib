@@ -14,7 +14,7 @@ bool Navigate::has_way_points() const {
 
 const WayPointSandboxesAndBvh& Navigate::way_points() const {
     if (way_points_ == nullptr) {
-        THROW_OR_ABORT("Waypoints not set");
+        throw std::runtime_error("Waypoints not set");
     }
     return *way_points_;
 }

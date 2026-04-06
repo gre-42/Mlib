@@ -1,8 +1,9 @@
+
 #include "Set_Fps.hpp"
 #include <Mlib/Os/Os.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
 #include <Mlib/Time/Fps/ISleeper.hpp>
 #include <Mlib/Time/Sleep.hpp>
+#include <stdexcept>
 #include <thread>
 
 using namespace Mlib;
@@ -70,14 +71,14 @@ std::chrono::steady_clock::time_point SetFps::completed_time() const {
 
 std::chrono::steady_clock::time_point SetFps::simulated_time() const {
     if (!simulated_time_) {
-        THROW_OR_ABORT("SetFps::simulated_time called but not set");
+        throw std::runtime_error("SetFps::simulated_time called but not set");
     }
     return simulated_time_();
 }
 
 bool SetFps::paused() const {
     if (!paused_) {
-        THROW_OR_ABORT("SetFps::paused called but not set");
+        throw std::runtime_error("SetFps::paused called but not set");
     }
     return paused_();
 }

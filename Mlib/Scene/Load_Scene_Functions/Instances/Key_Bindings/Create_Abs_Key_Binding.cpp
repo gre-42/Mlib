@@ -1,19 +1,19 @@
 #include "Create_Abs_Key_Binding.hpp"
-#include <Mlib/Argument_List.hpp>
 #include <Mlib/Components/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
+#include <Mlib/Misc/Argument_List.hpp>
+#include <Mlib/OpenGL/Key_Bindings/Absolute_Movable_Key_Binding.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Players/Advance_Times/Player.hpp>
 #include <Mlib/Players/Containers/Players.hpp>
-#include <Mlib/Render/Key_Bindings/Absolute_Movable_Key_Binding.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Load_Scene_Funcs.hpp>
 #include <Mlib/Scene/Render_Logics/Key_Bindings.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Strings/String.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -56,14 +56,14 @@ void CreateAbsKeyBinding::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     args.arguments.validate(KnownArgs::options);
 
-    DanglingBaseClassRef<SceneNode> node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::node), DP_LOC);
+    DanglingBaseClassRef<SceneNode> node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::node), CURRENT_SOURCE_LOCATION);
     auto player = players.get_player(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::player), CURRENT_SOURCE_LOCATION);
-    auto& rb = get_rigid_body_vehicle(node);
+    auto rb = get_rigid_body_vehicle(node.get(), CURRENT_SOURCE_LOCATION);
     auto& kb = key_bindings.add_absolute_movable_key_binding(std::unique_ptr<AbsoluteMovableKeyBinding>(new AbsoluteMovableKeyBinding{
         .node = node.ptr(),
         .force = {
             .vector = args.arguments.at<EFixedArray<float, 3>>(KnownArgs::force, fixed_zeros<float, 3>()) * N,
-            .position = args.arguments.at<EFixedArray<ScenePos, 3>>(KnownArgs::position, rb.rbp_.com_.casted<ScenePos>()) * (ScenePos)meters},
+            .position = args.arguments.at<EFixedArray<ScenePos, 3>>(KnownArgs::position, rb->rbp_.com_.casted<ScenePos>()) * (ScenePos)meters},
         .rotate = args.arguments.at<EFixedArray<float, 3>>(KnownArgs::rotate, fixed_zeros<float, 3>()),
         .car_surface_power = args.arguments.contains(KnownArgs::car_surface_power)
             ? args.arguments.at<float>(KnownArgs::car_surface_power) * W
@@ -90,7 +90,7 @@ void CreateAbsKeyBinding::execute(const LoadSceneJsonUserFunctionArgs& args)
             args.arguments.at<uint32_t>(KnownArgs::local_user_id),
             args.arguments.at<std::string>(KnownArgs::id),
             args.arguments.at<std::string>(KnownArgs::seat)},
-        .on_node_clear{ DestructionFunctionsRemovalTokens{ node->on_clear, CURRENT_SOURCE_LOCATION } },
+        .on_node_clear{ DestructionFunctionsRemovalTokens{ node->on_clear.early, CURRENT_SOURCE_LOCATION } },
         .on_player_delete_vehicle_internals{ DestructionFunctionsRemovalTokens{ player->delete_vehicle_internals, CURRENT_SOURCE_LOCATION } }}));
     kb.on_node_clear.add([&kbs=key_bindings, &kb](){ kbs.delete_absolute_movable_key_binding(kb); }, CURRENT_SOURCE_LOCATION);
     kb.on_player_delete_vehicle_internals.add([&kbs=key_bindings, &kb](){ kbs.delete_absolute_movable_key_binding(kb); }, CURRENT_SOURCE_LOCATION);

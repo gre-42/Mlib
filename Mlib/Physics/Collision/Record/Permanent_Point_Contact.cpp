@@ -2,40 +2,44 @@
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
 #include <Mlib/Physics/Collision/Resolve/Constraints.hpp>
 #include <Mlib/Physics/Containers/Permanent_Contacts.hpp>
-#include <Mlib/Physics/Physics_Engine/Physics_Engine_Config.hpp>
-#include <Mlib/Physics/Rigid_Body/Rigid_Body_Pulses.hpp>
+#include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
+#include <Mlib/Scene_Config/Physics_Engine_Config.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 
 using namespace Mlib;
 
 PermanentPointContact::PermanentPointContact(
     PermanentContacts& permanent_contacts,
-    DanglingBaseClassRef<SceneNode> scene_node0,
-    DanglingBaseClassRef<SceneNode> scene_node1,
-    RigidBodyPulses& rbp0,
-    RigidBodyPulses& rbp1,
+    const DanglingBaseClassRef<RigidBodyVehicle>& rb0,
+    const DanglingBaseClassRef<RigidBodyVehicle>& rb1,
     const FixedArray<ScenePos, 3>& p0,
     const FixedArray<ScenePos, 3>& p1)
     : PermanentNodeContact{
         permanent_contacts,
-        scene_node0,
-        scene_node1,
-        rbp0,
-        rbp1
+        rb0,
+        rb1
     }
     , p0_{ p0 }
     , p1_{ p1 }
 {}
 
+PermanentPointContact::~PermanentPointContact() {
+    on_destroy.clear();
+}
+
 void PermanentPointContact::extend_contact_infos(
     const PhysicsEngineConfig& cfg,
+    const PhysicsPhase& phase,
     std::list<std::unique_ptr<IContactInfo>>& contact_infos)
 {
-    auto T0 = rbp0_.abs_transformation();
-    auto T1 = rbp1_.abs_transformation();
+    if (!is_in_group(phase)) {
+        return;
+    }
+    auto T0 = rb0_->rbp_.abs_transformation();
+    auto T1 = rb1_->rbp_.abs_transformation();
     contact_infos.push_back(std::make_unique<PointContactInfo2>(
-        rbp0_,
-        rbp1_,
+        rb0_->rbp_,
+        rb1_->rbp_,
         PointEqualityConstraint{
             .p0 = T0.transform(p0_),
             .p1 = T1.transform(p1_),

@@ -7,7 +7,8 @@ using namespace Mlib;
 
 IntersectableResource::IntersectableResource(
     std::list<TypedMesh<std::shared_ptr<IIntersectable>>>&& intersectables)
-    : intersectables_{ std::move(intersectables) }
+    : ISceneNodeResource{"IntersectableResource"}
+    , intersectables_{ std::move(intersectables) }
 {}
 
 void IntersectableResource::preload(const RenderableResourceFilter& filter) const

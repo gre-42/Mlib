@@ -13,10 +13,10 @@
 using namespace Mlib;
 
 DestinationReachedAi::DestinationReachedAi(
-    RigidBodyVehicle& rigid_body,
+    const DanglingBaseClassRef<RigidBodyVehicle>& rigid_body,
     ControlSource control_source,
     ScenePos destination_reached_radius)
-    : on_destroy_rigid_body_{ rigid_body.on_destroy, CURRENT_SOURCE_LOCATION }
+    : on_destroy_rigid_body_{ rigid_body->on_destroy.deflt, CURRENT_SOURCE_LOCATION }
     , rigid_body_{ rigid_body }
     , control_source_{ control_source }
     , destination_reached_radius_squared_{ squared(destination_reached_radius) }
@@ -40,9 +40,9 @@ VehicleAiMoveToStatus DestinationReachedAi::move_to(
     if (!ai_waypoint.has_position_of_destination()) {
         return VehicleAiMoveToStatus::WAYPOINT_IS_NAN;
     }
-    auto pod = ai_waypoint.position_of_destination(rigid_body_.waypoint_ofs_);
+    auto pod = ai_waypoint.position_of_destination(rigid_body_->waypoint_ofs_);
 
-    auto distance2 = sum(squared(funpack(pod) - rigid_body_.rbp_.abs_position()));
+    auto distance2 = sum(squared(funpack(pod) - rigid_body_->rbp_.abs_position()));
 
     if (distance2 < destination_reached_radius_squared_) {
         return VehicleAiMoveToStatus::WAYPOINT_REACHED;

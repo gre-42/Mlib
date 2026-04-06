@@ -1,33 +1,30 @@
 #pragma once
 #include <Mlib/Memory/Dangling_Base_Class.hpp>
-#include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
-#include <Mlib/Memory/Destruction_Observer.hpp>
+#include <Mlib/Memory/Destruction_Functions.hpp>
+#include <Mlib/Memory/Destruction_Notifier.hpp>
 #include <Mlib/Physics/Collision/Record/IPermanent_Contact.hpp>
 
 namespace Mlib {
 
-class RigidBodyPulses;
+class RigidBodyVehicle;
 class PermanentContacts;
-class SceneNode;
+struct PhysicsPhase;
 
-class PermanentNodeContact: public IPermanentContact, public DestructionObserver<SceneNode&>, public virtual DanglingBaseClass {
+class PermanentNodeContact: public IPermanentContact, public virtual DestructionNotifier, public virtual DanglingBaseClass {
 public:
     PermanentNodeContact(
         PermanentContacts& permanent_contacts,
-        DanglingBaseClassRef<SceneNode> scene_node0,
-        DanglingBaseClassRef<SceneNode> scene_node1,
-        RigidBodyPulses& rbp0,
-        RigidBodyPulses& rbp1);
-    
-    // DestructionObserver
-    virtual void notify_destroyed(SceneNode& destroyed_object) override;
+        const DanglingBaseClassRef<RigidBodyVehicle>& rbp0,
+        const DanglingBaseClassRef<RigidBodyVehicle>& rbp1);
+    ~PermanentNodeContact();
 protected:
-    RigidBodyPulses& rbp0_;
-    RigidBodyPulses& rbp1_;
+    bool is_in_group(const PhysicsPhase& phase) const;
+    DanglingBaseClassPtr<RigidBodyVehicle> rb0_;
+    DanglingBaseClassPtr<RigidBodyVehicle> rb1_;
 private:
     PermanentContacts& permanent_contacts_;
-    DanglingBaseClassRef<SceneNode> scene_node0_;
-    DanglingBaseClassRef<SceneNode> scene_node1_;
+    DestructionFunctionsRemovalTokens on_destroy_rb0_;
+    DestructionFunctionsRemovalTokens on_destroy_rb1_;
 };
 
 }

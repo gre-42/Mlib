@@ -1,12 +1,12 @@
 #include "Ground_Bvh.hpp"
 #include <Mlib/Geometry/Colored_Vertex.hpp>
 #include <Mlib/Geometry/Coordinates/Barycentric_Coordinates.hpp>
-#include <Mlib/Geometry/Intersection/Intersectable_Point.hpp>
-#include <Mlib/Geometry/Intersection/Interval.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_Area.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_List.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>
+#include <Mlib/Geometry/Primitives/Intersectable_Point.hpp>
+#include <Mlib/Geometry/Primitives/Interval.hpp>
 #include <Mlib/Math/Abs.hpp>
 #include <Mlib/Math/Max.hpp>
 #include <Mlib/Math/Min.hpp>
@@ -24,7 +24,7 @@ GroundBvh::GroundBvh(const std::list<std::shared_ptr<TriangleList<CompressedScen
 {
     for (const auto& l : triangles) {
         for (const auto& t : l->triangles) {
-            maybe_add_triangle(t, l->morphology.physics_material);
+            maybe_add_triangle(t, l->meta.morphology.physics_material);
         }
     }
 }
@@ -34,7 +34,7 @@ GroundBvh::GroundBvh(const std::list<std::shared_ptr<ColoredVertexArray<Compress
 {
     for (const auto& l : cvas) {
         for (const auto& t : l->triangles) {
-            maybe_add_triangle(t, l->morphology.physics_material);
+            maybe_add_triangle(t, l->meta.morphology.physics_material);
         }
     }
 }

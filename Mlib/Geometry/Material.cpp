@@ -1,6 +1,7 @@
+
 #include "Material.hpp"
 #include <Mlib/Geometry/Morphology.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -17,7 +18,7 @@ Material& Material::compute_color_mode() {
 
 std::string Material::identifier() const {
     if (textures_color.size() > 0) {
-        return "color: " + *textures_color.front().texture_descriptor.color.filename;
+        return "color: " + textures_color.front().texture_descriptor.color.filename.string();
     } else {
         return "<no texture>";
     }
@@ -28,7 +29,7 @@ const BillboardAtlasInstance& Material::billboard_atlas_instance(
     const std::string& name) const
 {
     if (billboard_id >= billboard_atlas_instances.size()) {
-        THROW_OR_ABORT(
+        throw std::runtime_error(
             name + ": Billboard ID out of bounds in material \"" + identifier() + "\" (" +
             std::to_string(billboard_id) +
             " >= " +

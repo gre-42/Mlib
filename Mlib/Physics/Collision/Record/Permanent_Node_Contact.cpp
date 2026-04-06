@@ -1,31 +1,43 @@
 #include "Permanent_Node_Contact.hpp"
+#include <Mlib/Physics/Containers/Collision_Group.hpp>
 #include <Mlib/Physics/Containers/Permanent_Contacts.hpp>
-#include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
+#include <Mlib/Physics/Physics_Engine/Physics_Phase.hpp>
+#include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 
 using namespace Mlib;
 
 PermanentNodeContact::PermanentNodeContact(
     PermanentContacts& permanent_contacts,
-    DanglingBaseClassRef<SceneNode> scene_node0,
-    DanglingBaseClassRef<SceneNode> scene_node1,
-    RigidBodyPulses& rbp0,
-    RigidBodyPulses& rbp1)
-    : rbp0_{ rbp0 }
-    , rbp1_{ rbp1 }
+    const DanglingBaseClassRef<RigidBodyVehicle>& rb0,
+    const DanglingBaseClassRef<RigidBodyVehicle>& rb1)
+    : rb0_{ rb0.ptr() }
+    , rb1_{ rb1.ptr() }
     , permanent_contacts_{ permanent_contacts }
-    , scene_node0_{ scene_node0 }
-    , scene_node1_{ scene_node1 }
+    , on_destroy_rb0_{ rb0->on_destroy.deflt, CURRENT_SOURCE_LOCATION }
+    , on_destroy_rb1_{ rb1->on_destroy.deflt, CURRENT_SOURCE_LOCATION }
 {
-    scene_node0_->destruction_observers.add({ *this, CURRENT_SOURCE_LOCATION });
-    scene_node1_->destruction_observers.add({ *this, CURRENT_SOURCE_LOCATION });
+    on_destroy_rb0_.add([this](){ permanent_contacts_.remove(*this); }, CURRENT_SOURCE_LOCATION);
+    on_destroy_rb1_.add([this](){ permanent_contacts_.remove(*this); }, CURRENT_SOURCE_LOCATION);
+    rb0_->permanent_colliders_.emplace({*this, CURRENT_SOURCE_LOCATION}, CURRENT_SOURCE_LOCATION);
+    rb1_->permanent_colliders_.emplace({*this, CURRENT_SOURCE_LOCATION}, CURRENT_SOURCE_LOCATION);
 }
 
-void PermanentNodeContact::notify_destroyed(SceneNode& destroyed_object) {
-    if (&destroyed_object == &scene_node0_.get()) {
-        scene_node1_->destruction_observers.remove({ *this, CURRENT_SOURCE_LOCATION });
+PermanentNodeContact::~PermanentNodeContact() {
+    rb0_ = nullptr;
+    rb1_ = nullptr;
+    if (!on_destroy.empty()) {
+        verbose_abort("PermanentNodeContact::on_destroy must be called by derived classes");
     }
-    if (&destroyed_object == &scene_node1_.get()) {
-        scene_node0_->destruction_observers.remove({ *this, CURRENT_SOURCE_LOCATION });
+}
+
+bool PermanentNodeContact::is_in_group(const PhysicsPhase& phase) const {
+    if (phase.group.penetration_class == PenetrationClass::BULLET_LINE) {
+        return false;
     }
-    permanent_contacts_.remove(*this);
+    auto c0 = phase.group.rigid_bodies.contains(&rb0_->rbp_);
+    auto c1 = phase.group.rigid_bodies.contains(&rb1_->rbp_);
+    if (c0 != c1) {
+        throw std::runtime_error("Inconsistent collision phase");
+    }
+    return c0;
 }

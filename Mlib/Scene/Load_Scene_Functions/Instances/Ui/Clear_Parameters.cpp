@@ -18,6 +18,6 @@ ClearParameters::ClearParameters(PhysicsScene& physics_scene)
 
 void ClearParameters::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    THROW_OR_ABORT("clear_parameters is not implemented");
+    throw std::runtime_error("clear_parameters is not implemented");
     // args.external_substitutions.clear_and_notify();
 }

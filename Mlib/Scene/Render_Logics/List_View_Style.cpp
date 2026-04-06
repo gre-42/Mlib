@@ -1,5 +1,5 @@
 #include "List_View_Style.hpp"
-#include <Mlib/Throw_Or_Abort.hpp>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -10,5 +10,5 @@ ListViewStyle Mlib::list_view_style_from_string(const std::string& s) {
     if (s == "icon") {
         return ListViewStyle::ICON;
     }
-    THROW_OR_ABORT("Unknown listview style: \"" + s + '"');
+    throw std::runtime_error("Unknown listview style: \"" + s + '"');
 }

@@ -1,17 +1,17 @@
 #include "Visual_Node_Status_3rd.hpp"
-#include <Mlib/Argument_List.hpp>
 #include <Mlib/Components/Status_Writer.hpp>
-#include <Mlib/FPath.hpp>
 #include <Mlib/Layout/Layout_Constraints.hpp>
 #include <Mlib/Macro_Executor/Expression_Watcher.hpp>
 #include <Mlib/Memory/Object_Pool.hpp>
+#include <Mlib/Misc/Argument_List.hpp>
+#include <Mlib/Misc/FPath.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Engine.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Render_Logics/Visual_Movable_3rd_Logger.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Status_Writer.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -41,8 +41,8 @@ VisualNodeStatus3rd::VisualNodeStatus3rd(RenderableScene& renderable_scene)
 
 void VisualNodeStatus3rd::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    DanglingBaseClassRef<SceneNode> node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::node), DP_LOC);
-    auto& lo = get_status_writer(node);
+    DanglingBaseClassRef<SceneNode> node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::node), CURRENT_SOURCE_LOCATION);
+    auto lo = get_status_writer(node.get(), CURRENT_SOURCE_LOCATION);
     StatusComponents log_components = status_components_from_string(args.arguments.at<std::string>(KnownArgs::format));
     global_object_pool.create<VisualMovable3rdLogger>(
         CURRENT_SOURCE_LOCATION,

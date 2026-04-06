@@ -6,12 +6,14 @@ namespace Mlib {
 
 class IContactInfo;
 struct PhysicsEngineConfig;
+struct PhysicsPhase;
 
 class IPermanentContact {
 public:
     virtual ~IPermanentContact() = default;
     virtual void extend_contact_infos(
         const PhysicsEngineConfig& cfg,
+        const PhysicsPhase& phase,
         std::list<std::unique_ptr<IContactInfo>>& contact_infos) = 0;
 };
 

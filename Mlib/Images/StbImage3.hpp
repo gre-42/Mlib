@@ -32,8 +32,8 @@ public:
 
     void save_to_file(const std::string &filename, int jpg_quality = 95) const;
 
-    static StbImage3 from_rgb(const Array<uint8_t>& grayscale);
-    static StbImage3 from_float_rgb(const Array<float>& grayscale);
+    static StbImage3 from_rgb(const Array<uint8_t>& rgb);
+    static StbImage3 from_float_rgb(const Array<float>& rgb);
     static StbImage3 from_float_grayscale(const Array<float>& grayscale);
 
     Array<float> to_float_grayscale() const;

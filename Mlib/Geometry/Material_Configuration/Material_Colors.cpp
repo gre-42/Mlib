@@ -1,12 +1,13 @@
+
 #include "Material_Colors.hpp"
+#include <Mlib/Geometry/Material_Configuration/Shading_Factors.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
-#include <Mlib/Osm_Loader/Osm_Map_Resource/Osm_Resource_Config.hpp>
 #include <map>
 
 using namespace Mlib;
 
-Shading Mlib::material_shading(PhysicsMaterial material, const OsmResourceConfig& config) {
+Shading Mlib::material_shading(PhysicsMaterial material, const ShadingFactors& factors) {
     using O = OrderableFixedArray<float, 3>;
     const auto f0 = FresnelAndAmbient{.reflectance = {.min = 0.f, .max = 0.3f, .exponent = 4.f}, .ambient = O(1.f)};
     const auto f1 = FresnelAndAmbient{.reflectance = {.min = 0.f, .max = 0.3f, .exponent = 5.f}, .ambient = O(1.f)};
@@ -33,19 +34,19 @@ Shading Mlib::material_shading(PhysicsMaterial material, const OsmResourceConfig
     };
     auto it = m.find(material);
     if (it == m.end()) {
-        THROW_OR_ABORT("Cannot find shading options for material \"" + physics_material_to_string(material));
+        throw std::runtime_error("Cannot find shading options for material \"" + physics_material_to_string(material));
     }
-    return material_shading(it->second, config);
+    return material_shading(it->second, factors);
 }
 
-Shading Mlib::material_shading(const Shading& shading, const OsmResourceConfig& config) {
+Shading Mlib::material_shading(const Shading& shading, const ShadingFactors& factors) {
     Shading res = shading;
-    res.emissive *= config.emissive_factor;
-    res.ambient *= config.ambient_factor;
-    res.diffuse *= config.diffuse_factor;
-    res.specular *= config.specular_factor;
-    res.fresnel.ambient *= config.fresnel_ambient_factor;
-    res.fog_distances = config.fog_distances;
-    res.fog_ambient = config.fog_ambient;
+    res.emissive *= factors.emissive_factor;
+    res.ambient *= factors.ambient_factor;
+    res.diffuse *= factors.diffuse_factor;
+    res.specular *= factors.specular_factor;
+    res.fresnel.ambient *= factors.fresnel_ambient_factor;
+    res.fog_distances = factors.fog_distances;
+    res.fog_ambient = factors.fog_ambient;
     return res;
 }

@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/Audio/Audio_Resource_Context.hpp>
-#include <Mlib/Render/Rendering_Context.hpp>
+#include <Mlib/OpenGL/Rendering_Context.hpp>
+#include <Mlib/Threads/Recursive_Shared_Mutex.hpp>
 #include <atomic>
 #include <functional>
 
@@ -29,7 +30,6 @@ class SetFps;
 class RenderLogic;
 class GameLogic;
 class BaseLog;
-class DeleteNodeMutex;
 struct RenderingContext;
 class DirtmapLogic;
 class SkyboxLogic;
@@ -86,7 +86,7 @@ protected:
     BaseLog& base_log;
     CountdownPhysics& countdown_start;
     UiFocus& ui_focus;
-    DeleteNodeMutex& delete_node_mutex;
+    SafeAtomicRecursiveSharedMutex& delete_node_mutex;
 
 private:
     AudioResourceContextGuard arg0_;

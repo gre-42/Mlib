@@ -54,7 +54,7 @@ void CommunicatorProxies::send(TransmissionType transmission_type) {
         }
         return;
     }
-    THROW_OR_ABORT("Unknown transmission type");
+    throw std::runtime_error("Unknown transmission type");
 }
 
 void CommunicatorProxies::receive() {

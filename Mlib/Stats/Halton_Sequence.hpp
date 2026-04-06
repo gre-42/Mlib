@@ -2,7 +2,7 @@
 #include <Mlib/Math/Rational_Number.hpp>
 #include <Mlib/Stats/Fast_Random_Number_Generators.hpp>
 #include <Mlib/Stats/Sequence_Filters.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
+#include <stdexcept>
 
 #ifdef _MSC_VER
 #ifdef MlibStats_EXPORTS

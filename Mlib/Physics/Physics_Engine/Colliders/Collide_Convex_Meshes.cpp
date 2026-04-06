@@ -1,8 +1,9 @@
+
 #include "Collide_Convex_Meshes.hpp"
-#include <Mlib/Geometry/Intersection/Collision_Polygon.hpp>
 #include <Mlib/Geometry/Mesh/IIntersectable_Mesh.hpp>
 #include <Mlib/Geometry/Mesh/Typed_Mesh.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>
+#include <Mlib/Geometry/Primitives/Collision_Polygon.hpp>
 #include <Mlib/Physics/Collision/Detect/Collide_Intersectables_And_Intersectables.hpp>
 #include <Mlib/Physics/Collision/Detect/Collide_Triangle_And_Intersectables.hpp>
 #include <Mlib/Physics/Collision/Detect/Collide_Triangle_And_Lines.hpp>
@@ -84,7 +85,7 @@ void Mlib::collide_convex_meshes(
             PhysicsMaterial::OBJ_DISTANCEBOX;
 
         if (!any(msh.physics_material & known_objects)) {
-            THROW_OR_ABORT(
+            throw std::runtime_error(
                 "Unexpected material for convex mesh \"" + msh.mesh->name() +
                 "\" in object \"" + o.name() + "\". Expected: " +
                 physics_material_to_string(known_objects) + ". Actual: " +
@@ -111,13 +112,13 @@ void Mlib::collide_convex_meshes(
     auto line_mask = [&](){
         switch (history.phase.group.penetration_class) {
             case PenetrationClass::NONE:
-                THROW_OR_ABORT("PenetrationClass::NONE in collide_convex_meshes");
+                throw std::runtime_error("PenetrationClass::NONE in collide_convex_meshes");
             case PenetrationClass::BULLET_LINE:
                 return PhysicsMaterial::OBJ_BULLET_LINE_SEGMENT;
             case PenetrationClass::STANDARD:
                 return PhysicsMaterial::OBJ_TIRE_LINE;
         }
-        THROW_OR_ABORT("Unknown penetration class");
+        throw std::runtime_error("Unknown penetration class");
     }();
     collide(o0, o1, msh0, msh1, history, line_mask);
     collide(o1, o0, msh1, msh0, history, line_mask);

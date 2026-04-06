@@ -2,9 +2,9 @@
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Macro_Executor/Macro_Line_Executor.hpp>
 #include <Mlib/Macro_Executor/Notifying_Json_Macro_Arguments.hpp>
-#include <Mlib/Render/Render_Logic.hpp>
-#include <Mlib/Render/Ui/IList_View_Contents.hpp>
-#include <Mlib/Render/Ui/List_View.hpp>
+#include <Mlib/OpenGL/Render_Logic.hpp>
+#include <Mlib/OpenGL/Ui/IList_View_Contents.hpp>
+#include <Mlib/OpenGL/Ui/List_View.hpp>
 #include <atomic>
 #include <cstddef>
 #include <cstdint>
@@ -30,7 +30,6 @@ class ExpressionWatcher;
 class SubmenuHeaderContents: public IListViewContents {
 public:
     explicit SubmenuHeaderContents(
-        const AssetReferences& asset_references,
         Focus focus_mask,
         UiFocus& ui_focus);
 
@@ -38,7 +37,6 @@ public:
     virtual size_t num_entries() const override;
     virtual bool is_visible(size_t index) const override;
 private:
-    const AssetReferences& asset_references_;
     Focus focus_mask_;
     UiFocus& ui_focus_;
 };

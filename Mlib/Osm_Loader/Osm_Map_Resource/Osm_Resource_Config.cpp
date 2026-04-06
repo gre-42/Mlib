@@ -1,8 +1,8 @@
 #include "Osm_Resource_Config.hpp"
-#include <Mlib/Argument_List.hpp>
-#include <Mlib/Geometry/Intersection/Axis_Aligned_Bounding_Box_Json.hpp>
+#include <Mlib/Geometry/Primitives/Axis_Aligned_Bounding_Box_Json.hpp>
 #include <Mlib/Json/Chrono_Duration.hpp>
 #include <Mlib/Json/Json_View.hpp>
+#include <Mlib/Misc/Argument_List.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Road_Type.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Waysides_Surface.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Waysides_Vertex.hpp>
@@ -30,8 +30,8 @@ DECLARE_ARGUMENT(alpha);
 void Mlib::from_json(const nlohmann::json& j, WaterTextureConfiguration& textures) {
     JsonView jv{ j };
     jv.validate(WaterTextureArgs::options);
-    textures.color = jv.at<std::vector<VariableAndHash<std::string>>>(WaterTextureArgs::color);
-    textures.alpha = jv.at<std::vector<VariableAndHash<std::string>>>(WaterTextureArgs::alpha);
+    textures.color = jv.at_vector<std::string>(WaterTextureArgs::color, [](const auto& v){ return FPath{v}; });
+    textures.alpha = jv.at_vector<std::string>(WaterTextureArgs::alpha, [](const auto& v){ return FPath{v}; });
 }
 
 namespace WaterArgs {
@@ -63,8 +63,6 @@ void Mlib::from_json(const nlohmann::json& j, WaterConfiguration& water) {
     water.yangle = jv.at<float>(WaterArgs::yangle) * degrees;
 }
 
-OsmResourceConfig::OsmResourceConfig()
-{}
+OsmResourceConfig::OsmResourceConfig() = default;
 
-OsmResourceConfig::~OsmResourceConfig()
-{}
+OsmResourceConfig::~OsmResourceConfig() = default;

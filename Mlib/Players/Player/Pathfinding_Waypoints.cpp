@@ -1,38 +1,34 @@
 #include "Pathfinding_Waypoints.hpp"
-#include <Mlib/Assert.hpp>
-#include <Mlib/Env.hpp>
 #include <Mlib/Geometry/Graph/Points_And_Adjacency.hpp>
-#include <Mlib/Geometry/Intersection/Bvh.hpp>
+#include <Mlib/Geometry/Primitives/Bvh.hpp>
 #include <Mlib/Iterator/Enumerate.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
+#include <Mlib/Os/Env.hpp>
 #include <Mlib/Physics/Misc/Beacon.hpp>
 #include <Mlib/Physics/Physics_Engine/Beacons.hpp>
-#include <Mlib/Physics/Physics_Engine/Physics_Engine_Config.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Physics/Vehicle_Controllers/Car_Controllers/Rigid_Body_Vehicle_Controller.hpp>
 #include <Mlib/Players/Advance_Times/Player.hpp>
 #include <Mlib/Players/Containers/Players.hpp>
-#include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
 #include <Mlib/Scene_Graph/Interfaces/Way_Points.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
+#include <Mlib/Testing/Assert.hpp>
+#include <Mlib/Threads/Throwing_Lock_Guard.hpp>
+#include <stdexcept>
 
 using namespace Mlib;
 
 static const auto BEACON = VariableAndHash<std::string>{"beacon"};
 
-PathfindingWaypoints::PathfindingWaypoints(
-    Player& player,
-    const PhysicsEngineConfig& cfg)
+PathfindingWaypoints::PathfindingWaypoints(Player& player)
     : player_{ player }
-    , cfg_{ cfg }
 {}
 
 PathfindingWaypoints::~PathfindingWaypoints() = default;
 
 void PathfindingWaypoints::set_waypoint(size_t waypoint_id) {
     if (waypoints_ == nullptr) {
-        THROW_OR_ABORT("Waypoints not set");
+        throw std::runtime_error("Waypoints not set");
     }
     player_.single_waypoint_.set_waypoint(waypoints_->way_points.points.at(waypoint_id), waypoint_id);
 }
@@ -49,7 +45,7 @@ bool PathfindingWaypoints::has_waypoints() const {
 }
 
 void PathfindingWaypoints::select_next_waypoint() {
-    player_.delete_node_mutex_.assert_this_thread_is_deleter_thread();
+    ThrowingLockGuard delete_lock{player_.delete_node_mutex_};
     if (!has_waypoints()) {
         return;
     }
@@ -164,7 +160,7 @@ void PathfindingWaypoints::select_next_waypoint() {
                 }
             }
             if (best_id == SIZE_MAX) {
-                THROW_OR_ABORT("Select next waypoint failed. Forgot diagonal elements of adjacency matrix?");
+                throw std::runtime_error("Select next waypoint failed. Forgot diagonal elements of adjacency matrix?");
             }
             set_waypoint(best_id);
         }

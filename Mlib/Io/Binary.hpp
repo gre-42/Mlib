@@ -1,9 +1,9 @@
 #pragma once
 #include <Mlib/Memory/Integral_Cast.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
 #include <istream>
 #include <ostream>
 #include <span>
+#include <stdexcept>
 #include <string>
 #include <vector>
 
@@ -40,7 +40,7 @@ T read_binary(std::istream& istr, const char* msg, IoVerbosity verbosity) {
     T result;
     istr.read(reinterpret_cast<char*>(&result), sizeof(result));
     if (istr.fail()) {
-        THROW_OR_ABORT("Could not read " + std::string(msg) + " from stream");
+        throw std::runtime_error("Could not read " + std::string(msg) + " from stream");
     }
     if (any(verbosity & IoVerbosity::DATA)) {
         char* begin = reinterpret_cast<char*>(&result);
@@ -59,7 +59,7 @@ template <class TVec>
 void read_vector(std::istream& istr, TVec& vec, const char* msg, IoVerbosity verbosity) {
     istr.read(reinterpret_cast<char*>(vec.data()), integral_cast<std::streamsize>(sizeof(typename TVec::value_type) * vec.size()));
     if (istr.fail()) {
-        THROW_OR_ABORT("Could not read vector from stream: " + std::string(msg));
+        throw std::runtime_error("Could not read vector from stream: " + std::string(msg));
     }
     if (any(verbosity & IoVerbosity::DATA)) {
         char* begin = reinterpret_cast<char*>(vec.data());
@@ -67,6 +67,8 @@ void read_vector(std::istream& istr, TVec& vec, const char* msg, IoVerbosity ver
         print_chars({ begin, end }, msg);
     }
 }
+
+std::vector<std::byte> read_all_vector(std::istream& istr, const char* msg, IoVerbosity verbosity);
 
 std::string read_string(std::istream& istr, size_t length, const char* msg, IoVerbosity verbosity);
 
@@ -76,7 +78,7 @@ template <class T>
 void write_binary(std::ostream& ostr, const T& value, const char* msg) {
     ostr.write((const char*)&value, sizeof(value));
     if (ostr.fail()) {
-        THROW_OR_ABORT("Could not write " + std::string(msg) + "to stream");
+        throw std::runtime_error("Could not write " + std::string(msg) + "to stream");
     }
 }
 

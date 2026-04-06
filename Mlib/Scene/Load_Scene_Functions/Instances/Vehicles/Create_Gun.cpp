@@ -1,5 +1,4 @@
 #include "Create_Gun.hpp"
-#include <Mlib/Argument_List.hpp>
 #include <Mlib/Audio/Audio_Periodicity.hpp>
 #include <Mlib/Audio/Audio_Resource_Context.hpp>
 #include <Mlib/Audio/Audio_Resources.hpp>
@@ -10,12 +9,13 @@
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Macro_Executor/Macro_Line_Executor.hpp>
 #include <Mlib/Memory/Object_Pool.hpp>
+#include <Mlib/Misc/Argument_List.hpp>
+#include <Mlib/OpenGL/Batch_Renderers/Particle_Renderer.hpp>
 #include <Mlib/Physics/Advance_Times/Gun.hpp>
 #include <Mlib/Physics/Bullets/Bullet_Property_Db.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Engine.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle_Flags.hpp>
-#include <Mlib/Render/Batch_Renderers/Particle_Renderer.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Linker.hpp>
 #include <Mlib/Scene/Load_Scene_Funcs.hpp>
@@ -30,8 +30,8 @@
 #include <Mlib/Signal/Exponential_Smoother.hpp>
 #include <Mlib/Stats/Fast_Random_Number_Generators.hpp>
 #include <Mlib/Stats/Random_Process.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
 #include <memory>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -93,11 +93,11 @@ void CreateGun::operator()(const JsonView& args)
     args.validate(KnownArgs::options);
 
     Linker linker{ physics_engine.advance_times_ };
-    DanglingBaseClassRef<SceneNode> parent_rb_node = scene.get_node(args.at<VariableAndHash<std::string>>(KnownArgs::parent_rigid_body_node), DP_LOC);
-    auto& rb = get_rigid_body_vehicle(parent_rb_node);
-    DanglingBaseClassRef<SceneNode> node = scene.get_node(args.at<VariableAndHash<std::string>>(KnownArgs::node), DP_LOC);
+    DanglingBaseClassRef<SceneNode> parent_rb_node = scene.get_node(args.at<VariableAndHash<std::string>>(KnownArgs::parent_rigid_body_node), CURRENT_SOURCE_LOCATION);
+    auto rb = get_rigid_body_vehicle(parent_rb_node.get(), CURRENT_SOURCE_LOCATION);
+    DanglingBaseClassRef<SceneNode> node = scene.get_node(args.at<VariableAndHash<std::string>>(KnownArgs::node), CURRENT_SOURCE_LOCATION);
     DanglingBaseClassPtr<SceneNode> punch_angle_node = args.contains_non_null(KnownArgs::punch_angle_node)
-        ? scene.get_node(args.at<VariableAndHash<std::string>>(KnownArgs::punch_angle_node), DP_LOC).ptr()
+        ? scene.get_node(args.at<VariableAndHash<std::string>>(KnownArgs::punch_angle_node), CURRENT_SOURCE_LOCATION).ptr()
         : nullptr;
     float punch_angle_idle_std = args.at<float>(KnownArgs::punch_angle_idle_std) * degrees;
     float punch_angle_shoot_std = args.at<float>(KnownArgs::punch_angle_shoot_std) * degrees;
@@ -184,7 +184,7 @@ void CreateGun::operator()(const JsonView& args)
         punch_angle_rng,
         generate_muzzle_flash);
     if (args.contains_non_null(KnownArgs::ypln_node)) {
-        auto ypln_node = scene.get_node(args.at<VariableAndHash<std::string>>(KnownArgs::ypln_node), DP_LOC);
+        auto ypln_node = scene.get_node(args.at<VariableAndHash<std::string>>(KnownArgs::ypln_node), CURRENT_SOURCE_LOCATION);
         gun.set_ypln_node(ypln_node);
     }
 }

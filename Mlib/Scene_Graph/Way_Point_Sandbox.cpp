@@ -1,6 +1,7 @@
+
 #include "Way_Point_Sandbox.hpp"
-#include <Mlib/Throw_Or_Abort.hpp>
 #include <map>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -15,7 +16,7 @@ std::string Mlib::way_point_sandbox_to_string(WayPointSandbox t) {
     case WayPointSandbox::RUNWAY_OR_TAXIWAY:
         return "runway_or_taxiway";
     }
-    THROW_OR_ABORT("Unknown waypoint sandbox");
+    throw std::runtime_error("Unknown waypoint sandbox");
 }
 
 WayPointSandbox Mlib::way_point_sandbox_from_string(const std::string& s) {
@@ -27,7 +28,7 @@ WayPointSandbox Mlib::way_point_sandbox_from_string(const std::string& s) {
     };
     auto it = m.find(s);
     if (it == m.end()) {
-        THROW_OR_ABORT("Unknown waypoint sandbox: \"" + s + '"');
+        throw std::runtime_error("Unknown waypoint sandbox: \"" + s + '"');
     }
     return it->second;
 }

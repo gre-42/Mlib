@@ -1,6 +1,6 @@
 #include "String_View_To_Number.hpp"
-#include <Mlib/Throw_Or_Abort.hpp>
 #include <cmath>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -38,6 +38,10 @@ unsigned int Mlib::safe_stou(const std::string_view& s) {
     return safe_stox<unsigned int>(s, "uint");
 }
 
+uint16_t Mlib::safe_stou16(const std::string_view& s) {
+    return safe_stox<uint16_t>(s, "uint16");
+}
+
 uint64_t Mlib::safe_stou64(const std::string_view& s) {
     return safe_stox<uint64_t>(s, "uint64");
 }
@@ -53,5 +57,5 @@ bool Mlib::safe_stob(const std::string_view& s) {
     if (s == "1") {
         return true;
     }
-    THROW_OR_ABORT("Could not convert \"" + std::string{s} + "\" to bool");
+    throw std::runtime_error("Could not convert \"" + std::string{s} + "\" to bool");
 }

@@ -25,22 +25,22 @@ DeletingDamageable::DeletingDamageable(
     , root_node_name_{ std::move(root_node_name) }
     , health_{ health }
     , delete_node_when_health_leq_zero_{ delete_node_when_health_leq_zero }
-    , rb_{ &get_rigid_body_vehicle(scene.get_node(root_node_name_, DP_LOC)) }
+    , rb_{ get_rigid_body_vehicle(scene.get_node(root_node_name_, CURRENT_SOURCE_LOCATION).get(), CURRENT_SOURCE_LOCATION).ptr() }
     , translator_{ std::move(translator) }
     , generate_explosions_{ std::move(generate_explosions) }
-    , node_on_clear_{ scene_.get_node(root_node_name_, DP_LOC)->on_clear, CURRENT_SOURCE_LOCATION }
-    , rb_on_destroy_{ rb_->on_destroy, CURRENT_SOURCE_LOCATION }
+    , node_on_clear_{ scene_.get_node(root_node_name_, CURRENT_SOURCE_LOCATION)->on_clear.early, CURRENT_SOURCE_LOCATION }
+    , rb_on_destroy_{ rb_->on_destroy.deflt, CURRENT_SOURCE_LOCATION }
     , final_damage_sources_{ DamageSource::NONE }
     , explosion_generated_{ false }
 {
     if (rb_->damageable_ != nullptr) {
-        THROW_OR_ABORT("Rigid body already has a damageable");
+        throw std::runtime_error("Rigid body already has a damageable");
     }
-    rb_->damageable_ = this;
-    dgs_.add([this]() { if (rb_ != nullptr) { rb_->damageable_ = nullptr; } });
+    rb_->damageable_ = {this, CURRENT_SOURCE_LOCATION};
+    dgs_.add([this]() { if (rb_ != nullptr) { rb_->damageable_ = nullptr; }; rb_ = nullptr; });
     advance_times_.add_advance_time({ *this, CURRENT_SOURCE_LOCATION }, CURRENT_SOURCE_LOCATION);
     node_on_clear_.add([this]() { global_object_pool.remove(this); }, CURRENT_SOURCE_LOCATION);
-    rb_on_destroy_.add([this]() { rb_ = nullptr; global_object_pool.remove(this); }, CURRENT_SOURCE_LOCATION);
+    rb_on_destroy_.add([this]() { global_object_pool.remove(this); }, CURRENT_SOURCE_LOCATION);
 }
 
 DeletingDamageable::~DeletingDamageable() {
@@ -68,13 +68,17 @@ void DeletingDamageable::advance_time(float dt, const StaticWorld& world) {
     }
 }
 
+StatusComponents DeletingDamageable::status_component() const {
+    return StatusComponents::HEALTH;
+}
+
 void DeletingDamageable::write_status(
     std::ostream& ostr,
     StatusComponents log_components,
     const StaticWorld& world) const
 {
     static const VariableAndHash<std::string> HP{ "HP" };
-    if (log_components & StatusComponents::HEALTH) {
+    if (any(log_components & StatusComponents::HEALTH)) {
         ostr << translator_->translate(HP) << ": " << health() << std::endl;
     }
 }
@@ -83,11 +87,11 @@ float DeletingDamageable::get_value(StatusComponents log_components) const {
     if (log_components == StatusComponents::HEALTH) {
         return health();
     }
-    THROW_OR_ABORT("Unknown status component: " + std::to_string((unsigned int)log_components));
+    throw std::runtime_error("Unknown status component: " + std::to_string((unsigned int)log_components));
 }
 
-StatusWriter& DeletingDamageable::child_status_writer(const std::vector<VariableAndHash<std::string>>& name) {
-    THROW_OR_ABORT("DeletingDamageable has no children");
+DanglingBaseClassRef<StatusWriter> DeletingDamageable::child_status_writer(const std::vector<VariableAndHash<std::string>>& name) {
+    throw std::runtime_error("DeletingDamageable has no children");
 }
 
 float DeletingDamageable::health() const {

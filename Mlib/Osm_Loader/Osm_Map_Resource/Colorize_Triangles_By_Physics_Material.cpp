@@ -11,10 +11,10 @@ void Mlib::colorize_triangles_by_physics_material(
     for (auto& cva : cvas) {
         for (auto& t : cva->triangles) {
             for (auto& v : t.flat_iterable()) {
-                if (any(cva->morphology.physics_material & PhysicsMaterial::OBJ_GROUND)) {
+                if (any(cva->meta.morphology.physics_material & PhysicsMaterial::OBJ_GROUND)) {
                     v.color = Colors::from_rgb({1.f, 0.f, 0.f});
                 }
-                if (any(cva->morphology.physics_material & PhysicsMaterial::OBJ_WAY_AIR_SUPPORT)) {
+                if (any(cva->meta.morphology.physics_material & PhysicsMaterial::OBJ_WAY_AIR_SUPPORT)) {
                     v.color = Colors::from_rgb({0.f, 1.f, 0.f});
                 }
             }

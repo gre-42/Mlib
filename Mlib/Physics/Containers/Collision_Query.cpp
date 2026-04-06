@@ -1,12 +1,13 @@
+
 #include "Collision_Query.hpp"
 #include <Mlib/Geometry/Interfaces/IIntersectable.hpp>
 #include <Mlib/Geometry/Interfaces/Transformed_IIntersectable.hpp>
-#include <Mlib/Geometry/Intersection/Intersectors/Ray_Segment_3D_For_Aabb.hpp>
 #include <Mlib/Geometry/Mesh/IIntersectable_Mesh.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>
+#include <Mlib/Geometry/Primitives/Intersectors/Ray_Segment_3D_For_Aabb.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Engine.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -182,7 +183,7 @@ bool CollisionQuery::can_see(
                             if (seen_mesh != nullptr) {
                                 *seen_mesh = nullptr;
                                 linfo() << "-" << t0.rb.name() << "-";
-                                THROW_OR_ABORT("gggg");
+                                throw std::runtime_error("gggg");
                             }
                         }
                     }

@@ -21,7 +21,7 @@ const Morphology& GetMorphology::operator[](BuildingDetailType detail_type) cons
         case BuildingDetailType::COMBINED:
             return combined_detail_morphology_;
         case BuildingDetailType::UNDEFINED:
-            THROW_OR_ABORT("Building detail type is \"undefined\"");
+            throw std::runtime_error("Building detail type is \"undefined\"");
     }
-    THROW_OR_ABORT("Unknown building detail type: " + std::to_string((int)detail_type));
+    throw std::runtime_error("Unknown building detail type: " + std::to_string((int)detail_type));
 }

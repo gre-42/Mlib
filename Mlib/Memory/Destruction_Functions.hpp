@@ -1,22 +1,54 @@
 #pragma once
-#include <Mlib/Source_Location.hpp>
+#include <Mlib/Misc/Source_Location.hpp>
 #include <Mlib/Threads/Fast_Mutex.hpp>
 #include <atomic>
 #include <functional>
 #include <list>
-#include <map>
+#include <optional>
 
 namespace Mlib {
 
-class DestructionFunctions;
+class DestructionFunctionsRemovalTokens;
+
+struct FuncAndSourceLocation {
+    std::function<void()> func;
+    SourceLocation loc;
+};
+
+struct TokensAndFuncs {
+    DestructionFunctionsRemovalTokens& tokens;
+    std::list<FuncAndSourceLocation> funcs;
+};
+
+class DestructionFunctions {
+    friend DestructionFunctionsRemovalTokens;
+    DestructionFunctions(const DestructionFunctions&) = delete;
+    DestructionFunctions& operator = (const DestructionFunctions&) = delete;
+    using Funcs = std::list<TokensAndFuncs>;
+private:
+    void add(
+        DestructionFunctionsRemovalTokens& tokens,
+        std::function<void()> f,
+        SourceLocation loc);
+    void remove(DestructionFunctionsRemovalTokens& tokens);
+    Funcs funcs_;
+    mutable FastMutex mutex_;
+    std::atomic_bool clearing_;
+public:
+    DestructionFunctions();
+    ~DestructionFunctions();
+    void clear();
+    bool empty() const;
+    void print_source_locations() const;
+};
 
 class DestructionFunctionsRemovalTokens {
     friend DestructionFunctions;
     DestructionFunctionsRemovalTokens(const DestructionFunctionsRemovalTokens&) = delete;
     DestructionFunctionsRemovalTokens& operator = (const DestructionFunctionsRemovalTokens&) = delete;
 public:
-    explicit DestructionFunctionsRemovalTokens(DestructionFunctions& funcs, SourceLocation loc);
-    explicit DestructionFunctionsRemovalTokens(DestructionFunctions* funcs, SourceLocation loc);
+    DestructionFunctionsRemovalTokens(DestructionFunctions& funcs, SourceLocation loc);
+    DestructionFunctionsRemovalTokens(DestructionFunctions* funcs, SourceLocation loc);
     ~DestructionFunctionsRemovalTokens();
     void add(std::function<void()> f, SourceLocation loc);
     void clear();
@@ -32,30 +64,25 @@ private:
     mutable FastMutex mutex_;
     SourceLocation loc_;
     DestructionFunctions* funcs_;
+    std::optional<DestructionFunctions::Funcs::iterator> funcs_it_;
 };
 
-struct FuncAndSourceLocation {
-    std::function<void()> func;
-    SourceLocation loc;
+struct EarlyAndLateDestructionFunctions;
+
+struct EarlyAndLateDestructionFunctionsRemovalTokens {
+    DestructionFunctionsRemovalTokens deflt;
+    DestructionFunctionsRemovalTokens early;    // depth-first
+    DestructionFunctionsRemovalTokens late;     // breadth-first
+    EarlyAndLateDestructionFunctionsRemovalTokens(EarlyAndLateDestructionFunctions& funcs, SourceLocation loc);
+    EarlyAndLateDestructionFunctionsRemovalTokens(EarlyAndLateDestructionFunctions* funcs, SourceLocation loc);
+    void set(EarlyAndLateDestructionFunctions& funcs, SourceLocation loc);
+    void set(EarlyAndLateDestructionFunctions* funcs, SourceLocation loc);
 };
 
-class DestructionFunctions {
-    friend DestructionFunctionsRemovalTokens;
-    DestructionFunctions(const DestructionFunctions&) = delete;
-    DestructionFunctions& operator = (const DestructionFunctions&) = delete;
-    using Funcs = std::map<DestructionFunctionsRemovalTokens*, std::list<FuncAndSourceLocation>>;
-private:
-    void add(
-        DestructionFunctionsRemovalTokens& tokens,
-        std::function<void()> f,
-        SourceLocation loc);
-    void remove(DestructionFunctionsRemovalTokens& tokens);
-    Funcs funcs_;
-    mutable FastMutex mutex_;
-    std::atomic_bool clearing_;
-public:
-    DestructionFunctions();
-    ~DestructionFunctions();
+struct EarlyAndLateDestructionFunctions {
+    DestructionFunctions deflt;
+    DestructionFunctions early; // depth-first
+    DestructionFunctions late;  // breadth-first
     void clear();
     bool empty() const;
     void print_source_locations() const;

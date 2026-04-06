@@ -1,6 +1,7 @@
+
 #include "Deallocation_Token.hpp"
 #include <Mlib/Memory/Deallocators.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -17,7 +18,7 @@ DeallocationToken::DeallocationToken(DeallocationToken&& other) noexcept
 
 DeallocationToken& DeallocationToken::operator = (DeallocationToken&& other) {
     if (deallocators_ != nullptr) {
-        THROW_OR_ABORT("Deallocators already set");
+        throw std::runtime_error("Deallocators already set");
     }
     deallocators_ = other.deallocators_;
     it_ = std::move(other.it_);

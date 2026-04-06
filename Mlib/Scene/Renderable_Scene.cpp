@@ -4,25 +4,25 @@
 #include <Mlib/Macro_Executor/Focus.hpp>
 #include <Mlib/Macro_Executor/Focus_Filter.hpp>
 #include <Mlib/Memory/Destruction_Guard.hpp>
-#include <Mlib/Render/Render_Config.hpp>
-#include <Mlib/Render/Render_Logics/Aggregate_Render_Logic.hpp>
-#include <Mlib/Render/Render_Logics/Bloom/Bloom_Logic.hpp>
-#include <Mlib/Render/Render_Logics/Bloom/Bloom_Selector_Logic.hpp>
-#include <Mlib/Render/Render_Logics/Bloom/Sky_Bloom_Logic.hpp>
-#include <Mlib/Render/Render_Logics/Dirtmap_Logic.hpp>
-#include <Mlib/Render/Render_Logics/Flying_Camera_Logic.hpp>
-#include <Mlib/Render/Render_Logics/Fxaa_Logic.hpp>
-#include <Mlib/Render/Render_Logics/Motion_Interpolation_Logic.hpp>
-#include <Mlib/Render/Render_Logics/Post_Processing_Logic.hpp>
-#include <Mlib/Render/Render_Logics/Standard_Render_Logic.hpp>
-#include <Mlib/Render/Render_Setup.hpp>
+#include <Mlib/OpenGL/Render_Config.hpp>
+#include <Mlib/OpenGL/Render_Logics/Aggregate_Render_Logic.hpp>
+#include <Mlib/OpenGL/Render_Logics/Bloom/Bloom_Logic.hpp>
+#include <Mlib/OpenGL/Render_Logics/Bloom/Bloom_Selector_Logic.hpp>
+#include <Mlib/OpenGL/Render_Logics/Bloom/Sky_Bloom_Logic.hpp>
+#include <Mlib/OpenGL/Render_Logics/Dirtmap_Logic.hpp>
+#include <Mlib/OpenGL/Render_Logics/Flying_Camera_Logic.hpp>
+#include <Mlib/OpenGL/Render_Logics/Fxaa_Logic.hpp>
+#include <Mlib/OpenGL/Render_Logics/Motion_Interpolation_Logic.hpp>
+#include <Mlib/OpenGL/Render_Logics/Post_Processing_Logic.hpp>
+#include <Mlib/OpenGL/Render_Logics/Standard_Render_Logic.hpp>
+#include <Mlib/OpenGL/Render_Setup.hpp>
 #include <Mlib/Scene/Audio/Audio_Listener_Updater.hpp>
 #include <Mlib/Scene/Physics_Scene.hpp>
 #include <Mlib/Scene/Renderable_Scene.hpp>
 #include <Mlib/Scene/Scene_Config.hpp>
 #include <Mlib/Scene_Graph/Rendered_Scene_Descriptor.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
 #include <Mlib/Time/Fps/Realtime_Sleeper.hpp>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -39,7 +39,7 @@ RenderableScene::RenderableScene(
     const RemoteObserver& remote_observer,
     const SceneConfigResource& config)
     : on_stop_and_join_physics_{ physics_scene->on_stop_and_join_, CURRENT_SOURCE_LOCATION }
-    , on_destroy_physics_{ physics_scene->on_destroy, CURRENT_SOURCE_LOCATION }
+    , on_destroy_physics_{ physics_scene->on_destroy.deflt, CURRENT_SOURCE_LOCATION }
     , object_pool_{ InObjectPoolDestructor::CLEAR }
     , counter_user_{ DanglingBaseClassRef<UsageCounter>{physics_scene->usage_counter_, CURRENT_SOURCE_LOCATION} }
     , name_{ std::move(name) }
@@ -55,7 +55,6 @@ RenderableScene::RenderableScene(
           .wire_frame = scene_config.render_config.wire_frame,
           .depth_test = scene_config.render_config.depth_test,
           .cull_faces = scene_config.render_config.cull_faces,
-          .delete_node_mutex = physics_scene->delete_node_mutex_,
           .physics_set_fps = &physics_scene->physics_set_fps_}
     , ui_focus_{ ui_focus }
     , focus_filter_{ focus_filter }
@@ -87,7 +86,6 @@ RenderableScene::RenderableScene(
           selected_cameras_,
           ui_focus.focuses,
           physics_scene->countdown_start_,
-          physics_scene->players_,
           physics_scene->physics_engine_)}
     , read_pixels_logic_{ *aggregate_render_logic_, button_states, key_configurations, ReadPixelsRole::INTERMEDIATE }
     , dirtmap_logic_{ std::make_unique<DirtmapLogic>(physics_scene->rendering_resources_, read_pixels_logic_) }
@@ -192,7 +190,7 @@ void RenderableScene::render_without_setup(
 
     auto f = frame_id;
     f.external_render_pass.observer = remote_observer_;
-    f.external_render_pass.renderable_scene = { *this, DP_LOC };
+    f.external_render_pass.renderable_scene = { *this, CURRENT_SOURCE_LOCATION };
     auto completed_time = physics_scene_->physics_set_fps_.completed_time();
     if (completed_time != std::chrono::steady_clock::time_point()) {
         f.external_render_pass.time = std::min(
@@ -226,7 +224,6 @@ void RenderableScene::instantiate_audio_listener(
 {
     audio_listener_updater_ = std::make_unique<AudioListenerUpdater>(
         selected_cameras_,
-        physics_scene_->scene_,
         delay,
         velocity_dt);
     physics_scene_->physics_engine_.advance_times_.add_advance_time(

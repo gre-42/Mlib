@@ -2,7 +2,7 @@
 #include <Mlib/Geometry/Angle.hpp>
 #include <Mlib/Geometry/Coordinates/To_Tait_Bryan_Angles.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
-#include <Mlib/Math/Signed_Min.hpp>
+#include <Mlib/Math/Sigmoid/Signed_Min.hpp>
 #include <Mlib/Memory/Object_Pool.hpp>
 #include <Mlib/Physics/Advance_Times/Movables/Aim_At.hpp>
 #include <Mlib/Physics/Advance_Times/Movables/Pitch_Look_At_Node.hpp>
@@ -11,8 +11,8 @@
 using namespace Mlib;
 
 YawPitchLookAtNodes::YawPitchLookAtNodes(
-    AimAt& aim_at,
-    PitchLookAtNode& pitch_look_at_node,
+    const DanglingBaseClassRef<AimAt>& aim_at,
+    const DanglingBaseClassRef<PitchLookAtNode>& pitch_look_at_node,
     float dyaw_max,
     std::function<float()> increment_yaw_error)
     : aim_at_node_{ aim_at }
@@ -36,8 +36,8 @@ void YawPitchLookAtNodes::set_updated_relative_model_matrix(const Transformation
 }
 
 void YawPitchLookAtNodes::set_absolute_model_matrix(const TransformationMatrix<float, ScenePos, 3>& absolute_model_matrix) {
-    if (!any(isnan(aim_at_node_.relative_point_to_aim_at()))) {
-        float dyaw = z_to_yaw(-aim_at_node_.relative_point_to_aim_at());
+    if (!any(isnan(aim_at_node_->relative_point_to_aim_at()))) {
+        float dyaw = z_to_yaw(-aim_at_node_->relative_point_to_aim_at());
         float eyaw = increment_yaw_error_();
         increment_yaw(dyaw + eyaw, 1.f);
     }
@@ -70,13 +70,13 @@ TransformationMatrix<float, ScenePos, 3> YawPitchLookAtNodes::get_new_relative_m
     return relative_model_matrix_;
 }
 
-PitchLookAtNode& YawPitchLookAtNodes::pitch_look_at_node() const {
+DanglingBaseClassRef<PitchLookAtNode> YawPitchLookAtNodes::pitch_look_at_node() {
     return pitch_look_at_node_;
 }
 
 void YawPitchLookAtNodes::notify_destroyed(SceneNode& destroyed_object) {
     if (destroyed_object.has_relative_movable()) {
-        if (&destroyed_object.get_relative_movable() != this) {
+        if (&destroyed_object.get_relative_movable(CURRENT_SOURCE_LOCATION).get() != this) {
             verbose_abort("Unexpected relative movable");
         }
         destroyed_object.clear_relative_movable();

@@ -1,4 +1,3 @@
-#include <Mlib/Argument_List.hpp>
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Geometry/Material/Billboard_Atlas_Instance.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array_Filter.hpp>
@@ -13,12 +12,13 @@
 #include <Mlib/Geometry/Mesh/Load/Raster_Config.hpp>
 #include <Mlib/Io/Folder_IStream_Dictionary.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
-#include <Mlib/Render/Deallocate/Render_Allocator.hpp>
-#include <Mlib/Render/Raster/Raster_Factory.hpp>
-#include <Mlib/Render/Rendering_Context.hpp>
-#include <Mlib/Render/Resource_Managers/Rendering_Resources.hpp>
-#include <Mlib/Render/Resources/Dff_File_Resource.hpp>
-#include <Mlib/Render/Resources/Pssg_File_Resource.hpp>
+#include <Mlib/Misc/Argument_List.hpp>
+#include <Mlib/OpenGL/Deallocate/Render_Allocator.hpp>
+#include <Mlib/OpenGL/Raster/Raster_Factory.hpp>
+#include <Mlib/OpenGL/Rendering_Context.hpp>
+#include <Mlib/OpenGL/Resource_Managers/Rendering_Resources.hpp>
+#include <Mlib/OpenGL/Resources/Dff_File_Resource.hpp>
+#include <Mlib/OpenGL/Resources/Pssg_File_Resource.hpp>
 #include <Mlib/Scene/Json/Load_Mesh_Config_Json.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Load_Scene_Funcs.hpp>
@@ -79,7 +79,7 @@ static void add_rw_resource(
                 std::transform(filename.begin(), filename.end(), filename.begin(),
                     ::tolower);
                 auto cm = ColormapWithModifiers{
-                    .filename = VariableAndHash{filename},
+                    .filename =  FPath::from_variable(filename),
                     .color_mode = ColorMode::RGB | ColorMode::RGBA,
                     .mipmap_mode = MipmapMode::WITH_MIPMAPS,
                     .magnifying_interpolation_mode = cfg->magnifying_interpolation_mode
@@ -95,27 +95,26 @@ static void add_rw_resource(
             }
             });
     } else {
-        THROW_OR_ABORT("Unknown resource type: \"" + *name + "\". Extension: \"" + extension + '"');
+        throw std::runtime_error("Unknown resource type: \"" + *name + "\". Extension: \"" + extension + '"');
     }
 }
 
 template <class TPosition>
 static void add_rw_file_resource(
-    const std::string& name,
+    const std::filesystem::path& path,
     const std::shared_ptr<LoadMeshConfig<TPosition>>& cfg,
     const std::shared_ptr<DrawDistanceDb>& dddb,
     std::list<VariableAndHash<std::string>>& added_scene_node_resources)
 {
-    auto extension = std::filesystem::path{ name }.extension().string();
+    auto extension = path.extension().string();
     std::transform(extension.begin(), extension.end(), extension.begin(),
         ::tolower);
     if (extension == ".img") {
-        auto img = ImgReader::load_from_file(name);
+        auto img = ImgReader::load_from_file(path);
         for (const auto& name : img->names()) {
-            add_rw_resource(VariableAndHash<std::string>{name}, img, cfg, dddb, added_scene_node_resources);
+            add_rw_resource(name, img, cfg, dddb, added_scene_node_resources);
         }
     } else {
-        auto path = std::filesystem::path{ name };
         auto dir = std::make_shared<FolderIStreamDictionary>(path.parent_path().string());
         add_rw_resource(
             VariableAndHash<std::string>{path.filename().string()},
@@ -136,40 +135,40 @@ static void exec(
     auto cfg = std::make_shared<LoadMeshConfig<TPosition>>();
     *cfg = load_mesh_config_from_json<TPosition>(args.arguments.child(KnownArgs::config));
     auto filters = args.arguments.at<ColoredVertexArrayFilters>(KnownArgs::filters, ColoredVertexArrayFilters{});
-    if (auto c = args.arguments.try_at<VariableAndHash<std::string>>(KnownArgs::texture)) {
+    if (auto c = args.arguments.try_path_or_variable(KnownArgs::texture); !c.empty()) {
         auto& rr = RenderingContextStack::primary_rendering_resources();
-        cfg->textures = { rr.get_blend_map_texture(*c) };
+        cfg->textures = { rr.get_blend_map_texture(c) };
     }
     for (const auto& s : args.arguments.try_pathes_or_variables(KnownArgs::rw_resource_files)) {
-        FunctionGuard fg{ "Load RW \"" + short_path(s.path) + '"' };
-        add_rw_file_resource(s.path, cfg, dddb, added_scene_node_resources);
+        FunctionGuard fg{ "Load RW \"" + short_path(s.local_path()) + '"' };
+        add_rw_file_resource(s.local_path(), cfg, dddb, added_scene_node_resources);
     }
     for (const auto& s : args.arguments.try_pathes_or_variables(KnownArgs::pssg_files)) {
-        FunctionGuard fg{ "Load PSSG \"" + short_path(s.path) + '"' };
+        FunctionGuard fg{ "Load PSSG \"" + short_path(s.local_path()) + '"' };
         auto& rr = RenderingContextStack::primary_rendering_resources();
         auto& sr = RenderingContextStack::primary_scene_node_resources();
-        auto model = load_pssg(s.path, IoVerbosity::SILENT);
+        auto model = load_pssg(s.local_path(), IoVerbosity::SILENT);
         try {
             auto arrays = load_pssg_arrays<TPosition, ScenePos>(
                 model,
                 *cfg,
                 &rr,
-                std::filesystem::path{ s.path }.filename().string() + '#',
+                s.local_path().filename().string() + '#',
                 IoVerbosity::SILENT);
             load_renderable_pssg(arrays, filters, sr, added_scene_node_resources, added_instantiables);
         } catch (const std::runtime_error& e) {
-            throw std::runtime_error("Error interpreting file \"" + s.path + "\": " + e.what());
+            throw std::runtime_error("Error interpreting file \"" + s.string() + "\": " + e.what());
         }
     }
     if (auto rv = args.arguments.try_at<std::string>(KnownArgs::resource_variable)) {
         if (args.local_json_macro_arguments == nullptr) {
-            THROW_OR_ABORT("No local arguments set");
+            throw std::runtime_error("No local arguments set");
         }
         args.local_json_macro_arguments->set(*rv, added_scene_node_resources);
     }
     if (auto iv = args.arguments.try_at<std::string>(KnownArgs::instantiables_variable)) {
         if (args.local_json_macro_arguments == nullptr) {
-            THROW_OR_ABORT("No local arguments set");
+            throw std::runtime_error("No local arguments set");
         }
         args.local_json_macro_arguments->set(*iv, added_instantiables);
     }
@@ -186,7 +185,7 @@ struct RegisterJsonUserFunction {
                 args.arguments.validate(KnownArgs::options);
                 auto dddb = std::make_shared<DrawDistanceDb>();
                 for (const auto& f : args.arguments.pathes_or_variables(KnownArgs::rw_ide_files)) {
-                    dddb->add_ide(f.path);
+                    dddb->add_ide(f.local_path());
                 }
                 if (args.arguments.at<bool>(KnownArgs::double_precision)) {
                     exec<CompressedScenePos>(args, dddb);

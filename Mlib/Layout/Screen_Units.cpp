@@ -1,7 +1,8 @@
+
 #include "Screen_Units.hpp"
 #include <Mlib/Array/Fixed_Array.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
 #include <map>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -12,7 +13,7 @@ ScreenUnits Mlib::screen_units_from_string(const std::string& str) {
     };
     auto it = m.find(str);
     if (it == m.end()) {
-        THROW_OR_ABORT("Unknown screen units: \"" + str + '"');
+        throw std::runtime_error("Unknown screen units: \"" + str + '"');
     }
     return it->second;
 }
@@ -24,7 +25,7 @@ float Mlib::to_pixels(ScreenUnits units, float value, float dpi) {
     case ScreenUnits::INCHES:
         return dpi * value;
     default:
-        THROW_OR_ABORT("Unknown screen units");
+        throw std::runtime_error("Unknown screen units");
     }
 }
 
@@ -39,7 +40,7 @@ FixedArray<float, 2> Mlib::to_pixels(
     case ScreenUnits::INCHES:
         return dpi * value;
     default:
-        THROW_OR_ABORT("Unknown screen units");
+        throw std::runtime_error("Unknown screen units");
     }
 }
 
@@ -54,5 +55,5 @@ float Mlib::round(float value, PixelsRoundMode pixels_round_mode) {
     case PixelsRoundMode::FLOOR:
         return std::floor(value);
     }
-    THROW_OR_ABORT("Unknown round mode");
+    throw std::runtime_error("Unknown round mode");
 }

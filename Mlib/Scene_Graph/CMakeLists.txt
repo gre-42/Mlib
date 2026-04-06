@@ -1,11 +1,9 @@
 include(../../CMakeCommands.cmake)
 
-set(mlib_excluded_files "")
+set(excluded_files "")
 
-my_add_library(MlibSceneGraph "1" "" "${mlib_excluded_files}")
-# https://issuetracker.google.com/issues/214811726
-if (NOT ANDROID)
-    target_precompile_headers(MlibSceneGraph PRIVATE ../Precompiled_Header.hpp)
-endif()
+my_add_library(MlibSceneGraph "1" "" "${excluded_files}")
 
-target_link_libraries(MlibSceneGraph Mlib MlibMemory MlibGeometry MlibThreads MlibMacroExecutor)
+target_include_directories(MlibSceneGraph PUBLIC ${Mlib_INCLUDE_DIR})
+
+target_link_libraries(MlibSceneGraph MlibGeometry MlibRegex)

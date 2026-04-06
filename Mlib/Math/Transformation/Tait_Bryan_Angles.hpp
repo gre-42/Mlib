@@ -1,5 +1,5 @@
 #pragma once
-#include <Mlib/Default_Uninitialized.hpp>
+#include <Mlib/Initialization/Default_Uninitialized.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
 

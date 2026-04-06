@@ -1,12 +1,11 @@
 #pragma once
 #include <Mlib/Array/Array.hpp>
 #include <Mlib/Array/Consteval_Workaround.hpp>
-#include <Mlib/Assert.hpp>
 #include <Mlib/Math/Abs.hpp>
 #include <Mlib/Math/Float_Type.hpp>
 #include <Mlib/Math/Funpack.hpp>
-#include <Mlib/Rvalue_Address.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
+#include <Mlib/Memory/Rvalue_Address.hpp>
+#include <Mlib/Testing/Assert.hpp>
 #include <Mlib/Type_Traits/Get_Scalar.hpp>
 #include <Mlib/Type_Traits/Scalar.hpp>
 #include <climits>
@@ -14,6 +13,7 @@
 #include <optional>
 #include <random>
 #include <sstream>
+#include <stdexcept>
 
 namespace Mlib {
 
@@ -567,7 +567,7 @@ void outer2d(
     assert_true(rR == aR);
     assert_true(rC == bR);
     if (rR > INT_MAX) {
-        THROW_OR_ABORT("Too many rows in matrix");
+        throw std::runtime_error("Too many rows in matrix");
     }
     #pragma omp parallel for if (CW::nelements(*result) > 200 * 200)
     for (int r = 0; r < (int)rR; ++r) {
@@ -640,7 +640,7 @@ void operator , (
     const Array<TData>& a,
     const Array<TData>& b)
 {
-    THROW_OR_ABORT("Use dot/outer instead");
+    throw std::runtime_error("Use dot/outer instead");
 }
 
 template <class TDerivedA, class TDerivedB, class TDerivedR, class TData>
@@ -666,7 +666,7 @@ void dot2d(
     assert_true(rR == aR);
     assert_true(rC == bC);
     if (rR > INT_MAX) {
-        THROW_OR_ABORT("Too many rows in matrix");
+        throw std::runtime_error("Too many rows in matrix");
     }
     #pragma omp parallel for if (CW::nelements(*result) > 200 * 200)
     for (int r = 0; r < (int)rR; ++r) {
@@ -1216,7 +1216,7 @@ void assert_isclose(const TData& a, const TData& b, typename FloatType<TData>::v
         std::stringstream sstr;
         sstr << "Numbers not close (atol=" << atol << "): " <<
             a << ", " << b;
-        THROW_OR_ABORT(sstr.str());
+        throw std::runtime_error(sstr.str());
     }
 }
 
@@ -1225,14 +1225,14 @@ void assert_allclose(const Array<TData>& a, const Array<TData>& b, typename Floa
     if ((a.ndim() != b.ndim()) || any(a.shape() != b.shape())) {
         std::stringstream sstr;
         sstr << "Shape mismatch: " << a.shape() << ", " << b.shape();
-        THROW_OR_ABORT(sstr.str());
+        throw std::runtime_error(sstr.str());
     }
     a.shape().foreach([&](const ArrayShape& index) {
         if (!isclose(a(index), b(index), atol)) {
             std::stringstream sstr;
             sstr << std::setprecision(18) << "Numbers not close (atol=" << atol << ") at " <<
                 index << ": " << a(index) << ", " << b(index);
-            THROW_OR_ABORT(sstr.str());
+            throw std::runtime_error(sstr.str());
         }
     });
 }
@@ -1242,14 +1242,14 @@ void assert_allequal(const Array<TData>& a, const Array<TData>& b) {
     if ((a.ndim() != b.ndim()) || any(a.shape() != b.shape())) {
         std::stringstream sstr;
         sstr << "Shape mismatch: " << a.shape() << ", " << b.shape();
-        THROW_OR_ABORT(sstr.str());
+        throw std::runtime_error(sstr.str());
     }
     a.shape().foreach([&](const ArrayShape& index) {
         if (!isequal(a(index), b(index))) {
             std::stringstream sstr;
             sstr << "Numbers not identical at " <<
                 index << ": " << a(index) << ", " << b(index);
-            THROW_OR_ABORT(sstr.str());
+            throw std::runtime_error(sstr.str());
         }
     });
 }
@@ -1257,7 +1257,7 @@ void assert_allequal(const Array<TData>& a, const Array<TData>& b) {
 template <class TData>
 void assert_isequal(const TData& a, const TData& b) {
     if (!isequal(a, b)) {
-        THROW_OR_ABORT(std::to_string(a) + " does not equal " + std::to_string(b));
+        throw std::runtime_error(std::to_string(a) + " does not equal " + std::to_string(b));
     }
 }
 

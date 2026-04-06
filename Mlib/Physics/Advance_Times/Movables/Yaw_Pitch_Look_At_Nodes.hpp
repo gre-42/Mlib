@@ -2,7 +2,6 @@
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
 #include <Mlib/Memory/Dangling_Base_Class.hpp>
-#include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
 #include <Mlib/Memory/Destruction_Observer.hpp>
 #include <Mlib/Physics/Interfaces/IAdvance_Time.hpp>
 #include <Mlib/Scene_Graph/Interfaces/Scene_Node/IRelative_Movable.hpp>
@@ -21,8 +20,8 @@ class SceneNode;
 class YawPitchLookAtNodes: public DestructionObserver<SceneNode&>, public IRelativeMovable, public IAdvanceTime, public virtual DanglingBaseClass {
 public:
     YawPitchLookAtNodes(
-        AimAt& aim_at,
-        PitchLookAtNode& pitch_look_at_node,
+        const DanglingBaseClassRef<AimAt>& aim_at,
+        const DanglingBaseClassRef<PitchLookAtNode>& pitch_look_at_node,
         float dyaw_max,
         std::function<float()> increment_yaw_error);
     ~YawPitchLookAtNodes();
@@ -37,14 +36,14 @@ public:
     void set_yaw(float yaw);
     float get_yaw() const;
 
-    PitchLookAtNode& pitch_look_at_node() const;
+    DanglingBaseClassRef<PitchLookAtNode> pitch_look_at_node();
 
 private:
-    AimAt& aim_at_node_;
+    DanglingBaseClassRef<AimAt> aim_at_node_;
     float dyaw_;
     float dyaw_max_;
     TransformationMatrix<float, ScenePos, 3> relative_model_matrix_;
-    PitchLookAtNode& pitch_look_at_node_;
+    DanglingBaseClassRef<PitchLookAtNode> pitch_look_at_node_;
     std::function<float()> increment_yaw_error_;
 };
 

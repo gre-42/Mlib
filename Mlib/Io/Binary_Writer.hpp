@@ -15,7 +15,11 @@ public:
     }
     template <class T>
     inline void write_binary(const T& v, const char* message) {
-        return Mlib::write_binary(ostr_, v, message);
+        Mlib::write_binary(ostr_, v, message);
+    }
+    template <class TIterable>
+    void write_iterable(const TIterable& iterable, const char* msg) {
+        Mlib::write_iterable(ostr_, iterable, msg);
     }
 private:
     std::ostream& ostr_;

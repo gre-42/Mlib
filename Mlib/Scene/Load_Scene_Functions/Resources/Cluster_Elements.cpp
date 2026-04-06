@@ -1,12 +1,12 @@
-#include <Mlib/Argument_List.hpp>
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Geometry/Instance/Rendering_Dynamics.hpp>
 #include <Mlib/Geometry/Material/Blend_Distances.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix_Json.hpp>
-#include <Mlib/Render/Modifiers/Cluster_Elements.hpp>
-#include <Mlib/Render/Rendering_Context.hpp>
+#include <Mlib/Misc/Argument_List.hpp>
+#include <Mlib/OpenGL/Modifiers/Cluster_Elements.hpp>
+#include <Mlib/OpenGL/Rendering_Context.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Load_Scene_Funcs.hpp>
 #include <Mlib/Scene_Graph/Interfaces/IScene_Node_Resource.hpp>
@@ -54,13 +54,13 @@ struct RegisterJsonUserFunction {
 
                 if (auto rv = args.arguments.try_at<std::string>(KnownArgs::resource_variable)) {
                     if (args.local_json_macro_arguments == nullptr) {
-                        THROW_OR_ABORT("No local arguments set");
+                        throw std::runtime_error("No local arguments set");
                     }
                     args.local_json_macro_arguments->set(*rv, added_scene_node_resources);
                 }
                 if (auto iv = args.arguments.try_at<std::string>(KnownArgs::instantiables_variable)) {
                     if (args.local_json_macro_arguments == nullptr) {
-                        THROW_OR_ABORT("No local arguments set");
+                        throw std::runtime_error("No local arguments set");
                     }
                     args.local_json_macro_arguments->set(*iv, added_instantiables);
                 }

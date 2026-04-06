@@ -1,9 +1,9 @@
-#include <Mlib/Floating_Point_Exceptions.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Math/Fixed_Scaled_Unit_Vector.hpp>
 #include <Mlib/Math/Fixed_Test.hpp>
 #include <Mlib/Math/Pi.hpp>
 #include <Mlib/Memory/Object_Pool.hpp>
+#include <Mlib/Misc/Floating_Point_Exceptions.hpp>
 #include <Mlib/Physics/Collision/Pacejkas_Magic_Formula.hpp>
 #include <Mlib/Physics/Collision/Power_To_Force.hpp>
 #include <Mlib/Physics/Misc/Aim.hpp>

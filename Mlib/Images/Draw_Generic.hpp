@@ -4,8 +4,8 @@
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Pi.hpp>
 #include <Mlib/Stats/Min_Max.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
 #include <cmath>
+#include <stdexcept>
 
 namespace Mlib {
 
@@ -142,7 +142,7 @@ void draw_line_ext(
     float len = max(abs(v));
     if (std::abs(len) < 1e-12) {
         if (short_line_color == nullptr) {
-            THROW_OR_ABORT("draw_infinite_line: from ~= to");
+            throw std::runtime_error("draw_infinite_line: from ~= to");
         }
         draw_point(from, *short_line_color);
         return;

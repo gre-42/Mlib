@@ -1,7 +1,7 @@
 #pragma once
 #include <Mlib/Memory/Destruction_Functions.hpp>
+#include <Mlib/OpenGL/Render_Logic.hpp>
 #include <Mlib/Physics/Interfaces/IExternal_Force_Provider.hpp>
-#include <Mlib/Render/Render_Logic.hpp>
 
 namespace Mlib {
 
@@ -24,7 +24,6 @@ class GamepadAnalogAxesPosition;
 class Scene;
 class Focuses;
 class CountdownPhysics;
-class Players;
 struct BaseKeyCombination;
 struct BaseGamepadAnalogAxesBinding;
 class ButtonPress;
@@ -38,7 +37,6 @@ public:
         SelectedCameras& selected_cameras,
         const Focuses& focuses,
         const CountdownPhysics& countdown_start,
-        Players& players,
         PhysicsEngine& physics_engine);
     ~KeyBindings();
 
@@ -112,7 +110,6 @@ private:
     SelectedCameras& selected_cameras_;
     const Focuses& focuses_;
     const CountdownPhysics& countdown_start_;
-    Players& players_;
     PhysicsEngine& physics_engine_;
 };
 

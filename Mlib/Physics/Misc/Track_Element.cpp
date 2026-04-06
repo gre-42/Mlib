@@ -1,3 +1,4 @@
+
 #include "Track_Element.hpp"
 #include <Mlib/Geometry/Angle.hpp>
 #include <Mlib/Io/Read_Number.hpp>
@@ -72,7 +73,7 @@ TrackElement TrackElement::from_vector(
 {
     TrackElement result;
     if (data.size() != 1 + ntransformations * 6) {
-        THROW_OR_ABORT("Unexpected track data vector size");
+        throw std::runtime_error("Unexpected track data vector size");
     }
     result.elapsed_seconds = (float)data[0];
     result.transformations.resize(ntransformations);
@@ -92,14 +93,14 @@ TrackElement TrackElement::from_vector(
 
 const OffsetAndTaitBryanAngles<float, ScenePos, 3>& TrackElement::transformation() const {
     if (transformations.empty()) {
-        THROW_OR_ABORT("Track element is empty");
+        throw std::runtime_error("Track element is empty");
     }
     return transformations.front();
 }
 
 TrackElement Mlib::interpolated(const TrackElement& a, const TrackElement& b, float alpha) {
     if (a.transformations.size() != b.transformations.size()) {
-        THROW_OR_ABORT("Mismatch in number of transformations");
+        throw std::runtime_error("Mismatch in number of transformations");
     }
     TrackElement result;
     result.elapsed_seconds = (1 - alpha) * a.elapsed_seconds + alpha * b.elapsed_seconds;

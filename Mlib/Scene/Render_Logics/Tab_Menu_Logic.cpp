@@ -5,33 +5,31 @@
 #include <Mlib/Layout/Layout_Constraint_Parameters.hpp>
 #include <Mlib/Layout/Screen_Units.hpp>
 #include <Mlib/Layout/Widget.hpp>
-#include <Mlib/Log.hpp>
 #include <Mlib/Macro_Executor/Expression_Watcher.hpp>
 #include <Mlib/Macro_Executor/Focus.hpp>
 #include <Mlib/Macro_Executor/Focus_Filter.hpp>
 #include <Mlib/Macro_Executor/Json_Expression.hpp>
-#include <Mlib/Render/Render_Logic_Gallery.hpp>
-#include <Mlib/Render/Render_Logics/Fill_With_Texture_Logic.hpp>
-#include <Mlib/Render/Render_Setup.hpp>
-#include <Mlib/Render/Text/Align_Text.hpp>
-#include <Mlib/Render/Text/Charsets.hpp>
-#include <Mlib/Render/Text/Renderable_Text.hpp>
-#include <Mlib/Render/Text/Text_And_Position.hpp>
-#include <Mlib/Render/Text/Text_Interpolation_Mode.hpp>
-#include <Mlib/Render/Ui/Button_Press.hpp>
-#include <Mlib/Render/Ui/List_View_Orientation.hpp>
-#include <Mlib/Render/Ui/List_View_String_Drawer.hpp>
-#include <Mlib/Render/Ui/List_View_Widget_Drawer.hpp>
+#include <Mlib/Misc/Log.hpp>
+#include <Mlib/OpenGL/Render_Logic_Gallery.hpp>
+#include <Mlib/OpenGL/Render_Logics/Fill_With_Texture_Logic.hpp>
+#include <Mlib/OpenGL/Render_Setup.hpp>
+#include <Mlib/OpenGL/Text/Align_Text.hpp>
+#include <Mlib/OpenGL/Text/Charsets.hpp>
+#include <Mlib/OpenGL/Text/Renderable_Text.hpp>
+#include <Mlib/OpenGL/Text/Text_And_Position.hpp>
+#include <Mlib/OpenGL/Text/Text_Interpolation_Mode.hpp>
+#include <Mlib/OpenGL/Ui/Button_Press.hpp>
+#include <Mlib/OpenGL/Ui/List_View_Orientation.hpp>
+#include <Mlib/OpenGL/Ui/List_View_String_Drawer.hpp>
+#include <Mlib/OpenGL/Ui/List_View_Widget_Drawer.hpp>
 #include <Mlib/Scene/Render_Logics/List_View_Style.hpp>
 
 using namespace Mlib;
 
 SubmenuHeaderContents::SubmenuHeaderContents(
-    const AssetReferences& asset_references,
     Focus focus_mask,
     UiFocus& ui_focus)
-    : asset_references_{ asset_references }
-    , focus_mask_{ focus_mask }
+    : focus_mask_{ focus_mask }
     , ui_focus_{ ui_focus }
 {}
     
@@ -83,7 +81,7 @@ TabMenuLogic::TabMenuLogic(
         ttf_filename_,
         font_color) }
     , ui_focus_{ ui_focus }
-    , contents_{ asset_references, focus_mask, ui_focus }
+    , contents_{ focus_mask, ui_focus }
     , gallery_{ gallery }
     , list_view_style_{ list_view_style }
     , selection_marker_{ selection_marker }
@@ -112,7 +110,7 @@ TabMenuLogic::TabMenuLogic(
     }) }
 {
     if ((icon_widget_ == nullptr) != (title_widget_ == nullptr)) {
-        THROW_OR_ABORT("Inconsistent icon / title widget definition");
+        throw std::runtime_error("Inconsistent icon / title widget definition");
     }
 }
 
@@ -163,7 +161,7 @@ void TabMenuLogic::render_without_setup(
         drawer.render();
     } else if (list_view_style_ == ListViewStyle::ICON) {
         if (reference_widget_ == nullptr) {
-            THROW_OR_ABORT("Listview style is \"icon\", but reference widget is null");
+            throw std::runtime_error("Listview style is \"icon\", but reference widget is null");
         }
         auto r_ref = reference_widget_->evaluate(lx, ly, YOrientation::AS_IS, RegionRoundMode::ENABLED);
         auto r_icon = (icon_widget_ == nullptr) ? nullptr : icon_widget_->evaluate(lx, ly, YOrientation::AS_IS, RegionRoundMode::ENABLED);
@@ -231,7 +229,7 @@ void TabMenuLogic::render_without_setup(
             *r_ref};
         list_view_.render_and_handle_input(lx, ly, drawer);
     } else {
-        THROW_OR_ABORT("Unknown listview style");
+        throw std::runtime_error("Unknown listview style");
     }
 }
 

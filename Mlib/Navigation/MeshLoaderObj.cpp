@@ -19,10 +19,10 @@
 #include "MeshLoaderObj.h"
 #include <Mlib/Geometry/Mesh/Indexed_Face_Set.hpp>
 #include <Mlib/Memory/Integral_Cast.hpp>
+#include <cmath>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
-#include <cmath>
 
 rcMeshLoaderObj::rcMeshLoaderObj() :
     m_scale(1.0f),
@@ -154,7 +154,7 @@ bool rcMeshLoaderObj::load(
 
         for (const auto& o : indexed_face_set->named_obj_polygons) {
             if (!o.quads.empty()) {
-                THROW_OR_ABORT("rcMeshLoaderObj::load does not yet support quad triangulation");
+                throw std::runtime_error("rcMeshLoaderObj::load does not yet support quad triangulation");
             }
             for (const auto& t : o.triangles) {
                 addTriangle(

@@ -1,5 +1,6 @@
+
 #include "Inventory.hpp"
-#include <Mlib/Throw_Or_Abort.hpp>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -16,7 +17,7 @@ bool Inventory::knows_item_type(const InventoryItem& item_type) const {
 const ItemInfo& Inventory::item(const InventoryItem& item_type) const {
     auto it = items_.find(item_type);
     if (it == items_.end()) {
-        THROW_OR_ABORT("Unknown item type: \"" + *item_type + '"');
+        throw std::runtime_error("Unknown item type: \"" + *item_type + '"');
     }
     return it->second;
 }
@@ -28,7 +29,7 @@ ItemInfo& Inventory::item(const InventoryItem& item_type) {
 
 void Inventory::set_capacity(const InventoryItem& item_type, uint32_t value) {
     if (!items_.insert({item_type, ItemInfo{.capacity = value, .navailable = 0}}).second) {
-        THROW_OR_ABORT("Capacity already set for item \"" + *item_type + '"');
+        throw std::runtime_error("Capacity already set for item \"" + *item_type + '"');
     }
 }
 
@@ -44,7 +45,7 @@ uint32_t Inventory::nfree(const InventoryItem& item_type) const {
 void Inventory::add(const InventoryItem& item_type, uint32_t amount) {
     auto& itm = item(item_type);
     if (itm.navailable + amount > itm.capacity) {
-        THROW_OR_ABORT("Inventory not large enough");
+        throw std::runtime_error("Inventory not large enough");
     }
     itm.navailable += amount;
 }
@@ -52,7 +53,7 @@ void Inventory::add(const InventoryItem& item_type, uint32_t amount) {
 void Inventory::take(const InventoryItem& item_type, uint32_t amount) {
     auto& itm = item(item_type);
     if (itm.navailable < amount) {
-        THROW_OR_ABORT("Insufficient items: \"" + *item_type + '"');
+        throw std::runtime_error("Insufficient items: \"" + *item_type + '"');
     }
     itm.navailable -= amount;
 }

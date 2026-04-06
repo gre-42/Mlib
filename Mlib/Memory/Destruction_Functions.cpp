@@ -33,7 +33,13 @@ void DestructionFunctions::add(
         verbose_abort("DestructionFunctions::add called during clearing");
     }
     std::scoped_lock lock{ mutex_ };
-    funcs_[&tokens].emplace_back(std::move(f), loc);
+    if (!tokens.funcs_it_.has_value()) {
+        tokens.funcs_ = this;
+        tokens.funcs_it_.emplace(funcs_.insert(funcs_.end(), {tokens}));
+    } else if (tokens.funcs_ != this) {
+        throw std::runtime_error("DestructionFunctions::add mismatch");
+    }
+    (*tokens.funcs_it_)->funcs.emplace_back(std::move(f), loc);
 }
 
 void DestructionFunctions::remove(DestructionFunctionsRemovalTokens& tokens) {
@@ -41,10 +47,18 @@ void DestructionFunctions::remove(DestructionFunctionsRemovalTokens& tokens) {
     // DestructionFunctions::clear is arbitrary and the token
     // can therefore already have been deleted.
     if (clearing_) {
-        funcs_.erase(&tokens);
+        if (tokens.funcs_it_.has_value()) {
+            funcs_.erase(*tokens.funcs_it_);
+            tokens.funcs_ = nullptr;
+            tokens.funcs_it_.reset();
+        }
     } else {
         std::scoped_lock lock{ mutex_ };
-        funcs_.erase(&tokens);
+        if (tokens.funcs_it_.has_value()) {
+            funcs_.erase(*tokens.funcs_it_);
+            tokens.funcs_ = nullptr;
+            tokens.funcs_it_.reset();
+        }
         // if (funcs_.erase(&tokens) != 1) {
         //     verbose_abort("Could not erase destruction removal token");
         // }
@@ -57,9 +71,10 @@ void DestructionFunctions::clear() {
     }
     std::unique_lock lock{ mutex_ };
     clearing_ = true;
-    clear_map_recursively(funcs_, [&lock](auto& node) {
-        node.key()->funcs_ = nullptr;
-        clear_list_recursively_with_lock(node.mapped(), lock, [](auto& e) {
+    clear_list_recursively(funcs_, [&lock](auto& node) {
+        node.tokens.funcs_ = nullptr;
+        node.tokens.funcs_it_.reset();
+        clear_list_recursively_with_lock(node.funcs, lock, [](auto& e) {
             // lerr() << e.loc;
             e.func();
         });
@@ -108,6 +123,7 @@ void DestructionFunctionsRemovalTokens::clear_unsafe() {
     if (funcs_ != nullptr) {
         funcs_->remove(*this);
         funcs_ = nullptr;
+        funcs_it_.reset();
     }
 }
 
@@ -127,14 +143,60 @@ bool DestructionFunctionsRemovalTokens::empty() const {
     if (funcs_ == nullptr) {
         verbose_abort("DestructionFunctionsRemovalTokens::empty call on null object");
     }
-    auto it = funcs_->funcs_.find(const_cast<DestructionFunctionsRemovalTokens*>(this));
-    if (it == funcs_->funcs_.end()) {
-        verbose_abort("Could not find destruction removal token");
-    }
-    return it->second.empty();
+    return funcs_it_.value()->funcs.empty();
 }
 
 bool DestructionFunctionsRemovalTokens::is_null() const {
     std::scoped_lock lock{ mutex_ };
     return funcs_ == nullptr;
+}
+
+EarlyAndLateDestructionFunctionsRemovalTokens::EarlyAndLateDestructionFunctionsRemovalTokens(
+    EarlyAndLateDestructionFunctions& funcs,
+    SourceLocation loc)
+    : deflt{funcs.deflt, loc}
+    , early{funcs.early, loc}
+    , late{funcs.late, loc}
+{}
+
+EarlyAndLateDestructionFunctionsRemovalTokens::EarlyAndLateDestructionFunctionsRemovalTokens(
+    EarlyAndLateDestructionFunctions* funcs,
+    SourceLocation loc)
+    : deflt{funcs ? &funcs->deflt : nullptr, loc}
+    , early{funcs ? &funcs->early : nullptr, loc}
+    , late{funcs ? &funcs->late : nullptr, loc}
+{}
+
+void EarlyAndLateDestructionFunctionsRemovalTokens::set(
+    EarlyAndLateDestructionFunctions& funcs,
+    SourceLocation loc)
+{
+    deflt.set(funcs.deflt, loc);
+    early.set(funcs.early, loc);
+    late.set(funcs.late, loc);
+}
+
+void EarlyAndLateDestructionFunctionsRemovalTokens::set(EarlyAndLateDestructionFunctions* funcs, SourceLocation loc) {
+    deflt.set(funcs ? &funcs->deflt : nullptr, loc);
+    early.set(funcs ? &funcs->early : nullptr, loc);
+    late.set(funcs ? &funcs->late : nullptr, loc);
+}
+
+void EarlyAndLateDestructionFunctions::clear() {
+    deflt.clear();
+    early.clear();
+    late.clear();
+}
+
+bool EarlyAndLateDestructionFunctions::empty() const {
+    return deflt.empty() && early.empty() && late.empty();
+}
+
+void EarlyAndLateDestructionFunctions::print_source_locations() const {
+    lerr() << "Default";
+    deflt.print_source_locations();
+    lerr() << "Early";
+    early.print_source_locations();
+    lerr() << "Late";
+    late.print_source_locations();
 }

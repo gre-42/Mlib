@@ -14,7 +14,7 @@ public:
     {}
     FutureGuard& operator = (std::future<void>&& f) {
         if (f_.valid()) {
-            THROW_OR_ABORT("FutureGuard already set");
+            throw std::runtime_error("FutureGuard already set");
         }
         f_ = std::move(f);
         return *this;

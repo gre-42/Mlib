@@ -1,11 +1,11 @@
 #include "Spawner.hpp"
-#include <Mlib/Env.hpp>
-#include <Mlib/Geometry/Intersection/Bvh.hpp>
+#include <Mlib/Geometry/Primitives/Bvh.hpp>
 #include <Mlib/Iterator/Enumerate.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
-#include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
+#include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/Memory/Destruction_Functions_Removeal_Tokens_Ref.hpp>
+#include <Mlib/Os/Env.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Players/Advance_Times/Player.hpp>
 #include <Mlib/Players/Containers/Players.hpp>
@@ -14,11 +14,10 @@
 #include <Mlib/Players/Scene_Vehicle/Scene_Vehicle.hpp>
 #include <Mlib/Players/Scene_Vehicle/Vehicle_Spawner.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
-#include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Spawn_Arguments.hpp>
 #include <Mlib/Scene_Graph/Spawn_Point.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
+#include <stdexcept>
 
 #ifndef __clang__
 #include <ranges>
@@ -30,12 +29,10 @@ Spawner::Spawner(
     VehicleSpawners& vehicle_spawners,
     Players& players,
     GameLogicConfig& cfg,
-    DeleteNodeMutex& delete_node_mutex,
     Scene& scene)
     : vehicle_spawners_{ vehicle_spawners }
     , players_{ players }
     , cfg_{ cfg }
-    , delete_node_mutex_{ delete_node_mutex }
     , scene_{ scene }
 {}
 
@@ -94,7 +91,7 @@ bool Spawner::try_spawn_at_spawn_point(
     //     std::scoped_lock lock{ delete_node_mutex_ };
     //     spawn_macro->second(sp2);
     //     if (player.scene_node_name().empty()) {
-    //         THROW_OR_ABORT("After spawning, scene node name empty for player " + player.name());
+    //         throw std::runtime_error("After spawning, scene node name empty for player " + player.name());
     //     }
     //     scene_.delete_root_node(player.scene_node_name());
     // }
@@ -105,10 +102,7 @@ void Spawner::respawn_all_players() {
         if (!p->has_scene_vehicle()) {
             continue;
         }
-        while (p->has_scene_vehicle()) {
-            auto node_name = p->get_primary_scene_vehicle()->scene_node_name();
-            scene_.delete_root_node(node_name);
-        }
+        p->delete_vehicle();
         ++ndelete_;
     }
     std::set<SpawnPoint*> occupied_spawn_points;
@@ -129,7 +123,7 @@ void Spawner::respawn_all_players() {
             }
             // lerr() << "Spawning \"" << name << "\" with team \"" << spawner->get_team_name() << '"';
             if (!try_spawn_at_spawn_point(*spawner, sp->trafo, AxisAlignedBoundingBox<CompressedScenePos, 3>::zero())) {
-                THROW_OR_ABORT("Could not spawn \"" + *name + "\" with team \"" + spawner->get_team_name() + '"');
+                throw std::runtime_error("Could not spawn \"" + *name + "\" with team \"" + spawner->get_team_name() + '"');
             }
             occupied_spawn_points.insert(sp);
             break;

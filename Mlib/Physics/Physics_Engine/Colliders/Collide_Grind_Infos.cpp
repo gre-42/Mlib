@@ -1,12 +1,13 @@
+
 #include "Collide_Grind_Infos.hpp"
 #include <Mlib/Math/Fixed_Scaled_Unit_Vector.hpp>
 #include <Mlib/Physics/Collision/Grind_Info.hpp>
 #include <Mlib/Physics/Collision/Resolve/Constraints.hpp>
 #include <Mlib/Physics/Physics_Engine/Colliders/Jump.hpp>
-#include <Mlib/Physics/Physics_Engine/Physics_Engine_Config.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
+#include <Mlib/Scene_Config/Physics_Engine_Config.hpp>
 #include <Mlib/Scene_Graph/Instances/Static_World.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -31,7 +32,7 @@ void Mlib::collide_grind_infos(
             point_dir *= sign(dot0d(point_dir, o1.rbp_.v_com_));
             point_dir -= dot0d(point_dir, p.rail_direction.casted<float>()) * p.rail_direction.casted<float>();
             if ((world.gravity == nullptr) || (world.gravity->magnitude == 0.f)) {
-                THROW_OR_ABORT("Collide grind infos without gravity");
+                throw std::runtime_error("Collide grind infos without gravity");
             }
             auto n = -world.gravity->direction + point_dir * 2.f;
             n /= std::sqrt(sum(squared(n)));
@@ -40,7 +41,7 @@ void Mlib::collide_grind_infos(
             auto n = cross(p.rail_direction, FixedArray<SceneDir, 3>{ 0.f, 1.f, 0.f });
             auto l2 = sum(squared(n));
             if (l2 < 1e-12) {
-                THROW_OR_ABORT("Rail normal too small");
+                throw std::runtime_error("Rail normal too small");
             }
             n /= std::sqrt(l2);
             if (p.rail_rb->mass() == INFINITY) {

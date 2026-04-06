@@ -1,9 +1,10 @@
+
 #include "Asset_Group_Replacement_Parameters.hpp"
 #include <Mlib/Geometry/Interfaces/IAsset_Loader.hpp>
 #include <Mlib/Macro_Executor/Macro_Line_Executor.hpp>
 #include <Mlib/Macro_Executor/Replacement_Parameter.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
 #include <mutex>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -29,7 +30,7 @@ void AssetGroupReplacementParameters::insert_if_active(
 void AssetGroupReplacementParameters::insert(ReplacementParameterAndFilename&& rp) {
     std::unique_lock lock{mutex_};
     if (!replacement_parameters_.try_emplace(rp.rp.id, std::move(rp)).second) {
-        THROW_OR_ABORT("Asset with id \"" + rp.rp.id + "\" already exists");
+        throw std::runtime_error("Asset with id \"" + rp.rp.id + "\" already exists");
     }
 }
 
@@ -37,7 +38,7 @@ void AssetGroupReplacementParameters::merge_into_database(const std::string& id,
     std::unique_lock lock{mutex_};
     auto it = replacement_parameters_.find(id);
     if (it == replacement_parameters_.end()) {
-        THROW_OR_ABORT("Asset with id \"" + id + "\" does not exist");
+        throw std::runtime_error("Asset with id \"" + id + "\" does not exist");
     }
     it->second.rp.database.merge(params);
 }
@@ -46,7 +47,7 @@ const ReplacementParameterAndFilename& AssetGroupReplacementParameters::at(const
     std::shared_lock lock{mutex_};
     auto it = replacement_parameters_.find(id);
     if (it == replacement_parameters_.end()) {
-        THROW_OR_ABORT("Could not find asset with id \"" + id + "\" in the asset group");
+        throw std::runtime_error("Could not find asset with id \"" + id + "\" in the asset group");
     }
     return it->second;
 }

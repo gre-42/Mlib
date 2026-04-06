@@ -1,7 +1,7 @@
 #pragma once
-#include <Mlib/Hash.hpp>
+#include <Mlib/Hashing/Hash.hpp>
+#include <Mlib/Hashing/Std_Hash.hpp>
 #include <Mlib/Math/Fixed_Point_Number.hpp>
-#include <Mlib/Std_Hash.hpp>
 
 namespace Mlib {
 

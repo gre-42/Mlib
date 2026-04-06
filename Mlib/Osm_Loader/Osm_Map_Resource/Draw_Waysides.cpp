@@ -1,15 +1,15 @@
 #include "Draw_Waysides.hpp"
 #include <Mlib/Geometry/Mesh/Contour.hpp>
 #include <Mlib/Math/Interp.hpp>
+#include <Mlib/OpenGL/Renderables/Triangle_Sampler/Resource_Name_Cycle.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Ground_Bvh.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Street_Bvh.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Subdivided_Contour.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Waysides_Surface.hpp>
-#include <Mlib/Render/Renderables/Triangle_Sampler/Resource_Name_Cycle.hpp>
 #include <Mlib/Scene_Graph/Resources/Batch_Resource_Instantiator.hpp>
 #include <Mlib/Scene_Graph/Resources/Parsed_Resource_Name.hpp>
 #include <Mlib/Stats/Fast_Random_Number_Generators.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -41,7 +41,7 @@ void Mlib::draw_waysides(
             FixedArray<double, 2> n2{ d3(1), -d3(0) };
             auto n2_len = std::sqrt(sum(squared(n2)));
             if (n2_len < 1e-12) {
-                THROW_OR_ABORT("draw_road_bollards: normal too short");
+                throw std::runtime_error("draw_road_bollards: normal too short");
             }
             n2 /= n2_len;
             auto p2_shifted = (p2 + distances.normal_distance * n2 * scale).casted<CompressedScenePos>();

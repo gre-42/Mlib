@@ -1,5 +1,5 @@
 #pragma once
-#include <Mlib/Ignore_Copy.hpp>
+#include <Mlib/Misc/Ignore_Copy.hpp>
 #include <Mlib/Threads/Safe_Atomic_Shared_Mutex.hpp>
 #include <string>
 

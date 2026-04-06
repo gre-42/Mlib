@@ -13,7 +13,7 @@ class DestinationReachedAi final: public IVehicleAi {
     DestinationReachedAi& operator = (const DestinationReachedAi&) = delete;
 public:
     explicit DestinationReachedAi(
-        RigidBodyVehicle& rigid_body,
+        const DanglingBaseClassRef<RigidBodyVehicle>& rigid_body,
         ControlSource control_source,
         ScenePos destination_reached_radius);
     virtual ~DestinationReachedAi() override;
@@ -25,7 +25,7 @@ public:
     virtual std::vector<SkillFactor> skills() const override;
 private:
     DestructionFunctionsRemovalTokens on_destroy_rigid_body_;
-    RigidBodyVehicle& rigid_body_;
+    DanglingBaseClassRef<RigidBodyVehicle> rigid_body_;
     ControlSource control_source_;
     ScenePos destination_reached_radius_squared_;
 };

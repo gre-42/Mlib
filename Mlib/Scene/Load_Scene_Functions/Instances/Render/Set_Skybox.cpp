@@ -1,7 +1,7 @@
 #include "Set_Skybox.hpp"
-#include <Mlib/Argument_List.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
-#include <Mlib/Render/Render_Logics/Skybox_Logic.hpp>
+#include <Mlib/Misc/Argument_List.hpp>
+#include <Mlib/OpenGL/Render_Logics/Skybox_Logic.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 
 using namespace Mlib;

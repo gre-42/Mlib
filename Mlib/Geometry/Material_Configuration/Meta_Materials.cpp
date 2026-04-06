@@ -1,8 +1,9 @@
+
 #include "Meta_Materials.hpp"
 #include <Mlib/Geometry/Material_Configuration/Base_Materials.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
 #include <map>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -25,7 +26,7 @@ PhysicsMaterial Mlib::meta_material(PhysicsMaterial material) {
     };
     auto it = m.find(material);
     if (it == m.end()) {
-        THROW_OR_ABORT("Cannot find meta material for \"" + physics_material_to_string(material));
+        throw std::runtime_error("Cannot find meta material for \"" + physics_material_to_string(material));
     }
     return it->second;
 }

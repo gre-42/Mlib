@@ -1,11 +1,11 @@
 #include "Instantiate.hpp"
-#include <Mlib/Argument_List.hpp>
 #include <Mlib/Geometry/Instance/Instance_Information.hpp>
 #include <Mlib/Geometry/Instance/Rendering_Dynamics.hpp>
 #include <Mlib/Geometry/Mesh/Cleanup/Cleanup_Mesh.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array_Filter.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
+#include <Mlib/Misc/Argument_List.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Load_Scene_Funcs.hpp>
 #include <Mlib/Scene/Renderable_Scene.hpp>
@@ -45,8 +45,8 @@ void Instantiate::execute(const LoadSceneJsonUserFunctionArgs &args) {
     std::set<VariableAndHash<std::string>> instantiated_resources;
     std::list<VariableAndHash<std::string>> instantiated_root_nodes;
     for (const auto& file : args.arguments.try_pathes_or_variables(KnownArgs::ipl_files)) {
-        FunctionGuard fg{ "Instantiate \"" + short_path(file.path) + '"'};
-        for (const auto& info : read_ipl(file.path, dynamics)) {
+        FunctionGuard fg{ "Instantiate \"" + short_path(file.local_path()) + '"'};
+        for (const auto& info : read_ipl(file.local_path(), dynamics)) {
             instantiate(
                 scene,
                 info,
@@ -72,13 +72,13 @@ void Instantiate::execute(const LoadSceneJsonUserFunctionArgs &args) {
     }
     if (ires.has_value()) {
         if (args.local_json_macro_arguments == nullptr) {
-            THROW_OR_ABORT("instantiated_resources requires local arguments");
+            throw std::runtime_error("instantiated_resources requires local arguments");
         }
         args.local_json_macro_arguments->set(*ires, instantiated_resources);
     }
     if (irno.has_value()) {
         if (args.local_json_macro_arguments == nullptr) {
-            THROW_OR_ABORT("instantiated_root_nodes requires local arguments");
+            throw std::runtime_error("instantiated_root_nodes requires local arguments");
         }
         args.local_json_macro_arguments->set(*irno, instantiated_root_nodes);
     }

@@ -1,7 +1,8 @@
 #include "Create_Ortho_Camera.hpp"
-#include <Mlib/Argument_List.hpp>
 #include <Mlib/Geometry/Cameras/Ortho_Camera.hpp>
+#include <Mlib/Geometry/Cameras/Ortho_Camera_Config_Json.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
+#include <Mlib/Misc/Argument_List.hpp>
 #include <Mlib/Regex/Regex_Select.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Scene_Config.hpp>
@@ -13,12 +14,7 @@ using namespace Mlib;
 namespace KnownArgs {
 BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(node);
-DECLARE_ARGUMENT(near_plane);
-DECLARE_ARGUMENT(far_plane);
-DECLARE_ARGUMENT(left_plane);
-DECLARE_ARGUMENT(right_plane);
-DECLARE_ARGUMENT(bottom_plane);
-DECLARE_ARGUMENT(top_plane);
+DECLARE_ARGUMENT(config);
 DECLARE_ARGUMENT(requires_postprocessing);
 }
 
@@ -30,21 +26,16 @@ LoadSceneJsonUserFunction CreateOrthoCamera::json_user_function = [](const LoadS
 };
 
 CreateOrthoCamera::CreateOrthoCamera(PhysicsScene& physics_scene) 
-: LoadPhysicsSceneInstanceFunction{ physics_scene }
+    : LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
 void CreateOrthoCamera::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    DanglingBaseClassRef<SceneNode> node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::node), DP_LOC);
+    args.arguments.validate(KnownArgs::options);
+    DanglingBaseClassRef<SceneNode> node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::node), CURRENT_SOURCE_LOCATION);
     auto oc = std::make_unique<OrthoCamera>(
-        OrthoCameraConfig(),
+        args.arguments.at<OrthoCameraConfig>(KnownArgs::config),
         OrthoCamera::Postprocessing::ENABLED);
-    oc->set_near_plane(args.arguments.at<float>(KnownArgs::near_plane));
-    oc->set_far_plane(args.arguments.at<float>(KnownArgs::far_plane));
-    oc->set_left_plane(args.arguments.at<float>(KnownArgs::left_plane));
-    oc->set_right_plane(args.arguments.at<float>(KnownArgs::right_plane));
-    oc->set_bottom_plane(args.arguments.at<float>(KnownArgs::bottom_plane));
-    oc->set_top_plane(args.arguments.at<float>(KnownArgs::top_plane));
     oc->set_requires_postprocessing(args.arguments.at<bool>(KnownArgs::requires_postprocessing));
     node->set_camera(std::move(oc));
 }

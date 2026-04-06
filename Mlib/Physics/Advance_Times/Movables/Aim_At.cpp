@@ -1,14 +1,15 @@
+
 #include "Aim_At.hpp"
-#include <Mlib/Assert.hpp>
 #include <Mlib/Components/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
-#include <Mlib/Math/Signed_Min.hpp>
+#include <Mlib/Math/Sigmoid/Signed_Min.hpp>
 #include <Mlib/Memory/Object_Pool.hpp>
 #include <Mlib/Physics/Containers/Advance_Times.hpp>
 #include <Mlib/Physics/Misc/Aim.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
+#include <Mlib/Testing/Assert.hpp>
 
 using namespace Mlib;
 
@@ -26,7 +27,7 @@ AimAt::AimAt(
     , relative_point_to_aim_at_((ScenePos)NAN)
     , followed_node_{ nullptr }
     , gun_node_{ gun_node.ptr() }
-    , follower_{ get_rigid_body_vehicle(follower_node) }
+    , follower_{ get_rigid_body_vehicle(follower_node.get(), CURRENT_SOURCE_LOCATION).ptr() }
     , followed_{ nullptr }
     , bullet_start_offset_{ bullet_start_offset }
     , bullet_velocity_{ bullet_velocity }
@@ -35,15 +36,20 @@ AimAt::AimAt(
     , locked_on_cosine_{ locked_on_cosine }
     , target_locked_on_{ false }
     , velocity_estimation_error_{ std::move(velocity_estimation_error) }
-    , gun_node_on_destroy_{ gun_node->on_destroy, CURRENT_SOURCE_LOCATION }
-    , follower_node_on_destroy_{ follower_node->on_destroy, CURRENT_SOURCE_LOCATION }
+    , gun_node_on_destroy_{ gun_node->on_destroy.deflt, CURRENT_SOURCE_LOCATION }
+    , follower_node_on_destroy_{ follower_node->on_destroy.deflt, CURRENT_SOURCE_LOCATION }
     , followed_node_on_destroy_{ nullptr, CURRENT_SOURCE_LOCATION }
 {
-    gun_node->set_sticky_absolute_observer(*this);
-    dgs_.add([gun_node]() { gun_node->clear_sticky_absolute_observer(); });
-    advance_times.add_advance_time({ *this, CURRENT_SOURCE_LOCATION }, CURRENT_SOURCE_LOCATION);
-    gun_node_on_destroy_.add([this]() { global_object_pool.remove(this); }, CURRENT_SOURCE_LOCATION);
-    follower_node_on_destroy_.add([this]() { global_object_pool.remove(this); }, CURRENT_SOURCE_LOCATION);
+    try {
+        gun_node->set_sticky_absolute_observer({*this, CURRENT_SOURCE_LOCATION});
+        dgs_.add([gun_node]() { gun_node->clear_sticky_absolute_observer(); });
+        advance_times.add_advance_time({ *this, CURRENT_SOURCE_LOCATION }, CURRENT_SOURCE_LOCATION);
+        gun_node_on_destroy_.add([this]() { global_object_pool.remove(this); }, CURRENT_SOURCE_LOCATION);
+        follower_node_on_destroy_.add([this]() { follower_ = nullptr; global_object_pool.remove(this); }, CURRENT_SOURCE_LOCATION);
+    } catch (...) {
+        on_destroy.clear();
+        throw;
+    }
 }
 
 AimAt::~AimAt() {
@@ -51,12 +57,15 @@ AimAt::~AimAt() {
 }
 
 void AimAt::set_absolute_model_matrix(const TransformationMatrix<float, ScenePos, 3>& absolute_model_matrix) {
+    if (follower_ == nullptr) {
+        throw std::runtime_error("AimAt::set_absolute_model_matrix called on destroyed object");
+    }
     if ((followed_ != nullptr) && !std::isnan(bullet_velocity_)) {
         {
             auto bullet_launch_position =
                 gun_node_->absolute_model_matrix().t -
                 (bullet_start_offset_ * gun_node_->absolute_model_matrix().R.column(2)).casted<ScenePos>();
-            auto initial_bullet_velocity = follower_.velocity_at_position(bullet_launch_position);
+            auto initial_bullet_velocity = follower_->velocity_at_position(bullet_launch_position);
             float verr = velocity_estimation_error_();
             auto offset = fixed_zeros<ScenePos, 3>();
             float t = 0;
@@ -115,8 +124,8 @@ void AimAt::set_followed(DanglingBaseClassPtr<SceneNode> followed_node)
     if (followed_node == nullptr) {
         followed_ = nullptr;
     } else {
-        followed_ = &get_rigid_body_vehicle(*followed_node);
-        followed_node_on_destroy_.set(followed_node_->on_destroy, CURRENT_SOURCE_LOCATION);
+        followed_ = get_rigid_body_vehicle((*followed_node).get(), CURRENT_SOURCE_LOCATION).ptr();
+        followed_node_on_destroy_.set(followed_node_->on_destroy.early, CURRENT_SOURCE_LOCATION);
         followed_node_on_destroy_.add([this]() {
             followed_node_ = nullptr;
             followed_ = nullptr;

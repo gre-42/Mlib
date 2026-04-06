@@ -1,3 +1,4 @@
+
 #include "Json_Expression.hpp"
 #include <Mlib/Json/Json_View.hpp>
 #include <Mlib/Macro_Executor/Asset_Group_Replacement_Parameters.hpp>
@@ -51,15 +52,25 @@ static const nlohmann::json& at(
     const nlohmann::json& locals,
     const nlohmann::json& block)
 {
+    static nlohmann::json builtin{
+        {"null", nlohmann::json()},
+        {"true", true},
+        {"false", false},
+        {"empty", ""}
+    };
+    auto iit = builtin.find(s);
     auto git = globals.find(s);
     auto lit = locals.find(s);
     auto bit = block.find(s);
-    auto nfound = int(git != globals.end()) + int(lit != locals.end()) + int(bit != block.end());
+    auto nfound = int(iit != builtin.end()) + int(git != globals.end()) + int(lit != locals.end()) + int(bit != block.end());
     if (nfound == 0) {
-        THROW_OR_ABORT("Could not find variable: \"" + std::string{ s } + '"');
+        throw std::runtime_error("Could not find variable: \"" + std::string{ s } + '"');
     }
     if (nfound > 1) {
-        THROW_OR_ABORT("Found variable in multiple dictionaries (globals, locals, block): \"" + std::string{ s } + '"');
+        throw std::runtime_error("Found variable in multiple dictionaries (builtin, globals, locals, block): \"" + std::string{ s } + '"');
+    }
+    if (iit != builtin.end()) {
+        return *iit;
     }
     if (git != globals.end()) {
         return *git;
@@ -87,7 +98,7 @@ static nlohmann::json eval_recursion(
     size_t recursion)
 {
     if (recursion > 100) {
-        THROW_OR_ABORT("Detected possibly infinite recursion");
+        throw std::runtime_error("Detected possibly infinite recursion");
     }
     if (expression.empty()) {
         return "";
@@ -95,13 +106,13 @@ static nlohmann::json eval_recursion(
     std::function<std::string(const std::string_view&)> subst;
     auto subst_ = [&globals, &locals, &block, &asset_references, &subst](const std::string_view& s) {
         if (s.empty()) {
-            THROW_OR_ABORT("Received empty substitution variable");
+            throw std::runtime_error("Received empty substitution variable");
         }
         if (s[0] == '$') {
             static const auto query_re = seq(adot, NSL, sl, NSL, sl, NSL, opt(seq(sl, NSL)), eof);
             SMatch<5> match;
             if (!regex_match(s, match, query_re)) {
-                THROW_OR_ABORT("Could not parse asset path: \"" + std::string{ s } + '"');
+                throw std::runtime_error("Could not parse asset path: \"" + std::string{ s } + '"');
             }
             const auto& db = asset_references[subst(match[DbQueryGroups::group].str())]
                 .at(subst(match[DbQueryGroups::asset_id].str()))
@@ -110,15 +121,15 @@ static nlohmann::json eval_recursion(
             if (match[DbQueryGroups::key].matched()) {
                 auto res = db.at(match[DbQueryGroups::value].str());
                 if (res.type() != nlohmann::detail::value_t::object) {
-                    THROW_OR_ABORT("Database value is not of type object: \"" + std::string{ s } + '"');
+                    throw std::runtime_error("Database value is not of type object: \"" + std::string{ s } + '"');
                 }
                 auto key = subst(match[DbQueryGroups::key].str());
                 auto it = res.find(key);
                 if (it == res.end()) {
-                    THROW_OR_ABORT("Could not find database key \"" + std::string{ key } + "\": \"" + std::string{ s } + '"');
+                    throw std::runtime_error("Could not find database key \"" + std::string{ key } + "\": \"" + std::string{ s } + '"');
                 }
                 if (it->type() != nlohmann::detail::value_t::string) {
-                    THROW_OR_ABORT("Database value is not of type string: \"" + std::string{ s } + '"');
+                    throw std::runtime_error("Database value is not of type string: \"" + std::string{ s } + '"');
                 }
                 return it->get<std::string>();
             } else {
@@ -129,12 +140,12 @@ static nlohmann::json eval_recursion(
             static const auto query_re = seq(adot, NSL, sl, NSL, eof);
             SMatch<3> match;
             if (!regex_match(s, match, query_re)) {
-                THROW_OR_ABORT("Could not parse asset path: \"" + std::string{ s } + '"');
+                throw std::runtime_error("Could not parse asset path: \"" + std::string{ s } + '"');
             }
             auto dict_name = subst(match[DictQueryGroups::dict].str());
             const auto& dict = at(dict_name, globals.json(), locals.json(), block.json());
             if (dict.type() != nlohmann::detail::value_t::object) {
-                THROW_OR_ABORT("Variable \"" + dict_name + "\" is not a dictionary");
+                throw std::runtime_error("Variable \"" + dict_name + "\" is not a dictionary");
             }
             auto key_name = subst(match[DictQueryGroups::key].str());
             return JsonView{ dict }.at<std::string>(key_name);
@@ -143,7 +154,7 @@ static nlohmann::json eval_recursion(
             if (v.type() != nlohmann::detail::value_t::string) {
                 std::stringstream sstr;
                 sstr << "Variable \"" << s << "\" is not of type string. Value: \"" << v << '"';
-                THROW_OR_ABORT(sstr.str());
+                throw std::runtime_error(sstr.str());
             }
             return v.get<std::string>();
         }
@@ -204,12 +215,12 @@ static nlohmann::json eval_recursion(
         auto rem = find_all_templated(expression.substr(1, expression.size() - 2), comma_re, [&](const SMatch<2>& match2b) {
             if (match2b[1].matched()) {
                 if (!result.insert(eval_recursion(match2b[1].str(), globals, locals, block, asset_references, recursion + 1)).second) {
-                    THROW_OR_ABORT("Duplicate element: \"" + std::string{ match2b[1].str() } + '"');
+                    throw std::runtime_error("Duplicate element: \"" + std::string{ match2b[1].str() } + '"');
                 }
             }
             });
         if (!rem.empty()) {
-            THROW_OR_ABORT("Could not parse \"" + std::string(expression) + "\". Remainder: \"" + std::string(rem) + '"');
+            throw std::runtime_error("Could not parse \"" + std::string(expression) + "\". Remainder: \"" + std::string(rem) + '"');
         }
         return result;
     }
@@ -246,22 +257,13 @@ static nlohmann::json eval_recursion(
         }
     }
     if ((expression[0] == '%') || (expression[0] == '!')) {
-        if (expression == "%null") {
-            return nlohmann::json();
-        }
-        if (expression == "%true") {
-            return true;
-        }
-        if (expression == "%false") {
-            return false;
-        }
         nlohmann::json var;
         if ((expression.length() > 1) && (expression[1] == '%')) {
             // static const DECLARE_REGEX(query_re, "^..([^/]+)/([^/]+)/(\\w+)$");
             static const auto query_re = seq(adot, adot, NSL, sl, NSL, sl, NSL, opt(seq(sl, NSL)), eof);
             SMatch<5> match;
             if (!regex_match(expression, match, query_re)) {
-                THROW_OR_ABORT("Could not parse asset path: \"" + std::string{ expression } + '"');
+                throw std::runtime_error("Could not parse asset path: \"" + std::string{ expression } + '"');
             }
             auto asset_id = subst(match[DbQueryGroups::asset_id].str());
             const auto& db = asset_references[subst(match[DbQueryGroups::group].str())]
@@ -271,19 +273,19 @@ static nlohmann::json eval_recursion(
             if (match[DbQueryGroups::key].matched()) {
                 auto res = db.at(subst(match[DbQueryGroups::value].str()));
                 if (res.type() != nlohmann::detail::value_t::object) {
-                    THROW_OR_ABORT("Database value is not of type object: \"" + std::string{ expression } + '"');
+                    throw std::runtime_error("Database value is not of type object: \"" + std::string{ expression } + '"');
                 }
                 auto key = subst(match[DbQueryGroups::key].str());
                 auto it = res.find(key);
                 if (it == res.end()) {
-                    THROW_OR_ABORT("Could not find database key \"" + std::string{ key } + "\": \"" + std::string{ expression } + "\". Asset ID: \"" + asset_id + "\".");
+                    throw std::runtime_error("Could not find database key \"" + std::string{ key } + "\": \"" + std::string{ expression } + "\". Asset ID: \"" + asset_id + "\".");
                 }
                 var = *it;
             } else {
                 auto key = subst(match[DbQueryGroups::value].str());
                 auto v = db.try_at(key);
                 if (!v.has_value()) {
-                    THROW_OR_ABORT("Could not find database key \"" + std::string{ key } + "\": \"" + std::string{ expression } + "\". Asset ID: \"" + asset_id + "\".");
+                    throw std::runtime_error("Could not find database key \"" + std::string{ key } + "\": \"" + std::string{ expression } + "\". Asset ID: \"" + asset_id + "\".");
                 }
                 var = *v;
             }
@@ -292,12 +294,12 @@ static nlohmann::json eval_recursion(
             static const auto query_re = seq(adot, adot, NSL, sl, NSL, eof);
             SMatch<3> match;
             if (!regex_match(expression, match, query_re)) {
-                THROW_OR_ABORT("Could not parse asset path: \"" + std::string{ expression } + '"');
+                throw std::runtime_error("Could not parse asset path: \"" + std::string{ expression } + '"');
             }
             auto dict_name = subst(match[DictQueryGroups::dict].str());
             const auto& dict = at(dict_name, globals.json(), locals.json(), block.json());
             if (dict.type() != nlohmann::detail::value_t::object) {
-                THROW_OR_ABORT("Variable \"" + dict_name + "\" is not a dictionary");
+                throw std::runtime_error("Variable \"" + dict_name + "\" is not a dictionary");
             }
             auto key_name = subst(match[DictQueryGroups::key].str());
             var = JsonView{ dict }.at(key_name);
@@ -306,14 +308,14 @@ static nlohmann::json eval_recursion(
         }
         if (expression[0] == '!') {
             if (var.type() != nlohmann::detail::value_t::boolean) {
-                THROW_OR_ABORT("Variable is not of type bool: \"" + std::string{ expression } + '"');
+                throw std::runtime_error("Variable is not of type bool: \"" + std::string{ expression } + '"');
             }
             return !var.get<bool>();
         } else {
             return var;
         }
     }
-    THROW_OR_ABORT("Could not interpret \"" + std::string{ expression } + '"');
+    throw std::runtime_error("Could not interpret \"" + std::string{ expression } + '"');
 }
 
 nlohmann::json Mlib::eval(
@@ -374,7 +376,7 @@ bool Mlib::eval<bool>(
 {
     auto result = eval(expression, globals, locals, block, asset_references);
     if (result.type() != nlohmann::detail::value_t::boolean) {
-        THROW_OR_ABORT("Expression is not of type bool: \"" + std::string{ expression } + '"');
+        throw std::runtime_error("Expression is not of type bool: \"" + std::string{ expression } + '"');
     }
     return result;
 }
@@ -431,7 +433,7 @@ std::string Mlib::eval<std::string>(
 {
     auto result = eval(expression, globals, locals, block, asset_references);
     if (result.type() != nlohmann::detail::value_t::string) {
-        THROW_OR_ABORT("Expression is not of type string: \"" + std::string{ expression } + '"');
+        throw std::runtime_error("Expression is not of type string: \"" + std::string{ expression } + '"');
     }
     return result;
 }

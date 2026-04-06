@@ -1,6 +1,7 @@
+
 #include "Color_Mode.hpp"
-#include <Mlib/Throw_Or_Abort.hpp>
 #include <map>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -14,7 +15,7 @@ size_t Mlib::max(ColorMode mode) {
     if (any(mode & ColorMode::GRAYSCALE)) {
         return 1;
     }
-    THROW_OR_ABORT("Unknown color mode: " + std::to_string((int)mode));
+    throw std::runtime_error("Unknown color mode: " + std::to_string((int)mode));
 }
 
 ColorMode Mlib::color_mode_from_channels(size_t nchannels) {
@@ -26,7 +27,7 @@ ColorMode Mlib::color_mode_from_channels(size_t nchannels) {
     case 1:
         return ColorMode::GRAYSCALE;
     }
-    THROW_OR_ABORT("Unsupported number of channels: " + std::to_string(nchannels));
+    throw std::runtime_error("Unsupported number of channels: " + std::to_string(nchannels));
 }
 
 ColorMode Mlib::color_mode_from_string(const std::string& str) {
@@ -37,7 +38,7 @@ ColorMode Mlib::color_mode_from_string(const std::string& str) {
     };
     auto it = m.find(str);
     if (it == m.end()) {
-        THROW_OR_ABORT("Unknown color mode: \"" + str + '"');
+        throw std::runtime_error("Unknown color mode: \"" + str + '"');
     }
     return it->second;
 }

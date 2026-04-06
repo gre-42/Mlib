@@ -4,9 +4,10 @@
 
 namespace Mlib {
 
-template <>
-inline CompressedScenePos safe_stox<CompressedScenePos>(const std::string_view& s, const char* msg) {
-	return (CompressedScenePos)safe_stox<ScenePos>(s, msg);
+inline CompressedScenePos safe_stocs(const std::string_view& s) {
+	return safe_stox<CompressedScenePos>(s, "CompressedScenePos");
 }
+
+template <> inline CompressedScenePos safe_sto<CompressedScenePos>(const std::string_view& s) { return safe_stocs(s); }
 
 }

@@ -1,7 +1,7 @@
 #include "stb_image_atlas.hpp"
 #include "stb_image_load.hpp"
-#include <Mlib/Throw_Or_Abort.hpp>
 #include <algorithm>
+#include <stdexcept>
 
 void build_image_atlas(
     const std::vector<std::shared_ptr<StbInfo<uint8_t>>>& atlas,
@@ -15,7 +15,7 @@ void build_image_atlas(
     }
     for (const auto& [source, target] : tiles) {
         if (target.layer >= atlas.size()) {
-            THROW_OR_ABORT("Tile layer out of bounds");
+            throw std::runtime_error("Tile layer out of bounds");
         }
         auto& atlas_layer = *atlas[target.layer];
         int width = std::min(source.image.width, source.width);

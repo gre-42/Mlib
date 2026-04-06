@@ -1,7 +1,8 @@
+
 #include "Damage_Source.hpp"
-#include <Mlib/Throw_Or_Abort.hpp>
+#include <Mlib/Json/Base.hpp>
 #include <map>
-#include <nlohmann/json.hpp>
+#include <stdexcept>
 #include <string>
 
 using namespace Mlib;
@@ -16,7 +17,7 @@ void Mlib::from_json(const nlohmann::json& j, DamageSource& damage_source) {
         };
         auto it = m.find(s);
         if (it == m.end()) {
-            THROW_OR_ABORT("Unknown damage source: \"" + s + '"');
+            throw std::runtime_error("Unknown damage source: \"" + s + '"');
         }
         damage_source |= it->second;
     }

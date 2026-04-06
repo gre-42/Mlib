@@ -3,9 +3,9 @@
 #include <Mlib/Memory/Integral_Cast.hpp>
 #include <Mlib/Players/Containers/Users.hpp>
 #include <Mlib/Stats/Arange.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
 #include <mutex>
 #include <random>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -42,7 +42,7 @@ void UserInfo::set_status(UserStatus status) {
         (status != UserStatus::LEVEL_LOADED) &&
         (status != UserStatus::LEVEL_LOADING))
     {
-        THROW_OR_ABORT("Unknown user status");
+        throw std::runtime_error("Unknown user status");
     }
     if (status_ != UserStatus::LEVEL_LOADED) {
         if (status == UserStatus::LEVEL_LOADED) {
@@ -142,12 +142,12 @@ void RemoteSites::set_local_user_count(uint32_t user_count) {
 void RemoteSites::set_user_count(RemoteSiteId site_id, uint32_t user_count) {
     std::scoped_lock lock{ mutex_ };
     if (user_count > 256) {
-        THROW_OR_ABORT("User-count per site cannot be greater than 256");
+        throw std::runtime_error("User-count per site cannot be greater than 256");
     }
     if (!remote_params_.has_value() || (site_id == remote_params_->site_id)) {
         assert_local_users_consistents();
         if (local_users_->get_user_count() != user_count) {
-            THROW_OR_ABORT(
+            throw std::runtime_error(
                 "Attempt to remotely set the user count to " +
                 std::to_string(user_count) +
                 " when it is actually " +
@@ -156,7 +156,7 @@ void RemoteSites::set_user_count(RemoteSiteId site_id, uint32_t user_count) {
     } else {
         if (!remote_sites_.contains(site_id)) {
             if (remote_sites_.size() >= 256) {
-                THROW_OR_ABORT("Number of sites cannot be greater than 256");
+                throw std::runtime_error("Number of sites cannot be greater than 256");
             }
         } else if (user_count == get_user_count(site_id)) {
             return;
@@ -232,7 +232,7 @@ bool RemoteSites::for_each_site_user(
 DanglingBaseClassRef<UserInfo> RemoteSites::get_user(RemoteSiteId site_id, uint32_t id) {
     auto& site = get_site_info(site_id);
     if (id >= site.users.size()) {
-        THROW_OR_ABORT("User ID too large");
+        throw std::runtime_error("User ID too large");
     }
     return DanglingBaseClassRef<UserInfo>{ site.users.at(id), CURRENT_SOURCE_LOCATION };
 }
@@ -244,7 +244,7 @@ DanglingBaseClassRef<const UserInfo> RemoteSites::get_user(RemoteSiteId site_id,
 DanglingBaseClassRef<UserInfo> RemoteSites::get_user(const VariableAndHash<std::string>& full_name) {
     auto it = named_users_.find(full_name);
     if (it == named_users_.end()) {
-        THROW_OR_ABORT("Could not find user with name \"" + *full_name + '"');
+        throw std::runtime_error("Could not find user with name \"" + *full_name + '"');
     }
     return it->second.object();
 }
@@ -280,7 +280,7 @@ DanglingBaseClassRef<const UserInfo> RemoteSites::get_user_by_rank(uint32_t rank
         return true;
     }, UserTypes::ALL);
     if (result == nullptr) {
-        THROW_OR_ABORT("Could not find user with rank " + std::to_string(rank));
+        throw std::runtime_error("Could not find user with rank " + std::to_string(rank));
     }
     return *result;
 }
@@ -297,7 +297,7 @@ void RemoteSites::assert_local_users_consistents() const {
     auto nlocal = local_users_->get_user_count();
     auto nremote = local_site_.users.size();
     if (nlocal != nremote) {
-        THROW_OR_ABORT(
+        throw std::runtime_error(
             "Number of local users (" + std::to_string(nlocal) +
             ") differs from the number of remote users (" + std::to_string(nremote) + ')');
     }

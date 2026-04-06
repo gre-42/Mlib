@@ -1,7 +1,7 @@
 #pragma once
+#include <Mlib/Json/Base.hpp>
 #include <Mlib/Threads/Fast_Mutex.hpp>
 #include <compare>
-#include <nlohmann/json.hpp>
 
 namespace Mlib {
 

@@ -16,8 +16,8 @@ FollowerAi::FollowerAi(
     : advance_times_{ advance_times }
     , follower_{ follower }
     , followed_{ followed.ptr() }
-    , follower_on_destroy_{ follower->on_destroy, CURRENT_SOURCE_LOCATION }
-    , followed_on_destroy_{ followed->on_destroy, CURRENT_SOURCE_LOCATION }
+    , follower_on_destroy_{ follower->on_destroy.deflt, CURRENT_SOURCE_LOCATION }
+    , followed_on_destroy_{ followed->on_destroy.deflt, CURRENT_SOURCE_LOCATION }
 {
     follower_on_destroy_.add([this]() { global_object_pool.remove(this); }, CURRENT_SOURCE_LOCATION);
     followed_on_destroy_.add([this]() { followed_ = nullptr; }, CURRENT_SOURCE_LOCATION);

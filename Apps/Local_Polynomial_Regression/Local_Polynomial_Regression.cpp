@@ -1,11 +1,11 @@
-#include <Mlib/Arg_Parser.hpp>
-#include <Mlib/Floating_Point_Exceptions.hpp>
 #include <Mlib/Images/Filters/Gaussian_Filter.hpp>
 #include <Mlib/Images/Filters/Local_Polynomial_Regression.hpp>
 #include <Mlib/Images/Normalize.hpp>
 #include <Mlib/Images/StbImage1.hpp>
+#include <Mlib/Io/Arg_Parser.hpp>
+#include <Mlib/Misc/Floating_Point_Exceptions.hpp>
 #include <Mlib/Os/Os.hpp>
-#include <Mlib/Strings/To_Number.hpp>
+#include <Mlib/Strings/String_View_To_Number.hpp>
 #include <iostream>
 
 using namespace Mlib;

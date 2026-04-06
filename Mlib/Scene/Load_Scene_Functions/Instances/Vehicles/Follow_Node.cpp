@@ -1,6 +1,6 @@
 #include "Follow_Node.hpp"
-#include <Mlib/Argument_List.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
+#include <Mlib/Misc/Argument_List.hpp>
 #include <Mlib/Physics/Advance_Times/Movables/Follow_Movable.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Engine.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
@@ -39,14 +39,13 @@ void FollowNode::execute(const LoadSceneJsonUserFunctionArgs& args)
     Linker linker{ physics_engine.advance_times_ };
     auto follower = args.arguments.at(KnownArgs::follower);
     auto followed = args.arguments.at(KnownArgs::followed);
-    DanglingBaseClassRef<SceneNode> follower_node = scene.get_node(follower, DP_LOC);
-    DanglingBaseClassRef<SceneNode> followed_node = scene.get_node(followed, DP_LOC);
+    DanglingBaseClassRef<SceneNode> follower_node = scene.get_node(follower, CURRENT_SOURCE_LOCATION);
+    DanglingBaseClassRef<SceneNode> followed_node = scene.get_node(followed, CURRENT_SOURCE_LOCATION);
     auto distance = args.arguments.at<float>(KnownArgs::distance);
     auto follow_movable = global_object_pool.create_unique<FollowMovable>(
         CURRENT_SOURCE_LOCATION,
-        physics_engine.advance_times_,
         followed_node,
-        followed_node->get_absolute_movable(),
+        followed_node->get_absolute_movable(CURRENT_SOURCE_LOCATION),
         distance,
         args.arguments.at<EFixedArray<float, 3>>(KnownArgs::node_displacement),
         args.arguments.at<EFixedArray<float, 3>>(KnownArgs::look_at_displacement),

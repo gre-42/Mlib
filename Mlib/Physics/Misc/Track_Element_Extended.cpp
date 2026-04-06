@@ -1,3 +1,4 @@
+
 #include "Track_Element_Extended.hpp"
 #include <Mlib/Math/Transformation/Tait_Bryan_Angles.hpp>
 
@@ -26,7 +27,7 @@ const OffsetAndTaitBryanAngles<float, ScenePos, 3>& TrackElementExtended::transf
 
 void TrackElementExtended::set_y_position(ScenePos value) {
     if (element.transformations.empty()) {
-        THROW_OR_ABORT("Extended track element is empty");
+        throw std::runtime_error("Extended track element is empty");
     }
     auto diff = value - element.transformations.front().position(1);
     for (auto& t : element.transformations) {

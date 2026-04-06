@@ -1,7 +1,7 @@
 #pragma once
-#include <Mlib/Geometry/Intersection/Collision_Line.hpp>
-#include <Mlib/Geometry/Intersection/Collision_Polygon.hpp>
 #include <Mlib/Geometry/Mesh/Typed_Mesh.hpp>
+#include <Mlib/Geometry/Primitives/Collision_Line.hpp>
+#include <Mlib/Geometry/Primitives/Collision_Polygon.hpp>
 #include <memory>
 #include <string>
 #include <vector>

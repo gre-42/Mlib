@@ -1,8 +1,8 @@
 #include "Set_Way_Points.hpp"
-#include <Mlib/Argument_List.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix_Json.hpp>
+#include <Mlib/Misc/Argument_List.hpp>
 #include <Mlib/Players/Advance_Times/Game_Logic.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Instantiation/Root_Instantiation_Options.hpp>
@@ -35,7 +35,7 @@ SetWayPoints::SetWayPoints(PhysicsScene& physics_scene)
 void SetWayPoints::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     if (game_logic == nullptr) {
-        THROW_OR_ABORT("Scene has no game logic");
+        throw std::runtime_error("Scene has no game logic");
     }
     auto location = transformation_matrix_from_json<SceneDir, ScenePos, 3>(
         args.arguments.at(KnownArgs::location));

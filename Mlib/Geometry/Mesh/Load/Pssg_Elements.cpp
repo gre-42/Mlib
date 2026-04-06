@@ -1,3 +1,4 @@
+
 #include "Pssg_Elements.hpp"
 #include <Mlib/Images/Dds_Header.hpp>
 #include <Mlib/Io/Endian.hpp>
@@ -7,39 +8,39 @@ using namespace Mlib;
 
 std::string PssgAttribute::string() const {
     if (data.size() < 4) {
-        THROW_OR_ABORT("PSSG string attribute too short");
+        throw std::runtime_error("PSSG string attribute too short");
     }
     auto length = swap_endianness(*reinterpret_cast<const uint32_t*>(data.data()));
     if (length != data.size() - 4) {
-        THROW_OR_ABORT("PSSG string attribute size mismatch");
+        throw std::runtime_error("PSSG string attribute size mismatch");
     }
     return std::string((char*)data.data() + 4, data.size() - 4);
 }
 
 uint32_t PssgAttribute::uint32() const {
     if (data.size() != 4) {
-        THROW_OR_ABORT("PSSG uint32 attribute does not have 4 bytes");
+        throw std::runtime_error("PSSG uint32 attribute does not have 4 bytes");
     }
     return swap_endianness(*reinterpret_cast<const uint32_t*>(data.data()));
 }
 
 uint64_t PssgAttribute::uint64() const {
     if (data.size() != 8) {
-        THROW_OR_ABORT("PSSG uint64 attribute does not have 8 bytes");
+        throw std::runtime_error("PSSG uint64 attribute does not have 8 bytes");
     }
     return swap_endianness(*reinterpret_cast<const uint64_t*>(data.data()));
 }
 
 float PssgAttribute::float32() const {
     if (data.size() != 4) {
-        THROW_OR_ABORT("PSSG float attribute does not have 4 bytes");
+        throw std::runtime_error("PSSG float attribute does not have 4 bytes");
     }
     return swap_endianness(*reinterpret_cast<const float*>(data.data()));
 }
 
 FixedArray<double, 2> PssgAttribute::dvec2() const {
     if (data.size() != 16) {
-        THROW_OR_ABORT("PSSG dvec2 attribute does not have 16 bytes");
+        throw std::runtime_error("PSSG dvec2 attribute does not have 16 bytes");
     }
     FixedArray<double, 2> result = uninitialized;
     result(0) = swap_endianness(*reinterpret_cast<const double*>(data.data()));
@@ -55,13 +56,13 @@ const PssgNode& PssgNode::get_child(
     for (const auto& c : children) {
         if (schema.nodes.get(c.type_id).name == type) {
             if (result != nullptr) {
-                THROW_OR_ABORT("Found multiple children of type \"" + type + '"');
+                throw std::runtime_error("Found multiple children of type \"" + type + '"');
             }
             result = &c;
         }
     }
     if (result == nullptr) {
-        THROW_OR_ABORT("Could not find child of type \"" + type + '"');
+        throw std::runtime_error("Could not find child of type \"" + type + '"');
     }
     return *result;
 }
@@ -85,7 +86,7 @@ const PssgAttribute& PssgNode::get_attribute(
             return a;
         }
     }
-    THROW_OR_ABORT("Could not find attribute with name \"" + name + '"');
+    throw std::runtime_error("Could not find attribute with name \"" + name + '"');
 }
 
 bool PssgNode::has_attribute(const std::string& name, const PssgSchema& schema) const {
@@ -113,10 +114,10 @@ bool PssgNode::for_each_node(const std::function<bool(const PssgNode& node)>& op
 std::string PssgNode::pnstring() const {
     auto str = std::string((const char*)data.data(), data.size());
     if (str.empty()) {
-        THROW_OR_ABORT("Raw PNSTRING is empty");
+        throw std::runtime_error("Raw PNSTRING is empty");
     }
     if (str[str.size() - 1] != 0) {
-        THROW_OR_ABORT("PNSTRING is not null-terminated");
+        throw std::runtime_error("PNSTRING is not null-terminated");
     }
     return str.substr(0, str.size() - 1);
 }
@@ -124,7 +125,7 @@ std::string PssgNode::pnstring() const {
 template <class TData>
 TData PssgNode::scalar() const {
     if (data.size() != sizeof(TData)) {
-        THROW_OR_ABORT("PSSG scalar attribute does not have correct number of bytes");
+        throw std::runtime_error("PSSG scalar attribute does not have correct number of bytes");
     }
     const TData* src = reinterpret_cast<const TData*>(data.data());
     return swap_endianness(*src);
@@ -133,7 +134,7 @@ TData PssgNode::scalar() const {
 template <class TData, size_t... tshape>
 FixedArray<TData, tshape...> PssgNode::array() const {
     if (data.size() != sizeof(FixedArray<TData, tshape...>)) {
-        THROW_OR_ABORT("PSSG array attribute does not have correct number of bytes");
+        throw std::runtime_error("PSSG array attribute does not have correct number of bytes");
     }
     FixedArray<TData, tshape...> result = uninitialized;
     const TData* src = reinterpret_cast<const TData*>(data.data());
@@ -146,7 +147,7 @@ FixedArray<TData, tshape...> PssgNode::array() const {
 
 AxisAlignedBoundingBox<float, 3> PssgNode::saabb3() const {
     if (data.size() != 24) {
-        THROW_OR_ABORT("PSSG saabb3 attribute does not have 24 bytes");
+        throw std::runtime_error("PSSG saabb3 attribute does not have 24 bytes");
     }
     AxisAlignedBoundingBox<float, 3> result = uninitialized;
     const float* src = reinterpret_cast<const float*>(data.data());
@@ -159,7 +160,7 @@ AxisAlignedBoundingBox<float, 3> PssgNode::saabb3() const {
 
 uint32_t fourcc(std::string s) {
     if (s.length() != 4) {
-        THROW_OR_ABORT("FOURCC string does not have length 4");
+        throw std::runtime_error("FOURCC string does not have length 4");
     }
     std::transform(s.begin(), s.end(), s.begin(), ::toupper);
     return *reinterpret_cast<uint32_t*>(s.data());
@@ -181,11 +182,11 @@ std::vector<std::byte> PssgNode::texture(const PssgSchema& schema) const {
 
     header.width = get_attribute("width", schema).uint32();
     if (header.width > 10'000) {
-        THROW_OR_ABORT("Width too large");
+        throw std::runtime_error("Width too large");
     }
     header.height = get_attribute("height", schema).uint32();
     if (header.height > 10'000) {
-        THROW_OR_ABORT("Height too large");
+        throw std::runtime_error("Height too large");
     }
     auto texel_format = get_attribute("texelFormat", schema).string();
     if (texel_format == "dxt1") {
@@ -260,7 +261,7 @@ std::vector<std::byte> PssgNode::texture(const PssgSchema& schema) const {
         header.ddspf.RGBBitCount = 8;
         header.ddspf.RBitMask = 0xFF;
     } else {
-        THROW_OR_ABORT("Texel format not supported: \"" + texel_format + '"');
+        throw std::runtime_error("Texel format not supported: \"" + texel_format + '"');
     }
     // Mip Maps
     header.mipMapCount = 1;
@@ -324,7 +325,7 @@ std::vector<std::byte> PssgNode::texture(const PssgSchema& schema) const {
                 header.pitchOrLinearSize = 0;
                 header.caps |= DdsCaps::COMPLEX;
             } else {
-                THROW_OR_ABORT("Loading cubemap failed because not all blocks were found. (Read)");
+                throw std::runtime_error("Loading cubemap failed because not all blocks were found. (Read)");
             }
         } else {
             bdata = texture_image_blocks.get_child("TEXTUREIMAGEBLOCKDATA", schema).data;
@@ -334,7 +335,7 @@ std::vector<std::byte> PssgNode::texture(const PssgSchema& schema) const {
         if (nc == 1) {
             bdata = get_child("TEXTUREIMAGE", schema).data;
         } else {
-            THROW_OR_ABORT("Support for exporting this texture is not implemented.");
+            throw std::runtime_error("Support for exporting this texture is not implemented.");
         }
     }
 

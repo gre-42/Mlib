@@ -1,10 +1,10 @@
 include(../../CMakeCommands.cmake)
 
-set(mlib_excluded_files "")
+set(excluded_files "")
 
-my_add_shared_library(RenderSceneFileActivity "1" "" "${mlib_excluded_files}")
+my_add_shared_library(RenderSceneFileActivity "1" "" "${excluded_files}")
 
-target_include_directories(RenderSceneFileActivity PRIVATE ${Mlib_INCLUDE_DIR} ${glfw3_INCLUDE_DIR})
+target_include_directories(RenderSceneFileActivity PRIVATE ${glfw3_INCLUDE_DIR})
 
 target_link_libraries(RenderSceneFileActivity PRIVATE -Wl,--whole-archive MlibScene -Wl,--no-whole-archive AGameHelper)
 

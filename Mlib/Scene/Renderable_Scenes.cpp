@@ -1,8 +1,8 @@
 #include "Renderable_Scenes.hpp"
 #include <Mlib/Layout/Layout_Constraint_Parameters.hpp>
 #include <Mlib/Layout/Widget.hpp>
-#include <Mlib/Render/Render_Setup.hpp>
-#include <Mlib/Render/Viewport_Guard.hpp>
+#include <Mlib/OpenGL/Render_Setup.hpp>
+#include <Mlib/OpenGL/Viewport_Guard.hpp>
 #include <Mlib/Scene/Generic_Scenes_Impl.hpp>
 
 using namespace Mlib;
@@ -80,7 +80,7 @@ void RenderableScenes::render_without_setup(
             }
         }
     } else {
-        THROW_OR_ABORT("Number of tiled scenes exceeds 2");
+        throw std::runtime_error("Number of tiled scenes exceeds 2");
     }
 }
 

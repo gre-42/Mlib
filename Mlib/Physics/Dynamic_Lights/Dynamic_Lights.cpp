@@ -1,3 +1,4 @@
+
 #include "Dynamic_Lights.hpp"
 #include <Mlib/Physics/Dynamic_Lights/Animated_Dynamic_Light.hpp>
 #include <Mlib/Physics/Dynamic_Lights/Constant_Dynamic_Light.hpp>
@@ -24,7 +25,7 @@ std::unique_ptr<IDynamicLight> DynamicLights::instantiate(
     } else if (std::holds_alternative<ConstantDynamicLightConfiguration>(config)) {
         result = std::make_unique<ConstantDynamicLight>(get_position, time, std::get<ConstantDynamicLightConfiguration>(config), *this);
     } else {
-        THROW_OR_ABORT("Unknown dynamic light type");
+        throw std::runtime_error("Unknown dynamic light type");
     }
     std::scoped_lock lock{ mutex_ };
     if (!instances_.insert(result.get()).second) {

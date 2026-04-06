@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Initialization/Uninitialized.hpp>
 #include <cstdint>
 
 namespace Mlib {

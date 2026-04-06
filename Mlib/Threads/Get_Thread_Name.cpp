@@ -1,5 +1,5 @@
+
 #include "Get_Thread_Name.hpp"
-#include <Mlib/Throw_Or_Abort.hpp>
 #include <stdexcept>
 
 #ifdef __linux__
@@ -12,7 +12,7 @@
 std::string Mlib::get_thread_name() {
     char buf[16];
     if (prctl(PR_GET_NAME, buf) != 0) {
-        THROW_OR_ABORT(std::string("Could not get thread name: ") + strerror(errno));
+        throw std::runtime_error(std::string("Could not get thread name: ") + strerror(errno));
     }
     return { buf };
 }
@@ -28,7 +28,7 @@ std::string Mlib::get_thread_name() {
     PWSTR data;
     auto hr = GetThreadDescription(GetCurrentThread(), &data);
     if (FAILED(hr)) {
-        THROW_OR_ABORT("Could not get thread name");
+        throw std::runtime_error("Could not get thread name");
     }
     std::string result(wcslen(data), '?');
     for (size_t i = 0; i < result.size(); ++i) {

@@ -1,7 +1,7 @@
-#include <Mlib/Throw_Or_Abort.hpp>
 #include <algorithm>
 #include <cmath>
 #include <iostream>
+#include <stdexcept>
 
 /**
  *  From: https://stackoverflow.com/a/56370320/2292832
@@ -25,7 +25,7 @@ void stb_lighten(
     short color[3])
 {
     if (nrChannels != 3 && nrChannels != 4) {
-        THROW_OR_ABORT("nrChannels is not 3 or 4");
+        throw std::runtime_error("nrChannels is not 3 or 4");
     }
     for (int r = 0; r < height; ++r) {
         for (int c = 0; c < width; ++c) {
@@ -46,7 +46,7 @@ void stb_lighten_horizontal_gradient(
     short color_right[3])
 {
     if (nrChannels != 3 && nrChannels != 4) {
-        THROW_OR_ABORT("nrChannels is not 3 or 4");
+        throw std::runtime_error("nrChannels is not 3 or 4");
     }
     for (int r = 0; r < height; ++r) {
         for (int c = 0; c < width; ++c) {
@@ -68,7 +68,7 @@ void stb_lighten_vertical_gradient(
     short color_bottom[3])
 {
     if (nrChannels != 3 && nrChannels != 4) {
-        THROW_OR_ABORT("nrChannels is not 3 or 4");
+        throw std::runtime_error("nrChannels is not 3 or 4");
     }
     for (int r = 0; r < height; ++r) {
         float t = float(r) / (float)height;

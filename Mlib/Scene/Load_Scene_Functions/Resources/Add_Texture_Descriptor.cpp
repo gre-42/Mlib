@@ -1,9 +1,9 @@
-#include <Mlib/Argument_List.hpp>
 #include <Mlib/Geometry/Material/Interpolation_Mode.hpp>
 #include <Mlib/Geometry/Material/Texture_Descriptor.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
-#include <Mlib/Render/Rendering_Context.hpp>
-#include <Mlib/Render/Resource_Managers/Rendering_Resources.hpp>
+#include <Mlib/Misc/Argument_List.hpp>
+#include <Mlib/OpenGL/Rendering_Context.hpp>
+#include <Mlib/OpenGL/Resource_Managers/Rendering_Resources.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Load_Scene_Funcs.hpp>
 
@@ -19,6 +19,7 @@ DECLARE_ARGUMENT(normal);
 DECLARE_ARGUMENT(color_mode);
 DECLARE_ARGUMENT(alpha_fac);
 DECLARE_ARGUMENT(alpha_exponent);
+DECLARE_ARGUMENT(chrominance);
 DECLARE_ARGUMENT(desaturate);
 DECLARE_ARGUMENT(desaturation_exponent);
 DECLARE_ARGUMENT(histogram);
@@ -76,21 +77,22 @@ struct RegisterJsonUserFunction {
         args.arguments.at<std::string>(KnownArgs::depth_interpolation, "nearest"));
     auto color = [&](){
         auto filename = args.arguments.path_or_variable(KnownArgs::color);
-        if (filename.path.empty()) {
+        if (filename.empty()) {
             return ColormapWithModifiers{}.compute_hash();
         }
-        if (filename.is_variable) {
-            return RenderingContextStack::primary_rendering_resources().get_colormap(VariableAndHash{filename.path});
+        if (filename.type() == PathType::VARIABLE) {
+            return RenderingContextStack::primary_rendering_resources().get_colormap(filename.variable_and_hash());
         }
         return ColormapWithModifiers{
-            .filename = VariableAndHash{args.arguments.path_or_variable(KnownArgs::color).path},
+            .filename = filename,
+            .chrominance = args.arguments.try_path_or_variable(KnownArgs::chrominance),
             .desaturate = args.arguments.at<float>(KnownArgs::desaturate, 0.f),
             .desaturation_exponent = args.arguments.at<float>(KnownArgs::desaturation_exponent, 0.f),
-            .alpha = args.arguments.try_path_or_variable(KnownArgs::alpha).path,
-            .histogram = args.arguments.try_path_or_variable(KnownArgs::histogram).path,
-            .average = "",
-            .multiply = args.arguments.try_path_or_variable(KnownArgs::multiply_color).path,
-            .alpha_blend = args.arguments.try_path_or_variable(KnownArgs::alpha_blend).path,
+            .alpha = args.arguments.try_path_or_variable(KnownArgs::alpha),
+            .histogram = args.arguments.try_path_or_variable(KnownArgs::histogram),
+            .average = FPath{},
+            .multiply = args.arguments.try_path_or_variable(KnownArgs::multiply_color),
+            .alpha_blend = args.arguments.try_path_or_variable(KnownArgs::alpha_blend),
             .mean_color = args.arguments.at<EOrderableFixedArray<float, 3>>(KnownArgs::mean_color, OrderableFixedArray<float, 3>(-1.f)),
             .lighten = args.arguments.at<EOrderableFixedArray<float, 3>>(KnownArgs::lighten, OrderableFixedArray<float, 3>(0.f)),
             .lighten_left = args.arguments.at<EOrderableFixedArray<float, 3>>(KnownArgs::lighten_left, OrderableFixedArray<float, 3>(0.f)),
@@ -123,15 +125,15 @@ struct RegisterJsonUserFunction {
     }();
     auto normal = [&](){
         auto filename = args.arguments.try_path_or_variable(KnownArgs::normal);
-        if (filename.path.empty()) {
+        if (filename.empty()) {
             return ColormapWithModifiers{}.compute_hash();
         }
-        if (filename.is_variable) {
-            return RenderingContextStack::primary_rendering_resources().get_colormap(VariableAndHash{filename.path});
+        if (filename.type() == PathType::VARIABLE) {
+            return RenderingContextStack::primary_rendering_resources().get_colormap(filename.variable_and_hash());
         }
         return ColormapWithModifiers{
-            .filename = VariableAndHash{args.arguments.try_path_or_variable(KnownArgs::normal).path},
-            .average = args.arguments.try_path_or_variable(KnownArgs::average_normal).path,
+            .filename = filename,
+            .average = args.arguments.try_path_or_variable(KnownArgs::average_normal),
             .color_mode = ColorMode::RGB,
             .mipmap_mode = mipmap_mode,
             .magnifying_interpolation_mode = magnifying_interpolation_mode,
@@ -142,14 +144,14 @@ struct RegisterJsonUserFunction {
     }();
     auto specular = [&](){
         auto filename = args.arguments.try_path_or_variable(KnownArgs::specular);
-        if (filename.path.empty()) {
+        if (filename.empty()) {
             return ColormapWithModifiers{}.compute_hash();
         }
-        if (filename.is_variable) {
-            return RenderingContextStack::primary_rendering_resources().get_colormap(VariableAndHash{filename.path});
+        if (filename.type() == PathType::VARIABLE) {
+            return RenderingContextStack::primary_rendering_resources().get_colormap(filename.variable_and_hash());
         }
         return ColormapWithModifiers{
-            .filename = VariableAndHash{args.arguments.try_path_or_variable(KnownArgs::specular).path},
+            .filename = filename,
             .color_mode = ColorMode::RGB,
             .mipmap_mode = mipmap_mode,
             .magnifying_interpolation_mode = magnifying_interpolation_mode,

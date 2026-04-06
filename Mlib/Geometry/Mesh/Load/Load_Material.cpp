@@ -1,8 +1,10 @@
+
 #include "Load_Material.hpp"
+#include <Mlib/Compression/Compressed_File.hpp>
 #include <Mlib/Geometry/Mesh/Obj_Material.hpp>
 #include <Mlib/Os/Os.hpp>
 #include <Mlib/Regex/Regex_Select.hpp>
-#include <Mlib/Strings/To_Number.hpp>
+#include <Mlib/Strings/String_View_To_Number.hpp>
 
 using namespace Mlib;
 
@@ -10,10 +12,10 @@ std::map<std::string, ObjMaterial> Mlib::load_mtllib(const std::string& filename
 {
     std::map<std::string, ObjMaterial> mtllib;
 
-    auto ifs_p = create_ifstream(filename);
+    auto ifs_p = CompressedFile{filename}.decompressed_ifstream();
     auto& ifs = *ifs_p;
     if (ifs.fail()) {
-        THROW_OR_ABORT("Could not open material file \"" + filename + '"');
+        throw std::runtime_error("Could not open material file \"" + filename + '"');
     }
 
     static const DECLARE_REGEX(newmtl_reg, "^newmtl (.+)$");
@@ -30,6 +32,7 @@ std::map<std::string, ObjMaterial> Mlib::load_mtllib(const std::string& filename
     static const DECLARE_REGEX(d_reg, "^\\s*d (.+)$");
     static const DECLARE_REGEX(map_Ke_reg, "^\\s*map_Ke +(.+)$");
     static const DECLARE_REGEX(map_Kd_reg, "^\\s*map_Kd +(.+)$");
+    static const DECLARE_REGEX(map_Kdc_reg, "^\\s*map_Kdc +(.+)$");
     static const DECLARE_REGEX(map_Ks_reg, "^\\s*map_Ks +(.+)$");
     static const DECLARE_REGEX(map_refl_reg, "^\\s*map_refl +(.+)$");
     static const DECLARE_REGEX(map_d_reg, "^\\s*map_d +(.+)$");
@@ -52,7 +55,7 @@ std::map<std::string, ObjMaterial> Mlib::load_mtllib(const std::string& filename
             mtl = match[1].str();
             if (!mtllib.try_emplace(mtl, ObjMaterial()).second) {
                 if (werror) {
-                    THROW_OR_ABORT("Redefinition of material \"" + mtl + '"');
+                    throw std::runtime_error("Redefinition of material \"" + mtl + '"');
                 } else {
                     lerr() << "WARNING: Redefinition of material \"" + mtl + '"';
                 }
@@ -96,7 +99,9 @@ std::map<std::string, ObjMaterial> Mlib::load_mtllib(const std::string& filename
         } else if (Mlib::re::regex_match(line, match, map_Ke_reg)) {
             // do nothing
         } else if (Mlib::re::regex_match(line, match, map_Kd_reg)) {
-            mtllib.at(mtl).color_texture = match[1].str();
+            mtllib.at(mtl).diffuse_texture = match[1].str();
+        } else if (Mlib::re::regex_match(line, match, map_Kdc_reg)) {
+            mtllib.at(mtl).diffuse_chrominance_texture = match[1].str();
         } else if (Mlib::re::regex_match(line, match, map_Ks_reg) ||
                    Mlib::re::regex_match(line, match, map_refl_reg))
         {
@@ -108,16 +113,16 @@ std::map<std::string, ObjMaterial> Mlib::load_mtllib(const std::string& filename
         } else if (Mlib::re::regex_match(line, match, refl_reg)) {
             // do nothing
         } else if (Mlib::re::regex_match(line, match, map_d_reg)) {
-            if (match[1].str() != mtllib.at(mtl).color_texture) {
-                THROW_OR_ABORT("map_d differs from map_Kd");
+            if (match[1].str() != mtllib.at(mtl).diffuse_texture) {
+                throw std::runtime_error("map_d differs from map_Kd");
             }
             mtllib.at(mtl).has_alpha_texture = true;
         } else {
-            THROW_OR_ABORT("Could not parse line " + line);
+            throw std::runtime_error("Could not parse line " + line);
         }
     }
     if (!ifs.eof() && ifs.fail()) {
-        THROW_OR_ABORT("Error reading from file " + filename);
+        throw std::runtime_error("Error reading from file " + filename);
     }
     return mtllib;
 }

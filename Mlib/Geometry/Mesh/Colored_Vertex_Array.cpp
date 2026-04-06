@@ -1,23 +1,24 @@
+
 #include "Colored_Vertex_Array.hpp"
-#include <Mlib/Assert.hpp>
 #include <Mlib/Geometry/Colored_Vertex.hpp>
 #include <Mlib/Geometry/Delaunay.hpp>
 #include <Mlib/Geometry/Delaunay_Error_Behavior.hpp>
-#include <Mlib/Geometry/Intersection/Collision_Line.hpp>
-#include <Mlib/Geometry/Intersection/Collision_Polygon.hpp>
-#include <Mlib/Geometry/Intersection/Welzl.hpp>
-#include <Mlib/Geometry/Line_3D.hpp>
 #include <Mlib/Geometry/Mesh/Vertex_Normals.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>
-#include <Mlib/Geometry/Polygon_3D.hpp>
-#include <Mlib/Geometry/Quad_3D.hpp>
-#include <Mlib/Geometry/Triangle_3D.hpp>
+#include <Mlib/Geometry/Primitives/Collision_Line.hpp>
+#include <Mlib/Geometry/Primitives/Collision_Polygon.hpp>
+#include <Mlib/Geometry/Primitives/Line_3D.hpp>
+#include <Mlib/Geometry/Primitives/Polygon_3D.hpp>
+#include <Mlib/Geometry/Primitives/Quad_3D.hpp>
+#include <Mlib/Geometry/Primitives/Triangle_3D.hpp>
+#include <Mlib/Geometry/Welzl.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
 #include <Mlib/Scene_Config/Scene_Precision.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
+#include <Mlib/Testing/Assert.hpp>
 #include <map>
 #include <mutex>
 #include <set>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -39,10 +40,7 @@ ColoredVertexArray<TPos>::ColoredVertexArray(
     UUVector<FixedArray<float, 4>>&& interiormap_uvmaps,
     const ExtremalAxisAlignedBoundingBox<TPos, 3>* aabb,
     const ExtremalBoundingSphere<TPos, 3>* bounding_sphere)
-    : name{ std::move(name) }
-    , material{ material }
-    , morphology{ morphology }
-    , modifier_backlog{ modifier_backlog }
+    : meta{ std::move(name), material, morphology, modifier_backlog }
     , quads{ std::move(quads) }
     , triangles{ std::move(triangles) }
     , lines{ std::move(lines) }
@@ -56,34 +54,34 @@ ColoredVertexArray<TPos>::ColoredVertexArray(
     , aabb_has_value_{ false }
     , bounding_sphere_has_value_{ false }
 {
-    assert_true(!this->name.empty());
+    assert_true(!this->meta.name.empty());
     if (!any(morphology.physics_material & (PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE))) {
-        THROW_OR_ABORT("Mesh \"" + this->name.full_name() + "\" is neither visible nor collidable");
+        throw std::runtime_error("Mesh \"" + this->meta.name.full_name() + "\" is neither visible nor collidable");
     }
     if (!this->triangle_bone_weights.empty() && (this->triangle_bone_weights.size() != this->triangles.size())) {
-        THROW_OR_ABORT("Triangle bone weights size mismatch");
+        throw std::runtime_error("Triangle bone weights size mismatch");
     }
     if (!this->continuous_triangle_texture_layers.empty() && (this->continuous_triangle_texture_layers.size() != this->triangles.size())) {
-        THROW_OR_ABORT("Continuous triangle texture layers size mismatch");
+        throw std::runtime_error("Continuous triangle texture layers size mismatch");
     }
     if (!this->discrete_triangle_texture_layers.empty() && (this->discrete_triangle_texture_layers.size() != this->triangles.size())) {
-        THROW_OR_ABORT("Discrete triangle texture layers size mismatch");
+        throw std::runtime_error("Discrete triangle texture layers size mismatch");
     }
     for (const auto& u : uv1) {
         if (u.size() != this->triangles.size()) {
-            THROW_OR_ABORT("UV1 size mismatch");
+            throw std::runtime_error("UV1 size mismatch");
         }
     }
     for (const auto& b : cweight) {
         if (b.size() != this->triangles.size()) {
-            THROW_OR_ABORT("cweight size mismatch");
+            throw std::runtime_error("cweight size mismatch");
         }
     }
     if (!alpha.empty() && (alpha.size() != this->triangles.size())) {
-        THROW_OR_ABORT("alpha size mismatch");
+        throw std::runtime_error("alpha size mismatch");
     }
     if ((aabb == nullptr) != (bounding_sphere == nullptr)) {
-        THROW_OR_ABORT("Inconsistent AABB/bounding sphere arguments");
+        throw std::runtime_error("Inconsistent AABB/bounding sphere arguments");
     }
     if (aabb != nullptr) {
         aabb_ = *aabb;
@@ -103,6 +101,21 @@ ColoredVertexArray<TPos>::~ColoredVertexArray()
     #pragma GCC push_options
     #pragma GCC optimize ("O3")
 #endif
+
+template <class TPos>
+size_t ColoredVertexArray<TPos>::nelements() const {
+    return nelements_from<PrimitiveDimensions::BEGIN>();
+}
+
+template <class TPos>
+template <PrimitiveDimensions tfirst_dim>
+size_t ColoredVertexArray<TPos>::nelements_from() const {
+    if constexpr (tfirst_dim == PrimitiveDimensions::END) {
+        return 0;
+    } else {
+        return primitives<tfirst_dim>().size() + nelements_from<tfirst_dim + 1>();
+    }
+}
 
 template <class TPos>
 bool ColoredVertexArray<TPos>::empty() const {
@@ -172,12 +185,12 @@ std::shared_ptr<ColoredVertexArray<TPosResult>> ColoredVertexArray<TPos>::transf
     const std::string& suffix) const
 {
     if (!lines.empty()) {
-        THROW_OR_ABORT("Cannot apply bone transformations on lines");
+        throw std::runtime_error("Cannot apply bone transformations on lines");
     }
     UUVector<FixedArray<ColoredVertex<TPosResult>, 3>> transformed_triangles;
     {
         if (triangle_bone_weights.size() != triangles.size()) {
-            THROW_OR_ABORT("Size mismatch in triangle bone weights");
+            throw std::runtime_error("Size mismatch in triangle bone weights");
         }
         auto wit = triangle_bone_weights.begin();
         transformed_triangles.reserve(triangles.size());
@@ -190,10 +203,10 @@ std::shared_ptr<ColoredVertexArray<TPosResult>> ColoredVertexArray<TPos>::transf
         }
     }
     return std::make_shared<ColoredVertexArray<TPosResult>>(
-        name + suffix,
-        material,
-        morphology,
-        modifier_backlog,
+        meta.name + suffix,
+        meta.material,
+        meta.morphology,
+        meta.modifier_backlog,
         UUVector<FixedArray<ColoredVertex<TPosResult>, 4>>{},
         std::move(transformed_triangles),
         UUVector<FixedArray<ColoredVertex<TPosResult>, 2>>{},
@@ -238,10 +251,10 @@ std::shared_ptr<ColoredVertexArray<TPosResult>> ColoredVertexArray<TPos>::transf
             (li(1).template casted<TPosTransform>()).transformed(tm, r).template casted<TPosResult>());
     }
     return std::make_shared<ColoredVertexArray<TPosResult>>(
-        name + suffix,
-        material,
-        morphology,
-        modifier_backlog,
+        meta.name + suffix,
+        meta.material,
+        meta.morphology,
+        meta.modifier_backlog,
         std::move(transformed_quads),
         std::move(transformed_triangles),
         std::move(transformed_lines),
@@ -285,10 +298,10 @@ std::shared_ptr<ColoredVertexArray<TPosResult>> ColoredVertexArray<TPos>::transl
             (li(1).template casted<TPosTranslation>()).translated(t).template casted<TPosResult>());
     }
     return std::make_shared<ColoredVertexArray<TPosResult>>(
-        name + suffix,
-        material,
-        morphology,
-        modifier_backlog,
+        meta.name + suffix,
+        meta.material,
+        meta.morphology,
+        meta.modifier_backlog,
         std::move(transformed_quads),
         std::move(transformed_triangles),
         std::move(transformed_lines),
@@ -339,7 +352,7 @@ void ColoredVertexArray<TPos>::polygon_sphere(
     const auto& prims = primitives<(PrimitiveDimensions)tnvertices>();
     size_t len0 = collision_polygons.size();
     if (len0 + prims.size() > collision_polygons.capacity()) {
-        THROW_OR_ABORT("Transformed vector has insufficient capacity");
+        throw std::runtime_error("Transformed vector has insufficient capacity");
     }
     auto rng = welzl_rng();
     for (const auto& q : prims) {
@@ -347,7 +360,7 @@ void ColoredVertexArray<TPos>::polygon_sphere(
         collision_polygons.push_back(CollisionPolygonSphere<CompressedScenePos, tnvertices>{
             .bounding_sphere = poly.bounding_sphere(rng),
             .polygon = poly.polygon().template casted<SceneDir, CompressedScenePos>(),
-            .physics_material = morphology.physics_material,
+            .physics_material = meta.morphology.physics_material,
             .corners = poly.vertices()
         });
     }
@@ -377,7 +390,7 @@ std::vector<CollisionPolygonAabb<CompressedScenePos, tnvertices>> ColoredVertexA
             .base = CollisionPolygonSphere<CompressedScenePos, tnvertices>{
                 .bounding_sphere = poly.bounding_sphere(rng),
                 .polygon = poly.polygon().template casted<SceneDir, CompressedScenePos>(),
-                .physics_material = morphology.physics_material,
+                .physics_material = meta.morphology.physics_material,
                 .corners = poly.vertices()
             },
             .aabb = poly.aabb()});
@@ -405,7 +418,7 @@ std::vector<CollisionLineAabb<CompressedScenePos>> ColoredVertexArray<TPos>::tra
         res.push_back(CollisionLineAabb{
             .base = CollisionLineSphere{
                 .bounding_sphere = line.bounding_sphere().casted<CompressedScenePos>(),
-                .physics_material = morphology.physics_material,
+                .physics_material = meta.morphology.physics_material,
                 .line = line.vertices().template casted<CompressedScenePos>(),
                 .ray = line.template ray<SceneDir>().template casted<SceneDir, CompressedScenePos>()
             },
@@ -423,7 +436,7 @@ std::vector<CollisionLineSphere<CompressedScenePos>> ColoredVertexArray<TPos>::l
         Line3D<ScenePos> line{ l };
         res.push_back(CollisionLineSphere{
             .bounding_sphere = line.bounding_sphere().template casted<CompressedScenePos>(),
-            .physics_material = morphology.physics_material,
+            .physics_material = meta.morphology.physics_material,
             .line = line.vertices().template casted<CompressedScenePos>(),
             .ray = line.template ray<SceneDir>().template casted<SceneDir, CompressedScenePos>()});
     }
@@ -447,7 +460,7 @@ std::vector<TData> downsampled_array(const std::vector<TData>& v, size_t n) {
 template <class TPos>
 void ColoredVertexArray<TPos>::downsample_triangles(size_t n) {
     if (n == 0) {
-        THROW_OR_ABORT("Cannot downsaple by a factor of 0");
+        throw std::runtime_error("Cannot downsaple by a factor of 0");
     }
     if (n == 1) {
         return;
@@ -494,7 +507,7 @@ std::shared_ptr<ColoredVertexArray<TPos>> ColoredVertexArray<TPos>::generate_gri
     }
     grind_lines.shrink_to_fit();
     return std::make_shared<ColoredVertexArray>(
-        name + "_grind_lines",
+        meta.name + "_grind_lines",
         Material{},
         Morphology{ .physics_material = PhysicsMaterial::ATTR_COLLIDE | PhysicsMaterial::OBJ_GRIND_LINE },
         ModifierBacklog{},
@@ -518,7 +531,7 @@ std::shared_ptr<ColoredVertexArray<TPos>> ColoredVertexArray<TPos>::generate_con
         for (size_t i = 0; i < CW::length(t); ++i) {
             std::pair<O, O> edge0{ t(i).position, t((i + 1) % CW::length(t)).position };
             if (!edges.insert(edge0).second) {
-                THROW_OR_ABORT("Could not insert edge for contour edge calculation");
+                throw std::runtime_error("Could not insert edge for contour edge calculation");
             }
             std::pair<O, O> edge1{ edge0.second, edge0.first };
             edges.erase(edge1);
@@ -532,7 +545,7 @@ std::shared_ptr<ColoredVertexArray<TPos>> ColoredVertexArray<TPos>::generate_con
             ColoredVertex<TPos>{e.second});
     }
     return std::make_shared<ColoredVertexArray>(
-        name + "_contour_edges",
+        meta.name + "_contour_edges",
         Material{},
         Morphology{ .physics_material = PhysicsMaterial::ATTR_COLLIDE },
         ModifierBacklog{},
@@ -565,22 +578,22 @@ std::shared_ptr<ColoredVertexArray<TPos>> ColoredVertexArray<TPos>::triangulate(
             res_triangles.emplace_back(q(0), q(1), q(3));
             res_triangles.emplace_back(q(3), q(1), q(2));
         } else if (s != DelaunayState::ERROR) {
-            THROW_OR_ABORT("Unknown Delaunay state: " + std::to_string((int)s));
+            throw std::runtime_error("Unknown Delaunay state: " + std::to_string((int)s));
         } else if (error_behavior == DelaunayErrorBehavior::SKIP) {
             // Do nothing
         } else if (error_behavior == DelaunayErrorBehavior::WARN) {
             lwarn() << "Degenerate quad for triangulation";
         } else if (error_behavior == DelaunayErrorBehavior::THROW) {
-            THROW_OR_ABORT("Degenerate quad for triangulation");
+            throw std::runtime_error("Degenerate quad for triangulation");
         } else {
-            THROW_OR_ABORT("Unknown Delaunay error behavior: " + std::to_string((int)error_behavior));
+            throw std::runtime_error("Unknown Delaunay error behavior: " + std::to_string((int)error_behavior));
         }
     }
     return std::make_shared<ColoredVertexArray<TPos>>(
-        name + "_triangulated",
-        material,
-        morphology,
-        modifier_backlog,
+        meta.name + "_triangulated",
+        meta.material,
+        meta.morphology,
+        meta.modifier_backlog,
         UUVector<FixedArray<ColoredVertex<TPos>, 4>>{},
         std::move(res_triangles),
         UUVector<FixedArray<ColoredVertex<TPos>, 2>>{},
@@ -598,21 +611,21 @@ std::vector<std::shared_ptr<ColoredVertexArray<TPos>>> ColoredVertexArray<TPos>:
     float depth,
     PhysicsMaterial destination_physics_material) const
 {
-    if (!any(morphology.physics_material & PhysicsMaterial::ATTR_COLLIDE)) {
-        THROW_OR_ABORT("Terrain to be decomposed is not collidable");
+    if (!any(meta.morphology.physics_material & PhysicsMaterial::ATTR_COLLIDE)) {
+        throw std::runtime_error("Terrain to be decomposed is not collidable");
     }
     if (!any(destination_physics_material & PhysicsMaterial::ATTR_CONCAVE)) {
-        THROW_OR_ABORT("Destination mesh is not tagged as concave");
+        throw std::runtime_error("Destination mesh is not tagged as concave");
     }
 
     std::vector<std::shared_ptr<ColoredVertexArray<TPos>>> result;
     result.reserve(triangles.size() + 1);
     result.push_back(
         std::make_shared<ColoredVertexArray<TPos>>(
-            name + "_visual",
-            material,
-            morphology - PhysicsMaterial::ATTR_COLLIDE,
-            modifier_backlog,
+            meta.name + "_visual",
+            meta.material,
+            meta.morphology - PhysicsMaterial::ATTR_COLLIDE,
+            meta.modifier_backlog,
             UUVector<FixedArray<ColoredVertex<TPos>, 4>>{},
             std::vector{triangles},
             UUVector<FixedArray<ColoredVertex<TPos>, 2>>{},
@@ -638,12 +651,12 @@ std::vector<std::shared_ptr<ColoredVertexArray<TPos>>> ColoredVertexArray<TPos>:
             PhysicsMaterial::ATTR_CONCAVE;
         result.push_back(
             std::make_shared<ColoredVertexArray<TPos>>(
-                name + "_triangle",
+                meta.name + "_triangle",
                 Material{
                     .aggregate_mode = AggregateMode::ONCE
                 },
-                (morphology - removed_attributes) + destination_physics_material,
-                modifier_backlog,
+                (meta.morphology - removed_attributes) + destination_physics_material,
+                meta.modifier_backlog,
                 UUVector<FixedArray<ColoredVertex<TPos>, 4>>{},
                 std::move(triangle_as_list),
                 UUVector<FixedArray<ColoredVertex<TPos>, 2>>{},
@@ -660,24 +673,34 @@ std::vector<std::shared_ptr<ColoredVertexArray<TPos>>> ColoredVertexArray<TPos>:
 
 template <class TPos>
 std::string ColoredVertexArray<TPos>::identifier() const {
-    if (material.textures_color.size() > 0) {
-        return name.full_name() + ", " + material.identifier() + ", #tris: " + std::to_string(triangles.size());
+    if (meta.material.textures_color.size() > 0) {
+        return meta.name.full_name() + ", " + meta.material.identifier() + ", #tris: " + std::to_string(triangles.size());
     } else {
-        return name.full_name() + ", #tris: " + std::to_string(triangles.size());
+        return meta.name.full_name() + ", #tris: " + std::to_string(triangles.size());
     }
 }
 
 template <class TPos>
-void ColoredVertexArray<TPos>::print(std::ostream& ostr) const {
-    ostr << "ColoredVertexArray(" << name << "): ";
-    ostr << "  visible = " << int(any(morphology.physics_material & PhysicsMaterial::ATTR_VISIBLE)) << ' ';
-    ostr << "  #triangles = " << triangles.size() << ' ';
-    ostr << "  #lines = " << lines.size() << ' ';
-    ostr << "  #triangle_bone_weights = " << triangle_bone_weights.size() << ' ';
-    ostr << "  #continuous_triangle_texture_layers = " << continuous_triangle_texture_layers.size() << ' ';
-    ostr << "  #alpha = " << alpha.size() << ' ';
-    ostr << "  #interiormap_uvmaps = " << interiormap_uvmaps.size() << ' ';
+void ColoredVertexArray<TPos>::print_stats(std::ostream& ostr) const {
+    ostr << "ColoredVertexArray(" << meta.name << "):\n";
+    ostr << "  visible = " << int(any(meta.morphology.physics_material & PhysicsMaterial::ATTR_VISIBLE)) << '\n';
+    ostr << "  #triangles = " << triangles.size() << '\n';
+    ostr << "  #lines = " << lines.size() << '\n';
+    ostr << "  #triangle_bone_weights = " << triangle_bone_weights.size() << '\n';
+    ostr << "  #continuous_triangle_texture_layers = " << continuous_triangle_texture_layers.size() << '\n';
+    ostr << "  #alpha = " << alpha.size() << '\n';
+    ostr << "  #interiormap_uvmaps = " << interiormap_uvmaps.size() << '\n';
     ostr << "  #discrete_triangle_texture_layers = " << discrete_triangle_texture_layers.size() << '\n';
+}
+
+template <class TPos>
+void ColoredVertexArray<TPos>::extend_aabb(ExtremalAxisAlignedBoundingBox<CompressedScenePos, 3>& aabb) const {
+    aabb.extend(this->aabb().template casted<CompressedScenePos>());
+}
+
+template <class TPos>
+void ColoredVertexArray<TPos>::extend_bounding_sphere(ExtremalBoundingSphere<CompressedScenePos, 3>& bounding_sphere) const {
+    bounding_sphere.extend(this->bounding_sphere().template casted<CompressedScenePos>());
 }
 
 template <class TPos>
@@ -691,7 +714,7 @@ const ExtremalAxisAlignedBoundingBox<TPos, 3>& ColoredVertexArray<TPos>::aabb() 
     }
     auto vs = vertices();
     if (vs.empty()) {
-        THROW_OR_ABORT("Cannot compute AABB of \"" + name.full_name() + "\" because it has no vertices");
+        throw std::runtime_error("Cannot compute AABB of \"" + meta.name.full_name() + "\" because it has no vertices");
     }
     aabb_.emplace(AxisAlignedBoundingBox<TPos, 3>::from_iterator(vs.begin(), vs.end()));
     aabb_has_value_ = true;
@@ -709,7 +732,7 @@ const ExtremalBoundingSphere<TPos, 3>& ColoredVertexArray<TPos>::bounding_sphere
     }
     auto vs = vertices();
     if (vs.empty()) {
-        THROW_OR_ABORT("Cannot compute bounding sphere of \"" + name.full_name() + "\" because it has no vertices");
+        throw std::runtime_error("Cannot compute bounding sphere of \"" + meta.name.full_name() + "\" because it has no vertices");
     }
     bounding_sphere_.emplace(BoundingSphere<TPos, 3>::from_iterator(vs.begin(), vs.end()));
     bounding_sphere_has_value_ = true;
@@ -717,10 +740,29 @@ const ExtremalBoundingSphere<TPos, 3>& ColoredVertexArray<TPos>::bounding_sphere
 }
 
 template <class TPos>
+void ColoredVertexArray<TPos>::extend_aabb(
+    const TransformationMatrix<SceneDir, ScenePos, 3>& mv,
+    AxisAlignedBoundingBox<CompressedScenePos, 3>& aabb) const
+{
+    auto extend = [&](const auto& primitvs){
+        for (const auto& t : primitvs) {
+            for (const auto& v : t.flat_iterable()) {
+                aabb.extend(
+                    mv.transform(funpack(v.position))
+                    .template casted<CompressedScenePos>());
+            }
+        }
+    };
+    extend(quads);
+    extend(triangles);
+    extend(lines);
+}
+
+template <class TPos>
 TPos ColoredVertexArray<TPos>::radius(const FixedArray<TPos, 3>& center) const {
     auto vs = vertices();
     if (vs.empty()) {
-        THROW_OR_ABORT("Mesh \"" + name.full_name() + "\" has no vertices");
+        throw std::runtime_error("Mesh \"" + meta.name.full_name() + "\" has no vertices");
     }
     auto bs = BoundingSphere<TPos, 3>::from_center_and_iterator(center, vs.begin(), vs.end());
     return bs.radius;
@@ -734,7 +776,7 @@ void ColoredVertexArray<TPos>::set_bounds(
     {
         std::scoped_lock lock{ aabb_mutex_ };
         if (aabb_.has_value()) {
-            THROW_OR_ABORT("AABB already set");
+            throw std::runtime_error("AABB already set");
         }
         aabb_ = aabb;
         aabb_has_value_ = true;
@@ -742,7 +784,7 @@ void ColoredVertexArray<TPos>::set_bounds(
     {
         std::scoped_lock lock{ bounding_sphere_mutex_ };
         if (bounding_sphere_.has_value()) {
-            THROW_OR_ABORT("Bounding sphere already set");
+            throw std::runtime_error("Bounding sphere already set");
         }
         bounding_sphere_ = bounding_sphere;
         bounding_sphere_has_value_ = true;
@@ -751,7 +793,7 @@ void ColoredVertexArray<TPos>::set_bounds(
 
 template <class TPos>
 ScenePos ColoredVertexArray<TPos>::max_center_distance2(BillboardId billboard_id) const {
-    return material.max_center_distance2(billboard_id, morphology, name.full_name());
+    return meta.material.max_center_distance2(billboard_id, meta.morphology, meta.name.full_name());
 }
 
 #ifdef __GNUC__

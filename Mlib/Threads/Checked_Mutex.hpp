@@ -1,3 +1,4 @@
+#pragma once
 #include <Mlib/Threads/Recursive_Shared_Mutex.hpp>
 #include <atomic>
 #include <thread>

@@ -1,6 +1,6 @@
 #include "Load_Players.hpp"
-#include <Mlib/Argument_List.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
+#include <Mlib/Misc/Argument_List.hpp>
 #include <Mlib/Players/Game_Logic/Late_Join_Player_Factory.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Load_Scene_Funcs.hpp>
@@ -20,7 +20,7 @@ void LoadPlayers::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     args.arguments.validate(KnownArgs::options);
     if (late_join_player_factory.has_value()) {
-        THROW_OR_ABORT("late_join_player_factory already set");
+        throw std::runtime_error("late_join_player_factory already set");
     }
     late_join_player_factory.emplace(
         args.arguments.path(KnownArgs::json),

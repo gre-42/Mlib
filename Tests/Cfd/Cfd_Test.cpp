@@ -1,6 +1,6 @@
-#include <Mlib/Floating_Point_Exceptions.hpp>
 #include <Mlib/Memory/Float_To_Integral.hpp>
 #include <Mlib/Memory/Integral_To_Float.hpp>
+#include <Mlib/Misc/Floating_Point_Exceptions.hpp>
 #include <Mlib/Os/Os.hpp>
 #include <Mlib/Physics/Cfd/Lbm/Fluid_Subdomain.hpp>
 #include <Mlib/Time/Elapsed_Guard.hpp>

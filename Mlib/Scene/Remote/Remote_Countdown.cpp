@@ -18,7 +18,7 @@ RemoteCountdown::RemoteCountdown(
     const DanglingBaseClassRef<PhysicsScene>& physics_scene)
     : physics_scene_{ physics_scene }
     , verbosity_{ verbosity }
-    , physics_scene_on_destroy_{ physics_scene->on_destroy, CURRENT_SOURCE_LOCATION }
+    , physics_scene_on_destroy_{ physics_scene->on_destroy.deflt, CURRENT_SOURCE_LOCATION }
 {
     if (any(verbosity_ & IoVerbosity::METADATA)) {
         linfo() << "Create RemoteCountdown";
@@ -56,7 +56,7 @@ void RemoteCountdown::read(
 {
     auto type = read_binary<RemoteSceneObjectType>(istr, "scene object type", verbosity_);
     if (type != RemoteSceneObjectType::COUNTDOWN) {
-        THROW_OR_ABORT("RemoteCountdown::read: Unexpected scene object type");
+        throw std::runtime_error("RemoteCountdown::read: Unexpected scene object type");
     }
     read_data(istr, remote_object_id);
 }
@@ -66,14 +66,14 @@ void RemoteCountdown::read_data(std::istream& istr, const RemoteObjectId& remote
     float elapsed = reader.read_binary<float>("elapsed");
     float duration = reader.read_binary<float>("duration");
     if (!physics_scene_->remote_sites_->get_local_site_id().has_value()) {
-        THROW_OR_ABORT("Local site ID not set");
+        throw std::runtime_error("Local site ID not set");
     }
     if (remote_object_id.site_id != *physics_scene_->remote_sites_->get_local_site_id()) {
         physics_scene_->countdown_start_.set(elapsed, duration);
     }
     auto end = reader.read_binary<uint32_t>("inverted countdown");
     if (end != ~(uint32_t)RemoteSceneObjectType::COUNTDOWN) {
-        THROW_OR_ABORT("Invalid countdown end");
+        throw std::runtime_error("Invalid countdown end");
     }
 }
 
@@ -85,7 +85,7 @@ void RemoteCountdown::write(
     TransmissionHistoryWriter& transmission_history_writer)
 {
     if (!physics_scene_->remote_sites_->get_local_site_id().has_value()) {
-        THROW_OR_ABORT("Local site ID not set");
+        throw std::runtime_error("Local site ID not set");
     }
     if (remote_object_id.site_id != *physics_scene_->remote_sites_->get_local_site_id()) {
         return;

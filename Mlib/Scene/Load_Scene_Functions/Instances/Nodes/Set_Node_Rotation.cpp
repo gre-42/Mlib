@@ -1,6 +1,6 @@
 #include "Set_Node_Rotation.hpp"
-#include <Mlib/Argument_List.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
+#include <Mlib/Misc/Argument_List.hpp>
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Regex/Regex_Select.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
@@ -29,7 +29,7 @@ SetNodeRotation::SetNodeRotation(PhysicsScene& physics_scene)
 
 void SetNodeRotation::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    DanglingBaseClassRef<SceneNode> node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::name), DP_LOC);
+    DanglingBaseClassRef<SceneNode> node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::name), CURRENT_SOURCE_LOCATION);
     node->set_rotation(
         args.arguments.at<EFixedArray<float, 3>>(KnownArgs::rotation) * degrees,
         SUCCESSOR_POSE);

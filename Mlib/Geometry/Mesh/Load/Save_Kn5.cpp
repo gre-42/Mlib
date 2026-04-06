@@ -1,3 +1,4 @@
+
 #include "Save_Kn5.hpp"
 #include <Mlib/Geometry/Mesh/Load/Kn5_Elements.hpp>
 #include <Mlib/Os/Os.hpp>
@@ -8,7 +9,7 @@ template <class T>
 void WriteBinary(std::ostream& str, const T& value, const char* msg) {
     str.write(reinterpret_cast<const char*>(&value), sizeof(T));
     if (str.fail()) {
-        THROW_OR_ABORT("Could not write " + std::string(msg) + " to stream");
+        throw std::runtime_error("Could not write " + std::string(msg) + " to stream");
     }
 }
 
@@ -16,7 +17,7 @@ template <class TVec>
 static void WriteVector(std::ostream& str, const TVec& vec) {
     str.write(reinterpret_cast<const char*>(vec.data()), integral_cast<std::streamsize>(sizeof(typename TVec::value_type) * vec.size()));
     if (str.fail()) {
-        THROW_OR_ABORT("Could not write vector to stream");
+        throw std::runtime_error("Could not write vector to stream");
     }
 }
 
@@ -27,7 +28,7 @@ static void WriteString(std::ostream& str, const std::string& value) {
 static void WriteStream(std::ostream& ostr, std::istream& istr) {
     ostr << istr.rdbuf();
     if (ostr.fail()) {
-        THROW_OR_ABORT("Could not write stream into another");
+        throw std::runtime_error("Could not write stream into another");
     }
 }
 

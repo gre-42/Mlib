@@ -1,3 +1,4 @@
+
 #include "Encoding.hpp"
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wsign-conversion"

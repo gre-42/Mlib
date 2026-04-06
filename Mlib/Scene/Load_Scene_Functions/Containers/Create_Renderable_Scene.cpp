@@ -1,11 +1,11 @@
-#include <Mlib/Argument_List.hpp>
 #include <Mlib/Macro_Executor/Focus.hpp>
 #include <Mlib/Macro_Executor/Focus_Filter.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
+#include <Mlib/Misc/Argument_List.hpp>
+#include <Mlib/OpenGL/Key_Bindings/Lockable_Key_Configurations.hpp>
+#include <Mlib/OpenGL/Render_Logics/Bloom/Bloom_Mode.hpp>
+#include <Mlib/OpenGL/Render_Logics/Clear_Mode.hpp>
 #include <Mlib/Players/Containers/Remote_Sites.hpp>
-#include <Mlib/Render/Key_Bindings/Lockable_Key_Configurations.hpp>
-#include <Mlib/Render/Render_Logics/Bloom/Bloom_Mode.hpp>
-#include <Mlib/Render/Render_Logics/Clear_Mode.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Load_Scene_Funcs.hpp>
 #include <Mlib/Scene/Physics_Scenes.hpp>
@@ -54,7 +54,7 @@ SceneLayout scene_layout_from_string(const std::string& s) {
     };
     auto it = m.find(s);
     if (it == m.end()) {
-        THROW_OR_ABORT("Unknown scene layout: \"" + s + '"');
+        throw std::runtime_error("Unknown scene layout: \"" + s + '"');
     }
     return it->second;
 }
@@ -112,13 +112,13 @@ struct RegisterJsonUserFunction {
                         .background_color = {1.f, 0.f, 1.f},
                         .clear_mode = clear_mode_from_string(args.arguments.at<std::string>(KnownArgs::clear_mode))});
                 if (state == InsertionStatus::FAILURE_NAME_COLLISION) {
-                    THROW_OR_ABORT("Scene with name \"" + name + "\" already exists");
+                    throw std::runtime_error("Scene with name \"" + name + "\" already exists");
                 }
                 if (state == InsertionStatus::FAILURE_SHUTDOWN) {
-                    THROW_OR_ABORT("Attempt to create scene with name \"" + name + "\" during shutdown");
+                    throw std::runtime_error("Attempt to create scene with name \"" + name + "\" during shutdown");
                 }
                 if (state != InsertionStatus::SUCCESS) {
-                    THROW_OR_ABORT("Unknown state after creating scene with name \"" + name + '"');
+                    throw std::runtime_error("Unknown state after creating scene with name \"" + name + '"');
                 }
                 switch (layout) {
                     case SceneLayout::CHILD:
@@ -133,7 +133,7 @@ struct RegisterJsonUserFunction {
                             name);
                         break;
                     default:
-                        THROW_OR_ABORT("Unknown scene layout");
+                        throw std::runtime_error("Unknown scene layout");
                 }
             });
     }

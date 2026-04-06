@@ -1,11 +1,12 @@
+
 #include "Jpk_Reader.hpp"
 #include <Mlib/Io/Binary.hpp>
 #include <Mlib/Io/Endian.hpp>
 #include <Mlib/Io/Stream_And_Lock.hpp>
 #include <Mlib/Io/Stream_Segment.hpp>
 #include <Mlib/Os/Os.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
 #include <istream>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -27,7 +28,7 @@ JpkReader::JpkReader(std::unique_ptr<std::istream>&& data, IoVerbosity verbosity
 {
     auto header = read_binary<JpkHeader>(*data, "JPK header", verbosity);
     if (header.magic != 0x4B41504A) {
-        THROW_OR_ABORT("Wrong JPK header");
+        throw std::runtime_error("Wrong JPK header");
     }
     if (any(verbosity & IoVerbosity::METADATA)) {
         linfo() << "#Entries: " << header.nentries;
@@ -55,10 +56,10 @@ JpkReader::JpkReader(std::unique_ptr<std::istream>&& data, IoVerbosity verbosity
         data->seekg(name_offset);
         auto name_length = end - integral_cast<std::streamoff>(name_offset);
         if (name_length == 0) {
-            THROW_OR_ABORT("Raw null-terminated string is empty");
+            throw std::runtime_error("Raw null-terminated string is empty");
         }
         if (name_length > 1000) {
-            THROW_OR_ABORT("Name too long");
+            throw std::runtime_error("Name too long");
         }
         auto name = VariableAndHash<std::string>{read_string(
             *data,
@@ -80,7 +81,7 @@ std::shared_ptr<IIStreamDictionary> JpkReader::load_from_file(
 {
     auto f = create_ifstream(filename, std::ios::binary);
     if (f->fail()) {
-        THROW_OR_ABORT("Could not open \"" + filename + '"');
+        throw std::runtime_error("Could not open \"" + filename + '"');
     }
     return std::make_shared<JpkReader>(std::move(f), verbosity);
 }
@@ -97,17 +98,17 @@ StreamAndSize JpkReader::read(
     SourceLocation loc)
 {
     if (openmode != std::ios::binary) {
-        THROW_OR_ABORT("Open-mode is not binary");
+        throw std::runtime_error("Open-mode is not binary");
     }
     const auto& v = directory_.get(name);
     auto lock = std::make_unique<std::scoped_lock<std::recursive_mutex>>(mutex_);
     if (reading_) {
-        THROW_OR_ABORT("Recursively reading from JPK is not supported");
+        throw std::runtime_error("Recursively reading from JPK is not supported");
     }
     reading_ = true;
     data_->seekg(v.offset);
     if (data_->fail()) {
-        THROW_OR_ABORT("Could not seek entry \"" + *name + '"');
+        throw std::runtime_error("Could not seek entry \"" + *name + '"');
     }
     auto stream = std::make_unique<IStreamAndLock<DanglingBaseClassRef<JpkReader>>>(
         *data_,

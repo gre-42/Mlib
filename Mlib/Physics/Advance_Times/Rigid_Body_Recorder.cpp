@@ -4,7 +4,7 @@
 #include <Mlib/Memory/Object_Pool.hpp>
 #include <Mlib/Physics/Advance_Times/Countdown_Physics.hpp>
 #include <Mlib/Physics/Misc/Track_Element.hpp>
-#include <Mlib/Physics/Rigid_Body/Rigid_Body_Pulses.hpp>
+#include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 
 using namespace Mlib;
@@ -12,12 +12,12 @@ using namespace Mlib;
 RigidBodyRecorder::RigidBodyRecorder(
     const std::string& filename,
     const TransformationMatrix<double, double, 3>* geographic_mapping,
-    DanglingBaseClassRef<SceneNode> recorded_node,
-    RigidBodyPulses& rbp,
+    const DanglingBaseClassRef<SceneNode>& recorded_node,
+    const DanglingBaseClassRef<RigidBodyVehicle>& rb,
     const CountdownPhysics* countdown_start)
     : countdown_start_{ countdown_start }
     , recorded_node_{ recorded_node.ptr() }
-    , rbp_{ &rbp }
+    , rb_{ rb.ptr() }
     , track_writer_{ filename, geographic_mapping }
     , start_time_{ std::chrono::steady_clock::now() }
 {
@@ -37,11 +37,11 @@ void RigidBodyRecorder::advance_time(float dt, const StaticWorld& world) {
     }
     track_writer_.write(TrackElement{
         .elapsed_seconds = std::chrono::duration<float>{std::chrono::steady_clock::now() - start_time_}.count(),
-        .transformations = {UOffsetAndTaitBryanAngles<float, ScenePos, 3>{rbp_->rotation_, rbp_->abs_position()}}});
+        .transformations = {UOffsetAndTaitBryanAngles<float, ScenePos, 3>{rb_->rbp_.rotation_, rb_->rbp_.abs_position()}}});
 }
 
 void RigidBodyRecorder::notify_destroyed(SceneNode& destroyed_object) {
-    rbp_ = nullptr;
+    rb_ = nullptr;
     recorded_node_ = nullptr;
 
     global_object_pool.remove(this);

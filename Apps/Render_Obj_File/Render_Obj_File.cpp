@@ -1,5 +1,3 @@
-#include <Mlib/Arg_Parser.hpp>
-#include <Mlib/Floating_Point_Exceptions.hpp>
 #include <Mlib/Geometry/Cameras/Frustum_Camera.hpp>
 #include <Mlib/Geometry/Cameras/Perspective_Camera.hpp>
 #include <Mlib/Geometry/Colored_Vertex.hpp>
@@ -7,10 +5,10 @@
 #include <Mlib/Geometry/Coordinates/Gl_Look_At_Aabb.hpp>
 #include <Mlib/Geometry/Coordinates/Npixels_For_Dpi.hpp>
 #include <Mlib/Geometry/Instance/Rendering_Dynamics.hpp>
-#include <Mlib/Geometry/Intersection/Axis_Aligned_Bounding_Box.hpp>
 #include <Mlib/Geometry/Material/Aggregate_Mode.hpp>
 #include <Mlib/Geometry/Material/Blend_Mode.hpp>
 #include <Mlib/Geometry/Material/Transformation_Mode.hpp>
+#include <Mlib/Geometry/Mesh/Animated_Colored_Vertex_Arrays.hpp>
 #include <Mlib/Geometry/Mesh/Bone.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array_Filter.hpp>
@@ -20,8 +18,11 @@
 #include <Mlib/Geometry/Mesh/Load/Load_Pssg.hpp>
 #include <Mlib/Geometry/Mesh/Load/Load_Pssg_Arrays.hpp>
 #include <Mlib/Geometry/Mesh/Load/Pssg_Elements.hpp>
+#include <Mlib/Geometry/Primitives/Axis_Aligned_Bounding_Box.hpp>
 #include <Mlib/Geometry/Rectangle_Triangulation_Mode.hpp>
 #include <Mlib/Images/StbImage3.hpp>
+#include <Mlib/Images/Vectorial_Pixels.hpp>
+#include <Mlib/Io/Arg_Parser.hpp>
 #include <Mlib/Iterator/Enumerate.hpp>
 #include <Mlib/Macro_Executor/Focus.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
@@ -31,47 +32,47 @@
 #include <Mlib/Math/Pi.hpp>
 #include <Mlib/Memory/Destruction_Guard.hpp>
 #include <Mlib/Memory/Object_Pool.hpp>
+#include <Mlib/Misc/Floating_Point_Exceptions.hpp>
+#include <Mlib/OpenGL/Batch_Renderers/Aggregate_Array_Renderer.hpp>
+#include <Mlib/OpenGL/Clear_Wrapper.hpp>
+#include <Mlib/OpenGL/Deallocate/Render_Allocator.hpp>
+#include <Mlib/OpenGL/Input_Config.hpp>
+#include <Mlib/OpenGL/Key_Bindings/Key_Configuration.hpp>
+#include <Mlib/OpenGL/Key_Bindings/Lockable_Key_Configurations.hpp>
+#include <Mlib/OpenGL/Modifiers/Merge_Textures.hpp>
+#include <Mlib/OpenGL/Modifiers/Merged_Textures_Config.hpp>
+#include <Mlib/OpenGL/OpenGL_Object_Factory.hpp>
+#include <Mlib/OpenGL/Render.hpp>
+#include <Mlib/OpenGL/Render_Config.hpp>
+#include <Mlib/OpenGL/Render_Logics/Aggregate_Render_Logic.hpp>
+#include <Mlib/OpenGL/Render_Logics/Clear_Mode.hpp>
+#include <Mlib/OpenGL/Render_Logics/Flying_Camera_Logic.hpp>
+#include <Mlib/OpenGL/Render_Logics/Lambda_Render_Logic.hpp>
+#include <Mlib/OpenGL/Render_Logics/Lightmap_Logic.hpp>
+#include <Mlib/OpenGL/Render_Logics/Menu_Logic.hpp>
+#include <Mlib/OpenGL/Render_Logics/Move_Scene_Logic.hpp>
+#include <Mlib/OpenGL/Render_Logics/Read_Pixels_Logic.hpp>
+#include <Mlib/OpenGL/Render_Logics/Render_Logics.hpp>
+#include <Mlib/OpenGL/Render_Logics/Standard_Camera_Logic.hpp>
+#include <Mlib/OpenGL/Render_Logics/Standard_Render_Logic.hpp>
+#include <Mlib/OpenGL/Render_Logics/Window_Logic.hpp>
+#include <Mlib/OpenGL/Render_Results.hpp>
+#include <Mlib/OpenGL/Renderables/OpenGL_Vertex_Array_Renderer.hpp>
+#include <Mlib/OpenGL/Rendering_Context.hpp>
+#include <Mlib/OpenGL/Resource_Managers/Particle_Resources.hpp>
+#include <Mlib/OpenGL/Resource_Managers/Rendering_Resources.hpp>
+#include <Mlib/OpenGL/Resource_Managers/Trail_Resources.hpp>
+#include <Mlib/OpenGL/Resources/Bvh_File_Resource.hpp>
+#include <Mlib/OpenGL/Resources/Dff_File_Resource.hpp>
+#include <Mlib/OpenGL/Resources/Kn5_File_Resource.hpp>
+#include <Mlib/OpenGL/Resources/Mhx2_File_Resource.hpp>
+#include <Mlib/OpenGL/Resources/Obj_File_Resource.hpp>
+#include <Mlib/OpenGL/Resources/Pssg_File_Resource.hpp>
+#include <Mlib/OpenGL/Selected_Cameras/Selected_Cameras.hpp>
+#include <Mlib/OpenGL/Ui/Button_States.hpp>
+#include <Mlib/OpenGL/Ui/Cursor_States.hpp>
 #include <Mlib/Physics/Units.hpp>
-#include <Mlib/Render/Batch_Renderers/Aggregate_Array_Renderer.hpp>
-#include <Mlib/Render/Batch_Renderers/Array_Instances_Renderer.hpp>
-#include <Mlib/Render/Batch_Renderers/Array_Instances_Renderers.hpp>
-#include <Mlib/Render/Clear_Wrapper.hpp>
-#include <Mlib/Render/Deallocate/Render_Allocator.hpp>
-#include <Mlib/Render/Input_Config.hpp>
-#include <Mlib/Render/Key_Bindings/Key_Configuration.hpp>
-#include <Mlib/Render/Key_Bindings/Lockable_Key_Configurations.hpp>
-#include <Mlib/Render/Modifiers/Merge_Textures.hpp>
-#include <Mlib/Render/Modifiers/Merged_Textures_Config.hpp>
-#include <Mlib/Render/Render.hpp>
-#include <Mlib/Render/Render_Config.hpp>
-#include <Mlib/Render/Render_Logics/Aggregate_Render_Logic.hpp>
-#include <Mlib/Render/Render_Logics/Clear_Mode.hpp>
-#include <Mlib/Render/Render_Logics/Flying_Camera_Logic.hpp>
-#include <Mlib/Render/Render_Logics/Lambda_Render_Logic.hpp>
-#include <Mlib/Render/Render_Logics/Lightmap_Logic.hpp>
-#include <Mlib/Render/Render_Logics/Menu_Logic.hpp>
-#include <Mlib/Render/Render_Logics/Move_Scene_Logic.hpp>
-#include <Mlib/Render/Render_Logics/Read_Pixels_Logic.hpp>
-#include <Mlib/Render/Render_Logics/Render_Logics.hpp>
-#include <Mlib/Render/Render_Logics/Standard_Camera_Logic.hpp>
-#include <Mlib/Render/Render_Logics/Standard_Render_Logic.hpp>
-#include <Mlib/Render/Render_Logics/Window_Logic.hpp>
-#include <Mlib/Render/Render_Results.hpp>
-#include <Mlib/Render/Rendering_Context.hpp>
-#include <Mlib/Render/Resource_Managers/Particle_Resources.hpp>
-#include <Mlib/Render/Resource_Managers/Rendering_Resources.hpp>
-#include <Mlib/Render/Resource_Managers/Trail_Resources.hpp>
-#include <Mlib/Render/Resources/Bvh_File_Resource.hpp>
-#include <Mlib/Render/Resources/Dff_File_Resource.hpp>
-#include <Mlib/Render/Resources/Kn5_File_Resource.hpp>
-#include <Mlib/Render/Resources/Mhx2_File_Resource.hpp>
-#include <Mlib/Render/Resources/Obj_File_Resource.hpp>
-#include <Mlib/Render/Resources/Pssg_File_Resource.hpp>
-#include <Mlib/Render/Selected_Cameras/Selected_Cameras.hpp>
-#include <Mlib/Render/Ui/Button_States.hpp>
-#include <Mlib/Render/Ui/Cursor_States.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
-#include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
 #include <Mlib/Scene_Graph/Elements/Animation_State.hpp>
 #include <Mlib/Scene_Graph/Elements/Light.hpp>
 #include <Mlib/Scene_Graph/Elements/Make_Scene_Node.hpp>
@@ -79,12 +80,15 @@
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Instantiation/Child_Instantiation_Options.hpp>
 #include <Mlib/Scene_Graph/Modifiers/Add_Cleanup_Mesh_Modifier.hpp>
+#include <Mlib/Scene_Graph/Render/Batch_Renderers/Array_Instances_Renderer.hpp>
+#include <Mlib/Scene_Graph/Render/Batch_Renderers/Array_Instances_Renderers.hpp>
 #include <Mlib/Scene_Graph/Resources/Compound_Resource.hpp>
 #include <Mlib/Scene_Graph/Resources/Renderable_Resource_Filter.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
 #include <Mlib/Stats/Linspace.hpp>
 #include <Mlib/Stats/Min_Max.hpp>
-#include <Mlib/Strings/To_Number.hpp>
+#include <Mlib/Strings/String_View_To_Number.hpp>
+#include <Mlib/Strings/String_View_To_Scene_Pos.hpp>
 #include <Mlib/Threads/Realtime_Threads.hpp>
 #include <Mlib/Threads/Termination_Manager.hpp>
 #include <Mlib/Time/Fps/Fixed_Time_Sleeper.hpp>
@@ -167,8 +171,8 @@ static LoadMeshConfig<TPos> cfg(const ParsedArgs& args, const std::string& light
     if (args.has_named_value("--multilayer_diffuse")) {
         textures = {BlendMapTexture{
             .texture_descriptor = {
-                .color = {.filename = VariableAndHash{args.named_value("--multilayer_diffuse")}, .mipmap_mode = MipmapMode::WITH_MIPMAPS},
-                .normal = {.filename = VariableAndHash{args.named_value("--multilayer_normal", "")}, .color_mode = ColorMode::RGB, .mipmap_mode = MipmapMode::WITH_MIPMAPS}},
+                .color = {.filename = FPath::from_variable_and_hash(VariableAndHash{args.named_value("--multilayer_diffuse")}), .mipmap_mode = MipmapMode::WITH_MIPMAPS},
+                .normal = {.filename = FPath::from_variable_and_hash(VariableAndHash{args.named_value("--multilayer_normal", "")}), .color_mode = ColorMode::RGB, .mipmap_mode = MipmapMode::WITH_MIPMAPS}},
             .role = BlendMapRole::DETAIL_BASE,
             .reweight_mode = BlendMapReweightMode::DISABLED}};
         std::vector<float> lcm_world_args;
@@ -181,14 +185,14 @@ static LoadMeshConfig<TPos> cfg(const ParsedArgs& args, const std::string& light
             if (args.has_named_value("--multilayer_mask")) {
                 textures.push_back(BlendMapTexture{
                     .texture_descriptor = {
-                        .color = {.filename = VariableAndHash{args.named_value("--multilayer_mask")}, .mipmap_mode = MipmapMode::WITH_MIPMAPS}},
+                        .color = {.filename = FPath::from_variable_and_hash(VariableAndHash{args.named_value("--multilayer_mask")}), .mipmap_mode = MipmapMode::WITH_MIPMAPS}},
                     .role = BlendMapRole::DETAIL_MASK_R + i});
             }
             textures.push_back(BlendMapTexture{
                 .texture_descriptor = {
-                    .color = {.filename = VariableAndHash{detail}, .mipmap_mode = MipmapMode::WITH_MIPMAPS},
+                    .color = {.filename = FPath::from_variable_and_hash(VariableAndHash{detail}), .mipmap_mode = MipmapMode::WITH_MIPMAPS},
                     .normal = {
-                        .filename = VariableAndHash{args.named_value("--multilayer_detail_normal" + std::to_string(i), "")},
+                        .filename = FPath::from_variable_and_hash(VariableAndHash{args.named_value("--multilayer_detail_normal" + std::to_string(i), "")}),
                         .color_mode = ColorMode::RGB,
                         .mipmap_mode = MipmapMode::WITH_MIPMAPS}},
                 .scale = OrderableFixedArray<float, 2>(multilayer_scale),
@@ -500,7 +504,8 @@ int main(int argc, char** argv) {
                 .pass = args.has_named_value("--output_pass")
                     ? external_render_pass_type_from_string(args.named_value("--output_pass"))
                     : ExternalRenderPassType::STANDARD} };
-        if (args.has_named_value("--output")) {
+        auto is_interactive = !args.has_named_value("--output");
+        if (!is_interactive) {
             render_results.outputs[rsd] = RenderResult{
                 .width = safe_stoi(args.named_value("--output_width", "512")),
                 .height = safe_stoi(args.named_value("--output_height", "512"))};
@@ -534,23 +539,33 @@ int main(int argc, char** argv) {
             input_config,
             num_renderings,
             set_fps,
-            []() { return std::chrono::steady_clock::now(); },
+            [is_interactive]() {
+                if (is_interactive) {
+                    return std::chrono::steady_clock::now();
+                } else {
+                    return std::chrono::steady_clock::time_point();
+                }
+            },
             &render_results };
 
         render.print_hardware_info(linfo(LogFlags::NO_APPEND_NEWLINE).ref());
         ClearWrapperGuard clear_wrapper_guard;
 
-        SceneNodeResources scene_node_resources;
+        OpenGLObjectFactory gpu_object_factory;
+        SceneNodeResources scene_node_resources{gpu_object_factory};
         ParticleResources particle_resources;
         TrailResources trail_resources;
         RenderingResources rendering_resources{
             "primary_rendering_resources",
             16 };
+        OpenGLVertexArrayRenderer gpu_vertex_array_renderer{rendering_resources, rendering_resources};
         RenderingContext primary_rendering_context{
             .scene_node_resources = scene_node_resources,
             .particle_resources = particle_resources,
             .trail_resources = trail_resources,
             .rendering_resources = rendering_resources,
+            .gpu_object_factory = gpu_object_factory,
+            .gpu_vertex_array_renderer = gpu_vertex_array_renderer,
             .z_order = 0 };
         RenderingContextGuard rcg{ primary_rendering_context };
         BackgroundLoop small_aggregate_bg_worker{ "Small_agg_BG" };
@@ -565,19 +580,18 @@ int main(int argc, char** argv) {
         InstancesRendererGuard instances_renderer_guard{
             &small_instances_bg_worker,
             &large_instances_bg_worker,
-            std::make_shared<ArrayInstancesRenderers>(rendering_resources),
-            std::make_shared<ArrayInstancesRenderer>(rendering_resources)};
-        DeleteNodeMutex delete_node_mutex;
-        Scene scene{ "main_scene", delete_node_mutex };
+            std::make_shared<ArrayInstancesRenderers>(gpu_object_factory, gpu_vertex_array_renderer),
+            std::make_shared<ArrayInstancesRenderer>(gpu_object_factory, gpu_vertex_array_renderer)};
+        Scene scene{ "main_scene" };
         DestructionGuard scene_destruction_guard{[&](){
             scene.shutdown();
         }};
         std::string light_configuration = args.named_value("--light_configuration", "one");
         auto scene_node = make_unique_scene_node(
             FixedArray<ScenePos, 3>{
-                safe_stox<ScenePos>(args.named_value("--x", "0")),
-                safe_stox<ScenePos>(args.named_value("--y", "0")),
-                safe_stox<ScenePos>(args.named_value("--z", "-40"))},
+                safe_sto<ScenePos>(args.named_value("--x", "0")),
+                safe_sto<ScenePos>(args.named_value("--y", "0")),
+                safe_sto<ScenePos>(args.named_value("--z", "-40"))},
             FixedArray<float, 3>{
                 safe_stof(args.named_value("--angle_x", "0")) * degrees,
                 safe_stof(args.named_value("--angle_y", "0")) * degrees,
@@ -764,7 +778,7 @@ int main(int argc, char** argv) {
                     .resource_name = VariableAndHash<std::string>{"merged_resource"},
                     .array_name = "merged_array",
                     .texture_name = ColormapWithModifiers{
-                        .filename = VariableAndHash<std::string>{"merged_texture"},
+                        .filename = FPath::from_variable_and_hash(VariableAndHash<std::string>{"merged_texture"}),
                         .color_mode = ColorMode::RGBA,
                         .mipmap_mode = MipmapMode::WITH_MIPMAPS,
                         .anisotropic_filtering_level = 0
@@ -799,10 +813,10 @@ int main(int argc, char** argv) {
                     {
                         using I = funpack_t<TPos>;
                         Interp<I> interp{
-                            {safe_stox<I>(args.named_value("--color_gradient_min_x")),
-                            safe_stox<I>(args.named_value("--color_gradient_max_x"))},
-                            {safe_stox<float>(args.named_value("--color_gradient_min_c")),
-                            safe_stox<float>(args.named_value("--color_gradient_max_c"))},
+                            {safe_sto<I>(args.named_value("--color_gradient_min_x")),
+                            safe_sto<I>(args.named_value("--color_gradient_max_x"))},
+                            {safe_sto<float>(args.named_value("--color_gradient_min_c")),
+                            safe_sto<float>(args.named_value("--color_gradient_max_c"))},
                             OutOfRangeBehavior::CLAMP};
                         for (auto& m : cvas) {
                             for (auto& t : m->triangles) {
@@ -822,15 +836,15 @@ int main(int argc, char** argv) {
                     {
                         using I = funpack_t<TPos>;
                         Interp<I> interp{
-                            {safe_stox<I>(args.named_value("--color_radial_min_r")),
-                            safe_stox<I>(args.named_value("--color_radial_max_r"))},
-                            {safe_stox<float>(args.named_value("--color_radial_min_c")),
-                            safe_stox<float>(args.named_value("--color_radial_max_c"))},
+                            {safe_sto<I>(args.named_value("--color_radial_min_r")),
+                            safe_sto<I>(args.named_value("--color_radial_max_r"))},
+                            {safe_sto<float>(args.named_value("--color_radial_min_c")),
+                            safe_sto<float>(args.named_value("--color_radial_max_c"))},
                             OutOfRangeBehavior::CLAMP};
                         FixedArray<TPos, 3> center{
-                            safe_stox<TPos>(args.named_value("--color_radial_center_x", "0")),
-                            safe_stox<TPos>(args.named_value("--color_radial_center_y", "0")),
-                            safe_stox<TPos>(args.named_value("--color_radial_center_z", "0"))};
+                            safe_sto<TPos>(args.named_value("--color_radial_center_x", "0")),
+                            safe_sto<TPos>(args.named_value("--color_radial_center_y", "0")),
+                            safe_sto<TPos>(args.named_value("--color_radial_center_z", "0"))};
                         for (auto& m : cvas) {
                             for (auto& t : m->triangles) {
                                 for (auto& v : t.flat_iterable()) {
@@ -848,15 +862,15 @@ int main(int argc, char** argv) {
                     auto apply_cone_colors = [&args]<typename TPos>(std::list<std::shared_ptr<ColoredVertexArray<TPos>>>& cvas) {
                         using I = funpack_t<TPos>;
                         Interp<I> interp{
-                            {safe_stox<I>(args.named_value("--color_cone_min_r")),
-                            safe_stox<I>(args.named_value("--color_cone_max_r"))},
-                            {safe_stox<float>(args.named_value("--color_cone_min_c")),
-                            safe_stox<float>(args.named_value("--color_cone_max_c"))},
+                            {safe_sto<I>(args.named_value("--color_cone_min_r")),
+                            safe_sto<I>(args.named_value("--color_cone_max_r"))},
+                            {safe_sto<float>(args.named_value("--color_cone_min_c")),
+                            safe_sto<float>(args.named_value("--color_cone_max_c"))},
                             OutOfRangeBehavior::CLAMP};
-                        I bottom = safe_stox<I>(args.named_value("--color_cone_bottom", "0"));
-                        I top = safe_stox<I>(args.named_value("--color_cone_top"));
-                        I cx = safe_stox<I>(args.named_value("--color_cone_x", "0"));
-                        I cz = safe_stox<I>(args.named_value("--color_cone_z", "0"));
+                        I bottom = safe_sto<I>(args.named_value("--color_cone_bottom", "0"));
+                        I top = safe_sto<I>(args.named_value("--color_cone_top"));
+                        I cx = safe_sto<I>(args.named_value("--color_cone_x", "0"));
+                        I cz = safe_sto<I>(args.named_value("--color_cone_z", "0"));
                         for (auto& m : cvas) {
                             for (auto& t : m->triangles) {
                                 for (auto& v : t.flat_iterable()) {
@@ -875,9 +889,9 @@ int main(int argc, char** argv) {
                 }
                 auto apply_constant_color = [&args]<typename TPos>(std::list<std::shared_ptr<ColoredVertexArray<TPos>>>& cvas) {
                     FixedArray<float, 3> color{
-                        safe_stox<float>(args.named_value("--color_r", "-1")),
-                        safe_stox<float>(args.named_value("--color_g", "-1")),
-                        safe_stox<float>(args.named_value("--color_b", "-1"))};
+                        safe_sto<float>(args.named_value("--color_r", "-1")),
+                        safe_sto<float>(args.named_value("--color_g", "-1")),
+                        safe_sto<float>(args.named_value("--color_b", "-1"))};
                     if (any(color != -1.f)) {
                         for (auto& m : cvas) {
                             for (auto& t : m->triangles) {
@@ -957,13 +971,13 @@ int main(int argc, char** argv) {
                 RenderingDynamics::MOVING,
                 RenderingStrategies::OBJECT);
             auto light = create_light();
-            lights.push_back({.light = light, .node = scene.get_node(VariableAndHash<std::string>{"light_node0"}, DP_LOC)});
-            scene.get_node(VariableAndHash<std::string>{"light_node0"}, DP_LOC)->add_light(std::move(light));
-            scene.get_node(VariableAndHash<std::string>{"light_node0"}, DP_LOC)->set_camera(
+            lights.push_back({.light = light, .node = scene.get_node(VariableAndHash<std::string>{"light_node0"}, CURRENT_SOURCE_LOCATION)});
+            scene.get_node(VariableAndHash<std::string>{"light_node0"}, CURRENT_SOURCE_LOCATION)->add_light(std::move(light));
+            scene.get_node(VariableAndHash<std::string>{"light_node0"}, CURRENT_SOURCE_LOCATION)->set_camera(
                 std::make_unique<PerspectiveCamera>(
                     PerspectiveCameraConfig(),
                     PerspectiveCamera::Postprocessing::ENABLED));
-            add_light_beacon_if_set(scene.get_node(VariableAndHash<std::string>{"light_node0"}, DP_LOC));
+            add_light_beacon_if_set(scene.get_node(VariableAndHash<std::string>{"light_node0"}, CURRENT_SOURCE_LOCATION));
         } else if (light_configuration == "circle" || light_configuration == "shifted_circle") {
             size_t n = 10;
             float r = 50;
@@ -979,10 +993,10 @@ int main(int argc, char** argv) {
             for (const auto& [i, a] : enumerate(Linspace<float>(0.f, 2.f * float(M_PI), n))) {
                 auto name = VariableAndHash<std::string>{"light" + std::to_string(i)};
                 auto R = gl_lookat_absolute(
-                    scene.get_node(name, DP_LOC)->position(),
-                    scene.get_node(VariableAndHash<std::string>{"obj"}, DP_LOC)->position());
+                    scene.get_node(name, CURRENT_SOURCE_LOCATION)->position(),
+                    scene.get_node(VariableAndHash<std::string>{"obj"}, CURRENT_SOURCE_LOCATION)->position());
                 if (!R.has_value()) {
-                    THROW_OR_ABORT("Could not compute lookat for light " + std::to_string(i));
+                    throw std::runtime_error("Could not compute lookat for light " + std::to_string(i));
                 }
                 scene.add_root_node(
                     name,
@@ -993,9 +1007,9 @@ int main(int argc, char** argv) {
                     RenderingDynamics::MOVING,
                     RenderingStrategies::OBJECT);
                 auto light = create_light();
-                lights.push_back({.light = light, .node = scene.get_node(name, DP_LOC)});
-                scene.get_node(name, DP_LOC)->add_light(light);
-                scene.get_node(name, DP_LOC)->set_camera(
+                lights.push_back({.light = light, .node = scene.get_node(name, CURRENT_SOURCE_LOCATION)});
+                scene.get_node(name, CURRENT_SOURCE_LOCATION)->add_light(light);
+                scene.get_node(name, CURRENT_SOURCE_LOCATION)->set_camera(
                     std::make_unique<PerspectiveCamera>(
                         PerspectiveCameraConfig(),
                         PerspectiveCamera::Postprocessing::ENABLED));
@@ -1007,10 +1021,10 @@ int main(int argc, char** argv) {
                 for (const auto& [i, a] : enumerate(Linspace<float>(0.f, 2.f * float(M_PI), n))) {
                     auto name = VariableAndHash<std::string>{"light_s" + std::to_string(i)};
                     auto R = gl_lookat_absolute(
-                        scene.get_node(name, DP_LOC)->position(),
-                        scene.get_node(VariableAndHash<std::string>{"obj"}, DP_LOC)->position());
+                        scene.get_node(name, CURRENT_SOURCE_LOCATION)->position(),
+                        scene.get_node(VariableAndHash<std::string>{"obj"}, CURRENT_SOURCE_LOCATION)->position());
                     if (!R.has_value()) {
-                        THROW_OR_ABORT("Could not compute lookat for light " + std::to_string(i));
+                        throw std::runtime_error("Could not compute lookat for light " + std::to_string(i));
                     }
                     scene.add_root_node(
                         name,
@@ -1021,9 +1035,9 @@ int main(int argc, char** argv) {
                         RenderingDynamics::MOVING,
                         RenderingStrategies::OBJECT);
                     auto light = create_light();
-                    lights.push_back({.light = light, .node = scene.get_node(name, DP_LOC)});
-                    scene.get_node(name, DP_LOC)->add_light(std::move(light));
-                    scene.get_node(name, DP_LOC)->set_camera(std::make_unique<PerspectiveCamera>(
+                    lights.push_back({.light = light, .node = scene.get_node(name, CURRENT_SOURCE_LOCATION)});
+                    scene.get_node(name, CURRENT_SOURCE_LOCATION)->add_light(std::move(light));
+                    scene.get_node(name, CURRENT_SOURCE_LOCATION)->set_camera(std::make_unique<PerspectiveCamera>(
                         PerspectiveCameraConfig(),
                         PerspectiveCamera::Postprocessing::ENABLED));
                     light->ambient = 0.f;
@@ -1042,9 +1056,9 @@ int main(int argc, char** argv) {
                 RenderingDynamics::MOVING,
                 RenderingStrategies::OBJECT);
             auto light = create_light();
-            lights.push_back({.light = light, .node = scene.get_node(name, DP_LOC)});
-            scene.get_node(name, DP_LOC)->add_light(std::move(light));
-            scene.get_node(name, DP_LOC)->set_camera(std::make_unique<PerspectiveCamera>(
+            lights.push_back({.light = light, .node = scene.get_node(name, CURRENT_SOURCE_LOCATION)});
+            scene.get_node(name, CURRENT_SOURCE_LOCATION)->add_light(std::move(light));
+            scene.get_node(name, CURRENT_SOURCE_LOCATION)->set_camera(std::make_unique<PerspectiveCamera>(
                 PerspectiveCameraConfig(),
                 PerspectiveCamera::Postprocessing::ENABLED));
             light->ambient = FixedArray<float, 3>{1.f, 1.f, 1.f} * safe_stof(args.named_value("--background_light_ambience"));
@@ -1053,7 +1067,7 @@ int main(int argc, char** argv) {
         }
         
         if (args.has_named("--look_at_aabb")) {
-            auto aabb = scene.get_node(VariableAndHash<std::string>{"obj"}, DP_LOC)->relative_aabb();
+            auto aabb = scene.get_node(VariableAndHash<std::string>{"obj"}, CURRENT_SOURCE_LOCATION)->relative_aabb();
             if (aabb.empty()) {
                 throw std::runtime_error("Node has an empty AABB");
             }
@@ -1066,8 +1080,8 @@ int main(int argc, char** argv) {
                 RenderingDynamics::MOVING,
                 RenderingStrategies::OBJECT);
             auto la = gl_lookat_aabb(
-                scene.get_node(VariableAndHash<std::string>{"follower_camera_0"}, DP_LOC)->position(),
-                scene.get_node(VariableAndHash<std::string>{"obj"}, DP_LOC)->absolute_model_matrix(),
+                scene.get_node(VariableAndHash<std::string>{"follower_camera_0"}, CURRENT_SOURCE_LOCATION)->position(),
+                scene.get_node(VariableAndHash<std::string>{"obj"}, CURRENT_SOURCE_LOCATION)->absolute_model_matrix(),
                 aabb.data());
             if (!la.has_value()) {
                 throw std::runtime_error("Could not compute frustum, camera might be inside the object's AABB");
@@ -1082,17 +1096,17 @@ int main(int argc, char** argv) {
             if (!npixels.has_value()) {
                 throw std::runtime_error("Could not compute npixels, object might be too small or too large");
             }
-            if (args.has_named_value("--output")) {
+            if (!is_interactive) {
                 render_results.outputs.at(rsd).width = npixels->width;
                 render_results.outputs.at(rsd).height = npixels->height;
             }
-            scene.get_node(VariableAndHash<std::string>{"follower_camera_0"}, DP_LOC)->set_camera(std::make_unique<FrustumCamera>(
+            scene.get_node(VariableAndHash<std::string>{"follower_camera_0"}, CURRENT_SOURCE_LOCATION)->set_camera(std::make_unique<FrustumCamera>(
                 FrustumCameraConfig::from_sensor_aabb(
                     npixels->scaled_sensor_aabb,
                     la->near_plane,
                     la->far_plane),
                 FrustumCamera::Postprocessing::ENABLED));
-            scene.get_node(VariableAndHash<std::string>{"follower_camera_0"}, DP_LOC)->set_rotation(
+            scene.get_node(VariableAndHash<std::string>{"follower_camera_0"}, CURRENT_SOURCE_LOCATION)->set_rotation(
                 matrix_2_tait_bryan_angles(la->extrinsic_R),
                 std::chrono::steady_clock::time_point());
         } else {
@@ -1110,7 +1124,7 @@ int main(int argc, char** argv) {
                     1.f),
                 RenderingDynamics::MOVING,
                 RenderingStrategies::OBJECT);
-            scene.get_node(VariableAndHash<std::string>{"follower_camera_0"}, DP_LOC)->set_camera(std::make_unique<PerspectiveCamera>(
+            scene.get_node(VariableAndHash<std::string>{"follower_camera_0"}, CURRENT_SOURCE_LOCATION)->set_camera(std::make_unique<PerspectiveCamera>(
                 PerspectiveCameraConfig{
                     .y_fov = safe_stof(args.named_value("--y_fov", "90")) * degrees},
                 PerspectiveCamera::Postprocessing::ENABLED));
@@ -1157,7 +1171,6 @@ int main(int argc, char** argv) {
             .wire_frame = render_config.wire_frame,
             .depth_test = render_config.depth_test,
             .cull_faces = render_config.cull_faces,
-            .delete_node_mutex = delete_node_mutex,
             .physics_set_fps = nullptr};
         ObjectPool object_pool{ InObjectPoolDestructor::CLEAR };
         auto& flying_camera_logic = object_pool.create<FlyingCameraLogic>(
@@ -1200,7 +1213,6 @@ int main(int argc, char** argv) {
                 object_pool.create<MoveSceneLogic>(
                     CURRENT_SOURCE_LOCATION,
                     scene,
-                    delete_node_mutex,
                     safe_stof(args.named_value("--speed", "1"))),
                 CURRENT_SOURCE_LOCATION
             },
@@ -1229,11 +1241,12 @@ int main(int argc, char** argv) {
             print_unhandled_exceptions();
             return 1;
         }
-        if (args.has_named_value("--output")) {
-            const Array<float>& array = render_results.outputs.at(rsd).rgb;
-            if (!array.initialized()) {
+        if (!is_interactive) {
+            const Array<float>& varray = render_results.outputs.at(rsd).rgb;
+            if (!varray.initialized()) {
                 throw std::runtime_error("Rendered scene descriptor not initialized");
             }
+            auto array = VectorialPixels<float, 3>::from_vector(varray).to_array();
             StbImage3::from_float_rgb(array).save_to_file(args.named_value("--output"));
         }
     } catch (const std::runtime_error& e) {

@@ -11,7 +11,6 @@ class VehicleSpawner;
 class Players;
 class Player;
 class GameLogic;
-class Scene;
 class Spawner;
 struct GameLogicConfig;
 
@@ -26,7 +25,6 @@ public:
     Bystanders(
         VehicleSpawners& vehicle_spawners,
         Players& players,
-        Scene& scene,
         Spawner& spawner,
         GameLogicConfig& cfg);
     ~Bystanders();
@@ -46,7 +44,6 @@ private:
     DanglingList<Player> vips_;
     VehicleSpawners& vehicle_spawners_;
     Players& players_;
-    Scene& scene_;
     Spawner& spawner_;
     GameLogicConfig& cfg_;
 };

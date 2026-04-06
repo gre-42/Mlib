@@ -1,3 +1,4 @@
+
 #include "Json_View.hpp"
 #include <ostream>
 
@@ -11,7 +12,7 @@ JsonView::JsonView(
     if ((check == CheckIsObjectBehavior::CHECK) &&
         (j_.type() != nlohmann::detail::value_t::object))
     {
-        THROW_OR_ABORT("JSON is not of type object");
+        throw std::runtime_error("JSON is not of type object");
     }
 }
 
@@ -30,10 +31,10 @@ static const nlohmann::json* get_internal(
     size_t rec)
 {
     if (keys.empty()) {
-        THROW_OR_ABORT("JSON contains called with empty path");
+        throw std::runtime_error("JSON contains called with empty path");
     }
     if (j.type() != nlohmann::detail::value_t::object) {
-        THROW_OR_ABORT("JSON entry is not an object");
+        throw std::runtime_error("JSON entry is not an object");
     }
     auto it = j.find(keys[rec]);
     if (it == j.end()) {
@@ -92,7 +93,7 @@ std::optional<nlohmann::json> JsonView::try_at_non_null(std::string_view name) c
 nlohmann::json JsonView::at(std::string_view name) const {
     auto it = j_.find(name);
     if (it == j_.end()) {
-        THROW_OR_ABORT("Cannot find key with name \"" + std::string{ name } + "\"");
+        throw std::runtime_error("Cannot find key with name \"" + std::string{ name } + "\"");
     }
     return *it;
 }

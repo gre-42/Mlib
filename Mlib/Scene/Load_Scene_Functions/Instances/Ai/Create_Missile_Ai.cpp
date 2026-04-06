@@ -1,13 +1,13 @@
 #include "Create_Missile_Ai.hpp"
-#include <Mlib/Argument_List.hpp>
 #include <Mlib/Components/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Memory/Object_Pool.hpp>
+#include <Mlib/Misc/Argument_List.hpp>
 #include <Mlib/Physics/Vehicle_Controllers/Missile_Controllers/Missile_Controller.hpp>
 #include <Mlib/Players/Vehicle_Ai/Flying_Missile_Ai.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -51,15 +51,17 @@ void CreateMissileAi::execute(const LoadSceneJsonUserFunctionArgs& args)
         jdy.at_vector<float>(DyArgs::velocity, parse_kph),
         jdy.at<std::vector<float>>(DyArgs::dy),
         OutOfRangeBehavior::CLAMP };
-    auto& missile_vehicle = get_rigid_body_vehicle(scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::missile), DP_LOC));
-    missile_vehicle.add_autopilot(
+    auto missile_vehicle = get_rigid_body_vehicle(
+        scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::missile), CURRENT_SOURCE_LOCATION).get(),
+        CURRENT_SOURCE_LOCATION);
+    missile_vehicle->add_autopilot(
         {
             global_object_pool.create<FlyingMissileAi>(
                 CURRENT_SOURCE_LOCATION,
                 missile_vehicle,
                 std::move(dy),
                 args.arguments.at<float>(KnownArgs::eta_max) * seconds,
-                missile_vehicle.missile_controller(),
+                missile_vehicle->missile_controller(CURRENT_SOURCE_LOCATION),
                 args.arguments.at<float>(KnownArgs::waypoint_reached_radius) * meters,
                 args.arguments.at<float>(KnownArgs::resting_position_reached_radius) * meters,
                 args.arguments.at<float>(KnownArgs::maximum_velocity) * kph),

@@ -1,8 +1,8 @@
 #pragma once
+#include <Mlib/Hashing/Variable_And_Hash.hpp>
 #include <Mlib/Math/Interp.hpp>
 #include <Mlib/Physics/Interfaces/IControllable.hpp>
 #include <Mlib/Physics/Vehicle_Controllers/Car_Controllers/Rigid_Body_Vehicle_Controller.hpp>
-#include <Mlib/Variable_And_Hash.hpp>
 #include <cstddef>
 #include <string>
 #include <vector>
@@ -14,7 +14,7 @@ class PhysicsEngine;
 class CarController final: public RigidBodyVehicleController, public IControllable {
 public:
     CarController(
-        RigidBodyVehicle& rb,
+        const DanglingBaseClassRef<RigidBodyVehicle>& rb,
         VariableAndHash<std::string> front_engine,
         VariableAndHash<std::string> rear_engine,
         std::vector<size_t> front_tire_ids,

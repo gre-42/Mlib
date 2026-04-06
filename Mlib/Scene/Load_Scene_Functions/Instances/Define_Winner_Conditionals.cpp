@@ -1,11 +1,11 @@
 #include "Define_Winner_Conditionals.hpp"
-#include <Mlib/Argument_List.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
+#include <Mlib/Misc/Argument_List.hpp>
 #include <Mlib/Physics/Containers/Race_History.hpp>
 #include <Mlib/Players/Containers/Players.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
-#include <Mlib/Strings/To_Number.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
+#include <Mlib/Strings/String_View_To_Number.hpp>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -29,7 +29,7 @@ DefineWinnerConditionals::DefineWinnerConditionals(PhysicsScene& physics_scene)
 void DefineWinnerConditionals::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     if (args.local_json_macro_arguments == nullptr) {
-        THROW_OR_ABORT("Cannot define winner conditionals without local substitutions");
+        throw std::runtime_error("Cannot define winner conditionals without local substitutions");
     }
     for (size_t rank = args.arguments.at<size_t>(KnownArgs::begin_rank); rank < args.arguments.at<size_t>(KnownArgs::end_rank); ++rank) {
         auto lapTimeEvent = players.get_winner_track_filename(rank);
@@ -50,7 +50,7 @@ void DefineWinnerConditionals::execute(const LoadSceneJsonUserFunctionArgs& args
         } else {
             const auto& lte = *lapTimeEvent;
             if (lte.event.vehicle_colors.empty()) {
-                THROW_OR_ABORT("Could not find a single vehicle color");
+                throw std::runtime_error("Could not find a single vehicle color");
             }
             args.local_json_macro_arguments->merge(JsonMacroArguments(nlohmann::json{
                 {

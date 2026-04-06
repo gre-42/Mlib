@@ -1,6 +1,6 @@
 #pragma once
 #include <Mlib/Memory/Dangling_Base_Class.hpp>
-#include <Mlib/Render/Render_Logics/Render_Text_Logic.hpp>
+#include <Mlib/OpenGL/Render_Logics/Render_Text_Logic.hpp>
 #include <Mlib/Scene/Render_Logics/Visual_Movable_Logger_View.hpp>
 #include <Mlib/Threads/Containers/Thread_Safe_String.hpp>
 
@@ -15,7 +15,7 @@ class ExpressionWatcher;
 class VisualMovableTextLogger: public VisualMovableLoggerView, private RenderTextLogic, public virtual DanglingBaseClass {
 public:
     VisualMovableTextLogger(
-        StatusWriter& status_writer,
+        const DanglingBaseClassRef<StatusWriter>& status_writer,
         StatusComponents log_components,
         std::unique_ptr<ExpressionWatcher>&& ew,
         std::string charset,
@@ -38,7 +38,7 @@ public:
 private:
     std::unique_ptr<ExpressionWatcher> ew_;
     std::string charset_;
-    StatusWriter& status_writer_;
+    DanglingBaseClassRef<StatusWriter> status_writer_;
     StatusComponents log_components_;
     ThreadSafeString text_;
     std::unique_ptr<IWidget> widget_;

@@ -2,7 +2,7 @@
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
 #include <Mlib/Memory/Dangling_Base_Class.hpp>
-#include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
+#include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/Memory/Destruction_Functions.hpp>
 #include <Mlib/Physics/Interfaces/IAdvance_Time.hpp>
 #include <Mlib/Physics/Units.hpp>
@@ -14,7 +14,6 @@
 
 namespace Mlib {
 
-class AdvanceTimes;
 class SceneNode;
 class FollowMovable;
 
@@ -49,9 +48,8 @@ class FollowMovable: public IAbsoluteMovable, public IAdvanceTime, public virtua
     friend FollowedMovableNodeSetter;
 public:
     FollowMovable(
-        AdvanceTimes& advance_times,
         const DanglingBaseClassRef<const SceneNode>& followed_node,
-        IAbsoluteMovable& followed,
+        const DanglingBaseClassRef<IAbsoluteMovable>& followed,
         float attachment_distance,
         const FixedArray<float, 3>& node_displacement,
         const FixedArray<float, 3>& look_at_displacement,
@@ -71,9 +69,8 @@ private:
     void notify_destroyed(SceneNode& destroyed_object);
     void advance_time(float dt);
     void initialize(const DanglingBaseClassRef<SceneNode>& follower_node);
-    AdvanceTimes& advance_times_;
     DanglingBaseClassPtr<const SceneNode> followed_node_;
-    IAbsoluteMovable* followed_;
+    DanglingBaseClassPtr<IAbsoluteMovable> followed_;
     float attachment_distance_;
     FixedArray<ScenePos, 2> attachment_position_;
     FixedArray<float, 3> node_displacement_;

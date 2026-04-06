@@ -1,6 +1,6 @@
 #include "Clear_Node.hpp"
-#include <Mlib/Argument_List.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
+#include <Mlib/Misc/Argument_List.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Load_Scene_Funcs.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
@@ -20,7 +20,7 @@ ClearNode::ClearNode(PhysicsScene& physics_scene)
 void ClearNode::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     args.arguments.validate(KnownArgs::options);
-    scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::node), DP_LOC)->clear();
+    scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::node), CURRENT_SOURCE_LOCATION)->clear();
 }
 
 namespace {

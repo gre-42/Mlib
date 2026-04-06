@@ -1,15 +1,15 @@
 #include "Add_Color_Style.hpp"
-#include <Mlib/Argument_List.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
-#include <Mlib/Render/Rendering_Context.hpp>
-#include <Mlib/Render/Resource_Managers/Rendering_Resources.hpp>
+#include <Mlib/Misc/Argument_List.hpp>
+#include <Mlib/OpenGL/Rendering_Context.hpp>
+#include <Mlib/OpenGL/Resource_Managers/Rendering_Resources.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Load_Scene_Funcs.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Color_Style.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -52,7 +52,7 @@ void AddColorStyle::execute(const LoadSceneJsonUserFunctionArgs& args)
         .reflection_maps = std::move(parsed_reflection_maps),
         .reflection_strength = args.arguments.at<float>(KnownArgs::reflection_strength, -1.f)});
     if (auto node = args.arguments.try_at<VariableAndHash<std::string>>(KnownArgs::node); node.has_value()) {
-        DanglingBaseClassRef<SceneNode> n = scene.get_node(*node, DP_LOC);
+        DanglingBaseClassRef<SceneNode> n = scene.get_node(*node, CURRENT_SOURCE_LOCATION);
         n->add_color_style(std::move(style));
     } else {
         scene.add_color_style(std::move(style));

@@ -1,31 +1,30 @@
-/*
-    proctree c++ port test / example
-    Copyright (c) 2015 Jari Komppa
+// proctree c++ port test / example
+// Copyright (c) 2015 Jari Komppa
+// 
+// This software is provided 'as-is', without any express or implied
+// warranty. In no event will the authors be held liable for any damages
+// arising from the use of this software.
+// 
+// Permission is granted to anyone to use this software for any purpose,
+// including commercial applications, and to alter it and redistribute it
+// freely, subject to the following restrictions:
+// 
+// 1. The origin of this software must not be misrepresented; you must not
+// claim that you wrote the original software. If you use this software
+// in a product, an acknowledgement in the product documentation would be
+// appreciated but is not required.
+// 2. Altered source versions must be plainly marked as such, and must not be
+// misrepresented as being the original software.
+// 3. This notice may not be removed or altered from any source distribution.
+// 
+// NOTE: this license covers this example only, proctree.cpp has different license
 
-    This software is provided 'as-is', without any express or implied
-    warranty. In no event will the authors be held liable for any damages
-    arising from the use of this software.
-
-    Permission is granted to anyone to use this software for any purpose,
-    including commercial applications, and to alter it and redistribute it
-    freely, subject to the following restrictions:
-
-    1. The origin of this software must not be misrepresented; you must not
-    claim that you wrote the original software. If you use this software
-    in a product, an acknowledgement in the product documentation would be
-    appreciated but is not required.
-    2. Altered source versions must be plainly marked as such, and must not be
-    misrepresented as being the original software.
-    3. This notice may not be removed or altered from any source distribution.
-
-    NOTE: this license covers this example only, proctree.cpp has different license
-*/
-
-#include "proctree.h"
-#include <Mlib/Env.hpp>
+#include <Mlib/Memory/Integral_Cast.hpp>
+#include <Mlib/Os/Env.hpp>
 #include <Mlib/Os/Os.hpp>
 #include <chrono>
 #include <ostream>
+#include <proctree/proctree.hpp>
 #include <stdexcept>
 #include <stdio.h>
 #include <stdlib.h>
@@ -57,16 +56,16 @@ void benchmark()
 
 void draw_arrays(std::ostream& file, int vertCount, fvec3 * vert, fvec3 * normal, fvec2 * uv, int faceCount, ivec3 * face, int faceOffset, const fvec3& position, bool rotate90) {
     for (int i = 0; i < vertCount; i++) {
-        std::print(file, "v %{:3f} %{:3f} %{:3f}\n",
+        std::print(file, "v {:3f} {:3f} {:3f}\n",
             (rotate90 ? -vert[i].z : vert[i].x) + position.x,
             vert[i].y + position.y,
             (rotate90 ? vert[i].x : vert[i].z) + position.z);
     }
     for (int i = 0; i < vertCount; ++i) {
-        std::print(file, "vn %{:3f} %{:3f} %{:3f}\n", normal[i].x, normal[i].y, normal[i].z);
+        std::print(file, "vn {:3f} {:3f} {:3f}\n", normal[i].x, normal[i].y, normal[i].z);
     }
     for (int i = 0; i < vertCount; ++i) {
-        std::print(file, "vt %{:3f} %{:3f}\n", uv[i].u, uv[i].v);
+        std::print(file, "vt {:3f} {:3f}\n", uv[i].u, uv[i].v);
     }
     for (int i = 0; i < faceCount; ++i) {
         std::print(
@@ -128,17 +127,17 @@ void basic_use()
     {
         auto file = create_ofstream("tree.obj");
         if (file->fail()) {
-            verbose_abort("Could not open tree.obj for write");
+            throw std::runtime_error("Could not open tree.obj for write");
         }
         *file << "mtllib tree.mtl\n";
         int faceOffset = 0;
         fvec3 position{float(-ntrees) * tree_distance / 2.f, 0.f, 0.f};
         int seed0 = getenv_default_int("mSeed", 1);
         if (seed0 == 0) {
-            verbose_abort("mSeed=0 not allowed");
+            throw std::runtime_error("mSeed=0 not allowed");
         }
         for (int i = 0; i < ntrees; ++i) {
-            srand((unsigned int)(seed0 + i));
+            srand(integral_cast<unsigned int>(seed0 + i));
             tree.generate();
             std::print(*file, "g Tree{:d}\n", i);
             std::print(*file, "o Tree{:d}\n", i);
@@ -163,13 +162,13 @@ void basic_use()
 
         file->flush();
         if (file->fail()) {
-            verbose_abort("Could not write to file tree.obj");
+            throw std::runtime_error("Could not write to file tree.obj");
         }
     }
     {
         auto file = create_ofstream("tree.mtl");
         if (file->fail()) {
-            verbose_abort("Could not open tree.mtl for write");
+            throw std::runtime_error("Could not open tree.mtl for write");
         }
         std::print(*file, "newmtl tree\n");
         std::print(*file, "map_Kd {:s}\n", trunk_diffuse);
@@ -182,7 +181,7 @@ void basic_use()
 
         file->flush();
         if (file->fail()) {
-            verbose_abort("Could not write to file tree.mtl");
+            throw std::runtime_error("Could not write to file tree.mtl");
         }
     }
 }
@@ -190,7 +189,12 @@ void basic_use()
 
 int main(int argc, char **argv)
 {
-    //benchmark();
-    basic_use();
-
+    try {
+        //benchmark();
+        basic_use();
+    } catch (const std::exception& e) {
+        lerr() << e.what();
+        return 1;
+    }
+    return 0;
 }

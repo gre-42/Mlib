@@ -1,20 +1,20 @@
 #include "Create_Hud_Opponent_Zoom_Logic.hpp"
-#include <Mlib/Argument_List.hpp>
-#include <Mlib/FPath.hpp>
 #include <Mlib/Layout/Layout_Constraints.hpp>
 #include <Mlib/Layout/Widget.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Memory/Object_Pool.hpp>
+#include <Mlib/Misc/Argument_List.hpp>
+#include <Mlib/Misc/FPath.hpp>
+#include <Mlib/OpenGL/Render_Logics/Camera_Stream_Logic.hpp>
+#include <Mlib/OpenGL/Render_Logics/Clear_Mode.hpp>
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Players/Advance_Times/Player.hpp>
 #include <Mlib/Players/Containers/Players.hpp>
-#include <Mlib/Render/Render_Logics/Camera_Stream_Logic.hpp>
-#include <Mlib/Render/Render_Logics/Clear_Mode.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Render_Logics/Hud_Opponent_Zoom_Logic.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -49,7 +49,7 @@ void CreateHudOpponentZoom::execute(const LoadSceneJsonUserFunctionArgs& args)
     if (args.arguments.contains_non_null(KnownArgs::exclusive_nodes)) {
         exclusive_nodes = args.arguments.at_vector<VariableAndHash<std::string>>(
             KnownArgs::exclusive_nodes,
-            [&scene=scene](const auto& n){ return (const DanglingBaseClassPtr<const SceneNode>&)scene.get_node(n, DP_LOC).ptr(); });
+            [&scene=scene](const auto& n){ return (const DanglingBaseClassPtr<const SceneNode>&)scene.get_node(n, CURRENT_SOURCE_LOCATION).ptr(); });
     }
     auto player = players.get_player(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::player), CURRENT_SOURCE_LOCATION);
     auto cam_stream = std::make_unique<CameraStreamLogic>(
@@ -60,10 +60,8 @@ void CreateHudOpponentZoom::execute(const LoadSceneJsonUserFunctionArgs& args)
     object_pool.create<HudOpponentZoomLogic>(
         CURRENT_SOURCE_LOCATION,
         object_pool,
-        scene,
         std::move(cam_stream),
         render_logics,
-        players,
         player,
         exclusive_nodes,
         std::make_unique<Widget>(

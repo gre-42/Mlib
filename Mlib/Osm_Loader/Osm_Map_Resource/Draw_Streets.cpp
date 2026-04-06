@@ -1,11 +1,12 @@
 #include "Draw_Streets.hpp"
 #include <Mlib/Array/Fixed_Array.hpp>
-#include <Mlib/Assert.hpp>
-#include <Mlib/Geometry/Intersection/Bvh.hpp>
 #include <Mlib/Geometry/Mesh/Animated_Colored_Vertex_Arrays.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array_Filter.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_List.hpp>
+#include <Mlib/Geometry/Primitives/Bvh.hpp>
+#include <Mlib/Hashing/Variable_And_Hash.hpp>
+#include <Mlib/OpenGL/Renderables/Triangle_Sampler/Resource_Name_Cycle.hpp>
 #include <Mlib/Os/Os.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Entrance_Type.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Get_Way_Width.hpp>
@@ -21,7 +22,6 @@
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Styled_Road.hpp>
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Regex/Regex_Select.hpp>
-#include <Mlib/Render/Renderables/Triangle_Sampler/Resource_Name_Cycle.hpp>
 #include <Mlib/Scene_Graph/Driving_Direction.hpp>
 #include <Mlib/Scene_Graph/Resources/Batch_Resource_Instantiator.hpp>
 #include <Mlib/Scene_Graph/Resources/Parsed_Resource_Name.hpp>
@@ -30,8 +30,8 @@
 #include <Mlib/Scene_Graph/Way_Point_Sandbox.hpp>
 #include <Mlib/Stats/Mean.hpp>
 #include <Mlib/Strings/String.hpp>
-#include <Mlib/Strings/To_Number.hpp>
-#include <Mlib/Variable_And_Hash.hpp>
+#include <Mlib/Strings/String_View_To_Number.hpp>
+#include <Mlib/Testing/Assert.hpp>
 
 using namespace Mlib;
 
@@ -116,7 +116,7 @@ static void get_neighbors(
     float angle = neighbors.at(center).angle;
     auto it = angles.find(angle);
     if (it == angles.end()) {
-        THROW_OR_ABORT("Could not find angle");
+        throw std::runtime_error("Could not find angle");
     }
     if (it == angles.begin()) {
         *l = &angles.rbegin()->second.neighbor_id;
@@ -156,7 +156,7 @@ void DrawStreets::initialize_arrays() {
             node_hole_waypoints[WayPointSandbox::STREET].insert(std::make_pair(n.first, HoleWaypoint()));
             node_hole_waypoints[WayPointSandbox::SIDEWALK].insert(std::make_pair(n.first, HoleWaypoint()));
         } else if (driving_direction != DrivingDirection::CENTER) {
-            THROW_OR_ABORT("Unknown driving direction");
+            throw std::runtime_error("Unknown driving direction");
         }
         node_hole_waypoints[WayPointSandbox::RUNWAY_OR_TAXIWAY].insert(std::make_pair(n.first, HoleWaypoint()));
     }
@@ -221,7 +221,7 @@ void DrawStreets::calculate_neighbors() {
             } else if (tags.contains("aeroway")) {
                 if (tags.contains("runway", "displaced_threshold")) {
                     if (!tags.contains("aeroway", "runway")) {
-                        THROW_OR_ABORT("Way \"" + way_id + "\" is no runway but contains an aeroway=runway tag");
+                        throw std::runtime_error("Way \"" + way_id + "\" is no runway but contains an aeroway=runway tag");
                     }
                     road_type = RoadType::RUNWAY_DISPLACEMENT_THRESHOLD;
                 } else if (tags.contains("aeroway", "runway")) {
@@ -230,7 +230,7 @@ void DrawStreets::calculate_neighbors() {
                     road_type = RoadType::TAXIWAY;
                 }
             } else {
-                THROW_OR_ABORT("Unknown way type");
+                throw std::runtime_error("Unknown way type");
             }
             int layer = (tags.find("layer") == tags.end()) ? 0 : safe_stoi(tags.at("layer"));
             if ((layer != 0) && !layer_heights.is_within_range((float)layer)) {
@@ -240,7 +240,7 @@ void DrawStreets::calculate_neighbors() {
             double way_length = 0;
             for (auto it = way.nd.begin(); it != way.nd.end(); ++it) {
                 if (nodes.find(*it) == nodes.end()) {
-                    THROW_OR_ABORT("Way " + way_id + ": Could not find node with ID " + *it);
+                    throw std::runtime_error("Way " + way_id + ": Could not find node with ID " + *it);
                 }
                 {
                     auto nwi = node_way_info.find(*it);
@@ -262,7 +262,7 @@ void DrawStreets::calculate_neighbors() {
                 ++s;
                 if (s != way.nd.end()) {
                     if (nodes.find(*s) == nodes.end()) {
-                        THROW_OR_ABORT("Way " + way_id + ": Could not find node with ID " + *s);
+                        throw std::runtime_error("Way " + way_id + ": Could not find node with ID " + *s);
                     }
                     FixedArray<double, 2> dir = (nodes.at(*it).position - nodes.at(*s).position).casted<double>();
                     float angle0 = (float)std::atan2(dir(1), dir(0));
@@ -302,7 +302,7 @@ void DrawStreets::calculate_neighbors() {
                         parse_color(tags, "curb2_color", way_color)},
                     .model = model}}).second)
             {
-                THROW_OR_ABORT("Could not insert way");
+                throw std::runtime_error("Could not insert way");
             }
             check_curb_validity(way_infos.at(way_id).curb_alpha, way_infos.at(way_id).curb2_alpha);
         }
@@ -430,7 +430,7 @@ static void draw_terrain_triangle_hole(
     TriangleList<CompressedScenePos>& triangles)
 {
     if (hv.length() != 3) {
-        THROW_OR_ABORT("Triangle hole does not have 3 corners");
+        throw std::runtime_error("Triangle hole does not have 3 corners");
     }
     triangles.draw_triangle_wo_normals(
         FixedArray<CompressedScenePos, 3>{hv(0).position(0), hv(0).position(1), (CompressedScenePos)0.},
@@ -448,7 +448,7 @@ static void draw_terrain_fan_hole(
     TriangleList<CompressedScenePos>& triangles)
 {
     if (hv.length() < 3) {
-        THROW_OR_ABORT("Fan has less than 3 corners");
+        throw std::runtime_error("Fan has less than 3 corners");
     }
     FixedArray<float, 3> center_color =
         mean(hv->template applied<FixedArray<float, 3>>([&](auto& v){return way_infos.at(v.way_id).colors[0];}));
@@ -514,7 +514,7 @@ void DrawStreets::draw_holes() {
         connect(node_hole_waypoints.at(WayPointSandbox::RUNWAY_OR_TAXIWAY), way_point_edge_descriptors[WayPointSandbox::RUNWAY_OR_TAXIWAY]);
         connect(node_hole_waypoints.at(WayPointSandbox::SIDEWALK), way_point_edge_descriptors[WayPointSandbox::SIDEWALK]);
     } else if (driving_direction != DrivingDirection::CENTER) {
-        THROW_OR_ABORT("Only 1 or 2 lanes are supported");
+        throw std::runtime_error("Only 1 or 2 lanes are supported");
     }
     if (use_terrain_holes) {
         auto draw_air_holes = [this](const auto& hole_contours, auto& hole_triangles) {
@@ -535,7 +535,7 @@ void DrawStreets::draw_holes() {
                     // Draw center fan
                     draw_terrain_fan_hole(nodes.at(n), hv, way_infos, *hole_triangles);
                 } else {
-                    THROW_OR_ABORT("Unexpected air hole size: \"" + n + '"');
+                    throw std::runtime_error("Unexpected air hole size: \"" + n + '"');
                 }
             }
         };
@@ -578,7 +578,7 @@ void DrawStreets::draw_holes() {
         }
         auto sit = uv_scales.find(road_type);
         if (sit == uv_scales.end()) {
-            THROW_OR_ABORT("Could not find uv_scale for " + road_type_to_string(road_type));
+            throw std::runtime_error("Could not find uv_scale for " + road_type_to_string(road_type));
         }
         float uv_scale = sit->second;
         float curb_alpha = NAN;
@@ -592,10 +592,10 @@ void DrawStreets::draw_holes() {
                 curb2_alpha = wi.curb2_alpha;
             }
             if ((curb_alpha != curb2_alpha) != (wi.curb_alpha != wi.curb2_alpha)) {
-                THROW_OR_ABORT("Incompatible curb alpha");
+                throw std::runtime_error("Incompatible curb alpha");
             }
             if ((curb2_alpha != 1) != (wi.curb2_alpha != 1)) {
-                THROW_OR_ABORT("Incompatible curb2 alpha");
+                throw std::runtime_error("Incompatible curb2 alpha");
             }
         }
         auto& crossings = *tlist2->tl_street_crossing[road_type];
@@ -778,7 +778,7 @@ void DrawStreets::draw_streets_add_waypoints(
                     i0 = 1;
                     i1 = 0;
                 } else {
-                    THROW_OR_ABORT("Unknown driving direction");
+                    throw std::runtime_error("Unknown driving direction");
                 }
                 way_point_edge_descriptors[sandbox].push_back({
                     StreetWayPoint{.alpha{0.75f - shift, 0.25f + shift}, .edge{o23(c1.s[i0][0], c1.s[i0][1])}, .location = location},
@@ -879,7 +879,7 @@ VariableAndHash<std::string> DrawStreets::auto_model_name(
     {
         const auto& node_angles0 = node_angles.at(node_id);
         if (node_angles0.size() != 2) {
-            THROW_OR_ABORT("get_neighbor_road_connection_type internal error");
+            throw std::runtime_error("get_neighbor_road_connection_type internal error");
         }
         auto it0 = node_angles0.begin();
         if (it0->second.neighbor_id == not_node_id) {
@@ -901,10 +901,10 @@ VariableAndHash<std::string> DrawStreets::auto_model_name(
     auto node_way_info0 = node_way_info.find(node_id);
     auto node_way_info1 = node_way_info.find(angle_way.neighbor_id);
     if (node_way_info0 == node_way_info.end()) {
-        THROW_OR_ABORT("Could not find way info for node \"" + node_id + '"');
+        throw std::runtime_error("Could not find way info for node \"" + node_id + '"');
     }
     if (node_way_info1 == node_way_info.end()) {
-        THROW_OR_ABORT("Could not find way info for node \"" + angle_way.neighbor_id + '"');
+        throw std::runtime_error("Could not find way info for node \"" + angle_way.neighbor_id + '"');
     }
     if (!central_resource_names.empty()) {
         if (node_angles0.size() != 2) {
@@ -952,25 +952,25 @@ VariableAndHash<std::string> DrawStreets::auto_model_name(
             assert_true(node_angles0.size() == 2);
             assert_true(node_angles1.size() == 2);
             if (model_name_central->empty()) {
-                THROW_OR_ABORT("Empty model names not supported");
+                throw std::runtime_error("Empty model names not supported");
             }
             return *model_name_central;
         } else if (model_name_endpoint0 != nullptr) {
             // assert_true(node_angles.at(node_id).size() != 2);
             assert_true(node_angles0.size() == 2);
             if (model_name_endpoint0->empty()) {
-                THROW_OR_ABORT("Empty model names not supported");
+                throw std::runtime_error("Empty model names not supported");
             }
             return *model_name_endpoint0;
         } else if (model_name_endpoint1 != nullptr) {
             assert_true(node_angles1.size() == 2);
             // assert_true(node_angles.at(angle_way.neighbor_id).size() != 2);
             if (model_name_endpoint1->empty()) {
-                THROW_OR_ABORT("Empty model names not supported");
+                throw std::runtime_error("Empty model names not supported");
             }
             return *model_name_endpoint1;
         } else {
-            THROW_OR_ABORT("Draw streets internal error");
+            throw std::runtime_error("Draw streets internal error");
         }
     }
     return VariableAndHash<std::string>();
@@ -983,17 +983,17 @@ void DrawStreets::draw_streets_draw_ways(
 {
     auto sit = uv_scales.find(angle_way.road_type);
     if (sit == uv_scales.end()) {
-        THROW_OR_ABORT("Could not find uv_scale for " + road_type_to_string(angle_way.road_type));
+        throw std::runtime_error("Could not find uv_scale for " + road_type_to_string(angle_way.road_type));
     }
     float uv_scale = sit->second;
     // Way length is used to get connected street textures where possible.
     auto node_way_info0 = node_way_info.find(node_id);
     auto node_way_info1 = node_way_info.find(angle_way.neighbor_id);
     if (node_way_info0 == node_way_info.end()) {
-        THROW_OR_ABORT("Could not find way info for node \"" + node_id + '"');
+        throw std::runtime_error("Could not find way info for node \"" + node_id + '"');
     }
     if (node_way_info1 == node_way_info.end()) {
-        THROW_OR_ABORT("Could not find way info for node \"" + angle_way.neighbor_id + '"');
+        throw std::runtime_error("Could not find way info for node \"" + angle_way.neighbor_id + '"');
     }
     const auto& node0 = nodes.at(node_id);
     const auto& node1 = nodes.at(angle_way.neighbor_id);
@@ -1095,7 +1095,7 @@ void DrawStreets::draw_streets_draw_ways(
     }
     if ((street_surface_central_resource_names.empty() != street_surface_endpoint0_resource_names.empty()) ||
         (street_surface_central_resource_names.empty() != street_surface_endpoint1_resource_names.empty())) {
-        THROW_OR_ABORT("Inconsistent definition of surface central / endpoint");
+        throw std::runtime_error("Inconsistent definition of surface central / endpoint");
     }
     auto draw_street_with_ditch = [&](
         const std::list<std::shared_ptr<ColoredVertexArray<float>>>& cvas,
@@ -1105,23 +1105,23 @@ void DrawStreets::draw_streets_draw_ways(
             TriangleList<CompressedScenePos>* destination_triangles;
             float uv_sx;
             float uv_sy;
-            if (cva->name.name() == "street") {
+            if (cva->meta.name.name() == "street") {
                 destination_triangles = street_lst.triangle_list.get();
                 uv_sx = street_lst.uvx;
                 uv_sy = 1.f;
-            } else if (cva->name.name() == "curb") {
+            } else if (cva->meta.name.name() == "curb") {
                 destination_triangles = tlists.tl_street_curb[angle_way.road_type].get();
                 uv_sx = curb_uv(0);
                 uv_sy = curb_uv(1);
-            } else if (cva->name.name() == "ditch") {
+            } else if (cva->meta.name.name() == "ditch") {
                 destination_triangles = tlists.tl_ditch.get();
                 uv_sx = 1.f;
                 uv_sy = 1.f;
             } else {
-                THROW_OR_ABORT(std::format(
+                throw std::runtime_error(std::format(
                     "Unknown street name \"{}\" (full name is \"{}\"), must be \"street\", \"curb\" or \"ditch\"",
-                    cva->name.name(),
-                    cva->name.full_name()));
+                    cva->meta.name.name(),
+                    cva->meta.name.full_name()));
             }
             assert_true(angle_way.neighbor_is_second);
             try {
@@ -1129,7 +1129,7 @@ void DrawStreets::draw_streets_draw_ways(
                 double racing_line_uv_len_central = std::floor(racing_line_scale_y * (uv_len0 + uv_len1) / 2.);
                 rect.draw(
                     *destination_triangles,
-                    !std::isnan(racing_line_dx0) && (cva->name.name() == "street")
+                    !std::isnan(racing_line_dx0) && (cva->meta.name.name() == "street")
                         ? tlists.tl_racing_line.get()
                         : nullptr,
                     racing_line_segment_scale_x0,
@@ -1549,7 +1549,7 @@ void DrawStreets::draw_streets_find_hole_waypoints(
                 add(-1.f, -curb2_alpha, 0.f, node_hole_waypoints.at(WayPointSandbox::SIDEWALK));
             }
         } else if (driving_direction != DrivingDirection::CENTER) {
-            THROW_OR_ABORT("Unknown driving direction");
+            throw std::runtime_error("Unknown driving direction");
         }
     }
     const std::map<std::string, NeighborWay>& nn = node_neighbors.at(angle_way.neighbor_id);
@@ -1587,7 +1587,7 @@ void DrawStreets::draw_streets_find_hole_waypoints(
                 add(-1.f, -curb2_alpha, 0.f, node_hole_waypoints.at(WayPointSandbox::SIDEWALK));
             }
         } else if (driving_direction != DrivingDirection::CENTER) {
-            THROW_OR_ABORT("Unknown driving direction");
+            throw std::runtime_error("Unknown driving direction");
         }
     }
 }

@@ -1,5 +1,6 @@
+
 #include "Color_Style.hpp"
-#include <Mlib/Hash.hpp>
+#include <Mlib/Hashing/Hash.hpp>
 
 using namespace Mlib;
 

@@ -1,18 +1,17 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
+#include <Mlib/Hashing/Variable_And_Hash.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
 #include <Mlib/Memory/Dangling_Base_Class.hpp>
-#include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
+#include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/Memory/Destruction_Functions.hpp>
 #include <Mlib/Physics/Interfaces/IAdvance_Time.hpp>
 #include <Mlib/Scene_Graph/Interfaces/INode_Setter.hpp>
 #include <Mlib/Scene_Graph/Interfaces/Scene_Node/IAbsolute_Movable.hpp>
-#include <Mlib/Variable_And_Hash.hpp>
 #include <memory>
 
 namespace Mlib {
 
-class AdvanceTimes;
 class Scene;
 class SceneNode;
 class LookAtMovable;
@@ -48,12 +47,11 @@ class LookAtMovable: public IAbsoluteMovable, public IAdvanceTime, public virtua
     friend LookAtMovableFollowedNodeSetter;
 public:
     LookAtMovable(
-        AdvanceTimes& advance_times,
         Scene& scene,
         VariableAndHash<std::string> follower_name,
-        DanglingBaseClassRef<SceneNode> follower_node,
-        DanglingBaseClassRef<SceneNode> followed_node,
-        IAbsoluteMovable& followed);
+        const DanglingBaseClassRef<SceneNode>& follower_node,
+        const DanglingBaseClassRef<SceneNode>& followed_node,
+        const DanglingBaseClassRef<IAbsoluteMovable>& followed);
     virtual ~LookAtMovable() override;
     virtual void advance_time(float dt, const StaticWorld& world) override;
     virtual void set_absolute_model_matrix(const TransformationMatrix<float, ScenePos, 3>& absolute_model_matrix) override;
@@ -64,12 +62,11 @@ public:
 private:
     void notify_destroyed(SceneNode& destroyed_object);
 
-    AdvanceTimes& advance_times_;
     Scene& scene_;
     VariableAndHash<std::string> follower_name_;
     DanglingBaseClassPtr<SceneNode> follower_node_;
     DanglingBaseClassPtr<SceneNode> followed_node_;
-    IAbsoluteMovable* followed_;
+    DanglingBaseClassPtr<IAbsoluteMovable> followed_;
     TransformationMatrix<float, ScenePos, 3> transformation_matrix_;
 };
 

@@ -26,7 +26,7 @@ inline std::function<FixedArray<TPos, 3>(const ColoredVertexArray<TPos>&)> cva_t
 {
     return [width](const ColoredVertexArray<TPos>& cva){
         if (any(width == (TWidth)0.f)) {
-            THROW_OR_ABORT("Cluster width is zero (0)");
+            throw std::runtime_error("Cluster width is zero (0)");
         }
         return point_to_grid_center(cva.aabb().data().center(), width);
     };
@@ -38,7 +38,7 @@ std::unordered_map<float, std::list<std::shared_ptr<ColoredVertexArray<TPos>>>>
 {
     std::unordered_map<float, std::list<std::shared_ptr<ColoredVertexArray<TPos>>>> result;
     for (const auto& cva : cvas) {
-        result[cva->morphology.object_cluster_width].push_back(cva);
+        result[cva->meta.morphology.object_cluster_width].push_back(cva);
     }
     return result;
 }

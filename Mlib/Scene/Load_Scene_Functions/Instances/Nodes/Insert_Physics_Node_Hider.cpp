@@ -1,9 +1,9 @@
 #include "Insert_Physics_Node_Hider.hpp"
-#include <Mlib/Argument_List.hpp>
 #include <Mlib/Geometry/Material/Render_Pass.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Macro_Executor/Macro_Line_Executor.hpp>
 #include <Mlib/Memory/Object_Pool.hpp>
+#include <Mlib/Misc/Argument_List.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Engine.hpp>
 #include <Mlib/Regex/Regex_Select.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
@@ -11,7 +11,7 @@
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Render_Pass.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -63,7 +63,7 @@ bool PhysicsNodeHiderWithEvent::node_shall_be_hidden(
     const ExternalRenderPass& external_render_pass) const
 {
     if (camera_node == nullptr) {
-        THROW_OR_ABORT("NodeHiderWithEvent requires a camera node. Was the hider attached to a static node?");
+        throw std::runtime_error("NodeHiderWithEvent requires a camera node. Was the hider attached to a static node?");
     }
     if (camera_node_ == nullptr) {
         verbose_abort("node_shall_be_hidden on destroyed node hider");
@@ -82,8 +82,8 @@ void InsertPhysicsNodeHider::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     args.arguments.validate(KnownArgs::options);
 
-    DanglingBaseClassRef<SceneNode> node_to_hide = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::node_to_hide), DP_LOC);
-    DanglingBaseClassRef<SceneNode> camera_node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::camera_node), DP_LOC);
+    DanglingBaseClassRef<SceneNode> node_to_hide = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::node_to_hide), CURRENT_SOURCE_LOCATION);
+    DanglingBaseClassRef<SceneNode> camera_node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::camera_node), CURRENT_SOURCE_LOCATION);
     auto node_hider = std::make_unique<PhysicsNodeHiderWithEvent>(
         node_to_hide,
         camera_node);

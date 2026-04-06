@@ -1,6 +1,7 @@
+
 #include "Pacenote.hpp"
-#include <Mlib/Throw_Or_Abort.hpp>
 #include <ostream>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -11,7 +12,7 @@ PacenoteDirection Mlib::pacenote_direction_from_string(const std::string& s) {
     if (s == "right") {
         return PacenoteDirection::RIGHT;
     }
-    THROW_OR_ABORT("Unknown pacenote direction: \"" + s + '"');
+    throw std::runtime_error("Unknown pacenote direction: \"" + s + '"');
 }
 
 std::ostream& Mlib::operator << (std::ostream& ostr, PacenoteDirection direction) {
@@ -20,7 +21,7 @@ std::ostream& Mlib::operator << (std::ostream& ostr, PacenoteDirection direction
     } else if (direction == PacenoteDirection::RIGHT) {
         ostr << "right";
     } else {
-        THROW_OR_ABORT("Unknown pacenote direction");
+        throw std::runtime_error("Unknown pacenote direction");
     }
     return ostr;
 }

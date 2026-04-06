@@ -1,8 +1,8 @@
 #include "Merge_Neighboring_Points.hpp"
 #include <Mlib/Geometry/Colored_Vertex.hpp>
-#include <Mlib/Geometry/Intersection/Bvh.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_Largest_Cosine.hpp>
+#include <Mlib/Geometry/Primitives/Bvh.hpp>
 #include <list>
 
 using namespace Mlib;

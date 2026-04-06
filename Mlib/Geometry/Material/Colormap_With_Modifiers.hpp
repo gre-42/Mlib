@@ -1,25 +1,26 @@
 #pragma once
-#include <Mlib/Cached_Hash.hpp>
 #include <Mlib/Geometry/Material/Color_Mode.hpp>
 #include <Mlib/Geometry/Material/Interpolation_Mode.hpp>
 #include <Mlib/Geometry/Material/Mipmap_Mode.hpp>
 #include <Mlib/Geometry/Material/Wrap_Mode.hpp>
+#include <Mlib/Hashing/Cached_Hash.hpp>
 #include <Mlib/Math/Orderable_Fixed_Array.hpp>
-#include <Mlib/Variable_And_Hash.hpp>
+#include <Mlib/Misc/FPath.hpp>
 #include <iosfwd>
 #include <string>
 
 namespace Mlib {
 
 struct ColormapWithModifiers {
-    VariableAndHash<std::string> filename;
+    FPath filename;
+    FPath chrominance;
     float desaturate = 0.f;
     float desaturation_exponent = 0.f;
-    std::string alpha = "";
-    std::string histogram = "";
-    std::string average = "";
-    std::string multiply = "";
-    std::string alpha_blend = "";
+    FPath alpha;
+    FPath histogram;
+    FPath average;
+    FPath multiply;
+    FPath alpha_blend;
     OrderableFixedArray<float, 3> mean_color = { -1.f, -1.f, -1.f };
     OrderableFixedArray<float, 3> lighten = { 0.f, 0.f, 0.f };
     OrderableFixedArray<float, 3> lighten_left = { 0.f, 0.f, 0.f };
@@ -57,6 +58,7 @@ struct ColormapWithModifiers {
     template <class Archive>
     void serialize(Archive& archive) {
         archive(filename);
+        archive(chrominance);
         archive(desaturate);
         archive(desaturation_exponent);
         archive(alpha);
@@ -70,12 +72,12 @@ struct ColormapWithModifiers {
         archive(lighten_right);
         archive(lighten_top);
         archive(lighten_bottom);
-        archive(selected_color);
-        archive(selected_color_near);
-        archive(selected_color_far);
         archive(color_to_replace);
         archive(replacement_color);
         archive(replacement_tolerance);
+        archive(selected_color);
+        archive(selected_color_near);
+        archive(selected_color_far);
         archive(edge_sigma);
         archive(times);
         archive(plus);

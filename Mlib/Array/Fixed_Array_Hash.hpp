@@ -1,6 +1,6 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
-#include <Mlib/Hash.hpp>
+#include <Mlib/Hashing/Hash.hpp>
 
 namespace Mlib {
 

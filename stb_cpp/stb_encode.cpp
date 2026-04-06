@@ -1,7 +1,7 @@
 #include "stb_encode.hpp"
 #include <Mlib/Memory/Integral_Cast.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
 #include <stb/stb_image_write.h>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -28,7 +28,7 @@ std::vector<std::byte> stb_encode_png(
         data,
         0) == 0)
     {
-        THROW_OR_ABORT("Could not convert texture to PNG");
+        throw std::runtime_error("Could not convert texture to PNG");
     }
     return result;
 }

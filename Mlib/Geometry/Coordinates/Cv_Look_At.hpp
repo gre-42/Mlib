@@ -15,7 +15,7 @@ TransformationMatrix<TData, TData, 3> cv_lookat_relative(
         cv_to_opengl_coordinates(dz),
         cv_to_opengl_coordinates(dy0));
     if (!R.has_value()) {
-        THROW_OR_ABORT("Could not compute lookat-matrix");
+        throw std::runtime_error("Could not compute lookat-matrix");
     }
     return opengl_to_cv_extrinsic_matrix(
         TransformationMatrix<float, float, 3>{

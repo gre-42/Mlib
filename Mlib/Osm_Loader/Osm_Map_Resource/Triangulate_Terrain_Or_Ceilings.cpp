@@ -1,6 +1,6 @@
 #include "Triangulate_Terrain_Or_Ceilings.hpp"
+#include <Mlib/OpenGL/Renderables/Triangle_Sampler/Terrain_Type.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Triangulate_Entity_List.hpp>
-#include <Mlib/Render/Renderables/Triangle_Sampler/Terrain_Type.hpp>
 
 using namespace Mlib;
 

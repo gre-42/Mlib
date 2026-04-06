@@ -1,6 +1,6 @@
-#include <Mlib/Floating_Point_Exceptions.hpp>
 #include <Mlib/Images/Svg.hpp>
 #include <Mlib/Memory/Integral_To_Float.hpp>
+#include <Mlib/Misc/Floating_Point_Exceptions.hpp>
 #include <Mlib/Os/Os.hpp>
 #include <Mlib/Signal/Pid_Controller.hpp>
 
@@ -19,7 +19,7 @@ void test_pid() {
     std::string filename = "TestOut/pid.svg";
     auto f = create_ofstream(filename);
     if (f->fail()) {
-        THROW_OR_ABORT("Could not open file \"" + filename + "\" for write");
+        throw std::runtime_error("Could not open file \"" + filename + "\" for write");
     }
     Svg<float> svg{*f, 600, 500};
     size_t n = 150;
@@ -59,7 +59,7 @@ void test_pid() {
     svg.finish();
     f->flush();
     if (f->fail()) {
-        THROW_OR_ABORT("Could not write to file \"/" + filename + "\"");
+        throw std::runtime_error("Could not write to file \"/" + filename + "\"");
     }
 }
 

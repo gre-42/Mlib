@@ -1,18 +1,18 @@
-#include <Mlib/Argument_List.hpp>
 #include <Mlib/Macro_Executor/Focus.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Macro_Executor/Translator.hpp>
+#include <Mlib/Misc/Argument_List.hpp>
+#include <Mlib/OpenGL/Render_Config.hpp>
+#include <Mlib/OpenGL/Rendering_Context.hpp>
 #include <Mlib/Physics/Containers/Race_Identifier.hpp>
 #include <Mlib/Remote/Remote_Params.hpp>
-#include <Mlib/Render/Render_Config.hpp>
-#include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Load_Scene_Funcs.hpp>
 #include <Mlib/Scene/Physics_Scene.hpp>
 #include <Mlib/Scene/Physics_Scenes.hpp>
 #include <Mlib/Scene/Scene_Config.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
 #include <Mlib/Time/Fps/Realtime_Dependent_Fps.hpp>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -69,13 +69,13 @@ struct RegisterJsonUserFunction {
                     std::make_unique<Translator>(args.translators, VariableAndHash{ args.arguments.at<AssetGroupAndId>(KnownArgs::gid) }),
                     args.arguments.try_at_non_null<RemoteParams>(KnownArgs::remote_params));
                 if (state == InsertionStatus::FAILURE_NAME_COLLISION) {
-                    THROW_OR_ABORT("Scene with name \"" + name + "\" already exists");
+                    throw std::runtime_error("Scene with name \"" + name + "\" already exists");
                 }
                 if (state == InsertionStatus::FAILURE_SHUTDOWN) {
-                    THROW_OR_ABORT("Attempt to create scene with name \"" + name + "\" during shutdown");
+                    throw std::runtime_error("Attempt to create scene with name \"" + name + "\" during shutdown");
                 }
                 if (state != InsertionStatus::SUCCESS) {
-                    THROW_OR_ABORT("Unknown state after creating scene with name \"" + name + '"');
+                    throw std::runtime_error("Unknown state after creating scene with name \"" + name + '"');
                 }
             });
     }

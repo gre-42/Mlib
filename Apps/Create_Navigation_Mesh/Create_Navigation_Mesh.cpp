@@ -1,9 +1,9 @@
-#include <Mlib/Arg_Parser.hpp>
+#include <Mlib/Io/Arg_Parser.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
-#include <Mlib/Navigation/NavigationMeshBuilder.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
+#include <Mlib/Navigation/Navigation_Mesh_Builder.hpp>
 #include <chrono>
 #include <iostream>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -36,10 +36,10 @@ int main(int argc, char** argv) {
         auto start = nmb.ssm.closest_point_on_navmesh(FixedArray<float, 3>{ -1534.788086f, 159.749268f, 756.568665f });
         auto end = nmb.ssm.closest_point_on_navmesh(FixedArray<float, 3>{ -1386.703369f, 164.245132f, 734.361694f });
         if (!start.has_value()) {
-            THROW_OR_ABORT("Could not localize start");
+            throw std::runtime_error("Could not localize start");
         }
         if (!end.has_value()) {
-            THROW_OR_ABORT("Could not localize end");
+            throw std::runtime_error("Could not localize end");
         }
         linfo() << "Start " << start->position;
         linfo() << "End " << end->position;

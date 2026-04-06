@@ -1,5 +1,6 @@
+
 #include "Interior_Texture_Set.hpp"
-#include <Mlib/Throw_Or_Abort.hpp>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -8,7 +9,7 @@ size_t Mlib::size(InteriorTextureSet a) {
         return 0;
     }
     if (!any(a & InteriorTextureSet::INTERIOR_COLORS)) {
-        THROW_OR_ABORT("Interior textures have not colors");
+        throw std::runtime_error("Interior textures have not colors");
     }
     for (size_t result = 5;;) {
         a >>= 1;
@@ -23,20 +24,20 @@ size_t Mlib::size(InteriorTextureSet a) {
 
 size_t Mlib::index(InteriorTextureSet available, InteriorTextureSet x) {
     if (!any(available & InteriorTextureSet::INTERIOR_COLORS)) {
-        THROW_OR_ABORT("Interior colors not set");
+        throw std::runtime_error("Interior colors not set");
     }
     if (!any(available & x)) {
-        THROW_OR_ABORT("Interior texture not found");
+        throw std::runtime_error("Interior texture not found");
     }
     if (!any(available & InteriorTextureSet::INTERIOR_COLORS)) {
-        THROW_OR_ABORT("Interior textures have not colors");
+        throw std::runtime_error("Interior textures have not colors");
     }
     available >>= 1;
     x >>= 1;
     for (size_t result = 4;;) {
         if (!any(x)) {
             if (result < 5) {
-                THROW_OR_ABORT("Interior texture index too small");
+                throw std::runtime_error("Interior texture index too small");
             }
             return result;
         }
@@ -46,5 +47,5 @@ size_t Mlib::index(InteriorTextureSet available, InteriorTextureSet x) {
         available >>= 1;
         x >>= 1;
     }
-    THROW_OR_ABORT("Could not find interior texture index");
+    throw std::runtime_error("Could not find interior texture index");
 }

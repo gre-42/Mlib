@@ -8,7 +8,7 @@ namespace Mlib {
 template <class T>
 Array<T> heightmap_to_normalmap(const Array<T>& heightmap, const T& d) {
     if (heightmap.ndim() != 2) {
-        THROW_OR_ABORT("Heightmap is not 2D");
+        throw std::runtime_error("Heightmap is not 2D");
     }
     auto normalmap = Array<T>(ArrayShape{3, heightmap.shape(0), heightmap.shape(1)});
     normalmap.row_range(0, 2) = -central_gradient_filter(heightmap) * (T(1) / (2 * d));

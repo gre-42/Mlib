@@ -4,15 +4,15 @@
 #include <Mlib/Images/Bilinear_Interpolation.hpp>
 #include <Mlib/Math/Interp.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
+#include <Mlib/OpenGL/Renderables/Triangle_Sampler/Terrain_Type.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Entrance_Type.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Height_Sampler.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Node_Height_Binding.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Osm_Map_Resource_Helpers.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Osm_Triangle_Lists.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Vertex_Height_Binding.hpp>
-#include <Mlib/Render/Renderables/Triangle_Sampler/Terrain_Type.hpp>
-#include <Mlib/Strings/To_Number.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
+#include <Mlib/Strings/String_View_To_Number.hpp>
+#include <stdexcept>
 
 namespace Mlib {
 
@@ -80,7 +80,7 @@ void Mlib::apply_heightmap(
                         }
                     }
                     if (all(nodes.at(*it).position == nodes.at(*s).position)) {
-                        THROW_OR_ABORT("Duplicates in neighboring points: " + *it + " - " + *s);
+                        throw std::runtime_error("Duplicates in neighboring points: " + *it + " - " + *s);
                     }
                     double weight = 1 / std::sqrt(sum(squared(nodes.at(*it).position - nodes.at(*s).position)));
                     node_neighbors[*s].push_back({.id = *it, .weight = weight, .layer = layer, .bridge_height = bridge_height_ref});
@@ -242,7 +242,7 @@ void Mlib::apply_heightmap(
             // lerr() << "Height out of bounds.";
             for (auto& pc : position.second) {
                 if (!vertices_to_delete.insert(pc).second) {
-                    THROW_OR_ABORT("Could not insert vertex to delete");
+                    throw std::runtime_error("Could not insert vertex to delete");
                 }
             }
         } else {

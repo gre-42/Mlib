@@ -1,7 +1,7 @@
 #include "Create_Heli_Controller.hpp"
-#include <Mlib/Argument_List.hpp>
 #include <Mlib/Components/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
+#include <Mlib/Misc/Argument_List.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Physics/Rigid_Body/Vehicle_Domain.hpp>
 #include <Mlib/Physics/Units.hpp>
@@ -10,7 +10,7 @@
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Strings/String.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -48,23 +48,23 @@ CreateHeliController::CreateHeliController(PhysicsScene& physics_scene)
 
 void CreateHeliController::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    DanglingBaseClassRef<SceneNode> node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::node), DP_LOC);
-    auto& rb = get_rigid_body_vehicle(node);
-    if (rb.vehicle_controller_ != nullptr) {
-        THROW_OR_ABORT("Heli controller already set");
+    DanglingBaseClassRef<SceneNode> node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::node), CURRENT_SOURCE_LOCATION);
+    auto rb = get_rigid_body_vehicle(node.get(), CURRENT_SOURCE_LOCATION);
+    if (rb->vehicle_controller_ != nullptr) {
+        throw std::runtime_error("Heli controller already set");
     }
     std::vector<size_t> tire_ids = args.arguments.at<std::vector<size_t>>(KnownArgs::tire_ids);
     std::vector<float> tire_angles = args.arguments.at_vector<float>(KnownArgs::tire_angles, from_degrees);
     if (tire_ids.size() != tire_angles.size()) {
-        THROW_OR_ABORT("Tire IDs and angles have different lengths");
+        throw std::runtime_error("Tire IDs and angles have different lengths");
     }
     std::map<size_t, float> tire_angles_map;
     for (size_t i = 0; i < tire_ids.size(); ++i) {
         if (!tire_angles_map.insert({ tire_ids[i], tire_angles[i] }).second) {
-            THROW_OR_ABORT("Duplicate tire ID");
+            throw std::runtime_error("Duplicate tire ID");
         }
     }
-    rb.vehicle_controller_ = std::make_unique<HeliController>(
+    rb->vehicle_controller_ = std::make_unique<HeliController>(
         rb,
         tire_angles_map,
         args.arguments.at<size_t>(KnownArgs::main_rotor_id),

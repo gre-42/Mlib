@@ -1,6 +1,7 @@
+
 #include "Triangle_Tangent_Error_Behavior.hpp"
-#include <Mlib/Throw_Or_Abort.hpp>
 #include <map>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -11,7 +12,7 @@ TriangleTangentErrorBehavior Mlib::triangle_tangent_error_behavior_from_string(c
         {"throw", TriangleTangentErrorBehavior::THROW} };
     auto it = m.find(str);
     if (it == m.end()) {
-        THROW_OR_ABORT("Unknown triangle tangent error behavior: " + str);
+        throw std::runtime_error("Unknown triangle tangent error behavior: " + str);
     }
     return it->second;
 }

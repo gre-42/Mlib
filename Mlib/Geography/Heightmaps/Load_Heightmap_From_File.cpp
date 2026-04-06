@@ -1,3 +1,4 @@
+
 #include "Load_Heightmap_From_File.hpp"
 #include <Mlib/Geography/Heightmaps/Cities_Skylines.hpp>
 #include <Mlib/Geography/Heightmaps/Terrarium.hpp>
@@ -20,18 +21,18 @@ Array<TData> Mlib::load_heightmap_from_file(const std::string& filename) {
         } else if (ar.shape(0) == 1) {
             return ar[0].template casted<TData>() / TData(255);
         } else {
-            THROW_OR_ABORT("Height map is no 16-bit image and does not have 1 or 3 channels");
+            throw std::runtime_error("Height map is no 16-bit image and does not have 1 or 3 channels");
         }
     }
     if (auto* im16 = std::get_if<StbInfo<uint16_t>>(&imX); im16 != nullptr) {
         auto ar = stb_image_2_array(*im16);
         if (ar.shape(0) == 1) {
-            return cities_skylines_to_meters<TData>(ar);
+            return cities_skylines_to_meters<TData>(ar[0]);
         } else {
-            THROW_OR_ABORT("Height map is a 16-bit image and does not have exactly 1 channel");
+            throw std::runtime_error("Height map is a 16-bit image and does not have exactly 1 channel");
         }
     }
-    THROW_OR_ABORT("Image does not have 8 or 16 bit");
+    throw std::runtime_error("Image does not have 8 or 16 bit");
 }
 
 template Array<float> Mlib::load_heightmap_from_file<float>(const std::string&);

@@ -1,6 +1,6 @@
 #include "Racing_Line_Bvh.hpp"
-#include <Mlib/Geometry/Intersection/Distance/Distance_Point_Line.hpp>
-#include <Mlib/Geometry/Intersection/Intersect_Lines.hpp>
+#include <Mlib/Geometry/Primitives/Distance/Distance_Point_Line.hpp>
+#include <Mlib/Geometry/Primitives/Intersect_Lines.hpp>
 
 using namespace Mlib;
 

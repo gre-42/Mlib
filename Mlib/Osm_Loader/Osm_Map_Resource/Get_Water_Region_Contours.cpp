@@ -3,7 +3,7 @@
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Osm_Map_Resource_Helpers.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Region_With_Margin.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Water_Type.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -24,7 +24,7 @@ std::list<RegionWithMargin<WaterType, std::list<FixedArray<CompressedScenePos, 2
             continue;
         }
         if (w.second.nd.front() != w.second.nd.back()) {
-            THROW_OR_ABORT("Region is not closed: " + w.first);
+            throw std::runtime_error("Region is not closed: " + w.first);
         }
         auto& contour = result.emplace_back(terrain_type, WaterType::UNDEFINED, (CompressedScenePos)0.f);
         auto it = w.second.nd.begin();

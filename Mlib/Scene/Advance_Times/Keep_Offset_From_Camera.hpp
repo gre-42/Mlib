@@ -2,7 +2,7 @@
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
 #include <Mlib/Memory/Dangling_Base_Class.hpp>
-#include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
+#include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/Memory/Destruction_Functions.hpp>
 #include <Mlib/Memory/Event_Emitter.hpp>
 #include <Mlib/Physics/Interfaces/IAdvance_Time.hpp>
@@ -14,16 +14,12 @@ namespace Mlib {
 
 template <class T>
 class DanglingRef;
-class AdvanceTimes;
 class SceneNode;
-class Scene;
 class SelectedCameras;
 
 class KeepOffsetFromCamera: public INodeSetter, public IAbsoluteMovable, public IAdvanceTime, public virtual DanglingBaseClass {
 public:
     KeepOffsetFromCamera(
-        AdvanceTimes& advance_times,
-        Scene& scene,
         SelectedCameras& cameras,
         const FixedArray<float, 3>& offset,
         const FixedArray<float, 3>& grid,
@@ -42,8 +38,6 @@ private:
     void advance_time(float dt);
 
     DestructionFunctionsRemovalTokens on_destroy_follower_node_;
-    AdvanceTimes& advance_times_;
-    Scene& scene_;
     const SelectedCameras& cameras_;
     FixedArray<float, 3> offset_;
     FixedArray<float, 3> grid_;

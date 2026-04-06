@@ -1,5 +1,6 @@
+
 #include "Smoothness_Target.hpp"
-#include <Mlib/Throw_Or_Abort.hpp>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -9,6 +10,6 @@ SmoothnessTarget Mlib::smoothness_target_from_string(const std::string& s) {
     } else if (s == "render") {
         return SmoothnessTarget::RENDER;
     } else {
-        THROW_OR_ABORT("Unknown smoothness target: \"" + s + '"');
+        throw std::runtime_error("Unknown smoothness target: \"" + s + '"');
     }
 }

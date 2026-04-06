@@ -1,3 +1,4 @@
+
 #include "Group_Elements_By_Material.hpp"
 #include <Mlib/Geometry/Colored_Vertex.hpp>
 #include <Mlib/Geometry/Material.hpp>
@@ -13,7 +14,9 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::group_elements_by_mat
 {
     std::map<MaterialAndMorphology, TriangleList<TPos>> lists;
     for (const auto& cva : cvas) {
-        auto& l = lists.try_emplace({cva->material, cva->morphology}, cva->name, cva->material, cva->morphology).first->second;
+        auto& l = lists.try_emplace(
+            {cva->meta.material, cva->meta.morphology},
+            cva->meta.name, cva->meta.material, cva->meta.morphology, cva->meta.modifier_backlog).first->second;
         l.triangles.insert(l.triangles.end(), cva->triangles.begin(), cva->triangles.end());
     }
     std::list<std::shared_ptr<ColoredVertexArray<TPos>>> result;

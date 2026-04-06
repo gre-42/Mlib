@@ -1,7 +1,7 @@
 #include "Set_Soft_Light.hpp"
-#include <Mlib/Argument_List.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
-#include <Mlib/Render/Render_Logics/Post_Processing_Logic.hpp>
+#include <Mlib/Misc/Argument_List.hpp>
+#include <Mlib/OpenGL/Render_Logics/Post_Processing_Logic.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 
 using namespace Mlib;

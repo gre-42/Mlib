@@ -1,6 +1,6 @@
 #pragma once
 #include <Mlib/Memory/Destruction_Functions.hpp>
-#include <Mlib/Source_Location.hpp>
+#include <Mlib/Misc/Source_Location.hpp>
 #include <map>
 
 namespace Mlib {
@@ -10,7 +10,7 @@ class DanglingMap {
 public:
     template <class TKey>
     decltype(auto) try_emplace(const TKey& key, SourceLocation loc) {
-        auto res = elements_.try_emplace(key, key->on_destroy, loc);
+        auto res = elements_.try_emplace(key, key->on_destroy.deflt, loc);
         if (!res.second) {
             return res;
         }

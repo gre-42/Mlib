@@ -1,6 +1,7 @@
+
 #include "Vehicle_Domain.hpp"
-#include <Mlib/Throw_Or_Abort.hpp>
 #include <map>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -12,7 +13,7 @@ VehicleDomain Mlib::vehicle_domain_from_string(const std::string& str) {
     };
     auto it = m.find(str);
     if (it == m.end()) {
-        THROW_OR_ABORT("Unknown vehicle domain: \"" + str + '"');
+        throw std::runtime_error("Unknown vehicle domain: \"" + str + '"');
     }
     return it->second;
 }
@@ -28,5 +29,5 @@ std::string Mlib::vehicle_domain_to_string(VehicleDomain domain) {
     case VehicleDomain::END:
         ; // Fall through
     }
-    THROW_OR_ABORT("Unknown vehicle domain: " + std::to_string((int)domain));
+    throw std::runtime_error("Unknown vehicle domain: " + std::to_string((int)domain));
 }

@@ -3,6 +3,7 @@
 #include <Mlib/Geometry/Mesh/Animated_Colored_Vertex_Arrays.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array_Filter.hpp>
+#include <Mlib/Misc/FPath.hpp>
 #include <Mlib/Scene_Graph/Interfaces/IScene_Node_Resource.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
 #include <memory>
@@ -17,7 +18,7 @@ void Mlib::modify_rendering_material(
     std::optional<ExternalRenderPassType> occluded_pass,
     std::optional<ExternalRenderPassType> occluder_pass,
     std::optional<InterpolationMode> magnifying_interpolation_mode,
-    std::optional<std::string> histogram)
+    const FPath& histogram)
 {
     scene_node_resources.add_modifier(
         resource_name,
@@ -36,23 +37,23 @@ void Mlib::modify_rendering_material(
                             continue;
                         }
                         if (blend_mode.has_value()) {
-                            cva->material.blend_mode = *blend_mode;
+                            cva->meta.material.blend_mode = *blend_mode;
                         }
                         if (occluded_pass.has_value()) {
-                            cva->material.occluded_pass = *occluded_pass;
+                            cva->meta.material.occluded_pass = *occluded_pass;
                         }
                         if (occluder_pass.has_value()) {
-                            cva->material.occluder_pass = *occluder_pass;
+                            cva->meta.material.occluder_pass = *occluder_pass;
                         }
                         if (magnifying_interpolation_mode.has_value()) {
-                            for (auto& texture : cva->material.textures_color) {
+                            for (auto& texture : cva->meta.material.textures_color) {
                                 texture.texture_descriptor.color.magnifying_interpolation_mode = *magnifying_interpolation_mode;
                                 texture.texture_descriptor.color.compute_hash();
                             }
                         }
-                        if (histogram.has_value()) {
-                            for (auto& texture : cva->material.textures_color) {
-                                texture.texture_descriptor.color.histogram = *histogram;
+                        if (!histogram.empty()) {
+                            for (auto& texture : cva->meta.material.textures_color) {
+                                texture.texture_descriptor.color.histogram = histogram;
                                 texture.texture_descriptor.color.hash.reset();
                                 texture.texture_descriptor.color.compute_hash();
                             }

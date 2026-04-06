@@ -1,10 +1,10 @@
 #include "Delete_Mesh.hpp"
-#include <Mlib/Argument_List.hpp>
 #include <Mlib/Geometry/Mesh/Animated_Colored_Vertex_Arrays.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
-#include <Mlib/Render/Rendering_Context.hpp>
+#include <Mlib/Misc/Argument_List.hpp>
+#include <Mlib/OpenGL/Rendering_Context.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Interfaces/IScene_Node_Resource.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
@@ -33,7 +33,7 @@ LoadSceneJsonUserFunction DeleteMesh::json_user_function = [](const LoadSceneJso
                 std::list<std::shared_ptr<ColoredVertexArray<TPos>>>& cvas)
             {
                 cvas.remove_if([where](auto& cva){
-                    return any(cva->morphology.physics_material & where);
+                    return any(cva->meta.morphology.physics_material & where);
                 });
             };
             for (const auto& acva : resource.get_rendering_arrays()) {

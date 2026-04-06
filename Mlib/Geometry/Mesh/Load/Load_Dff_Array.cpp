@@ -1,3 +1,4 @@
+
 #include "Load_Dff_Array.hpp"
 #include <Mlib/Array/Non_Copying_Vector.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
@@ -23,7 +24,7 @@ DffArrays<TPosition> Mlib::load_dff(
 {
     auto ifs = create_ifstream(filename, std::ios::binary);
     if (ifs->fail()) {
-        THROW_OR_ABORT("Could not open file for read: \"" + filename + '"');
+        throw std::runtime_error("Could not open file for read: \"" + filename + '"');
     }
     try {
         return load_dff(
@@ -33,7 +34,7 @@ DffArrays<TPosition> Mlib::load_dff(
             dddb,
             frame_transformation);
     } catch (std::runtime_error& e) {
-        THROW_OR_ABORT("Could not read file \"" + filename + "\": "+ e.what());
+        throw std::runtime_error("Could not read file \"" + filename + "\": "+ e.what());
     }
 }
 
@@ -50,15 +51,15 @@ DffArrays<TPosition> Mlib::load_dff(
     auto clump = Mlib::Dff::read_dff(istr, IoVerbosity::SILENT);
     for (const auto& a : clump.atomics) {
         if (a.frame == nullptr) {
-            THROW_OR_ABORT("Atomic has no frame");
+            throw std::runtime_error("Atomic has no frame");
         }
         if (a.geometry->morph_targets.empty()) {
-            THROW_OR_ABORT("Morph targets empty");
+            throw std::runtime_error("Morph targets empty");
         }
         auto trafo = a.frame->matrix.casted<float, I>();
         for (uint32_t p = a.frame->parent; p != UINT32_MAX;) {
             if (p >= clump.frames.size()) {
-                THROW_OR_ABORT("Parent frame index out of bounds");
+                throw std::runtime_error("Parent frame index out of bounds");
             }
             const auto& parent = clump.frames[p];
             trafo = parent.matrix.casted<float, I>() * trafo;
@@ -113,13 +114,14 @@ DffArrays<TPosition> Mlib::load_dff(
                         ? cfg.physics_material
                         : (cfg.physics_material & ~PhysicsMaterial::ATTR_COLLIDE),
                     .center_distances2 = center_distances2,
-                    .max_triangle_distance = cfg.max_triangle_distance });
+                    .max_triangle_distance = cfg.max_triangle_distance },
+                ModifierBacklog{});
             if ((material.texture != nullptr) && cfg.textures.empty()) {
                 auto filename_lower = ide.texture_dictionary + ".txd_" + *material.texture->name;
                 std::transform(filename_lower.begin(), filename_lower.end(), filename_lower.begin(), ::tolower);
-                tl.material.textures_color = { {.texture_descriptor = TextureDescriptor{
+                tl.meta.material.textures_color = { {.texture_descriptor = TextureDescriptor{
                     .color = ColormapWithModifiers{
-                        .filename = VariableAndHash{ filename_lower },
+                        .filename = FPath::from_variable(filename_lower),
                         .color_mode = ColorMode::RGB | ColorMode::RGBA,
                         .mipmap_mode = cfg.mipmap_mode,
                         .magnifying_interpolation_mode = cfg.magnifying_interpolation_mode
@@ -134,22 +136,22 @@ DffArrays<TPosition> Mlib::load_dff(
 
         for (const auto& v : a.geometry->triangles) {
             if (v.matId >= tls.size()) {
-                THROW_OR_ABORT("Material ID too large (0)");
+                throw std::runtime_error("Material ID too large (0)");
             }
             if (v.matId >= materials.size()) {
-                THROW_OR_ABORT("Material ID too large (1)");
+                throw std::runtime_error("Material ID too large (1)");
             }
             if (any(v.v >= integral_cast<uint16_t>(vertices.size()))) {
-                THROW_OR_ABORT("Vertex ID too large");
+                throw std::runtime_error("Vertex ID too large");
             }
             if (!normals.empty() && any(v.v >= integral_cast<uint16_t>(normals.size()))) {
-                THROW_OR_ABORT("Vertex ID too large");
+                throw std::runtime_error("Vertex ID too large");
             }
             if (!colors.empty() && any(v.v >= integral_cast<uint16_t>(colors.size()))) {
-                THROW_OR_ABORT("Vertex ID too large");
+                throw std::runtime_error("Vertex ID too large");
             }
             if ((uvs != nullptr) && any(v.v >= integral_cast<uint16_t>(uvs->size()))) {
-                THROW_OR_ABORT("Vertex ID too large");
+                throw std::runtime_error("Vertex ID too large");
             }
             auto material_color = materials[v.matId].color;
             if (normals.empty()) {

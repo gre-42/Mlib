@@ -1,7 +1,7 @@
 #include "Road_Connection_Type.hpp"
+#include <Mlib/Hashing/Variable_And_Hash.hpp>
 #include <Mlib/Regex/Regex_Select.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
-#include <Mlib/Variable_And_Hash.hpp>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -14,7 +14,7 @@ RoadConnectionType Mlib::road_connection_type_from_string(const VariableAndHash<
     } else if (s == ENDPOINT) {
         return RoadConnectionType::ENDPOINT;
     } else {
-        THROW_OR_ABORT("Unknown road connection type: \"" + *s + '"');
+        throw std::runtime_error("Unknown road connection type: \"" + *s + '"');
     }
 }
 
@@ -33,7 +33,7 @@ void Mlib::road_connection_types_from_model_name(
         static const DECLARE_REGEX(re, "^[^.]+\\.(\\w+)-(\\w+)$");
         Mlib::re::cmatch match;
         if (!Mlib::re::regex_match(*model_name, match, re)) {
-            THROW_OR_ABORT("Could not parse model name: \"" + *model_name + '"');
+            throw std::runtime_error("Could not parse model name: \"" + *model_name + '"');
         }
         rct0 = road_connection_type_from_string(VariableAndHash<std::string>{match[1].str()});
         rct1 = road_connection_type_from_string(VariableAndHash<std::string>{match[2].str()});

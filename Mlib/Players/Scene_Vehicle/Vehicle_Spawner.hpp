@@ -103,6 +103,7 @@ private:
     DanglingBaseClassPtr<Player> player_;
     std::string role_;
     DestructionFunctionsRemovalTokens on_player_destroy_;
+    DestructionFunctionsRemovalTokens on_primary_scene_vehicle_node_destroy_;
     std::string suffix_;
     std::string team_name_;
     std::string group_name_;

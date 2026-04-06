@@ -1,3 +1,4 @@
+
 #include "Read_Texture_Native_Ps2.hpp"
 #include <Mlib/Geometry/Mesh/Load/IRaster_Factory.hpp>
 #include <Mlib/Geometry/Mesh/Load/IRaster_Ps2.hpp>
@@ -48,15 +49,15 @@ std::shared_ptr<Texture> Mlib::Dff::read_native_texture_ps2(
     IoVerbosity verbosity)
 {
     // if(!find_chunk(istr, ID_STRUCT, nullptr, nullptr)){
-    //     THROW_OR_ABORT("Could not find struct");
+    //     throw std::runtime_error("Could not find struct");
     // }
     // auto fourcc = read_binary<uint32_t>(istr, "fourcc", verbosity);
     // if(fourcc != FOURCC_PS2){
-    //     THROW_OR_ABORT((std::stringstream() << "Unexpected fourcc: 0x" << std::ios::hex << fourcc << ", " << asciiify(fourcc)).str());
+    //     throw std::runtime_error((std::stringstream() << "Unexpected fourcc: 0x" << std::ios::hex << fourcc << ", " << asciiify(fourcc)).str());
     // }
 
     if ((raster_factory != nullptr) && (raster_config == nullptr)) {
-        THROW_OR_ABORT("Received raster factory without config");
+        throw std::runtime_error("Received raster factory without config");
     }
 
     auto texture = std::make_shared<Texture>();
@@ -65,11 +66,11 @@ std::shared_ptr<Texture> Mlib::Dff::read_native_texture_ps2(
     uint32_t length;
     texture->filter_addressing = read_binary<uint32_t>(istr, "filter addressing", verbosity);
     if (!find_chunk(istr, ID_STRING, &length, nullptr, verbosity)){
-        THROW_OR_ABORT("Could not find string chunk");
+        throw std::runtime_error("Could not find string chunk");
     }
     texture->name = remove_trailing_zeros(read_string(istr, length, "texture name", verbosity));
     if(!find_chunk(istr, ID_STRING, &length, nullptr, verbosity)){
-        THROW_OR_ABORT("Could not find string");
+        throw std::runtime_error("Could not find string");
     }
     texture->mask = remove_trailing_zeros(read_string(istr, length, "texture mask", verbosity));
 
@@ -82,11 +83,11 @@ std::shared_ptr<Texture> Mlib::Dff::read_native_texture_ps2(
 
     // Raster
     if (!find_chunk(istr, ID_STRUCT, nullptr, nullptr, verbosity)){
-        THROW_OR_ABORT("Could not find struct");
+        throw std::runtime_error("Could not find struct");
     }
     uint32_t version;
     if(!find_chunk(istr, ID_STRUCT, nullptr, &version, verbosity)){
-        THROW_OR_ABORT("Could not find struct");
+        throw std::runtime_error("Could not find struct");
     }
     ASSERTLITTLE;
     auto streamExt = read_binary<StreamRasterExt>(istr, "stream raster ext", verbosity);
@@ -124,21 +125,21 @@ std::shared_ptr<Texture> Mlib::Dff::read_native_texture_ps2(
             if(!(raster_ps2->flags() & Ps2Flags::NEWSTYLE))
                 raster_ps2->flags() |= Ps2Flags::SWIZZLED8;
             else
-                THROW_OR_ABORT("read_native_texture_ps2 internal error (0)");
+                throw std::runtime_error("read_native_texture_ps2 internal error (0)");
         } else {
             // Version 0 has no swizzling at all
             if(!(raster_ps2->flags() & Ps2Flags::NEWSTYLE))
                 raster_ps2->flags() &= ~Ps2Flags::SWIZZLED8;
             else
-                THROW_OR_ABORT("read_native_texture_ps2 internal error (1)");
+                throw std::runtime_error("read_native_texture_ps2 internal error (1)");
         }
     }
 
     if (!find_chunk(istr, ID_STRUCT, &length, nullptr, verbosity)){
-        THROW_OR_ABORT("Could not find struct");
+        throw std::runtime_error("Could not find struct");
     }
     if (length != ALIGN16((streamExt.width * streamExt.height * streamExt.depth) / 8) + streamExt.paletteSize) {
-        THROW_OR_ABORT((std::stringstream() <<
+        throw std::runtime_error((std::stringstream() <<
             "Unexpected struct length. " <<
             streamExt.width <<
             'x' << streamExt.height <<
@@ -146,7 +147,7 @@ std::shared_ptr<Texture> Mlib::Dff::read_native_texture_ps2(
             " != 8 * (" << length << " + " << streamExt.paletteSize << ')').str());
     }
     if (raster_ps2->pixel_size() != ALIGN16((streamExt.width * streamExt.height * streamExt.depth) / 8)) {
-        THROW_OR_ABORT((std::stringstream() <<
+        throw std::runtime_error((std::stringstream() <<
             "Unexpected struct length. " <<
             streamExt.width <<
             'x' << streamExt.height <<

@@ -1,14 +1,14 @@
 #include "Sliding_Normal_Modifier.hpp"
 #include <Mlib/Math/Fixed_Math.hpp>
-#include <Mlib/Physics/Rigid_Body/Rigid_Body_Pulses.hpp>
+#include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 
 using namespace Mlib;
 
 SlidingNormalModifier::SlidingNormalModifier(
-    const RigidBodyPulses& rbp,
+    const DanglingBaseClassRef<const RigidBodyVehicle>& rb,
     float fac,
     float max_overlap)
-    : rbp_{ rbp }
+    : rb_{ rb }
     , fac_{ fac }
     , max_overlap_{ max_overlap }
 {}
@@ -21,7 +21,7 @@ void SlidingNormalModifier::modify_collision_normal(
     float& overlap) const
 {
     // auto v = rbp_.velocity_at_position(position);
-    auto v = rbp_.v_com_;
+    auto v = rb_->rbp_.v_com_;
     auto lv = std::sqrt(sum(squared(v)));
     if (lv < 1e-12) {
         return;

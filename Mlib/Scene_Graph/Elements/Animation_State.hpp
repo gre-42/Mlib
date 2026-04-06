@@ -1,8 +1,8 @@
 #pragma once
+#include <Mlib/Hashing/Variable_And_Hash.hpp>
 #include <Mlib/Scene_Graph/Animation/Animation_Frame.hpp>
 #include <Mlib/Scene_Graph/Animation/Aperiodic_Reference_Time.hpp>
 #include <Mlib/Scene_Graph/Animation/Periodic_Reference_Time.hpp>
-#include <Mlib/Variable_And_Hash.hpp>
 #include <cmath>
 #include <variant>
 

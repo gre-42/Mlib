@@ -1,7 +1,7 @@
 #include "Create_Aim_At.hpp"
-#include <Mlib/Argument_List.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Memory/Object_Pool.hpp>
+#include <Mlib/Misc/Argument_List.hpp>
 #include <Mlib/Physics/Advance_Times/Movables/Aim_At.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Engine.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
@@ -12,7 +12,7 @@
 #include <Mlib/Signal/Exponential_Smoother.hpp>
 #include <Mlib/Stats/Fast_Random_Number_Generators.hpp>
 #include <Mlib/Stats/Random_Process.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -45,11 +45,11 @@ CreateAimAt::CreateAimAt(PhysicsScene& physics_scene)
 void CreateAimAt::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     Linker linker{ physics_engine.advance_times_ };
-    DanglingBaseClassRef<SceneNode> gun_node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::gun_node), DP_LOC);
-    DanglingBaseClassRef<SceneNode> follower_node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::parent_follower_rigid_body_node), DP_LOC);
+    DanglingBaseClassRef<SceneNode> gun_node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::gun_node), CURRENT_SOURCE_LOCATION);
+    DanglingBaseClassRef<SceneNode> follower_node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::parent_follower_rigid_body_node), CURRENT_SOURCE_LOCATION);
     DanglingBaseClassPtr<SceneNode> followed_node = nullptr;
     if (args.arguments.contains(KnownArgs::followed)) {
-        followed_node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::followed), DP_LOC).ptr();
+        followed_node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::followed), CURRENT_SOURCE_LOCATION).ptr();
     }
     float velocity_error_std = args.arguments.at<float>(KnownArgs::velocity_error_std);
     float error_alpha = (velocity_error_std != 0.f)

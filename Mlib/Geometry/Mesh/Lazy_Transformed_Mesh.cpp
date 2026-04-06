@@ -1,18 +1,18 @@
+
 #include "Lazy_Transformed_Mesh.hpp"
 #include <Mlib/Geometry/Colored_Vertex.hpp>
 #include <Mlib/Geometry/Coordinates/Homogeneous.hpp>
 #include <Mlib/Geometry/Interfaces/Transformed_IIntersectable.hpp>
-#include <Mlib/Geometry/Intersection/Bounding_Sphere.hpp>
-#include <Mlib/Geometry/Intersection/Collision_Line.hpp>
-#include <Mlib/Geometry/Intersection/Collision_Polygon.hpp>
 #include <Mlib/Geometry/Mesh/Collision_Edges.hpp>
 #include <Mlib/Geometry/Mesh/Collision_Mesh.hpp>
-#include <Mlib/Geometry/Mesh/Collision_Ridges.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
 #include <Mlib/Geometry/Mesh/Typed_Mesh.hpp>
-#include <Mlib/Geometry/Plane_Nd.hpp>
-#include <Mlib/Geometry/Quad_3D.hpp>
-#include <Mlib/Geometry/Triangle_3D.hpp>
+#include <Mlib/Geometry/Primitives/Bounding_Sphere.hpp>
+#include <Mlib/Geometry/Primitives/Collision_Line.hpp>
+#include <Mlib/Geometry/Primitives/Collision_Polygon.hpp>
+#include <Mlib/Geometry/Primitives/Plane_Nd.hpp>
+#include <Mlib/Geometry/Primitives/Quad_3D.hpp>
+#include <Mlib/Geometry/Primitives/Triangle_3D.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 
 using namespace Mlib;
@@ -25,10 +25,8 @@ using namespace Mlib;
 LazyTransformedMesh::LazyTransformedMesh(
     const TransformationMatrix<SceneDir, ScenePos, 3>& transformation_matrix,
     const BoundingSphere<CompressedScenePos, 3>& bounding_sphere,
-    const std::shared_ptr<CollisionMesh>& collision_mesh,
-    SceneDir max_min_cos_ridge)
-    : max_min_cos_ridge_{max_min_cos_ridge}
-    , transformation_matrix_{ transformation_matrix }
+    const std::shared_ptr<CollisionMesh>& collision_mesh)
+    : transformation_matrix_{ transformation_matrix }
     , transformed_bounding_sphere_{ bounding_sphere.transformed(transformation_matrix) }
     , mesh_{ collision_mesh }
 {}
@@ -76,7 +74,7 @@ const std::vector<CollisionLineSphere<CompressedScenePos>>& LazyTransformedMesh:
     //if (msh.vertices->size() == 0) {
     //    lerr() << "Skipping mesh without triangles";
     //}
-    if (std::isnan(max_min_cos_ridge_) && !edges_calculated_) {
+    if (!edges_calculated_) {
         get_quads_sphere();
         get_triangles_sphere();
         std::scoped_lock lock{mutex_};
@@ -96,34 +94,6 @@ const std::vector<CollisionLineSphere<CompressedScenePos>>& LazyTransformedMesh:
         }
     }
     return transformed_edges_;
-}
-
-const std::vector<CollisionRidgeSphere<CompressedScenePos>>& LazyTransformedMesh::get_ridges_sphere() const {
-    //if (msh.vertices->size() == 0) {
-    //    lerr() << "Skipping mesh without triangles";
-    //}
-    if (!std::isnan(max_min_cos_ridge_) && !ridges_calculated_) {
-        get_quads_sphere();
-        get_triangles_sphere();
-        std::scoped_lock lock{mutex_};
-        if (!ridges_calculated_) {
-            CollisionRidges<CompressedScenePos> ridges;
-            for (const auto& q3 : transformed_quads_) {
-                ridges.insert(q3.corners, q3.polygon.plane.normal, max_min_cos_ridge_, q3.physics_material);
-            }
-            for (const auto& t3 : transformed_triangles_) {
-                ridges.insert(t3.corners, t3.polygon.plane.normal, max_min_cos_ridge_, t3.physics_material);
-            }
-            transformed_ridges_.reserve(ridges.size());
-            for (const auto& e : ridges) {
-                if (e.collision_ridge_sphere.is_touchable(SingleFaceBehavior::UNTOUCHABLE)) {
-                    transformed_ridges_.emplace_back(e.collision_ridge_sphere).finalize();
-                }
-            }
-            ridges_calculated_ = true;
-        }
-    }
-    return transformed_ridges_;
 }
 
 const std::vector<CollisionLineSphere<CompressedScenePos>>& LazyTransformedMesh::get_lines_sphere() const {

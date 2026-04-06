@@ -1,6 +1,6 @@
 #pragma once
 #include <Mlib/Os/Os.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
+#include <stdexcept>
 #include <vector>
 
 namespace Mlib {
@@ -71,7 +71,7 @@ public:
     node_type extract(const key_type& key) {
         auto res = elements_.extract(key);
         if (res.empty()) {
-            THROW_OR_ABORT(value_name_ + " with name \"" + key_to_string_(key) + "\" does not exist");
+            throw std::runtime_error(value_name_ + " with name \"" + key_to_string_(key) + "\" does not exist");
         }
         return res;
     }
@@ -95,7 +95,7 @@ public:
     mapped_type& get(const key_type& key) {
         auto it = elements_.find(key);
         if (it == elements_.end()) {
-            THROW_OR_ABORT(value_name_ + " with key \"" + key_to_string_(key) +
+            throw std::runtime_error(value_name_ + " with key \"" + key_to_string_(key) +
                 "\" does not exist");
         }
         return it->second;
@@ -125,7 +125,7 @@ public:
     mapped_type& add(const key_type& key, Args&&... args) {
         auto res = elements_.try_emplace(key, std::forward<Args>(args)...);
         if (!res.second) {
-            THROW_OR_ABORT("Could not insert into map");
+            throw std::runtime_error("Could not insert into map");
         }
         return res.first->second;
     }

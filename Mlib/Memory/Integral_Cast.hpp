@@ -1,7 +1,7 @@
 #pragma once
-#include <Mlib/Throw_Or_Abort.hpp>
 #include <concepts>
 #include <limits>
+#include <stdexcept>
 
 namespace Mlib {
 
@@ -13,12 +13,12 @@ template <std::integral TDest, std::integral TSource>
 TDest integral_cast(TSource source) {
     if constexpr((double)std::numeric_limits<TSource>::max() > (double)std::numeric_limits<TDest>::max()) {
         if (source > (TSource)std::numeric_limits<TDest>::max()) {
-            THROW_OR_ABORT("Value too large");
+            throw std::runtime_error("Value too large");
         }
     }
     if constexpr((double)std::numeric_limits<TSource>::min() < (double)std::numeric_limits<TDest>::min()) {
         if (source < (TSource)std::numeric_limits<TDest>::min()) {
-            THROW_OR_ABORT("Value too small");
+            throw std::runtime_error("Value too small");
         }
     }
     return TDest(source);

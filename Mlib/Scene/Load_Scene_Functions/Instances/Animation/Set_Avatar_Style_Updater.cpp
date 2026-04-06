@@ -1,14 +1,14 @@
 #include "Set_Avatar_Style_Updater.hpp"
-#include <Mlib/Argument_List.hpp>
 #include <Mlib/Components/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
+#include <Mlib/Misc/Argument_List.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Scene/Animation/Avatar_Animation_Updater.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Load_Scene_Funcs.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -27,11 +27,11 @@ SetAvatarStyleUpdater::SetAvatarStyleUpdater(PhysicsScene& physics_scene)
 void SetAvatarStyleUpdater::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     args.arguments.validate(KnownArgs::options);
-    DanglingBaseClassRef<SceneNode> avatar_node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::avatar_node), DP_LOC);
-    DanglingBaseClassRef<SceneNode> gun_node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::gun_node), DP_LOC);
-    auto& rb = get_rigid_body_vehicle(avatar_node);
-    if (rb.animation_state_updater_ != nullptr) {
-        THROW_OR_ABORT("Rigid body already has a style updater");
+    DanglingBaseClassRef<SceneNode> avatar_node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::avatar_node), CURRENT_SOURCE_LOCATION);
+    DanglingBaseClassRef<SceneNode> gun_node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::gun_node), CURRENT_SOURCE_LOCATION);
+    auto rb = get_rigid_body_vehicle(avatar_node.get(), CURRENT_SOURCE_LOCATION);
+    if (rb->animation_state_updater_ != nullptr) {
+        throw std::runtime_error("Rigid body already has a style updater");
     }
     auto updater = std::make_unique<AvatarAnimationUpdater>(
         rb,
@@ -40,7 +40,7 @@ void SetAvatarStyleUpdater::execute(const LoadSceneJsonUserFunctionArgs& args)
         args.arguments.at<std::string>(KnownArgs::resource_w_gun));
     AnimationStateUpdater& ref = *updater;
     avatar_node->set_animation_state_updater(std::move(updater));
-    rb.animation_state_updater_ = { ref, CURRENT_SOURCE_LOCATION };
+    rb->animation_state_updater_ = { ref, CURRENT_SOURCE_LOCATION };
 }
 
 namespace {

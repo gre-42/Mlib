@@ -1,7 +1,7 @@
+
 #include "Physics_Loop.hpp"
-#include <Mlib/Physics/Physics_Engine/Physics_Engine_Config.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Iteration.hpp>
-#include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
+#include <Mlib/Scene_Config/Physics_Engine_Config.hpp>
 #include <Mlib/Threads/Termination_Manager.hpp>
 #include <Mlib/Threads/Thread_Initializer.hpp>
 #include <Mlib/Time/Fps/Lag_Finder.hpp>
@@ -27,16 +27,11 @@ PhysicsLoop::PhysicsLoop(
         {
             try {
                 ThreadInitializer ti{ tn, thread_affinity };
-                DeferredSetDeleterThreadGuard set_deleter_thread_guard{physics_iteration_.delete_node_mutex_};
                 size_t nframes2 = nframes;
                 auto simulated_time = set_fps_.simulated_time();
                 // PeriodicLagFinder lag_finder{ "Physics: ", std::chrono::milliseconds{ 100 }};
                 while (!physics_thread_.get_stop_token().stop_requested()) {
                     auto loading = ll();
-                    if (!loading && !set_deleter_thread_guard.is_set()) {
-                        set_deleter_thread_guard.clear_deleter_thread();
-                        set_deleter_thread_guard.set_deleter_thread();
-                    }
                     if (!set_fps_.paused() && !loading) {
                         // lag_finder.start();
                         // TimeGuard::initialize(5 * 60);

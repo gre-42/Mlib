@@ -1,15 +1,18 @@
 #include "Base_Rotor.hpp"
+#include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 
 using namespace Mlib;
 
 BaseRotor::BaseRotor(
     VariableAndHash<std::string> engine,
     std::optional<VariableAndHash<std::string>> delta_engine,
-    RigidBodyPulses* rbp,
+    const DanglingBaseClassPtr<RigidBodyVehicle>& rb,
     float brake_torque)
     : engine{ std::move(engine) }
     , delta_engine{ std::move(delta_engine) }
-    , rbp{ rbp }
+    , rb{ rb }
     , angular_velocity{ 0.f }
     , brake_torque{ brake_torque }
 {}
+
+BaseRotor::~BaseRotor() = default;

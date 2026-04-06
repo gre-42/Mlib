@@ -1,10 +1,11 @@
+
 #include "Contour.hpp"
-#include <Mlib/Env.hpp>
 #include <Mlib/Geometry/Colored_Vertex.hpp>
 #include <Mlib/Geometry/Exceptions/Edge_Exception.hpp>
 #include <Mlib/Geometry/Mesh/Contour_Detection_Strategy.hpp>
 #include <Mlib/Geometry/Mesh/Plot.hpp>
 #include <Mlib/Math/Orderable_Fixed_Array.hpp>
+#include <Mlib/Os/Env.hpp>
 #include <Mlib/Scene_Config/Scene_Precision.hpp>
 
 #define C_DEBUG(a)
@@ -108,7 +109,7 @@ std::list<std::list<FixedArray<TPos, 3>>> Mlib::find_contours(
         //         if (edge_neighbors.find(p.second) == edge_neighbors.end()) {
         //             std::stringstream sstr;
         //             sstr << "Edge neighbor not found: " << p.second.first << " | " << p.second.second;
-        //             THROW_OR_ABORT(sstr.str());
+        //             throw std::runtime_error(sstr.str());
         //         }
         //     }
         // };
@@ -130,10 +131,10 @@ std::list<std::list<FixedArray<TPos, 3>>> Mlib::find_contours(
                         C_DEBUG(lerr());
                         C_DEBUG(lerr() << "insert (0) " << en.first << " | " << en.second);
                         if (!edge_neighbors.try_emplace(en, O((*t)(c).position)).second) {
-                            THROW_OR_ABORT("Detected duplicate edge (0)");
+                            throw std::runtime_error("Detected duplicate edge (0)");
                         }
                         if (!parent_edges.try_emplace(en, ep).second) {
-                            THROW_OR_ABORT("Could not set parent edge (1)");
+                            throw std::runtime_error("Could not set parent edge (1)");
                         }
                         C_DEBUG(print_debug_info());
                     };
@@ -154,23 +155,23 @@ std::list<std::list<FixedArray<TPos, 3>>> Mlib::find_contours(
                         edge_neighbors.erase(it_ab);
                         auto e_az = std::make_pair(ei_ab.second, z);
                         if (parent_edges.insert_or_assign(e_az, e_ca).second) {
-                            THROW_OR_ABORT("Expected edge (6)");
+                            throw std::runtime_error("Expected edge (6)");
                         }
                         auto p_ab = parent_edges.find(ei_ab);
                         if (p_ab == parent_edges.end()) {
-                            THROW_OR_ABORT("Could not find parent edge");
+                            throw std::runtime_error("Could not find parent edge");
                         }
                         if (edge_neighbors.insert_or_assign(p_ab->second, O((*t)(c).position)).second) {
-                            THROW_OR_ABORT("Expected edge (5)");
+                            throw std::runtime_error("Expected edge (5)");
                         }
                         if (!edge_neighbors.try_emplace(e_bc, O((*t)(a).position)).second) {
-                            THROW_OR_ABORT("Detected duplicate edge (2)");
+                            throw std::runtime_error("Detected duplicate edge (2)");
                         }
                         if (!parent_edges.try_emplace(e_bc, p_ab->second).second) {
-                            THROW_OR_ABORT("Detected duplicate edge (3)");
+                            throw std::runtime_error("Detected duplicate edge (3)");
                         }
                         if (!edge_neighbors.try_emplace(e_ca, O(z)).second) {
-                            THROW_OR_ABORT("Detected duplicate edge (4)");
+                            throw std::runtime_error("Detected duplicate edge (4)");
                         }
                         parent_edges.try_emplace(e_ca, e_bc);
                         parent_edges.erase(p_ab);
@@ -198,20 +199,20 @@ std::list<std::list<FixedArray<TPos, 3>>> Mlib::find_contours(
                         {
                             auto it_bc = edge_neighbors.find(ei_bc);
                             if (it_bc == edge_neighbors.end()) {
-                                THROW_OR_ABORT("Could not get it_bc");
+                                throw std::runtime_error("Could not get it_bc");
                             }
                             auto e_bx = std::make_pair(O((*t)(b).position), it_bc->second);
                             auto p_bx = parent_edges.find(e_bx);
                             if (p_bx == parent_edges.end()) {
-                                THROW_OR_ABORT("Could not get p_bx");
+                                throw std::runtime_error("Could not get p_bx");
                             }
                             auto p_ab = parent_edges.find(ei_ab);
                             if (p_ab == parent_edges.end()) {
-                                THROW_OR_ABORT("Could not get p_ab");
+                                throw std::runtime_error("Could not get p_ab");
                             }
                             parent_edges.insert_or_assign(p_bx, e_bx, p_ab->second);
                             if (edge_neighbors.insert_or_assign(p_ab->second, it_bc->second).second) {
-                                THROW_OR_ABORT("Expected edge (0)");
+                                throw std::runtime_error("Expected edge (0)");
                             }
                             C_DEBUG(lerr() << "a ");
                             C_DEBUG(check_consistency());
@@ -219,42 +220,42 @@ std::list<std::list<FixedArray<TPos, 3>>> Mlib::find_contours(
                         // ca
                         auto p_bc = parent_edges.find(ei_bc);
                         if (p_bc == parent_edges.end()) {
-                            THROW_OR_ABORT("Could not find parent edge bc");
+                            throw std::runtime_error("Could not find parent edge bc");
                         }
                         auto it_ab = edge_neighbors.find(ei_ab);
                         if (it_ab == edge_neighbors.end()) {
-                            THROW_OR_ABORT("Could not find it_ab");
+                            throw std::runtime_error("Could not find it_ab");
                         }
                         auto z = it_ab->second;
                         if (!edge_neighbors.try_emplace(e_ca, z).second) {
-                            THROW_OR_ABORT("Detected duplicate edge (5)");
+                            throw std::runtime_error("Detected duplicate edge (5)");
                         }
                         parent_edges.try_emplace(e_ca, p_bc->second);
                         if (edge_neighbors.insert_or_assign(p_bc->second, O((*t)(a).position)).second) {
-                            THROW_OR_ABORT("Expected edge (1)");
+                            throw std::runtime_error("Expected edge (1)");
                         }
                         C_DEBUG(lerr() << "b ");
                         C_DEBUG(check_consistency());
                         // ab
                         edge_neighbors.erase(it_ab);
                         if (parent_edges.erase(ei_ab) == 0) {
-                            THROW_OR_ABORT("Could not delete parent ab");
+                            throw std::runtime_error("Could not delete parent ab");
                         }
                         // az
                         {
                             auto e_az = std::make_pair(ei_ab.second, z);
                             if (parent_edges.insert_or_assign(e_az, e_ca).second) {
-                                THROW_OR_ABORT("Expected edge (2)");
+                                throw std::runtime_error("Expected edge (2)");
                             }
                         }
                         C_DEBUG(lerr() << "4");
                         C_DEBUG(check_consistency());
                         // bc
                         if (edge_neighbors.erase(ei_bc) == 0) {
-                            THROW_OR_ABORT("Could not delete edge bc");
+                            throw std::runtime_error("Could not delete edge bc");
                         }
                         if (parent_edges.erase(ei_bc) == 0) {
-                            THROW_OR_ABORT("Could not delete parent bc");
+                            throw std::runtime_error("Could not delete parent bc");
                         }
                         C_DEBUG(lerr() << "c");
                         C_DEBUG(check_consistency());
@@ -274,27 +275,27 @@ std::list<std::list<FixedArray<TPos, 3>>> Mlib::find_contours(
                         auto ei_bc = std::make_pair(O((*t)(c).position), O((*t)(b).position));
                         auto en_b = edge_neighbors.find(ei_bc);
                         if (en_b == edge_neighbors.end()) {
-                            THROW_OR_ABORT("Could not find en_b");
+                            throw std::runtime_error("Could not find en_b");
                         }
                         // ab
                         auto p_ab = parent_edges.find(ei_ab);
                         if (p_ab == parent_edges.end()) {
-                            THROW_OR_ABORT("Could not find p_ab");
+                            throw std::runtime_error("Could not find p_ab");
                         }
                         if (edge_neighbors.insert_or_assign(p_ab->second, en_b->second).second) {
-                            THROW_OR_ABORT("Expected edge (7)");
+                            throw std::runtime_error("Expected edge (7)");
                         }
                         // bx
                         auto e_bx = std::make_pair(ei_ab.first, en_b->second);
                         if (parent_edges.insert_or_assign(e_bx, p_ab->second).second) {
-                            THROW_OR_ABORT("Expected edge (8)");
+                            throw std::runtime_error("Expected edge (8)");
                         }
                         parent_edges.erase(p_ab);
                     };
                     auto safe_erase = [&edge_neighbors, &t](size_t a, size_t b, size_t c) {
                         auto ei_ab = std::make_pair(O((*t)(b).position), O((*t)(a).position));
                         if (edge_neighbors.erase(ei_ab) == 0) {
-                            THROW_OR_ABORT("Could not delete ei_ab");
+                            throw std::runtime_error("Could not delete ei_ab");
                         }
                     };
                     safe_insert_neighbor(0, 1, 2);
@@ -310,9 +311,9 @@ std::list<std::list<FixedArray<TPos, 3>>> Mlib::find_contours(
                 auto debug_filename = try_getenv("CONTOUR_DEBUG_FILENAME");
                 if (debug_filename.has_value()) {
                     plot_mesh(FixedArray<size_t, 2>{8000u, 8000u}, 1, 4, triangles, {}, {}, {(*t)(0).position, (*t)(1).position, (*t)(2).position}).T().reversed(0).save_to_file(*debug_filename);
-                    THROW_OR_ABORT(std::string(e.what()) + ", debug image saved");
+                    throw std::runtime_error(std::string(e.what()) + ", debug image saved");
                 } else {
-                    THROW_OR_ABORT(std::string(e.what()) + ", consider setting the CONTOUR_DEBUG_FILENAME environment variable");
+                    throw std::runtime_error(std::string(e.what()) + ", consider setting the CONTOUR_DEBUG_FILENAME environment variable");
                 }
             }
         }
@@ -335,14 +336,14 @@ std::list<std::list<FixedArray<TPos, 3>>> Mlib::find_contours(
             if (any(vv != vv0)) {
                 // plot_mesh(ArrayShape{8000, 8000}, triangles, contour, {}).save_to_file("/tmp/cc.pgm");
                 // plot_mesh_svg("/tmp/cc.svg", 800, 800, triangles, contour, {});
-                THROW_OR_ABORT("Contour is not closed");
+                throw std::runtime_error("Contour is not closed");
             }
             edge_neighbors.erase(v);
             result.push_back(contour);
         }
         return result;
     } else {
-        THROW_OR_ABORT("Unknown contour detection strategy");
+        throw std::runtime_error("Unknown contour detection strategy");
     }
 }
 

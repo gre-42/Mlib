@@ -1,13 +1,13 @@
 #include "Create_Destination_Reached_Ai.hpp"
-#include <Mlib/Argument_List.hpp>
 #include <Mlib/Components/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Memory/Object_Pool.hpp>
+#include <Mlib/Misc/Argument_List.hpp>
 #include <Mlib/Physics/Ai/Control_Source.hpp>
 #include <Mlib/Players/Vehicle_Ai/Destination_Reached_Ai.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -33,8 +33,9 @@ CreateDestinationReachedAi::CreateDestinationReachedAi(PhysicsScene& physics_sce
 
 void CreateDestinationReachedAi::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    auto& vehicle = get_rigid_body_vehicle(scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::vehicle), DP_LOC));
-    vehicle.add_autopilot(
+    auto node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::vehicle), CURRENT_SOURCE_LOCATION);
+    auto vehicle = get_rigid_body_vehicle(node.get(), CURRENT_SOURCE_LOCATION);
+    vehicle->add_autopilot(
         {
             global_object_pool.create<DestinationReachedAi>(
                 CURRENT_SOURCE_LOCATION,

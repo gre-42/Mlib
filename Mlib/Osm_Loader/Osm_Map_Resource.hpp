@@ -1,11 +1,11 @@
 #pragma once
-#include <Mlib/Default_Uninitialized_List.hpp>
-#include <Mlib/Geometry/Intersection/Bvh_Fwd.hpp>
 #include <Mlib/Geometry/Mesh/Animated_Colored_Vertex_Arrays.hpp>
+#include <Mlib/Geometry/Primitives/Bvh_Fwd.hpp>
+#include <Mlib/Initialization/Default_Uninitialized_List.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
-#include <Mlib/Render/Renderables/Triangle_Sampler/Terrain_Styles.hpp>
-#include <Mlib/Render/Renderables/Triangle_Sampler/Terrain_Triangles.hpp>
-#include <Mlib/Render/Resources/Heterogeneous_Resource.hpp>
+#include <Mlib/OpenGL/Renderables/Triangle_Sampler/Terrain_Styles.hpp>
+#include <Mlib/OpenGL/Renderables/Triangle_Sampler/Terrain_Triangles.hpp>
+#include <Mlib/OpenGL/Resources/Heterogeneous_Resource.hpp>
 #include <Mlib/Scene_Graph/Interfaces/IScene_Node_Resource.hpp>
 #include <Mlib/Scene_Graph/Resources/Batch_Resource_Instantiator.hpp>
 #include <Mlib/Threads/Recursive_Shared_Mutex.hpp>

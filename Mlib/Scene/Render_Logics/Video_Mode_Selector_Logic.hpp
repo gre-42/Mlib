@@ -1,10 +1,10 @@
 #pragma once
 #include <Mlib/Macro_Executor/Focus.hpp>
 #include <Mlib/Macro_Executor/Focus_Filter.hpp>
+#include <Mlib/OpenGL/Render_Logic.hpp>
+#include <Mlib/OpenGL/Ui/IList_View_Contents.hpp>
+#include <Mlib/OpenGL/Ui/List_View.hpp>
 #include <Mlib/Regex/Misc.hpp>
-#include <Mlib/Render/Render_Logic.hpp>
-#include <Mlib/Render/Ui/IList_View_Contents.hpp>
-#include <Mlib/Render/Ui/List_View.hpp>
 #include <cstdint>
 #include <memory>
 #include <vector>
@@ -81,7 +81,6 @@ private:
     const ILayoutPixels& font_height_;
     const ILayoutPixels& line_distance_;
     FocusFilter focus_filter_;
-    UiFocus& ui_focus_;
     std::string id_;
     WindowLogic& window_logic_;
     ListView list_view_;

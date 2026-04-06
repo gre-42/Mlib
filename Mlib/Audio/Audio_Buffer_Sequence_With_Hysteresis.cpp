@@ -1,5 +1,6 @@
+
 #include "Audio_Buffer_Sequence_With_Hysteresis.hpp"
-#include <Mlib/Throw_Or_Abort.hpp>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -16,7 +17,7 @@ const AudioBufferAndFrequency& AudioBufferSequenceWithHysteresis::get_buffer_and
     PitchAdjustmentStrategy strategy)
 {
     if (frequency < 0.f) {
-        THROW_OR_ABORT("Requested negative audio frequency");
+        throw std::runtime_error("Requested negative audio frequency");
     }
     if ((previous_result_ == nullptr) ||
         (std::abs(previous_result_->frequency - frequency) / (previous_result_->frequency + 1e-6) > hysteresis_step_))

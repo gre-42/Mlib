@@ -1,12 +1,12 @@
 #include "Explosion_Rocks_Resource.hpp"
-#include <Mlib/Argument_List.hpp>
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Geometry/Instance/Rendering_Dynamics.hpp>
-#include <Mlib/Geometry/Intersection/Interval_Json.hpp>
 #include <Mlib/Geometry/Material/Aggregate_Mode.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>
+#include <Mlib/Geometry/Primitives/Interval_Json.hpp>
 #include <Mlib/Json/Json_View.hpp>
 #include <Mlib/Math/Lerp.hpp>
+#include <Mlib/Misc/Argument_List.hpp>
 #include <Mlib/Physics/Advance_Times/Bullet.hpp>
 #include <Mlib/Physics/Bullets/Bullet_Generator.hpp>
 #include <Mlib/Physics/Bullets/Bullet_Properties.hpp>
@@ -22,7 +22,7 @@
 #include <Mlib/Scene_Graph/Instantiation/Child_Instantiation_Options.hpp>
 #include <Mlib/Scene_Graph/Instantiation/Root_Instantiation_Options.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -46,7 +46,8 @@ ExplosionRocksResource::ExplosionRocksResource(
     const BulletPropertyDb& bullet_property_db,
     const ResourceCycle<ExplosionRockDescriptor>& descriptors,
     size_t nrocks)
-    : scene_node_resources_{ scene_node_resources }
+    : ISceneNodeResource{"ExplosionRocksResource"}
+    , scene_node_resources_{ scene_node_resources }
     , bullet_property_db_{ bullet_property_db }
     , descriptors_{ descriptors }
     , random_velocity_direction_generator_{ 42 } // seed is overridden in "instantiate_root_renderables"
@@ -65,7 +66,7 @@ void ExplosionRocksResource::preload(const RenderableResourceFilter& filter) con
 void ExplosionRocksResource::instantiate_root_renderables(const RootInstantiationOptions& options) const
 {
     if (options.bullet_generator == nullptr) {
-        THROW_OR_ABORT("ExplosionRocksResource::instantiate_root_renderables: Bullet generator not set");
+        throw std::runtime_error("ExplosionRocksResource::instantiate_root_renderables: Bullet generator not set");
     }
     std::scoped_lock lock{ rng_mutex_ };
 

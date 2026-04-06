@@ -32,7 +32,7 @@
 #define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h>
 
-#include <Mlib/Render/linmath.hpp>
+#include <Mlib/OpenGL/linmath.hpp>
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>

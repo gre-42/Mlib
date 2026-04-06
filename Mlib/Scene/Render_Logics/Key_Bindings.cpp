@@ -2,13 +2,39 @@
 #include <Mlib/Components/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Geometry/Cameras/Camera.hpp>
 #include <Mlib/Geometry/Coordinates/To_Tait_Bryan_Angles.hpp>
-#include <Mlib/Geometry/Intersection/Axis_Aligned_Bounding_Box.hpp>
-#include <Mlib/Geometry/Intersection/Intersectors/Swept_Sphere_Aabb.hpp>
-#include <Mlib/Log.hpp>
+#include <Mlib/Geometry/Primitives/Axis_Aligned_Bounding_Box.hpp>
+#include <Mlib/Geometry/Primitives/Intersectors/Swept_Sphere_Aabb.hpp>
 #include <Mlib/Macro_Executor/Focus.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Math/Interp.hpp>
 #include <Mlib/Math/Lerp.hpp>
+#include <Mlib/Misc/Log.hpp>
+#include <Mlib/OpenGL/Key_Bindings/Absolute_Movable_Idle_Binding.hpp>
+#include <Mlib/OpenGL/Key_Bindings/Absolute_Movable_Key_Binding.hpp>
+#include <Mlib/OpenGL/Key_Bindings/Avatar_Controller_Idle_Binding.hpp>
+#include <Mlib/OpenGL/Key_Bindings/Avatar_Controller_Key_Binding.hpp>
+#include <Mlib/OpenGL/Key_Bindings/Base_Cursor_Axis_Binding.hpp>
+#include <Mlib/OpenGL/Key_Bindings/Base_Gamepad_Analog_Axis_Binding.hpp>
+#include <Mlib/OpenGL/Key_Bindings/Camera_Key_Binding.hpp>
+#include <Mlib/OpenGL/Key_Bindings/Car_Controller_Idle_Binding.hpp>
+#include <Mlib/OpenGL/Key_Bindings/Car_Controller_Key_Binding.hpp>
+#include <Mlib/OpenGL/Key_Bindings/Gun_Key_Binding.hpp>
+#include <Mlib/OpenGL/Key_Bindings/Key_Configuration.hpp>
+#include <Mlib/OpenGL/Key_Bindings/Lockable_Key_Configurations.hpp>
+#include <Mlib/OpenGL/Key_Bindings/Plane_Controller_Idle_Binding.hpp>
+#include <Mlib/OpenGL/Key_Bindings/Plane_Controller_Key_Binding.hpp>
+#include <Mlib/OpenGL/Key_Bindings/Player_Key_Binding.hpp>
+#include <Mlib/OpenGL/Key_Bindings/Print_Node_Info_Key_Binding.hpp>
+#include <Mlib/OpenGL/Key_Bindings/Relative_Movable_Key_Binding.hpp>
+#include <Mlib/OpenGL/Key_Bindings/Weapon_Cycle_Key_Binding.hpp>
+#include <Mlib/OpenGL/Render_Setup.hpp>
+#include <Mlib/OpenGL/Selected_Cameras/Camera_Cycle_Type.hpp>
+#include <Mlib/OpenGL/Selected_Cameras/Selected_Cameras.hpp>
+#include <Mlib/OpenGL/Ui/Button_Press.hpp>
+#include <Mlib/OpenGL/Ui/Cursor_Movement.hpp>
+#include <Mlib/OpenGL/Ui/Cursor_States.hpp>
+#include <Mlib/OpenGL/Ui/Gamepad_Analog_Axes_Position.hpp>
+#include <Mlib/OpenGL/Ui/Scroll_Wheel_Movement.hpp>
 #include <Mlib/Physics/Actuators/Engine_Power_Delta_Intent.hpp>
 #include <Mlib/Physics/Actuators/Engine_Power_Intent.hpp>
 #include <Mlib/Physics/Actuators/Tire.hpp>
@@ -19,45 +45,18 @@
 #include <Mlib/Physics/Advance_Times/Movables/Yaw_Pitch_Look_At_Nodes.hpp>
 #include <Mlib/Physics/Misc/Weapon_Cycle.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Engine.hpp>
-#include <Mlib/Physics/Physics_Engine/Physics_Engine_Config.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Physics/Vehicle_Controllers/Avatar_Controllers/Rigid_Body_Avatar_Controller.hpp>
 #include <Mlib/Physics/Vehicle_Controllers/Car_Controllers/Rigid_Body_Vehicle_Controller.hpp>
 #include <Mlib/Physics/Vehicle_Controllers/Plane_Controllers/Rigid_Body_Plane_Controller.hpp>
 #include <Mlib/Players/Advance_Times/Player.hpp>
-#include <Mlib/Players/Containers/Players.hpp>
-#include <Mlib/Render/Key_Bindings/Absolute_Movable_Idle_Binding.hpp>
-#include <Mlib/Render/Key_Bindings/Absolute_Movable_Key_Binding.hpp>
-#include <Mlib/Render/Key_Bindings/Avatar_Controller_Idle_Binding.hpp>
-#include <Mlib/Render/Key_Bindings/Avatar_Controller_Key_Binding.hpp>
-#include <Mlib/Render/Key_Bindings/Base_Cursor_Axis_Binding.hpp>
-#include <Mlib/Render/Key_Bindings/Base_Gamepad_Analog_Axis_Binding.hpp>
-#include <Mlib/Render/Key_Bindings/Camera_Key_Binding.hpp>
-#include <Mlib/Render/Key_Bindings/Car_Controller_Idle_Binding.hpp>
-#include <Mlib/Render/Key_Bindings/Car_Controller_Key_Binding.hpp>
-#include <Mlib/Render/Key_Bindings/Gun_Key_Binding.hpp>
-#include <Mlib/Render/Key_Bindings/Key_Configuration.hpp>
-#include <Mlib/Render/Key_Bindings/Lockable_Key_Configurations.hpp>
-#include <Mlib/Render/Key_Bindings/Plane_Controller_Idle_Binding.hpp>
-#include <Mlib/Render/Key_Bindings/Plane_Controller_Key_Binding.hpp>
-#include <Mlib/Render/Key_Bindings/Player_Key_Binding.hpp>
-#include <Mlib/Render/Key_Bindings/Print_Node_Info_Key_Binding.hpp>
-#include <Mlib/Render/Key_Bindings/Relative_Movable_Key_Binding.hpp>
-#include <Mlib/Render/Key_Bindings/Weapon_Cycle_Key_Binding.hpp>
-#include <Mlib/Render/Render_Setup.hpp>
-#include <Mlib/Render/Selected_Cameras/Camera_Cycle_Type.hpp>
-#include <Mlib/Render/Selected_Cameras/Selected_Cameras.hpp>
-#include <Mlib/Render/Ui/Button_Press.hpp>
-#include <Mlib/Render/Ui/Cursor_Movement.hpp>
-#include <Mlib/Render/Ui/Cursor_States.hpp>
-#include <Mlib/Render/Ui/Gamepad_Analog_Axes_Position.hpp>
-#include <Mlib/Render/Ui/Scroll_Wheel_Movement.hpp>
+#include <Mlib/Scene_Config/Physics_Engine_Config.hpp>
 #include <Mlib/Scene_Graph/Animation/Animation_State_Updater.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Instances/Static_World.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
 #include <map>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -65,12 +64,10 @@ KeyBindings::KeyBindings(
     SelectedCameras& selected_cameras,
     const Focuses& focuses,
     const CountdownPhysics& countdown_start,
-    Players& players,
     PhysicsEngine& physics_engine)
     : selected_cameras_{ selected_cameras }
     , focuses_{ focuses }
     , countdown_start_{ countdown_start }
-    , players_{ players }
     , physics_engine_{ physics_engine }
 {}
 
@@ -310,77 +307,77 @@ void KeyBindings::increment_external_forces(
     // Absolute movable
     if (enable_controls) {
         for (const auto& k : absolute_movable_idle_bindings_) {
-            auto& rb = get_rigid_body_vehicle(*k->node);
-            if (!phase.group.rigid_bodies.contains(&rb.rbp_)) {
+            auto rb = get_rigid_body_vehicle(*k->node.get(), CURRENT_SOURCE_LOCATION);
+            if (!phase.group.rigid_bodies.contains(&rb->rbp_)) {
                 continue;
             }
-            rb.set_surface_power(main_name, EnginePowerIntent{.surface_power = 0});
-            rb.set_surface_power(brakes_name, EnginePowerIntent{.surface_power = 0});
-            rb.set_max_velocity(INFINITY);
-            for (auto& t : rb.tires_) {
+            rb->set_surface_power(main_name, EnginePowerIntent{.surface_power = 0});
+            rb->set_surface_power(brakes_name, EnginePowerIntent{.surface_power = 0});
+            rb->set_max_velocity(INFINITY);
+            for (auto& t : rb->tires_) {
                 t.second.angle_y = 0;
                 // t.second.accel_x = 0;
             }
-            rb.tires_z_ = k->tires_z;
+            rb->tires_z_ = k->tires_z;
         }
     }
     for (auto& k : absolute_movable_key_bindings_) {
-        auto& rb = get_rigid_body_vehicle(*k->node);
-        if (!phase.group.rigid_bodies.contains(&rb.rbp_)) {
+        auto rb = get_rigid_body_vehicle(*k->node.get(), CURRENT_SOURCE_LOCATION);
+        if (!phase.group.rigid_bodies.contains(&rb->rbp_)) {
             continue;
         }
         float alpha = k->button_press.keys_alpha(0.05f);
         if (enable_controls && !std::isnan(alpha)) {
             if (any(k->force.vector != 0.f)) {
-                rb.integrate_force(rb.abs_F(k->force), cfg, phase);
+                rb->integrate_force(rb->abs_F(k->force), cfg, phase);
             }
             if (any(k->rotate != 0.f)) {
-                rb.rbp_.rotation_ = dot2d(rb.rbp_.rotation_, rodrigues1(alpha * k->rotate));
+                rb->rbp_.rotation_ = dot2d(rb->rbp_.rotation_, rodrigues1(alpha * k->rotate));
             }
             if (k->car_surface_power.has_value()) {
-                rb.set_surface_power(main_name, EnginePowerIntent{.surface_power = *k->car_surface_power});
-                rb.set_surface_power(brakes_name, EnginePowerIntent{.surface_power = *k->car_surface_power});
+                rb->set_surface_power(main_name, EnginePowerIntent{.surface_power = *k->car_surface_power});
+                rb->set_surface_power(brakes_name, EnginePowerIntent{.surface_power = *k->car_surface_power});
             }
             if (k->max_velocity != INFINITY) {
-                rb.set_max_velocity(k->max_velocity);
+                rb->set_max_velocity(k->max_velocity);
             }
             if (k->tire_id != SIZE_MAX) {
                 // float v = std::sqrt(sum(squared(rb->rbp_.v_)));
                 float v = std::abs(dot0d(
-                    rb.rbp_.v_com_,
-                    rb.rbp_.rotation_.column(2)));
-                rb.set_tire_angle_y(k->tire_id, alpha * k->tire_angle_interp(v));
+                    rb->rbp_.v_com_,
+                    rb->rbp_.rotation_.column(2)));
+                rb->set_tire_angle_y(k->tire_id, alpha * k->tire_angle_interp(v));
                 // rb->set_tire_accel_x(k->tire_id, alpha * sign(k->tire_angle_interp(0)));
             }
             if (any(k->tires_z != 0.f)) {
-                rb.tires_z_ += k->tires_z;
+                rb->tires_z_ += k->tires_z;
             }
             if ((alpha == 0) && k->wants_to_jump.has_value() && *k->wants_to_jump) {
-                rb.set_wants_to_jump();
+                rb->set_wants_to_jump();
             }
             if (k->wants_to_grind.has_value()) {
-                rb.grind_state_.wants_to_grind_ = *k->wants_to_grind;
+                rb->grind_state_.wants_to_grind_ = *k->wants_to_grind;
             }
             if (k->fly_forward_factor.has_value()) {
-                rb.fly_forward_state_.wants_to_fly_forward_factor_ = *k->fly_forward_factor;
+                rb->fly_forward_state_.wants_to_fly_forward_factor_ = *k->fly_forward_factor;
             }
         }
     }
     if (enable_controls) {
         for (const auto& k : absolute_movable_idle_bindings_) {
-            auto& rb = get_rigid_body_vehicle(*k->node);
-            if (!phase.group.rigid_bodies.contains(&rb.rbp_)) {
+            auto rb = get_rigid_body_vehicle(*k->node.get(), CURRENT_SOURCE_LOCATION);
+            if (!phase.group.rigid_bodies.contains(&rb->rbp_)) {
                 continue;
             }
-            if (any(abs(rb.tires_z_) > float(1e-12))) {
-                rb.tires_z_ /= std::sqrt(sum(squared(rb.tires_z_)));
+            if (any(abs(rb->tires_z_) > float(1e-12))) {
+                rb->tires_z_ /= std::sqrt(sum(squared(rb->tires_z_)));
             } else {
-                rb.tires_z_ = { 0.f, 0.f, 1.f };
-                rb.set_surface_power(main_name, EnginePowerIntent{.surface_power = NAN});
-                rb.set_surface_power(brakes_name, EnginePowerIntent{.surface_power = NAN});
+                rb->tires_z_ = { 0.f, 0.f, 1.f };
+                rb->set_surface_power(main_name, EnginePowerIntent{.surface_power = NAN});
+                rb->set_surface_power(brakes_name, EnginePowerIntent{.surface_power = NAN});
             }
-            if (rb.animation_state_updater_ != nullptr) {
-                rb.animation_state_updater_->notify_movement_intent();
+            if (rb->animation_state_updater_ != nullptr) {
+                rb->animation_state_updater_->notify_movement_intent();
             }
         }
     }
@@ -397,9 +394,9 @@ void KeyBindings::increment_external_forces(
         }
         if (enable_controls) {
             for (const auto& [k, node] : k_n) {
-                auto& m = node->get_relative_movable();
-                auto rt = dynamic_cast<RelativeTransformer*>(&m);
-                auto ypln = dynamic_cast<YawPitchLookAtNodes*>(&m);
+                auto m = node->get_relative_movable(CURRENT_SOURCE_LOCATION);
+                auto rt = dynamic_cast<RelativeTransformer*>(&m.get());
+                auto ypln = dynamic_cast<YawPitchLookAtNodes*>(&m.get());
 
                 // Reset to defaults
                 if (rt != nullptr) {
@@ -407,14 +404,14 @@ void KeyBindings::increment_external_forces(
                 } else if (ypln != nullptr) {
                     // Do nothing (yet)
                 } else {
-                    THROW_OR_ABORT("Relative movable is neither a relative transformer nor yaw/pitch-look-at-nodes");
+                    throw std::runtime_error("Relative movable is neither a relative transformer nor yaw/pitch-look-at-nodes");
                 }
             }
         }
         for (auto& [k, node] : k_n) {
-            auto& m = node->get_relative_movable();
-            auto rt = dynamic_cast<RelativeTransformer*>(&m);
-            auto ypln = dynamic_cast<YawPitchLookAtNodes*>(&m);
+            auto m = node->get_relative_movable(CURRENT_SOURCE_LOCATION);
+            auto rt = dynamic_cast<RelativeTransformer*>(&m.get());
+            auto ypln = dynamic_cast<YawPitchLookAtNodes*>(&m.get());
 
             auto rotate = [&k=k, &rt, &ypln](float dangle){
                 if (dangle == 0.f) {
@@ -430,19 +427,19 @@ void KeyBindings::increment_external_forces(
                     } else if (all(k.rotation_axis == FixedArray<float, 3>{1.f, 0.f, 0.f})) {
                         r(0) += dangle;
                     } else {
-                        THROW_OR_ABORT("Unsupported rotation axis for relative transformer");
+                        throw std::runtime_error("Unsupported rotation axis for relative transformer");
                     }
                     rt->transformation_matrix_.R = tait_bryan_angles_2_matrix(r);
                 } else if (ypln != nullptr) {
                     if (all(k.rotation_axis == FixedArray<float, 3>{0.f, 1.f, 0.f})) {
                         ypln->increment_yaw(dangle, 1.f);
                     } else if (all(k.rotation_axis == FixedArray<float, 3>{1.f, 0.f, 0.f})) {
-                        ypln->pitch_look_at_node().increment_pitch(dangle, 1.f);
+                        ypln->pitch_look_at_node()->increment_pitch(dangle, 1.f);
                     } else {
-                        THROW_OR_ABORT("Unsupported rotation axis for yaw/pitch-look-at-nodes");
+                        throw std::runtime_error("Unsupported rotation axis for yaw/pitch-look-at-nodes");
                     }
                 } else {
-                    THROW_OR_ABORT("Relative movable is neither a relative transformer nor yaw/pitch-look-at-nodes");
+                    throw std::runtime_error("Relative movable is neither a relative transformer nor yaw/pitch-look-at-nodes");
                 }
             };
 
@@ -514,16 +511,16 @@ void KeyBindings::increment_external_forces(
     // Avatar controller
     if (enable_controls) {
         for (const auto& k : avatar_controller_idle_bindings_) {
-            auto& rb = get_rigid_body_vehicle(*k->node);
-            if (!phase.group.rigid_bodies.contains(&rb.rbp_)) {
+            auto rb = get_rigid_body_vehicle(*k->node.get(), CURRENT_SOURCE_LOCATION);
+            if (!phase.group.rigid_bodies.contains(&rb->rbp_)) {
                 continue;
             }
-            rb.avatar_controller().reset();
+            rb->avatar_controller(CURRENT_SOURCE_LOCATION)->reset();
         }
     }
     for (auto& k : avatar_controller_key_bindings_) {
-        auto& rb = get_rigid_body_vehicle(*k->node);
-        if (!phase.group.rigid_bodies.contains(&rb.rbp_)) {
+        auto rb = get_rigid_body_vehicle(*k->node.get(), CURRENT_SOURCE_LOCATION);
+        if (!phase.group.rigid_bodies.contains(&rb->rbp_)) {
             continue;
         }
         float alpha = get_alpha(
@@ -536,47 +533,48 @@ void KeyBindings::increment_external_forces(
             cfg,
             phase);
         if (enable_controls && !std::isnan(alpha)) {
+            auto avatar_controller = rb->avatar_controller(CURRENT_SOURCE_LOCATION);
             if (k->surface_power.has_value()) {
-                rb.avatar_controller().walk(*k->surface_power, alpha);
-                rb.avatar_controller().increment_legs_z((*k->legs_z) * alpha);
+                avatar_controller->walk(*k->surface_power, alpha);
+                avatar_controller->increment_legs_z((*k->legs_z) * alpha);
             }
             if (k->angular_velocity.has_value()) {
                 if (k->yaw) {
-                    rb.avatar_controller().increment_yaw((*k->angular_velocity) * cfg.dt_substeps(phase), alpha);
+                    avatar_controller->increment_yaw((*k->angular_velocity) * cfg.dt_substeps(phase), alpha);
                 }
                 if (k->pitch) {
-                    rb.avatar_controller().increment_pitch((*k->angular_velocity) * cfg.dt_substeps(phase), alpha);
+                    avatar_controller->increment_pitch((*k->angular_velocity) * cfg.dt_substeps(phase), alpha);
                 }
             }
         }
     }
     if (enable_controls) {
         for (const auto& k : avatar_controller_idle_bindings_) {
-            auto& rb = get_rigid_body_vehicle(*k->node);
-            if (!phase.group.rigid_bodies.contains(&rb.rbp_)) {
+            auto rb = get_rigid_body_vehicle(*k->node.get(), CURRENT_SOURCE_LOCATION);
+            if (!phase.group.rigid_bodies.contains(&rb->rbp_)) {
                 continue;
             }
-            rb.avatar_controller().apply();
+            rb->avatar_controller(CURRENT_SOURCE_LOCATION)->apply();
         }
     }
     // Vehicle controller
     if (enable_controls) {
         for (const auto& k : car_controller_idle_bindings_) {
-            auto& rb = get_rigid_body_vehicle(*k->node);
-            if (!phase.group.rigid_bodies.contains(&rb.rbp_)) {
+            auto rb = get_rigid_body_vehicle(*k->node.get(), CURRENT_SOURCE_LOCATION);
+            if (!phase.group.rigid_bodies.contains(&rb->rbp_)) {
                 continue;
             }
-            rb.vehicle_controller().reset_parameters(
+            rb->vehicle_controller(CURRENT_SOURCE_LOCATION)->reset_parameters(
                 k->surface_power,
                 k->steer_angle);
-            rb.vehicle_controller().reset_relaxation(
+            rb->vehicle_controller(CURRENT_SOURCE_LOCATION)->reset_relaxation(
                 k->drive_relaxation,
                 k->steer_relaxation);
         }
     }
     for (auto& k : car_controller_key_bindings_) {
-        auto& rb = get_rigid_body_vehicle(*k->node);
-        if (!phase.group.rigid_bodies.contains(&rb.rbp_)) {
+        auto rb = get_rigid_body_vehicle(*k->node.get(), CURRENT_SOURCE_LOCATION);
+        if (!phase.group.rigid_bodies.contains(&rb->rbp_)) {
             continue;
         }
         float alpha = get_alpha(
@@ -590,23 +588,23 @@ void KeyBindings::increment_external_forces(
             phase);
         if (enable_controls && !std::isnan(alpha)) {
             if (k->surface_power.has_value()) {
-                rb.vehicle_controller().drive(*k->surface_power, alpha);
+                rb->vehicle_controller(CURRENT_SOURCE_LOCATION)->drive(*k->surface_power, alpha);
             }
             if (k->steer_left_amount.has_value()) {
-                rb.vehicle_controller().set_stearing_wheel_amount(*k->steer_left_amount, alpha);
+                rb->vehicle_controller(CURRENT_SOURCE_LOCATION)->set_stearing_wheel_amount(*k->steer_left_amount, alpha);
             }
             if (k->ascend_velocity.has_value()) {
-                rb.vehicle_controller().ascend_by((*k->ascend_velocity) * alpha * cfg.dt_substeps(phase));
+                rb->vehicle_controller(CURRENT_SOURCE_LOCATION)->ascend_by((*k->ascend_velocity) * alpha * cfg.dt_substeps(phase));
             }
         }
     }
     if (enable_controls) {
         for (const auto& k : car_controller_idle_bindings_) {
-            auto& rb = get_rigid_body_vehicle(*k->node);
-            if (!phase.group.rigid_bodies.contains(&rb.rbp_)) {
+            auto rb = get_rigid_body_vehicle(*k->node.get(), CURRENT_SOURCE_LOCATION);
+            if (!phase.group.rigid_bodies.contains(&rb->rbp_)) {
                 continue;
             }
-            rb.vehicle_controller().apply();
+            rb->vehicle_controller(CURRENT_SOURCE_LOCATION)->apply();
         }
     }
     // Plane controller
@@ -616,8 +614,8 @@ void KeyBindings::increment_external_forces(
             if (!phase.group.rigid_bodies.contains(&rb->rbp_)) {
                 continue;
             }
-            rb->plane_controller().reset_parameters(0.f, 0.f, 0.f, 0.f, 0.f);
-            rb->plane_controller().reset_relaxation(0.f, 0.f, 0.f, 0.f);
+            rb->plane_controller(CURRENT_SOURCE_LOCATION)->reset_parameters(0.f, 0.f, 0.f, 0.f, 0.f);
+            rb->plane_controller(CURRENT_SOURCE_LOCATION)->reset_relaxation(0.f, 0.f, 0.f, 0.f);
         }
     }
     for (auto& k : plane_controller_key_bindings_) {
@@ -636,19 +634,19 @@ void KeyBindings::increment_external_forces(
             phase);
         if (enable_controls && !std::isnan(alpha)) {
             if (k->turbine_power.has_value()) {
-                rb->plane_controller().accelerate(*k->turbine_power, alpha);
+                rb->plane_controller(CURRENT_SOURCE_LOCATION)->accelerate(*k->turbine_power, alpha);
             }
             if (k->brake.has_value()) {
-                rb->plane_controller().brake(*k->brake, alpha);
+                rb->plane_controller(CURRENT_SOURCE_LOCATION)->brake(*k->brake, alpha);
             }
             if (k->pitch.has_value()) {
-                rb->plane_controller().pitch(alpha * (*k->pitch), alpha);
+                rb->plane_controller(CURRENT_SOURCE_LOCATION)->pitch(alpha * (*k->pitch), alpha);
             }
             if (k->yaw.has_value()) {
-                rb->plane_controller().yaw(alpha * (*k->yaw), alpha);
+                rb->plane_controller(CURRENT_SOURCE_LOCATION)->yaw(alpha * (*k->yaw), alpha);
             }
             if (k->roll.has_value()) {
-                rb->plane_controller().roll(alpha * (*k->roll), alpha);
+                rb->plane_controller(CURRENT_SOURCE_LOCATION)->roll(alpha * (*k->roll), alpha);
             }
         }
     }
@@ -658,7 +656,7 @@ void KeyBindings::increment_external_forces(
             if (!phase.group.rigid_bodies.contains(&rb->rbp_)) {
                 continue;
             }
-            rb->plane_controller().apply();
+            rb->plane_controller(CURRENT_SOURCE_LOCATION)->apply();
         }
     }
     // Weapon inventory
@@ -672,13 +670,13 @@ void KeyBindings::increment_external_forces(
             cfg,
             phase);
         if (pressed && enable_controls) {
-            auto& wc = k->player->weapon_cycle();
+            auto wc = k->player->weapon_cycle();
             if (k->direction == 1) {
-                wc.equip_next_weapon(k->player->id());
+                wc->equip_next_weapon(k->player->id());
             } else if (k->direction == -1) {
-                wc.equip_previous_weapon(k->player->id());
+                wc->equip_previous_weapon(k->player->id());
             } else {
-                THROW_OR_ABORT("Weapon cycle direction not -1 or 1");
+                throw std::runtime_error("Weapon cycle direction not -1 or 1");
             }
         }
     }

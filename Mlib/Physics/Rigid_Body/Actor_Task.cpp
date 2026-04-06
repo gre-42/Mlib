@@ -1,6 +1,7 @@
+
 #include "Actor_Task.hpp"
-#include <Mlib/Throw_Or_Abort.hpp>
 #include <map>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -14,7 +15,7 @@ ActorTask Mlib::actor_task_from_string(const std::string& str) {
     };
     auto it = m.find(str);
     if (it == m.end()) {
-        THROW_OR_ABORT("Unknown actor task: \"" + str + '"');
+        throw std::runtime_error("Unknown actor task: \"" + str + '"');
     }
     return it->second;
 }
@@ -34,5 +35,5 @@ std::string Mlib::actor_task_to_string(ActorTask actor_task) {
     case ActorTask::END:
         ; // Fall through
     }
-    THROW_OR_ABORT("Unknown actor state: " + std::to_string((int)actor_task));
+    throw std::runtime_error("Unknown actor state: " + std::to_string((int)actor_task));
 }

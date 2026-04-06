@@ -56,15 +56,17 @@ BulletGenerator::BulletGenerator(
     , generate_bullet_engine_audio_{ std::move(generate_bullet_engine_audio) }
 {}
 
+BulletGenerator::~BulletGenerator() = default;
+
 void BulletGenerator::generate_bullet(
     const BulletProperties& bullet_properties,
     const GenerateSmartBullet& generate_smart_bullet,
-    RigidBodyVehicle* non_collider,
+    const DanglingBaseClassPtr<RigidBodyVehicle>& non_collider,
     const TransformationMatrix<SceneDir, ScenePos, 3>& location,
     const FixedArray<SceneDir, 3>& velocity,
     const FixedArray<SceneDir, 3>& angular_velocity,
-    IPlayer* player,
-    ITeam* team) const
+    const DanglingBaseClassPtr<IPlayer>& player,
+    const DanglingBaseClassPtr<ITeam>& team) const
 {
     StaticWorld world{
         .geographic_mapping = dynamic_world_.get_geographic_mapping(),
@@ -102,7 +104,7 @@ void BulletGenerator::generate_bullet(
             player == nullptr ? std::nullopt : std::optional{ player->target_id() },
             velocity,
             angular_velocity);
-        auto& rc = get_rigid_body_vehicle(np);
+        auto rc = get_rigid_body_vehicle(np.get(), CURRENT_SOURCE_LOCATION);
         auto bullet = std::make_unique<Bullet>(
             scene_,
             generate_bullet_explosion_audio_,
@@ -123,7 +125,7 @@ void BulletGenerator::generate_bullet(
             RotateBullet::NO);
         // Destruction order: Node -> Rigid body (collision observers) -> Bullet
         // node->clearing_observers.add(*bullet);
-        rc.collision_observers_.emplace_back(std::move(bullet));
+        rc->collision_observers_.emplace_back(std::move(bullet));
     } else {
         auto rcu = rigid_cuboid(
             "bullet",
@@ -134,9 +136,9 @@ void BulletGenerator::generate_bullet(
             velocity);
         rcu->flags_ = bullet_properties.rigid_body_flags;
         if (non_collider != nullptr) {
-            rcu->non_colliders_.emplace({*non_collider, CURRENT_SOURCE_LOCATION}, CURRENT_SOURCE_LOCATION);
+            rcu->non_colliders_.emplace(non_collider.set_loc(CURRENT_SOURCE_LOCATION), CURRENT_SOURCE_LOCATION);
         }
-        auto& rc = *rcu;
+        auto rc = DanglingBaseClassRef<RigidBodyVehicle>{*rcu, CURRENT_SOURCE_LOCATION};
         {
             AbsoluteMovableSetter ams{ scene_, node.ref(CURRENT_SOURCE_LOCATION), bullet_node_name, std::move(rcu), CURRENT_SOURCE_LOCATION };
             if (!bullet_properties.renderable_resource_name->empty()) {
@@ -186,7 +188,7 @@ void BulletGenerator::generate_bullet(
             RotateBullet::YES);
         // Destruction order: Node -> Rigid body (collision observers) -> Bullet
         // node->clearing_observers.add(*bullet);
-        rc.collision_observers_.emplace_back(std::move(bullet));
+        rc->collision_observers_.emplace_back(std::move(bullet));
         scene_.add_root_node(
             bullet_node_name,
             std::move(node),

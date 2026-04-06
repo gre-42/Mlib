@@ -1,6 +1,5 @@
 #pragma once
 #include <Mlib/Math/Math.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
 
 namespace Mlib {
 

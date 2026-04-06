@@ -1,14 +1,14 @@
 #include "stb_mipmaps.hpp"
-#include <Mlib/Floating_Point_Exceptions.hpp>
 #include <Mlib/Images/Filters/Box_Filter.hpp>
 #include <Mlib/Images/Filters/Gaussian_Filter.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
+#include <Mlib/Misc/Floating_Point_Exceptions.hpp>
 #include <algorithm>
 #include <memory>
 #include <stb/stb_image.h>
 #include <stb/stb_image_resize2.h>
 #include <stb/stb_image_write.h>
 #include <stb_cpp/stb_array.hpp>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -37,7 +37,7 @@ void downsample_rgba_inplace(
             ar[(size_t)d] = box_filter_append_zeros(ar[(size_t)d] * ar[3], ArrayShape{ 3, 3 }) / m;
         }
     } else {
-        THROW_OR_ABORT("Unknown smoother type");
+        throw std::runtime_error("Unknown smoother type");
     }
     array_2_stb_image(substitute_nans(ar, 0.f).casted<unsigned char>(), data);
     {
@@ -53,7 +53,7 @@ void downsample_rgba_inplace(
             0,
             (stbir_pixel_layout)4))
         {
-            THROW_OR_ABORT("could not resize image");
+            throw std::runtime_error("could not resize image");
         }
     }
 }
@@ -85,7 +85,7 @@ void downsample_rgba_inplace0(
             0,
             (stbir_pixel_layout)4))
         {
-            THROW_OR_ABORT("could not resize image");
+            throw std::runtime_error("could not resize image");
         }
     }
     for (int r = 0; r < height / 2; ++r) {

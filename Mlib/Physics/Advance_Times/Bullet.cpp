@@ -30,10 +30,10 @@ Bullet::Bullet(
     std::function<void(const AudioSourceState<ScenePos>*)> update_engine_audio_position,
     SmokeParticleGenerator& smoke_generator,
     AdvanceTimes& advance_times,
-    RigidBodyVehicle& rigid_body,
+    const DanglingBaseClassRef<RigidBodyVehicle>& rigid_body,
     RigidBodies& rigid_bodies,
-    IPlayer* gunner,
-    ITeam* team,
+    const DanglingBaseClassPtr<IPlayer>& gunner,
+    const DanglingBaseClassPtr<ITeam>& team,
     VariableAndHash<std::string> bullet_node_name,
     const BulletProperties& props,
     std::unique_ptr<ITrailExtender> trace_extender,
@@ -45,7 +45,7 @@ Bullet::Bullet(
     , update_engine_audio_position_{ std::move(update_engine_audio_position) }
     , smoke_generator_{ smoke_generator }
     , advance_times_{ advance_times }
-    , rigid_body_pulses_{ rigid_body.rbp_ }
+    , rigid_body_vehicle_{ rigid_body }
     , rigid_bodies_{ rigid_bodies }
     , gunner_{ gunner }
     , team_{ team }
@@ -61,7 +61,7 @@ Bullet::Bullet(
     , team_on_destroy_{ (team_ != nullptr) ? &team_->on_destroy_team() : nullptr, CURRENT_SOURCE_LOCATION }
 {
     if (!props_.dynamic_light_configuration_before_impact.empty()) {
-        auto func = [&b = rigid_body.rbp_]() { return b.abs_position(); };
+        auto func = [this]() { return rigid_body_vehicle_->rbp_.abs_position(); };
         light_before_impact_ = dynamic_lights_.instantiate(props_.dynamic_light_configuration_before_impact, func, world.time);
     }
     if (!gunner_on_destroy_.is_null()) {
@@ -90,18 +90,18 @@ void Bullet::advance_time(float dt, const StaticWorld& world) {
     }
     if (rotate_bullet_) {
         auto R = gl_lookat_relative(
-            rigid_body_pulses_.v_com_ / std::sqrt(sum(squared(rigid_body_pulses_.v_com_))),
-            rigid_body_pulses_.rotation_.column(1));
+            rigid_body_vehicle_->rbp_.v_com_ / std::sqrt(sum(squared(rigid_body_vehicle_->rbp_.v_com_))),
+            rigid_body_vehicle_->rbp_.rotation_.column(1));
         if (!R.has_value()) {
-            THROW_OR_ABORT("Could not update bullet rotation");
+            throw std::runtime_error("Could not update bullet rotation");
         }
-        rigid_body_pulses_.rotation_ = *R;
+        rigid_body_vehicle_->rbp_.rotation_ = *R;
     }
     if (has_trail_) {
         maybe_generate_.advance_time(dt);
         if (maybe_generate_(props_.trail.generation_dt)) {
             trail_generator_.generate(
-                rigid_body_pulses_.abs_position(),
+                rigid_body_vehicle_->rbp_.abs_position(),
                 fixed_zeros<float, 3>(),
                 fixed_zeros<float, 3>(),
                 0.f,
@@ -113,12 +113,12 @@ void Bullet::advance_time(float dt, const StaticWorld& world) {
     }
     if (trace_extender_ != nullptr) {
         trace_extender_->append_location(
-            rigid_body_pulses_.abs_transformation(),
+            rigid_body_vehicle_->rbp_.abs_transformation(),
             TrailLocationType::MIDPOINT,
             world);
     }
     if (update_engine_audio_position_) {
-        AudioSourceState<ScenePos> state{rigid_body_pulses_.abs_position(), rigid_body_pulses_.v_com_};
+        AudioSourceState<ScenePos> state{rigid_body_vehicle_->rbp_.abs_position(), rigid_body_vehicle_->rbp_.v_com_};
         update_engine_audio_position_(&state);
     }
 }
@@ -169,7 +169,7 @@ void Bullet::notify_collided(
     }
     if (trace_extender_ != nullptr) {
         trace_extender_->append_location(
-            TransformationMatrix<float, ScenePos, 3>{rigid_body_pulses_.rotation_, intersection_point},
+            TransformationMatrix<float, ScenePos, 3>{rigid_body_vehicle_->rbp_.rotation_, intersection_point},
             TrailLocationType::ENDPOINT,
             world);
     }

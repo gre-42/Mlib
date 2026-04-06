@@ -1,7 +1,8 @@
+
 #include "Way_Point_Location.hpp"
 #include <Mlib/Strings/String.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
 #include <map>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -26,7 +27,7 @@ std::string Mlib::way_point_location_to_string(WayPointLocation t) {
         }
     }
     if (cmp != t) {
-        THROW_OR_ABORT("Unknown waypoint location");
+        throw std::runtime_error("Unknown waypoint location");
     }
     return result;
 }
@@ -37,7 +38,7 @@ WayPointLocation Mlib::way_point_location_from_string(const std::string& s) {
     for (const auto& t : string_to_list(s, re)) {
         auto it = m.find(t);
         if (it == m.end()) {
-            THROW_OR_ABORT("Unknown waypoint location: \"" + t + '"');
+            throw std::runtime_error("Unknown waypoint location: \"" + t + '"');
         }
         result |= it->second;
     }

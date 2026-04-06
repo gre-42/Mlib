@@ -6,7 +6,7 @@
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Osm_Map_Resource_Rectangle_2D.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Subdivided_Way.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Subdivided_Way_Vertex.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -19,10 +19,10 @@ std::list<BuildingSegment> Mlib::smooth_building_level(
     double scale)
 {
     if (bu.way.nd.empty()) {
-        THROW_OR_ABORT("Building " + bu.id + ": outline is empty");
+        throw std::runtime_error("Building " + bu.id + ": outline is empty");
     }
     if (bu.way.nd.front() != bu.way.nd.back()) {
-        THROW_OR_ABORT("Cannot compute smooth level of building " + bu.id + ": outline not closed");
+        throw std::runtime_error("Cannot compute smooth level of building " + bu.id + ": outline not closed");
     }
     std::list<BuildingSegment> result;
     auto sw = subdivided_way(
@@ -32,7 +32,7 @@ std::list<BuildingSegment> Mlib::smooth_building_level(
         max_length);
     sw.erase(sw.begin());
     if (std::isnan(bu.area)) {
-        THROW_OR_ABORT("Building area is NAN");
+        throw std::runtime_error("Building area is NAN");
     }
     if (bu.area < 0) {
         sw.reverse();
@@ -70,7 +70,7 @@ std::list<BuildingSegment> Mlib::smooth_building_level(
                 (CompressedScenePos)(scale * width0),
                 (CompressedScenePos)(scale * width1)))
         {
-            THROW_OR_ABORT("Error triangulating level of building " + bu.id);
+            throw std::runtime_error("Error triangulating level of building " + bu.id);
         } else {
             result.emplace_back(
                 FixedArray<SubdividedWayVertex, 2>{*a, *b},
@@ -140,7 +140,7 @@ std::list<std::list<BuildingSegment>> Mlib::straight_building_level(
         auto dir = (b.indented[1] - b.indented[0]).casted<ScenePos>();
         auto len = std::sqrt(sum(squared(dir)));
         if (len < 1e-12) {
-            THROW_OR_ABORT("Building segment too short");
+            throw std::runtime_error("Building segment too short");
         }
         dir /= len;
         if (result.empty() ||

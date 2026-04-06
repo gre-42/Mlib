@@ -50,5 +50,5 @@ DanglingBaseClassPtr<IIncrementalObject> RemoteSceneObjectFactory::try_create_sh
             physics_scene_.get(), istr,
             remote_object_id, verbosity_);
     }
-    THROW_OR_ABORT("Unknown object type: " + std::to_string((int)type));
+    throw std::runtime_error("Unknown object type: " + std::to_string((int)type));
 }

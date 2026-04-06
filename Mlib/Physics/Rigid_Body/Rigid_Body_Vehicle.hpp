@@ -2,14 +2,15 @@
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Array/Fixed_History.hpp>
 #include <Mlib/Geometry/Graph/Point_And_Flags.hpp>
-#include <Mlib/Geometry/Vector_At_Position.hpp>
+#include <Mlib/Geometry/Primitives/Vector_At_Position.hpp>
+#include <Mlib/Hashing/Variable_And_Hash.hpp>
 #include <Mlib/Map/String_With_Hash_Unordered_Map.hpp>
 #include <Mlib/Map/Verbose_Unordered_Map.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
 #include <Mlib/Memory/Dangling_Base_Class.hpp>
+#include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/Memory/Dangling_Map.hpp>
-#include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
-#include <Mlib/Memory/Dangling_Unordered_Set.hpp>
+#include <Mlib/Memory/Dangling_Set.hpp>
 #include <Mlib/Memory/Destruction_Functions.hpp>
 #include <Mlib/Memory/Destruction_Functions_Removeal_Tokens_Ref.hpp>
 #include <Mlib/Memory/Destruction_Notifier.hpp>
@@ -28,7 +29,6 @@
 #include <Mlib/Scene_Graph/Interfaces/Scene_Node/INode_Hider.hpp>
 #include <Mlib/Scene_Graph/Status_Writer.hpp>
 #include <Mlib/Threads/Fast_Mutex.hpp>
-#include <Mlib/Variable_And_Hash.hpp>
 #include <map>
 #include <memory>
 #include <optional>
@@ -260,9 +260,10 @@ public:
         SourceLocation loc) override;
 
     // StatusWriter
+    virtual StatusComponents status_component() const override;
     virtual void write_status(std::ostream& ostr, StatusComponents log_components, const StaticWorld& world) const override;
     virtual float get_value(StatusComponents status_components) const override;
-    virtual StatusWriter& child_status_writer(const std::vector<VariableAndHash<std::string>>& name) override;
+    virtual DanglingBaseClassRef<StatusWriter> child_status_writer(const std::vector<VariableAndHash<std::string>>& name) override;
 
     // INodeHider
     virtual bool node_shall_be_hidden(
@@ -279,10 +280,10 @@ public:
     bool has_plane_controller() const;
     bool has_missile_controller() const;
 
-    RigidBodyAvatarController& avatar_controller();
-    RigidBodyPlaneController& plane_controller();
-    RigidBodyVehicleController& vehicle_controller();
-    RigidBodyMissileController& missile_controller();
+    DanglingBaseClassRef<RigidBodyAvatarController> avatar_controller(SourceLocation loc);
+    DanglingBaseClassRef<RigidBodyPlaneController> plane_controller(SourceLocation loc);
+    DanglingBaseClassRef<RigidBodyVehicleController> vehicle_controller(SourceLocation loc);
+    DanglingBaseClassRef<RigidBodyMissileController> missile_controller(SourceLocation loc);
 
     void set_surface_normal(std::unique_ptr<ISurfaceNormal>&& surface_normal);
     bool has_surface_normal() const;
@@ -292,8 +293,10 @@ public:
     bool has_collision_normal_modifier() const;
     const ICollisionNormalModifier& get_collision_normal_modifier() const;
 
+    bool collides_permanently(const RigidBodyVehicle& other) const;
+
     DestructionObservers<const RigidBodyVehicle&> destruction_observers;
-    DestructionFunctionsRemovalTokens on_clear_scene_node_;
+    EarlyAndLateDestructionFunctionsRemovalTokens on_clear_scene_node_;
     Scene* scene_ = nullptr;
     DanglingBaseClassPtr<SceneNode> scene_node_;
     VariableAndHash<std::string> node_name_;
@@ -329,7 +332,7 @@ public:
 
     std::string name_;
     std::string asset_id_;
-    IDamageable* damageable_;
+    DanglingBaseClassPtr<IDamageable> damageable_;
     DanglingMap<RigidBodyVehicle> passengers_;
     float door_distance_;
     DanglingBaseClassPtr<AnimationStateUpdater> animation_state_updater_;
@@ -352,6 +355,7 @@ public:
     std::unique_ptr<ISurfaceNormal> surface_normal_;
     std::unique_ptr<ICollisionNormalModifier> collision_normal_modifier_;
     DanglingUnorderedSet<const RigidBodyVehicle> non_colliders_;
+    DanglingSet<const DestructionNotifier> permanent_colliders_;
     FixedArray<float, 3> damage_absorption_direction_;
     std::optional<RemoteObjectId> remote_object_id_;
     std::optional<RemoteSiteId> owner_site_id_;

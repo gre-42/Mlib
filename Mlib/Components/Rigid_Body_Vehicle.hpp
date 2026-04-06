@@ -1,16 +1,21 @@
 #pragma once
+#include <Mlib/Misc/Source_Location.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
+#include <stdexcept>
 
 namespace Mlib {
 
-inline RigidBodyVehicle& get_rigid_body_vehicle(const DanglingBaseClassRef<SceneNode>& node) {
-    auto rb = dynamic_cast<RigidBodyVehicle*>(&node->get_absolute_movable());
+inline DanglingBaseClassRef<RigidBodyVehicle> get_rigid_body_vehicle(
+    const SceneNode& node,
+    SourceLocation loc)
+{
+    auto am = node.get_absolute_movable(loc);
+    auto rb = dynamic_cast<RigidBodyVehicle*>(&am.get());
     if (rb == nullptr) {
-        THROW_OR_ABORT("Absolute movable is not a rigid body");
+        throw std::runtime_error("Absolute movable is not a rigid body");
     }
-    return *rb;
+    return {*rb, loc};
 }
 
 inline bool has_rigid_body_vehicle(const DanglingBaseClassRef<SceneNode>& node) {

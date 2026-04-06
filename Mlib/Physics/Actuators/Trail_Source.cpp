@@ -1,3 +1,4 @@
+
 #include "Trail_Source.hpp"
 #include <Mlib/Scene_Graph/Interfaces/ITrail_Extender.hpp>
 

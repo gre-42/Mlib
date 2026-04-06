@@ -5,7 +5,7 @@ namespace Mlib {
 
 class DestructionNotifier {
 public:
-    mutable DestructionFunctions on_destroy;
+    mutable EarlyAndLateDestructionFunctions on_destroy;
 };
 
 }

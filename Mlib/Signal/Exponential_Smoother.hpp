@@ -1,6 +1,6 @@
 #pragma once
+#include <Mlib/Initialization/Uninitialized.hpp>
 #include <Mlib/Math/Lerp.hpp>
-#include <Mlib/Uninitialized.hpp>
 #include <cmath>
 #include <optional>
 

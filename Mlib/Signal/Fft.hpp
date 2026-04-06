@@ -1,7 +1,7 @@
 #pragma once
 #include <Mlib/Array/Array.hpp>
 #include <Mlib/Math/Is_Power_Of_Two.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
+#include <stdexcept>
 
 namespace Mlib {
 
@@ -12,7 +12,7 @@ template <class TFloat>
 void fft1d_inplace(Array<std::complex<TFloat>>& x) {
     assert(x.ndim() == 1);
     if (!is_power_of_two(x.length())) {
-        THROW_OR_ABORT("Vector length not a power of 2");
+        throw std::runtime_error("Vector length not a power of 2");
     }
     // DFT
     size_t N = x.length();

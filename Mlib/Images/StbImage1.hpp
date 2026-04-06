@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Array/Array.hpp>
+#include <cmath>
 #include <string>
 
 template <class TData>
@@ -15,12 +16,12 @@ static inline uint8_t uint8_from_float(float grayscale) {
     }
     // consider using grayscale.clip(0, 1) if this fails
     if (grayscale < 0) {
-        THROW_OR_ABORT("PgmImage::from_float received " + std::to_string(grayscale) + "<0");
+        throw std::runtime_error("PgmImage::from_float received " + std::to_string(grayscale) + "<0");
     }
     if (grayscale > 1) {
-        THROW_OR_ABORT("PgmImage::from_float received " + std::to_string(grayscale) + ">1");
+        throw std::runtime_error("PgmImage::from_float received " + std::to_string(grayscale) + ">1");
     }
-    return (uint8_t)(grayscale * UINT8_MAX + 0.5f);
+    return (uint8_t)std::round(grayscale * UINT8_MAX);
 }
 
 class StbImage1: public Array<uint8_t> {

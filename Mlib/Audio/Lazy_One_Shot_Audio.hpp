@@ -1,6 +1,6 @@
 #pragma once
+#include <Mlib/Hashing/Variable_And_Hash.hpp>
 #include <Mlib/Scene_Config/Scene_Precision.hpp>
-#include <Mlib/Variable_And_Hash.hpp>
 #include <cmath>
 #include <memory>
 #include <string>

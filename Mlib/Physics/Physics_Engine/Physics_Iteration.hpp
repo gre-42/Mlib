@@ -1,6 +1,7 @@
 #pragma once
-#include <Mlib/Features.hpp>
+#include <Mlib/Misc/Features.hpp>
 #include <chrono>
+#include <functional>
 #include <list>
 #include <mutex>
 
@@ -15,7 +16,6 @@ class PhysicsEngine;
 struct PhysicsEngineConfig;
 class SetFps;
 class BaseLog;
-class DeleteNodeMutex;
 class DeleteRigidBodyMutex;
 class PhysicsLoop;
 struct Beacon;
@@ -33,7 +33,6 @@ public:
         DynamicWorld& dynamic_world,
         PhysicsEngine& physics_engine,
         std::function<void(const TimeAndPause<std::chrono::steady_clock::time_point>&)> send_and_receive,
-        DeleteNodeMutex& delete_node_mutex,
         const PhysicsEngineConfig& physics_cfg,
         BaseLog* base_log = nullptr);
     ~PhysicsIteration();
@@ -45,7 +44,6 @@ private:
     DynamicWorld& dynamic_world_;
     PhysicsEngine& physics_engine_;
     std::function<void(const TimeAndPause<std::chrono::steady_clock::time_point>&)> send_and_receive_;
-    DeleteNodeMutex& delete_node_mutex_;
     const PhysicsEngineConfig& physics_cfg_;
     BaseLog* base_log_;
     std::list<VariableAndHash<std::string>> beacon_nodes_;

@@ -1,15 +1,16 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
-#include <Mlib/Default_Uninitialized_List.hpp>
 #include <Mlib/Geometry/Colored_Vertex.hpp>
 #include <Mlib/Geometry/Delaunay_Error_Behavior.hpp>
 #include <Mlib/Geometry/Material.hpp>
 #include <Mlib/Geometry/Mesh/Bone_Weight.hpp>
+#include <Mlib/Geometry/Mesh/Mesh_Meta.hpp>
 #include <Mlib/Geometry/Modifier_Backlog.hpp>
 #include <Mlib/Geometry/Morphology.hpp>
 #include <Mlib/Geometry/Normal_Vector_Error_Behavior.hpp>
 #include <Mlib/Geometry/Rectangle_Triangulation_Mode.hpp>
 #include <Mlib/Geometry/Triangle_Tangent_Error_Behavior.hpp>
+#include <Mlib/Initialization/Default_Uninitialized_List.hpp>
 #include <Mlib/Strings/Group_And_Name.hpp>
 #include <cereal/access.hpp>
 #include <cstdint>
@@ -39,6 +40,7 @@ public:
         GroupAndName name,
         const Material& material,
         const Morphology& morphology,
+        ModifierBacklog modifier_backlog,
         UUList<FixedArray<ColoredVertex<TPos>, 4>>&& quads = {},
         UUList<FixedArray<ColoredVertex<TPos>, 3>>&& triangles = {},
         UUList<FixedArray<std::vector<BoneWeight>, 3>>&& triangle_bone_weights = {},
@@ -182,9 +184,7 @@ public:
     std::shared_ptr<ColoredVertexArray<TPos>> triangle_array() const;
     template <class Archive>
     void serialize(Archive& archive) {
-        archive(name);
-        archive(material);
-        archive(morphology);
+        archive(meta);
         archive(quads);
         archive(triangles);
         archive(triangle_bone_weights);
@@ -198,9 +198,7 @@ public:
         Archive& archive,
         cereal::construct<TriangleList>& construct)
     {
-        GroupAndName name;
-        Material material;
-        Morphology morphology;
+        MeshMeta meta;
         UUList<FixedArray<ColoredVertex<TPos>, 4>> quads;
         UUList<FixedArray<ColoredVertex<TPos>, 3>> triangles;
         UUList<FixedArray<std::vector<BoneWeight>, 3>> triangle_bone_weights;
@@ -208,9 +206,7 @@ public:
         UUList<FixedArray<float, 3>> alpha;
         UUList<FixedArray<float, 4>> interiormap_uvmaps;
 
-        archive(name);
-        archive(material);
-        archive(morphology);
+        archive(meta);
         archive(quads);
         archive(triangles);
         archive(triangle_bone_weights);
@@ -219,9 +215,10 @@ public:
         archive(interiormap_uvmaps);
 
         construct(
-            name,
-            material,
-            morphology,
+            meta.name,
+            meta.material,
+            meta.morphology,
+            meta.modifier_backlog,
             std::move(quads),
             std::move(triangles),
             std::move(triangle_bone_weights),
@@ -229,10 +226,7 @@ public:
             std::move(alpha),
             std::move(interiormap_uvmaps));
     }
-    GroupAndName name;
-    Material material;
-    Morphology morphology;
-    ModifierBacklog modifier_backlog;
+    MeshMeta meta;
     UUList<FixedArray<ColoredVertex<TPos>, 4>> quads;
     UUList<FixedArray<ColoredVertex<TPos>, 3>> triangles;
     UUList<FixedArray<std::vector<BoneWeight>, 3>> triangle_bone_weights;

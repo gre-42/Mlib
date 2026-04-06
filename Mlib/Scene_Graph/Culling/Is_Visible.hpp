@@ -1,5 +1,5 @@
 #pragma once
-#include <Mlib/Billboard_Id.hpp>
+#include <Mlib/Geometry/Billboard_Id.hpp>
 #include <cstddef>
 #include <cstdint>
 #include <string>
@@ -16,11 +16,13 @@ struct SceneGraphConfig;
 enum class ExternalRenderPassType;
 template <class TData>
 class VisibilityCheck;
+template <class T>
+class VariableAndHash;
 
 template <class TData>
 bool is_visible(
     const VisibilityCheck<TData>& vc,
-    const std::string& object_name,
+    const VariableAndHash<std::string>& object_name,
     const Material& material,
     const Morphology& morphology,
     BillboardId billboard_id,

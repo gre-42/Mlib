@@ -1,11 +1,7 @@
-#include <Mlib/Android/game_helper/AContext.hpp>
-#include <Mlib/Android/game_helper/AEngine.hpp>
-#include <Mlib/Android/game_helper/ARenderLoop.hpp>
-#include <Mlib/Android/game_helper/AWindow.hpp>
-#include <Mlib/Android/ndk_helper/AUi.hpp>
-#include <Mlib/Android/ndk_helper/AndroidApp.hpp>
-#include <Mlib/Android/ndk_helper/NDKHelper.h>
-#include <Mlib/Arg_Parser.hpp>
+#include <Mlib/AGameHelper/AContext.hpp>
+#include <Mlib/AGameHelper/AEngine.hpp>
+#include <Mlib/AGameHelper/ARenderLoop.hpp>
+#include <Mlib/AGameHelper/AWindow.hpp>
 #include <Mlib/Array/Verbose_Vector.hpp>
 #include <Mlib/Audio/Audio_Context.hpp>
 #include <Mlib/Audio/Audio_Device.hpp>
@@ -13,8 +9,7 @@
 #include <Mlib/Audio/Audio_Listener.hpp>
 #include <Mlib/Audio/Audio_Scene.hpp>
 #include <Mlib/Audio/List_Audio_Devices.hpp>
-#include <Mlib/Env.hpp>
-#include <Mlib/Floating_Point_Exceptions.hpp>
+#include <Mlib/Io/Arg_Parser.hpp>
 #include <Mlib/Layout/Layout_Constraint_Parameters.hpp>
 #include <Mlib/Layout/Layout_Constraints.hpp>
 #include <Mlib/Macro_Executor/Asset_References.hpp>
@@ -22,59 +17,73 @@
 #include <Mlib/Macro_Executor/Notifying_Json_Macro_Arguments.hpp>
 #include <Mlib/Macro_Executor/Translators.hpp>
 #include <Mlib/Memory/Destruction_Guard.hpp>
+#include <Mlib/Misc/Floating_Point_Exceptions.hpp>
+#include <Mlib/OpenGL/CHK.hpp>
+#include <Mlib/OpenGL/Clear_Wrapper.hpp>
+#include <Mlib/OpenGL/Context_Query.hpp>
+#include <Mlib/OpenGL/Deallocate/Render_Allocator.hpp>
+#include <Mlib/OpenGL/Deallocate/Render_Deallocator.hpp>
+#include <Mlib/OpenGL/Deallocate/Render_Garbage_Collector.hpp>
+#include <Mlib/OpenGL/Gl_Context_Guard.hpp>
+#include <Mlib/OpenGL/IRenderer.hpp>
+#include <Mlib/OpenGL/Key_Bindings/Base_Key_Combination.hpp>
+#include <Mlib/OpenGL/Key_Bindings/Key_Configuration.hpp>
+#include <Mlib/OpenGL/Key_Bindings/Key_Configurations.hpp>
+#include <Mlib/OpenGL/Key_Bindings/Lockable_Key_Descriptions.hpp>
+#include <Mlib/OpenGL/Key_Bindings/Make_Key_Binding.hpp>
+#include <Mlib/OpenGL/OpenGL_Object_Factory.hpp>
+#include <Mlib/OpenGL/Print_Gl_Version_Info.hpp>
+#include <Mlib/OpenGL/Render_Config.hpp>
+#include <Mlib/OpenGL/Render_Logic_Gallery.hpp>
+#include <Mlib/OpenGL/Render_Logics/Lambda_Render_Logic.hpp>
+#include <Mlib/OpenGL/Render_Logics/Menu_Logic.hpp>
+#include <Mlib/OpenGL/Render_Logics/Window_Logic.hpp>
+#include <Mlib/OpenGL/Renderables/OpenGL_Vertex_Array_Renderer.hpp>
+#include <Mlib/OpenGL/Rendering_Context.hpp>
+#include <Mlib/OpenGL/Resource_Managers/Particle_Resources.hpp>
+#include <Mlib/OpenGL/Resource_Managers/Trail_Resources.hpp>
+#include <Mlib/OpenGL/Text/Charsets.hpp>
+#include <Mlib/OpenGL/Ui/Button_States.hpp>
+#include <Mlib/OpenGL/Ui/Cursor_States.hpp>
+#include <Mlib/OpenGL/Ui/Renderable_Hider/File_Renderable_Hider.hpp>
+#include <Mlib/OpenGL/Ui/Renderable_Hider/Static_Renderable_Hider.hpp>
+#include <Mlib/OpenGL/Ui/Renderable_Hider/Tty_Renderable_Hider.hpp>
+#include <Mlib/OpenGL/Viewport_Guard.hpp>
+#include <Mlib/OpenGL/Window.hpp>
+#include <Mlib/Os/Env.hpp>
+#include <Mlib/Os/Pathes.hpp>
+#include <Mlib/Os/Pathes.hpp>
+#include <Mlib/Os/ndk_helper/AUi.hpp>
+#include <Mlib/Os/ndk_helper/AndroidApp.hpp>
+#include <Mlib/Os/ndk_helper/NDKHelper.h>
 #include <Mlib/Physics/Bullets/Bullet_Property_Db.hpp>
 #include <Mlib/Physics/Dynamic_Lights/Dynamic_Light_Db.hpp>
 #include <Mlib/Physics/Smoke_Generation/Surface_Contact_Db.hpp>
+#include <Mlib/Players/Containers/Remote_Sites.hpp>
 #include <Mlib/Players/Containers/Users.hpp>
-#include <Mlib/Pretty_Terminate.hpp>
-#include <Mlib/Render/CHK.hpp>
-#include <Mlib/Render/Clear_Wrapper.hpp>
-#include <Mlib/Render/Context_Query.hpp>
-#include <Mlib/Render/Deallocate/Render_Allocator.hpp>
-#include <Mlib/Render/Deallocate/Render_Deallocator.hpp>
-#include <Mlib/Render/Deallocate/Render_Garbage_Collector.hpp>
-#include <Mlib/Render/Gl_Context_Guard.hpp>
-#include <Mlib/Render/IRenderer.hpp>
-#include <Mlib/Render/Key_Bindings/Base_Key_Combination.hpp>
-#include <Mlib/Render/Key_Bindings/Key_Configuration.hpp>
-#include <Mlib/Render/Key_Bindings/Key_Configurations.hpp>
-#include <Mlib/Render/Key_Bindings/Lockable_Key_Descriptions.hpp>
-#include <Mlib/Render/Key_Bindings/Make_Key_Binding.hpp>
-#include <Mlib/Render/Print_Gl_Version_Info.hpp>
-#include <Mlib/Render/Render_Config.hpp>
-#include <Mlib/Render/Render_Logic_Gallery.hpp>
-#include <Mlib/Render/Render_Logics/Lambda_Render_Logic.hpp>
-#include <Mlib/Render/Render_Logics/Menu_Logic.hpp>
-#include <Mlib/Render/Render_Logics/Window_Logic.hpp>
-#include <Mlib/Render/Rendering_Context.hpp>
-#include <Mlib/Render/Resource_Managers/Particle_Resources.hpp>
-#include <Mlib/Render/Resource_Managers/Trail_Resources.hpp>
-#include <Mlib/Render/Text/Charsets.hpp>
-#include <Mlib/Render/Ui/Button_States.hpp>
-#include <Mlib/Render/Ui/Cursor_States.hpp>
-#include <Mlib/Render/Viewport_Guard.hpp>
-#include <Mlib/Render/Window.hpp>
+#include <Mlib/Remote/Incremental_Objects/Scene_Level.hpp>
+#include <Mlib/Remote/Remote_Params.hpp>
+#include <Mlib/Remote/Remote_Role.hpp>
 #include <Mlib/Scene/Load_Scene.hpp>
 #include <Mlib/Scene/Physics_Scene.hpp>
 #include <Mlib/Scene/Physics_Scenes.hpp>
 #include <Mlib/Scene/Renderable_Scene.hpp>
 #include <Mlib/Scene/Renderable_Scenes.hpp>
 #include <Mlib/Scene/Scene_Config.hpp>
+#include <Mlib/Scene_Config/Scene_Graph_Config.hpp>
 #include <Mlib/Scene_Graph/Rendered_Scene_Descriptor.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
-#include <Mlib/Scene_Graph/Scene_Graph_Config.hpp>
 #include <Mlib/Strings/Iterate_Over_Chunks_Of_String.hpp>
-#include <Mlib/Strings/String.hpp>
-#include <Mlib/Strings/To_Number.hpp>
+#include <Mlib/Strings/String_View_To_Number.hpp>
 #include <Mlib/Threads/Containers/Thread_Safe_String.hpp>
 #include <Mlib/Threads/J_Thread.hpp>
+#include <Mlib/Threads/Realtime_Threads.hpp>
 #include <Mlib/Threads/Termination_Manager.hpp>
 #include <Mlib/Threads/Thread_Affinity.hpp>
 #include <Mlib/Threads/Thread_Initializer.hpp>
 #include <Mlib/Time/Fps/Realtime_Dependent_Fps.hpp>
+#include <Mlib/Time/Time_And_Pause.hpp>
 #include <filesystem>
-
-namespace fs = std::filesystem;
 
 using namespace Mlib;
 
@@ -97,7 +106,7 @@ public:
         , menu_logic_{ menu_logic }
         , physics_scenes_{ nullptr }
         , renderable_scenes_{ nullptr }
-        , load_scene_finished_{ nullptr }
+        , load_scene_{ nullptr }
         , last_load_scene_finished_{ false }
     {
         render_set_fps_.set_fps.tick(std::chrono::steady_clock::time_point());
@@ -120,8 +129,8 @@ public:
         if (event != RenderEvent::LOOP) {
             return;
         }
-        if (load_scene_finished_ == nullptr) {
-            verbose_abort("load_scene_finished is null");
+        if (load_scene_ == nullptr) {
+            verbose_abort("load_scene is null");
         }
         if (physics_scenes_ == nullptr) {
             verbose_abort("physics_scenes is null");
@@ -130,8 +139,8 @@ public:
             verbose_abort("renderable_scenes is null");
         }
         ViewportGuard vg{ lx.ilength(), ly.ilength() };
-        auto rsd = rrsd_.next(render_config_.motion_interpolation, render_set_fps_.ft.frame_time());
-        if (*load_scene_finished_) {
+        auto frame_id = rrsd_.next(render_config_.motion_interpolation, render_set_fps_.ft.frame_time());
+        if (load_scene_->level_loaded()) {
             execute_render_allocators();
             auto& rs = (*physics_scenes_)["primary_scene"];
             rs.scene_.wait_for_cleanup();
@@ -140,8 +149,7 @@ public:
                 !args_.has_named("--single_threaded"))
             {
                 for (auto& [n, r] : physics_scenes_->guarded_iterable()) {
-                    r.delete_node_mutex_.clear_deleter_thread();
-                    r.start_physics_loop(("Phys_" + n).substr(0, 15), ThreadAffinity::POOL);
+                    r.start_physics_loop(("Phys_" + n).substr(0, 15), ThreadAffinity::POOL, [](){ return false; /*loading*/ });
                 }
                 last_load_scene_finished_ = true;
             }
@@ -151,12 +159,11 @@ public:
                 render_config_,
                 scene_graph_config_,
                 render_results_,
-                rsd);
+                frame_id);
             if (args_.has_named("--single_threaded")) {
                 for (auto& [_, r] : physics_scenes_->guarded_iterable()) {
-                    SetDeleterThreadGuard set_deleter_thread_guard{ r.scene_.delete_node_mutex() };
                     if (!r.physics_set_fps_.paused()) {
-                        r.physics_iteration_(std::chrono::steady_clock::now());
+                        r.physics_iteration({std::chrono::steady_clock::now(), PauseStatus::RUNNING});
                     }
                     r.physics_set_fps_.execute_oldest_funcs();
                 }
@@ -171,22 +178,22 @@ public:
                     render_config_,
                     scene_graph_config_,
                     render_results_,
-                    rsd);
+                    frame_id);
             }
         } else {
             clear_color({0.2f, 0.2f, 0.2f, 1.f});
         }
-        render_set_fps_.set_fps.tick(rsd.external_render_pass.time);
+        render_set_fps_.set_fps.tick(frame_id.external_render_pass.time);
     }
 
     void set_scene(
+        LoadScene* load_scene,
         PhysicsScenes* physics_scenes,
-        RenderableScenes* renderable_scenes,
-        std::atomic_bool* load_scene_finished)
+        RenderableScenes* renderable_scenes)
     {
+        load_scene_ = load_scene;
         physics_scenes_ = physics_scenes;
         renderable_scenes_ = renderable_scenes;
-        load_scene_finished_ = load_scene_finished;
         last_load_scene_finished_ = false;
     }
 
@@ -199,7 +206,7 @@ private:
     MenuLogic& menu_logic_;
     PhysicsScenes* physics_scenes_;
     RenderableScenes* renderable_scenes_;
-    std::atomic_bool* load_scene_finished_;
+    LoadScene* load_scene_;
     RootRenderedSceneDescriptor rrsd_;
     bool last_load_scene_finished_;
 };
@@ -234,10 +241,10 @@ void print_debug_info(
 
 JThread loader_thread(
     const ParsedArgs& args,
+    RemoteSites& remote_sites,
     PhysicsScenes& physics_scenes,
     RenderableScenes& renderable_scenes,
     LoadScene& load_scene,
-    std::atomic_bool& load_scene_finished,
     std::chrono::steady_clock::duration render_delay,
     std::chrono::steady_clock::duration velocity_dt)
 {
@@ -250,22 +257,18 @@ JThread loader_thread(
                 AudioListener::set_gain(safe_stof(args.named_value("--audio_gain", "1")));
                 // GlContextGuard gcg{ render2.window() };
                 load_scene();
-                renderable_scenes["primary_scene_0"].instantiate_audio_listener(
+                renderable_scenes["primary_scene_" + remote_sites.get_local_user(0)->full_name].instantiate_audio_listener(
                     render_delay,
                     velocity_dt);
                 if (!args.has_named("--no_physics")) {
                     if (args.has_named("--no_render")) {
                         for (auto& [n, r] : physics_scenes.guarded_iterable()) {
-                            r.delete_node_mutex_.clear_deleter_thread();
-                            r.start_physics_loop(("Phys_" + n).substr(0, 15), ThreadAffinity::POOL);
-                        }
-                    } else if (args.has_named("--single_threaded")) {
-                        for (auto& [n, r] : physics_scenes.guarded_iterable()) {
-                            r.scene_.delete_node_mutex().clear_deleter_thread();
+                            r.start_physics_loop(("Phys_" + n).substr(0, 15), ThreadAffinity::POOL, [](){ return false; /*loading*/ });
                         }
                     }
                 }
-                load_scene_finished = true;
+                load_scene.notify_level_loaded();
+                remote_sites.set_user_status(UserTypes::ALL_LOCAL, UserStatus::LEVEL_LOADED);
             }
 
             print_debug_info(args, physics_scenes);
@@ -338,9 +341,11 @@ void android_main(android_app* app) {
         "    [--far_plane <value>]\n"
         "    [--record_track_basename <value>]\n"
         "    [--flavor <flavor>]\n"
+        "    [--mesh <obj.gz>]\n"
+        "    [--animated_mesh <mhx2.gz>]\n"
         "    [--devel_mode]\n"
-        "    [--enable_ridge_map]\n"
-        "    [--hand_brake_velocity <x>]\n"
+        "    [--parking_brake_velocity <x>]\n"
+        "    [--slow_velocity <x>]\n"
         "    [--stiction_coefficient <x>]\n"
         "    [--friction_coefficient <x>]\n"
         "    [--max_extra_friction <x>]\n"
@@ -384,6 +389,8 @@ void android_main(android_app* app) {
         "    [--audio_distance_model <value>]\n"
         "    [--user_count <n>]\n"
         "    [--check_gl_errors]\n"
+        "    [--print_gl_calls]\n"
+        "    [--print_rendered_materials]\n"
         "    [--verbose]",
         {"--wire_frame",
          "--cull_faces",
@@ -407,7 +414,6 @@ void android_main(android_app* app) {
          "--plot_triangle_bvh",
          "--devel_mode",
          "--show_mouse_cursor",
-         "--enable_ridge_map",
          "--no_slip",
          "--no_avoid_burnout",
          "--print_search_time",
@@ -416,8 +422,12 @@ void android_main(android_app* app) {
          "--control_render_fps",
          "--fxaa",
          "--check_gl_errors",
+         "--print_gl_calls",
+         "--print_rendered_materials",
          "--verbose"},
         {"--record_track_basename",
+         "--mesh",
+         "--animated_mesh"
          "--swap_interval",
          "--nsamples_msaa",
          "--lightmap_nsamples_msaa",
@@ -447,7 +457,8 @@ void android_main(android_app* app) {
          "--nsubsteps",
          "--render_dt",
          "--render_max_residual_time",
-         "--hand_brake_velocity",
+         "--parking_brake_velocity",
+         "--slow_velocity",
          "--stiction_coefficient",
          "--friction_coefficient",
          "--max_extra_w",
@@ -470,23 +481,35 @@ void android_main(android_app* app) {
          "--audio_alpha",
          "--audio_distance_model",
          "--user_count",
+         "--remote_site_id",
+         "--remote_role",
+         "--remote_ip",
+         "--remote_port",
          "--bloom_x",
          "--bloom_y",
          "--bloom_threshold",
          "--bloom_std",
          "--bloom_intensities",
-         "--show_only"});
+         "--show_only",
+         "--show_only_file",
+         "--rgba_debug_image"});
     try {
         const char* argv[] = {"appname", "/;/data", "/levels/main/main.scn.json"};
         const auto args = parser.parsed(sizeof(argv) / sizeof(argv[0]), argv);
 
         args.assert_num_unnamed(2);
-        auto search_path = string_to_list(args.unnamed_value(0), Mlib::compile_regex(";"));
-        auto initial_main_scene_filename = fs::absolute(args.unnamed_value(1)).string();
+        auto search_path = split_semicolon_separated_pathes(args.unnamed_value(0));
+        auto initial_main_scene_filename = std::filesystem::absolute(args.unnamed_value(1)).string();
         auto main_scene_filename = initial_main_scene_filename;
 
         if (args.has_named("--check_gl_errors")) {
             check_gl_errors(CheckErrors::ENABLED);
+        }
+        if (args.has_named("--print_gl_calls")) {
+            print_gl_calls(PrintGlCalls::ENABLED);
+        }
+        if (args.has_named("--print_rendered_materials")) {
+            print_rendered_materials(PrintRenderedMaterials::ENABLED);
         }
         list_audio_devices(linfo(LogFlags::NO_APPEND_NEWLINE).ref());
         AudioDevice audio_device;
@@ -579,8 +602,21 @@ void android_main(android_app* app) {
         WindowLogic window_logic;
         MenuLogic menu_logic{menu_user_object};
 
+        std::optional<RemoteParams> remote_params;
+        if (args.has_named_value("--remote_role")) {
+            remote_params.emplace(
+                safe_sto<RemoteSiteId>(args.named_value("--remote_site_id")),
+                remote_role_from_string(args.named_value("--remote_role")),
+                args.named_value("--remote_ip"),
+                safe_sto<uint16_t>(args.named_value("--remote_port")));
+        }
+        auto user_count = safe_sto<uint32_t>(args.named_value("--user_count", "1"));
+        Users users;
+        RemoteSites remote_sites{ {users, CURRENT_SOURCE_LOCATION}, remote_params };
+        remote_sites.set_local_user_count(user_count);
         {
             auto record_track_basename = args.try_named_value("--record_track_basename");
+            auto rgba_debug_image = args.try_named_value("--rgba_debug_image");
             nlohmann::json j{
                 {"primary_scene_fly", args.has_named("--fly")},
                 {"primary_scene_rotate", args.has_named("--rotate")},
@@ -604,11 +640,17 @@ void android_main(android_app* app) {
                 {"record_track_basename", (record_track_basename == nullptr)
                     ? nlohmann::json()
                     : nlohmann::json(*record_track_basename)},
+                {"rgba_debug_image", (rgba_debug_image == nullptr)
+                    ? nlohmann::json()
+                    : nlohmann::json(*rgba_debug_image)},
                 {"if_devel", args.has_named("--devel_mode")},
                 {"if_show_debug_wheels", args.has_named("--show_debug_wheels")},
                 {"if_show_global_log", args.has_named("--show_global_log")},
                 {"if_android", true},
+                {"if_web", false},
                 {"flavor", AUi::GetFlavor()},
+                {"mesh", args.named_value("--mesh", "obj")},
+                {"animated_mesh", args.named_value("--animated_mesh", "mhx2")},
                 {"scene_lightmap_width", safe_stoi(args.named_value("--scene_lightmap_width", "2048"))},
                 {"scene_lightmap_height", safe_stoi(args.named_value("--scene_lightmap_height", "2048"))},
                 {"black_lightmap_width", safe_stoi(args.named_value("--black_lightmap_width", "1024"))},
@@ -619,12 +661,37 @@ void android_main(android_app* app) {
                 {"scene_water_waves_height", safe_stoi(args.named_value("--scene_water_waves_height", "512"))},
                 {"scene_sea_spray_width", safe_stoi(args.named_value("--scene_sea_spray_width", "2048"))},
                 {"scene_sea_spray_height", safe_stoi(args.named_value("--scene_sea_spray_height", "2048"))},
-                {"selected_user_count", safe_sto<uint32_t>(args.named_value("--user_count", "1"))},
+                {"selected_user_count", user_count},
+                {"remote_role", args.named_value("--remote_role", "none")},
                 {"sparse_triangle_cluster_width", safe_stof(args.named_value("--sparse_triangle_cluster_width", "3e3"))},
                 {"medium_triangle_cluster_width", safe_stof(args.named_value("--medium_triangle_cluster_width", "700"))},
                 {"dense_triangle_cluster_width", safe_stof(args.named_value("--dense_triangle_cluster_width", "250"))},
                 {"object_cluster_width", safe_stof(args.named_value("--object_cluster_width", "500"))}};
+                if (remote_params.has_value()) {
+                    j["remote_params"] = *remote_params;
+                } else {
+                    j["remote_params"] = nlohmann::json();
+                }
             external_json_macro_arguments.merge_and_notify(JsonMacroArguments{std::move(j)});
+        }
+        IRenderableHider* renderable_hider = nullptr;
+        auto set_renderable_hider = [&](IRenderableHider& rh){
+            if (renderable_hider != nullptr) {
+                throw std::runtime_error("Multiple renderable hiders provided");
+            }
+            renderable_hider = &rh;
+        };
+        std::optional<FileRenderableHider> file_renderable_hider;
+        if (auto it = args.try_named_value("--show_only_file"); it != nullptr) {
+            set_renderable_hider(file_renderable_hider.emplace(button_states, *it));
+        }
+        std::optional<TtyRenderableHider> tty_renderable_hider;
+        if (auto it = args.try_named_value("--tty_hider"); it != nullptr) {
+            set_renderable_hider(tty_renderable_hider.emplace(button_states));
+        }
+        std::optional<StaticRenderableHider> static_renderable_hider;
+        if (auto it = args.try_named_value("--show_only"); it != nullptr) {
+            set_renderable_hider(static_renderable_hider.emplace(VariableAndHash{args.named_value("--show_only", "")}));
         }
         // Declared as first class to let destructors of other classes succeed.
         SceneRenderer scene_renderer{
@@ -646,6 +713,7 @@ void android_main(android_app* app) {
         a_engine.AddOnSaveState([&](){
             ui_focuses.try_save();
         });
+        LocalSceneLevel local_scene_level;
         size_t args_num_renderings = safe_stoz(args.named_value("--num_renderings", "-1"));
         while (!render_loop.destroy_requested() && !unhandled_exceptions_occured()) {
             num_renderings = args_num_renderings;
@@ -664,23 +732,24 @@ void android_main(android_app* app) {
                 .max_extra_w = safe_stof(args.named_value("--max_extra_w", "0")),
                 .avoid_burnout = !args.has_named("--no_avoid_burnout"),
                 .no_slip = args.has_named("--no_slip"),
-                .hand_brake_velocity = safe_stof(args.named_value("--hand_brake_velocity", "5")) * kph,
+                .parking_brake_velocity = safe_stof(args.named_value("--parking_brake_velocity", "5")) * kph,
+                .slow_velocity = safe_stof(args.named_value("--slow_velocity", "40")) * kph,
                 // Friction
                 .stiction_coefficient = safe_stof(args.named_value("--stiction_coefficient", "0.5")),
                 .friction_coefficient = safe_stof(args.named_value("--friction_coefficient", "0.5")),
-                .longitudinal_friction_steepness = safe_stof(args.named_value("--longitudinal_friction_steepness", "5")),
-                .lateral_friction_steepness = safe_stof(args.named_value("--lateral_friction_steepness", "7")),
+                .longitudinal_friction_steepness = safe_stof(args.named_value("--longitudinal_friction_steepness", "20")),
+                .lateral_friction_steepness = safe_stof(args.named_value("--lateral_friction_steepness", "20")),
                 // Collision
                 .wheel_penetration_depth = safe_stof(args.named_value("--wheel_penetration_depth", "0.25")),
-                .nsubsteps = safe_stoz(args.named_value("--nsubsteps", "8")),
-                .enable_ridge_map = args.has_named("--enable_ridge_map")};
+                .nsubsteps = safe_stoz(args.named_value("--nsubsteps", "8"))};
 
             SceneConfig scene_config{
                 .render_config = render_config,
                 .scene_graph_config = scene_graph_config,
                 .physics_engine_config = physics_engine_config};
 
-            SceneNodeResources scene_node_resources;
+            OpenGLObjectFactory gpu_object_factory;
+            SceneNodeResources scene_node_resources{gpu_object_factory};
             ParticleResources particle_resources;
             TrailResources trail_resources;
             SurfaceContactDb surface_contact_db;
@@ -702,34 +771,38 @@ void android_main(android_app* app) {
                     render_config.anisotropic_filtering_level
                 };
                 rendering_resources.add_charset(ascii, ascii_chars());
+                OpenGLVertexArrayRenderer gpu_vertex_array_renderer{rendering_resources, rendering_resources};
                 RenderingContext primary_rendering_context{
                     .scene_node_resources = scene_node_resources,
                     .particle_resources = particle_resources,
                     .trail_resources = trail_resources,
                     .rendering_resources = rendering_resources,
+                    .gpu_object_factory = gpu_object_factory,
+                    .gpu_vertex_array_renderer = gpu_vertex_array_renderer,
                     .z_order = 0
                 };
                 RenderingContextGuard rcg{ primary_rendering_context };
 
-                Users users;
                 RenderLogicGallery gallery;
                 AssetReferences asset_references;
                 Translators translators{ asset_references, external_json_macro_arguments };
                 RenderableScenes renderable_scenes;
                 PhysicsScenes physics_scenes;
 
-                std::atomic_bool load_scene_finished = false;
-                scene_renderer.set_scene(&physics_scenes, &renderable_scenes, &load_scene_finished);
+                scene_renderer.set_scene(load_scene.get(), &physics_scenes, &renderable_scenes);
                 DestructionGuard dg0{[&scene_renderer](){ scene_renderer.set_scene(nullptr, nullptr, nullptr); }};
 
                 DestructionGuard dg1{[](){discard_render_allocators();}};
                 std::function<void()> exit = [](){
                     lerr() << "Program exit not supported on Android";
                 };
+                remote_sites.set_user_status(UserTypes::ALL_REMOTE, UserStatus::INITIAL);
+                remote_sites.set_user_status(UserTypes::ALL_LOCAL, UserStatus::LEVEL_LOADING);
                 load_scene.reset(new LoadScene(
-                    &search_path,
+                    search_path,
                     main_scene_filename,
                     next_scene_filename,
+                    local_scene_level,
                     external_json_macro_arguments,
                     num_renderings,
                     render_set_fps,
@@ -746,6 +819,7 @@ void android_main(android_app* app) {
                     key_descriptions,
                     ui_focuses,
                     users,
+                    remote_sites,
                     layout_constraints,
                     gallery,
                     asset_references,
@@ -756,16 +830,17 @@ void android_main(android_app* app) {
                     exit));
                 JThread loader_future_guard{loader_thread(
                     args,
+                    remote_sites,
                     physics_scenes,
                     renderable_scenes,
                     *load_scene,
-                    load_scene_finished,
                     render_delay,
                     velocity_dt)};
                 render_loop.render_loop([&num_renderings](){return (num_renderings == 0) || unhandled_exceptions_occured();});
                 if (args.has_named_value("--write_loaded_resources")) {
                     scene_node_resources.write_loaded_resources(args.named_value("--write_loaded_resources"));
                 }
+                local_scene_level = load_scene->scene_level();
             }
             ui_focuses.clear_focuses();
             if (auto s = (std::string)next_scene_filename; !s.empty()) {

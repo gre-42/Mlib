@@ -1,7 +1,7 @@
 #include "Add_Street_Steiner_Points.hpp"
 #include <Mlib/Geometry/Colored_Vertex.hpp>
-#include <Mlib/Geometry/Intersection/Bvh.hpp>
-#include <Mlib/Geometry/Intersection/Point_Triangle_Intersection.hpp>
+#include <Mlib/Geometry/Primitives/Bvh.hpp>
+#include <Mlib/Geometry/Primitives/Point_Triangle_Intersection.hpp>
 #include <Mlib/Math/Interp.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Bounding_Info.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Steiner_Point_Info.hpp>

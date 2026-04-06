@@ -1,3 +1,4 @@
+
 #include "Group_Meshes_By_Material.hpp"
 #include <Mlib/Geometry/Colored_Vertex.hpp>
 #include <Mlib/Geometry/Material.hpp>
@@ -12,7 +13,7 @@ std::map<MaterialAndMorphology, std::list<std::shared_ptr<ColoredVertexArray<TPo
 {
     std::map<MaterialAndMorphology, std::list<std::shared_ptr<ColoredVertexArray<TPos>>>> result;
     for (const auto& cva : cvas) {
-        result[{cva->material, cva->morphology}].push_back(cva);
+        result[{cva->meta.material, cva->meta.morphology}].push_back(cva);
     }
     return result;
 }

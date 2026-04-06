@@ -1,10 +1,11 @@
+
 #include "StbImage1.hpp"
 #include <Mlib/Images/Draw_Generic.hpp>
 #include <Mlib/Stats/Min_Max.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
 #include <fstream>
 #include <stb/stb_image_write.h>
 #include <stb_cpp/stb_image_load.hpp>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -28,7 +29,7 @@ StbImage1::StbImage1(const ArrayShape& shape)
 
 StbImage1::StbImage1(const StbInfo<uint8_t>& stb_info) {
     if (stb_info.nrChannels != 1) {
-        THROW_OR_ABORT("Image does not have 1 channel");
+        throw std::runtime_error("Image does not have 1 channel");
     }
     resize((size_t)stb_info.height, (size_t)stb_info.width);
     memcpy(flat_begin(), stb_info.data(), nbytes());
@@ -116,7 +117,7 @@ void StbImage1::draw_streamline(
 StbImage1 StbImage1::load_from_file(const std::string& filename) {
     auto image = stb_load8(filename, FlipMode::NONE);
     if (image.nrChannels != 1) {
-        THROW_OR_ABORT("Image does not have 1 channel: \"" + filename + '"');
+        throw std::runtime_error("Image does not have 1 channel: \"" + filename + '"');
     }
     return StbImage1{image};
 }
@@ -124,20 +125,20 @@ StbImage1 StbImage1::load_from_file(const std::string& filename) {
 void StbImage1::save_to_file(const std::string& filename, int jpg_quality) const {
     if (filename.ends_with(".png")) {
         if (!stbi_write_png(filename.c_str(), (int)shape(1), (int)shape(0), 1, flat_begin(), 0)) {
-            THROW_OR_ABORT("Could not save to file " + filename);
+            throw std::runtime_error("Could not save to file: \"" + filename + '"');
         }
     } else if (filename.ends_with(".jpg")) {
         if (!stbi_write_jpg(filename.c_str(), (int)shape(1), (int)shape(0), 1, flat_begin(), jpg_quality)) {
-            THROW_OR_ABORT("Could not save to file " + filename);
+            throw std::runtime_error("Could not save to file: \"" + filename + '"');
         }
     } else {
-        THROW_OR_ABORT("Filename does not have png or jpg extension: \"" + filename + '"');
+        throw std::runtime_error("Filename does not have png or jpg extension: \"" + filename + '"');
     }
 }
 
 StbImage1 StbImage1::from_float_grayscale(const Array<float>& grayscale) {
     if (grayscale.ndim() != 2) {
-        THROW_OR_ABORT("from_float_grayscale: grayscale image does not have ndim=2, but " + grayscale.shape().str());
+        throw std::runtime_error("from_float_grayscale: grayscale image does not have ndim=2, but " + grayscale.shape().str());
     }
     StbImage1 result(grayscale.shape());
     Array<uint8_t> f = result.flattened();
@@ -153,7 +154,7 @@ Array<float> StbImage1::to_float_grayscale() const {
     Array<uint8_t> f = flattened();
     Array<float> g = grayscale.flattened();
     for (size_t i = 0; i < g.length(); i++) {
-        g(i) = static_cast<float>(f(i)) / 255.f;
+        g(i) = static_cast<float>(f(i)) / UINT8_MAX;
         assert(g(i) >= 0);
         assert(g(i) <= 1);
     }

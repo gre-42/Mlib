@@ -1,10 +1,11 @@
+
 #include "Barycentric_Coordinates.hpp"
 #include <Mlib/Geometry/Coordinates/Normalized_Points_Fixed.hpp>
 #include <Mlib/Geometry/Exceptions/Triangle_Exception.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
 #include <sstream>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -42,7 +43,7 @@ void Mlib::barycentric(
     // TData denom = dot0d(v0, dot1d(M - M.T(), v1));
     if (std::abs(denom) < 1e-14) {
         auto sd = (std::stringstream() << denom).str();
-        THROW_OR_ABORT2(TriangleException(a, b, c, "barycentric coordinates encountered zero denominator: " + sd));
+        throw TriangleException(a, b, c, "barycentric coordinates encountered zero denominator: " + sd);
     }
     FixedArray<double, 2> pn = m.transform(p);
     FixedArray<double, 2> v2 = (pn - an);

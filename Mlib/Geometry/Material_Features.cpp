@@ -1,3 +1,4 @@
+
 #include "Material_Features.hpp"
 #include <Mlib/Geometry/Material/Blend_Distances.hpp>
 #include <Mlib/Geometry/Material/Blend_Map_Texture.hpp>
@@ -8,7 +9,7 @@ using namespace Mlib;
 
 bool Mlib::has_normalmap(const std::vector<BlendMapTexture>& textures_color) {
     for (const auto& t : textures_color) {
-        if (!t.texture_descriptor.normal.filename->empty()) {
+        if (!t.texture_descriptor.normal.filename.empty()) {
             return true;
         }
     }

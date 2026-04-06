@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/Signal/Pid_Controller.hpp>
 #include <optional>
 
@@ -11,7 +12,7 @@ class CarMovement {
     CarMovement(const CarMovement&) = delete;
     CarMovement& operator = (const CarMovement&) = delete;
 public:
-    explicit CarMovement(Player& player);
+    explicit CarMovement(const DanglingBaseClassRef<Player>& player);
     ~CarMovement();
 
     void set_max_tire_angle(float max_tire_angle);
@@ -28,7 +29,7 @@ public:
     void steer_left_partial(float angle);
     void steer_right_partial(float angle);
 private:
-    Player& player_;
+    DanglingBaseClassRef<Player> player_;
     std::optional<float> max_tire_angle_;
     std::optional<PidController<float, float>> tire_angle_pid_;
 };

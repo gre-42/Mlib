@@ -1,6 +1,4 @@
 #include "Create_Grid_Resource.hpp"
-#include <Mlib/Argument_List.hpp>
-#include <Mlib/FPath.hpp>
 #include <Mlib/Geometry/Material.hpp>
 #include <Mlib/Geometry/Material_Configuration/Material_Skidmarks.hpp>
 #include <Mlib/Geometry/Material_Configuration/Meta_Materials.hpp>
@@ -9,10 +7,12 @@
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix_Json.hpp>
+#include <Mlib/Misc/Argument_List.hpp>
+#include <Mlib/Misc/FPath.hpp>
+#include <Mlib/OpenGL/Rendering_Context.hpp>
+#include <Mlib/OpenGL/Resource_Managers/Rendering_Resources.hpp>
+#include <Mlib/OpenGL/Resources/Grid_Resource.hpp>
 #include <Mlib/Physics/Units.hpp>
-#include <Mlib/Render/Rendering_Context.hpp>
-#include <Mlib/Render/Resource_Managers/Rendering_Resources.hpp>
-#include <Mlib/Render/Resources/Grid_Resource.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
 #include <vector>
@@ -75,8 +75,8 @@ LoadSceneJsonUserFunction CreateGridResource::json_user_function = [](const Load
     
     auto physics_material = physics_material_from_string(args.arguments.at<std::string>(KnownArgs::physics_material, ""));
 
-    auto get_texture = [&](const std::string& name){
-        return primary_rendering_resources.get_blend_map_texture(VariableAndHash{name});
+    auto get_texture = [&](const FPath& name){
+        return primary_rendering_resources.get_blend_map_texture(name);
     };
     RenderingContextStack::primary_scene_node_resources().add_resource(
         args.arguments.at<VariableAndHash<std::string>>(KnownArgs::name),
@@ -92,8 +92,8 @@ LoadSceneJsonUserFunction CreateGridResource::json_user_function = [](const Load
                 .depth_func = args.arguments.contains(KnownArgs::depth_func)
                     ? depth_func_from_string(args.arguments.at<std::string>(KnownArgs::depth_func))
                     : DepthFunc::LESS,
-                .textures_color = args.arguments.at_vector<std::string>(KnownArgs::textures_color, get_texture),
-                .textures_alpha = args.arguments.try_at_vector<std::string>(KnownArgs::textures_alpha, get_texture),
+                .textures_color = args.arguments.pathes_or_variables(KnownArgs::textures_color, get_texture),
+                .textures_alpha = args.arguments.try_pathes_or_variables(KnownArgs::textures_alpha, get_texture),
                 .occluded_pass = external_render_pass_type_from_string(args.arguments.at<std::string>(KnownArgs::occluded_pass)),
                 .occluder_pass = external_render_pass_type_from_string(args.arguments.at<std::string>(KnownArgs::occluder_pass)),
                 .skidmarks = material_skidmarks(physics_material),

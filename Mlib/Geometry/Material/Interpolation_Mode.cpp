@@ -1,6 +1,8 @@
+
 #include "Interpolation_Mode.hpp"
-#include <Mlib/Throw_Or_Abort.hpp>
 #include <map>
+#include <stdexcept>
+#include <string>
 
 using namespace std::string_view_literals;
 using namespace Mlib;
@@ -12,7 +14,7 @@ InterpolationMode Mlib::interpolation_mode_from_string(std::string_view str) {
     };
     auto it = m.find(str);
     if (it == m.end()) {
-        THROW_OR_ABORT("Unknown interpolation mode: \"" + std::string{ str } + '"');
+        throw std::runtime_error("Unknown interpolation mode: \"" + std::string{ str } + '"');
     }
     return it->second;
 }
@@ -24,5 +26,5 @@ std::string_view Mlib::interpolation_mode_to_string(InterpolationMode mode) {
     case InterpolationMode::LINEAR:
         return "linear"sv;
     }
-    THROW_OR_ABORT("Unknown interpolation mode: " + std::to_string((int)mode));
+    throw std::runtime_error("Unknown interpolation mode: " + std::to_string((int)mode));
 }

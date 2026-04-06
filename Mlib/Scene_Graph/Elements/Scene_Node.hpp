@@ -1,23 +1,23 @@
 #pragma once
-#include <Mlib/Geometry/Intersection/Bvh.hpp>
+#include <Mlib/Geometry/Primitives/Bvh.hpp>
+#include <Mlib/Hashing/Variable_And_Hash.hpp>
 #include <Mlib/Map/String_With_Hash_Unordered_Map.hpp>
 #include <Mlib/Math/Transformation/Quaternion_Series.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
-#include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
+#include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/Memory/Destruction_Functions.hpp>
 #include <Mlib/Memory/Destruction_Notifier.hpp>
 #include <Mlib/Memory/Destruction_Observers.hpp>
 #include <Mlib/Memory/Memory.hpp>
 #include <Mlib/Memory/Shared_Ptrs.hpp>
-#include <Mlib/Object.hpp>
+#include <Mlib/Misc/Object.hpp>
 #include <Mlib/Scene_Config/Scene_Precision.hpp>
-#include <Mlib/Scene_Graph/Elements/Billboard_Container.hpp>
 #include <Mlib/Scene_Graph/Elements/Color_Style.hpp>
+#include <Mlib/Scene_Graph/Instances/Billboard_Container.hpp>
 #include <Mlib/Scene_Graph/Interpolation.hpp>
 #include <Mlib/Scene_Graph/Pose_Interpolation_Mode.hpp>
 #include <Mlib/Scene_Graph/Remote_User_Filter.hpp>
 #include <Mlib/Threads/Recursive_Shared_Mutex.hpp>
-#include <Mlib/Variable_And_Hash.hpp>
 #include <atomic>
 #include <cstdint>
 #include <iosfwd>
@@ -65,22 +65,6 @@ class Blended;
 template <class T>
 struct Bijection;
 
-struct SceneNodeInstances {
-    using SmallInstances = GenericBvh<CompressedScenePos, 3, BillboardContainer>;
-
-    bool is_registered;
-    std::unique_ptr<SceneNode> scene_node;
-    CompressedScenePos max_center_distance;
-    SmallInstances small_instances;
-    std::list<PositionAndYAngleAndBillboardId<CompressedScenePos>> large_instances;
-    mutable SafeAtomicSharedMutex mutex;
-};
-
-struct SceneNodeChild {
-    bool is_registered;
-    std::unique_ptr<SceneNode> scene_node;
-};
-
 struct SceneNodeBone {
     VariableAndHash<std::string> name;
     float smoothness;
@@ -118,7 +102,8 @@ enum class SceneNodeVisibility {
 
 enum class ChildRegistrationState {
     NOT_REGISTERED,
-    REGISTERED
+    MAYBE_REGISTERED,
+    IS_REGISTERED
 };
 
 enum class ChildParentState {
@@ -130,6 +115,22 @@ enum class ShutdownPhase {
     NONE,
     IN_PROGRESS,
     FINISHED
+};
+
+struct SceneNodeInstances {
+    using SmallInstances = GenericBvh<CompressedScenePos, 3, BillboardContainer>;
+
+    ChildRegistrationState registration_state;
+    std::unique_ptr<SceneNode> scene_node;
+    CompressedScenePos max_center_distance;
+    SmallInstances small_instances;
+    std::list<PositionAndYAngleAndBillboardId<CompressedScenePos>> large_instances;
+    mutable SafeAtomicSharedMutex mutex;
+};
+
+struct SceneNodeChild {
+    ChildRegistrationState registration_state;
+    std::unique_ptr<SceneNode> scene_node;
 };
 
 enum class PhysicsMaterial: uint32_t;
@@ -162,27 +163,27 @@ public:
     ShutdownPhase shutdown_phase() const;
 
     void set_absolute_movable(DanglingBaseClassRef<IAbsoluteMovable> absolute_movable);
-    IAbsoluteMovable& get_absolute_movable() const;
+    DanglingBaseClassRef<IAbsoluteMovable> get_absolute_movable(SourceLocation loc) const;
     bool has_absolute_movable() const;
     void clear_absolute_movable();
 
-    IRelativeMovable& get_relative_movable() const;
+    DanglingBaseClassRef<IRelativeMovable> get_relative_movable(SourceLocation loc) const;
     void set_relative_movable(const observer_ptr<IRelativeMovable, SceneNode&>& relative_movable);
     bool has_relative_movable() const;
     void clear_relative_movable();
 
-    INodeModifier& get_node_modifier() const;
+    DanglingBaseClassRef<INodeModifier> get_node_modifier(SourceLocation loc) const;
     bool has_node_modifier() const;
     void set_node_modifier(std::unique_ptr<INodeModifier>&& node_modifier);
 
     bool has_absolute_observer() const;
-    IAbsoluteObserver& get_absolute_observer() const;
-    void set_absolute_observer(IAbsoluteObserver& absolute_observer);
+    DanglingBaseClassRef<IAbsoluteObserver> get_absolute_observer() const;
+    void set_absolute_observer(const DanglingBaseClassRef<IAbsoluteObserver>& absolute_observer);
 
     bool has_sticky_absolute_observer() const;
 
-    IAbsoluteObserver& get_sticky_absolute_observer() const;
-    void set_sticky_absolute_observer(IAbsoluteObserver& sticky_absolute_observer);
+    DanglingBaseClassRef<IAbsoluteObserver> get_sticky_absolute_observer() const;
+    void set_sticky_absolute_observer(const DanglingBaseClassRef<IAbsoluteObserver>& sticky_absolute_observer);
 
     bool contains_node_hider(
         const DanglingBaseClassPtr<IRenderableScene>& renderable_scene,
@@ -204,7 +205,7 @@ public:
         const VariableAndHash<std::string>& name,
         std::unique_ptr<SceneNode>&& node,
         ChildRegistrationState child_registration_state = ChildRegistrationState::NOT_REGISTERED,
-        ChildParentState =  ChildParentState::PARENT_NOT_SET);
+        ChildParentState = ChildParentState::PARENT_NOT_SET);
     void set_parent(DanglingBaseClassRef<SceneNode> parent);
     bool has_parent() const;
     DanglingBaseClassRef<SceneNode> parent();
@@ -353,29 +354,28 @@ public:
     void set_bone(const SceneNodeBone& bone);
     void set_periodic_animation(const VariableAndHash<std::string>& name);
     void set_aperiodic_animation(const VariableAndHash<std::string>& name);
-    void set_scene_and_state(Scene& scene, SceneNodeState state);
+    void set_scene_and_state(const DanglingBaseClassRef<Scene>& scene, SceneNodeState state);
     inline bool is_visible_for_user(const RemoteObserver& observer) const {
         return observer.can_see(remote_viewable_);
     }
     SceneNodeState state() const;
-    Scene& scene();
-    const Scene& scene() const;
+    DanglingBaseClassRef<Scene> scene();
+    DanglingBaseClassRef<const Scene> scene() const;
     void set_debug_message(std::string message);
     std::string debug_message() const;
     PoseInterpolationMode pose_interpolation_mode() const;
     SceneNodeDomain domain() const;
-    void assert_node_can_be_modified_by_this_thread() const;
     void invalidate_transformation_history();
     void clear_transformation_history();
     mutable DestructionObservers<SceneNode&> clearing_observers;
     mutable DestructionObservers<SceneNode&> destruction_observers;
     mutable SharedPtrs clearing_pointers;
     mutable SharedPtrs destruction_pointers;
-    mutable DestructionFunctions on_clear;
+    mutable EarlyAndLateDestructionFunctions on_clear;
 private:
     void clear_transformation_history(
         const TransformationMatrix<float, ScenePos, 3>& parent_m);
-    void set_scene_and_state_unsafe(Scene& scene, SceneNodeState state);
+    void set_scene_and_state_unsafe(const DanglingBaseClassRef<Scene>& scene, SceneNodeState state);
     void setup_child_unsafe(
         const VariableAndHash<std::string>& name,
         DanglingBaseClassRef<SceneNode> node,
@@ -383,14 +383,14 @@ private:
         ChildParentState child_parent_state);
     void clear_unsafe();
     ViewableRemoteObject remote_viewable_;
-    Scene* scene_;
+    DanglingBaseClassPtr<Scene> scene_;
     DanglingBaseClassPtr<SceneNode> parent_;
     DanglingBaseClassPtr<IAbsoluteMovable> absolute_movable_;
     DanglingBaseClassPtr<IRelativeMovable> relative_movable_;
     std::unique_ptr<INodeModifier> node_modifier_;
     std::unordered_map<DanglingBaseClassPtr<IRenderableScene>, std::unordered_set<DanglingBaseClassPtr<INodeHider>>> node_hiders_;
-    IAbsoluteObserver* absolute_observer_;
-    IAbsoluteObserver* sticky_absolute_observer_;
+    DanglingBaseClassPtr<IAbsoluteObserver> absolute_observer_;
+    DanglingBaseClassPtr<IAbsoluteObserver> sticky_absolute_observer_;
     std::unique_ptr<Camera> camera_;
     StringWithHashUnorderedMap<std::shared_ptr<RenderableWithStyle>> renderables_;
     std::shared_ptr<IParticleRenderer> particle_renderer_;

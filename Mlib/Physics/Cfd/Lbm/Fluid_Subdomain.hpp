@@ -29,7 +29,7 @@ public:
         , density_field_{ArrayShape{subdomain_size(0), subdomain_size(1)}}
     {
         if (any(subdomain_size_ == 0uz)) {
-            THROW_OR_ABORT("Subdomain size cannot be zero");
+            throw std::runtime_error("Subdomain size cannot be zero");
         }
         for (size_t dir = 0; dir < ndirections; ++dir) {
             good_momentum_magnitudes_field_[dir] = TModel::weights[dir];

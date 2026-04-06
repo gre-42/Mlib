@@ -1,5 +1,5 @@
 #pragma once
-#include <Mlib/Geometry/Intersection/Bvh_Fwd.hpp>
+#include <Mlib/Geometry/Primitives/Bvh_Fwd.hpp>
 #include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/Physics/Interfaces/IAdvance_Time.hpp>
 #include <Mlib/Players/Game_Logic/Bystanders.hpp>
@@ -20,7 +20,6 @@ enum class Focus;
 class Scene;
 class SceneNode;
 class AdvanceTimes;
-class DeleteNodeMutex;
 
 class GameLogic: public IAdvanceTime, public virtual DanglingBaseClass {
 public:
@@ -30,7 +29,6 @@ public:
         VehicleSpawners& vehicle_spawners,
         Players& players,
         SupplyDepots& supply_depots,
-        DeleteNodeMutex& delete_node_mutex,
         std::function<void()> setup_new_round);
     ~GameLogic();
     virtual void advance_time(float dt, const StaticWorld& world) override;

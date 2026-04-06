@@ -1,10 +1,10 @@
 #include "Udp_Node.hpp"
-#include <Mlib/Env.hpp>
 #include <Mlib/Io/Binary.hpp>
 #include <Mlib/Memory/Integral_Cast.hpp>
+#include <Mlib/Os/Env.hpp>
 #include <Mlib/Remote/Sockets/Asio.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
 #include <mutex>
+#include <stdexcept>
 
 using boost::asio::ip::udp;
 using boost::asio::ip::address;
@@ -32,7 +32,7 @@ UdpNode::UdpNode(
 
 void UdpNode::start_receive_thread(size_t max_stored_received_messages) {
     if (receive_thread_.joinable()) {
-        THROW_OR_ABORT("UDP receive-thread already started");
+        throw std::runtime_error("UDP receive-thread already started");
     }
     receive_thread_ = std::jthread{[&, max_stored_received_messages](){
         std::vector<std::byte> receive_buffer(1024 * 1024);
@@ -104,10 +104,10 @@ void UdpNode::send(std::istream& istr) {
         linfo() << this << " send_to. Error: " << (int)(bool)ec << ", Length: " << sent << " / " << data.size();
     }
     if (ec) {
-        THROW_OR_ABORT("UDP send failed: \"" + ec.message() + '"');
+        throw std::runtime_error("UDP send failed: \"" + ec.message() + '"');
     }
     if (sent != len) {
-        THROW_OR_ABORT((std::stringstream() << "Bytes sent: " << sent << ". Expected: " << len).str());
+        throw std::runtime_error((std::stringstream() << "Bytes sent: " << sent << ". Expected: " << len).str());
     }
 }
 

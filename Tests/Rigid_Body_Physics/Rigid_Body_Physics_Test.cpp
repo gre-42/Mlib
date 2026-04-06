@@ -1,9 +1,9 @@
-#include <Mlib/Floating_Point_Exceptions.hpp>
 #include <Mlib/Geometry/Plane_Nd.hpp>
 #include <Mlib/Geometry/Vector_At_Position.hpp>
 #include <Mlib/Images/Svg.hpp>
 #include <Mlib/Math/Fixed_Cholesky.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
+#include <Mlib/Misc/Floating_Point_Exceptions.hpp>
 #include <Mlib/Physics/Collision/Resolve/Constraints.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Pulses.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Primitives.hpp>

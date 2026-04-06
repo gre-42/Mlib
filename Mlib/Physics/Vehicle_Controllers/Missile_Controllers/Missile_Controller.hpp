@@ -1,8 +1,8 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
+#include <Mlib/Hashing/Variable_And_Hash.hpp>
 #include <Mlib/Physics/Vehicle_Controllers/Missile_Controllers/Rigid_Body_Missile_Controller.hpp>
 #include <Mlib/Signal/Pid_Controller.hpp>
-#include <Mlib/Variable_And_Hash.hpp>
 #include <cstddef>
 #include <map>
 
@@ -18,7 +18,7 @@ struct MissileWingController {
 class MissileController: public RigidBodyMissileController {
 public:
     MissileController(
-        RigidBodyVehicle& rb,
+        const DanglingBaseClassRef<RigidBodyVehicle>& rb,
         float dt_ref,
         const PidController<FixedArray<float, 2>, float>& pid,
         std::vector<MissileWingController> wing_controllers,

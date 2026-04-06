@@ -1,10 +1,11 @@
+
 #include "StbImage3.hpp"
 #include <Mlib/Images/Draw_Generic.hpp>
 #include <Mlib/Stats/Min_Max.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
 #include <fstream>
 #include <stb/stb_image_write.h>
 #include <stb_cpp/stb_image_load.hpp>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -28,7 +29,7 @@ StbImage3::StbImage3(const FixedArray<size_t, 2>& shape)
 
 StbImage3::StbImage3(const StbInfo<uint8_t>& stb_info) {
     if (stb_info.nrChannels != 3) {
-        THROW_OR_ABORT("Image does not have 3 channels");
+        throw std::runtime_error("Image does not have 3 channels");
     }
     resize((size_t)stb_info.height, (size_t)stb_info.width);
     memcpy(flat_begin(), stb_info.data(), nbytes());
@@ -116,7 +117,7 @@ void StbImage3::draw_streamline(
 StbImage3 StbImage3::load_from_file(const std::string& filename) {
     auto image = stb_load8(filename, FlipMode::NONE);
     if (image.nrChannels != 3) {
-        THROW_OR_ABORT("Image does not have 3 channels: \"" + filename + '"');
+        throw std::runtime_error("Image does not have 3 channels: \"" + filename + '"');
     }
     return StbImage3{image};
 }
@@ -124,23 +125,23 @@ StbImage3 StbImage3::load_from_file(const std::string& filename) {
 void StbImage3::save_to_file(const std::string& filename, int jpg_quality) const {
     if (filename.ends_with(".png")) {
         if (!stbi_write_png(filename.c_str(), (int)shape(1), (int)shape(0), 3, flat_begin(), 0)) {
-            THROW_OR_ABORT("Could not save to file " + filename);
+            throw std::runtime_error("Could not save to file: \"" + filename + '"');
         }
     } else if (filename.ends_with(".jpg")) {
         if (!stbi_write_jpg(filename.c_str(), (int)shape(1), (int)shape(0), 3, flat_begin(), jpg_quality)) {
-            THROW_OR_ABORT("Could not save to file " + filename);
+            throw std::runtime_error("Could not save to file: \"" + filename + '"');
         }
     } else {
-        THROW_OR_ABORT("Filename does not have png or jpg extension: \"" + filename + '"');
+        throw std::runtime_error("Filename does not have png or jpg extension: \"" + filename + '"');
     }
 }
 
 StbImage3 StbImage3::from_rgb(const Array<uint8_t>& rgb) {
     if (rgb.ndim() != 3) {
-        THROW_OR_ABORT("from_rgb: rgb image does not have ndim=3, but " + rgb.shape().str());
+        throw std::runtime_error("from_rgb: rgb image does not have ndim=3, but " + rgb.shape().str());
     }
     if (rgb.shape(0) != 3) {
-        THROW_OR_ABORT("from_rgb: rgb image does not have shape(0)=3, but " + rgb.shape().str());
+        throw std::runtime_error("from_rgb: rgb image does not have shape(0)=3, but " + rgb.shape().str());
     }
     StbImage3 result(FixedArray<size_t, 2>{ rgb.shape(1), rgb.shape(2) });
     Array<Rgb24> f = result.flattened();
@@ -155,10 +156,10 @@ StbImage3 StbImage3::from_rgb(const Array<uint8_t>& rgb) {
 
 StbImage3 StbImage3::from_float_rgb(const Array<float>& rgb) {
     if (rgb.ndim() != 3) {
-        THROW_OR_ABORT("from_float: rgb image does not have ndim=3, but " + rgb.shape().str());
+        throw std::runtime_error("from_float: rgb image does not have ndim=3, but " + rgb.shape().str());
     }
     if (rgb.shape(0) != 3) {
-        THROW_OR_ABORT("from_float: rgb image does not have shape(0)=3, but " + rgb.shape().str());
+        throw std::runtime_error("from_float: rgb image does not have shape(0)=3, but " + rgb.shape().str());
     }
     StbImage3 result(FixedArray<size_t, 2>{ rgb.shape(1), rgb.shape(2) });
     Array<Rgb24> f = result.flattened();
@@ -173,7 +174,7 @@ StbImage3 StbImage3::from_float_rgb(const Array<float>& rgb) {
 
 StbImage3 StbImage3::from_float_grayscale(const Array<float>& grayscale) {
     if (grayscale.ndim() != 2) {
-        THROW_OR_ABORT("from_float_grayscale: grayscale image does not have ndim=2, but " + grayscale.shape().str());
+        throw std::runtime_error("from_float_grayscale: grayscale image does not have ndim=2, but " + grayscale.shape().str());
     }
     StbImage3 result(FixedArray<size_t, 2>{ grayscale.shape(0), grayscale.shape(1) });
     Array<Rgb24> f = result.flattened();

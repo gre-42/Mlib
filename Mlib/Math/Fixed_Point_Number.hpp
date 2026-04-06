@@ -1,6 +1,5 @@
 #pragma once
 #include <Mlib/Math/Round.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
 #include <cmath>
 #include <concepts>
 #include <concepts>
@@ -10,6 +9,7 @@
 #include <limits>
 #include <ratio>
 #include <sstream>
+#include <string>
 
 namespace Mlib {
 
@@ -53,11 +53,11 @@ public:
     template <std::floating_point F>
     static constexpr inline FixedPointNumber from_float_safe(const F& value) {
         if (!std::isfinite(value)) {
-            THROW_OR_ABORT("Floating-point value is not finite");
+            throw std::runtime_error("Floating-point value is not finite");
         }
         auto res = FixedPointNumber{ value };
         if (std::abs((F)res - value) > (F)5 / denominator) {
-            THROW_OR_ABORT("Large deviation after converting to fixed point");
+            throw std::runtime_error("Large deviation after converting to fixed point");
         }
         return res;
     }
@@ -263,4 +263,19 @@ namespace std {
     std::string to_string(const Mlib::FixedPointNumber<TInt, denominator>& v) {
         return (std::stringstream() << v).str();
     }
+
+#ifndef __clang__
+    template <std::integral TInt, std::intmax_t denominator>
+    std::from_chars_result from_chars( const char* first, const char* last,
+        Mlib::FixedPointNumber<TInt, denominator>& value,
+        std::chars_format fmt = std::chars_format::general)
+    {
+        Mlib::intermediate_float<TInt> fvalue;
+        auto result = std::from_chars(first, last, fvalue, fmt);
+        if (result.ec == std::errc()) {
+            value = Mlib::FixedPointNumber<TInt, denominator>{fvalue};
+        }
+        return result;
+    }
+#endif
 }

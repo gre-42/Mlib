@@ -5,10 +5,10 @@
 #include <Mlib/Geometry/Mesh/Triangle_List.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>
 #include <Mlib/Memory/Integral_Cast.hpp>
+#include <Mlib/OpenGL/Rendering_Context.hpp>
+#include <Mlib/OpenGL/Resource_Managers/Rendering_Resources.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Barrier_Style.hpp>
-#include <Mlib/Render/Rendering_Context.hpp>
-#include <Mlib/Render/Resource_Managers/Rendering_Resources.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -36,7 +36,8 @@ void Mlib::draw_boundary_barriers(
     const auto& tl = tls.emplace_back(std::make_shared<TriangleList<CompressedScenePos>>(
         "boundary_barriers",
         material,
-        morphology + PhysicsMaterial::ATTR_VISIBLE + PhysicsMaterial::ATTR_TWO_SIDED));
+        morphology + PhysicsMaterial::ATTR_VISIBLE + PhysicsMaterial::ATTR_TWO_SIDED,
+        ModifierBacklog{}));
     // plot_mesh_svg(
     //     "/tmp/contours.svg",
     //     600,
@@ -45,14 +46,14 @@ void Mlib::draw_boundary_barriers(
     //     contours,
     //     {});
 
-    tl->material.textures_color = { primary_rendering_resources.get_blend_map_texture(barrier_style.texture) };
-    tl->material.blend_mode = barrier_style.blend_mode;
-    tl->material.cull_faces = barrier_style.cull_faces;
-    tl->material.reorient_uv0 = barrier_style.reorient_uv0;
-    tl->material.shading = barrier_style.shading;
-    tl->material.compute_color_mode();
+    tl->meta.material.textures_color = { primary_rendering_resources.get_blend_map_texture(barrier_style.texture) };
+    tl->meta.material.blend_mode = barrier_style.blend_mode;
+    tl->meta.material.cull_faces = barrier_style.cull_faces;
+    tl->meta.material.reorient_uv0 = barrier_style.reorient_uv0;
+    tl->meta.material.shading = barrier_style.shading;
+    tl->meta.material.compute_color_mode();
     if (barrier_style.depth != 0.f) {
-        THROW_OR_ABORT("Boundary barrier depth must be zero");
+        throw std::runtime_error("Boundary barrier depth must be zero");
     }
     for (const auto& contour : contours) {
         if (contour.size() < 4) {

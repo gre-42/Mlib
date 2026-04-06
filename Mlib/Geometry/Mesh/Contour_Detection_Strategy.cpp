@@ -1,6 +1,7 @@
+
 #include "Contour_Detection_Strategy.hpp"
-#include <Mlib/Throw_Or_Abort.hpp>
 #include <map>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -12,7 +13,7 @@ ContourDetectionStrategy Mlib::contour_detection_strategy_from_string(const std:
     };
     auto it = m.find(s);
     if (it == m.end()) {
-        THROW_OR_ABORT("Unknown contour detection strategy: \"" + s + '"');
+        throw std::runtime_error("Unknown contour detection strategy: \"" + s + '"');
     }
     return it->second;
 }

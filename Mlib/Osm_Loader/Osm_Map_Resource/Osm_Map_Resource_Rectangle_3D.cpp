@@ -1,11 +1,11 @@
 #include "Osm_Map_Resource_Rectangle_3D.hpp"
-#include <Mlib/Geometry/Mesh/Lines_To_Rectangles.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_List.hpp>
+#include <Mlib/Geometry/Primitives/Lines_To_Rectangles.hpp>
 #include <Mlib/Math/Math.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Entrance_Type.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Node_Height_Binding.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Road_Type.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -26,7 +26,7 @@ void OsmRectangle3D::draw(
             p(i) = ws.warp_01(t(i).position.casted<double>(), scale, width, height);
         }
         if (std::isnan(uv0_y) != std::isnan(uv1_y)) {
-            THROW_OR_ABORT("Inconsistent UV NaN-ness");
+            throw std::runtime_error("Inconsistent UV NaN-ness");
         }
         {
             FixedArray<FixedArray<float, 2>, 3> uv = uninitialized;
@@ -40,7 +40,7 @@ void OsmRectangle3D::draw(
                     if (t(i).uv(1) < 0 || t(i).uv(1) > 1) {
                         std::stringstream sstr;
                         sstr << "uv.y not between 0 and 1: " << t(i).uv(1);
-                        THROW_OR_ABORT(sstr.str());
+                        throw std::runtime_error(sstr.str());
                     }
                     uv(i)(1) = (1.f - t(i).uv(1)) * uv0_y + t(i).uv(1) * uv1_y;
                 }
@@ -79,7 +79,7 @@ FixedArray<double, 3> WarpedSegment3D::warp_01(const FixedArray<double, 3>& p, d
     if (std::abs(x) > 1) {
         std::stringstream sstr;
         sstr << "Position.y not between -1 and +1: " << x;
-        THROW_OR_ABORT(sstr.str());
+        throw std::runtime_error(sstr.str());
     }
     auto w0 = warp_0(width * p(0));
     auto w1 = warp_1(width * p(0));

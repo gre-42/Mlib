@@ -17,14 +17,14 @@ struct TrackElementExtended {
     inline double progress(TrackElementInterpolationKey key) const {
         if (key == TrackElementInterpolationKey::ELAPSED_SECONDS) {
             if (std::isnan(element.elapsed_seconds)) {
-                THROW_OR_ABORT("Elapsed seconds is NAN despite selected interpolation key");
+                throw std::runtime_error("Elapsed seconds is NAN despite selected interpolation key");
             }
             return element.elapsed_seconds;
         }
         if (key == TrackElementInterpolationKey::METERS_TO_START) {
             return meters_to_start;
         }
-        THROW_OR_ABORT("Unknown track element interpolation key");
+        throw std::runtime_error("Unknown track element interpolation key");
     }
     const OffsetAndTaitBryanAngles<float, ScenePos, 3>& transformation() const;
     void set_y_position(ScenePos value);

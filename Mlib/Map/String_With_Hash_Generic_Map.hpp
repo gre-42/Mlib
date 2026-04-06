@@ -1,6 +1,6 @@
 #pragma once
-#include <Mlib/Throw_Or_Abort.hpp>
-#include <Mlib/Variable_And_Hash.hpp>
+#include <Mlib/Hashing/Variable_And_Hash.hpp>
+#include <stdexcept>
 #include <string>
 #include <vector>
 
@@ -25,7 +25,7 @@ public:
     mapped_type& add(key_type key, Args &&...args) {
         auto res = elements_.try_emplace(std::move(key), std::forward<Args>(args)...);
         if (!res.second) {
-            THROW_OR_ABORT(value_name_ + " with name \"" + *key + "\" already exists");
+            throw std::runtime_error(value_name_ + " with name \"" + *key + "\" already exists");
         }
         return res.first->second;
     }
@@ -91,7 +91,7 @@ public:
     node_type extract(const key_type& key) {
         auto res = elements_.extract(key);
         if (res.empty()) {
-            THROW_OR_ABORT(value_name_ + " with name \"" + *key + "\" does not exist");
+            throw std::runtime_error(value_name_ + " with name \"" + *key + "\" does not exist");
         }
         return res;
     }
@@ -103,7 +103,7 @@ public:
     mapped_type& get(const key_type& key) {
         auto it = elements_.find(key);
         if (it == elements_.end()) {
-            THROW_OR_ABORT(value_name_ + " with name \"" + *key + "\" does not exist");
+            throw std::runtime_error(value_name_ + " with name \"" + *key + "\" does not exist");
         }
         return it->second;
     }

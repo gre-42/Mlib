@@ -1,3 +1,4 @@
+
 #include "Audio_Scene.hpp"
 #include <Mlib/Audio/Audio_Distance_Model.hpp>
 #include <Mlib/Audio/Audio_Entity_State.hpp>
@@ -49,7 +50,7 @@ void AudioScene::set_listener(
             node.relative_velocity.reset();
         }
         listener_node_ = node.ptr();
-        on_destroy_.emplace(node->on_destroy, CURRENT_SOURCE_LOCATION);
+        on_destroy_.emplace(node->on_destroy.deflt, CURRENT_SOURCE_LOCATION);
         on_destroy_->add([](){
             listener_node_ = nullptr;
             }, CURRENT_SOURCE_LOCATION);
@@ -87,7 +88,7 @@ void AudioScene::set_distance_model(AudioDistanceModel model) {
         AL_CHK(alDistanceModel(AL_LINEAR_DISTANCE_CLAMPED));
         return;
     }
-    THROW_OR_ABORT("Unknown audio distance model: " + std::to_string((int)model));
+    throw std::runtime_error("Unknown audio distance model: " + std::to_string((int)model));
 }
 
 void AudioScene::print(std::ostream& ostr) {

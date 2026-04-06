@@ -1,6 +1,6 @@
 #include "Add_Vip.hpp"
-#include <Mlib/Argument_List.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
+#include <Mlib/Misc/Argument_List.hpp>
 #include <Mlib/Players/Advance_Times/Game_Logic.hpp>
 #include <Mlib/Players/Containers/Players.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
@@ -21,7 +21,7 @@ void AddVip::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     args.arguments.validate(KnownArgs::options);
     if (game_logic == nullptr) {
-        THROW_OR_ABORT("Scene has no game logic");
+        throw std::runtime_error("Scene has no game logic");
     }
     game_logic->bystanders.add_vip(
         players.get_player(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::player), CURRENT_SOURCE_LOCATION),

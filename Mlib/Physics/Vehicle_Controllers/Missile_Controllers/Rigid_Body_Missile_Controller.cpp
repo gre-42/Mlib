@@ -3,7 +3,8 @@
 
 using namespace Mlib;
 
-RigidBodyMissileController::RigidBodyMissileController(RigidBodyVehicle& rb)
+RigidBodyMissileController::RigidBodyMissileController(
+    const DanglingBaseClassRef<RigidBodyVehicle>& rb)
     : rb_{ rb }
     , rocket_engine_power_{ NAN }
     , rocket_engine_power_relaxation_{ 0.f }
@@ -20,7 +21,7 @@ void RigidBodyMissileController::set_desired_direction(
     if (relaxation >= desired_direction_relaxation_) {
         auto l2 = sum(squared(dir));
         if (std::abs(l2 - 1.f) > 1e6f) {
-            THROW_OR_ABORT("Desired missile direction not normalized. Length: " + std::to_string(std::sqrt(l2)));
+            throw std::runtime_error("Desired missile direction not normalized. Length: " + std::to_string(std::sqrt(l2)));
         }
         desired_direction_ = dir;
         desired_direction_relaxation_ = relaxation;

@@ -1,6 +1,7 @@
 #include "Remote_Role.hpp"
-#include <Mlib/Throw_Or_Abort.hpp>
 #include <map>
+#include <stdexcept>
+#include <string>
 
 using namespace std::string_view_literals;
 using namespace Mlib;
@@ -12,7 +13,7 @@ RemoteRole Mlib::remote_role_from_string(const std::string_view& s) {
     };
     auto it = m.find(s);
     if (it == m.end()) {
-        THROW_OR_ABORT("Unknown remote role: \"" + std::string(s) + '"');
+        throw std::runtime_error("Unknown remote role: \"" + std::string(s) + '"');
     }
     return it->second;
 }
@@ -24,5 +25,5 @@ std::string_view Mlib::remote_role_to_string(RemoteRole r) {
     case RemoteRole::CLIENT:
         return "client"sv;
     }
-    THROW_OR_ABORT("Unknown remote role: \"" + std::to_string((int)r) + '"');
+    throw std::runtime_error("Unknown remote role: \"" + std::to_string((int)r) + '"');
 }

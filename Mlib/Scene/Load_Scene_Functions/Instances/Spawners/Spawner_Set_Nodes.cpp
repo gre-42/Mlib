@@ -1,11 +1,11 @@
 #include "Spawner_Set_Nodes.hpp"
-#include <Mlib/Argument_List.hpp>
 #include <Mlib/Components/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Macro_Executor/Asset_Group_Replacement_Parameters.hpp>
 #include <Mlib/Macro_Executor/Asset_References.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Macro_Executor/Replacement_Parameter.hpp>
 #include <Mlib/Memory/Object_Pool.hpp>
+#include <Mlib/Misc/Argument_List.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Players/Containers/Vehicle_Spawners.hpp>
 #include <Mlib/Players/Scene_Vehicle/Scene_Vehicle.hpp>
@@ -13,7 +13,7 @@
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -48,14 +48,13 @@ void SpawnerSetNodes::execute(const LoadSceneJsonUserFunctionArgs& args)
     std::list<std::unique_ptr<SceneVehicle, DeleteFromPool<SceneVehicle>>> vehicles;
     for (const auto& prefix : prefixes) {
         auto name = VariableAndHash<std::string>{prefix + suffix};
-        DanglingBaseClassRef<SceneNode> node = scene.get_node(name, DP_LOC);
-        auto& rb = get_rigid_body_vehicle(node);
+        DanglingBaseClassRef<SceneNode> node = scene.get_node(name, CURRENT_SOURCE_LOCATION);
+        auto rb = get_rigid_body_vehicle(node.get(), CURRENT_SOURCE_LOCATION);
         vehicles.push_back(global_object_pool.create_unique<SceneVehicle>(
             CURRENT_SOURCE_LOCATION,
-            delete_node_mutex,
             name,
             node,
-            DanglingBaseClassRef<RigidBodyVehicle>{ rb, CURRENT_SOURCE_LOCATION }));
+            rb));
     }
     vehicle_spawners
         .get(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::spawner))

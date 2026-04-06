@@ -1,3 +1,4 @@
+
 #include "Collide_With_Terrain.hpp"
 #include <Mlib/Geometry/Mesh/IIntersectable_Mesh.hpp>
 #include <Mlib/Geometry/Mesh/Typed_Mesh.hpp>
@@ -7,14 +8,14 @@
 #include <Mlib/Physics/Collision/Detect/Collide_Triangle_And_Intersectables.hpp>
 #include <Mlib/Physics/Collision/Detect/Collide_Triangle_And_Lines.hpp>
 #include <Mlib/Physics/Collision/Detect/Collide_Triangle_And_Triangles.hpp>
-#include <Mlib/Physics/Collision/Detect/Collide_Triangles_And_Ridge.hpp>
+#include <Mlib/Physics/Collision/Detect/Collide_Triangles_And_Line.hpp>
 #include <Mlib/Physics/Collision/Record/Collision_History.hpp>
 #include <Mlib/Physics/Containers/Collision_Group.hpp>
 #include <Mlib/Physics/Containers/Rigid_Bodies.hpp>
 #include <Mlib/Physics/Physics_Engine/Colliders/Collide_Convex_Meshes.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Phase.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
+#include <stdexcept>
 
 namespace Mlib {
     
@@ -107,14 +108,14 @@ void Mlib::collide_with_terrain(
                             },
                             t0.ctp);
                     });
-                rigid_bodies.ridge_bvh().visit(
+                rigid_bodies.line_bvh().visit(
                     msh1.mesh->aabb(),
-                    [&](const RigidBodyAndCollisionRidgeSphere<CompressedScenePos>& e0){
-                        collide_triangles_and_ridge(
+                    [&](const RigidBodyAndCollisionLineSphere<CompressedScenePos>& e0){
+                        collide_triangles_and_line(
                             o1.rigid_body.get(),
                             e0.rb,
                             msh1,
-                            e0.crp,
+                            e0.clp,
                             history);
                         return true;
                     });
@@ -132,10 +133,10 @@ void Mlib::collide_with_terrain(
                     });
             } else if (any(msh1.physics_material & PhysicsMaterial::OBJ_HITBOX)) {
                 if (!msh1.mesh->get_lines_sphere().empty()) {
-                    THROW_OR_ABORT("Detected hitbox with lines in object \"" + o1.rigid_body->name() + '"');
+                    throw std::runtime_error("Detected hitbox with lines in object \"" + o1.rigid_body->name() + '"');
                 }
             } else {
-                THROW_OR_ABORT(
+                throw std::runtime_error(
                     "Unknown mesh type when colliding object \"" + o1.rigid_body->name() + '"');
             }
         }

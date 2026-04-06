@@ -1,7 +1,7 @@
 #pragma once
+#include <Mlib/Hashing/Std_Hash.hpp>
 #include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/Memory/Destruction_Functions.hpp>
-#include <Mlib/Std_Hash.hpp>
 #include <compare>
 #include <type_traits>
 
@@ -39,6 +39,9 @@ public:
     }
     inline void on_destroy(std::function<void()> func, SourceLocation loc) const {
         on_object_destroy_.add(std::move(func), std::move(loc));
+    }
+    inline bool operator < (const DestructionFunctionsTokensPtr& other) const {
+        return object_.get() < other.get();
     }
 private:
     DanglingBaseClassPtr<T> object_;

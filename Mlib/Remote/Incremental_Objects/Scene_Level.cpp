@@ -1,6 +1,6 @@
 #include "Scene_Level.hpp"
-#include <Mlib/Throw_Or_Abort.hpp>
 #include <mutex>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -58,7 +58,7 @@ void SceneLevelSelector::server_set_next_scene_level(std::string level) {
 void SceneLevelSelector::client_schedule_load_scene_level(LocalSceneLevel level) {
     std::scoped_lock lock{ mutex_ };
     if (!on_schedule_load_scene_) {
-        THROW_OR_ABORT("on_schedule_load_scene not set");
+        throw std::runtime_error("on_schedule_load_scene not set");
     }
     next_scene_level_ = std::move(level);
     if (on_schedule_load_scene_) {

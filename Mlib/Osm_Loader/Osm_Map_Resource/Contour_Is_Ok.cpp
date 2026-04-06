@@ -1,6 +1,6 @@
 #include "Contour_Is_Ok.hpp"
-#include <Mlib/Geometry/Intersection/Contour_Intersections.hpp>
 #include <Mlib/Geometry/Mesh/Cleanup/Close_Neighbor_Detector.hpp>
+#include <Mlib/Geometry/Primitives/Contour_Intersections.hpp>
 
 using namespace Mlib;
 

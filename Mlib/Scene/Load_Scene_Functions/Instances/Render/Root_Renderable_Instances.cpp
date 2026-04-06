@@ -1,12 +1,12 @@
 #include "Root_Renderable_Instances.hpp"
-#include <Mlib/Argument_List.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix_Json.hpp>
+#include <Mlib/Misc/Argument_List.hpp>
+#include <Mlib/OpenGL/Deferred_Instantiator.hpp>
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Players/Game_Logic/Supply_Depots.hpp>
-#include <Mlib/Render/Deferred_Instantiator.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Instantiation/Root_Instantiation_Options.hpp>
@@ -63,7 +63,7 @@ void RootRenderableInstances::execute(const LoadSceneJsonUserFunctionArgs& args)
     
     if (irno.has_value()) {
         if (args.local_json_macro_arguments == nullptr) {
-            THROW_OR_ABORT("instantiated_root_nodes requires local arguments");
+            throw std::runtime_error("instantiated_root_nodes requires local arguments");
         }
         args.local_json_macro_arguments->set(*irno, instantiated_root_nodes);
     }

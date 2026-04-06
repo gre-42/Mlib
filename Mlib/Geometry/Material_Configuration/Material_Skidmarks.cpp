@@ -1,8 +1,9 @@
+
 #include "Material_Skidmarks.hpp"
 #include <Mlib/Geometry/Material/Particle_Type.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
 #include <map>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -26,7 +27,7 @@ ParticleType Mlib::material_skidmarks(PhysicsMaterial material) {
     };
     auto it = m.find(material);
     if (it == m.end()) {
-        THROW_OR_ABORT("Cannot find skidmark options for material \"" + physics_material_to_string(material));
+        throw std::runtime_error("Cannot find skidmark options for material \"" + physics_material_to_string(material));
     }
     return it->second;
 }

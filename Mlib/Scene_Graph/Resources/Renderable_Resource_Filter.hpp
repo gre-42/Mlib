@@ -4,11 +4,13 @@
 
 namespace Mlib {
 
+struct MeshMeta;
 template <class TPos>
 class ColoredVertexArray;
 
 struct RenderableResourceFilter {
     ~RenderableResourceFilter();
+    bool matches(size_t num, const MeshMeta &meta) const;
     template <class TPos>
     bool matches(size_t num, const ColoredVertexArray<TPos> &cva) const;
     size_t min_num = 0;

@@ -1,3 +1,4 @@
+
 #include "Load_Dff.hpp"
 #include <Mlib/Geometry/Mesh/Load/IRaster.hpp>
 #include <Mlib/Geometry/Mesh/Load/IRaster_Factory.hpp>
@@ -97,10 +98,10 @@ void Image::unpalletize(bool force_alpha) {
     if(this->depth > 8)
         return;
     if (pixels.empty()) {
-        THROW_OR_ABORT("Unpalletize called on empty image");
+        throw std::runtime_error("Unpalletize called on empty image");
     }
     if (palette.empty()) {
-        THROW_OR_ABORT("Unpalletize called on image without a palette");
+        throw std::runtime_error("Unpalletize called on image without a palette");
     }
 
     uint32_t ndepth = (force_alpha || this->has_alpha()) ? 32 : 24;
@@ -136,7 +137,7 @@ void Image::compress_palette()
     if (this->depth != 8)
         return;
     if (pixels.size() != stride * height) {
-        THROW_OR_ABORT("Unexpected number of pixels");
+        throw std::runtime_error("Unexpected number of pixels");
     }
     uint8_t *pixels = this->pixels.data();
     for (uint32_t y = 0; y < this->height; y++) {
@@ -372,7 +373,7 @@ void Image::set_pixels_dxt(uint32_t type, uint8_t *pixels)
         decompress_dxt5(this->pixels.data(), this->width, this->height, pixels);
         break;
     }
-    THROW_OR_ABORT("Unknown dxt type");
+    throw std::runtime_error("Unknown dxt type");
 }
 
 void Image::remove_mask()
@@ -380,7 +381,7 @@ void Image::remove_mask()
     if(this->depth <= 8){
         uint32_t pallen = 4 * (1 << this->depth);
         if (this->palette.size() != pallen + 4) {
-            THROW_OR_ABORT("Unexpected palette size");
+            throw std::runtime_error("Unexpected palette size");
         }
         for(uint32_t i = 0; i < pallen; i += 4)
             this->palette[i+3] = 0xFF;
@@ -389,7 +390,7 @@ void Image::remove_mask()
     if(this->depth == 24)
         return;
     if (this->pixels.size() != stride * height) {
-        THROW_OR_ABORT("Unexpected number of pixels");
+        throw std::runtime_error("Unexpected number of pixels");
     }
     uint8_t *line = this->pixels.data();
     uint8_t *p;
@@ -495,14 +496,14 @@ static void read_extension(
             lwarn() << "Could not find extension chunk for type " << type;
             return;
         case ExtensionNotFoundBehavior::RAISE:
-            THROW_OR_ABORT("Could not find extension chunk for type " + std::string(type));
+            throw std::runtime_error("Could not find extension chunk for type " + std::string(type));
         }
         verbose_abort("Unknown extension_not_found_behavior");
     }
     while (length != 0) {
         ChunkHeaderInfo header = read_chunk_header_info(istr, verbosity);
         if (length < sizeof(ChunkHeaderBuf)) {
-            THROW_OR_ABORT("Unexpected length");
+            throw std::runtime_error("Unexpected length");
         }
         length -= sizeof(ChunkHeaderBuf);
         for (const auto& plugin : plugins) {
@@ -520,14 +521,14 @@ static void read_extension(
                 lwarn() << "Could not find plugin with ID 0x" << std::hex << header.type << " for type " << type;
                 return;
             case PluginNotFoundBehavior::RAISE:
-                THROW_OR_ABORT((std::stringstream() << "Could not find plugin with ID 0x" << std::hex << header.type << " for type " << type).str());
+                throw std::runtime_error((std::stringstream() << "Could not find plugin with ID 0x" << std::hex << header.type << " for type " << type).str());
             }
             verbose_abort("Unknown plugin_not_found_behavior");
             }();
         seek_relative_positive(istr, header.length, verbosity);
     cont:
         if (length < header.length) {
-            THROW_OR_ABORT("Unexpected header length");
+            throw std::runtime_error("Unexpected header length");
         }
         length -= header.length;
     }
@@ -544,11 +545,11 @@ static std::vector<Frame> read_frame_list(
     IoVerbosity verbosity)
 {
     if (!find_chunk(istr, ID_STRUCT, nullptr, nullptr, verbosity)){
-        THROW_OR_ABORT("Could not find struct");
+        throw std::runtime_error("Could not find struct");
     }
     auto num_frames = read_binary<uint32_t>(istr, "frame list", verbosity);
     if (num_frames > 1000) {
-        THROW_OR_ABORT("Unexpected number of frames: " + std::to_string(num_frames));
+        throw std::runtime_error("Unexpected number of frames: " + std::to_string(num_frames));
     }
     std::vector<Frame> frames(num_frames);
     for (auto& frame : frames) {
@@ -560,7 +561,7 @@ static std::vector<Frame> read_frame_list(
                 buf.right(2), buf.up(2), buf.at(2)),
             buf.pos };
         if ((buf.parent_index != UINT32_MAX) && (buf.parent_index >= frames.size())) {
-            THROW_OR_ABORT(
+            throw std::runtime_error(
                 "Parent frame ID too large. Size: " +
                 std::to_string(frames.size()) + ", ID: " +
                 std::to_string(buf.parent_index));
@@ -615,7 +616,7 @@ struct DffConfig {
 //         ChunkHeaderInfo header = read_chunk_header_info(istr);
 //         seek_relative_positive(istr, header.length);
 //         if (length < sizeof(ChunkHeaderBuf) + header.length) {
-//             THROW_OR_ABORT("Unexpected chunk header info");
+//             throw std::runtime_error("Unexpected chunk header info");
 //         }
 //         length -= sizeof(ChunkHeaderBuf) + header.length;
 //     }
@@ -627,7 +628,7 @@ static std::shared_ptr<Texture> read_texture(
     IoVerbosity verbosity)
 {
     if (!find_chunk(istr, ID_STRUCT, nullptr, nullptr, verbosity)){
-        THROW_OR_ABORT("Could not find struct");
+        throw std::runtime_error("Could not find struct");
     }
 
     auto texture = std::make_shared<Texture>();
@@ -641,12 +642,12 @@ static std::shared_ptr<Texture> read_texture(
     // if 0x10000 is set, set mipmapping
     uint32_t length;
     if (!find_chunk(istr, ID_STRING, &length, nullptr, verbosity)) {
-        THROW_OR_ABORT("Could not find string");
+        throw std::runtime_error("Could not find string");
     }
     texture->name = Mlib::remove_trailing_zeros(read_string(istr, length, "name", verbosity));
 
     if (!find_chunk(istr, ID_STRING, &length, nullptr, verbosity)){
-        THROW_OR_ABORT("Could not find string");
+        throw std::runtime_error("Could not find string");
     }
     texture->mask = Mlib::remove_trailing_zeros(read_string(istr, length, "mask", verbosity));
 
@@ -690,7 +691,7 @@ static Material read_material(
 {
     uint32_t version;
     if (!find_chunk(istr, ID_STRUCT, nullptr, &version, verbosity)){
-        THROW_OR_ABORT("Could not find struct");
+        throw std::runtime_error("Could not find struct");
     }
     auto buf = read_binary<MatStreamData>(istr, "material stream data", verbosity);
     Material material {
@@ -698,7 +699,7 @@ static Material read_material(
     };
     if (version < 0x30400) {
         if (!default_surface_properties.has_value()) {
-            THROW_OR_ABORT("Default surface properties not specified");
+            throw std::runtime_error("Default surface properties not specified");
         }
         material.surface_properties = *default_surface_properties;
     } else {
@@ -706,7 +707,7 @@ static Material read_material(
     }
     if (buf.textured) {
         if (!find_chunk(istr, ID_TEXTURE, nullptr, nullptr, verbosity)){
-            THROW_OR_ABORT("Could not find texture");
+            throw std::runtime_error("Could not find texture");
         }
         material.texture = read_texture(istr, plugins, verbosity);
     }
@@ -730,13 +731,13 @@ static MaterialList read_material_list(
 {
     MaterialList matlist;
     if( !find_chunk(istr, ID_STRUCT, nullptr, nullptr, verbosity)){
-        THROW_OR_ABORT("Could not find struct");
+        throw std::runtime_error("Could not find struct");
     }
     uint32_t num_mat = read_binary<uint32_t>(istr, "num mat", verbosity);
     if(num_mat == 0)
         return matlist;
     if (num_mat > 1000) {
-        THROW_OR_ABORT("Number of materials too large: " + std::to_string(num_mat));
+        throw std::runtime_error("Number of materials too large: " + std::to_string(num_mat));
     }
     matlist.materials.resize(num_mat);
     matlist.space = num_mat;
@@ -747,12 +748,12 @@ static MaterialList read_material_list(
     for (uint32_t i = 0; i < num_mat; i++){
         if (indices[i] != UINT32_MAX) {
             if (indices[i] >= i) {
-                THROW_OR_ABORT("Detected material forward reference");
+                throw std::runtime_error("Detected material forward reference");
             }
             matlist.materials[i] = matlist.materials[indices[i]];
         } else {
             if (!find_chunk(istr, ID_MATERIAL, nullptr, nullptr, verbosity)) {
-                THROW_OR_ABORT("Could not find material");
+                throw std::runtime_error("Could not find material");
             }
             matlist.materials[i] = read_material(istr, default_surface_properties, plugins, verbosity);
         }
@@ -774,13 +775,13 @@ Geometry::Geometry(
     this->numVertices = numVerts;
 
     if (this->numTexCoordSets > 10) {
-        THROW_OR_ABORT("Number of texture coordinates too large");
+        throw std::runtime_error("Number of texture coordinates too large");
     }
     if (this->numTriangles > 10'000) {
-        THROW_OR_ABORT("Number of triangles too large");
+        throw std::runtime_error("Number of triangles too large");
     }
     if (this->numVertices > 10'000) {
-        THROW_OR_ABORT("Number of vertices too large");
+        throw std::runtime_error("Number of vertices too large");
     }
 
     if (!(this->flags & NATIVE)) {
@@ -807,12 +808,12 @@ static std::shared_ptr<Geometry> read_geometry(
 {
     uint32_t version;
     if(!find_chunk(istr, ID_STRUCT, nullptr, &version, verbosity)){
-        THROW_OR_ABORT("Could nto find struct");
+        throw std::runtime_error("Could nto find struct");
     }
     auto buf = read_binary<GeoStreamData>(istr, "geometry stream data", verbosity);
     auto geo = std::make_shared<Geometry>(buf.numVertices, buf.numTriangles, buf.flags);
     if (buf.numMorphTargets > 100) {
-        THROW_OR_ABORT("Number of morph targets too large");
+        throw std::runtime_error("Number of morph targets too large");
     }
     geo->morph_targets.resize(buf.numMorphTargets);
     SurfaceProperties surfProps;
@@ -851,7 +852,7 @@ static std::shared_ptr<Geometry> read_geometry(
     }
 
     if (!find_chunk(istr, ID_MATLIST, nullptr, nullptr, verbosity)){
-        THROW_OR_ABORT("Could not find matlist");
+        throw std::runtime_error("Could not find matlist");
     }
     std::optional<SurfaceProperties> defaultSurfaceProps;
     if (version < 0x34000) {
@@ -878,7 +879,7 @@ static Atomic read_atomic(
 {
     uint32_t version;
     if (!find_chunk(istr, ID_STRUCT, nullptr, &version, verbosity)){
-        THROW_OR_ABORT("Could not find struct");
+        throw std::runtime_error("Could not find struct");
     }
     auto frame_id = read_binary<uint32_t>(istr, "frame ID", verbosity);
     auto geometry_id = read_binary<uint32_t>(istr, "geometry ID", verbosity);
@@ -887,12 +888,12 @@ static Atomic read_atomic(
         read_binary<int32_t>(istr, "unknown value in DFF", verbosity);
     }
     if (frame_id >= frames.size()) {
-        THROW_OR_ABORT("Frame ID too large");
+        throw std::runtime_error("Frame ID too large");
     }
     std::shared_ptr<Geometry> g;
     if (version < 0x30400){
         if (!find_chunk(istr, ID_GEOMETRY, nullptr, nullptr, verbosity)){
-            THROW_OR_ABORT("Could not find geometry");
+            throw std::runtime_error("Could not find geometry");
         }
         g = read_geometry(istr, plugins, verbosity);
     } else {
@@ -928,7 +929,7 @@ static Light read_light(
 {
     uint32_t version;
     if(!find_chunk(istr, ID_STRUCT, nullptr, &version, verbosity)){
-        THROW_OR_ABORT("Could not find struct");
+        throw std::runtime_error("Could not find struct");
     }
     auto buf = read_binary<LightChunkData>(istr, "light chunk data", verbosity);
     Light light;
@@ -961,7 +962,7 @@ static Camera read_camera(
     IoVerbosity verbosity)
 {
     if (!find_chunk(istr, ID_STRUCT, nullptr, nullptr, verbosity)){
-        THROW_OR_ABORT("Could not find struct");
+        throw std::runtime_error("Could not find struct");
     }
     auto buf = read_binary<CameraChunkData>(istr, "camera chunk data", verbosity);
     Camera camera;
@@ -1000,17 +1001,17 @@ static Clump read_clump(std::istream& istr, IoVerbosity verbosity)
     uint32_t version;
 
     if (!find_chunk(istr, ID_STRUCT, &length, &version, verbosity)){
-        THROW_OR_ABORT("Could not find struct");
+        throw std::runtime_error("Could not find struct");
     }
     if (length < 4) {
-        THROW_OR_ABORT("Struct size too small");
+        throw std::runtime_error("Struct size too small");
     }
     uint32_t numAtomics = read_binary<uint32_t>(istr, "number of atomics", verbosity);
     uint32_t numLights = 0;
     uint32_t numCameras = 0;
     if (version > 0x33000) {
         if (length != 12) {
-            THROW_OR_ABORT("Struct size is not 12");
+            throw std::runtime_error("Struct size is not 12");
         }
         numLights = read_binary<uint32_t>(istr, "number of lights", verbosity);
         numCameras = read_binary<uint32_t>(istr, "number of cameras", verbosity);
@@ -1018,7 +1019,7 @@ static Clump read_clump(std::istream& istr, IoVerbosity verbosity)
 
     // Frame list
     if (!find_chunk(istr, ID_FRAMELIST, nullptr, nullptr, verbosity)) {
-        THROW_OR_ABORT("Could not find frame list");
+        throw std::runtime_error("Could not find frame list");
     }
     std::list<std::unique_ptr<IPlugin>> plugins;
     plugins.push_back(std::make_unique<NamePlugin>());
@@ -1028,19 +1029,19 @@ static Clump read_clump(std::istream& istr, IoVerbosity verbosity)
     std::vector<std::shared_ptr<Geometry>> geometries;
     if (version >= 0x30400) {
         if (!find_chunk(istr, ID_GEOMETRYLIST, nullptr, nullptr, verbosity)) {
-            THROW_OR_ABORT("Could not find geometry list");
+            throw std::runtime_error("Could not find geometry list");
         }
         if (!find_chunk(istr, ID_STRUCT, nullptr, nullptr, verbosity)){
-            THROW_OR_ABORT("Could not find struct");
+            throw std::runtime_error("Could not find struct");
         }
         uint32_t num_geometries = read_binary<uint32_t>(istr, "number of geometries", verbosity);
         if (num_geometries > 1000) {
-            THROW_OR_ABORT("Large number of geometries");
+            throw std::runtime_error("Large number of geometries");
         }
         geometries.resize(num_geometries);
         for (auto& geometry : geometries) {
             if (!find_chunk(istr, ID_GEOMETRY, nullptr, nullptr, verbosity)){
-                THROW_OR_ABORT("Could not find geometry");
+                throw std::runtime_error("Could not find geometry");
             }
             geometry = read_geometry(istr, plugins, verbosity);
         }
@@ -1050,51 +1051,51 @@ static Clump read_clump(std::istream& istr, IoVerbosity verbosity)
     std::vector<Atomic> atomics(numAtomics);
     for (auto& atomic : atomics) {
         if (!find_chunk(istr, ID_ATOMIC, nullptr, nullptr, verbosity)){
-            THROW_OR_ABORT("Could not find atomic");
+            throw std::runtime_error("Could not find atomic");
         }
         atomic = read_atomic(istr, frames, geometries, plugins, verbosity);
     }
 
     // Lights
     if (numLights > 1'000) {
-        THROW_OR_ABORT("Number of lights too large");
+        throw std::runtime_error("Number of lights too large");
     }
     std::vector<Light> lights(numLights);
     for (auto& light : lights) {
         if (!find_chunk(istr, ID_STRUCT, nullptr, nullptr, verbosity)){
-            THROW_OR_ABORT("Could not find struct");
+            throw std::runtime_error("Could not find struct");
         }
         auto frame_id = read_binary<uint32_t>(istr, "frame ID", verbosity);
         if(!find_chunk(istr, ID_LIGHT, nullptr, nullptr, verbosity)){
-            THROW_OR_ABORT("Could not find light");
+            throw std::runtime_error("Could not find light");
         }
         if (frame_id >= frames.size()) {
-            THROW_OR_ABORT("Frame ID too large");
+            throw std::runtime_error("Frame ID too large");
         }
         light = read_light(istr, frames[frame_id], plugins, verbosity);
     }
 
     // Cameras
     if (numCameras > 1'000) {
-        THROW_OR_ABORT("Number of cameras too large");
+        throw std::runtime_error("Number of cameras too large");
     }
     std::vector<Camera> cameras(numCameras);
     for (auto& camera : cameras) {
         if (!find_chunk(istr, ID_STRUCT, nullptr, nullptr, verbosity)){
-            THROW_OR_ABORT("Could not read struct");
+            throw std::runtime_error("Could not read struct");
         }
         auto frame_id = read_binary<uint32_t>(istr, "frame ID", verbosity);
         if (!find_chunk(istr, ID_CAMERA, nullptr, nullptr, verbosity)){
-            THROW_OR_ABORT("Could not find camera");
+            throw std::runtime_error("Could not find camera");
         }
         if (frame_id >= frames.size()) {
-            THROW_OR_ABORT("Frame ID too large");
+            throw std::runtime_error("Frame ID too large");
         }
         camera = read_camera(istr, frames[frame_id], plugins, verbosity);
     }
 
     if (frames.empty()) {
-        THROW_OR_ABORT("Frame list is empty");
+        throw std::runtime_error("Frame list is empty");
     }
     Clump clump{ &frames.front(), std::move(frames), std::move(atomics), std::move(lights) };
 
@@ -1137,7 +1138,7 @@ void Mlib::Dff::read_palette(Palette& palette, std::istream& istr, uint32_t form
 static void find_raster_format(const Image& img, uint32_t type, uint32_t *depth, uint32_t* format)
 {
     if ((type&0xF) != Raster::TEXTURE) {
-        THROW_OR_ABORT("Raster is not a texture");
+        throw std::runtime_error("Raster is not a texture");
     }
 
     //    for(width = 1; width < img->width; width <<= 1);
@@ -1167,7 +1168,7 @@ static void find_raster_format(const Image& img, uint32_t type, uint32_t *depth,
     case 8:
     case 4:
     default:
-        THROW_OR_ABORT("Invalid raster");
+        throw std::runtime_error("Invalid raster");
     }
 
     *format |= type;
@@ -1221,7 +1222,7 @@ std::unique_ptr<IRaster> Mlib::Dff::read_as_image(
             image.height = raster->mipmap_level(i).height;
             image.stride = image.width * image.bpp;
             if (image.stride * image.height != size) {
-                THROW_OR_ABORT("Unexpected image size");
+                throw std::runtime_error("Unexpected image size");
             }
         }
 
@@ -1269,10 +1270,10 @@ static std::shared_ptr<Texture> read_texture_native(
 {
     uint32_t length;
     if (!find_chunk(istr, ID_STRUCT, &length, nullptr, verbosity)) {
-        THROW_OR_ABORT("Could not find struct");
+        throw std::runtime_error("Could not find struct");
     }
     if (length > 10'000'000) {
-        THROW_OR_ABORT("Texture too large");
+        throw std::runtime_error("Texture too large");
     }
     auto platform = read_binary<uint32_t>(istr, "platform", verbosity);
     switch (platform) {
@@ -1283,11 +1284,11 @@ static std::shared_ptr<Texture> read_texture_native(
     case PLATFORM_D3D9:
         return read_texture_native_d3d9(istr, plugins, verbosity);
     case PLATFORM_XBOX:
-        THROW_OR_ABORT("PLATFORM_XBOX texture not yet implemented");
+        throw std::runtime_error("PLATFORM_XBOX texture not yet implemented");
     case PLATFORM_GL3:
-        THROW_OR_ABORT("PLATFORM_GL3 texture not yet implemented");
+        throw std::runtime_error("PLATFORM_GL3 texture not yet implemented");
     };
-    THROW_OR_ABORT("Unsupported platform");
+    throw std::runtime_error("Unsupported platform");
 }
 
 static TexDictionary read_texdictionary(
@@ -1297,12 +1298,12 @@ static TexDictionary read_texdictionary(
     IoVerbosity verbosity)
 {
     if (!find_chunk(istr, ID_STRUCT, nullptr, nullptr, verbosity)) {
-        THROW_OR_ABORT("Could not find struct");
+        throw std::runtime_error("Could not find struct");
     }
 
     auto num_textures = read_binary<uint32_t>(istr, "num textures", verbosity);
     if (num_textures > 1'000) {
-        THROW_OR_ABORT("Number of textures too large");
+        throw std::runtime_error("Number of textures too large");
     }
     std::list<std::unique_ptr<IPlugin>> plugins;
     TexDictionary tex_dict;
@@ -1310,18 +1311,18 @@ static TexDictionary read_texdictionary(
     while (num_textures-- != 0) {
         uint32_t length;
         if (!find_chunk(istr, ID_TEXTURENATIVE, &length, nullptr, verbosity)) {
-            THROW_OR_ABORT("Could not find texture");
+            throw std::runtime_error("Could not find texture");
         }
         if (raster_factory == nullptr) {
             auto old_pos = istr.tellg();
             read_texture_native(istr, plugins, raster_factory, raster_config, verbosity);
             auto new_pos = istr.tellg();
             if (new_pos < old_pos) {
-                THROW_OR_ABORT("Unexpected stream position (0)");
+                throw std::runtime_error("Unexpected stream position (0)");
             }
             auto diff = new_pos - old_pos;
             if (diff > length) {
-                THROW_OR_ABORT("Unexpected stream position (1)");
+                throw std::runtime_error("Unexpected stream position (1)");
             }
             seek_relative_positive(istr, length - diff, verbosity);
         } else {
@@ -1334,7 +1335,7 @@ static TexDictionary read_texdictionary(
 Clump Mlib::Dff::read_dff(std::istream& istr, IoVerbosity verbosity)
 {
     if (!find_chunk(istr, ID_CLUMP, nullptr, nullptr, verbosity)) {
-        THROW_OR_ABORT("Could not find clump");
+        throw std::runtime_error("Could not find clump");
     }
     return read_clump(istr, verbosity);
 }
@@ -1346,7 +1347,7 @@ TexDictionary Mlib::Dff::read_txd(
     IoVerbosity verbosity)
 {
     if (!find_chunk(istr, ID_TEXDICTIONARY, nullptr, nullptr, verbosity)) {
-        THROW_OR_ABORT("Could not find texture dictionary");
+        throw std::runtime_error("Could not find texture dictionary");
     }
     return read_texdictionary(istr, raster_factory, raster_config, verbosity);
 }
@@ -1359,7 +1360,7 @@ TexDictionary Mlib::Dff::read_txd(
 {
     auto istr = create_ifstream(path, std::ios::binary);
     if (istr->fail()) {
-        THROW_OR_ABORT("Could not open \"" + path.string() + '"');
+        throw std::runtime_error("Could not open \"" + path.string() + '"');
     }
     return read_txd(*istr, raster_factory, raster_config, verbosity);
 }

@@ -1,7 +1,8 @@
+
 #include "Asset_References.hpp"
 #include <Mlib/Macro_Executor/Asset_Group_Replacement_Parameters.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
 #include <mutex>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -17,7 +18,7 @@ bool AssetReferences::contains(const std::string& group) const {
 void AssetReferences::add(const std::string& group) {
     std::scoped_lock lock{mutex_};
     if (!replacement_parameters_.try_emplace(group).second) {
-        THROW_OR_ABORT("Replacement parameter group \"" + group + "\" already exists");
+        throw std::runtime_error("Replacement parameter group \"" + group + "\" already exists");
     }
 }
 
@@ -26,7 +27,7 @@ const AssetGroupReplacementParameters& AssetReferences::operator [] (const std::
     std::shared_lock lock{mutex_};
     auto it = replacement_parameters_.find(group);
     if (it == replacement_parameters_.end()) {
-        THROW_OR_ABORT("Could not find replacement parameter group \"" + group + '"');
+        throw std::runtime_error("Could not find replacement parameter group \"" + group + '"');
     }
     return it->second;
 }

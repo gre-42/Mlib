@@ -1,12 +1,18 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
-#include <Mlib/Default_Uninitialized_Vector.hpp>
-#include <Mlib/Geometry/Intersection/Axis_Aligned_Bounding_Box.hpp>
 #include <Mlib/Geometry/Material/Interior_Textures.hpp>
+#include <Mlib/Geometry/Material_Configuration/Shading_Factors.hpp>
 #include <Mlib/Geometry/Mesh/Contour_Detection_Strategy.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>
+#include <Mlib/Geometry/Primitives/Axis_Aligned_Bounding_Box.hpp>
+#include <Mlib/Hashing/Variable_And_Hash.hpp>
+#include <Mlib/Initialization/Default_Uninitialized_Vector.hpp>
 #include <Mlib/Map/Map.hpp>
 #include <Mlib/Math/Interp.hpp>
+#include <Mlib/OpenGL/Renderables/Color_And_Probability.hpp>
+#include <Mlib/OpenGL/Renderables/Triangle_Sampler/Terrain_Style.hpp>
+#include <Mlib/OpenGL/Renderables/Triangle_Sampler/Terrain_Type.hpp>
+#include <Mlib/OpenGL/Renderables/Triangle_Sampler/Triangle_Sampler_Resource_Config.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Barrier_Style.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Building.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Facade_Texture.hpp>
@@ -14,17 +20,12 @@
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Socle_Texture.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Vertical_Subdivision.hpp>
 #include <Mlib/Physics/Units.hpp>
-#include <Mlib/Render/Renderables/Color_And_Probability.hpp>
-#include <Mlib/Render/Renderables/Triangle_Sampler/Terrain_Style.hpp>
-#include <Mlib/Render/Renderables/Triangle_Sampler/Terrain_Type.hpp>
-#include <Mlib/Render/Renderables/Triangle_Sampler/Triangle_Sampler_Resource_Config.hpp>
 #include <Mlib/Scene_Graph/Driving_Direction.hpp>
 #include <Mlib/Scene_Graph/Resources/Parsed_Resource_Name.hpp>
-#include <Mlib/Variable_And_Hash.hpp>
 #include <chrono>
 #include <cmath>
 #include <cstdint>
-#include <cstdint>
+#include <filesystem>
 #include <list>
 #include <map>
 #include <nlohmann/json_fwd.hpp>
@@ -42,9 +43,10 @@ struct RoadProperties;
 enum class TerrainType;
 enum class WrapMode;
 enum class PhysicsMaterial: uint32_t;
+class FPath;
 
 struct RoadStyle {
-    std::vector<VariableAndHash<std::string>> textures;
+    std::vector<FPath> textures;
     float uvx;
 };
 
@@ -55,8 +57,8 @@ struct CoastConfiguration {
 void from_json(const nlohmann::json& j, CoastConfiguration& water);
 
 struct WaterTextureConfiguration {
-    std::vector<VariableAndHash<std::string>> color;
-    std::vector<VariableAndHash<std::string>> alpha;
+    std::vector<FPath> color;
+    std::vector<FPath> alpha;
 };
 
 void from_json(const nlohmann::json& j, WaterTextureConfiguration& textures);
@@ -81,7 +83,7 @@ struct OsmResourceConfig {
     OsmResourceConfig& operator = (const OsmResourceConfig&) = delete;
     OsmResourceConfig();
     ~OsmResourceConfig();
-    std::vector<std::string> filenames;
+    std::vector<std::filesystem::path> filenames;
     std::string heightmap;
     std::string heightmap_mask;
     size_t heightmap_extension = 0;
@@ -104,26 +106,26 @@ struct OsmResourceConfig {
     std::vector<ParsedResourceName> zone_resource_names;
     std::map<TerrainType, PhysicsMaterial> terrain_materials;
     std::map<RoadType, PhysicsMaterial> street_materials;
-    std::map<TerrainType, std::vector<VariableAndHash<std::string>>> terrain_textures;
-    std::map<TerrainType, VariableAndHash<std::string>> terrain_dirt_textures;
-    VariableAndHash<std::string> street_dirt_texture;
-    std::map<RoadType, std::vector<VariableAndHash<std::string>>> street_mud_textures;
-    std::map<RoadType, VariableAndHash<std::string>> street_reflection_map;
-    std::map<TerrainType, VariableAndHash<std::string>> terrain_reflection_map;
-    VariableAndHash<std::string> window_reflection_map;
-    std::map<RoadType, std::vector<VariableAndHash<std::string>>> street_alpha_textures;
-    std::map<RoadType, std::vector<VariableAndHash<std::string>>> street_mud_alpha_textures;
+    std::map<TerrainType, std::vector<FPath>> terrain_textures;
+    std::map<TerrainType, FPath> terrain_dirt_textures;
+    FPath street_dirt_texture;
+    std::map<RoadType, std::vector<FPath>> street_mud_textures;
+    std::map<RoadType, FPath> street_reflection_map;
+    std::map<TerrainType, FPath> terrain_reflection_map;
+    FPath window_reflection_map;
+    std::map<RoadType, std::vector<FPath>> street_alpha_textures;
+    std::map<RoadType, std::vector<FPath>> street_mud_alpha_textures;
     std::map<RoadProperties, RoadStyle> street_texture;
-    std::map<RoadType, std::vector<VariableAndHash<std::string>>> street_crossing_textures;
-    std::map<RoadType, VariableAndHash<std::string>> curb_street_texture;
-    std::map<RoadType, VariableAndHash<std::string>> curb2_street_texture;
-    std::map<RoadType, VariableAndHash<std::string>> air_curb_street_texture;
+    std::map<RoadType, std::vector<FPath>> street_crossing_textures;
+    std::map<RoadType, FPath> curb_street_texture;
+    std::map<RoadType, FPath> curb2_street_texture;
+    std::map<RoadType, FPath> air_curb_street_texture;
     float racing_line_width_x = 3.0f;
     float racing_line_scale_y = 0.1f;
-    VariableAndHash<std::string> racing_line_texture;
-    std::string racing_line_track;
-    std::string racing_line_playback;
-    VariableAndHash<std::string> air_support_texture;
+    FPath racing_line_texture;
+    std::filesystem::path racing_line_track;
+    std::filesystem::path racing_line_playback;
+    FPath air_support_texture;
     std::vector<SocleTexture> socle_textures;
     std::vector<FacadeTexture> entrance_textures;
     float extrusion_ambient_occlusion = 0.5f;
@@ -135,11 +137,11 @@ struct OsmResourceConfig {
             UFixedArray<float, 3>{ 0.8f, 0.8f, 0.8f }},
         OutOfRangeBehavior::CLAMP };
     std::vector<FacadeTexture> facade_textures;
-    VariableAndHash<std::string> ceiling_texture;
+    FPath ceiling_texture;
     Map<std::string, BarrierStyle> barrier_styles;
     float boundary_barrier_height = 1.f;
     std::string boundary_barrier_style;
-    VariableAndHash<std::string> tunnel_pipe_texture;
+    FPath tunnel_pipe_texture;
     VariableAndHash<std::string> tunnel_pipe_resource_name = VariableAndHash<std::string>{"pipe_box"};
     VariableAndHash<std::string> tunnel_bdry_resource_name = VariableAndHash<std::string>{"pipe_box_boundary"};
     Map<RoadType, VariableAndHash<std::string>> street_surface_central_resource_names;
@@ -178,14 +180,14 @@ struct OsmResourceConfig {
     float uv_scale_barrier_wall = 1;
     float uv_scale_highway_wall = 1;
     std::vector<ColorAndProbability> building_colors;
-    VariableAndHash<std::string> roof_texture;
-    VariableAndHash<std::string> roof_rail_texture;
+    FPath roof_texture;
+    FPath roof_rail_texture;
     float default_roof_9_2_max_building_height = INFINITY * meters;
     std::optional<Roof9_2> default_roof_9_2;
     VariableAndHash<std::string> roof_model;
     VariableAndHash<std::string> bridge_pier_model;
     SceneDir bridge_pier_radius = 1.5f;
-    std::vector<VariableAndHash<std::string>> bridge_pier_textures;
+    std::vector<FPath> bridge_pier_textures;
     bool with_roofs = true;
     bool with_ceilings = false;
     float building_bottom = -3;
@@ -245,13 +247,7 @@ struct OsmResourceConfig {
     Interp<float> terrain_edge_bias{ std::vector<float>{}, std::vector<float>{} };
     float bump_height = 1.f * meters;
     ContourDetectionStrategy contour_detection_strategy = ContourDetectionStrategy::EDGE_NEIGHBOR;
-    FixedArray<float, 3> emissive_factor = FixedArray<float, 3>(1.f);
-    FixedArray<float, 3> ambient_factor = FixedArray<float, 3>(1.f);
-    FixedArray<float, 3> diffuse_factor = FixedArray<float, 3>(1.f);
-    FixedArray<float, 3> specular_factor = FixedArray<float, 3>(1.f);
-    FixedArray<float, 3> fresnel_ambient_factor = FixedArray<float, 3>(1.f);
-    FixedArray<float, 2> fog_distances = default_step_distances;
-    FixedArray<float, 3> fog_ambient = FixedArray<float, 3>(0.f);
+    ShadingFactors shading_factors;
     DrivingDirection driving_direction = DrivingDirection::CENTER;
     std::map<RoadType, bool> blend_street;
     Interp<double> layer_heights{ std::vector<double>{}, std::vector<double>{} };

@@ -1,7 +1,7 @@
 #include "For_Each_Site_User.hpp"
-#include <Mlib/Argument_List.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Macro_Executor/Macro_Line_Executor.hpp>
+#include <Mlib/Misc/Argument_List.hpp>
 #include <Mlib/Players/Containers/Remote_Sites.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Load_Scene_Funcs.hpp>
@@ -23,7 +23,7 @@ static void visit_user(
     if (user.site_id.has_value()) {
         auto locals_site_id = remote_sites.get_local_site_id();
         if (!locals_site_id.has_value()) {
-            THROW_OR_ABORT("Local site ID not set");
+            throw std::runtime_error("Local site ID not set");
         }
         if (*user.site_id == *locals_site_id) {
             let["local_user_id"] = user.user_id;
@@ -71,7 +71,7 @@ OnUserLoadedLevel::~OnUserLoadedLevel() = default;
 void OnUserLoadedLevel::execute(const LoadSceneJsonUserFunctionArgs &args) {
     args.arguments.validate(KnownArgs::options);
     if (on_user_loaded_level_token.has_value()) {
-        THROW_OR_ABORT("on_user_loaded_level_token already set");
+        throw std::runtime_error("on_user_loaded_level_token already set");
     }
     on_user_loaded_level_token.emplace(
         args.remote_sites.on_user_loaded_level,

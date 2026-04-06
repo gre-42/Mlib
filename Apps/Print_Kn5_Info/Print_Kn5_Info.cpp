@@ -1,5 +1,5 @@
-#include <Mlib/Arg_Parser.hpp>
 #include <Mlib/Geometry/Mesh/Load/Load_Kn5.hpp>
+#include <Mlib/Io/Arg_Parser.hpp>
 #include <Mlib/Os/Os.hpp>
 #include <Mlib/Regex/Regex_Select.hpp>
 #include <filesystem>
@@ -26,12 +26,12 @@ int main(int argc, char **argv) {
                     auto tex_filename = std::filesystem::path{ "textures" } / *name;
                     auto f = create_ofstream(tex_filename, std::ios::binary);
                     if (f->fail()) {
-                        THROW_OR_ABORT("Could not open file for write: \"" + tex_filename.string() + '"');
+                        throw std::runtime_error("Could not open file for write: \"" + tex_filename.string() + '"');
                     }
                     f->write((const char*)data.data.data(), integral_cast<std::streamsize>(data.data.size()));
                     f->flush();
                     if (f->fail()) {
-                        THROW_OR_ABORT("Could not write to file: \"" + tex_filename.string() + '"');
+                        throw std::runtime_error("Could not write to file: \"" + tex_filename.string() + '"');
                     }
                 }
             }

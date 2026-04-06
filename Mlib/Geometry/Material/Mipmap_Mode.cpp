@@ -1,6 +1,7 @@
+
 #include "Mipmap_Mode.hpp"
-#include <Mlib/Throw_Or_Abort.hpp>
 #include <map>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -12,7 +13,7 @@ MipmapMode Mlib::mipmap_mode_from_string(const std::string& str) {
     };
     auto it = m.find(str);
     if (it == m.end()) {
-        THROW_OR_ABORT("Unknown mipmap mode: \"" + str + '"');
+        throw std::runtime_error("Unknown mipmap mode: \"" + str + '"');
     }
     return it->second;
 }
@@ -26,6 +27,6 @@ std::string Mlib::mipmap_mode_to_string(const MipmapMode& mode) {
     case MipmapMode::NO_MIPMAPS:
         return "no_mipmaps";
     default:
-        THROW_OR_ABORT("Unknown mipmap mode");
+        throw std::runtime_error("Unknown mipmap mode");
     }
 }

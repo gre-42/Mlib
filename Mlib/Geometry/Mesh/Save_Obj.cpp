@@ -1,3 +1,4 @@
+
 #include "Save_Obj.hpp"
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
 #include <Mlib/Geometry/Mesh/Obj_Material.hpp>
@@ -21,34 +22,34 @@ void save_obj_with_materials(
         decltype(cvas.front()->quads)>> ipolys;
     ipolys.reserve(cvas.size());
     for (const std::shared_ptr<TContainer>& cva : cvas) {
-        if (cva->name.empty()) {
-            if (!cva->material.textures_color.empty()) {
-                THROW_OR_ABORT("Empty name, material: \"" + *cva->material.textures_color.front().texture_descriptor.color.filename);
+        if (cva->meta.name.empty()) {
+            if (!cva->meta.material.textures_color.empty()) {
+                throw std::runtime_error("Empty name, material: \"" + cva->meta.material.textures_color.front().texture_descriptor.color.filename.string());
             } else {
-                THROW_OR_ABORT("Empty name, no material color texture");
+                throw std::runtime_error("Empty name, no material color texture");
             }
         }
-        if (!names.insert(cva->name.full_name()).second) {
-            THROW_OR_ABORT("Duplicate name: \"" + cva->name.full_name() + '"');
+        if (!names.insert(cva->meta.name.full_name()).second) {
+            throw std::runtime_error("Duplicate name: \"" + cva->meta.name.full_name() + '"');
         }
         std::string mname;
         if (material_name) {
             mname = material_name(*cva);
         } else {
-            material_indices.insert({ cva->material, material_indices.size() });
-            mname = cva->name.full_name() + "_material_" + std::to_string(material_indices.at(cva->material));
+            material_indices.insert({ cva->meta.material, material_indices.size() });
+            mname = cva->meta.name.full_name() + "_material_" + std::to_string(material_indices.at(cva->meta.material));
         }
         ObjMaterial obj_material;
         if (convert_material) {
-            obj_material = convert_material(cva->material);
+            obj_material = convert_material(cva->meta.material);
         } else {
             obj_material = ObjMaterial{
-                .ambient = cva->material.shading.ambient,
-                .diffuse = cva->material.shading.diffuse,
-                .specular = cva->material.shading.specular
+                .ambient = cva->meta.material.shading.ambient,
+                .diffuse = cva->meta.material.shading.diffuse,
+                .specular = cva->meta.material.shading.specular
             };
         }
-        ipolys.push_back({ cva->name.full_name(), mname, cva->triangles, cva->quads });
+        ipolys.push_back({ cva->meta.name.full_name(), mname, cva->triangles, cva->quads });
         obj_materials.insert({ mname, obj_material });
     }
     save_obj(filename, IndexedFaceSet<float, TPos, size_t>{ ipolys }, &obj_materials);

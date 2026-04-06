@@ -9,8 +9,9 @@
 #include <Mlib/Geometry/Material/Shading.hpp>
 #include <Mlib/Geometry/Rectangle_Triangulation_Mode.hpp>
 #include <Mlib/Geometry/Triangle_Tangent_Error_Behavior.hpp>
-#include <Mlib/Variable_And_Hash.hpp>
+#include <Mlib/Misc/FPath.hpp>
 #include <cstdint>
+#include <optional>
 #include <vector>
 
 namespace Mlib {
@@ -43,7 +44,7 @@ struct LoadMeshConfig {
     AggregateMode aggregate_mode;
     TransformationMode transformation_mode;
     std::vector<BillboardAtlasInstance> billboard_atlas_instances;
-    VariableAndHash<std::string> reflection_map;
+    FPath reflection_map;
     Shading shading;
     FixedArray<float, 3> emissive_factor = FixedArray<float, 3>(1.f);
     FixedArray<float, 3> ambient_factor = FixedArray<float, 3>(1.f);
@@ -51,7 +52,7 @@ struct LoadMeshConfig {
     FixedArray<float, 3> specular_factor = FixedArray<float, 3>(1.f);
     float desaturate = 0.f;
     float desaturation_exponent = 0.f;
-    std::string histogram;
+    FPath histogram;
     FixedArray<float, 3> lighten = FixedArray<float, 3>(0.f);
     std::vector<BlendMapTexture> textures;
     float period_world;

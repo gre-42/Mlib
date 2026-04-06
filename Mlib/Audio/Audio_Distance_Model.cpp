@@ -1,6 +1,7 @@
+
 #include "Audio_Distance_Model.hpp"
-#include <Mlib/Throw_Or_Abort.hpp>
 #include <map>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -12,5 +13,5 @@ AudioDistanceModel Mlib::audio_distance_model_from_string(const std::string& s) 
     if (it != m.end()) {
         return it->second;
     }
-    THROW_OR_ABORT("Unknown audio distance model: \"" + s + '"');
+    throw std::runtime_error("Unknown audio distance model: \"" + s + '"');
 }

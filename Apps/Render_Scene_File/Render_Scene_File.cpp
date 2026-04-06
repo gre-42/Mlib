@@ -1,4 +1,3 @@
-#include <Mlib/Arg_Parser.hpp>
 #include <Mlib/Array/Verbose_Vector.hpp>
 #include <Mlib/Audio/Audio_Context.hpp>
 #include <Mlib/Audio/Audio_Device.hpp>
@@ -6,14 +5,43 @@
 #include <Mlib/Audio/Audio_Listener.hpp>
 #include <Mlib/Audio/Audio_Scene.hpp>
 #include <Mlib/Audio/List_Audio_Devices.hpp>
-#include <Mlib/Env.hpp>
-#include <Mlib/Floating_Point_Exceptions.hpp>
+#include <Mlib/Io/Arg_Parser.hpp>
 #include <Mlib/Layout/Layout_Constraints.hpp>
 #include <Mlib/Macro_Executor/Asset_References.hpp>
 #include <Mlib/Macro_Executor/Focus.hpp>
 #include <Mlib/Macro_Executor/Notifying_Json_Macro_Arguments.hpp>
 #include <Mlib/Macro_Executor/Translators.hpp>
 #include <Mlib/Memory/Destruction_Guard.hpp>
+#include <Mlib/Misc/Floating_Point_Exceptions.hpp>
+#include <Mlib/OpenGL/CHK.hpp>
+#include <Mlib/OpenGL/Clear_Wrapper.hpp>
+#include <Mlib/OpenGL/Deallocate/Render_Allocator.hpp>
+#include <Mlib/OpenGL/IWindow.hpp>
+#include <Mlib/OpenGL/Input_Config.hpp>
+#include <Mlib/OpenGL/Key_Bindings/Base_Key_Combination.hpp>
+#include <Mlib/OpenGL/Key_Bindings/Key_Configuration.hpp>
+#include <Mlib/OpenGL/Key_Bindings/Lockable_Key_Descriptions.hpp>
+#include <Mlib/OpenGL/Key_Bindings/Make_Key_Binding.hpp>
+#include <Mlib/OpenGL/OpenGL_Object_Factory.hpp>
+#include <Mlib/OpenGL/Render.hpp>
+#include <Mlib/OpenGL/Render_Config.hpp>
+#include <Mlib/OpenGL/Render_Logic_Gallery.hpp>
+#include <Mlib/OpenGL/Render_Logics/Lambda_Render_Logic.hpp>
+#include <Mlib/OpenGL/Render_Logics/Menu_Logic.hpp>
+#include <Mlib/OpenGL/Render_Logics/Window_Logic.hpp>
+#include <Mlib/OpenGL/Renderables/OpenGL_Vertex_Array_Renderer.hpp>
+#include <Mlib/OpenGL/Renderer.hpp>
+#include <Mlib/OpenGL/Rendering_Context.hpp>
+#include <Mlib/OpenGL/Resource_Managers/Particle_Resources.hpp>
+#include <Mlib/OpenGL/Resource_Managers/Trail_Resources.hpp>
+#include <Mlib/OpenGL/Text/Charsets.hpp>
+#include <Mlib/OpenGL/Ui/Button_States.hpp>
+#include <Mlib/OpenGL/Ui/Cursor_States.hpp>
+#include <Mlib/OpenGL/Ui/Renderable_Hider/File_Renderable_Hider.hpp>
+#include <Mlib/OpenGL/Ui/Renderable_Hider/Static_Renderable_Hider.hpp>
+#include <Mlib/OpenGL/Ui/Renderable_Hider/Tty_Renderable_Hider.hpp>
+#include <Mlib/Os/Env.hpp>
+#include <Mlib/Os/Pathes.hpp>
 #include <Mlib/Physics/Bullets/Bullet_Property_Db.hpp>
 #include <Mlib/Physics/Dynamic_Lights/Dynamic_Light_Db.hpp>
 #include <Mlib/Physics/Smoke_Generation/Surface_Contact_Db.hpp>
@@ -22,30 +50,6 @@
 #include <Mlib/Remote/Incremental_Objects/Scene_Level.hpp>
 #include <Mlib/Remote/Remote_Params.hpp>
 #include <Mlib/Remote/Remote_Role.hpp>
-#include <Mlib/Render/CHK.hpp>
-#include <Mlib/Render/Clear_Wrapper.hpp>
-#include <Mlib/Render/Deallocate/Render_Allocator.hpp>
-#include <Mlib/Render/IWindow.hpp>
-#include <Mlib/Render/Input_Config.hpp>
-#include <Mlib/Render/Key_Bindings/Base_Key_Combination.hpp>
-#include <Mlib/Render/Key_Bindings/Key_Configuration.hpp>
-#include <Mlib/Render/Key_Bindings/Lockable_Key_Descriptions.hpp>
-#include <Mlib/Render/Key_Bindings/Make_Key_Binding.hpp>
-#include <Mlib/Render/Render.hpp>
-#include <Mlib/Render/Render_Config.hpp>
-#include <Mlib/Render/Render_Logic_Gallery.hpp>
-#include <Mlib/Render/Render_Logics/Lambda_Render_Logic.hpp>
-#include <Mlib/Render/Render_Logics/Menu_Logic.hpp>
-#include <Mlib/Render/Render_Logics/Window_Logic.hpp>
-#include <Mlib/Render/Renderer.hpp>
-#include <Mlib/Render/Rendering_Context.hpp>
-#include <Mlib/Render/Resource_Managers/Particle_Resources.hpp>
-#include <Mlib/Render/Resource_Managers/Trail_Resources.hpp>
-#include <Mlib/Render/Text/Charsets.hpp>
-#include <Mlib/Render/Ui/Button_States.hpp>
-#include <Mlib/Render/Ui/Cursor_States.hpp>
-#include <Mlib/Render/Ui/Static_Renderable_Hider.hpp>
-#include <Mlib/Render/Ui/Tty_Renderable_Hider.hpp>
 #include <Mlib/Scene/Load_Scene.hpp>
 #include <Mlib/Scene/Physics_Scene.hpp>
 #include <Mlib/Scene/Physics_Scenes.hpp>
@@ -53,8 +57,7 @@
 #include <Mlib/Scene/Renderable_Scenes.hpp>
 #include <Mlib/Scene/Scene_Config.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
-#include <Mlib/Strings/String.hpp>
-#include <Mlib/Strings/To_Number.hpp>
+#include <Mlib/Strings/String_View_To_Number.hpp>
 #include <Mlib/Threads/Containers/Thread_Safe_String.hpp>
 #include <Mlib/Threads/J_Thread.hpp>
 #include <Mlib/Threads/Realtime_Threads.hpp>
@@ -64,8 +67,6 @@
 #include <Mlib/Time/Fps/Realtime_Dependent_Fps.hpp>
 #include <Mlib/Time/Time_And_Pause.hpp>
 #include <filesystem>
-
-namespace fs = std::filesystem;
 
 using namespace Mlib;
 
@@ -125,7 +126,6 @@ std::unique_ptr<JThread> render_thread(
                             frame_id);
                         if (args.has_named("--single_threaded")) {
                             for (auto& [_, r] : physics_scenes.guarded_iterable()) {
-                                SetDeleterThreadGuard set_deleter_thread_guard{ r.scene_.delete_node_mutex() };
                                 if (!r.physics_set_fps_.paused()) {
                                     r.physics_iteration({std::chrono::steady_clock::now(), PauseStatus::RUNNING});
                                 }
@@ -210,10 +210,6 @@ JThread loader_thread(
                     if (args.has_named("--no_render")) {
                         for (auto& [n, r] : physics_scenes.guarded_iterable()) {
                             r.start_physics_loop(("Phys_" + n).substr(0, 15), ThreadAffinity::POOL, [](){ return false; /*loading*/ });
-                        }
-                    } else if (args.has_named("--single_threaded")) {
-                        for (auto& [n, r] : physics_scenes.guarded_iterable()) {
-                            r.scene_.delete_node_mutex().clear_deleter_thread();
                         }
                     }
                 }
@@ -310,9 +306,11 @@ int main(int argc, char** argv) {
         "    [--far_plane <value>]\n"
         "    [--record_track_basename <value>]\n"
         "    [--flavor <flavor>]\n"
+        "    [--mesh <obj.gz>]\n"
+        "    [--animated_mesh <mhx2.gz>]\n"
         "    [--devel_mode]\n"
-        "    [--enable_ridge_map]\n"
-        "    [--hand_brake_velocity <x>]\n"
+        "    [--parking_brake_velocity <x>]\n"
+        "    [--slow_velocity <x>]\n"
         "    [--stiction_coefficient <x>]\n"
         "    [--friction_coefficient <x>]\n"
         "    [--max_extra_friction <x>]\n"
@@ -361,7 +359,15 @@ int main(int argc, char** argv) {
         "    [--remote_port <port>]\n"
         "    [--tty_hider]\n"
         "    [--show_only <name>]\n"
+        "    [--show_only_file <filename>]\n"
+        "    [--show_hitbox]\n"
+        "    [--show_massbox]\n"
         "    [--check_gl_errors]\n"
+        "    [--print_gl_calls]\n"
+        "    [--print_glfw_calls]\n"
+        "    [--print_rendered_materials]\n"
+        "    [--rgba_debug_image <name>]\n"
+        "    [--window_title <title>]\n"
         "    [--verbose]";
     const ArgParser parser(
         help,
@@ -388,7 +394,6 @@ int main(int argc, char** argv) {
          "--plot_triangle_bvh",
          "--devel_mode",
          "--show_mouse_cursor",
-         "--enable_ridge_map",
          "--no_slip",
          "--no_avoid_burnout",
          "--print_search_time",
@@ -396,11 +401,18 @@ int main(int argc, char** argv) {
          "--no_control_physics_fps",
          "--fxaa",
          "--tty_hider",
+         "--show_hitbox",
+         "--show_massbox",
          "--check_gl_errors",
+         "--print_gl_calls",
+         "--print_glfw_calls",
+         "--print_rendered_materials",
          "--verbose"},
         {"--app_reldir",
          "--record_track_basename",
          "--flavor",
+         "--mesh",
+         "--animated_mesh"
          "--swap_interval",
          "--fullscreen_refresh_rate",
          "--nsamples_msaa",
@@ -432,7 +444,8 @@ int main(int argc, char** argv) {
          "--render_dt",
          "--input_polling_interval",
          "--render_max_residual_time",
-         "--hand_brake_velocity",
+         "--parking_brake_velocity",
+         "--slow_velocity",
          "--stiction_coefficient",
          "--friction_coefficient",
          "--max_extra_w",
@@ -464,7 +477,10 @@ int main(int argc, char** argv) {
          "--bloom_threshold",
          "--bloom_std",
          "--bloom_intensities",
-         "--show_only"});
+         "--show_only",
+         "--show_only_file",
+         "--rgba_debug_image",
+         "--window_title"});
     try {
         const auto args = parser.parsed(argc, argv);
         if (args.has_named("--help")) {
@@ -477,12 +493,21 @@ int main(int argc, char** argv) {
         }
 
         args.assert_num_unnamed(2);
-        auto search_path = string_to_list(args.unnamed_value(0), Mlib::compile_regex(";"));
-        auto initial_main_scene_filename = fs::absolute(args.unnamed_value(1)).string();
+        auto search_path = split_semicolon_separated_pathes(args.unnamed_value(0));
+        auto initial_main_scene_filename = std::filesystem::absolute(args.unnamed_value(1)).string();
         auto main_scene_filename = initial_main_scene_filename;
 
         if (args.has_named("--check_gl_errors")) {
             check_gl_errors(CheckErrors::ENABLED);
+        }
+        if (args.has_named("--print_gl_calls")) {
+            print_gl_calls(PrintGlCalls::ENABLED);
+        }
+        if (args.has_named("--print_glfw_calls")) {
+            print_glfw_calls(PrintGlfwCalls::ENABLED);
+        }
+        if (args.has_named("--print_rendered_materials")) {
+            print_rendered_materials(PrintRenderedMaterials::ENABLED);
         }
         list_audio_devices(linfo(LogFlags::NO_APPEND_NEWLINE).ref());
         AudioDevice audio_device;
@@ -491,6 +516,11 @@ int main(int argc, char** argv) {
         linfo() << "Audio frequency: " << audio_device.get_frequency();
         AudioScene::set_default_alpha(safe_stof(args.named_value("--audio_alpha", "0.1")));
         AudioScene::set_distance_model(audio_distance_model_from_string(args.named_value("--audio_distance_model", "inverse_distance_clamped")));
+
+        auto window_title = args.named_value("--window_title", "");
+        auto generate_window_title = [&](){
+            return window_title + main_scene_filename;
+        };
 
         std::atomic_size_t num_renderings;
         RenderConfig render_config{
@@ -505,7 +535,7 @@ int main(int argc, char** argv) {
             .wire_frame = args.has_named("--wire_frame")
                 ? BoolRenderOption::ON
                 : BoolRenderOption::UNCHANGED,
-            .window_title = main_scene_filename,
+            .window_title = generate_window_title(),
             .windowed_width = safe_stoi(args.named_value("--windowed_width", "800")),
             .windowed_height = safe_stoi(args.named_value("--windowed_height", "600")),
             .fullscreen_width = safe_stoi(args.named_value("--fullscreen_width", "0")),
@@ -593,10 +623,10 @@ int main(int argc, char** argv) {
         std::optional<RemoteParams> remote_params;
         if (args.has_named_value("--remote_role")) {
             remote_params.emplace(
-                safe_stox<RemoteSiteId>(args.named_value("--remote_site_id")),
+                safe_sto<RemoteSiteId>(args.named_value("--remote_site_id")),
                 remote_role_from_string(args.named_value("--remote_role")),
                 args.named_value("--remote_ip"),
-                safe_stox<uint16_t>(args.named_value("--remote_port")));
+                safe_sto<uint16_t>(args.named_value("--remote_port")));
         }
         auto user_count = safe_sto<uint32_t>(args.named_value("--user_count", "1"));
         Users users;
@@ -604,6 +634,7 @@ int main(int argc, char** argv) {
         remote_sites.set_local_user_count(user_count);
         {
             auto record_track_basename = args.try_named_value("--record_track_basename");
+            auto rgba_debug_image = args.try_named_value("--rgba_debug_image");
             nlohmann::json j{
                 {"primary_scene_fly", args.has_named("--fly")},
                 {"primary_scene_rotate", args.has_named("--rotate")},
@@ -627,11 +658,17 @@ int main(int argc, char** argv) {
                 {"record_track_basename", (record_track_basename == nullptr)
                     ? nlohmann::json()
                     : nlohmann::json(*record_track_basename)},
+                {"rgba_debug_image", (rgba_debug_image == nullptr)
+                    ? nlohmann::json()
+                    : nlohmann::json(*rgba_debug_image)},
                 {"if_devel", args.has_named("--devel_mode")},
                 {"if_show_debug_wheels", args.has_named("--show_debug_wheels")},
                 {"if_show_global_log", args.has_named("--show_global_log")},
                 {"if_android", false},
+                {"if_web", false},
                 {"flavor", args.named_value("--flavor", "main")},
+                {"mesh", args.named_value("--mesh", "obj")},
+                {"animated_mesh", args.named_value("--animated_mesh", "mhx2")},
                 {"scene_lightmap_width", safe_stoi(args.named_value("--scene_lightmap_width", "2048"))},
                 {"scene_lightmap_height", safe_stoi(args.named_value("--scene_lightmap_height", "2048"))},
                 {"black_lightmap_width", safe_stoi(args.named_value("--black_lightmap_width", "1024"))},
@@ -648,31 +685,46 @@ int main(int argc, char** argv) {
                 {"medium_triangle_cluster_width", safe_stof(args.named_value("--medium_triangle_cluster_width", "700"))},
                 {"dense_triangle_cluster_width", safe_stof(args.named_value("--dense_triangle_cluster_width", "250"))},
                 {"object_cluster_width", safe_stof(args.named_value("--object_cluster_width", "500"))}};
-                if (remote_params.has_value()) {
-                    j["remote_params"] = *remote_params;
-                } else {
-                    j["remote_params"] = nlohmann::json();
-                }
+            if (remote_params.has_value()) {
+                j["remote_params"] = *remote_params;
+            } else {
+                j["remote_params"] = nlohmann::json();
+            }
+            {
+                auto show_hitbox = args.has_named("--show_hitbox");
+                auto show_massbox = args.has_named("--show_massbox");
+                j["show_hitbox"] = show_hitbox;
+                j["show_massbox"] = show_massbox;
+                j["hitbox_massbox_triangulation"] = (show_hitbox || show_massbox)
+                    ? "delaunay"
+                    : "disabled";
+            }
             external_json_macro_arguments.merge_and_notify(JsonMacroArguments{std::move(j)});
+        }
+        IRenderableHider* renderable_hider = nullptr;
+        auto set_renderable_hider = [&](IRenderableHider& rh){
+            if (renderable_hider != nullptr) {
+                throw std::runtime_error("Multiple renderable hiders provided");
+            }
+            renderable_hider = &rh;
+        };
+        std::optional<FileRenderableHider> file_renderable_hider;
+        if (auto it = args.try_named_value("--show_only_file"); it != nullptr) {
+            set_renderable_hider(file_renderable_hider.emplace(button_states, *it));
+        }
+        std::optional<TtyRenderableHider> tty_renderable_hider;
+        if (auto it = args.try_named_value("--tty_hider"); it != nullptr) {
+            set_renderable_hider(tty_renderable_hider.emplace(button_states));
+        }
+        std::optional<StaticRenderableHider> static_renderable_hider;
+        if (auto it = args.try_named_value("--show_only"); it != nullptr) {
+            set_renderable_hider(static_renderable_hider.emplace(VariableAndHash{args.named_value("--show_only", "")}));
         }
         LocalSceneLevel local_scene_level;
         size_t args_num_renderings = safe_stoz(args.named_value("--num_renderings", "-1"));
         while (!render.window_should_close() && !unhandled_exceptions_occured()) {
             num_renderings = args_num_renderings;
             ui_focuses.clear();
-
-            TtyRenderableHider tty_renderable_hider{ button_states };
-            StaticRenderableHider static_renderable_hider{ args.named_value("--show_only", "") };
-            IRenderableHider* renderable_hider = nullptr;
-            if (args.has_named("--tty_hider")) {
-                renderable_hider = &tty_renderable_hider;
-            }
-            if (args.has_named_value("--show_only")) {
-                if (renderable_hider != nullptr) {
-                    THROW_OR_ABORT("Both --tty_hider and --show_only were specified");
-                }
-                renderable_hider = &static_renderable_hider;
-            }
 
             SceneGraphConfig scene_graph_config{
                 .max_distance_black = safe_stof(args.named_value("--max_distance_black", "200")) * meters,
@@ -692,23 +744,24 @@ int main(int argc, char** argv) {
                 .max_extra_w = safe_stof(args.named_value("--max_extra_w", "0")),
                 .avoid_burnout = !args.has_named("--no_avoid_burnout"),
                 .no_slip = args.has_named("--no_slip"),
-                .hand_brake_velocity = safe_stof(args.named_value("--hand_brake_velocity", "5")) * kph,
+                .parking_brake_velocity = safe_stof(args.named_value("--parking_brake_velocity", "5")) * kph,
+                .slow_velocity = safe_stof(args.named_value("--slow_velocity", "40")) * kph,
                 // Friction
                 .stiction_coefficient = safe_stof(args.named_value("--stiction_coefficient", "0.5")),
                 .friction_coefficient = safe_stof(args.named_value("--friction_coefficient", "0.5")),
-                .longitudinal_friction_steepness = safe_stof(args.named_value("--longitudinal_friction_steepness", "5")),
-                .lateral_friction_steepness = safe_stof(args.named_value("--lateral_friction_steepness", "7")),
+                .longitudinal_friction_steepness = safe_stof(args.named_value("--longitudinal_friction_steepness", "20")),
+                .lateral_friction_steepness = safe_stof(args.named_value("--lateral_friction_steepness", "20")),
                 // Collision
                 .wheel_penetration_depth = safe_stof(args.named_value("--wheel_penetration_depth", "0.25")),
-                .nsubsteps = safe_stoz(args.named_value("--nsubsteps", "8")),
-                .enable_ridge_map = args.has_named("--enable_ridge_map")};
+                .nsubsteps = safe_stoz(args.named_value("--nsubsteps", "8"))};
 
             SceneConfig scene_config{
                 .render_config = render_config,
                 .scene_graph_config = scene_graph_config,
                 .physics_engine_config = physics_engine_config};
 
-            SceneNodeResources scene_node_resources;
+            OpenGLObjectFactory gpu_object_factory;
+            SceneNodeResources scene_node_resources{gpu_object_factory};
             ParticleResources particle_resources;
             TrailResources trail_resources;
             SurfaceContactDb surface_contact_db;
@@ -730,11 +783,14 @@ int main(int argc, char** argv) {
                     render_config.anisotropic_filtering_level
                 };
                 rendering_resources.add_charset(ascii, ascii_chars());
+                OpenGLVertexArrayRenderer gpu_vertex_array_renderer{rendering_resources, rendering_resources};
                 RenderingContext primary_rendering_context{
                     .scene_node_resources = scene_node_resources,
                     .particle_resources = particle_resources,
                     .trail_resources = trail_resources,
                     .rendering_resources = rendering_resources,
+                    .gpu_object_factory = gpu_object_factory,
+                    .gpu_vertex_array_renderer = gpu_vertex_array_renderer,
                     .z_order = 0
                 };
                 RenderingContextGuard rcg{ primary_rendering_context };
@@ -748,12 +804,12 @@ int main(int argc, char** argv) {
                 std::function<void()> exit = [&render](){
                     render.request_window_close();
                 };
-                render.window().set_title(main_scene_filename);
+                render.window().set_title(generate_window_title());
 
                 remote_sites.set_user_status(UserTypes::ALL_REMOTE, UserStatus::INITIAL);
                 remote_sites.set_user_status(UserTypes::ALL_LOCAL, UserStatus::LEVEL_LOADING);
                 load_scene.reset(new LoadScene(
-                    &search_path,
+                    search_path,
                     main_scene_filename,
                     next_scene_filename,
                     local_scene_level,

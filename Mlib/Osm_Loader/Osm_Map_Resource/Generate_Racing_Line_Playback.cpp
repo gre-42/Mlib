@@ -2,7 +2,7 @@
 #include <Mlib/Array/Array.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Ground_Bvh.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -23,18 +23,18 @@ void Mlib::generate_racing_line_playback(
 {
     auto mat = Array<double>::load_txt_2d(racing_line_filename, ArrayShape{0, 6});
     if (mat.shape(1) != 6) {
-        THROW_OR_ABORT("File \"" + racing_line_filename + "\" does not have 6 columns");
+        throw std::runtime_error("File \"" + racing_line_filename + "\" does not have 6 columns");
     }
     auto ofstr = create_ofstream(playback_filename, std::ios_base::out, file_storage_type);
     if (ofstr->fail()) {
-        THROW_OR_ABORT("Could not open racing line playback file \"" + playback_filename + "\" for writing");
+        throw std::runtime_error("Could not open racing line playback file \"" + playback_filename + "\" for writing");
     }
     *ofstr << std::setprecision(18) << std::scientific;
     for (const auto& row : mat) {
         auto pos = normalization_matrix.transform(FixedArray<double, 2>{ row(LAT), row(LON) }).casted<CompressedScenePos>();
         CompressedScenePos height;
         if (!ground_bvh.max_height(height, pos)) {
-            THROW_OR_ABORT("Could not find height for point on racing line");
+            throw std::runtime_error("Could not find height for point on racing line");
         }
         auto xpos = geographic_mapping.transform(FixedArray<CompressedScenePos, 3>{pos(0), pos(1), height}.casted<ScenePos>());
         // *ofstr << xpos << ' ' << row(YANGLE) << ' ' << row(TIME) << ' ' << row(ACCEL) << ' ' << row(BRAKE) << '\n';
@@ -42,6 +42,6 @@ void Mlib::generate_racing_line_playback(
     }
     ofstr->flush();
     if (ofstr->fail()) {
-        THROW_OR_ABORT("Could not write to file \"" + playback_filename + '"');
+        throw std::runtime_error("Could not write to file \"" + playback_filename + '"');
     }
 }

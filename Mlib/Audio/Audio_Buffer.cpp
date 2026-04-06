@@ -1,10 +1,13 @@
+
 #include "Audio_Buffer.hpp"
 #include <Mlib/Audio/Alut_Init_Without_Context.hpp>
 #include <Mlib/Audio/CHK.hpp>
+#include <Mlib/Memory/Destruction_Guard.hpp>
 #include <Mlib/Memory/Integral_Cast.hpp>
 #include <Mlib/Os/Os.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
+#include <minimp3/minimp3_ex.h>
 #include <mutex>
+#include <stdexcept>
 #include <vector>
 
 using namespace Mlib;
@@ -35,21 +38,21 @@ AudioBuffer::~AudioBuffer() {
 //             else
 //                 return AL_FORMAT_MONO8;
 //         default:
-//             THROW_OR_ABORT("Unsupported samples");
+//             throw std::runtime_error("Unsupported samples");
 //     }
 // }
 
-std::shared_ptr<AudioBuffer> AudioBuffer::from_wave(const std::string& filename) {
+std::shared_ptr<AudioBuffer> AudioBuffer::from_wave(const std::filesystem::path& filename) {
     // WaveInfo* wave = WaveOpenFileForReading(filename.c_str());
     // if (wave == nullptr) {
-    //     THROW_OR_ABORT("Failed to read wave file: \"" + filename + '"');
+    //     throw std::runtime_error("Failed to read wave file: \"" + filename + '"');
     // }
 
     // try {
     //     {
     //         int ret = WaveSeekFile(0, wave);
     //         if (ret != 0) {
-    //             THROW_OR_ABORT("Failed to seek wave file: \"" + filename + '"');
+    //             throw std::runtime_error("Failed to seek wave file: \"" + filename + '"');
     //         }
     //     }
 
@@ -57,7 +60,7 @@ std::shared_ptr<AudioBuffer> AudioBuffer::from_wave(const std::string& filename)
     //     {
     //         int ret = WaveReadFile(bufferData.data(), wave->dataSize, wave);
     //         if (ret != (int)wave->dataSize) {
-    //             THROW_OR_ABORT(
+    //             throw std::runtime_error(
     //                 "Short read: " + std::to_string(ret) +
     //                 ", want: " + std::to_string(wave->dataSize) +
     //                 ", file: \"" + filename + '"');
@@ -79,9 +82,39 @@ std::shared_ptr<AudioBuffer> AudioBuffer::from_wave(const std::string& filename)
     ALuint buffer = alutCreateBufferFromFileImage(data.data(), integral_cast<ALsizei>(data.size()));
     if (buffer == AL_NONE) {
         ALenum error = alutGetError();
-        THROW_OR_ABORT("Could not load file \"" + filename + "\": " + alutGetErrorString(error) + ", code " + std::to_string(error));
+        throw std::runtime_error("Could not load file \"" + filename.string() + "\": " + alutGetErrorString(error) + ", code " + std::to_string(error));
     }
     return std::make_shared<AudioBuffer>(buffer);
+}
+
+std::shared_ptr<AudioBuffer> AudioBuffer::from_mp3(const std::filesystem::path& filename) {
+    auto file_data = read_file_bytes(filename);
+    mp3dec_ex_t dec;
+    if (mp3dec_ex_open_buf(&dec, file_data.data(), file_data.size(), MP3D_SEEK_TO_SAMPLE) != 0) {
+        throw std::runtime_error("Could not open mp3: \"" + filename.string() + '"');
+    }
+    DestructionGuard dg{[&dec](){ mp3dec_ex_close(&dec); }};
+    if (dec.info.channels != 1) {
+        throw std::runtime_error("mp3 file does not have 1 channel: \"" + filename.string() + '"');
+    }
+    // Allocate memory for decoded samples
+    std::vector<int16_t> pcm_data(dec.samples);
+    size_t read_samples = mp3dec_ex_read(&dec, pcm_data.data(), dec.samples);
+    ALuint buffer;
+    AL_CHK(alGenBuffers(1, &buffer));
+    auto result = std::make_shared<AudioBuffer>(buffer);
+    AL_CHK(alBufferData(buffer, AL_FORMAT_MONO16, pcm_data.data(), integral_cast<ALsizei>(read_samples * sizeof(int16_t)), dec.info.hz));
+    return result;
+}
+
+std::shared_ptr<AudioBuffer> AudioBuffer::from_file(const std::filesystem::path& filename) {
+    if (filename.extension() == ".wav") {
+        return from_wave(filename);
+    }
+    if (filename.extension() == ".mp3") {
+        return from_mp3(filename);
+    }
+    throw std::runtime_error("Unknown audio file format: \"" + filename.string() + '"');
 }
 
 uint32_t AudioBuffer::nchannels() const {

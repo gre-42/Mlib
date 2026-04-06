@@ -1,5 +1,5 @@
 #include "Bounding_Info.hpp"
-#include <Mlib/Default_Uninitialized_Vector.hpp>
+#include <Mlib/Initialization/Default_Uninitialized_Vector.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Osm_Map_Resource_Helpers.hpp>
 #include <Mlib/Stats/Min_Max.hpp>

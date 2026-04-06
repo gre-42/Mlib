@@ -1,11 +1,12 @@
+
 #include "Img_Reader.hpp"
 #include <Mlib/Io/Binary.hpp>
 #include <Mlib/Io/Cleanup.hpp>
 #include <Mlib/Io/Stream_And_Lock.hpp>
 #include <Mlib/Io/Stream_Segment.hpp>
 #include <Mlib/Os/Os.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
 #include <istream>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -34,18 +35,18 @@ ImgReader::ImgReader(std::istream& directory, std::unique_ptr<std::istream>&& da
 
 std::shared_ptr<IIStreamDictionary> ImgReader::load_from_file(const std::string& img_filename) {
     if (!img_filename.ends_with(".img")) {
-        THROW_OR_ABORT("Filename \"" + img_filename + "\" does not end with .img");
+        throw std::runtime_error("Filename \"" + img_filename + "\" does not end with .img");
     }
     auto dir_filename = img_filename.substr(0, img_filename.length() - 3) + "dir";
 
     auto dir = create_ifstream(dir_filename, std::ios::binary);
     if (dir->fail()) {
-        THROW_OR_ABORT("Could not open \"" + dir_filename + '"');
+        throw std::runtime_error("Could not open \"" + dir_filename + '"');
     }
 
     auto img = create_ifstream(img_filename, std::ios::binary);
     if (img->fail()) {
-        THROW_OR_ABORT("Could not open \"" + img_filename + '"');
+        throw std::runtime_error("Could not open \"" + img_filename + '"');
     }
     return std::make_shared<ImgReader>(*dir, std::move(img));
 }
@@ -62,17 +63,17 @@ StreamAndSize ImgReader::read(
     SourceLocation loc)
 {
     if (openmode != std::ios::binary) {
-        THROW_OR_ABORT("Open-mode is not binary");
+        throw std::runtime_error("Open-mode is not binary");
     }
     const auto& v = directory_.get(name);
     auto lock = std::make_unique<std::scoped_lock<std::recursive_mutex>>(mutex_);
     if (reading_) {
-        THROW_OR_ABORT("Recursively reading from IMG is not supported");
+        throw std::runtime_error("Recursively reading from IMG is not supported");
     }
     reading_ = true;
     data_->seekg(v.offset);
     if (data_->fail()) {
-        THROW_OR_ABORT("Could not seek entry \"" + *name + '"');
+        throw std::runtime_error("Could not seek entry \"" + *name + '"');
     }
     auto stream = std::make_unique<IStreamAndLock<DanglingBaseClassRef<ImgReader>>>(
         *data_,

@@ -1,3 +1,4 @@
+
 #include "Light.hpp"
 #include <Mlib/Array/Fixed_Array_Hash.hpp>
 #include <Mlib/Geometry/Material/Render_Pass.hpp>

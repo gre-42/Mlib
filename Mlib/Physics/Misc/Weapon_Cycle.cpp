@@ -1,15 +1,16 @@
+
 #include "Weapon_Cycle.hpp"
 #include <Mlib/Physics/Bullets/Bullet_Properties.hpp>
 #include <Mlib/Physics/Misc/Inventory.hpp>
 #include <Mlib/Physics/Misc/When_To_Equip.hpp>
 #include <Mlib/Physics/Units.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
+#include <stdexcept>
 
 using namespace Mlib;
 
 float WeaponInfo::score(double distance_to_target) const {
     if (cool_down == 0) {
-        THROW_OR_ABORT("Weapon has cooldown 0");
+        throw std::runtime_error("Weapon has cooldown 0");
     }
     if ((distance_to_target < range_min) ||
         (distance_to_target > range_max))
@@ -27,9 +28,9 @@ void WeaponCycle::modify_node() {
     if (equipped_ != desired_) {
         auto it = weapon_infos_.find(desired_.weapon_name);
         if (it == weapon_infos_.end()) {
-            THROW_OR_ABORT("Inventory does not have information about a weapon with name \"" + desired_.weapon_name + '"');
+            throw std::runtime_error("Inventory does not have information about a weapon with name \"" + desired_.weapon_name + '"');
         }
-        if (it->second.create_weapon) {
+        if (it->second.create_weapon && (equipped_.weapon_name != desired_.weapon_name)) {
             it->second.create_weapon();
         }
         if (it->second.create_externals && desired_.player_name.has_value()) {
@@ -39,20 +40,19 @@ void WeaponCycle::modify_node() {
     }
 }
 
-void WeaponCycle::create_externals(const VariableAndHash<std::string>& player_name) {
-    auto it = weapon_infos_.find(equipped_.weapon_name);
-    if (it == weapon_infos_.end()) {
-        THROW_OR_ABORT("Inventory does not have information about a weapon with name \"" + equipped_.weapon_name + '"');
-    }
-    if (it->second.create_externals) {
-        it->second.create_externals(player_name);
-    }
+void WeaponCycle::clear_player() {
+    desired_.player_name.reset();
+}
+
+void WeaponCycle::set_player(const VariableAndHash<std::string>& player_name) {
+    desired_.player_name = player_name;
+    modify_node();
 }
 
 void WeaponCycle::add_weapon(std::string weapon_name, const WeaponInfo& weapon_info)
 {
     if (!weapon_infos_.try_emplace(std::move(weapon_name), weapon_info).second)  {
-        THROW_OR_ABORT("Inventory already has information about a weapon with name \"" + weapon_name + '"');
+        throw std::runtime_error("Inventory already has information about a weapon with name \"" + weapon_name + '"');
     }
 }
 
@@ -101,14 +101,14 @@ void WeaponCycle::equip_previous_weapon(std::optional<VariableAndHash<std::strin
 InventoryItem WeaponCycle::ammo_type() const {
     auto it = weapon_infos_.find(equipped_.weapon_name);
     if (it == weapon_infos_.end()) {
-        THROW_OR_ABORT("Inventory does not have information about a weapon with name \"" + equipped_.weapon_name + '"');
+        throw std::runtime_error("Inventory does not have information about a weapon with name \"" + equipped_.weapon_name + '"');
     }
     return it->second.ammo_type;
 }
 
 const std::string& WeaponCycle::weapon_name() const {
     if (equipped_.weapon_name.empty()) {
-        THROW_OR_ABORT("No weapon is equpped");
+        throw std::runtime_error("No weapon is equpped");
     }
     return equipped_.weapon_name;
 }

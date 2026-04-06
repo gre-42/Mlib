@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/Audio/Audio_Resource_Context.hpp>
-#include <Mlib/Render/Rendering_Context.hpp>
+#include <Mlib/OpenGL/Rendering_Context.hpp>
+#include <Mlib/Threads/Recursive_Shared_Mutex.hpp>
 #include <atomic>
 #include <functional>
 #include <optional>
@@ -33,7 +34,6 @@ class SetFps;
 class RenderLogic;
 class GameLogic;
 class BaseLog;
-class DeleteNodeMutex;
 class DirtmapLogic;
 class SkyboxLogic;
 class StandardRenderLogic;
@@ -96,7 +96,7 @@ protected:
     CountdownPhysics& countdown_start;
     UiFocus& ui_focus;
     BaseLog& base_log;
-    DeleteNodeMutex& delete_node_mutex;
+    SafeAtomicRecursiveSharedMutex& delete_node_mutex;
     std::optional<EventReceiverDeletionToken<const UserInfo&>>& on_user_loaded_level_token;
     std::optional<EventReceiverDeletionToken<>>& on_all_users_loaded_level_token;
     std::optional<LateJoinPlayerFactory>& late_join_player_factory;

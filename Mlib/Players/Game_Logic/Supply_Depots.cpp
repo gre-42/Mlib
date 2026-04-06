@@ -1,13 +1,13 @@
 #include "Supply_Depots.hpp"
-#include <Mlib/Geometry/Intersection/Bounding_Sphere.hpp>
+#include <Mlib/Geometry/Primitives/Bounding_Sphere.hpp>
 #include <Mlib/Memory/Destruction_Functions_Removeal_Tokens_Ref.hpp>
 #include <Mlib/Memory/Object_Pool.hpp>
 #include <Mlib/Physics/Advance_Times/Movables/Relative_Transformer.hpp>
 #include <Mlib/Physics/Containers/Advance_Times.hpp>
-#include <Mlib/Physics/Physics_Engine/Physics_Engine_Config.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Players/Advance_Times/Player.hpp>
 #include <Mlib/Players/Containers/Players.hpp>
+#include <Mlib/Scene_Config/Physics_Engine_Config.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 
 using namespace Mlib;
@@ -135,7 +135,7 @@ void SupplyDepots::add_supply_depot(
             .remaining_supplies = supplies,
             .cooldown = cooldown,
             .time_since_first_sale = cooldown,
-            .node_on_clear = std::make_shared<DestructionFunctionsRemovalTokens>(scene_node->on_clear, CURRENT_SOURCE_LOCATION) });
+            .node_on_clear = std::make_shared<DestructionFunctionsRemovalTokens>(scene_node->on_clear.early, CURRENT_SOURCE_LOCATION) });
     auto& rt = global_object_pool.create<RelativeTransformer>(
         CURRENT_SOURCE_LOCATION,
         fixed_zeros<float, 3>(),

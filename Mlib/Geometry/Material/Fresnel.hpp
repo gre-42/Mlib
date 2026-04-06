@@ -1,6 +1,6 @@
 #pragma once
+#include <Mlib/Hashing/Std_Hash.hpp>
 #include <Mlib/Math/Orderable_Fixed_Array.hpp>
-#include <Mlib/Std_Hash.hpp>
 #include <compare>
 #include <nlohmann/json_fwd.hpp>
 

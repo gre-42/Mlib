@@ -10,7 +10,7 @@
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Street_Rectangle.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Styled_Road.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -27,9 +27,10 @@ void Mlib::draw_into_street_rectangles(
             .road_properties = tl.road_properties,
             .styled_road = StyledRoad{
                 .triangle_list = std::make_shared<TriangleList<CompressedScenePos>>(
-                    tl.styled_road.triangle_list->name,
-                    tl.styled_road.triangle_list->material,
-                    tl.styled_road.triangle_list->morphology),
+                    tl.styled_road.triangle_list->meta.name,
+                    tl.styled_road.triangle_list->meta.material,
+                    tl.styled_road.triangle_list->meta.morphology,
+                    tl.styled_road.triangle_list->meta.modifier_backlog),
                 .uvx = tl.styled_road.uvx}});
     }
     for (const auto& r : street_rectangles) {
@@ -44,8 +45,8 @@ void Mlib::draw_into_street_rectangles(
             .p11_ = funpack(r.rectangle[1][1])};
         const auto& cvas = scene_node_resources.get_arrays(r.bumps_model, ColoredVertexArrayFilter{})->scvas;
         for (const auto& cva : cvas) {
-            if (cva->name.name() != "street") {
-                THROW_OR_ABORT("Material name is not \"street\" in resource \"" + *r.bumps_model + '"');
+            if (cva->meta.name.name() != "street") {
+                throw std::runtime_error("Material name is not \"street\" in resource \"" + *r.bumps_model + '"');
             }
             rect.draw(*tl_str.triangle_list, cva->triangles, scale, 1.f, height, 0.f, 1.f);
         }

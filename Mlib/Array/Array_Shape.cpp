@@ -1,3 +1,4 @@
+
 #include "Array_Shape.hpp"
 #include <sstream>
 
@@ -6,8 +7,13 @@ using namespace Mlib;
 ArrayShape::ArrayShape() = default;
 ArrayShape::ArrayShape(const ArrayShape& shape) = default;
 ArrayShape::ArrayShape(ArrayShape&& shape) = default;
-ArrayShape& ArrayShape::operator = (const ArrayShape& shape) = default;
-ArrayShape& ArrayShape::operator = (ArrayShape&& shape) = default;
+ArrayShape& ArrayShape::operator = (const ArrayShape& shape) {
+    assert(shape.ndim() == ndim());
+    for (size_t d = 0; d < ndim(); ++d) {
+        shape_[d] = shape(d);
+    }
+    return *this;
+}
 ArrayShape::ArrayShape(std::initializer_list<size_t> shape) {
     shape_.reserve(shape.size());
     for (size_t s : shape) {
@@ -71,14 +77,6 @@ ArrayShape ArrayShape::concatenated(const ArrayShape& other) const {
     ArrayShape result = *this;
     result.concatenate(other);
     return result;
-}
-const size_t& ArrayShape::operator () (size_t i) const {
-    assert(i < ndim());
-    return shape_[i];
-}
-size_t& ArrayShape::operator () (size_t i) {
-    const ArrayShape& a = *this;
-    return const_cast<size_t&>(a(i));
 }
 size_t ArrayShape::ndim() const {
     return shape_.size();

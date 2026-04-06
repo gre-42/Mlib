@@ -1,7 +1,8 @@
 #pragma once
-#include <Mlib/Throw_Or_Abort.hpp>
 #include <cassert>
 #include <cstddef>
+#include <stdexcept>
+#include <utility>
 
 namespace Mlib {
 
@@ -56,7 +57,7 @@ public:
     }
     inline const T& at(size_t index) const {
         if (index >= size_) {
-            THROW_OR_ABORT("Index out of bounds");
+            throw std::runtime_error("Index out of bounds");
         }
         return (*this)[index];
     }

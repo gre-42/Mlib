@@ -1,0 +1,54 @@
+
+#include "Move_Scene_Logic.hpp"
+#include <Mlib/Geometry/Cameras/Camera.hpp>
+#include <Mlib/Misc/Log.hpp>
+#include <Mlib/OpenGL/CHK.hpp>
+#include <Mlib/OpenGL/Render_Config.hpp>
+#include <Mlib/OpenGL/Render_Setup.hpp>
+#include <Mlib/Scene_Graph/Containers/Scene.hpp>
+#include <Mlib/Scene_Graph/Rendered_Scene_Descriptor.hpp>
+
+using namespace Mlib;
+
+MoveSceneLogic::MoveSceneLogic(
+    Scene& scene,
+    float speed)
+    : scene_{ scene }
+    , first_render_{ true }
+    , speed_{ speed }
+{}
+
+MoveSceneLogic::~MoveSceneLogic() {
+    on_destroy.clear();
+}
+
+std::optional<RenderSetup> MoveSceneLogic::try_render_setup(
+    const LayoutConstraintParameters& lx,
+    const LayoutConstraintParameters& ly,
+    const RenderedSceneDescriptor& frame_id) const
+{
+    return std::nullopt;
+}
+
+void MoveSceneLogic::render_without_setup(
+    const LayoutConstraintParameters& lx,
+    const LayoutConstraintParameters& ly,
+    const RenderConfig& render_config,
+    const SceneGraphConfig& scene_graph_config,
+    RenderResults* render_results,
+    const RenderedSceneDescriptor& frame_id)
+{
+    LOG_FUNCTION("MoveSceneLogic::render");
+
+    auto time = std::chrono::steady_clock::now();
+    if (first_render_) {
+        last_time_ = time;
+        first_render_ = false;
+    } else {
+        scene_.move(std::chrono::duration<float>(time - last_time_).count() * speed_, time);
+    }
+}
+
+void MoveSceneLogic::print(std::ostream& ostr, size_t depth) const {
+    ostr << std::string(depth, ' ') << "MoveSceneLogic";
+}

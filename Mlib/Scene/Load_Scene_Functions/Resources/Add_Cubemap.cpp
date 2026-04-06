@@ -1,7 +1,7 @@
-#include <Mlib/Argument_List.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
-#include <Mlib/Render/Rendering_Context.hpp>
-#include <Mlib/Render/Resource_Managers/Rendering_Resources.hpp>
+#include <Mlib/Misc/Argument_List.hpp>
+#include <Mlib/OpenGL/Rendering_Context.hpp>
+#include <Mlib/OpenGL/Resource_Managers/Rendering_Resources.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Load_Scene_Funcs.hpp>
 
@@ -24,7 +24,7 @@ struct RegisterJsonUserFunction {
                 args.arguments.validate(KnownArgs::options);
                 RenderingContextStack::primary_rendering_resources().add_cubemap(
                     args.arguments.at<VariableAndHash<std::string>>(KnownArgs::alias),
-                    args.arguments.pathes_or_variables(KnownArgs::filenames, [](const FPath& p) { return VariableAndHash{ p.path }; }));
+                    args.arguments.pathes_or_variables(KnownArgs::filenames));
             });
     }
 } obj;

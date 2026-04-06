@@ -1,5 +1,5 @@
 #pragma once
-#include <Mlib/Geometry/Intersection/Axis_Aligned_Bounding_Box.hpp>
+#include <Mlib/Geometry/Primitives/Axis_Aligned_Bounding_Box.hpp>
 #include <cstdint>
 #include <iosfwd>
 

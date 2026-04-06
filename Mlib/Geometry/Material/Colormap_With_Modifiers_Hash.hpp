@@ -1,5 +1,5 @@
 #pragma once
-#include <Mlib/Std_Hash.hpp>
+#include <Mlib/Hashing/Std_Hash.hpp>
 #include <cstddef>
 
 namespace Mlib {

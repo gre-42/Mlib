@@ -1,5 +1,5 @@
 #include "Drive_Or_Walk_Ai.hpp"
-#include <Mlib/Geometry/Intersection/Intersect_Lines.hpp>
+#include <Mlib/Geometry/Primitives/Intersect_Lines.hpp>
 #include <Mlib/Memory/Destruction_Functions_Removeal_Tokens_Ref.hpp>
 #include <Mlib/Memory/Object_Pool.hpp>
 #include <Mlib/Physics/Ai/Ai_Waypoint.hpp>
@@ -67,7 +67,7 @@ static ActorTask get_initial_actor_task(const RigidBodyVehicle& rb) {
     case VehicleDomain::END:
         ; // Do nothing
     }
-    THROW_OR_ABORT("Unknown vehicle domain: " + vehicle_domain_to_string(rb.current_vehicle_domain_));
+    throw std::runtime_error("Unknown vehicle domain: " + vehicle_domain_to_string(rb.current_vehicle_domain_));
 }
 
 VehicleAiMoveToStatus DriveOrWalkAi::move_to(
@@ -100,11 +100,12 @@ VehicleAiMoveToStatus DriveOrWalkAi::move_to(
     //     0.f, // surface_power
     //     0.f  // steer_angle
     // );
-    player_rb->vehicle_controller().reset_relaxation(0.f, 0.f);
+    auto vehicle_controller = player_rb->vehicle_controller(CURRENT_SOURCE_LOCATION);
+    vehicle_controller->reset_relaxation(0.f, 0.f);
     if (!ai_waypoint.has_position_of_destination()) {
         player_->car_movement.step_on_brakes();
         player_->car_movement.steer(0.f);
-        player_rb->vehicle_controller().apply();
+        vehicle_controller->apply();
         return VehicleAiMoveToStatus::WAYPOINT_IS_NAN;
     }
     auto waypoint_flags = ai_waypoint.flags();
@@ -203,7 +204,7 @@ VehicleAiMoveToStatus DriveOrWalkAi::move_to(
                     } else if (player_->driving_direction() == DrivingDirection::LEFT) {
                         d_wpt = -collision_avoidance_step_aside_distance_;
                     } else {
-                        THROW_OR_ABORT("Unknown driving direction");
+                        throw std::runtime_error("Unknown driving direction");
                     }
                     return;
                 }
@@ -294,11 +295,11 @@ VehicleAiMoveToStatus DriveOrWalkAi::move_to(
                         // The waypoint is behind us => full, inverted steering.
                         if (wpt(0) < 0) {
                             player_->car_movement.steer_left_full();
-                            player_rb->vehicle_controller().apply();
+                            vehicle_controller->apply();
                             return result;
                         } else {
                             player_->car_movement.steer_right_full();
-                            player_rb->vehicle_controller().apply();
+                            vehicle_controller->apply();
                             return result;
                         }
                     } else {
@@ -306,11 +307,11 @@ VehicleAiMoveToStatus DriveOrWalkAi::move_to(
                         auto angle = (float)std::atan(std::abs(wpt(0) / wpt(1)));
                         if (wpt(0) < 0) {
                             player_->car_movement.steer_left_partial(angle);
-                            player_rb->vehicle_controller().apply();
+                            vehicle_controller->apply();
                             return result;
                         } else {
                             player_->car_movement.steer_right_partial(angle);
-                            player_rb->vehicle_controller().apply();
+                            vehicle_controller->apply();
                             return result;
                         }
                     }
@@ -322,7 +323,7 @@ VehicleAiMoveToStatus DriveOrWalkAi::move_to(
         player_rb->avatar_controller_->apply();
     } else {
         player_->car_movement.steer(0.f);
-        player_rb->vehicle_controller().apply();
+        vehicle_controller->apply();
     }
     return result;
 }

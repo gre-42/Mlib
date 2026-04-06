@@ -1,3 +1,4 @@
+
 #include "Load_Bvh.hpp"
 #include <Mlib/Geometry/Coordinates/Homogeneous.hpp>
 #include <Mlib/Iterator/Enumerate.hpp>
@@ -5,7 +6,7 @@
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Regex/Regex_Select.hpp>
 #include <Mlib/Strings/String.hpp>
-#include <Mlib/Strings/To_Number.hpp>
+#include <Mlib/Strings/String_View_To_Number.hpp>
 #include <algorithm>
 #include <istream>
 
@@ -17,7 +18,7 @@ FixedArray<float, 4, 4> Mlib::get_parameter_transformation(const std::string& na
     if (name == "xz-y") {
         return x_z_my;
     } else {
-        THROW_OR_ABORT("Unknown parameter transformation: " + name);
+        throw std::runtime_error("Unknown parameter transformation: " + name);
     }
 }
 
@@ -30,11 +31,11 @@ BvhLoader::BvhLoader(
     , frame_time_{ NAN }
 {
     if (!all(cfg.rotation_order < size_t(3))) {
-        THROW_OR_ABORT("Rotation order out of bounds");
+        throw std::runtime_error("Rotation order out of bounds");
     }
     auto file = create_ifstream(filename);
     if (file->fail()) {
-        THROW_OR_ABORT("Could not open \"" + filename + '"');
+        throw std::runtime_error("Could not open \"" + filename + '"');
     }
     std::vector<StringWithHashUnorderedMap<FixedArray<float, 2, 3>>> raw_frames;
     std::string line;
@@ -54,16 +55,16 @@ BvhLoader::BvhLoader(
             if (Mlib::re::regex_match(line, match, name_re)) {
                 joint_name = VariableAndHash{ match[2].str() };
                 if ((match[1].str() == "ROOT") != joint_stack.empty()) {
-                    THROW_OR_ABORT("Inconsistent ROOT hierarchy");
+                    throw std::runtime_error("Inconsistent ROOT hierarchy");
                 }
                 if (!joint_stack.empty() && !parents_.try_emplace(joint_name, joint_stack.back()).second)
                 {
-                    THROW_OR_ABORT("Parent of \"" + *joint_name + "\" already set");
+                    throw std::runtime_error("Parent of \"" + *joint_name + "\" already set");
                 }
                 joint_stack.push_back(joint_name);
             } else if (Mlib::re::regex_match(line, match, closing_re)) {
                 if (joint_stack.empty()) {
-                    THROW_OR_ABORT("Joint stack is empty despite \"}\"");
+                    throw std::runtime_error("Joint stack is empty despite \"}\"");
                 }
                 joint_stack.pop_back();
             } else if (Mlib::re::regex_match(line, match, ends_re)) {
@@ -77,14 +78,14 @@ BvhLoader::BvhLoader(
                         safe_stof(match[2].str()),
                         safe_stof(match[3].str())).second)
                     {
-                        THROW_OR_ABORT("Could not insert offset for joint " + *joint_name);
+                        throw std::runtime_error("Could not insert offset for joint " + *joint_name);
                     }
                 }
             } else if (Mlib::re::regex_match(line, match, chan_re)) {
                 size_t nchannels = safe_stoz(match[1].str());
                 auto channels = string_to_vector(match[2].str());
                 if (channels.size() != nchannels) {
-                    THROW_OR_ABORT("Channel number mismatch");
+                    throw std::runtime_error("Channel number mismatch");
                 }
                 for (const auto& c : channels) {
                     size_t cid0 = SIZE_MAX;
@@ -108,7 +109,7 @@ BvhLoader::BvhLoader(
                         cid0 = 1;
                         cid1 = 2;
                     } else {
-                        THROW_OR_ABORT("Unknown channel type");
+                        throw std::runtime_error("Unknown channel type");
                     }
                     columns_.push_back(ColumnDescription{.joint_name = joint_name, .pose_index0 = cid0, .pose_index1 = cid1});
                 }
@@ -116,18 +117,18 @@ BvhLoader::BvhLoader(
                 static const DECLARE_REGEX(frames_re, "^\\s*Frames:\\s*(\\d+)\\s*");
                 static const DECLARE_REGEX(frame_time_re, "^\\s*Frame Time:\\s*(\\S+)\\s*");
                 if (!std::getline(*file, line)) {
-                    THROW_OR_ABORT("Could not get line");
+                    throw std::runtime_error("Could not get line");
                 }
                 if (!Mlib::re::regex_match(line, match, frames_re)) {
-                    THROW_OR_ABORT("Could not match frames: \"" + line + '"');
+                    throw std::runtime_error("Could not match frames: \"" + line + '"');
                 }
                 nframes = safe_stoz(match[1].str());
                 raw_frames.reserve(nframes);
                 if (!std::getline(*file, line)) {
-                    THROW_OR_ABORT("Could not get line");
+                    throw std::runtime_error("Could not get line");
                 }
                 if (!Mlib::re::regex_match(line, match, frame_time_re)) {
-                    THROW_OR_ABORT("Could not match frame time: \"" + line + '"');
+                    throw std::runtime_error("Could not match frame time: \"" + line + '"');
                 }
                 frame_time_ = safe_stof(match[1].str()) * seconds;
                 in_data_section = true;
@@ -135,16 +136,16 @@ BvhLoader::BvhLoader(
         } else {
             std::vector<float> d = string_to_vector(line, safe_stof);
             if (d.size() != columns_.size()) {
-                THROW_OR_ABORT(
+                throw std::runtime_error(
                     "Invalid data length. Expected " + std::to_string(columns_.size()) +
                     ", received " + std::to_string(d.size()) +
                     ": " + line);
             }
             if (nframes == SIZE_MAX) {
-                THROW_OR_ABORT("In data section without nframes");
+                throw std::runtime_error("In data section without nframes");
             }
             if (raw_frames.size() == nframes) {
-                THROW_OR_ABORT("Too many frames in BVH file");
+                throw std::runtime_error("Too many frames in BVH file");
             }
             auto& frame = raw_frames.emplace_back("BVH frame");
             for (const auto& [joint_name, offset] : offsets_) {
@@ -157,23 +158,23 @@ BvhLoader::BvhLoader(
             }
             for (const auto& [n, v] : frame) {
                 if (any(isnan(v))) {
-                    THROW_OR_ABORT("Detected NAN value in joint \"" + *n + '"');
+                    throw std::runtime_error("Detected NAN value in joint \"" + *n + '"');
                 }
             }
         }
     }
     if (!joint_stack.empty()) {
-        THROW_OR_ABORT("Joint stack not empty");
+        throw std::runtime_error("Joint stack not empty");
     }
     if (nframes == SIZE_MAX) {
-        THROW_OR_ABORT("nframes undefined");
+        throw std::runtime_error("nframes undefined");
     }
     if (raw_frames.size() != nframes) {
-        THROW_OR_ABORT("Too few frames in BVH file");
+        throw std::runtime_error("Too few frames in BVH file");
     }
     if (cfg_.demean) {
         if (columns_.empty()) {
-            THROW_OR_ABORT("Columns list is empty");
+            throw std::runtime_error("Columns list is empty");
         }
         FixedArray<float, 3> center(0.f);
         for (const auto& f : raw_frames) {
@@ -185,7 +186,7 @@ BvhLoader::BvhLoader(
         }
     }
     if (std::isnan(frame_time_)) {
-        THROW_OR_ABORT("Frame time not set");
+        throw std::runtime_error("Frame time not set");
     }
     transformed_frames_.reserve(raw_frames.size() + (cfg.periodic && !raw_frames.empty()));
     for (size_t i = 0; i < raw_frames.size(); ++i) {
@@ -203,7 +204,7 @@ BvhLoader::BvhLoader(
                 joint_name,
                 dot2d(n, dot2d(m, n.T()))).second)
             {
-                THROW_OR_ABORT("Could not insert transformed frame");
+                throw std::runtime_error("Could not insert transformed frame");
             }
         }
     }
@@ -212,27 +213,27 @@ BvhLoader::BvhLoader(
     }
     smoothen();
     if (!file->eof() && file->fail()) {
-        THROW_OR_ABORT("Error reading from file: \"" + filename + '"');
+        throw std::runtime_error("Error reading from file: \"" + filename + '"');
     }
 }
 
 const StringWithHashUnorderedMap<OffsetAndQuaternion<float, float>>& BvhLoader::get_frame(size_t id) const {
     if (id >= transformed_frames_.size()) {
-        THROW_OR_ABORT("Frame index too large");
+        throw std::runtime_error("Frame index too large");
     }
     return transformed_frames_[id];
 }
 
 StringWithHashUnorderedMap<OffsetAndQuaternion<float, float>> BvhLoader::get_relative_interpolated_frame(float time) const {
     if (transformed_frames_.empty()) {
-        THROW_OR_ABORT("No frames to interpolate from");
+        throw std::runtime_error("No frames to interpolate from");
     }
     float i = time / frame_time_;
     i = std::clamp(i, float{0}, float(transformed_frames_.size() - 1));
     auto i0 = size_t(i);
     auto i1 = i0 + 1;
     if (i1 > transformed_frames_.size()) {
-        THROW_OR_ABORT("Frame interpolation internal error");
+        throw std::runtime_error("Frame interpolation internal error");
     }
     if (i1 == transformed_frames_.size()) {
         --i1;
@@ -269,7 +270,7 @@ void BvhLoader::compute_absolute_transformation(
             for (const auto& [n, p] : parents_) {
                 lerr() << *n << " -> " << *p;
             }
-            THROW_OR_ABORT("Recursion depth exceeded, probably loop in parents mapping");
+            throw std::runtime_error("Recursion depth exceeded, probably loop in parents mapping");
         }
         compute_absolute_transformation(
             *it,
@@ -301,7 +302,7 @@ void BvhLoader::smoothen() {
         return;
     }
     if (!cfg_.periodic) {
-        THROW_OR_ABORT("Aperiodic smoothing not implemented");
+        throw std::runtime_error("Aperiodic smoothing not implemented");
     }
     std::vector<StringWithHashUnorderedMap<OffsetAndQuaternion<float, float>>>
         smoothed_transformed_frames;
@@ -338,7 +339,7 @@ void BvhLoader::smoothen() {
 
 float BvhLoader::duration() const {
     if (transformed_frames_.size() < 2) {
-        THROW_OR_ABORT("Computation of animation duration requires at least two frames");
+        throw std::runtime_error("Computation of animation duration requires at least two frames");
     }
     return frame_time_ * float(transformed_frames_.size() - 1);
 }

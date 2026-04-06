@@ -1,17 +1,17 @@
 #include "Single_Waypoint.hpp"
-#include <Mlib/Env.hpp>
 #include <Mlib/Geometry/Graph/Point_And_Flags.hpp>
 #include <Mlib/Images/Svg.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
+#include <Mlib/Os/Env.hpp>
 #include <Mlib/Physics/Ai/Ai_Waypoint.hpp>
 #include <Mlib/Physics/Ai/IVehicle_Ai.hpp>
 #include <Mlib/Physics/Physics_Engine/Beacons.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Players/Advance_Times/Player.hpp>
 #include <Mlib/Players/Scene_Vehicle/Scene_Vehicle.hpp>
-#include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
 #include <Mlib/Scene_Graph/Way_Point_Location.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
+#include <Mlib/Threads/Throwing_Lock_Guard.hpp>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -77,7 +77,7 @@ void SingleWaypoint::move_to_waypoint(
             add_beacon(Beacon::create(funpack(w.position), BEACON));
         }
     }
-    player_->delete_node_mutex_.assert_this_thread_is_deleter_thread();
+    ThrowingLockGuard delete_lock{player_->delete_node_mutex_};
     if (!player_->has_scene_vehicle()) {
         return;
     }
@@ -118,11 +118,11 @@ void SingleWaypoint::notify_spawn() {
 
 void SingleWaypoint::draw_waypoint_history(const std::string& filename) const {
     if (max_waypoint_history_length_ == 0) {
-        THROW_OR_ABORT("draw_waypoint_history but recording is not enabled");
+        throw std::runtime_error("draw_waypoint_history but recording is not enabled");
     }
     std::ofstream ofstr{filename};
     if (ofstr.fail()) {
-        THROW_OR_ABORT("Could not open \"" + filename + "\" for write");
+        throw std::runtime_error("Could not open \"" + filename + "\" for write");
     }
     Svg<ScenePos> svg{ ofstr, 600, 600 };
     std::vector<CompressedScenePos> x;
@@ -139,7 +139,7 @@ void SingleWaypoint::draw_waypoint_history(const std::string& filename) const {
     svg.finish();
     ofstr.flush();
     if (ofstr.fail()) {
-        THROW_OR_ABORT("Could not write to file \"" + filename + '"');
+        throw std::runtime_error("Could not write to file \"" + filename + '"');
     }
 }
 
@@ -153,7 +153,7 @@ bool SingleWaypoint::waypoint_reached() const {
 
 const SingleWaypoint::WayPoint& SingleWaypoint::get_waypoint() const {
     if (!has_waypoint()) {
-        THROW_OR_ABORT("Waypoint not defined");
+        throw std::runtime_error("Waypoint not defined");
     }
     if (!waypoint_.has_value()) {
         verbose_abort("Internal error in SingleWaypoint::get_waypoint");
@@ -175,7 +175,7 @@ size_t SingleWaypoint::previous_waypoint_id() const {
 
 std::chrono::steady_clock::time_point SingleWaypoint::last_visited(size_t waypoint_id) const {
     if (waypoint_id >= last_visited_.size()) {
-        THROW_OR_ABORT("Waypoint ID too large");
+        throw std::runtime_error("Waypoint ID too large");
     }
     return last_visited_.at(waypoint_id);
 }

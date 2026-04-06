@@ -1,3 +1,4 @@
+
 #include "Compound_Resource.hpp"
 #include <Mlib/Geometry/Graph/Point_And_Flags.hpp>
 #include <Mlib/Geometry/Graph/Points_And_Adjacency.hpp>
@@ -7,6 +8,7 @@
 #include <Mlib/Geometry/Mesh/Animated_Colored_Vertex_Arrays.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array_Filter.hpp>
 #include <Mlib/Geometry/Mesh/Typed_Mesh.hpp>
+#include <Mlib/Hashing/Variable_And_Hash.hpp>
 #include <Mlib/Iterator/Enumerate.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
 #include <Mlib/Scene_Graph/Instantiation/Child_Instantiation_Options.hpp>
@@ -17,9 +19,8 @@
 #include <Mlib/Scene_Graph/Spawn_Point.hpp>
 #include <Mlib/Threads/Recursion_Guard.hpp>
 #include <Mlib/Threads/Thread_Local.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
-#include <Mlib/Variable_And_Hash.hpp>
 #include <mutex>
+#include <stdexcept>
 #include <unordered_set>
 
 using namespace Mlib;
@@ -27,7 +28,8 @@ using namespace Mlib;
 CompoundResource::CompoundResource(
     SceneNodeResources& scene_node_resources,
     std::vector<VariableAndHash<std::string>> resource_names)
-    : scene_node_resources_{ scene_node_resources }
+    : ISceneNodeResource{"CompoundResource"}
+    , scene_node_resources_{ scene_node_resources }
     , resource_names_{ std::move(resource_names) }
 {}
 
@@ -80,7 +82,7 @@ TransformationMatrix<double, double, 3> CompoundResource::get_geographic_mapping
     const TransformationMatrix<double, double, 3>& absolute_model_matrix) const
 {
     if (resource_names_.empty()) {
-        THROW_OR_ABORT("Compound resource is empty");
+        throw std::runtime_error("Compound resource is empty");
     }
     static THREAD_LOCAL(RecursionCounter) recursion_counter = RecursionCounter{};
     RecursionGuard rg{ recursion_counter };
@@ -93,7 +95,7 @@ AggregateMode CompoundResource::get_aggregate_mode() const {
         result.insert(scene_node_resources_.aggregate_mode(resource_name));
     }
     if (result.size() != 1) {
-        THROW_OR_ABORT("Could not determine unique aggregate mode");
+        throw std::runtime_error("Could not determine unique aggregate mode");
     }
     return *result.begin();
 }

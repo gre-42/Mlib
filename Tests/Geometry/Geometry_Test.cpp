@@ -1,53 +1,46 @@
-#include <Mlib/Assert.hpp>
-#include <Mlib/Floating_Point_Exceptions.hpp>
 #include <Mlib/Geometry/Cameras/Frustum_Camera.hpp>
 #include <Mlib/Geometry/Coordinates/Coordinate_Conversion.hpp>
 #include <Mlib/Geometry/Coordinates/Cv_Look_At.hpp>
 #include <Mlib/Geometry/Coordinates/Homogeneous.hpp>
-#include <Mlib/Geometry/Cross.hpp>
 #include <Mlib/Geometry/Fixed_Cross.hpp>
 #include <Mlib/Geometry/Graph/Cluster_By_Flood_Fill.hpp>
 #include <Mlib/Geometry/Graph/Point_And_Flags.hpp>
 #include <Mlib/Geometry/Graph/Points_And_Adjacency.hpp>
 #include <Mlib/Geometry/Graph/Points_And_Adjacency_Impl.hpp>
 #include <Mlib/Geometry/Graph/Shortest_Path_Multiple_Targets.hpp>
-#include <Mlib/Geometry/Intersection/Bvh.hpp>
-#include <Mlib/Geometry/Intersection/Bvh_Grid.hpp>
-#include <Mlib/Geometry/Intersection/Caching_Bvh.hpp>
-#include <Mlib/Geometry/Intersection/Distance/Distange_Polygon_Aabb.hpp>
-#include <Mlib/Geometry/Intersection/Frustum3.hpp>
-#include <Mlib/Geometry/Intersection/Intersect_Lines.hpp>
-#include <Mlib/Geometry/Intersection/Intersectors/Ray_Segment_3D_For_Aabb.hpp>
-#include <Mlib/Geometry/Intersection/Octree.hpp>
-#include <Mlib/Geometry/Intersection/Point_Triangle_Intersection.hpp>
-#include <Mlib/Geometry/Intersection/Ray_Sphere_Intersection.hpp>
-#include <Mlib/Geometry/Intersection/Welzl.hpp>
 #include <Mlib/Geometry/Mesh/Contour.hpp>
 #include <Mlib/Geometry/Mesh/Contour_Detection_Strategy.hpp>
 #include <Mlib/Geometry/Mesh/Interpolated_Intermediate_Points_Creator.hpp>
-#include <Mlib/Geometry/Mesh/Lines_To_Rectangles.hpp>
 #include <Mlib/Geometry/Mesh/Load/Load_Mesh_Config.hpp>
 #include <Mlib/Geometry/Mesh/Load/Load_Obj.hpp>
 #include <Mlib/Geometry/Mesh/Modifiers/Height_Contours.hpp>
-#include <Mlib/Geometry/Mesh/Quad_Area.hpp>
 #include <Mlib/Geometry/Mesh/Save_Obj.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_Area.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_Largest_Cosine.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_List.hpp>
-#include <Mlib/Geometry/Mesh/Triangulate_3D.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>
-#include <Mlib/Geometry/Polygon_3D.hpp>
-#include <Mlib/Geometry/Ray_Segment_3D.hpp>
-#include <Mlib/Geometry/Roundness_Estimator.hpp>
+#include <Mlib/Geometry/Primitives/Bvh.hpp>
+#include <Mlib/Geometry/Primitives/Bvh_Grid.hpp>
+#include <Mlib/Geometry/Primitives/Distance/Distange_Polygon_Aabb.hpp>
+#include <Mlib/Geometry/Primitives/Frustum3.hpp>
+#include <Mlib/Geometry/Primitives/Intersect_Lines.hpp>
+#include <Mlib/Geometry/Primitives/Intersectors/Ray_Segment_3D_For_Aabb.hpp>
+#include <Mlib/Geometry/Primitives/Lines_To_Rectangles.hpp>
+#include <Mlib/Geometry/Primitives/Point_Triangle_Intersection.hpp>
+#include <Mlib/Geometry/Primitives/Polygon_3D.hpp>
+#include <Mlib/Geometry/Primitives/Ray_Segment_3D.hpp>
+#include <Mlib/Geometry/Primitives/Ray_Sphere_Intersection.hpp>
 #include <Mlib/Geometry/Triangle_Is_Right_Handed.hpp>
+#include <Mlib/Geometry/Welzl.hpp>
 #include <Mlib/Images/Svg.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Math/Fixed_Test.hpp>
 #include <Mlib/Math/Fixed_Test.hpp>
 #include <Mlib/Math/Orderable_Fixed_Array.hpp>
-#include <Mlib/Math/Rodrigues.hpp>
+#include <Mlib/Misc/Floating_Point_Exceptions.hpp>
 #include <Mlib/Stats/Random_Arrays.hpp>
+#include <Mlib/Testing/Assert.hpp>
 #include <poly2tri/poly2tri.h>
 
 using namespace Mlib;
@@ -69,44 +62,7 @@ void test_special_tait_bryan_angles() {
         R);
 }
 
-void test_inverse_tait_bryan_angles() {
-    Array<float> kep = uniform_random_array<float>(ArrayShape{3}, 1);
-    assert_allclose(kep, matrix_2_tait_bryan_angles(tait_bryan_angles_2_matrix(kep)));
-    assert_allclose(
-        Array<float>{kep(0), kep(1), 0},
-        matrix_2_tait_bryan_angles(
-            tait_bryan_angles_2_matrix(Array<float>{kep(0), kep(1), 0}),
-            true));  // true == force_singular
-}
-
-void test_tait_bryan_angles_2_matrix() {
-    {
-        Array<float> r = tait_bryan_angles_2_matrix(Array<float>{0.f, 0.f, 0.f});
-        assert_allclose(r, identity_array<float>(3));
-        assert_allclose(outer(r, r), identity_array<float>(3));
-    }
-
-    {
-        Array<float> r = tait_bryan_angles_2_matrix(Array<float>{1.f, 0.f, 0.f});
-        assert_allclose(outer(r, r), identity_array<float>(3));
-        assert_allclose(dot(r.T(), r), identity_array<float>(3));
-    }
-
-    {
-        Array<float> r = tait_bryan_angles_2_matrix(Array<float>{0.1f, 0.2f, 0.3f});
-        assert_allclose(outer(r, r), identity_array<float>(3));
-        assert_allclose(dot(r.T(), r), identity_array<float>(3));
-    }
-}
-
 void test_rodrigues_fixed() {
-    {
-        Array<float> k = uniform_random_array<float>(ArrayShape{3}, 1);
-        auto kf = FixedArray<float, 3>{k};
-        FixedArray<float, 3, 3> rf = rodrigues1(kf);
-        Array<float> r = rodrigues1(k);
-        assert_allclose(r, rf.to_array());
-    }
     {
         FixedArray<float, 3> k{1e-7f, 1e-6f, 1e-5f};
         linfo() << rodrigues1(k, true, 0.f);
@@ -118,8 +74,6 @@ void test_fixed_tait_bryan_angles_2_matrix() {
     Array<float> k = uniform_random_array<float>(ArrayShape{3}, 1);
     auto kf = FixedArray<float, 3>{k};
     auto rf = tait_bryan_angles_2_matrix(kf);
-    auto r = tait_bryan_angles_2_matrix(k);
-    assert_allclose(r, rf.to_array());
 
     assert_allclose(k, matrix_2_tait_bryan_angles(rf).to_array());
     kf(2) = 0;
@@ -157,12 +111,6 @@ void test_quad_area() {
     FixedArray<float, 3> d{-3.f, -5.f, 0.f};
     assert_isclose(triangle_area(a, b, c), 0.5f);
     assert_isclose(triangle_area(a, c, d), 17.f);
-    assert_isclose(quad_area(a, b, c, d), 17.5f);
-    assert_isclose(quad_area(
-        a.row_range<0, 2>(),
-        b.row_range<0, 2>(),
-        c.row_range<0, 2>(),
-        d.row_range<0, 2>()), 17.5f);
 }
 
 void test_contour() {
@@ -334,22 +282,6 @@ void test_bvh() {
         assert_isequal(*result[0].second, 43);
         assert_isequal(*result[4].second, 46);
     }
-    CachingBvh cvh{ bvh, Cache<BvhCacheElement<AABB, AabbAndPayload<float, 3, Payload>>>{ 100 } };
-    cvh.visit(
-        AABB::from_min_max({1.f, 2.f, 3.f}, {2.f, 3.f, 4.f}),
-        AABB::from_min_max({1.f, 2.f, 3.f}, {2.f, 3.f, 4.f}),
-        [](const auto& d) {
-            linfo() << d;
-            return true;
-        });
-    CachingAabbBvh<float, 3, Payload> cvh2{ bvh, 100 };
-    cvh2.visit(
-        AABB::from_min_max({1.f, 2.f, 3.f}, {2.f, 3.f, 4.f}),
-        AABB::from_min_max({1.f, 2.f, 3.f}, {2.f, 3.f, 4.f}),
-        [](const auto& d) {
-            linfo() << d;
-            return true;
-        });
 }
 
 void test_bvh_performance() {
@@ -449,30 +381,6 @@ void test_ray_segment_intersects_aabb() {
     ray.intersects(AABB::from_min_max({1.f, 2.f, 3.f}, {2.f, 3.f, 4.f}));
 }
 
-void test_roundness_estimator() {
-    RoundnessEstimator rm;
-    rm.add_direction({0.f, 1.f});
-    assert_isclose(rm.roundness(), 0.f);
-    rm.add_direction({0.f, -1.f});
-    assert_isclose(rm.roundness(), 0.f);
-    rm.add_direction({1.f, 0.f});
-    assert_isclose(rm.roundness(), 4 * 0.2222222222f);
-    rm.add_direction({-1.f, 0.f});
-    assert_isclose(rm.roundness(), 4 * 0.25f);
-
-    rm.add_direction({0.f, 1.f});
-    assert_isclose(rm.roundness(), 4 * 0.24f);
-    rm.add_direction({0.f, -1.f});
-    assert_isclose(rm.roundness(), 4 * 0.2222222222f);
-    rm.add_direction({1.f, 0.f});
-    assert_isclose(rm.roundness(), 4 * 0.244898f);
-    rm.add_direction({-1.f, 0.f});
-    assert_isclose(rm.roundness(), 4 * 0.25f);
-
-    rm.add_direction({-2.f, 2.1f});
-    assert_isclose(rm.roundness(), 0.737352f);
-}
-
 // void test_smoothen_edges() {
 //     std::list<std::shared_ptr<TriangleList>> triangle_lists;
 //     triangle_lists.push_back(std::make_shared<TriangleList>("", Material{}));
@@ -496,29 +404,6 @@ void test_distance_point_triangle() {
     assert_isclose(distance_point_to_triangle<float>({ 0.5f, 0.2f }, { V{0.f, 0.f}, V{1.f, 0.f}, V{1.f, 1.f} }), 0.f);
 }
 
-void test_triangulate_3d_1() {
-    const Array<TransformationMatrix<float, float, 3>> points{
-        TransformationMatrix<float, float, 3>{fixed_identity_array<float, 3>(), FixedArray<float, 3>{0.f, 0.f, 0.f}},
-        TransformationMatrix<float, float, 3>{fixed_identity_array<float, 3>(), FixedArray<float, 3>{1.f, 0.f, 0.f}},
-        TransformationMatrix<float, float, 3>{fixed_identity_array<float, 3>(), FixedArray<float, 3>{1.f, 1.f, 0.f}}
-    };
-
-    Array<FixedArray<float, 3, 3>> mesh = triangulate_3d(
-        points,
-        10.f,   // boundary_radius
-        0.1f,   // z_thickness
-        0.1f);  // cos_min_angle
-
-    assert_allequal(
-        Array<float>{ mesh },
-        Array<float>{ Array<FixedArray<float, 3>>{
-            Array<FixedArray<FixedArray<float, 3>, 3>>{
-                FixedArray<FixedArray<float, 3>, 3>{
-                    FixedArray<float, 3>{0.f, 0.f, 0.f},
-                    FixedArray<float, 3>{1.f, 0.f, 0.f},
-                    FixedArray<float, 3>{1.f, 1.f, 0.f}}}}});
-}
-
 TransformationMatrix<float, float, 3> generate_point_observation(const FixedArray<float, 3>& pos) {
     return opengl_to_cv_extrinsic_matrix(
         TransformationMatrix<float, float, 3>{
@@ -527,34 +412,6 @@ TransformationMatrix<float, float, 3> generate_point_observation(const FixedArra
                 cv_to_opengl_coordinates(pos),
                 cv_to_opengl_coordinates({0.f, 1.f, 0.f})).value(),
             cv_to_opengl_coordinates(pos) });
-}
-
-void test_triangulate_3d_2() {
-    const Array<TransformationMatrix<float, float, 3>> points{
-        generate_point_observation({0.f, 0.f, -1.f}),
-        generate_point_observation({0.f, 0.f, 0.f}),
-        generate_point_observation({1.f, 0.f, 0.f}),
-        generate_point_observation({1.f, 1.f, 0.f})
-    };
-
-    Array<FixedArray<float, 3, 3>> mesh = triangulate_3d(
-        points,
-        1.f,    // boundary_radius
-        10.f,   // z_thickness
-        -10.f); // cos_min_angle
-
-    assert_allequal(
-        Array<float>{ mesh },
-        Array<float>{ Array<FixedArray<float, 3>>{
-            Array<FixedArray<FixedArray<float, 3>, 3>>{
-                FixedArray<FixedArray<float, 3>, 3>{
-                    FixedArray<float, 3>{1.f, 0.f, 0.f},
-                    FixedArray<float, 3>{0.f, 0.f, 0.f},
-                    FixedArray<float, 3>{0.f, 0.f, -1.f}},
-                FixedArray<FixedArray<float, 3>, 3>{
-                    FixedArray<float, 3>{1.f, 0.f, 0.f},
-                    FixedArray<float, 3>{1.f, 1.f, 0.f},
-                    FixedArray<float, 3>{0.f, 0.f, 0.f}}}}});
 }
 
 void test_smallest_angle_in_triangle() {
@@ -777,7 +634,7 @@ void test_plane_shift() {
         auto plane2 = plane + p;
         auto plane3 = plane2 - p;
         if (plane3 != plane) {
-            THROW_OR_ABORT("Plane roundtrip error");
+            throw std::runtime_error("Plane roundtrip error");
         }
     }
 }
@@ -862,8 +719,6 @@ int main(int argc, const char** argv) {
         test_touching_holes();
 
         test_special_tait_bryan_angles();
-        test_tait_bryan_angles_2_matrix();
-        test_inverse_tait_bryan_angles();
         test_rodrigues_fixed();
         test_fixed_tait_bryan_angles_2_matrix();
 
@@ -881,13 +736,8 @@ int main(int argc, const char** argv) {
         // test_bvh_performance();
         test_interesection_grid();
         test_ray_segment_intersects_aabb();
-        test_roundness_estimator();
         // test_smoothen_edges();
         test_distance_point_triangle();
-    #ifndef WITHOUT_TRIANGLE
-        test_triangulate_3d_1();
-        test_triangulate_3d_2();
-    #endif
         test_smallest_angle_in_triangle();
         test_rotate_intrinsic_matrix();
         // test_subdivide_points_and_adjacency();

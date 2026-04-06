@@ -34,7 +34,7 @@ void Mlib::apply_displacement_map(
                 uv(1) -= std::floor(uv(1));
                 double displacement;
                 if (!bilinear_grayscale_interpolation(uv(1) * double(displacementmap.shape(0) - 1), uv(0) * double(displacementmap.shape(1) - 1), displacementmap, displacement)) {
-                    THROW_OR_ABORT("Unexpected bilinear interpolation failure");
+                    throw std::runtime_error("Unexpected bilinear interpolation failure");
                 }
                 auto pt = FixedArray<CompressedScenePos, 2>{ v.position(0), v.position(1) };
                 auto max_dist = (CompressedScenePos)(scale * distance_2_z_scale.xmax());
@@ -46,7 +46,7 @@ void Mlib::apply_displacement_map(
                 v.position += d;
                 if (auto it = displacements.try_emplace(make_orderable(pt), v.position); !it.second) {
                     if (any(v.position != it.first->second)) {
-                        THROW_OR_ABORT((std::stringstream() << "Conflicting displacements (0): " << it.first->second << " | " << v.position).str());
+                        throw std::runtime_error((std::stringstream() << "Conflicting displacements (0): " << it.first->second << " | " << v.position).str());
                     }
                 }
                 auto bit = vertex_instances_map.extract(make_orderable(pt));

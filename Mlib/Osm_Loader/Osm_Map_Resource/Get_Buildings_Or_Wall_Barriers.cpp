@@ -1,4 +1,5 @@
 #include "Get_Buildings_Or_Wall_Barriers.hpp"
+#include <Mlib/Misc/FPath.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Building.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Compute_Area.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Contour_Is_Ok.hpp>
@@ -9,8 +10,8 @@
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Osm_Map_Resource_Helpers.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Socle_Texture.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Vertical_Subdivision.hpp>
-#include <Mlib/Strings/To_Number.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
+#include <Mlib/Strings/String_View_To_Number.hpp>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -69,7 +70,7 @@ std::list<Building> Mlib::get_buildings_or_wall_barriers(
             case BuildingType::SPAWN_LINE:
                 break;
             default:
-                THROW_OR_ABORT("Unknown building type");
+                throw std::runtime_error("Unknown building type");
         }
         float building_top = default_building_top;
         building_top = parse_meters(w.tags, "height", building_top);
@@ -140,10 +141,10 @@ std::list<Building> Mlib::get_buildings_or_wall_barriers(
             float roof_height = parse_meters(w.tags, "3dr:height1", NAN);
             float roof_angle = parse_radians(w.tags, "3dr:alpha", NAN);
             if (std::isnan(roof_height)) {
-                THROW_OR_ABORT("3dr:type=9.2 requires 3dr:height1");
+                throw std::runtime_error("3dr:type=9.2 requires 3dr:height1");
             }
             if (std::isnan(roof_angle)) {
-                THROW_OR_ABORT("3dr:type=9.2 requires 3dr:alpha");
+                throw std::runtime_error("3dr:type=9.2 requires 3dr:alpha");
             }
             roof_9_2 = Roof9_2{
                 .width = (std::abs(roof_angle - float(M_PI / 2.)) < float(1e-3))
@@ -164,7 +165,7 @@ std::list<Building> Mlib::get_buildings_or_wall_barriers(
         };
         if (any(vertical_subdivision & VerticalSubdivision::ANY_SOCLE)) {
             if (socle_textures.empty()) {
-                THROW_OR_ABORT("Socle textures empty");
+                throw std::runtime_error("Socle textures empty");
             }
             const auto& st = socle_textures.at(bid % socle_textures.size());
             add_level(
@@ -199,10 +200,10 @@ std::list<Building> Mlib::get_buildings_or_wall_barriers(
             float last_height = -INFINITY;
             for (const auto& l : levels) {
                 if (l.bottom < last_height) {
-                    THROW_OR_ABORT("Inconsistent building height. ID: \"" + id + '"');
+                    throw std::runtime_error("Inconsistent building height. ID: \"" + id + '"');
                 }
                 if (l.top <= l.bottom) {
-                    THROW_OR_ABORT("Building level has no positive height. ID: \"" + id + '"');
+                    throw std::runtime_error("Building level has no positive height. ID: \"" + id + '"');
                 }
                 last_height = l.top;
             }

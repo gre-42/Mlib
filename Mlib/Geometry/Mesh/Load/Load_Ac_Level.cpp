@@ -1,3 +1,4 @@
+
 #include "Load_Ac_Level.hpp"
 #include <Mlib/Geometry/Interfaces/IDds_Resources.hpp>
 #include <Mlib/Geometry/Material/Texture_Descriptor.hpp>
@@ -5,8 +6,8 @@
 #include <Mlib/Json/Misc.hpp>
 #include <Mlib/Macro_Executor/Replacement_Parameter.hpp>
 #include <Mlib/Os/Os.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
 #include <filesystem>
+#include <stdexcept>
 
 namespace fs = std::filesystem;
 using namespace Mlib;
@@ -31,11 +32,11 @@ std::list<ReplacementParameterAndFilename> LoadAcLevel::try_load(const std::stri
         {
             auto f = create_ifstream(ui_track_filename);
             if (f->fail()) {
-                THROW_OR_ABORT("Could not open file \"" + ui_track_filename.string() + '"');
+                throw std::runtime_error("Could not open file \"" + ui_track_filename.string() + '"');
             }
             *f >> j;
             if (f->fail()) {
-                THROW_OR_ABORT("Could not read from file \"" + ui_track_filename.string() + '"');
+                throw std::runtime_error("Could not read from file \"" + ui_track_filename.string() + '"');
             }
         }
         IniParser ini_parser{ minimap_ini_filename.string() };
@@ -48,7 +49,7 @@ std::list<ReplacementParameterAndFilename> LoadAcLevel::try_load(const std::stri
         // if (!fs::exists(minimap_filename)) {
         //     minimap_comp = 0;
         // } else if (stbi_info(minimap_filename.string().c_str(), &minimap_x, &minimap_y, &minimap_comp) == 0) {
-        //     THROW_OR_ABORT("Could not read size information from file \"" + minimap_filename.string() + '"');
+        //     throw std::runtime_error("Could not read size information from file \"" + minimap_filename.string() + '"');
         // }
         FixedArray<float, 2> minimap_size{
             ini_parser.get<float>("PARAMETERS", "WIDTH"),
@@ -78,14 +79,14 @@ std::list<ReplacementParameterAndFilename> LoadAcLevel::try_load(const std::stri
         {
             circular = true;
         } else {
-            THROW_OR_ABORT("Unknown \"run\" parameter in file \"" + preview_filename.string() + "\": " + run);
+            throw std::runtime_error("Unknown \"run\" parameter in file \"" + preview_filename.string() + "\": " + run);
         }
         auto globals = nlohmann::json{
             {"selected_level_id", level_id},
-            {"level_icon_file", preview_filename.string()},
-            {"stage_ini_filename", stage_filename.string()},
+            {"level_icon_file", "file://" + preview_filename.string()},
+            {"stage_ini_filename", "file://" + stage_filename.string()},
             {"minimap_file", any(minimap_size != 20.f) || any(minimap_offset != 20.f)
-                ? nlohmann::json(minimap_filename.string())
+                ? nlohmann::json("file://" + minimap_filename.string())
                 : nlohmann::json()},
             {"minimap_scale", ini_parser.get<float>("PARAMETERS", "SCALE_FACTOR")},
             {"minimap_size", minimap_size},
@@ -136,7 +137,7 @@ std::list<ReplacementParameterAndFilename> LoadAcLevel::try_load(const std::stri
                     }
                 }
                 if (kn5_candidates.size() != 1) {
-                    THROW_OR_ABORT("Did not find exactly one .kn5-file in \"" + level_dir.path().string() + '"');
+                    throw std::runtime_error("Did not find exactly one .kn5-file in \"" + level_dir.path().string() + '"');
                 }
                 add_level(
                     kn5_candidates.front(),

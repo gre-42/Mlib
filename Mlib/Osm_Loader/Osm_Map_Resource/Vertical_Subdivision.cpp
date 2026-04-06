@@ -1,7 +1,7 @@
 #include "Vertical_Subdivision.hpp"
 #include <Mlib/Strings/String.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
 #include <map>
+#include <stdexcept>
 
 using namespace std::string_view_literals;
 using namespace Mlib;
@@ -14,7 +14,7 @@ static VerticalSubdivision single_vertical_subdivision_from_string(const std::st
     };
     auto it = m.find(s);
     if (it == m.end()) {
-        THROW_OR_ABORT("Unknown vertical subdivision: \"" + s + '"');
+        throw std::runtime_error("Unknown vertical subdivision: \"" + s + '"');
     }
     return it->second;
 }

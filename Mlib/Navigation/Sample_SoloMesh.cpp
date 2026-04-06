@@ -17,8 +17,8 @@
 //
 
 #include "Sample_SoloMesh.hpp"
-#include <Mlib/Floating_Point_Exceptions.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
+#include <Mlib/Misc/Floating_Point_Exceptions.hpp>
 #include <Mlib/Navigation/InputGeom.hpp>
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wsign-conversion"

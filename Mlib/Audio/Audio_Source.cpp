@@ -1,3 +1,4 @@
+
 #include "Audio_Source.hpp"
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Audio/Audio_Buffer.hpp>
@@ -6,7 +7,7 @@
 #include <Mlib/Audio/Audio_Scene.hpp>
 #include <Mlib/Audio/CHK.hpp>
 #include <Mlib/Audio/OpenALSoft_efx.h>
-#include <Mlib/Geometry/Intersection/Interval.hpp>
+#include <Mlib/Geometry/Primitives/Interval.hpp>
 #include <Mlib/Physics/Units.hpp>
 
 using namespace Mlib;
@@ -46,10 +47,10 @@ void AudioSource::set_loop(bool value) {
 
 void AudioSource::set_gain(float value) {
     if (value < 0.f) {
-        THROW_OR_ABORT("Attempt to set negative audio gain");
+        throw std::runtime_error("Attempt to set negative audio gain");
     }
     if (value > 1.f) {
-        THROW_OR_ABORT("Attempt to set audio gain greater 1");
+        throw std::runtime_error("Attempt to set audio gain greater 1");
     }
     if (position_requirement_ != PositionRequirement::WAITING_FOR_POSITION) {
         if (!muted_) {
@@ -65,7 +66,7 @@ void AudioSource::set_pitch(float value) {
 
 void AudioSource::set_position(const AudioSourceState<float>& position) {
     if (nchannels_ != 1) {
-        THROW_OR_ABORT("Attempt to set position of an audio source with #channels != 1");
+        throw std::runtime_error("Attempt to set position of an audio source with #channels != 1");
     }
     AL_CHK(alSourcefv(source_, AL_POSITION, (position.position / meters).flat_begin()));
     AL_CHK(alSourcefv(source_, AL_VELOCITY, (position.velocity / (meters / seconds)).flat_begin()));

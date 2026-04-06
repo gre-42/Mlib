@@ -4,12 +4,13 @@
 #include <Mlib/Geometry/Coordinates/Homogeneous.hpp>
 #include <Mlib/Geometry/Coordinates/Rotate_Axis_Onto_Other_Axis.hpp>
 #include <Mlib/Geometry/Fixed_Cross.hpp>
+#include <Mlib/Iterator/Empty_Set_Intersection.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Math/Fixed_Scaled_Unit_Vector.hpp>
 #include <Mlib/Math/Pi.hpp>
 #include <Mlib/Math/Transformation/Quaternion.hpp>
-#include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
+#include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/Memory/Destruction_Functions_Removeal_Tokens_Ref.hpp>
 #include <Mlib/Memory/Object_Pool.hpp>
 #include <Mlib/Physics/Actuators/Base_Rotor.hpp>
@@ -29,7 +30,6 @@
 #include <Mlib/Physics/Interfaces/ISpawner.hpp>
 #include <Mlib/Physics/Interfaces/ISurface_Normal.hpp>
 #include <Mlib/Physics/Misc/Beacon.hpp>
-#include <Mlib/Physics/Physics_Engine/Physics_Engine_Config.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Time_Step.hpp>
 #include <Mlib/Physics/Rigid_Body/Actor_Task.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle_Flags.hpp>
@@ -39,12 +39,13 @@
 #include <Mlib/Physics/Vehicle_Controllers/Car_Controllers/Rigid_Body_Vehicle_Controller.hpp>
 #include <Mlib/Physics/Vehicle_Controllers/Missile_Controllers/Rigid_Body_Missile_Controller.hpp>
 #include <Mlib/Physics/Vehicle_Controllers/Plane_Controllers/Rigid_Body_Plane_Controller.hpp>
+#include <Mlib/Scene_Config/Physics_Engine_Config.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Instances/Static_World.hpp>
 #include <Mlib/Scene_Graph/Interfaces/ITrail_Extender.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
 #include <chrono>
+#include <stdexcept>
 
 enum class WheelVerticalConstraintType {
     SINGLE,
@@ -110,7 +111,7 @@ RigidBodyVehicle::RigidBodyVehicle(
     , damage_absorption_direction_{ fixed_zeros<float, 3>() }
 {
     if (name_.empty()) {
-        THROW_OR_ABORT("No name given for rigid body vehicle");
+        throw std::runtime_error("No name given for rigid body vehicle");
     }
     // lerr() << "Rigid body vehicle \"" << name_ << '"';
     // lerr() << "I [kg*m²]\n" << rbi.rbp_.I_ / (kg * squared(meters));
@@ -137,7 +138,7 @@ void RigidBodyVehicle::reset_forces(const PhysicsPhase& phase) {
         return;
     }
     if (is_deactivated_avatar()) {
-        THROW_OR_ABORT("Attempt to reset forces of deactivated avatar");
+        throw std::runtime_error("Attempt to reset forces of deactivated avatar");
     }
     for (auto& e : engines_) {
         e.second.reset_forces();
@@ -208,7 +209,7 @@ void RigidBodyVehicle::integrate_force(
     const PhysicsPhase& phase)
 {
     if (is_deactivated_avatar()) {
-        THROW_OR_ABORT("Attempt to integrate forces of deactivated avatar");
+        throw std::runtime_error("Attempt to integrate forces of deactivated avatar");
     }
     integrate_force(F, cfg, phase);
     if (damping != 0) {
@@ -228,7 +229,7 @@ void RigidBodyVehicle::collide_with_air(CollisionHistory& c)
         return;
     }
     if (is_deactivated_avatar()) {
-        THROW_OR_ABORT("Attempt to collide deactivated avatar with air");
+        throw std::runtime_error("Attempt to collide deactivated avatar with air");
     }
     for (auto& [rotor_id, rotor] : rotors_) {
         TirePowerIntent P = consume_rotor_surface_power(rotor_id);
@@ -243,20 +244,20 @@ void RigidBodyVehicle::collide_with_air(CollisionHistory& c)
                 c.phase);
         }
         set_rotor_angular_velocity(rotor_id, rotor->w, c.cfg, c.phase, P.power);
-        if (rotor->rbp != nullptr) {
-            rotor->rbp->w_ = rotor->angular_velocity * z3_from_3x3(rotor->rbp->rotation_);
+        if (rotor->rb != nullptr) {
+            rotor->rb->rbp_.w_ = rotor->angular_velocity * z3_from_3x3(rotor->rb->rbp_.rotation_);
             auto T0 = rbp_.abs_transformation();
-            auto T1 = rotor->rbp->abs_transformation();
+            auto T1 = rotor->rb->rbp_.abs_transformation();
             c.contact_infos.push_back(std::make_unique<PointContactInfo2>(
                 rbp_,
-                *rotor->rbp,
+                rotor->rb->rbp_,
                 PointEqualityConstraint{
                     .p0 = T0.transform(rotor->vehicle_mount_0.casted<ScenePos>()),
                     .p1 = T1.transform(rotor->blades_mount_0.casted<ScenePos>()),
                     .beta = c.cfg.point_equality_beta}));
             c.contact_infos.push_back(std::make_unique<PointContactInfo2>(
                 rbp_,
-                *rotor->rbp,
+                rotor->rb->rbp_,
                 PointEqualityConstraint{
                     .p0 = T0.transform(rotor->vehicle_mount_1.casted<ScenePos>()),
                     .p1 = T1.transform(rotor->blades_mount_1.casted<ScenePos>()),
@@ -301,7 +302,7 @@ void RigidBodyVehicle::collide_with_air(CollisionHistory& c)
     if (!std::isnan(fly_forward_state_.wants_to_fly_forward_factor_)) {
         auto dir = rbp_.rotation_.column(1);
         if ((c.world.gravity == nullptr) || (c.world.gravity->magnitude == 0.f)) {
-            THROW_OR_ABORT("collide_with_air without gravity");
+            throw std::runtime_error("collide_with_air without gravity");
         }
         dir -= dot0d(dir, c.world.gravity->direction) * c.world.gravity->direction;
         float l2 = sum(squared(dir));
@@ -317,11 +318,11 @@ void RigidBodyVehicle::collide_with_air(CollisionHistory& c)
         }
     }
     for (auto& [tire_id, tire] : tires_) {
-        if (tire.rbp == nullptr) {
+        if (tire.rb == nullptr) {
             continue;
         }
         auto T0 = rbp_.abs_transformation();
-        auto T1 = tire.rbp->abs_transformation();
+        auto T1 = tire.rb->rbp_.abs_transformation();
         auto abs_vehicle_mount_0 = T0.transform(tire.vehicle_mount_0.casted<ScenePos>());
         auto abs_vertical_linef = T0.rotate(tire.vertical_line);
         auto abs_vertical_line = abs_vertical_linef.casted<ScenePos>();
@@ -334,7 +335,7 @@ void RigidBodyVehicle::collide_with_air(CollisionHistory& c)
             {
                 c.contact_infos.push_back(std::make_unique<LineContactInfo2>(
                     rbp_,
-                    *tire.rbp,
+                    tire.rb->rbp_,
                     LineEqualityConstraint{
                         .pec = PointEqualityConstraint{
                             .p0 = abs_vehicle_mount_0,
@@ -367,7 +368,7 @@ void RigidBodyVehicle::collide_with_air(CollisionHistory& c)
                     auto p1 = T1.t + rod1 * dr;
                     c.contact_infos.push_back(std::make_unique<LineContactInfo2>(
                         rbp_,
-                        *tire.rbp,
+                        tire.rb->rbp_,
                         LineEqualityConstraint{
                             .pec = PointEqualityConstraint{
                                 .p0 = p0,
@@ -411,7 +412,7 @@ void RigidBodyVehicle::collide_with_air(CollisionHistory& c)
                 auto p0 = p1 - rod0 * dot0d(rod0, p1 - abs_vehicle_mount_0);
                 c.contact_infos.push_back(std::make_unique<PlaneContactInfo2>(
                     rbp_,
-                    *tire.rbp,
+                    tire.rb->rbp_,
                     BoundedPlaneEqualityConstraint{
                         PlaneEqualityConstraint{
                             .pec = PointEqualityConstraint{
@@ -428,19 +429,19 @@ void RigidBodyVehicle::collide_with_air(CollisionHistory& c)
         {
             auto ci = std::make_unique<ShockAbsorberContactInfo2>(
                 rbp_,
-                *tire.rbp,
+                tire.rb->rbp_,
                 BoundedShockAbsorberConstraint{
                     .constraint{
                         .normal_impulse{.normal = -abs_vertical_linef},
                         .fit = 1.f,
-                        .distance = dot0d((abs_vehicle_mount_0 - tire.rbp->abs_position()).casted<float>(), abs_vertical_linef),
+                        .distance = dot0d((abs_vehicle_mount_0 - tire.rb->rbp_.abs_position()).casted<float>(), abs_vertical_linef),
                         .Ks = tire.sKs,
                         .Ka = tire.sKa,
                         .exponent = tire.sKe
                     },
-                    .lambda_min = tire.rbp->mass_ * c.cfg.velocity_lambda_min,
-                    .lambda_max = -tire.rbp->mass_ * c.cfg.velocity_lambda_min },
-                tire.rbp->abs_position());
+                    .lambda_min = tire.rb->rbp_.mass_ * c.cfg.velocity_lambda_min,
+                    .lambda_max = -tire.rb->rbp_.mass_ * c.cfg.velocity_lambda_min },
+                tire.rb->rbp_.abs_position());
             tire.normal_impulse = &ci->normal_impulse();
             c.contact_infos.push_back(std::move(ci));
         }
@@ -466,7 +467,7 @@ void RigidBodyVehicle::advance_time_skate(
     // Align to surface
     if (grind_state_.grinding_) {
         if ((world.gravity == nullptr) || (world.gravity->magnitude == 0.f)) {
-            THROW_OR_ABORT("advance_time_skate without gravity");
+            throw std::runtime_error("advance_time_skate without gravity");
         }
         if (grind_state_.grind_axis_ == 0) {
             if (std::abs(grind_state_.grind_pv_(0)) > 1e-12) {
@@ -486,7 +487,7 @@ void RigidBodyVehicle::advance_time_skate(
             if (std::abs(grind_state_.grind_pv_(2)) > 1e-12) {
                 auto r1 = gl_lookat_relative(-sign(grind_state_.grind_pv_(2)) * grind_state_.grind_direction_, -world.gravity->direction);
                 if (!r1.has_value()) {
-                    THROW_OR_ABORT("Could not compute grind rotation");
+                    throw std::runtime_error("Could not compute grind rotation");
                 }
                 rbp_.rotation_ =
                     Quaternion<float>{ rbp_.rotation_ }
@@ -494,14 +495,14 @@ void RigidBodyVehicle::advance_time_skate(
                     .to_rotation_matrix();
             }
         } else {
-            THROW_OR_ABORT("Unknown grind axis");
+            throw std::runtime_error("Unknown grind axis");
         }
     } else {
         if ((align_to_surface_state_.align_to_surface_relaxation_ != 0) &&
             !all(Mlib::isnan(align_to_surface_state_.surface_normal_)))
         {
             if (!all(rbp_.w_ == 0.f)) {
-                THROW_OR_ABORT("Detected angular velocity despite alignment to surface normal. Forgot to set the rigid body's size to INFINITY?");
+                throw std::runtime_error("Detected angular velocity despite alignment to surface normal. Forgot to set the rigid body's size to INFINITY?");
             }
             rbp_.rotation_ = rotate_axis_onto_other_axis(
                 rbp_.rotation_,
@@ -517,10 +518,10 @@ void RigidBodyVehicle::finalize_collisions(CollisionHistory& c) {
         return;
     }
     if (is_deactivated_avatar()) {
-        THROW_OR_ABORT("Attempt to finalize collisions of deactivated avatar");
+        throw std::runtime_error("Attempt to finalize collisions of deactivated avatar");
     }
     for (auto& [tire_id, tire] : tires_) {
-        if (tire.rbp != nullptr) {
+        if (tire.rb != nullptr) {
             update_tire_angular_velocity(tire_id);
         }
     }
@@ -536,7 +537,7 @@ void RigidBodyVehicle::advance_time(
         return;
     }
     if (is_deactivated_avatar()) {
-        THROW_OR_ABORT("Attempt to move deactivated avatar");
+        throw std::runtime_error("Attempt to move deactivated avatar");
     }
     auto time_step = PhysicsTimeStep{
         .dt_step = cfg.dt,
@@ -547,8 +548,8 @@ void RigidBodyVehicle::advance_time(
     rbp_.advance_time(dt_substeps);
     for (auto& [_, t] : tires_) {
         t.advance_time(dt_substeps);
-        if (t.rbp != nullptr) {
-            auto rel_tire_pos = rbp_.abs_transformation().itransform(t.rbp->abs_position()).casted<float>();
+        if (t.rb != nullptr) {
+            auto rel_tire_pos = rbp_.abs_transformation().itransform(t.rb->rbp_.abs_position()).casted<float>();
             t.shock_absorber_position = dot0d(rel_tire_pos - t.vehicle_mount_0, t.vertical_line);
         }
     }
@@ -583,7 +584,7 @@ FixedArray<float, 3, 3> RigidBodyVehicle::abs_I() const {
 
 FixedArray<ScenePos, 3> RigidBodyVehicle::abs_grind_point() const {
     if (!grind_state_.grind_point_.has_value()) {
-        THROW_OR_ABORT("Grind point is not set");
+        throw std::runtime_error("Grind point is not set");
     }
     return rbp_.transform_to_world_coordinates(*grind_state_.grind_point_);
 }
@@ -650,14 +651,14 @@ void RigidBodyVehicle::set_rotor_movement_z(size_t id, float movement_z) {
 
 void RigidBodyVehicle::set_wing_angle_of_attack(size_t id, float angle) {
     if (std::abs(angle) >= M_PI) {
-        THROW_OR_ABORT("Angle of attack too large");
+        throw std::runtime_error("Angle of attack too large");
     }
     get_wing(id).angle_of_attack = angle;
 }
 
 void RigidBodyVehicle::set_wing_brake_angle(size_t id, float angle) {
     if (std::abs(angle) >= M_PI) {
-        THROW_OR_ABORT("Brake angle too large");
+        throw std::runtime_error("Brake angle too large");
     }
     get_wing(id).brake_angle = angle;
 }
@@ -676,31 +677,31 @@ float RigidBodyVehicle::get_tire_angular_velocity(size_t id) const {
 
 void RigidBodyVehicle::update_tire_angular_velocity(size_t id) {
     auto& tire = get_tire(id);
-    if (tire.rbp == nullptr) {
+    if (tire.rb == nullptr) {
         std::stringstream sstr;
         sstr <<
             "Vehicle \"" << name() <<
             "\": tire " << id <<
             " has no rigid body";
-        THROW_OR_ABORT(sstr.str());
+        throw std::runtime_error(sstr.str());
     }
     auto abs_rotation_axis = dot1d(rbp_.rotation_, tire.rotation_axis());
-    tire.angular_velocity = dot0d(tire.rbp->w_, abs_rotation_axis);
+    tire.angular_velocity = dot0d(tire.rb->rbp_.w_, abs_rotation_axis);
 }
 
 void RigidBodyVehicle::verify_tire_angular_velocity(size_t id) const {
     const auto& tire = get_tire(id);
-    if (tire.rbp != nullptr) {
+    if (tire.rb != nullptr) {
         auto abs_rotation_axis = dot1d(rbp_.rotation_, tire.rotation_axis());
-        if (std::abs((tire.angular_velocity / rpm) - (dot0d(tire.rbp->w_, abs_rotation_axis) / rpm)) > 0.1) {
+        if (std::abs((tire.angular_velocity / rpm) - (dot0d(tire.rb->rbp_.w_, abs_rotation_axis) / rpm)) > 0.1) {
             std::stringstream sstr;
             sstr <<
-                "Last update: " << tire.rbp->last_update_source_location_ <<
+                "Last update: " << tire.rb->rbp_.last_update_source_location_ <<
                 " vehicle: \"" << name() <<
                 "\": tire " << id <<
                 " scalar RPM: " << (tire.angular_velocity / rpm) <<
-                " vectorial RPM: " << (dot0d(tire.rbp->w_, abs_rotation_axis) / rpm);
-            THROW_OR_ABORT(sstr.str());
+                " vectorial RPM: " << (dot0d(tire.rb->rbp_.w_, abs_rotation_axis) / rpm);
+            throw std::runtime_error(sstr.str());
         }
     }
 }
@@ -735,13 +736,13 @@ void RigidBodyVehicle::set_base_angular_velocity(
     const PhysicsPhase& phase,
     float& available_power)
 {
-    if (base_rotor.rbp != nullptr) {
+    if (base_rotor.rb != nullptr) {
         auto abs_rotation_axis = dot1d(rbp_.rotation_, rotation_axis);
         if (false) {
-            auto I = dot0d(abs_rotation_axis, base_rotor.rbp->dot1d_abs_I(abs_rotation_axis));
+            auto I = dot0d(abs_rotation_axis, base_rotor.rb->rbp_.dot1d_abs_I(abs_rotation_axis));
             float dw = w - base_rotor.angular_velocity;
             if (sign(dw) != sign(available_power)) {
-                THROW_OR_ABORT("Sign mismatch between dw and available power");
+                throw std::runtime_error("Sign mismatch between dw and available power");
             }
             float available_torque;
             bool requires_power = (sign(dw) == sign(base_rotor.angular_velocity));
@@ -765,18 +766,18 @@ void RigidBodyVehicle::set_base_angular_velocity(
             if (requires_power) {
                 auto ap = std::abs(available_power) - available_dL / cfg.dt_substeps(phase) * base_rotor.angular_velocity;
                 if (ap < 1e-12) {
-                    THROW_OR_ABORT("available_power too strongly negative");
+                    throw std::runtime_error("available_power too strongly negative");
                 }
                 available_power = std::copysign(ap, available_power);
             }
             auto dL_vec = available_dL * abs_rotation_axis;
             auto dt = cfg.dt_substeps(phase);
-            base_rotor.rbp->integrate_delta_angular_momentum(dL_vec, 0.f, dt);
+            base_rotor.rb->rbp_.integrate_delta_angular_momentum(dL_vec, 0.f, dt);
             rbp_.integrate_delta_angular_momentum(dL_vec, 0.f, dt);
-            base_rotor.angular_velocity = dot0d(base_rotor.rbp->w_, abs_rotation_axis);
+            base_rotor.angular_velocity = dot0d(base_rotor.rb->rbp_.w_, abs_rotation_axis);
         } else {
             // Change angular velocity along the rotation axis, while preserving the remaining components.
-            base_rotor.rbp->w_ += abs_rotation_axis * (w - dot0d(base_rotor.rbp->w_, abs_rotation_axis));
+            base_rotor.rb->rbp_.w_ += abs_rotation_axis * (w - dot0d(base_rotor.rb->rbp_.w_, abs_rotation_axis));
             base_rotor.angular_velocity = w;
         }
     } else {
@@ -935,12 +936,37 @@ const std::string& RigidBodyVehicle::asset_id() const {
 //     return false;
 // }
 
+StatusComponents RigidBodyVehicle::status_component() const {
+    auto result =
+        StatusComponents::TIME |
+        StatusComponents::SPEED |
+        StatusComponents::ANGULAR_VELOCITY |
+        StatusComponents::WHEEL_ANGULAR_VELOCITY |
+        StatusComponents::DIAMETER |
+        StatusComponents::POSITION |
+        StatusComponents::ENERGY |
+        StatusComponents::DRIVER_NAME;
+    for (const auto& o : collision_observers_) {
+        auto c = dynamic_cast<StatusWriter*>(o.get());
+        if (c != nullptr) {
+            result |= c->status_component();
+        }
+    }
+    {
+        auto c = dynamic_cast<StatusWriter*>(damageable_.get());
+        if (c != nullptr) {
+            result |= c->status_component();
+        }
+    }
+    return result;
+}
+
 void RigidBodyVehicle::write_status(
     std::ostream& ostr,
     StatusComponents log_components,
     const StaticWorld& world) const
 {
-    if (log_components & StatusComponents::TIME) {
+    if (any(log_components & StatusComponents::TIME)) {
         static const std::chrono::steady_clock::time_point epoch_time = std::chrono::steady_clock::now();
         std::chrono::steady_clock::time_point current_time = std::chrono::steady_clock::now();
         auto milliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(current_time - epoch_time);
@@ -973,18 +999,18 @@ void RigidBodyVehicle::write_status(
     //     old_velocity = rbp_.v_;
     //     ostr << "a: " << a / (meters / (s * s)) << " m/s^2" << std::endl;
     // }
-    if (log_components & StatusComponents::SPEED) {
+    if (any(log_components & StatusComponents::SPEED)) {
         ostr << "v: " << std::sqrt(sum(squared(rbp_.v_com_))) / kph << " km/h" << std::endl;
     }
-    if (log_components & StatusComponents::ANGULAR_VELOCITY) {
+    if (any(log_components & StatusComponents::ANGULAR_VELOCITY)) {
         ostr << "w: " << std::sqrt(sum(squared(rbp_.w_))) / rpm << " rpm" << std::endl;
     }
-    if (log_components & StatusComponents::WHEEL_ANGULAR_VELOCITY) {
+    if (any(log_components & StatusComponents::WHEEL_ANGULAR_VELOCITY)) {
         ostr << "wt: " << std::sqrt(sum(squared(rbp_.v_com_))) / WHEEL_RADIUS / rpm << " rpm" << std::endl;
     }
-    if (log_components & StatusComponents::DIAMETER) {
+    if (any(log_components & StatusComponents::DIAMETER)) {
         if ((world.gravity == nullptr) || (world.gravity->magnitude == 0.f)) {
-            THROW_OR_ABORT("StatusComponents::DIAMETER without gravity");
+            throw std::runtime_error("StatusComponents::DIAMETER without gravity");
         }
         // T = 2 PI r / v, T = 2 PI / w
         // r = v / w
@@ -997,7 +1023,7 @@ void RigidBodyVehicle::write_status(
             ostr << "d / d2(g): undefined" << std::endl;
         }
     }
-    // if (log_components & StatusComponents::DIAMETER2) {
+    // if (any(log_components & StatusComponents::DIAMETER2)) {
     //     // F = m * a = m v^2 / r
     //     // r = v^2 / a
     //     if (float a2 = sum(squared(rbi_.a_)); a2 > squared(0.01f * meters / (s * s))) {
@@ -1008,7 +1034,7 @@ void RigidBodyVehicle::write_status(
     //     // Not implemented: https://de.wikipedia.org/wiki/Wendekreis_(Fahrzeug)
     //     // D = 2 L / sin(alpha)
     // }
-    if (log_components & StatusComponents::POSITION) {
+    if (any(log_components & StatusComponents::POSITION)) {
         auto pos = rbp_.abs_position();
         ostr << "x: " << pos(0) / meters << " m" << std::endl;
         ostr << "y: " << pos(1) / meters << " m" << std::endl;
@@ -1020,7 +1046,7 @@ void RigidBodyVehicle::write_status(
             ostr << "height: " << height_to_string(gpos(2)) << std::endl;
         }
     }
-    if (log_components & StatusComponents::ENERGY) {
+    if (any(log_components & StatusComponents::ENERGY)) {
         ostr << "E: " << energy() / (kilo * J) << " kJ" << std::endl;
 #ifdef COMPUTE_POWER
         // ostr << "P: " << power_ / W << " W" << std::endl;
@@ -1029,7 +1055,7 @@ void RigidBodyVehicle::write_status(
         }
 #endif
     }
-    if (log_components & StatusComponents::DRIVER_NAME) {
+    if (any(log_components & StatusComponents::DRIVER_NAME)) {
         if (auto driver = drivers_.try_get("driver"); driver != nullptr) {
             ostr << "Driver: " << driver->title() << std::endl;
         }
@@ -1041,7 +1067,7 @@ void RigidBodyVehicle::write_status(
         }
     }
     {
-        auto c = dynamic_cast<StatusWriter*>(damageable_);
+        auto c = dynamic_cast<StatusWriter*>(damageable_.get());
         if (c != nullptr) {
             c->write_status(ostr, log_components, world);
         }
@@ -1052,19 +1078,19 @@ float RigidBodyVehicle::get_value(StatusComponents status_components) const {
     if (status_components == StatusComponents::SPEED) {
         return std::sqrt(sum(squared(rbp_.v_com_))) / kph;
     }
-    THROW_OR_ABORT("Unsupported status component: " + std::to_string((unsigned int)status_components));
+    throw std::runtime_error("Unsupported status component: " + std::to_string((unsigned int)status_components));
 }
 
 static auto engines_name = VariableAndHash<std::string>{ "engines" };
 
-StatusWriter& RigidBodyVehicle::child_status_writer(const std::vector<VariableAndHash<std::string>>& name) {
+DanglingBaseClassRef<StatusWriter> RigidBodyVehicle::child_status_writer(const std::vector<VariableAndHash<std::string>>& name) {
     if (name.size() != 2) {
-        THROW_OR_ABORT("Unknown child status writer");
+        throw std::runtime_error("Unknown child status writer");
     }
     if (name[0] != engines_name) {
-        THROW_OR_ABORT("Unknown child status writer");
+        throw std::runtime_error("Unknown child status writer");
     }
-    return engines_.get(name[1]);
+    return {engines_.get(name[1]), CURRENT_SOURCE_LOCATION};
 }
 
 bool RigidBodyVehicle::node_shall_be_hidden(
@@ -1086,7 +1112,7 @@ bool RigidBodyVehicle::is_avatar() const {
 bool RigidBodyVehicle::is_activated_avatar() const {
     if (any(flags_ & RigidBodyVehicleFlags::IS_ACTIVATED_AVATAR)) {
         if (!is_avatar()) {
-            THROW_OR_ABORT("RigidBodyVehicle::is_activated_avatar: Rigid body is not an avatar");
+            throw std::runtime_error("RigidBodyVehicle::is_activated_avatar: Rigid body is not an avatar");
         }
         return true;
     }
@@ -1096,7 +1122,7 @@ bool RigidBodyVehicle::is_activated_avatar() const {
 bool RigidBodyVehicle::is_deactivated_avatar() const {
     if (any(flags_ & RigidBodyVehicleFlags::IS_DEACTIVATED_AVATAR)) {
         if (!is_avatar()) {
-            THROW_OR_ABORT("RigidBodyVehicle::is_deactivated_avatar: Rigid body is not an avatar");
+            throw std::runtime_error("RigidBodyVehicle::is_deactivated_avatar: Rigid body is not an avatar");
         }
         return true;
     }
@@ -1119,38 +1145,38 @@ bool RigidBodyVehicle::has_missile_controller() const {
     return missile_controller_ != nullptr;
 }
 
-RigidBodyAvatarController& RigidBodyVehicle::avatar_controller() {
+DanglingBaseClassRef<RigidBodyAvatarController> RigidBodyVehicle::avatar_controller(SourceLocation loc) {
     if (avatar_controller_ == nullptr) {
-        THROW_OR_ABORT("Rigid body \"" + name() + "\" has no avatar controller");
+        throw std::runtime_error("Rigid body \"" + name() + "\" has no avatar controller");
     }
-    return *avatar_controller_;
+    return {*avatar_controller_, CURRENT_SOURCE_LOCATION};
 }
 
-RigidBodyPlaneController& RigidBodyVehicle::plane_controller() {
+DanglingBaseClassRef<RigidBodyPlaneController> RigidBodyVehicle::plane_controller(SourceLocation loc) {
     if (plane_controller_ == nullptr) {
-        THROW_OR_ABORT("Rigid body \"" + name() + "\" has no plane controller");
+        throw std::runtime_error("Rigid body \"" + name() + "\" has no plane controller");
     }
-    return *plane_controller_;
+    return {*plane_controller_, CURRENT_SOURCE_LOCATION};
 }
 
-RigidBodyVehicleController& RigidBodyVehicle::vehicle_controller() {
+DanglingBaseClassRef<RigidBodyVehicleController> RigidBodyVehicle::vehicle_controller(SourceLocation loc) {
     if (vehicle_controller_ == nullptr) {
-        THROW_OR_ABORT("Rigid body \"" + name() + "\" has no vehicle controller");
+        throw std::runtime_error("Rigid body \"" + name() + "\" has no vehicle controller");
     }
-    return *vehicle_controller_;
+    return {*vehicle_controller_, CURRENT_SOURCE_LOCATION};
 }
 
-RigidBodyMissileController& RigidBodyVehicle::missile_controller() {
+DanglingBaseClassRef<RigidBodyMissileController> RigidBodyVehicle::missile_controller(SourceLocation loc) {
     if (missile_controller_ == nullptr) {
-        THROW_OR_ABORT("Rigid body \"" + name() + "\" has no missile controller");
+        throw std::runtime_error("Rigid body \"" + name() + "\" has no missile controller");
     }
-    return *missile_controller_;
+    return {*missile_controller_, CURRENT_SOURCE_LOCATION};
 }
 
 void RigidBodyVehicle::deactivate_avatar() {
     std::scoped_lock lock{ flags_mutex_ };
     if (!any(flags_ & RigidBodyVehicleFlags::IS_ACTIVATED_AVATAR)) {
-        THROW_OR_ABORT("Rigid body vehicle is not an activated avatar");
+        throw std::runtime_error("Rigid body vehicle is not an activated avatar");
     }
     flags_ &= ~RigidBodyVehicleFlags::IS_ACTIVATED_AVATAR;
     flags_ |= RigidBodyVehicleFlags::IS_DEACTIVATED_AVATAR;
@@ -1159,7 +1185,7 @@ void RigidBodyVehicle::deactivate_avatar() {
 void RigidBodyVehicle::activate_avatar() {
     std::scoped_lock lock{ flags_mutex_ };
     if (!any(flags_ & RigidBodyVehicleFlags::IS_DEACTIVATED_AVATAR)) {
-        THROW_OR_ABORT("Rigid body vehicle is not a deactivated avatar");
+        throw std::runtime_error("Rigid body vehicle is not a deactivated avatar");
     }
     flags_ &= ~RigidBodyVehicleFlags::IS_DEACTIVATED_AVATAR;
     flags_ |= RigidBodyVehicleFlags::IS_ACTIVATED_AVATAR;
@@ -1188,11 +1214,11 @@ DanglingBaseClassRef<IVehicleAi> RigidBodyVehicle::get_autopilot(const SkillScen
 {
     auto dit = autopilots_.find(scenario.actor_task);
     if (dit == autopilots_.end()) {
-        THROW_OR_ABORT("No autopilot for scenario \"" + skill_scenario_to_string(scenario) + "\" exists");
+        throw std::runtime_error("No autopilot for scenario \"" + skill_scenario_to_string(scenario) + "\" exists");
     }
     auto vit = dit->second.find(scenario.actor_type);
     if (vit == dit->second.end()) {
-        THROW_OR_ABORT("No autopilot for scenario \"" + skill_scenario_to_string(scenario) + "\" exists");
+        throw std::runtime_error("No autopilot for scenario \"" + skill_scenario_to_string(scenario) + "\" exists");
     }
     return vit->second.ai.object();
 }
@@ -1255,7 +1281,7 @@ void RigidBodyVehicle::set_waypoint_ofs(CompressedScenePos dy) {
 
 void RigidBodyVehicle::set_surface_normal(std::unique_ptr<ISurfaceNormal>&& surface_normal) {
     if (surface_normal_ != nullptr) {
-        THROW_OR_ABORT("Surface normal already set");
+        throw std::runtime_error("Surface normal already set");
     }
     surface_normal_ = std::move(surface_normal);
 }
@@ -1266,14 +1292,14 @@ bool RigidBodyVehicle::has_surface_normal() const {
 
 const ISurfaceNormal& RigidBodyVehicle::get_surface_normal() const {
     if (surface_normal_ == nullptr) {
-        THROW_OR_ABORT("Rigid body has no surface normal");
+        throw std::runtime_error("Rigid body has no surface normal");
     }
     return *surface_normal_;
 }
 
 void RigidBodyVehicle::set_collision_normal_modifier(std::unique_ptr<ICollisionNormalModifier>&& collision_normal_modifier) {
     if (collision_normal_modifier_ != nullptr) {
-        THROW_OR_ABORT("Collision normal modifier already set");
+        throw std::runtime_error("Collision normal modifier already set");
     }
     collision_normal_modifier_ = std::move(collision_normal_modifier);
 }
@@ -1284,7 +1310,7 @@ bool RigidBodyVehicle::has_collision_normal_modifier() const {
 
 const ICollisionNormalModifier& RigidBodyVehicle::get_collision_normal_modifier() const {
     if (collision_normal_modifier_ == nullptr) {
-        THROW_OR_ABORT("Rigid body has no collision normal modifier");
+        throw std::runtime_error("Rigid body has no collision normal modifier");
     }
     return *collision_normal_modifier_;
 }
@@ -1292,41 +1318,41 @@ const ICollisionNormalModifier& RigidBodyVehicle::get_collision_normal_modifier(
 void RigidBodyVehicle::get_rigid_pulses(std::unordered_set<RigidBodyPulses*>& rbps) {
     rbps.insert(&rbp_);
     for (auto& [_, t] : tires_) {
-        if (t.rbp != nullptr) {
-            rbps.insert(t.rbp);
+        if (t.rb != nullptr) {
+            rbps.insert(&t.rb->rbp_);
         }
     }
     for (auto& [_, r] : rotors_) {
-        if (r->rbp != nullptr) {
-            rbps.insert(r->rbp);
+        if (r->rb != nullptr) {
+            rbps.insert(&r->rb->rbp_);
         }
     }
 }
 
 FixedArray<float, 3> TrailerHitches::get_position_female() const {
     if (!female_.has_value()) {
-        THROW_OR_ABORT("Vehicle has no female trailer hitch");
+        throw std::runtime_error("Vehicle has no female trailer hitch");
     }
     return *female_;
 }
 
 FixedArray<float, 3> TrailerHitches::get_position_male() const {
     if (!male_.has_value()) {
-        THROW_OR_ABORT("Vehicle has no male trailer hitch");
+        throw std::runtime_error("Vehicle has no male trailer hitch");
     }
     return *male_;
 }
 
 void TrailerHitches::set_position_female(const FixedArray<float, 3>& position) {
     if (female_.has_value()) {
-        THROW_OR_ABORT("Female trailer hitch position already set");
+        throw std::runtime_error("Female trailer hitch position already set");
     }
     female_ = position;
 }
 
 void TrailerHitches::set_position_male(const FixedArray<float, 3>& position) {
     if (male_.has_value()) {
-        THROW_OR_ABORT("Male trailer hitch position already set");
+        throw std::runtime_error("Male trailer hitch position already set");
     }
     male_ = position;
 }
@@ -1338,7 +1364,7 @@ void RigidBodyVehicle::set_scene_node(
     SourceLocation loc)
 {
     if (scene_ != nullptr) {
-        THROW_OR_ABORT("RigidBodyVehicle::set_scene_node: Scene already set");
+        throw std::runtime_error("RigidBodyVehicle::set_scene_node: Scene already set");
     }
     scene_ = &scene;
     scene_node_ = node.ptr();
@@ -1349,9 +1375,9 @@ void RigidBodyVehicle::set_scene_node(
         node->insert_node_hider(nullptr, { *this, loc });
     }
     on_clear_scene_node_.set(node->on_clear, loc);
-    on_clear_scene_node_.add([this, node](){
+    on_clear_scene_node_.early.add([this, node](){
         if (node->has_absolute_movable()) {
-            if (&node->get_absolute_movable() != this) {
+            if (&node->get_absolute_movable(CURRENT_SOURCE_LOCATION).get() != this) {
                 verbose_abort("Unexpected absolute movable");
             }
             node->clear_absolute_movable();
@@ -1365,6 +1391,16 @@ void RigidBodyVehicle::set_scene_node(
         scene_ = nullptr;
         scene_node_ = nullptr;
         animation_state_updater_ = nullptr;
+        tires_.clear();
+        rotors_.clear();
+    }, loc);
+    on_clear_scene_node_.late.add([this](){
         global_object_pool.remove(this);
     }, loc);
+}
+
+bool RigidBodyVehicle::collides_permanently(const RigidBodyVehicle& other) const {
+    return !empty_intersection(
+        permanent_colliders_.begin(), permanent_colliders_.end(),
+        other.permanent_colliders_.begin(), other.permanent_colliders_.end());
 }

@@ -1,3 +1,4 @@
+
 #include "Wing_Angle.hpp"
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
@@ -21,7 +22,7 @@ WingAngle::~WingAngle() {
             { *this, CURRENT_SOURCE_LOCATION },
             ObserverDoesNotExistBehavior::IGNORE);
         if (node_->has_relative_movable()) {
-            if (&node_->get_relative_movable() != this) {
+            if (&node_->get_relative_movable(CURRENT_SOURCE_LOCATION).get() != this) {
                 verbose_abort("Unexpected relative movable");
             }
             node_->clear_relative_movable();
@@ -31,7 +32,7 @@ WingAngle::~WingAngle() {
 
 void WingAngle::notify_destroyed(SceneNode& destroyed_object) {
     if (destroyed_object.has_relative_movable()) {
-        if (&destroyed_object.get_relative_movable() != this) {
+        if (&destroyed_object.get_relative_movable(CURRENT_SOURCE_LOCATION).get() != this) {
             verbose_abort("Unexpected relative movable");
         }
         destroyed_object.clear_relative_movable();

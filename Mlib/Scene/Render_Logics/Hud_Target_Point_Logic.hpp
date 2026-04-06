@@ -1,9 +1,9 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
-#include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
+#include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/Memory/Destruction_Functions.hpp>
+#include <Mlib/OpenGL/Render_Logic.hpp>
 #include <Mlib/Physics/Interfaces/IAdvance_Time.hpp>
-#include <Mlib/Render/Render_Logic.hpp>
 #include <Mlib/Scene/Render_Logics/Hud_Tracker.hpp>
 #include <mutex>
 #include <optional>
@@ -31,9 +31,9 @@ public:
         RenderLogics& render_logics,
         const DanglingBaseClassRef<Player>& player,
         CollisionQuery& collision_query,
-        DanglingBaseClassRef<SceneNode> gun_node,
+        const DanglingBaseClassRef<SceneNode>& gun_node,
         const std::optional<std::vector<DanglingBaseClassPtr<const SceneNode>>>& exclusive_nodes,
-        YawPitchLookAtNodes* ypln,
+        const DanglingBaseClassPtr<YawPitchLookAtNodes>& ypln,
         AdvanceTimes& advance_times,
         const std::shared_ptr<ITextureHandle>& texture,
         const FixedArray<float, 2>& center,
@@ -63,11 +63,12 @@ private:
     ObjectPool& object_pool_;
     CollisionQuery& collision_query_;
     DanglingBaseClassRef<SceneNode> gun_node_;
-    YawPitchLookAtNodes* ypln_;
+    DanglingBaseClassPtr<YawPitchLookAtNodes> ypln_;
     RenderLogic& scene_logic_;
     HudTracker hud_tracker_;
     DestructionFunctionsRemovalTokens on_player_delete_vehicle_internals_;
     DestructionFunctionsRemovalTokens on_destroy_gun_node_;
+    DestructionFunctionsRemovalTokens on_destroy_ypln_;
 
     RenderLogics& render_logics_;
 };

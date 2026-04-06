@@ -1,8 +1,8 @@
 #include "Create_Wing.hpp"
-#include <Mlib/Argument_List.hpp>
 #include <Mlib/Components/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
+#include <Mlib/Misc/Argument_List.hpp>
 #include <Mlib/Physics/Actuators/Wing.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Physics/Units.hpp>
@@ -13,7 +13,7 @@
 #include <Mlib/Scene_Graph/Interfaces/ITrail_Renderer.hpp>
 #include <Mlib/Scene_Graph/Interfaces/ITrail_Storage.hpp>
 #include <Mlib/Strings/String.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -59,8 +59,8 @@ CreateWing::CreateWing(PhysicsScene& physics_scene)
 
 void CreateWing::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    DanglingBaseClassRef<SceneNode> vehicle_node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::vehicle), DP_LOC);
-    auto& vehicle_rb = get_rigid_body_vehicle(vehicle_node);
+    DanglingBaseClassRef<SceneNode> vehicle_node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::vehicle), CURRENT_SOURCE_LOCATION);
+    auto vehicle_rb = get_rigid_body_vehicle(vehicle_node.get(), CURRENT_SOURCE_LOCATION);
     auto position = args.arguments.at<EFixedArray<ScenePos, 3>>(KnownArgs::position) * (ScenePos)meters;
     auto rotation = args.arguments.at<EFixedArray<float, 3>>(KnownArgs::rotation) * degrees;
     size_t wing_id = args.arguments.at<size_t>(KnownArgs::wing_id);
@@ -80,13 +80,13 @@ void CreateWing::execute(const LoadSceneJsonUserFunctionArgs& args)
     }
     DanglingBaseClassPtr<SceneNode> angle_of_attack_node = nullptr;
     if (args.arguments.contains(KnownArgs::angle_of_attack_node)) {
-        angle_of_attack_node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::angle_of_attack_node), DP_LOC).ptr();
+        angle_of_attack_node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::angle_of_attack_node), CURRENT_SOURCE_LOCATION).ptr();
     }
     DanglingBaseClassPtr<SceneNode> brake_angle_node = nullptr;
     if (args.arguments.contains(KnownArgs::brake_angle_node)) {
-        brake_angle_node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::brake_angle_node), DP_LOC).ptr();
+        brake_angle_node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::brake_angle_node), CURRENT_SOURCE_LOCATION).ptr();
     }
-    vehicle_rb.wings_.add(
+    vehicle_rb->wings_.add(
         wing_id,
         std::make_unique<Wing>(
             angle_of_attack_node,

@@ -1,7 +1,8 @@
+
 #include "Folder_IStream_Dictionary.hpp"
+#include <Mlib/Hashing/Variable_And_Hash.hpp>
 #include <Mlib/Memory/Integral_Cast.hpp>
 #include <Mlib/Os/Os.hpp>
-#include <Mlib/Variable_And_Hash.hpp>
 #include <list>
 
 using namespace Mlib;

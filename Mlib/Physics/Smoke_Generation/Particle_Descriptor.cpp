@@ -1,7 +1,8 @@
+
 #include "Particle_Descriptor.hpp"
-#include <Mlib/Argument_List.hpp>
 #include <Mlib/Geometry/Material/Particle_Type.hpp>
 #include <Mlib/Json/Json_View.hpp>
+#include <Mlib/Misc/Argument_List.hpp>
 #include <Mlib/Physics/Units.hpp>
 #include <map>
 
@@ -23,7 +24,7 @@ ParticleRotation Mlib::particle_rotation_from_string(const std::string& s) {
     };
     auto it = m.find(s);
     if (it == m.end()) {
-        THROW_OR_ABORT("Unknown particle rotation: \"" + s + '"');
+        throw std::runtime_error("Unknown particle rotation: \"" + s + '"');
     }
     return it->second;
 }

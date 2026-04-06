@@ -1,5 +1,6 @@
+#pragma once
 #include <Mlib/Math/Math.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
+#include <stdexcept>
 
 // Source: https://math.nist.gov/iml++/cg.h.txt
 
@@ -83,7 +84,7 @@ Array<float> cg_simple(const TMatrix& A, const Array<TData>& x0, const Array<TDa
     Array<TData> x = x0.copy();
     int code = CG<TData>(A, x, b, [](const Array<float>& x){ return x; }, max_iter, tol);
     if (!nothrow && code != 0) {
-        THROW_OR_ABORT("CG did not converge");
+        throw std::runtime_error("CG did not converge");
     }
     return x;
 }

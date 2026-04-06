@@ -1,3 +1,4 @@
+
 #include "Rigid_Body_Playback.hpp"
 #include <Mlib/Geometry/Coordinates/Homogeneous.hpp>
 #include <Mlib/Macro_Executor/Focus.hpp>
@@ -45,7 +46,7 @@ void RigidBodyPlayback::advance_time(float dt, const StaticWorld& world) {
         progress_ += dt / seconds * speedup_;
         const auto& t = track_reader_.track_element().element.transformations;
         if (t.size() != playback_objects_.size()) {
-            THROW_OR_ABORT("Conflicting playback sizees");
+            throw std::runtime_error("Conflicting playback sizees");
         }
         for (size_t i = 0; i < t.size(); ++i) {
             playback_objects_[i]->transformation_matrix_ = t[i].to_matrix();
@@ -55,7 +56,7 @@ void RigidBodyPlayback::advance_time(float dt, const StaticWorld& world) {
 
 DanglingBaseClassRef<IAbsoluteMovable> RigidBodyPlayback::get_playback_object(size_t i) {
     if (i >= playback_objects_.size()) {
-        THROW_OR_ABORT("Playback-object index out of bounds");
+        throw std::runtime_error("Playback-object index out of bounds");
     }
     return { *playback_objects_[i], CURRENT_SOURCE_LOCATION };
 }

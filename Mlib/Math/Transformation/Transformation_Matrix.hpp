@@ -2,7 +2,7 @@
 #include <Mlib/Geometry/Coordinates/Homogeneous.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <cmath>
-#include <iostream>
+#include <iosfwd>
 
 #ifdef __GNUC__
     #pragma GCC push_options
@@ -154,6 +154,12 @@ public:
     FixedArray<TDir, n, n> R;
     FixedArray<TPos, n> t;
 };
+
+template <class TDir, class TPos, size_t n>
+std::ostream& operator << (std::ostream& ostr, const TransformationMatrix<TDir, TPos, n>& m) {
+    ostr << m.semi_affine();
+    return ostr;
+}
 
 }
 

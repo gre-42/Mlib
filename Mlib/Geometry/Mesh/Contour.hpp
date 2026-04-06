@@ -1,12 +1,12 @@
 #pragma once
-#include <Mlib/Env.hpp>
 #include <Mlib/Geometry/Colored_Vertex.hpp>
 #include <Mlib/Geometry/Exceptions/Edge_Exception.hpp>
 #include <Mlib/Geometry/Mesh/Plot.hpp>
-#include <Mlib/Hash_Of_Pair.hpp>
+#include <Mlib/Hashing/Hash_Of_Pair.hpp>
 #include <Mlib/Images/StbImage3.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
+#include <Mlib/Os/Env.hpp>
 #include <list>
+#include <stdexcept>
 #include <unordered_map>
 #include <unordered_set>
 
@@ -55,7 +55,7 @@ std::list<std::list<TPoint>> find_neighbor_contours(
         if (v != v0) {
             // plot_mesh(ArrayShape{8000, 8000}, triangles, contour, {}).save_to_file("/tmp/cc.pgm");
             // plot_mesh_svg("/tmp/cc.svg", 800, 800, triangles, contour, {});
-            THROW_OR_ABORT2((EdgeException{to_point(v), to_point(v0), "Contour is not closed"}));
+            throw EdgeException{to_point(v), to_point(v0), "Contour is not closed"};
         }
         neighbors.erase(v);
         result.push_back(contour);
@@ -100,14 +100,14 @@ void extract_triangles_inside_contours(
             if ((s == contour.end()) &&
                 (make_orderable(*it) == make_orderable(contour.front())))
             {
-                THROW_OR_ABORT("delete_triangles_outside_contour: Contour is closed");
+                throw std::runtime_error("delete_triangles_outside_contour: Contour is closed");
             }
             if (!contour_edges.insert(
                 std::make_pair(
                     std::make_pair(O{*it}, O{s == contour.end() ? contour.front() : *s}),
                     contour_id)).second)
             {
-                THROW_OR_ABORT("Could not insert contour edge");
+                throw std::runtime_error("Could not insert contour edge");
             }
         }
     }
@@ -173,7 +173,7 @@ void extract_triangles_inside_contours(
                                             { contours[contour_id], contours[it->second] },
                                             { O{a}, O{b}, O{c} });
                                     } else {
-                                        THROW_OR_ABORT("Unknown file extension: " + dbf);
+                                        throw std::runtime_error("Unknown file extension: " + dbf);
                                     }
                                     throw edge_exception(a, b, "Could not determine contour ID (" + std::to_string(contour_id) + " vs. " + std::to_string(it->second) + "), debug image saved");
                                 } else {

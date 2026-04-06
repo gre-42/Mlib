@@ -1,9 +1,9 @@
 #pragma once
+#include <Mlib/Hashing/Variable_And_Hash.hpp>
 #include <Mlib/Memory/Dangling_Base_Class.hpp>
-#include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
+#include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/Memory/Destruction_Functions.hpp>
 #include <Mlib/Memory/Destruction_Notifier.hpp>
-#include <Mlib/Variable_And_Hash.hpp>
 #include <cstddef>
 #include <cstdint>
 #include <functional>
@@ -12,7 +12,6 @@
 namespace Mlib {
 
 class Player;
-class DeleteNodeMutex;
 class SceneNode;
 class RigidBodyVehicle;
 class SkillMap;
@@ -31,7 +30,6 @@ public:
         const Player& player,
         const InternalsMode& internals_mode)>;
     SceneVehicle(
-        DeleteNodeMutex& delete_node_mutex,
         VariableAndHash<std::string> scene_node_name,
         const DanglingBaseClassRef<SceneNode>& scene_node,
         const DanglingBaseClassRef<RigidBodyVehicle>& rb);
@@ -53,7 +51,6 @@ public:
     DanglingBaseClassRef<RigidBodyVehicle> rb();
     DanglingBaseClassRef<const RigidBodyVehicle> rb() const;
 private:
-    DeleteNodeMutex& delete_node_mutex_;
     DestructionFunctionsRemovalTokens on_scene_node_destroyed_;
     DestructionFunctionsRemovalTokens on_rigid_body_destroyed_;
     VariableAndHash<std::string> scene_node_name_;

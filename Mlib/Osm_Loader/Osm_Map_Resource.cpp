@@ -1,5 +1,4 @@
 #include "Osm_Map_Resource.hpp"
-#include <Mlib/Env.hpp>
 #include <Mlib/Geography/Geographic_Coordinates.hpp>
 #include <Mlib/Geometry/Coordinates/Normalized_Points_Fixed.hpp>
 #include <Mlib/Geometry/Exceptions/Edge_Exception.hpp>
@@ -8,7 +7,6 @@
 #include <Mlib/Geometry/Graph/Point_And_Flags.hpp>
 #include <Mlib/Geometry/Graph/Points_And_Adjacency.hpp>
 #include <Mlib/Geometry/Instance/Rendering_Dynamics.hpp>
-#include <Mlib/Geometry/Intersection/Bounding_Sphere.hpp>
 #include <Mlib/Geometry/Material_Configuration/Base_Materials.hpp>
 #include <Mlib/Geometry/Material_Configuration/Material_Colors.hpp>
 #include <Mlib/Geometry/Mesh/Bone.hpp>
@@ -24,16 +22,28 @@
 #include <Mlib/Geometry/Mesh/Triangle_List.hpp>
 #include <Mlib/Geometry/Mesh/Triangles_Around.hpp>
 #include <Mlib/Geometry/Mesh/Up_Axis.hpp>
+#include <Mlib/Geometry/Primitives/Bounding_Sphere.hpp>
 #include <Mlib/Images/Filters/Gaussian_Filter.hpp>
 #include <Mlib/Images/StbImage1.hpp>
 #include <Mlib/Images/StbImage3.hpp>
 #include <Mlib/Iterator/Enumerate.hpp>
-#include <Mlib/Log.hpp>
 #include <Mlib/Math/Fixed_Cholesky.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Math/Transformation/Bijection.hpp>
 #include <Mlib/Math/Transformation/Translation_Matrix.hpp>
-#include <Mlib/Navigation/NavigationMeshBuilder.hpp>
+#include <Mlib/Misc/Cereal_Memory.hpp>
+#include <Mlib/Misc/Log.hpp>
+#include <Mlib/Navigation/Navigation_Mesh_Builder.hpp>
+#include <Mlib/OpenGL/Renderables/Color_Cycle.hpp>
+#include <Mlib/OpenGL/Renderables/Triangle_Sampler/Collidable_Triangle_Sampler.hpp>
+#include <Mlib/OpenGL/Renderables/Triangle_Sampler/Renderable_Triangle_Sampler.hpp>
+#include <Mlib/OpenGL/Renderables/Triangle_Sampler/Resource_Name_Cycle.hpp>
+#include <Mlib/OpenGL/Renderables/Triangle_Sampler/Sample_Triangle_Interior_Instances.hpp>
+#include <Mlib/OpenGL/Renderables/Triangle_Sampler/Terrain_Triangles.hpp>
+#include <Mlib/OpenGL/Rendering_Context.hpp>
+#include <Mlib/OpenGL/Resource_Managers/Rendering_Resources.hpp>
+#include <Mlib/OpenGL/Resources/Colored_Vertex_Array_Resource.hpp>
+#include <Mlib/Os/Env.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Add_Bridge_Piers.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Add_Grass_Inside_Triangles.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Add_Grass_on_Steiner_Points.hpp>
@@ -99,15 +109,6 @@
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Waysides_Surface.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Waysides_Vertex.hpp>
 #include <Mlib/Physics/Units.hpp>
-#include <Mlib/Render/Renderables/Color_Cycle.hpp>
-#include <Mlib/Render/Renderables/Triangle_Sampler/Collidable_Triangle_Sampler.hpp>
-#include <Mlib/Render/Renderables/Triangle_Sampler/Renderable_Triangle_Sampler.hpp>
-#include <Mlib/Render/Renderables/Triangle_Sampler/Resource_Name_Cycle.hpp>
-#include <Mlib/Render/Renderables/Triangle_Sampler/Sample_Triangle_Interior_Instances.hpp>
-#include <Mlib/Render/Renderables/Triangle_Sampler/Terrain_Triangles.hpp>
-#include <Mlib/Render/Rendering_Context.hpp>
-#include <Mlib/Render/Resource_Managers/Rendering_Resources.hpp>
-#include <Mlib/Render/Resources/Colored_Vertex_Array_Resource.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Descriptors/Object_Resource_Descriptor.hpp>
 #include <Mlib/Scene_Graph/Descriptors/Resource_Instance_Descriptor.hpp>
@@ -122,15 +123,14 @@
 #include <Mlib/Scene_Graph/Way_Point_Location.hpp>
 #include <Mlib/Scene_Graph/Way_Point_Sandbox.hpp>
 #include <Mlib/Strings/String.hpp>
-#include <Mlib/Strings/String_To_Scene_Pos.hpp>
-#include <Mlib/Strings/To_Number.hpp>
+#include <Mlib/Strings/String_View_To_Number.hpp>
+#include <Mlib/Strings/String_View_To_Scene_Pos.hpp>
 #include <Mlib/Threads/Thread_Top.hpp>
 #include <cereal/access.hpp>
 #include <cereal/archives/binary.hpp>
 #include <cereal/types/chrono.hpp>
 #include <cereal/types/list.hpp>
 #include <cereal/types/map.hpp>
-#include <cereal/types/memory.hpp>
 #include <cereal/types/optional.hpp>
 #include <cereal/types/string.hpp>
 #include <cereal/types/vector.hpp>
@@ -153,7 +153,8 @@ OsmMapResource::OsmMapResource(
     const OsmResourceConfig& config,
     const std::string& debug_prefix,
     FileStorageType file_storage_type)
-    : hri_{ scene_node_resources, { 90.f * degrees, 0.f, 0.f }, config.scale }
+    : ISceneNodeResource{"OsmMapResource"}
+    , hri_{ scene_node_resources, { 90.f * degrees, 0.f, 0.f }, config.scale }
     , scene_node_resources_{ scene_node_resources }
     , scale_{ config.scale }
     , max_imposter_texture_size_{ config.max_imposter_texture_size }
@@ -211,10 +212,10 @@ OsmMapResource::OsmMapResource(
             auto scvas = scene_node_resources.get_arrays(resource_name, ColoredVertexArrayFilter{})->scvas;
             auto dcvas = scene_node_resources.get_arrays(resource_name, ColoredVertexArrayFilter{})->dcvas;
             if (scvas.size() != 1) {
-                THROW_OR_ABORT('"' + *resource_name + "\" does not have exactly one single-precision mesh");
+                throw std::runtime_error('"' + *resource_name + "\" does not have exactly one single-precision mesh");
             }
             if (!dcvas.empty()) {
-                THROW_OR_ABORT('"' + *resource_name + "\" has a double-precision mesh");
+                throw std::runtime_error('"' + *resource_name + "\" has a double-precision mesh");
             }
             return scvas.front()->triangles;
         };
@@ -444,7 +445,7 @@ OsmMapResource::OsmMapResource(
                 .occluded_pass = ExternalRenderPassType::LIGHTMAP_BLOBS,
                 .occluder_pass = ExternalRenderPassType::LIGHTMAP_BLACK_GLOBAL_STATIC,
                 .aggregate_mode = AggregateMode::NODE_TRIANGLES,
-                .shading = material_shading(PhysicsMaterial::SURFACE_BASE_STONE, config),
+                .shading = material_shading(PhysicsMaterial::SURFACE_BASE_STONE, config.shading_factors),
                 .draw_distance_noperations = 1000},
             Morphology{
                 .physics_material = PhysicsMaterial::NONE,
@@ -467,7 +468,7 @@ OsmMapResource::OsmMapResource(
                     .occluded_pass = ExternalRenderPassType::LIGHTMAP_BLOBS,
                     .occluder_pass = ExternalRenderPassType::LIGHTMAP_BLACK_GLOBAL_STATIC,
                     .aggregate_mode = AggregateMode::NODE_TRIANGLES,
-                    .shading = material_shading(PhysicsMaterial::SURFACE_BASE_STONE, config),
+                    .shading = material_shading(PhysicsMaterial::SURFACE_BASE_STONE, config.shading_factors),
                     .draw_distance_noperations = 1000},
                 Morphology{
                     .physics_material = PhysicsMaterial::NONE,
@@ -537,7 +538,7 @@ OsmMapResource::OsmMapResource(
         if (auto prefix = try_getenv("MESH_AROUND_PREFIX"); prefix.has_value()) {
             std::vector<CompressedScenePos> coords = string_to_vector(str_getenv("MESH_AROUND_POS"), safe_stocs);
             if (coords.size() != 2) {
-                THROW_OR_ABORT("MESH_AROUND_POS does not have length 2");
+                throw std::runtime_error("MESH_AROUND_POS does not have length 2");
             }
             {
                 FixedArray<CompressedScenePos, 3> pos{ coords[0], coords[1], (CompressedScenePos)0.f };
@@ -720,10 +721,10 @@ OsmMapResource::OsmMapResource(
                                     for (const auto& n_v : n_t.flat_iterable()) {
                                         auto n_v2 = OrderableFixedArray<CompressedScenePos, 2>(n_v.position(0), n_v.position(1));
                                         if ((&n_v != &v) && (n_v2 == v2)) {
-                                            THROW_OR_ABORT((std::stringstream() <<
+                                            throw std::runtime_error((std::stringstream() <<
                                                 "Conflicting displacements (1): " <<
                                                 it.first->second << " == " << n_v.position << " | " << v.position <<
-                                                ". List 0: " << n_l->name << ", list 1: " << l->name).str());
+                                                ". List 0: " << n_l->meta.name << ", list 1: " << l->meta.name).str());
                                         }
                                     }
                                 }
@@ -766,6 +767,12 @@ OsmMapResource::OsmMapResource(
 
     if (config.with_roofs) {
         fg.update("Draw roofs");
+        if (config.roof_texture.empty()) {
+            throw std::runtime_error("with_roofs requires roof_texture");
+        }
+        if (config.roof_rail_texture.empty()) {
+            throw std::runtime_error("with_roofs requires roof_rail_texture");
+        }
         auto& primary_rendering_resources = RenderingContextStack::primary_rendering_resources();
         draw_roofs(
             tls_buildings,
@@ -778,7 +785,7 @@ OsmMapResource::OsmMapResource(
                 .aggregate_mode = (config.object_cluster_width == 0)
                     ? AggregateMode::SORTED_CONTINUOUSLY
                     : AggregateMode::NODE_OBJECT,
-                .shading = material_shading(RawShading::ROOF, config),
+                .shading = material_shading(RawShading::ROOF, config.shading_factors),
                 .draw_distance_noperations = 1000}.compute_color_mode(),
             Material{
                 .textures_color = { primary_rendering_resources.get_blend_map_texture(config.roof_rail_texture) },
@@ -786,7 +793,7 @@ OsmMapResource::OsmMapResource(
                 .aggregate_mode = (config.object_cluster_width == 0)
                     ? AggregateMode::SORTED_CONTINUOUSLY
                     : AggregateMode::NODE_OBJECT,
-                .shading = material_shading(RawShading::ROOF, config),
+                .shading = material_shading(RawShading::ROOF, config.shading_factors),
                 .draw_distance_noperations = 1000}.compute_color_mode(),
             get_building_morphology,
             roof_color,
@@ -1164,7 +1171,7 @@ OsmMapResource::OsmMapResource(
         if (config.water->holes_from_terrain) {
             auto lst = osm_triangle_lists.tls_wo_subtraction_and_water();
             for (const auto& l : tls_buildings) {
-                if (l->morphology.center_distances2(1) == INFINITY) {
+                if (l->meta.morphology.center_distances2(1) == INFINITY) {
                     lst.push_back(l);
                 }
             }
@@ -1246,12 +1253,12 @@ OsmMapResource::OsmMapResource(
         auto ground_bvh_triangles = osm_triangle_lists.tls_ground_bvh();
         if (config.with_terrain) {
             if (!config.base_osm_map_resource->empty()) {
-                THROW_OR_ABORT("Terrain already set, cannot inherit from base OSM map");
+                throw std::runtime_error("Terrain already set, cannot inherit from base OSM map");
             }
             ground_bvh = std::make_unique<GroundBvh>(ground_bvh_triangles);
         } else {
             if (config.base_osm_map_resource->empty()) {
-                THROW_OR_ABORT("Base OSM map resource not set");
+                throw std::runtime_error("Base OSM map resource not set");
             }
             ground_bvh = std::make_unique<GroundBvh>(scene_node_resources.get_arrays(
                 config.base_osm_map_resource,
@@ -1311,7 +1318,7 @@ OsmMapResource::OsmMapResource(
     if (!config.bridge_pier_model->empty()) {
         fg.update("Add bridge piers");
         if (config.bridge_pier_textures.empty()) {
-            THROW_OR_ABORT("Bridge pier texture not set");
+            throw std::runtime_error("Bridge pier texture not set");
         }
         std::vector<BlendMapTexture> textures_color;
         textures_color.reserve(config.bridge_pier_textures.size());
@@ -1327,7 +1334,7 @@ OsmMapResource::OsmMapResource(
                     .textures_color = std::move(textures_color),
                     .occluder_pass = ExternalRenderPassType::LIGHTMAP_BLACK_LOCAL_INSTANCES,
                     .aggregate_mode = AggregateMode::NODE_TRIANGLES,
-                    .shading = material_shading(PhysicsMaterial::SURFACE_BASE_STONE, config),
+                    .shading = material_shading(PhysicsMaterial::SURFACE_BASE_STONE, config.shading_factors),
                     .draw_distance_noperations = 1000}.compute_color_mode(),
                 Morphology{
                     .physics_material = BASE_VISIBLE_TERRAIN_MATERIAL,
@@ -1364,7 +1371,7 @@ OsmMapResource::OsmMapResource(
         ResourceNameCycle rnc{ config.zone_resource_names };
         auto im = stb_load8(config.zonemap, FlipMode::VERTICAL);
         if (im.nrChannels != 1) {
-            THROW_OR_ABORT("zonemap does not have 1 channel");
+            throw std::runtime_error("zonemap does not have 1 channel");
         }
         auto imf = gaussian_filter_NWE(
             stb_image_2_array(im)[0].casted<float>() / 255.f,
@@ -1375,10 +1382,10 @@ OsmMapResource::OsmMapResource(
         auto zonemap = 1.f - 2.f * abs(imf - 0.5f);
         fg.update("Add trees to zonemap");
         if (std::isnan(config.zonemap_width) || std::isnan(config.zonemap_height)) {
-            THROW_OR_ABORT("zonemap width or height not set");
+            throw std::runtime_error("zonemap width or height not set");
         }
         if (!config.water.has_value()) {
-            THROW_OR_ABORT("Zonemap requires water height");
+            throw std::runtime_error("Zonemap requires water height");
         }
         add_trees_to_zonemap(
             *hri_.bri,
@@ -1534,7 +1541,7 @@ OsmMapResource::OsmMapResource(
     tls_all = osm_triangle_lists.tls_wo_subtraction_w_water();
     for (const auto& l : tls_buildings) {
         if (l->triangles.empty()) {
-            THROW_OR_ABORT("Building \"" + l->name.full_name() + "\" has no triangles");
+            throw std::runtime_error("Building \"" + l->meta.name.full_name() + "\" has no triangles");
         }
         buildings_.emplace_back(l->triangle_array());
     }
@@ -1586,8 +1593,9 @@ OsmMapResource::OsmMapResource(
                 CompressedScenePos max_dist = (CompressedScenePos)(target_terrain_distances_to_bdry.max_distance_to_bdry * scale_);
                 tl_terrain_->insert(target_terrain_type, std::make_shared<TriangleList<CompressedScenePos>>(
                     terrain_type_to_string(target_terrain_type) + "_autogen",
-                    tit->second->material,
-                    tit->second->morphology));
+                    tit->second->meta.material,
+                    tit->second->meta.morphology,
+                    ModifierBacklog{}));
                 auto& wayside_grass = *(*tl_terrain_)[target_terrain_type];
                 tit->second->triangles.remove_if([&ground_street_bvh, &max_dist, &wayside_grass](const FixedArray<ColoredVertex<CompressedScenePos>, 3>& tri){
                     for (const auto& v : tri.flat_iterable()) {
@@ -1729,7 +1737,7 @@ OsmMapResource::OsmMapResource(
                     auto scaled_rotation = rotation.casted<double>() / scale_;
                     auto itm = inv(scaled_rotation);
                     if (!itm.has_value()) {
-                        THROW_OR_ABORT("Could not compute inverse to_meters mapping");
+                        throw std::runtime_error("Could not compute inverse to_meters mapping");
                     }
                     Bijection<FixedArray<double, 3, 3>> to_meters{ scaled_rotation, *itm };
                     calculate_waypoint_adjacency(
@@ -1787,7 +1795,8 @@ OsmMapResource::OsmMapResource(
     SceneNodeResources& scene_node_resources,
     const std::string& level_filename,
     const std::string& debug_prefix)
-    : hri_{ scene_node_resources, { NAN, NAN, NAN }, NAN }
+    : ISceneNodeResource{"OsmMapResource"}
+    , hri_{ scene_node_resources, { NAN, NAN, NAN }, NAN }
     , scene_node_resources_{ scene_node_resources }
     , normalization_matrix_{ uninitialized }
     , triangulation_normalization_matrix_{ uninitialized }
@@ -1798,12 +1807,12 @@ OsmMapResource::OsmMapResource(
     fg.update("Load OSM resource from cache");
     auto ifstr = create_ifstream(level_filename, std::ios::binary);
     if (ifstr->fail()) {
-        THROW_OR_ABORT("Could not open input OSM-map binary file \"" + level_filename + '"');
+        throw std::runtime_error("Could not open input OSM-map binary file \"" + level_filename + '"');
     }
     cereal::BinaryInputArchive iarchive(*ifstr);
     iarchive(*this);
     if (ifstr->fail()) {
-        THROW_OR_ABORT("Could not read from file \"" + level_filename + '"');
+        throw std::runtime_error("Could not read from file \"" + level_filename + '"');
     }
     print_waypoints_if_requested(debug_prefix);
     save_to_obj_file_if_requested(debug_prefix);
@@ -1840,13 +1849,13 @@ void OsmMapResource::save_to_file(
 {
     auto ofstr = create_ofstream(filename, std::ios::binary, file_storage_type);
     if (ofstr->fail()) {
-        THROW_OR_ABORT("Could not open output OSM-map binary file \"" + filename + '"');
+        throw std::runtime_error("Could not open output OSM-map binary file \"" + filename + '"');
     }
     cereal::BinaryOutputArchive oarchive(*ofstr);
     oarchive(*this);
     ofstr->flush();
     if (ofstr->fail()) {
-        THROW_OR_ABORT("Could not write to file \"" + filename + '"');
+        throw std::runtime_error("Could not write to file \"" + filename + '"');
     }
 }
 
@@ -1858,7 +1867,7 @@ void OsmMapResource::save_to_obj_file(
     auto& primary_rendering_resources = RenderingContextStack::primary_rendering_resources();
     std::map<ColormapWithModifiers, std::string> autogen_textures;
     auto get_filename = [&](const ColormapWithModifiers& color, TextureRole role) -> std::string {
-        if (color.filename->empty()) {
+        if (color.filename.empty()) {
             return "";
         }
         auto it = autogen_textures.find(color);
@@ -1892,7 +1901,7 @@ void OsmMapResource::save_to_obj_file(
                 .specular = m.shading.specular};
             if (!m.textures_color.empty()) {
                 const auto& desc = m.textures_color[0].texture_descriptor;
-                result.color_texture = get_filename(desc.color, TextureRole::COLOR_FROM_DB);
+                result.diffuse_texture = get_filename(desc.color, TextureRole::COLOR_FROM_DB);
                 result.bump_texture = get_filename(desc.normal, TextureRole::NORMAL);
                 result.has_alpha_texture = any(desc.color.color_mode & ColorMode::RGBA);
             }
@@ -1908,7 +1917,8 @@ void OsmMapResource::save_bad_triangles_to_obj_file(const std::string& filename)
                 .ambient = {1.f, 0.f, 0.f},
                 .diffuse = {1.f, 0.f, 0.f},
                 .specular = {1.f, 0.f, 0.f}}},
-        Morphology{ .physics_material = PhysicsMaterial::NONE } };
+        Morphology{ .physics_material = PhysicsMaterial::NONE },
+        ModifierBacklog{} };
     for (const auto& l : hri_.acvas->dcvas) {
         for (const auto& t : l->triangles) {
             auto tlc = triangle_largest_cosine<ScenePos, 3>({
@@ -2115,10 +2125,10 @@ WayPointSandboxes OsmMapResource::get_way_points() const {
 void OsmMapResource::print(std::ostream& ostr) const {
     ostr << "OsmMapResource\n";
     for (const auto& cva : hri_.acvas->scvas) {
-        cva->print(ostr);
+        cva->print_stats(ostr);
     }
     for (const auto& cva : hri_.acvas->dcvas) {
-        cva->print(ostr);
+        cva->print_stats(ostr);
     }
 }
 
@@ -2154,7 +2164,7 @@ void OsmMapResource::print_waypoints_if_requested(const std::string& debug_prefi
     if (auto wf = try_getenv("OSM_WAYPOINT_PREFIX"); wf.has_value()) {
         auto rs = try_getenv("OSM_WAYPOINT_BBOX_RADIUS");
         if (!rs.has_value()) {
-            THROW_OR_ABORT("Please specify the \"OSM_WAYPOINT_BBOX_RADIUS\" environment variable (should be half the scaled map size)");
+            throw std::runtime_error("Please specify the \"OSM_WAYPOINT_BBOX_RADIUS\" environment variable (should be half the scaled map size)");
         }
         CompressedScenePos r = safe_stocs(*rs);
         // way_points_.at(WayPointLocation::STREET).plot(wf + debug_prefix + "street.svg", 600, 600, 0.1f);

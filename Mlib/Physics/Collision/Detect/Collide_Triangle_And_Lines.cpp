@@ -1,19 +1,20 @@
+
 #include "Collide_Triangle_And_Lines.hpp"
 #include <Mlib/Geometry/Interfaces/IIntersectable.hpp>
-#include <Mlib/Geometry/Intersection/Collision_Line.hpp>
-#include <Mlib/Geometry/Intersection/Collision_Polygon.hpp>
 #include <Mlib/Geometry/Mesh/IIntersectable_Mesh.hpp>
 #include <Mlib/Geometry/Mesh/Typed_Mesh.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>
+#include <Mlib/Geometry/Primitives/Collision_Line.hpp>
+#include <Mlib/Geometry/Primitives/Collision_Polygon.hpp>
 #include <Mlib/Iterator/Enumerate.hpp>
+#include <Mlib/Misc/Pointer_To_Optional.hpp>
 #include <Mlib/Physics/Collision/Collision_Type.hpp>
 #include <Mlib/Physics/Collision/Record/Collision_History.hpp>
 #include <Mlib/Physics/Collision/Record/Handle_Line_Triangle_Intersection.hpp>
 #include <Mlib/Physics/Collision/Record/Intersection_Scene.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Physics/Smoke_Generation/Surface_Contact_Db.hpp>
-#include <Mlib/Pointer_To_Optional.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -64,7 +65,7 @@ void Mlib::collide_triangle_and_lines(
             }
         } else if (any(msh1.physics_material & PhysicsMaterial::OBJ_TIRE_LINE)) {
             if (lines1.size() != o1.tires_.size()) {
-                THROW_OR_ABORT(
+                throw std::runtime_error(
                     "Number of tire-lines (" + std::to_string(lines1.size()) + ") does not equal the "
                     "number of tires (" + std::to_string(o1.tires_.size()) + ") in object \"" + o1.name() + '"');
             }
@@ -92,9 +93,9 @@ void Mlib::collide_triangle_and_lines(
                     .history = history});
             }
         } else if (any(msh1.physics_material & PhysicsMaterial::OBJ_HITBOX)) {
-            THROW_OR_ABORT("Detected hitbox with lines in object \"" + o1.name() + '"');
+            throw std::runtime_error("Detected hitbox with lines in object \"" + o1.name() + '"');
         } else {
-            THROW_OR_ABORT(
+            throw std::runtime_error(
                 "Unknown mesh type when colliding objects \"" +
                 o0.name() + "\" and \"" + o1.name() + '"');
         }

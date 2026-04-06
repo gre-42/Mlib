@@ -1,6 +1,6 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
+#include <stdexcept>
 
 namespace Mlib {
 
@@ -18,7 +18,7 @@ FixedArray<T, 2> non_up_axis(const FixedArray<T, 3>& v, UpAxis up_axis) {
     } else if (up_axis == UpAxis::Z) {
         return FixedArray<T, 2>{v(0), v(1)};
     } else {
-        THROW_OR_ABORT("Unknown up axis");
+        throw std::runtime_error("Unknown up axis");
     }
 }
 

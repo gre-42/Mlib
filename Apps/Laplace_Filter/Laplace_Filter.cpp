@@ -1,4 +1,3 @@
-#include <Mlib/Arg_Parser.hpp>
 #include <Mlib/Geography/Heightmaps/Load_Heightmap_From_File.hpp>
 #include <Mlib/Images/Filters/Central_Differences.hpp>
 #include <Mlib/Images/Filters/Filters.hpp>
@@ -6,7 +5,8 @@
 #include <Mlib/Images/Normalize.hpp>
 #include <Mlib/Images/StbImage1.hpp>
 #include <Mlib/Images/StbImage3.hpp>
-#include <Mlib/Strings/To_Number.hpp>
+#include <Mlib/Io/Arg_Parser.hpp>
+#include <Mlib/Strings/String_View_To_Number.hpp>
 #include <iostream>
 
 using namespace Mlib;

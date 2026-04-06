@@ -1,15 +1,16 @@
 #pragma once
-#include <Mlib/Geometry/Intersection/Axis_Aligned_Bounding_Box.hpp>
+#include <Mlib/Geometry/Primitives/Axis_Aligned_Bounding_Box.hpp>
+#include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/Physics/Interfaces/ISurface_Normal.hpp>
 
 namespace Mlib {
 
-class RigidBodyPulses;
+class RigidBodyVehicle;
 
 class NormalOnBevelBox: public ISurfaceNormal {
 public:
 	NormalOnBevelBox(
-        const RigidBodyPulses& rbp,
+        const DanglingBaseClassRef<RigidBodyVehicle>& rb,
 		const AxisAlignedBoundingBox<float, 3>& aabb,
         float radius);
     ~NormalOnBevelBox();
@@ -26,7 +27,7 @@ private:
     std::optional<FixedArray<float, 3>> get_surface_normal(
         const FixedArray<ScenePos, 3>& position) const;
 
-    const RigidBodyPulses& rbp_;
+    DanglingBaseClassRef<RigidBodyVehicle> rb_;
 	AxisAlignedBoundingBox<float, 3> aabb_;
     float radius_;
 };

@@ -58,8 +58,7 @@ std::list<FixedArray<CompressedScenePos, 2>> Mlib::get_region_margin_contour(
                 2.f * width,
                 2.f * width))
         {
-            using PE = PointException<CompressedScenePos, 2>;
-            THROW_OR_ABORT2(PE(*b, "Error computing region margin"));
+            throw PointException<CompressedScenePos, 2>(*b, "Error computing region margin");
         } else {
             result.emplace_back(rect.p01_);
         }

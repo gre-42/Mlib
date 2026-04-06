@@ -1,6 +1,5 @@
 #include "Bystanders.hpp"
-#include <Mlib/Assert.hpp>
-#include <Mlib/Geometry/Intersection/Bvh.hpp>
+#include <Mlib/Geometry/Primitives/Bvh.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
 #include <Mlib/Memory/Destruction_Functions_Removeal_Tokens_Ref.hpp>
 #include <Mlib/Memory/Integral_Cast.hpp>
@@ -11,17 +10,16 @@
 #include <Mlib/Players/Game_Logic/Spawner.hpp>
 #include <Mlib/Players/Scene_Vehicle/Scene_Vehicle.hpp>
 #include <Mlib/Players/Scene_Vehicle/Vehicle_Spawner.hpp>
-#include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Spawn_Point.hpp>
 #include <Mlib/Scene_Graph/Way_Point_Location.hpp>
+#include <Mlib/Testing/Assert.hpp>
 
 using namespace Mlib;
 
 Bystanders::Bystanders(
     VehicleSpawners& vehicle_spawners,
     Players& players,
-    Scene& scene,
     Spawner& spawner,
     GameLogicConfig& cfg)
     : current_bystander_rng_{ 0 }
@@ -30,7 +28,6 @@ Bystanders::Bystanders(
     , current_bvh_{ 0 }
     , vehicle_spawners_{ vehicle_spawners }
     , players_{ players }
-    , scene_{ scene }
     , spawner_{ spawner }
     , cfg_{ cfg }
 {}
@@ -50,14 +47,14 @@ bool Bystanders::spawn_for_vip(
 {
     // assert_true(player.game_mode() == GameMode::BYSTANDER);
     if (spawner.has_scene_vehicle()) {
-        THROW_OR_ABORT("Spawner already has a vehicle");
+        throw std::runtime_error("Spawner already has a vehicle");
     }
     std::vector<SpawnPointAndDistance> neighboring_spawn_points;
     neighboring_spawn_points.reserve(1000);
     std::unordered_set<const SpawnPoint*> neighboring_spawn_points_set;
     for (const auto& vip : vips) {
         if (spawner.has_player() && (&spawner.get_player().get() == &vip.player)) {
-            THROW_OR_ABORT("Attempt to spawn a VIP as a bystander");
+            throw std::runtime_error("Attempt to spawn a VIP as a bystander");
         }
         spawner_.spawn_points_bvh_split_.at(current_bvh_)->visit(
             AxisAlignedBoundingBox<CompressedScenePos, 3>::from_center_and_radius(
@@ -177,7 +174,7 @@ bool Bystanders::delete_for_vip(
     const std::vector<VipAndPosition>& vips)
 {
     if (!spawner.has_scene_vehicle()) {
-        THROW_OR_ABORT("Spawner has no scene vehicle");
+        throw std::runtime_error("Spawner has no scene vehicle");
     }
     auto scene_vehicles = spawner.get_scene_vehicles(CURRENT_SOURCE_LOCATION);
     size_t ndelete_votes = 0;
@@ -266,7 +263,7 @@ void Bystanders::handle_bystanders() {
         //     }
         //     if (player->player_role() != PlayerRole::BYSTANDER) {
         //         // return;
-        //         THROW_OR_ABORT("Spawn trigger is \"bystanders\", but player role is not");
+        //         throw std::runtime_error("Spawn trigger is \"bystanders\", but player role is not");
         //     }
         // }
         if (std::ranges::any_of(vips.begin(), vips.end(),
@@ -275,6 +272,9 @@ void Bystanders::handle_bystanders() {
             continue;
         }
         spawners.push_back(spawner.get());
+    }
+    if (spawners.empty()) {
+        return;
     }
     auto it = spawners.begin();
     using players_map_difference_type = decltype(spawners.begin())::difference_type;

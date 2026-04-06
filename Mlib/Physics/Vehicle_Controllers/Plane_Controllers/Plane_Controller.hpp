@@ -9,7 +9,7 @@ namespace Mlib {
 class PlaneController: public RigidBodyPlaneController {
 public:
     PlaneController(
-        RigidBodyVehicle& rb,
+        const DanglingBaseClassRef<RigidBodyVehicle>& rb,
         std::vector<size_t> left_front_aileron_wing_ids,
         std::vector<size_t> right_front_aileron_wing_ids,
         std::vector<size_t> left_rear_aileron_wing_ids,

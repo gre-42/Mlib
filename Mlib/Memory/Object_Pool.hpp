@@ -1,8 +1,8 @@
 #pragma once
 #include <Mlib/Memory/Dangling_Base_Class.hpp>
-#include <Mlib/Object.hpp>
+#include <Mlib/Misc/Object.hpp>
+#include <Mlib/Misc/Source_Location.hpp>
 #include <Mlib/Os/Os.hpp>
-#include <Mlib/Source_Location.hpp>
 #include <Mlib/Threads/Fast_Mutex.hpp>
 #include <compare>
 #include <functional>

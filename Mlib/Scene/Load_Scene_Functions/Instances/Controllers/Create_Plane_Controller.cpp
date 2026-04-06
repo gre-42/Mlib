@@ -1,7 +1,7 @@
 #include "Create_Plane_Controller.hpp"
-#include <Mlib/Argument_List.hpp>
 #include <Mlib/Components/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
+#include <Mlib/Misc/Argument_List.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Physics/Vehicle_Controllers/Plane_Controllers/Plane_Controller.hpp>
 #include <Mlib/Regex/Regex_Select.hpp>
@@ -9,7 +9,7 @@
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Strings/String.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -40,10 +40,10 @@ CreatePlaneController::CreatePlaneController(PhysicsScene& physics_scene)
 
 void CreatePlaneController::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    DanglingBaseClassRef<SceneNode> node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::node), DP_LOC);
-    auto& rb = get_rigid_body_vehicle(node);
-    if (rb.plane_controller_ != nullptr) {
-        THROW_OR_ABORT("Plane controller already set");
+    DanglingBaseClassRef<SceneNode> node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::node), CURRENT_SOURCE_LOCATION);
+    auto rb = get_rigid_body_vehicle(node.get(), CURRENT_SOURCE_LOCATION);
+    if (rb->plane_controller_ != nullptr) {
+        throw std::runtime_error("Plane controller already set");
     }
     auto left_front_aileron_wing_ids  = args.arguments.at<std::vector<size_t>>(KnownArgs::left_front_aileron_wing_ids);
     auto right_front_aileron_wing_ids = args.arguments.at<std::vector<size_t>>(KnownArgs::right_front_aileron_wing_ids);
@@ -54,7 +54,7 @@ void CreatePlaneController::execute(const LoadSceneJsonUserFunctionArgs& args)
     auto left_flap_wing_ids           = args.arguments.at<std::vector<size_t>>(KnownArgs::left_flap_wing_ids);
     auto right_flap_wing_ids          = args.arguments.at<std::vector<size_t>>(KnownArgs::right_flap_wing_ids);
 
-    rb.plane_controller_ = std::make_unique<PlaneController>(
+    rb->plane_controller_ = std::make_unique<PlaneController>(
         rb,
         left_front_aileron_wing_ids,
         right_front_aileron_wing_ids,

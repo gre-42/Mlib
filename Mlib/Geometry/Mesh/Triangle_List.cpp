@@ -1,11 +1,12 @@
+
 #include "Triangle_List.hpp"
 #include <Mlib/Geometry/Delaunay.hpp>
-#include <Mlib/Geometry/Intersection/Point_Triangle_Intersection.hpp>
 #include <Mlib/Geometry/Mesh/Ambient_Occlusion_By_Curvature.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
 #include <Mlib/Geometry/Mesh/Contour.hpp>
 #include <Mlib/Geometry/Mesh/Vertex_Normals.hpp>
-#include <Mlib/Geometry/Plane_Nd.hpp>
+#include <Mlib/Geometry/Primitives/Plane_Nd.hpp>
+#include <Mlib/Geometry/Primitives/Point_Triangle_Intersection.hpp>
 #include <Mlib/Geometry/Static_Face_Lighting.hpp>
 #include <Mlib/Geometry/Triangle_Normal.hpp>
 #include <Mlib/Geometry/Triangle_Tangent.hpp>
@@ -24,15 +25,14 @@ TriangleList<TPos>::TriangleList(
     GroupAndName name,
     const Material& material,
     const Morphology& morphology,
+    ModifierBacklog modifier_backlog,
     UUList<FixedArray<ColoredVertex<TPos>, 4>>&& quads,
     UUList<FixedArray<ColoredVertex<TPos>, 3>>&& triangles,
     UUList<FixedArray<std::vector<BoneWeight>, 3>>&& triangle_bone_weights,
     UUList<FixedArray<uint8_t, 3>>&& discrete_triangle_texture_layers,
     UUList<FixedArray<float, 3>>&& alpha,
     UUList<FixedArray<float, 4>>&& interiormap_uvmaps)
-    : name{ std::move(name) }
-    , material{ material }
-    , morphology{ morphology }
+    : meta{ std::move(name), material, morphology, modifier_backlog }
     , quads{ std::move(quads) }
     , triangles{ std::move(triangles) }
     , triangle_bone_weights{ std::move(triangle_bone_weights) }
@@ -85,13 +85,13 @@ void TriangleList<TPos>::draw_triangle_with_normals(
     if (!b00.empty() || !b10.empty() || !b01.empty()) {
         triangle_bone_weights.emplace_back(b00, b10, b01);
         if (triangles.size() != triangle_bone_weights.size()) {
-            THROW_OR_ABORT("Triangle bone size mismatch");
+            throw std::runtime_error("Triangle bone size mismatch");
         }
     }
     if (interiormap_uvmap.has_value()) {
         interiormap_uvmaps.emplace_back(*interiormap_uvmap);
         if (triangles.size() != interiormap_uvmaps.size()) {
-            THROW_OR_ABORT("Interiormap uscale size mismatch");
+            throw std::runtime_error("Interiormap uscale size mismatch");
         }
     }
     if (pp00 != nullptr) {
@@ -198,15 +198,15 @@ void TriangleList<TPos>::draw_rectangle_with_normals(
         {
             // Do nothing
         } else if (delaunay_state != DelaunayState::ERROR) {
-            THROW_OR_ABORT("Unknown Delaunay state: " + std::to_string((int)delaunay_state));
+            throw std::runtime_error("Unknown Delaunay state: " + std::to_string((int)delaunay_state));
         } else if (delaunay_error_behavior == DelaunayErrorBehavior::SKIP) {
             return;
         } else if (delaunay_error_behavior == DelaunayErrorBehavior::WARN) {
             lwarn() << "Delaunay error";
         } else if (delaunay_error_behavior == DelaunayErrorBehavior::THROW) {
-            THROW_OR_ABORT("Delaunay error");
+            throw std::runtime_error("Delaunay error");
         } else {
-            THROW_OR_ABORT("Unknown Delaunay error behavior: " + std::to_string((int)delaunay_error_behavior));
+            throw std::runtime_error("Unknown Delaunay error behavior: " + std::to_string((int)delaunay_error_behavior));
         }
     }
     if ((rectangle_triangulation_mode == RectangleTriangulationMode::FIRST) ||
@@ -217,13 +217,13 @@ void TriangleList<TPos>::draw_rectangle_with_normals(
         draw_triangle_with_normals(p00, p10, p11, n00, n10, n11, c00, c10, c11, u00, u10, u11, interiormap_uvmap, b00, b10, b11, tangent_error_behavior, pp00b, pp10b, pp11b);
     } else if (rectangle_triangulation_mode == RectangleTriangulationMode::DELAUNAY) {
         if (pp00a || pp11a || pp01a || pp00b || pp10b || pp11b) {
-            THROW_OR_ABORT("Triangle positions not supported for Delaunay flipping");
+            throw std::runtime_error("Triangle positions not supported for Delaunay flipping");
         }
         draw_triangle_with_normals(p01, p10, p11, n01, n10, n11, c01, c10, c11, u01, u10, u11, interiormap_uvmap, b01, b10, b11, tangent_error_behavior);
         draw_triangle_with_normals(p00, p10, p01, n00, n10, n01, c00, c10, c01, u00, u10, u01, interiormap_uvmap, b00, b10, b01, tangent_error_behavior);
     } else if (rectangle_triangulation_mode == RectangleTriangulationMode::DISABLED) {
         if (pp00a || pp11a || pp01a || pp00b || pp10b || pp11b) {
-            THROW_OR_ABORT("Triangle positions not supported for quads");
+            throw std::runtime_error("Triangle positions not supported for quads");
         }
         quads.emplace_back(
             ColoredVertex<TPos>{
@@ -247,7 +247,7 @@ void TriangleList<TPos>::draw_rectangle_with_normals(
                 u01,
                 n01});
     } else {
-        THROW_OR_ABORT("Unsupported triangulation mode (0)");
+        throw std::runtime_error("Unsupported triangulation mode (0)");
     }
 }
 
@@ -293,15 +293,15 @@ void TriangleList<TPos>::draw_rectangle_wo_normals(
         {
             // Do nothing
         } else if (delaunay_state != DelaunayState::ERROR) {
-            THROW_OR_ABORT("Unknown Delaunay state: " + std::to_string((int)delaunay_state));
+            throw std::runtime_error("Unknown Delaunay state: " + std::to_string((int)delaunay_state));
         } else if (delaunay_error_behavior == DelaunayErrorBehavior::SKIP) {
             return;
         } else if (delaunay_error_behavior == DelaunayErrorBehavior::WARN) {
             lwarn() << "Delaunay error";
         } else if (delaunay_error_behavior == DelaunayErrorBehavior::THROW) {
-            THROW_OR_ABORT("Delaunay error");
+            throw std::runtime_error("Delaunay error");
         } else {
-            THROW_OR_ABORT("Unknown Delaunay error behavior: " + std::to_string((int)delaunay_error_behavior));
+            throw std::runtime_error("Unknown Delaunay error behavior: " + std::to_string((int)delaunay_error_behavior));
         }
     }
     if ((rectangle_triangulation_mode == RectangleTriangulationMode::FIRST) ||
@@ -312,12 +312,12 @@ void TriangleList<TPos>::draw_rectangle_wo_normals(
         draw_triangle_wo_normals(p00, p10, p11, c00, c10, c11, u00, u10, u11, interiormap_uvmap, b00, b10, b11, normal_error_behavior, tangent_error_behavior, pp00b, pp10b, pp11b);
     } else if (rectangle_triangulation_mode == RectangleTriangulationMode::DELAUNAY) {
         if (pp00a || pp11a || pp01a || pp00b || pp10b || pp11b) {
-            THROW_OR_ABORT("Triangle positions not supported for Delaunay flipping");
+            throw std::runtime_error("Triangle positions not supported for Delaunay flipping");
         }
         draw_triangle_wo_normals(p01, p10, p11, c01, c10, c11, u01, u10, u11, interiormap_uvmap, b01, b10, b11, normal_error_behavior, tangent_error_behavior);
         draw_triangle_wo_normals(p00, p10, p01, c00, c10, c01, u00, u10, u01, interiormap_uvmap, b00, b10, b01, normal_error_behavior, tangent_error_behavior);
     } else {
-        THROW_OR_ABORT("Unsupported triangulation mode (1)");
+        throw std::runtime_error("Unsupported triangulation mode (1)");
     }
 }
 
@@ -749,10 +749,10 @@ void TriangleList<TPos>::smoothen_edges(
 template <class TPos>
 std::shared_ptr<ColoredVertexArray<TPos>> TriangleList<TPos>::triangle_array() const {
     return std::make_shared<ColoredVertexArray<TPos>>(
-        name,
-        material,
-        morphology,
-        modifier_backlog,
+        meta.name,
+        meta.material,
+        meta.morphology,
+        meta.modifier_backlog,
         UUVector<FixedArray<ColoredVertex<TPos>, 4>>(quads.begin(), quads.end()),
         UUVector<FixedArray<ColoredVertex<TPos>, 3>>(triangles.begin(), triangles.end()),
         UUVector<FixedArray<ColoredVertex<TPos>, 2>>(),

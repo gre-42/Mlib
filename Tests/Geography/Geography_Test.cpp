@@ -1,9 +1,9 @@
-#include <Mlib/Assert.hpp>
-#include <Mlib/Floating_Point_Exceptions.hpp>
 #include <Mlib/Geography/Season.hpp>
 #include <Mlib/Geography/Sun_Direction.hpp>
 #include <Mlib/Images/StbImage1.hpp>
+#include <Mlib/Misc/Floating_Point_Exceptions.hpp>
 #include <Mlib/Physics/Units.hpp>
+#include <Mlib/Testing/Assert.hpp>
 #include <algorithm>
 
 using namespace Mlib;
@@ -14,7 +14,7 @@ static std::string serialize_time_point( const std::chrono::system_clock::time_p
     std::time_t tt = std::chrono::system_clock::to_time_t(time);
     std::tm* tm = std::gmtime(&tt); //GMT (UTC)
     if (tm == nullptr) {
-        THROW_OR_ABORT("std::gmtime failed");
+        throw std::runtime_error("std::gmtime failed");
     }
     //std::tm tm = *std::localtime(&tt); //Locale time-zone, usually UTC by default.
     std::stringstream ss;
@@ -24,7 +24,7 @@ static std::string serialize_time_point( const std::chrono::system_clock::time_p
 
 void assert_string_equals(const std::string& a, const std::string& b) {
     if (a != b) {
-        THROW_OR_ABORT("Assertion failed: " + a + " != " + b);
+        throw std::runtime_error("Assertion failed: " + a + " != " + b);
     }
 }
 

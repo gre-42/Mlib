@@ -1,3 +1,4 @@
+
 #include "Batch_Resource_Instantiator.hpp"
 #include <Mlib/Geometry/Instance/Rendering_Dynamics.hpp>
 #include <Mlib/Geometry/Material/Aggregate_Mode.hpp>
@@ -18,7 +19,7 @@
 #include <Mlib/Scene_Graph/Interfaces/ISupply_Depots.hpp>
 #include <Mlib/Scene_Graph/Resources/Parsed_Resource_Name.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -108,7 +109,7 @@ void BatchResourceInstantiator::instantiate_root_renderables(
         auto lr = tait_bryan_angles_2_matrix(rotation_);
         for (const auto&& [i, p] : enumerate(object_resource_descriptors_)) {
             if (!p.supplies.empty() && (options.supply_depots == nullptr)) {
-                THROW_OR_ABORT("Supplies requested, but no supply depots available");
+                throw std::runtime_error("Supplies requested, but no supply depots available");
             }
 
             auto cm =
@@ -138,7 +139,7 @@ void BatchResourceInstantiator::instantiate_root_renderables(
                 if (p.aggregate_mode == AggregateMode::NONE) {
                     if (p.create_imposter) {
                         if (options.imposters == nullptr) {
-                            THROW_OR_ABORT("Imposter requested, but no imposters available");
+                            throw std::runtime_error("Imposter requested, but no imposters available");
                         }
                         options.imposters->set_imposter_info(node.ref(CURRENT_SOURCE_LOCATION), { *node_name, p.max_imposter_texture_size });
                     }
@@ -148,10 +149,10 @@ void BatchResourceInstantiator::instantiate_root_renderables(
                         RenderingDynamics::STATIC);
                 } else {
                     if (any(p.aggregate_mode & ~AggregateMode::OBJECT_MASK)) {
-                        THROW_OR_ABORT("Unexpected aggregate mode");
+                        throw std::runtime_error("Unexpected aggregate mode");
                     }
                     if (p.create_imposter) {
-                        THROW_OR_ABORT("Cannot create imposter for aggregate node");
+                        throw std::runtime_error("Cannot create imposter for aggregate node");
                     }
                     lerr() << "Adding aggregate " << *p.name;
                     options.scene.auto_add_root_node(
@@ -189,7 +190,7 @@ void BatchResourceInstantiator::instantiate_root_renderables(
                         .interpolation_mode = PoseInterpolationMode::DISABLED,
                         .renderable_resource_filter = options.renderable_resource_filter});
                 if (node->requires_render_pass(ExternalRenderPassType::STANDARD)) {
-                    THROW_OR_ABORT("Object " + *name + " requires render pass");
+                    throw std::runtime_error("Object " + *name + " requires render pass");
                 }
                 world_node->add_instances_child(name, std::move(node));
                 for (const auto& r : ps) {
@@ -244,7 +245,7 @@ void BatchResourceInstantiator::instantiate_arrays(
                 add_hitbox(acva->dcvas);
             } else {
                 if (!acva->dcvas.empty()) {
-                    THROW_OR_ABORT("Scene position is single precision, but double arrays exist");
+                    throw std::runtime_error("Scene position is single precision, but double arrays exist");
                 }
             }
         }
@@ -308,7 +309,7 @@ std::list<FixedArray<CompressedScenePos, 3>> BatchResourceInstantiator::hitbox_p
     for (const auto& [p, hs] : hitboxes_) {
         auto mat = scene_node_resources.physics_material(p);
         if (!any(mat & PhysicsMaterial::ATTR_COLLIDE)) {
-            THROW_OR_ABORT("Hitbox \"" + *p + "\" is not collidable");
+            throw std::runtime_error("Hitbox \"" + *p + "\" is not collidable");
         }
         for (const auto& h : hs) {
             result.push_back(h.position);

@@ -1,17 +1,17 @@
 #include "Triangulate_Water.hpp"
 #include <Mlib/Geometry/Coordinates/Barycentric_Coordinates.hpp>
-#include <Mlib/Geometry/Intersection/Intersectable_Point.hpp>
 #include <Mlib/Geometry/Mesh/Animated_Colored_Vertex_Arrays.hpp>
 #include <Mlib/Geometry/Mesh/Cleanup/Close_Neighbor_Detector.hpp>
 #include <Mlib/Geometry/Mesh/Contour_Detection_Strategy.hpp>
 #include <Mlib/Geometry/Mesh/Modifiers/Height_Contours.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>
+#include <Mlib/Geometry/Primitives/Intersectable_Point.hpp>
 #include <Mlib/Math/Fixed_Rotation_2D.hpp>
+#include <Mlib/OpenGL/Resources/Heterogeneous_Resource.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Compute_Area.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Triangulate_Entity_List.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Water_Type.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Way_Bvh.hpp>
-#include <Mlib/Render/Resources/Heterogeneous_Resource.hpp>
 
 using namespace Mlib;
 
@@ -24,7 +24,7 @@ public:
     {
         for (const auto& contour : contours) {
             if (contour.hole_type != WaterType::STEEP_HOLE) {
-                THROW_OR_ABORT("HoleIndicator: Unexpected hole type");
+                throw std::runtime_error("HoleIndicator: Unexpected hole type");
             }
             BoundingInfo bounding_info{
                 std::vector(contour.geometry.begin(), contour.geometry.end()),
@@ -35,11 +35,13 @@ public:
             auto tl_steep_holes = std::make_shared<TriangleList<CompressedScenePos>>(
                 "steep_holes",
                 Material{},
-                Morphology{ PhysicsMaterial::NONE });
+                Morphology{ PhysicsMaterial::NONE },
+                ModifierBacklog{});
             auto tl_undefined = std::make_shared<TriangleList<CompressedScenePos>>(
                 "undefined",
                 Material{},
-                Morphology{ PhysicsMaterial::NONE });
+                Morphology{ PhysicsMaterial::NONE },
+                ModifierBacklog{});
             tl_holes.insert(WaterType::STEEP_HOLE, tl_steep_holes);
             tl_holes.insert(WaterType::UNDEFINED, tl_undefined);
             triangulate_entity_list(
@@ -164,7 +166,7 @@ void Mlib::add_water_steiner_points(
             duplicate_distance,
             DuplicateRule::IS_NEIGHBOR))
         {
-            THROW_OR_ABORT("Unexpected duplicate in steiner points");
+            throw std::runtime_error("Unexpected duplicate in steiner points");
         }
     }
     for (const auto& c : contours) {
@@ -254,7 +256,7 @@ void Mlib::set_water_alpha(
     }
     for (auto& [_, x] : tl_water.map()) {
         if (!x->alpha.empty()) {
-            THROW_OR_ABORT("Water already has alpha values");
+            throw std::runtime_error("Water already has alpha values");
         }
         for (auto& t : x->triangles) {
             auto& a = x->alpha.emplace_back(uninitialized);

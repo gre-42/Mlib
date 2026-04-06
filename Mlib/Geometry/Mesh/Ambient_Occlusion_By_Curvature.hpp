@@ -1,6 +1,6 @@
 #pragma once
 #include <Mlib/Geometry/Exceptions/Triangle_Exception.hpp>
-#include <Mlib/Geometry/Plane_Nd.hpp>
+#include <Mlib/Geometry/Primitives/Plane_Nd.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Orderable_Fixed_Array.hpp>
 #include <Mlib/Stats/Min_Max.hpp>
@@ -37,8 +37,8 @@ void ambient_occlusion_by_curvature(
                 auto n = dot0d(funpack(dp), t(i).normal.template casted<I>());
                 auto c = sum(squared(dp)) - squared(n);
                 if (c < 1e-12) {
-                    THROW_OR_ABORT2(TriangleException(
-                        t(0).position, t(1).position, t(2).position, "Infinite curvature detected: " + std::to_string(c)));
+                    throw TriangleException(
+                        t(0).position, t(1).position, t(2).position, "Infinite curvature detected: " + std::to_string(c));
                 }
                 auto ta = std::sqrt(c);
                 ++curvature.first;

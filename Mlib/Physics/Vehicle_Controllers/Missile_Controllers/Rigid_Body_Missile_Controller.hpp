@@ -1,13 +1,14 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
+#include <Mlib/Memory/Dangling_Base_Class.hpp>
 
 namespace Mlib {
 
 class RigidBodyVehicle;
 
-class RigidBodyMissileController {
+class RigidBodyMissileController: public virtual DanglingBaseClass {
 public:
-    explicit RigidBodyMissileController(RigidBodyVehicle& rb);
+    explicit RigidBodyMissileController(const DanglingBaseClassRef<RigidBodyVehicle>& rb);
     virtual ~RigidBodyMissileController();
     void set_desired_direction(
         const FixedArray<float, 3>& dir,
@@ -19,7 +20,7 @@ public:
         float relaxation);
     virtual void apply(float dt) = 0;
 protected:
-    RigidBodyVehicle& rb_;
+    DanglingBaseClassRef<RigidBodyVehicle> rb_;
     float rocket_engine_power_;
     float rocket_engine_power_relaxation_;
     FixedArray<float, 3> desired_direction_;

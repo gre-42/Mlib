@@ -1,25 +1,26 @@
+
 #include "Animation_Frame.hpp"
-#include <Mlib/Throw_Or_Abort.hpp>
 #include <algorithm>
 #include <cmath>
 #include <shared_mutex>
+#include <stdexcept>
 
 namespace Mlib {
 
 void AnimationFrame::advance_time(float dt, AnimationWrapMode wrap_mode) {
     if (!std::isnan(time)) {
         if (std::isnan(begin) != std::isnan(end)) {
-            THROW_OR_ABORT("Inconsistent begin and end NaN-ness (0)");
+            throw std::runtime_error("Inconsistent begin and end NaN-ness (0)");
         }
         if (!std::isnan(begin)) {
             if (end < begin) {
-                THROW_OR_ABORT("Loop end before loop begin");
+                throw std::runtime_error("Loop end before loop begin");
             }
             if (time < begin) {
-                THROW_OR_ABORT("Loop time before loop begin");
+                throw std::runtime_error("Loop time before loop begin");
             }
             if (time > end) {
-                THROW_OR_ABORT("Loop time after loop end");
+                throw std::runtime_error("Loop time after loop end");
             }
             if (end == begin) {
                 time = begin;
@@ -41,10 +42,10 @@ void AnimationFrame::advance_time(float dt, AnimationWrapMode wrap_mode) {
 
 bool AnimationFrame::is_nan() const {
     if (std::isnan(begin) != std::isnan(end)) {
-        THROW_OR_ABORT("Inconsistent begin and end NaN-ness (1)");
+        throw std::runtime_error("Inconsistent begin and end NaN-ness (1)");
     }
     if (std::isnan(time) != std::isnan(end)) {
-        THROW_OR_ABORT("Inconsistent begin and end NaN-ness (2)");
+        throw std::runtime_error("Inconsistent begin and end NaN-ness (2)");
     }
     return std::isnan(time);
 }
@@ -71,7 +72,7 @@ void AperiodicAnimationFrame::advance_time(float dt) {
 
 bool AperiodicAnimationFrame::active() const {
     if (std::isnan(frame_.begin) != std::isnan(frame_.end)) {
-        THROW_OR_ABORT("Inconsistent begin and end NaN-ness (3)");
+        throw std::runtime_error("Inconsistent begin and end NaN-ness (3)");
     }
     return !frame_.is_nan() && (frame_.time != frame_.end);
 }

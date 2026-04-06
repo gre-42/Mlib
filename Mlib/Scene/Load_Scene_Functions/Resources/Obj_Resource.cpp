@@ -1,6 +1,5 @@
 #include "Obj_Resource.hpp"
-#include <Mlib/Argument_List.hpp>
-#include <Mlib/FPath.hpp>
+#include <Mlib/Compression/Compressed_File.hpp>
 #include <Mlib/Geometry/Interfaces/IRace_Logic.hpp>
 #include <Mlib/Geometry/Material/Billboard_Atlas_Instance.hpp>
 #include <Mlib/Geometry/Mesh/Load/Load_Mesh_Config.hpp>
@@ -9,17 +8,20 @@
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Macro_Executor/Replacement_Parameter.hpp>
 #include <Mlib/Math/Transformation/Tait_Bryan_Angles.hpp>
+#include <Mlib/Misc/Argument_List.hpp>
+#include <Mlib/Misc/FPath.hpp>
+#include <Mlib/OpenGL/Rendering_Context.hpp>
+#include <Mlib/OpenGL/Resource_Managers/Rendering_Resources.hpp>
+#include <Mlib/OpenGL/Resources/Kn5_File_Resource.hpp>
+#include <Mlib/OpenGL/Resources/Mhx2_File_Resource.hpp>
+#include <Mlib/OpenGL/Resources/Obj_File_Resource.hpp>
+#include <Mlib/OpenGL/Resources/Proctree_File_Resource.hpp>
 #include <Mlib/Physics/Misc/Track_Element.hpp>
 #include <Mlib/Physics/Units.hpp>
-#include <Mlib/Render/Rendering_Context.hpp>
-#include <Mlib/Render/Resource_Managers/Rendering_Resources.hpp>
-#include <Mlib/Render/Resources/Kn5_File_Resource.hpp>
-#include <Mlib/Render/Resources/Mhx2_File_Resource.hpp>
-#include <Mlib/Render/Resources/Obj_File_Resource.hpp>
 #include <Mlib/Scene/Json/Load_Mesh_Config_Json.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -82,7 +84,7 @@ public:
         const std::vector<TransformationMatrix<SceneDir, ScenePos, 3>>& checkpoints) override
     {
         if (checkpoints.empty()) {
-            THROW_OR_ABORT("Received no checkpoints");
+            throw std::runtime_error("Received no checkpoints");
         }
         const auto geographic_mapping = TransformationMatrix<double, double, 3>::identity();
         std::vector<std::vector<double>> global_checkpoints;
@@ -100,7 +102,7 @@ public:
     }
     void set_circularity(bool is_circular) override {
         if (asset_references_["levels"].at(asset_id_).rp.database.at<bool>("if_raceway_circular") != is_circular) {
-            THROW_OR_ABORT("Inconsistent raceway circularity in level \"" + asset_id_ + '"');
+            throw std::runtime_error("Inconsistent raceway circularity in level \"" + asset_id_ + '"');
         }
     }
 private:
@@ -114,10 +116,11 @@ void ObjResource::execute(const LoadSceneJsonUserFunctionArgs& args)
     auto name = args.arguments.at<VariableAndHash<std::string>>(KnownArgs::name);
     LoadMeshConfig<TPos> load_mesh_config = load_mesh_config_from_json<TPos>(
         args.arguments.child(KnownArgs::config));
-    std::string filename = args.arguments.try_path_or_variable(KnownArgs::filename).path;
+    auto filename = args.arguments.try_path_or_variable(KnownArgs::filename).local_path();
     auto& scene_node_resources = RenderingContextStack::primary_scene_node_resources();
     auto& rendering_resources = RenderingContextStack::primary_rendering_resources();
-    if (filename.ends_with(".obj")) {
+    CompressedFile compressed_file{filename};
+    if (compressed_file.has_any_extension(".obj")) {
         scene_node_resources.add_resource_loader(
             name,
             [filename, load_mesh_config, &scene_node_resources](){
@@ -126,7 +129,7 @@ void ObjResource::execute(const LoadSceneJsonUserFunctionArgs& args)
                     load_mesh_config,
                     scene_node_resources);
             });
-    } else if (filename.ends_with(".kn5") || filename.ends_with(".ini")) {
+    } else if (compressed_file.has_any_extension(".kn5", ".ini")) {
         scene_node_resources.add_resource_loader(
             name,
             [filename,
@@ -144,7 +147,7 @@ void ObjResource::execute(const LoadSceneJsonUserFunctionArgs& args)
                     &rendering_resources,
                     &race_logic);
             });
-    } else if (filename.ends_with(".mhx2")) {
+    } else if (compressed_file.has_any_extension(".mhx2")) {
         if constexpr (std::is_same_v<TPos, float>) {
             scene_node_resources.add_resource_loader(
                 name,
@@ -154,9 +157,21 @@ void ObjResource::execute(const LoadSceneJsonUserFunctionArgs& args)
                         load_mesh_config);
                 });
         } else {
-            THROW_OR_ABORT("MHX2 does not support double precision");
+            throw std::runtime_error("MHX2 does not support double precision");
+        }
+    } else if (compressed_file.has_any_extension(".proctree.json")) {
+        if constexpr (std::is_same_v<TPos, float>) {
+            scene_node_resources.add_resource_loader(
+                name,
+                [filename, load_mesh_config](){
+                    return std::make_shared<ProctreeFileResource>(
+                        filename,
+                        load_mesh_config);
+                });
+        } else {
+            throw std::runtime_error("Proctree does not support double precision");
         }
     } else {
-        THROW_OR_ABORT("Unknown file type: " + filename);
+        throw std::runtime_error("Unknown file type: \"" + filename.string() + '"');
     }
 }

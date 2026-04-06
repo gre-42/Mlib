@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Hashing/Variable_And_Hash.hpp>
 #include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/Memory/Destruction_Functions.hpp>
 #include <Mlib/Physics/Containers/Rigid_Bodies.hpp>
@@ -7,7 +8,6 @@
 #include <Mlib/Physics/Maybe_Generate.hpp>
 #include <Mlib/Physics/Smoke_Generation/Particle_Trail_Generator.hpp>
 #include <Mlib/Scene_Config/Scene_Precision.hpp>
-#include <Mlib/Variable_And_Hash.hpp>
 #include <functional>
 #include <mutex>
 #include <string>
@@ -48,10 +48,10 @@ public:
         std::function<void(const AudioSourceState<ScenePos>*)> update_engine_audio_position,
         SmokeParticleGenerator& smoke_generator,
         AdvanceTimes& advance_times,
-        RigidBodyVehicle& rigid_body,
+        const DanglingBaseClassRef<RigidBodyVehicle>& rigid_body,
         RigidBodies& rigid_bodies,
-        IPlayer* gunner,
-        ITeam* team,
+        const DanglingBaseClassPtr<IPlayer>& gunner,
+        const DanglingBaseClassPtr<ITeam>& team,
         VariableAndHash<std::string> bullet_node_name,
         const BulletProperties& props,
         std::unique_ptr<ITrailExtender> trace_extender,
@@ -81,10 +81,10 @@ private:
     std::function<void(const AudioSourceState<ScenePos>*)> update_engine_audio_position_;
     SmokeParticleGenerator& smoke_generator_;
     AdvanceTimes& advance_times_;
-    RigidBodyPulses& rigid_body_pulses_;
+    DanglingBaseClassRef<RigidBodyVehicle> rigid_body_vehicle_;
     RigidBodies& rigid_bodies_;
-    IPlayer* gunner_;
-    ITeam* team_;
+    DanglingBaseClassPtr<IPlayer> gunner_;
+    DanglingBaseClassPtr<ITeam> team_;
     VariableAndHash<std::string> bullet_node_name_;
     const BulletProperties& props_;
     float lifetime_;

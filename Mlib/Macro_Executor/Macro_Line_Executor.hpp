@@ -4,9 +4,9 @@
 #include <Mlib/Regex/Misc.hpp>
 #include <filesystem>
 #include <functional>
-#include <list>
 #include <map>
 #include <string>
+#include <vector>
 
 namespace Mlib {
 
@@ -15,7 +15,6 @@ class SubstitutionMap;
 class NotifyingJsonMacroArguments;
 class JsonMacroArgumentsObserverToken;
 class AssetReferences;
-struct FPath;
 class JsonView;
 class JsonMacroArgumentsAndLock;
 class WritableJsonMacroArgumentsAndLock;
@@ -32,7 +31,7 @@ public:
     MacroLineExecutor(
         MacroRecorder& macro_recorder,
         std::string script_filename,
-        const std::list<std::string>* search_path,
+        const std::vector<std::filesystem::path>& search_path,
         JsonUserFunction json_user_function,
         std::string context,
         nlohmann::json block_arguments,
@@ -73,8 +72,8 @@ public:
     JsonView block_arguments() const;
 private:
     MacroRecorder& macro_recorder_;
-    std::string script_filename_;
-    const std::list<std::string>* search_path_;
+    std::filesystem::path script_filename_;
+    const std::vector<std::filesystem::path>& search_path_;
     JsonUserFunction json_user_function_;
     std::string context_;
     nlohmann::json block_arguments_;

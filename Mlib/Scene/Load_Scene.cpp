@@ -16,7 +16,6 @@
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Cameras/Create_Ortho_Camera.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Cameras/Create_Perspective_Camera.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Cameras/Fit_Canvas_To_Renderables.hpp>
-#include <Mlib/Scene/Load_Scene_Functions/Instances/Cameras/Set_Camera_Cycle.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Controllers/Create_Avatar_As_Avatar_Controller.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Controllers/Create_Avatar_As_Car_Controller.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Controllers/Create_Car_Controller.hpp>
@@ -122,7 +121,6 @@
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Add_Bvh_Resource.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Add_Companion_Renderable.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Add_Foliage_Resource.hpp>
-#include <Mlib/Scene/Load_Scene_Functions/Resources/Add_Texture_Atlas.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Animatable_Billboards.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Animatable_Trails.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Animated_Billboards.hpp>
@@ -165,7 +163,7 @@ using namespace Mlib;
 using namespace LoadSceneFuncs;
 
 LoadScene::LoadScene(
-    const std::list<std::string>* search_path,
+    const std::vector<std::filesystem::path>& search_path,
     const std::string& script_filename,
     ThreadSafeString& next_scene_filename,
     LocalSceneLevel scene_level,
@@ -362,7 +360,6 @@ LoadScene::LoadScene(
             register_json_user_function(SetBevelBoxSurfaceNormal::key, SetBevelBoxSurfaceNormal::json_user_function);
             register_json_user_function(SetCapsuleSurfaceNormal::key, SetCapsuleSurfaceNormal::json_user_function);
             register_json_user_function(SetSlidingNormalModifier::key, SetSlidingNormalModifier::json_user_function);
-            register_json_user_function(SetCameraCycle::key, SetCameraCycle::json_user_function);
             register_json_user_function(SetDesiredWeapon::key, SetDesiredWeapon::json_user_function);
             register_json_user_function(SetDirtmap::key, SetDirtmap::json_user_function);
             register_json_user_function(SetInventoryCapacity::key, SetInventoryCapacity::json_user_function);
@@ -394,7 +391,6 @@ LoadScene::LoadScene(
             register_json_user_function(AddBvhResource::key, AddBvhResource::json_user_function);
             register_json_user_function(AddCompanionRenderable::key, AddCompanionRenderable::json_user_function);
             register_json_user_function(AddFoliageResource::key, AddFoliageResource::json_user_function);
-            register_json_user_function(AddTextureAtlas::key, AddTextureAtlas::json_user_function);
             register_json_user_function(AnimatableBillboards::key, AnimatableBillboards::json_user_function);
             register_json_user_function(AnimatedBillboards::key, AnimatedBillboards::json_user_function);
             register_json_user_function(AnimatableTrails::key, AnimatableTrails::json_user_function);
@@ -454,5 +450,5 @@ bool LoadScene::level_loaded() const {
     case LocalSceneLevelLoadStatus::RUNNING:
         return true;
     }
-    THROW_OR_ABORT("Unknown level loaded status");
+    throw std::runtime_error("Unknown level loaded status");
 }

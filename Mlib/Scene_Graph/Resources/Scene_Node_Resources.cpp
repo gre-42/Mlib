@@ -1,3 +1,4 @@
+
 #include "Scene_Node_Resources.hpp"
 #include <Mlib/Geometry/Graph/Point_And_Flags.hpp>
 #include <Mlib/Geometry/Graph/Points_And_Adjacency.hpp>
@@ -18,13 +19,18 @@
 #include <Mlib/Scene_Graph/Instantiation/Root_Instantiation_Options.hpp>
 #include <Mlib/Scene_Graph/Interfaces/IScene_Node_Resource.hpp>
 #include <Mlib/Scene_Graph/Interfaces/Way_Points.hpp>
+#include <Mlib/Scene_Graph/Render/Batch_Renderers/Task_Location.hpp>
+#include <Mlib/Scene_Graph/Render/Gpu_Vertex_Datas.hpp>
+#include <Mlib/Scene_Graph/Render/IGpu_Object_Factory.hpp>
 #include <Mlib/Scene_Graph/Resources/Renderable_Resource_Filter.hpp>
 #include <Mlib/Scene_Graph/Spawn_Point.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
+#include <stdexcept>
+#include <unordered_set>
 
 using namespace Mlib;
 
-SceneNodeResources::SceneNodeResources()
+SceneNodeResources::SceneNodeResources(
+    IGpuObjectFactory& gpu_object_factory)
     : resources_{ "Resource" }
     , instantiables_{ "Instantiable" }
     , geographic_mappings_{ "Geographic mapping" }
@@ -33,6 +39,9 @@ SceneNodeResources::SceneNodeResources()
     , companions_{ "Companion" }
     , resource_loaders_{ "Resource loader" }
     , modifiers_{ "Modifier" }
+    , gpu_object_factory_{ gpu_object_factory }
+    , gpu_vertex_data_groups_{ "GPU vertex data group" }
+    , gpu_vertex_datas_{ "GPU vertex data", [](const auto& scva){ return scva->meta.name.full_name(); } }
 {}
 
 SceneNodeResources::~SceneNodeResources() = default;
@@ -41,7 +50,7 @@ void SceneNodeResources::write_loaded_resources(const std::string& filename) con
     std::scoped_lock lock{mutex_};
     std::ofstream fstr{filename};
     if (fstr.fail()) {
-        THROW_OR_ABORT("Could not open file for write: \"" + filename + '"');
+        throw std::runtime_error("Could not open file for write: \"" + filename + '"');
     }
     std::list<std::string> descriptors;
     for (const auto& [name, _] : resources_) {
@@ -51,7 +60,7 @@ void SceneNodeResources::write_loaded_resources(const std::string& filename) con
     nlohmann::json j(descriptors);
     fstr << j;
     if (fstr.fail()) {
-        THROW_OR_ABORT("Could not write to file: \"" + filename + '"');
+        throw std::runtime_error("Could not write to file: \"" + filename + '"');
     }
 }
 
@@ -62,12 +71,12 @@ void SceneNodeResources::preload_many(
     std::scoped_lock lock{mutex_};
     auto fstr = create_ifstream(filename);
     if (fstr->fail()) {
-        THROW_OR_ABORT("Could not open preload-file for read: \"" + filename + '"');
+        throw std::runtime_error("Could not open preload-file for read: \"" + filename + '"');
     }
     nlohmann::json j;
     *fstr >> j;
     if (fstr->fail()) {
-        THROW_OR_ABORT("Could not load from file: \"" + filename + '"');
+        throw std::runtime_error("Could not load from file: \"" + filename + '"');
     }
     std::vector<VariableAndHash<std::string>> resource_names;
     try {
@@ -99,7 +108,7 @@ void SceneNodeResources::add_resource(
 {
     std::scoped_lock lock{ mutex_ };
     if (resource_loaders_.contains(name)) {
-        THROW_OR_ABORT("Resource loader with name \"" + *name + "\" already exists");
+        throw std::runtime_error("Resource loader with name \"" + *name + "\" already exists");
     }
     resources_.add(name, resource);
 }
@@ -110,10 +119,10 @@ void SceneNodeResources::add_resource_loader(
 {
     std::scoped_lock lock{ mutex_ };
     if (resources_.contains(name)) {
-        THROW_OR_ABORT("Cannot add loader for name \"" + *name + "\", because a resource with that name already exists");
+        throw std::runtime_error("Cannot add loader for name \"" + *name + "\", because a resource with that name already exists");
     }
     if (!resource_loaders_.try_emplace(name, resource).second) {
-        THROW_OR_ABORT("Resource loader with name \"" + *name + "\" already exists");
+        throw std::runtime_error("Resource loader with name \"" + *name + "\" already exists");
     }
 }
 
@@ -124,7 +133,7 @@ void SceneNodeResources::instantiate_child_renderable(
     unsigned int recursion_depth) const
 {
     if (recursion_depth > 10) {
-        THROW_OR_ABORT("instantiate_child_renderable exceeded its recursion depth");
+        throw std::runtime_error("instantiate_child_renderable exceeded its recursion depth");
     }
     auto resource = get_resource(resource_name);
     try {
@@ -159,7 +168,7 @@ void SceneNodeResources::instantiate_root_renderables(
     unsigned int recursion_depth) const
 {
     if (recursion_depth > 10) {
-        THROW_OR_ABORT("instantiate_child_renderable exceeded its recursion depth");
+        throw std::runtime_error("instantiate_child_renderable exceeded its recursion depth");
     }
     auto resource = get_resource(resource_name);
     try {
@@ -268,7 +277,7 @@ std::shared_ptr<ColoredVertexArray<float>> SceneNodeResources::get_single_precis
 {
     auto res = get_single_precision_arrays(name, filter);
     if (res.size() != 1) {
-        THROW_OR_ABORT("Resource \"" + *name + "\" does not contain exactly one single-precision array");
+        throw std::runtime_error("Resource \"" + *name + "\" does not contain exactly one single-precision array");
     }
     return res.front();
 }
@@ -279,10 +288,10 @@ std::list<std::shared_ptr<ColoredVertexArray<float>>> SceneNodeResources::get_si
 {
     auto acvas = get_arrays(name, filter);
     if (acvas->scvas.empty()) {
-        THROW_OR_ABORT("Resource \"" + *name + "\" contains no single precision arrays");
+        throw std::runtime_error("Resource \"" + *name + "\" contains no single precision arrays");
     }
     if (!acvas->dcvas.empty()) {
-        THROW_OR_ABORT("Resource \"" + *name + "\" contains double precision arrays");
+        throw std::runtime_error("Resource \"" + *name + "\" contains double precision arrays");
     }
     return acvas->scvas;
 }
@@ -559,7 +568,7 @@ void SceneNodeResources::add_companion(
         if (!resources_.contains(resource_name) &&
             !resource_loaders_.contains(resource_name))
         {
-            THROW_OR_ABORT("Could not find resource or loader with name \"" + *resource_name + '"');
+            throw std::runtime_error("Could not find resource or loader with name \"" + *resource_name + '"');
         }
     }
     {
@@ -583,7 +592,7 @@ std::shared_ptr<ISceneNodeResource> SceneNodeResources::get_resource(
     }
     auto lit = resource_loaders_.try_get(name);
     if (lit == nullptr) {
-        THROW_OR_ABORT("Could not find resource or loader with name \"" + *name + '"');
+        throw std::runtime_error("Could not find resource or loader with name \"" + *name + '"');
     }
     auto resource = (*lit)();
     auto* mit = modifiers_.try_get(name);
@@ -618,9 +627,9 @@ void SceneNodeResources::add_modifier(
         if (!modifiers_.contains(resource_name)) {
             modifiers_.add(resource_name);
         }
-        modifiers_.get(resource_name).push_back(modifier);
+        modifiers_.get(resource_name).push_front(modifier);
     } else {
-        THROW_OR_ABORT("Could not find resource or loader with name \"" + *resource_name + '"');
+        throw std::runtime_error("Could not find resource or loader with name \"" + *resource_name + '"');
     }
 }
 
@@ -635,4 +644,55 @@ const InstanceInformation<ScenePos>& SceneNodeResources::instantiable(
     const VariableAndHash<std::string>& name) const
 {
     return instantiables_.get(name);
+}
+
+const GpuVertexDatas& SceneNodeResources::get_gpu_vertex_data_group(
+    const VariableAndHash<std::string>& name) const
+{
+    {
+        std::shared_lock lock{gpu_vertex_data_groups_mutex_};
+        if (auto it = gpu_vertex_data_groups_.try_get(name); it != nullptr) {
+            return *it;
+        }
+    }
+    std::scoped_lock lock{gpu_vertex_data_groups_mutex_};
+    if (auto it = gpu_vertex_data_groups_.try_get(name); it != nullptr) {
+        return *it;
+    }
+    auto acvas = get_rendering_arrays(name);
+    std::unordered_set<TransformationMode> transformation_modes;
+    for (const auto& acva : acvas) {
+        for (const auto& scva : acva->scvas) {
+            transformation_modes.insert(scva->meta.material.transformation_mode);
+        }
+    }
+    if (transformation_modes.size() != 1) {
+        throw std::runtime_error("Could not determine unique transformation mode for \"" + *name + '"');
+    }
+    GpuVertexDatas result{
+        {},
+        *transformation_modes.begin()};
+    for (const auto& acva : acvas) {
+        for (const auto& scva : acva->scvas) {
+            result.vertex_data.emplace_back(gpu_object_factory_.create_vertex_data(scva, acva, TaskLocation::BACKGROUND));
+        }
+    }
+    return gpu_vertex_data_groups_.add(name, std::move(result));
+}
+
+std::shared_ptr<IGpuVertexData> SceneNodeResources::get_gpu_vertex_data(
+    const std::shared_ptr<ColoredVertexArray<float>>& scva,
+    const std::shared_ptr<AnimatedColoredVertexArrays>& acvas) const
+{
+    {
+        std::shared_lock lock{gpu_vertex_datas_mutex_};
+        if (auto it = gpu_vertex_datas_.try_get(scva); it != nullptr) {
+            return *it;
+        }
+    }
+    std::scoped_lock lock{gpu_vertex_datas_mutex_};
+    if (auto it = gpu_vertex_datas_.try_get(scva); it != nullptr) {
+        return *it;
+    }
+    return gpu_vertex_datas_.add(scva, gpu_object_factory_.create_vertex_data(scva, acvas, TaskLocation::BACKGROUND));
 }

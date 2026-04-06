@@ -1,9 +1,9 @@
 #include "Create_Yaw_Pitch_Lookat_Nodes.hpp"
-#include <Mlib/Argument_List.hpp>
 #include <Mlib/Components/Aim_At.hpp>
 #include <Mlib/Components/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Memory/Integral_To_Float.hpp>
+#include <Mlib/Misc/Argument_List.hpp>
 #include <Mlib/Physics/Advance_Times/Movables/Pitch_Look_At_Node.hpp>
 #include <Mlib/Physics/Advance_Times/Movables/Yaw_Pitch_Look_At_Nodes.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Engine.hpp>
@@ -16,7 +16,7 @@
 #include <Mlib/Signal/Exponential_Smoother.hpp>
 #include <Mlib/Stats/Fast_Random_Number_Generators.hpp>
 #include <Mlib/Stats/Random_Process.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -50,9 +50,9 @@ CreateYawPitchLookatNodes::CreateYawPitchLookatNodes(PhysicsScene& physics_scene
 void CreateYawPitchLookatNodes::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     Linker linker{ physics_engine.advance_times_ };
-    DanglingBaseClassRef<SceneNode> yaw_node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::yaw_node), DP_LOC);
-    DanglingBaseClassRef<SceneNode> pitch_node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::pitch_node), DP_LOC);
-    DanglingBaseClassRef<SceneNode> gun_node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::gun_node), DP_LOC);
+    DanglingBaseClassRef<SceneNode> yaw_node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::yaw_node), CURRENT_SOURCE_LOCATION);
+    DanglingBaseClassRef<SceneNode> pitch_node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::pitch_node), CURRENT_SOURCE_LOCATION);
+    DanglingBaseClassRef<SceneNode> gun_node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::gun_node), CURRENT_SOURCE_LOCATION);
     float yaw_error_std = args.arguments.at<float>(KnownArgs::yaw_error_std);
     float pitch_velocity_error_std = args.arguments.at<float>(KnownArgs::pitch_error_std);
     float error_alpha = (pitch_velocity_error_std != 0.f)
@@ -70,7 +70,7 @@ void CreateYawPitchLookatNodes::execute(const LoadSceneJsonUserFunctionArgs& arg
         FastNormalRandomNumberGenerator<float>{ 0, 0.f, pitch_velocity_error_std * std::sqrt(2.f / error_alpha) },
         ExponentialSmoother<float>{ error_alpha, pitch_velocity_error_std } };
 
-    auto& aim_at = get_aim_at(gun_node);
+    auto aim_at = get_aim_at(gun_node.get(), CURRENT_SOURCE_LOCATION);
     auto follower_pitch = std::make_unique<PitchLookAtNode>(
         aim_at,
         args.arguments.at<float>(KnownArgs::pitch_min) * degrees,
@@ -79,11 +79,11 @@ void CreateYawPitchLookatNodes::execute(const LoadSceneJsonUserFunctionArgs& arg
         increment_pitch_error);
     auto follower = std::make_unique<YawPitchLookAtNodes>(
         aim_at,
-        *follower_pitch,
+        DanglingBaseClassRef<PitchLookAtNode>{*follower_pitch, CURRENT_SOURCE_LOCATION},
         args.arguments.at<float>(KnownArgs::dyaw_max) * degrees,
         increment_yaw_error);
     if (args.arguments.contains(KnownArgs::head_node)) {
-        follower->pitch_look_at_node().set_head_node(scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::head_node), DP_LOC));
+        follower->pitch_look_at_node()->set_head_node(scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::head_node), CURRENT_SOURCE_LOCATION));
     }
     linker.link_relative_movable(
         yaw_node,

@@ -1,9 +1,9 @@
 #pragma once
+#include <Mlib/Hashing/Variable_And_Hash.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
 #include <Mlib/Physics/Actuators/Base_Rotor.hpp>
 #include <Mlib/Scene_Config/Scene_Precision.hpp>
 #include <Mlib/Signal/Pid_Controller.hpp>
-#include <Mlib/Variable_And_Hash.hpp>
 #include <string>
 
 namespace Mlib {
@@ -37,7 +37,7 @@ public:
         const FixedArray<float, 3>& vehicle_mount_1,
         const FixedArray<float, 3>& blades_mount_0,
         const FixedArray<float, 3>& blades_mount_1,
-        RigidBodyPulses* rotor_rb);
+        const DanglingBaseClassPtr<RigidBodyVehicle>& rotor_rb);
     Rotor(const Rotor&) = delete;
     Rotor& operator = (const Rotor&) = delete;
     ~Rotor();

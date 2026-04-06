@@ -1,4 +1,5 @@
-#include <Mlib/Variable_And_Hash.hpp>
+#pragma once
+#include <Mlib/Hashing/Variable_And_Hash.hpp>
 #include <string>
 
 namespace Mlib {

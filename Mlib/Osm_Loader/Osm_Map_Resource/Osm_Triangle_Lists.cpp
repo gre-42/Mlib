@@ -5,15 +5,15 @@
 #include <Mlib/Geometry/Material_Configuration/Meta_Materials.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_List.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>
+#include <Mlib/OpenGL/Renderables/Triangle_Sampler/Terrain_Type.hpp>
+#include <Mlib/OpenGL/Rendering_Context.hpp>
+#include <Mlib/OpenGL/Resource_Managers/Rendering_Resources.hpp>
 #include <Mlib/Os/Os.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Entrance_Type.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Osm_Resource_Config.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Road_Type.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Styled_Road.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Water_Type.hpp>
-#include <Mlib/Render/Renderables/Triangle_Sampler/Terrain_Type.hpp>
-#include <Mlib/Render/Rendering_Context.hpp>
-#include <Mlib/Render/Resource_Managers/Rendering_Resources.hpp>
 
 using namespace Mlib;
 
@@ -23,7 +23,7 @@ static PhysicsMaterial physics_material(
 {
     auto it = m.find(terrain_type);
     if (it == m.end()) {
-        THROW_OR_ABORT("Could not find physics material for terrain type \"" + terrain_type_to_string(terrain_type) + '"');
+        throw std::runtime_error("Could not find physics material for terrain type \"" + terrain_type_to_string(terrain_type) + '"');
     }
     return it->second;
 }
@@ -43,7 +43,7 @@ static Shading terrain_type_specularity(
 {
     auto pm = physics_material(m, terrain_type);
     try {
-        return material_shading(pm, config);
+        return material_shading(pm, config.shading_factors);
     } catch (const std::runtime_error& e) {
         throw std::runtime_error("Error determining specularity for terrain type \"" + to_string(terrain_type) + "\": " + e.what());
     }
@@ -76,7 +76,7 @@ const StyledRoad& RoadPropertiesTriangleList::operator [] (const RoadProperties&
         }
     }
     if (result == nullptr) {
-        THROW_OR_ABORT("Could not find matching triangle list for properties " + (std::string)road_properties);
+        throw std::runtime_error("Could not find matching triangle list for properties " + (std::string)road_properties);
     }
     return *result;
 }
@@ -88,7 +88,7 @@ const std::list<StyledRoadEntry>& RoadPropertiesTriangleList::list() const {
 template <class EntityType>
 void EntityTypeTriangleList<EntityType>::insert(EntityType road_type, const std::shared_ptr<TriangleList<CompressedScenePos>>& lst) {
     if (!lst_.insert({road_type, lst}).second) {
-        THROW_OR_ABORT("Could not insert triangle list");
+        throw std::runtime_error("Could not insert triangle list");
     }
 }
 
@@ -101,7 +101,7 @@ template <class EntityType>
 const std::shared_ptr<TriangleList<CompressedScenePos>>& EntityTypeTriangleList<EntityType>::operator [] (EntityType road_type) const {
     auto it = lst_.find(road_type);
     if (it == lst_.end()) {
-        THROW_OR_ABORT("Could not find list with type " + to_string(road_type));
+        throw std::runtime_error("Could not find list with type " + to_string(road_type));
     }
     return it->second;
 }
@@ -126,29 +126,32 @@ OsmTriangleLists::OsmTriangleLists(
         std::make_shared<TriangleList<CompressedScenePos>>(
             terrain_type_to_string(TerrainType::STREET_HOLE) + name_suffix,
             Material{},
-            Morphology{ .physics_material = PhysicsMaterial::NONE }));
+            Morphology{ .physics_material = PhysicsMaterial::NONE },
+            ModifierBacklog{}));
     tl_terrain->insert(
         TerrainType::BUILDING_HOLE,
         std::make_shared<TriangleList<CompressedScenePos>>(
             terrain_type_to_string(TerrainType::BUILDING_HOLE) + name_suffix,
             Material{},
-            Morphology{ .physics_material = PhysicsMaterial::NONE }));
+            Morphology{ .physics_material = PhysicsMaterial::NONE },
+            ModifierBacklog{}));
     tl_terrain->insert(
         TerrainType::OCEAN_GROUND,
         std::make_shared<TriangleList<CompressedScenePos>>(
             terrain_type_to_string(TerrainType::OCEAN_GROUND) + name_suffix,
             Material{},
-            Morphology{ .physics_material = PhysicsMaterial::NONE }));
+            Morphology{ .physics_material = PhysicsMaterial::NONE },
+            ModifierBacklog{}));
     for (auto& [tt, ttt] : config.terrain_textures) {
         auto dt = config.terrain_dirt_textures.find(tt);
-        auto dirt_texture = (dt == config.terrain_dirt_textures.end()) ? VariableAndHash<std::string>{} : dt->second;
+        auto dirt_texture = (dt == config.terrain_dirt_textures.end()) ? FPath{} : dt->second;
         auto rit = config.terrain_reflection_map.find(tt);
         tl_terrain->insert(tt, std::make_shared<TriangleList<CompressedScenePos>>(
             terrain_type_to_string(tt) + name_suffix,
             Material{
                 .reflection_map = (rit != config.terrain_reflection_map.end())
                     ? rit->second
-                    : VariableAndHash<std::string>{},
+                    : FPath{},
                 .dirt_texture = dirt_texture,
                 .occluded_pass = ExternalRenderPassType::LIGHTMAP_BLACK_NODE,
                 .occluder_pass = ExternalRenderPassType::NONE,
@@ -159,13 +162,14 @@ OsmTriangleLists::OsmTriangleLists(
             Morphology{
                 .physics_material = BASE_VISIBLE_GROUND_MATERIAL | physics_meta_material(config.terrain_materials, tt),
                 .triangle_cluster_width = config.medium_triangle_cluster_width
-            }));
+            },
+            ModifierBacklog{}));
         tl_terrain_visuals.insert(tt, std::make_shared<TriangleList<CompressedScenePos>>(
             terrain_type_to_string(tt) + "_visuals" + name_suffix,
             Material{
                 .reflection_map = (rit != config.terrain_reflection_map.end())
                     ? rit->second
-                    : VariableAndHash<std::string>{},
+                    : FPath{},
                 .dirt_texture = dirt_texture,
                 .occluded_pass = ExternalRenderPassType::LIGHTMAP_BLACK_NODE,
                 .occluder_pass = ExternalRenderPassType::NONE,
@@ -176,13 +180,14 @@ OsmTriangleLists::OsmTriangleLists(
             Morphology{
                 .physics_material = PhysicsMaterial::ATTR_VISIBLE,
                 .triangle_cluster_width = config.medium_triangle_cluster_width
-            }));
+            },
+            ModifierBacklog{}));
         tl_terrain_extrusion.insert(tt, std::make_shared<TriangleList<CompressedScenePos>>(
             terrain_type_to_string(tt) + "_street_extrusion" + name_suffix,
             Material{
                 .reflection_map = (rit != config.terrain_reflection_map.end())
                     ? rit->second
-                    : VariableAndHash<std::string>{},
+                    : FPath{},
                 .dirt_texture = dirt_texture,
                 .occluded_pass = ExternalRenderPassType::LIGHTMAP_BLACK_NODE,
                 .occluder_pass = ExternalRenderPassType::NONE,
@@ -193,32 +198,33 @@ OsmTriangleLists::OsmTriangleLists(
             Morphology{
                 .physics_material = BASE_VISIBLE_GROUND_MATERIAL | physics_meta_material(config.terrain_materials, tt),
                 .triangle_cluster_width = config.medium_triangle_cluster_width
-            }));
+            },
+            ModifierBacklog{}));
         for (auto& t : ttt) {
             // BlendMapTexture bt{ .texture_descriptor = {.color = t, .normal = primary_rendering_resources.get_normalmap(t), .anisotropic_filtering_level = anisotropic_filtering_level } };
             BlendMapTexture bt = primary_rendering_resources.get_blend_map_texture(t);
             if (bt.texture_descriptor.color.mipmap_mode == MipmapMode::WITH_MIPMAPS_2D) {
-                (*tl_terrain)[tt]->material.has_animated_textures = true;
-                tl_terrain_visuals[tt]->material.has_animated_textures = true;
-                tl_terrain_extrusion[tt]->material.has_animated_textures = true;
+                (*tl_terrain)[tt]->meta.material.has_animated_textures = true;
+                tl_terrain_visuals[tt]->meta.material.has_animated_textures = true;
+                tl_terrain_extrusion[tt]->meta.material.has_animated_textures = true;
             }
-            (*tl_terrain)[tt]->material.textures_color.push_back(bt);
-            tl_terrain_visuals[tt]->material.textures_color.push_back(bt);
-            tl_terrain_extrusion[tt]->material.textures_color.push_back(bt);
+            (*tl_terrain)[tt]->meta.material.textures_color.push_back(bt);
+            tl_terrain_visuals[tt]->meta.material.textures_color.push_back(bt);
+            tl_terrain_extrusion[tt]->meta.material.textures_color.push_back(bt);
         }
-        (*tl_terrain)[tt]->material.compute_color_mode();
-        tl_terrain_visuals[tt]->material.compute_color_mode();
-        tl_terrain_extrusion[tt]->material.compute_color_mode();
+        (*tl_terrain)[tt]->meta.material.compute_color_mode();
+        tl_terrain_visuals[tt]->meta.material.compute_color_mode();
+        tl_terrain_extrusion[tt]->meta.material.compute_color_mode();
     }
     for (const auto& [tpe, textures] : config.street_crossing_textures) {
         auto pmit = config.street_materials.find(tpe);
         if (pmit == config.street_materials.end()) {
-            THROW_OR_ABORT("Could not find physics material for type \"" + road_type_to_string(tpe) + '"');
+            throw std::runtime_error("Could not find physics material for type \"" + road_type_to_string(tpe) + '"');
         }
         auto rit = config.street_reflection_map.find(tpe);
         std::vector<BlendMapTexture> blend_textures;
         blend_textures.reserve(textures.size());
-        for (const VariableAndHash<std::string>& texture : textures) {
+        for (const FPath& texture : textures) {
             blend_textures.push_back(primary_rendering_resources.get_blend_map_texture(texture));
         }
         tl_street_crossing.insert(tpe, std::make_shared<TriangleList<CompressedScenePos>>(
@@ -227,23 +233,24 @@ OsmTriangleLists::OsmTriangleLists(
                 .textures_color = blend_textures,
                 .reflection_map = (rit != config.street_reflection_map.end())
                     ? rit->second
-                    : VariableAndHash<std::string>{},
+                    : FPath{},
                 .dirt_texture = config.street_dirt_texture,
                 .occluded_pass = (tpe != RoadType::WALL) ? ExternalRenderPassType::LIGHTMAP_BLACK_NODE : ExternalRenderPassType::LIGHTMAP_BLOBS,
                 .occluder_pass = (tpe != RoadType::WALL) ? ExternalRenderPassType::NONE : ExternalRenderPassType::LIGHTMAP_BLACK_NODE,
                 .skidmarks = material_skidmarks(pmit->second),
                 .aggregate_mode = AggregateMode::NODE_TRIANGLES,
-                .shading = material_shading(pmit->second, config),
+                .shading = material_shading(pmit->second, config.shading_factors),
                 .draw_distance_noperations = 1000}.compute_color_mode(),
             Morphology{
                 .physics_material = BASE_VISIBLE_TERRAIN_MATERIAL | pmit->second,
                 .triangle_cluster_width = config.medium_triangle_cluster_width
-            }));
+            },
+            ModifierBacklog{}));
     }
     for (const auto& [road_properties, road_style] : config.street_texture) {
         auto pmit = config.street_materials.find(road_properties.type);
         if (pmit == config.street_materials.end()) {
-            THROW_OR_ABORT("Could not find physics material for type \"" + road_type_to_string(road_properties.type) + '"');
+            throw std::runtime_error("Could not find physics material for type \"" + road_type_to_string(road_properties.type) + '"');
         }
         bool blend =
             config.blend_street.contains(road_properties.type) &&
@@ -252,15 +259,15 @@ OsmTriangleLists::OsmTriangleLists(
         {
             auto alpha_texture_names = config.street_alpha_textures.contains(road_properties.type)
                 ? config.street_alpha_textures.at(road_properties.type)
-                : std::vector<VariableAndHash<std::string>>{};
+                : std::vector<FPath>{};
             std::vector<BlendMapTexture> textures_color;
             textures_color.reserve(road_style.textures.size());
-            for (const VariableAndHash<std::string>& texture : road_style.textures) {
+            for (const FPath& texture : road_style.textures) {
                 textures_color.push_back(primary_rendering_resources.get_blend_map_texture(texture));
             }
             std::vector<BlendMapTexture> textures_alpha;
             textures_alpha.reserve(alpha_texture_names.size());
-            for (const VariableAndHash<std::string>& texture : alpha_texture_names) {
+            for (const FPath& texture : alpha_texture_names) {
                 textures_alpha.push_back(primary_rendering_resources.get_blend_map_texture(texture));
             }
             auto rit = config.street_reflection_map.find(road_properties.type);
@@ -279,7 +286,7 @@ OsmTriangleLists::OsmTriangleLists(
                             .textures_alpha = textures_alpha,
                             .reflection_map = (rit != config.street_reflection_map.end())
                                 ? rit->second
-                                : VariableAndHash<std::string>{},
+                                : FPath{},
                             .dirt_texture = config.street_dirt_texture,
                             .occluded_pass = (road_properties.type != RoadType::WALL) ? ExternalRenderPassType::LIGHTMAP_BLACK_NODE : ExternalRenderPassType::LIGHTMAP_BLOBS,
                             .occluder_pass = (road_properties.type != RoadType::WALL) ? ExternalRenderPassType::NONE : ExternalRenderPassType::LIGHTMAP_BLACK_NODE,
@@ -287,13 +294,14 @@ OsmTriangleLists::OsmTriangleLists(
                             // .wrap_mode_s = (road_properties.type != RoadType::WALL) && (road_style.uvx <= 1) ? WrapMode::CLAMP_TO_EDGE : WrapMode::REPEAT,
                             // depth-func==equal requires aggregation, because the terrain is also aggregated.
                             .aggregate_mode = AggregateMode::NODE_TRIANGLES,
-                            .shading = material_shading(physics_material, config),
+                            .shading = material_shading(physics_material, config.shading_factors),
                             // .reflect_only_y = true,
                             .draw_distance_noperations = 1000}.compute_color_mode(),
                         Morphology{
                             .physics_material = BASE_VISIBLE_TERRAIN_MATERIAL | physics_material,
                             .triangle_cluster_width = config.medium_triangle_cluster_width
-                        }),
+                        },
+                        ModifierBacklog{}),
                     .uvx = road_style.uvx}}); // mixed_texture: terrain_texture
         }
         if (blend &&
@@ -303,15 +311,15 @@ OsmTriangleLists::OsmTriangleLists(
         {
             auto alpha_texture_names = config.street_mud_alpha_textures.contains(road_properties.type)
                 ? config.street_mud_alpha_textures.at(road_properties.type)
-                : std::vector<VariableAndHash<std::string>>{};
+                : std::vector<FPath>{};
             std::vector<BlendMapTexture> textures_color;
             textures_color.reserve(config.street_mud_textures.at(road_properties.type).size());
-            for (const VariableAndHash<std::string>& texture : config.street_mud_textures.at(road_properties.type)) {
+            for (const FPath& texture : config.street_mud_textures.at(road_properties.type)) {
                 textures_color.push_back(primary_rendering_resources.get_blend_map_texture(texture));
             }
             std::vector<BlendMapTexture> textures_alpha;
             textures_alpha.reserve(alpha_texture_names.size());
-            for (const VariableAndHash<std::string>& texture : alpha_texture_names) {
+            for (const FPath& texture : alpha_texture_names) {
                 textures_alpha.push_back(primary_rendering_resources.get_blend_map_texture(texture));
             }
             tl_street_mud_visuals.insert(road_properties.type, std::make_shared<TriangleList<CompressedScenePos>>(
@@ -328,13 +336,14 @@ OsmTriangleLists::OsmTriangleLists(
                     // .wrap_mode_s = (road_style.uvx <= 1) ? WrapMode::CLAMP_TO_EDGE : WrapMode::REPEAT,
                     // depth-func==equal requires aggregation, because the terrain is also aggregated.
                     .aggregate_mode = AggregateMode::NODE_TRIANGLES,
-                    .shading = material_shading(RawShading::MUD, config),
+                    .shading = material_shading(RawShading::MUD, config.shading_factors),
                     // .reflect_only_y = true,
                     .draw_distance_noperations = 1000}.compute_color_mode(),
                 Morphology{
                     .physics_material = PhysicsMaterial::ATTR_VISIBLE,
                     .triangle_cluster_width = config.medium_triangle_cluster_width
-                }));
+                },
+                ModifierBacklog{}));
         }
     }
     // WrapMode curb_wrap_mode_s = (config.extrude_curb_amount != 0) || (config.extrude_street_amount != 0)
@@ -343,7 +352,7 @@ OsmTriangleLists::OsmTriangleLists(
     for (const auto& [tpe, texture] : config.curb_street_texture) {
         auto pmit = config.street_materials.find(tpe);
         if (pmit == config.street_materials.end()) {
-            THROW_OR_ABORT("Could not find physics material for type \"" + road_type_to_string(tpe) + '"');
+            throw std::runtime_error("Could not find physics material for type \"" + road_type_to_string(tpe) + '"');
         }
         auto rit = config.street_reflection_map.find(tpe);
         tl_street_curb.insert(tpe, std::make_shared<TriangleList<CompressedScenePos>>(
@@ -352,23 +361,24 @@ OsmTriangleLists::OsmTriangleLists(
                 .textures_color = {primary_rendering_resources.get_blend_map_texture(texture)},
                 .reflection_map = (rit != config.street_reflection_map.end())
                     ? rit->second
-                    : VariableAndHash<std::string>{},
+                    : FPath{},
                 .occluded_pass = (tpe != RoadType::WALL) ? ExternalRenderPassType::LIGHTMAP_BLACK_NODE : ExternalRenderPassType::LIGHTMAP_BLOBS,
                 .occluder_pass = (tpe != RoadType::WALL) ? ExternalRenderPassType::NONE : ExternalRenderPassType::LIGHTMAP_BLACK_NODE,
                 .skidmarks = material_skidmarks(pmit->second),
                 // .wrap_mode_s = curb_wrap_mode_s,
                 .aggregate_mode = AggregateMode::NODE_TRIANGLES,
-                .shading = material_shading((config.extrude_curb_amount == (CompressedScenePos)0. && tpe != RoadType::WALL) ? RawShading::CURB : RawShading::DEFAULT, config),
+                .shading = material_shading((config.extrude_curb_amount == (CompressedScenePos)0. && tpe != RoadType::WALL) ? RawShading::CURB : RawShading::DEFAULT, config.shading_factors),
                 .draw_distance_noperations = 1000}.compute_color_mode(),
             Morphology{
                 .physics_material = BASE_VISIBLE_TERRAIN_MATERIAL | pmit->second,
                 .triangle_cluster_width = config.medium_triangle_cluster_width
-            })); // mixed_texture: terrain_texture
+            },
+            ModifierBacklog{})); // mixed_texture: terrain_texture
     }
     for (const auto& [tpe, texture] : config.curb2_street_texture) {
         auto pmit = config.street_materials.find(tpe);
         if (pmit == config.street_materials.end()) {
-            THROW_OR_ABORT("Could not find physics material for type \"" + road_type_to_string(tpe) + '"');
+            throw std::runtime_error("Could not find physics material for type \"" + road_type_to_string(tpe) + '"');
         }
         auto rit = config.street_reflection_map.find(tpe);
         tl_street_curb2.insert(tpe, std::make_shared<TriangleList<CompressedScenePos>>(
@@ -377,22 +387,23 @@ OsmTriangleLists::OsmTriangleLists(
                 .textures_color = {primary_rendering_resources.get_blend_map_texture(texture)},
                 .reflection_map = (rit != config.street_reflection_map.end())
                     ? rit->second
-                    : VariableAndHash<std::string>{},
+                    : FPath{},
                 .occluded_pass = (tpe != RoadType::WALL) ? ExternalRenderPassType::LIGHTMAP_BLACK_NODE : ExternalRenderPassType::LIGHTMAP_BLOBS,
                 .occluder_pass = (tpe != RoadType::WALL) ? ExternalRenderPassType::NONE : ExternalRenderPassType::LIGHTMAP_BLACK_NODE,
                 .skidmarks = material_skidmarks(pmit->second),
                 .aggregate_mode = AggregateMode::NODE_TRIANGLES,
-                .shading = material_shading((tpe != RoadType::WALL) ? RawShading::CURB : RawShading::DEFAULT, config),
+                .shading = material_shading((tpe != RoadType::WALL) ? RawShading::CURB : RawShading::DEFAULT, config.shading_factors),
                 .draw_distance_noperations = 1000}.compute_color_mode(),
             Morphology{
                 .physics_material = BASE_VISIBLE_TERRAIN_MATERIAL | pmit->second,
                 .triangle_cluster_width = config.medium_triangle_cluster_width
-            })); // mixed_texture: terrain_texture
+            },
+            ModifierBacklog{})); // mixed_texture: terrain_texture
     }
     for (const auto& [tpe, texture] : config.air_curb_street_texture) {
         auto pmit = config.street_materials.find(tpe);
         if (pmit == config.street_materials.end()) {
-            THROW_OR_ABORT("Could not find physics material for type \"" + road_type_to_string(tpe) + '"');
+            throw std::runtime_error("Could not find physics material for type \"" + road_type_to_string(tpe) + '"');
         }
         auto rit = config.street_reflection_map.find(tpe);
         tl_air_street_curb.insert(tpe, std::make_shared<TriangleList<CompressedScenePos>>(
@@ -401,105 +412,143 @@ OsmTriangleLists::OsmTriangleLists(
                 .textures_color = {primary_rendering_resources.get_blend_map_texture(texture)},
                 .reflection_map = (rit != config.street_reflection_map.end())
                     ? rit->second
-                    : VariableAndHash<std::string>{},
+                    : FPath{},
                 .occluded_pass = ExternalRenderPassType::LIGHTMAP_BLACK_NODE,
                 .occluder_pass = ExternalRenderPassType::NONE,
                 // .wrap_mode_s = curb_wrap_mode_s,
                 .aggregate_mode = AggregateMode::NODE_TRIANGLES,
-                .shading = material_shading(RawShading::DEFAULT, config),
+                .shading = material_shading(RawShading::DEFAULT, config.shading_factors),
                 .draw_distance_noperations = 1000}.compute_color_mode(),
             Morphology{
                 .physics_material = BASE_VISIBLE_TERRAIN_MATERIAL | pmit->second,
                 .triangle_cluster_width = config.medium_triangle_cluster_width
-            }));
+            },
+            ModifierBacklog{}));
     }
-    tl_racing_line = std::make_shared<TriangleList<CompressedScenePos>>(
-        "racing_line" + name_suffix,
-        Material{
-            .blend_mode = BlendMode::CONTINUOUS,
-            .continuous_blending_z_order = 2,
-            .depth_func = DepthFunc::EQUAL,
-            .blending_pass = BlendingPassType::EARLY,
-            .textures_color = {primary_rendering_resources.get_blend_map_texture(config.racing_line_texture)},
-            // .wrap_mode_s = WrapMode::CLAMP_TO_EDGE,
-            // .wrap_mode_t = WrapMode::REPEAT,
-            // depth-func==equal requires aggregation, because the terrain is also aggregated.
-            .aggregate_mode = AggregateMode::NODE_TRIANGLES,
-            .shading = material_shading(RawShading::DEFAULT, config),
-            .draw_distance_noperations = 1000}.compute_color_mode(),
-        Morphology{
-            .physics_material = PhysicsMaterial::ATTR_VISIBLE,
-            .triangle_cluster_width = config.medium_triangle_cluster_width
-        });
+    if (config.racing_line_texture.empty()) {
+        tl_racing_line = std::make_shared<TriangleList<CompressedScenePos>>(
+            "racing_line_without_texture" + name_suffix,
+            Material{}.compute_color_mode(),
+            Morphology{},
+            ModifierBacklog{});
+    } else {
+        tl_racing_line = std::make_shared<TriangleList<CompressedScenePos>>(
+            "racing_line" + name_suffix,
+            Material{
+                .blend_mode = BlendMode::CONTINUOUS,
+                .continuous_blending_z_order = 2,
+                .depth_func = DepthFunc::EQUAL,
+                .blending_pass = BlendingPassType::EARLY,
+                .textures_color = {primary_rendering_resources.get_blend_map_texture(config.racing_line_texture)},
+                // .wrap_mode_s = WrapMode::CLAMP_TO_EDGE,
+                // .wrap_mode_t = WrapMode::REPEAT,
+                // depth-func==equal requires aggregation, because the terrain is also aggregated.
+                .aggregate_mode = AggregateMode::NODE_TRIANGLES,
+                .shading = material_shading(RawShading::DEFAULT, config.shading_factors),
+                .draw_distance_noperations = 1000}.compute_color_mode(),
+            Morphology{
+                .physics_material = PhysicsMaterial::ATTR_VISIBLE,
+                .triangle_cluster_width = config.medium_triangle_cluster_width
+            },
+            ModifierBacklog{});
+    }
     tl_ditch = std::make_shared<TriangleList<CompressedScenePos>>(
         "ditch" + name_suffix,
         Material{},
-        Morphology{ .physics_material = BASE_INVISIBLE_TERRAIN_MATERIAL | PhysicsMaterial::SURFACE_BASE_TARMAC });
-    tl_air_support = std::make_shared<TriangleList<CompressedScenePos>>(
-        "air_support" + name_suffix,
-        Material{
-            .textures_color = {primary_rendering_resources.get_blend_map_texture(config.air_support_texture)},
-            .occluded_pass = ExternalRenderPassType::LIGHTMAP_BLACK_NODE,
-            .occluder_pass = ExternalRenderPassType::NONE,
-            .aggregate_mode = AggregateMode::NODE_TRIANGLES,
-            .shading = material_shading(RawShading::DEFAULT, config),
-            .draw_distance_noperations = 1000}.compute_color_mode(),
-        Morphology{
-            .physics_material = BASE_VISIBLE_AIR_SUPPORT_MATERIAL,
-            .triangle_cluster_width = config.medium_triangle_cluster_width
-        });
-    tl_tunnel_crossing = std::make_shared<TriangleList<CompressedScenePos>>(
-        "tunnel_crossing" + name_suffix,
-        Material{
-            .textures_color = {primary_rendering_resources.get_blend_map_texture(config.tunnel_pipe_texture)},
-            .occluded_pass = ExternalRenderPassType::LIGHTMAP_BLACK_NODE,
-            .occluder_pass = ExternalRenderPassType::NONE,
-            .aggregate_mode = AggregateMode::NODE_TRIANGLES,
-            .shading = material_shading(RawShading::DEFAULT, config),
-            .draw_distance_noperations = 1000}.compute_color_mode(),
-        Morphology{
-            .physics_material = BASE_VISIBLE_TERRAIN_MATERIAL,
-            .triangle_cluster_width = config.medium_triangle_cluster_width
-        });
-    tl_tunnel_pipe = std::make_shared<TriangleList<CompressedScenePos>>(
-        "tunnel_pipe" + name_suffix,
-        Material{
-            .textures_color = {primary_rendering_resources.get_blend_map_texture(config.tunnel_pipe_texture)},
-            .occluded_pass = ExternalRenderPassType::LIGHTMAP_BLACK_NODE,
-            .occluder_pass = ExternalRenderPassType::NONE,
-            .aggregate_mode = AggregateMode::NODE_TRIANGLES,
-            .shading = material_shading(RawShading::DEFAULT, config),
-            .draw_distance_noperations = 1000}.compute_color_mode(),
-        Morphology{
-            .physics_material = BASE_VISIBLE_TERRAIN_MATERIAL,
-            .triangle_cluster_width = config.medium_triangle_cluster_width
-        });
+        Morphology{ .physics_material = BASE_INVISIBLE_TERRAIN_MATERIAL | PhysicsMaterial::SURFACE_BASE_TARMAC },
+        ModifierBacklog{});
+    if (config.air_support_texture.empty()) {
+        tl_air_support = std::make_shared<TriangleList<CompressedScenePos>>(
+            "air_support_without_texture" + name_suffix,
+            Material{}.compute_color_mode(),
+            Morphology{},
+            ModifierBacklog{});
+    } else {
+        tl_air_support = std::make_shared<TriangleList<CompressedScenePos>>(
+            "air_support" + name_suffix,
+            Material{
+                .textures_color = {primary_rendering_resources.get_blend_map_texture(config.air_support_texture)},
+                .occluded_pass = ExternalRenderPassType::LIGHTMAP_BLACK_NODE,
+                .occluder_pass = ExternalRenderPassType::NONE,
+                .aggregate_mode = AggregateMode::NODE_TRIANGLES,
+                .shading = material_shading(RawShading::DEFAULT, config.shading_factors),
+                .draw_distance_noperations = 1000}.compute_color_mode(),
+            Morphology{
+                .physics_material = BASE_VISIBLE_AIR_SUPPORT_MATERIAL,
+                .triangle_cluster_width = config.medium_triangle_cluster_width
+            },
+            ModifierBacklog{});
+    }
+    if (config.tunnel_pipe_texture.empty()) {
+        tl_tunnel_crossing = std::make_shared<TriangleList<CompressedScenePos>>(
+            "tunnel_crossing_without_texture" + name_suffix,
+            Material{}.compute_color_mode(),
+            Morphology{},
+            ModifierBacklog{});
+        tl_tunnel_pipe = std::make_shared<TriangleList<CompressedScenePos>>(
+            "tunnel_pipe_without_texture" + name_suffix,
+            Material{}.compute_color_mode(),
+            Morphology{},
+            ModifierBacklog{});
+    } else {
+        tl_tunnel_crossing = std::make_shared<TriangleList<CompressedScenePos>>(
+            "tunnel_crossing" + name_suffix,
+            Material{
+                .textures_color = {primary_rendering_resources.get_blend_map_texture(config.tunnel_pipe_texture)},
+                .occluded_pass = ExternalRenderPassType::LIGHTMAP_BLACK_NODE,
+                .occluder_pass = ExternalRenderPassType::NONE,
+                .aggregate_mode = AggregateMode::NODE_TRIANGLES,
+                .shading = material_shading(RawShading::DEFAULT, config.shading_factors),
+                .draw_distance_noperations = 1000}.compute_color_mode(),
+            Morphology{
+                .physics_material = BASE_VISIBLE_TERRAIN_MATERIAL,
+                .triangle_cluster_width = config.medium_triangle_cluster_width
+            },
+            ModifierBacklog{});
+        tl_tunnel_pipe = std::make_shared<TriangleList<CompressedScenePos>>(
+            "tunnel_pipe" + name_suffix,
+            Material{
+                .textures_color = {primary_rendering_resources.get_blend_map_texture(config.tunnel_pipe_texture)},
+                .occluded_pass = ExternalRenderPassType::LIGHTMAP_BLACK_NODE,
+                .occluder_pass = ExternalRenderPassType::NONE,
+                .aggregate_mode = AggregateMode::NODE_TRIANGLES,
+                .shading = material_shading(RawShading::DEFAULT, config.shading_factors),
+                .draw_distance_noperations = 1000}.compute_color_mode(),
+            Morphology{
+                .physics_material = BASE_VISIBLE_TERRAIN_MATERIAL,
+                .triangle_cluster_width = config.medium_triangle_cluster_width
+            },
+            ModifierBacklog{});
+    }
     tl_tunnel_bdry = std::make_shared<TriangleList<CompressedScenePos>>(
         "tunnel_bdry" + name_suffix,
         Material{
-            .shading = material_shading(RawShading::DEFAULT, config)},
-        Morphology{ .physics_material = BASE_VISIBLE_TERRAIN_MATERIAL });
+            .shading = material_shading(RawShading::DEFAULT, config.shading_factors)},
+        Morphology{ .physics_material = BASE_VISIBLE_TERRAIN_MATERIAL },
+        ModifierBacklog{});
     tl_entrance[EntranceType::TUNNEL] = std::make_shared<TriangleList<CompressedScenePos>>(
         "tunnel_entrance" + name_suffix,
         Material{
-            .shading = material_shading(RawShading::DEFAULT, config)},
-        Morphology{ .physics_material = BASE_VISIBLE_TERRAIN_MATERIAL });
+            .shading = material_shading(RawShading::DEFAULT, config.shading_factors)},
+        Morphology{ .physics_material = BASE_VISIBLE_TERRAIN_MATERIAL },
+        ModifierBacklog{});
     tl_entrance[EntranceType::BRIDGE] = std::make_shared<TriangleList<CompressedScenePos>>(
         "bridge_entrance" + name_suffix,
         Material{
-            .shading = material_shading(RawShading::DEFAULT, config)},
-        Morphology{ .physics_material = BASE_VISIBLE_TERRAIN_MATERIAL });
+            .shading = material_shading(RawShading::DEFAULT, config.shading_factors)},
+        Morphology{ .physics_material = BASE_VISIBLE_TERRAIN_MATERIAL },
+        ModifierBacklog{});
     entrances[EntranceType::TUNNEL];
     entrances[EntranceType::BRIDGE];
     if (config.water.has_value()) {
         std::vector<BlendMapTexture> blend_textures_color;
         blend_textures_color.reserve(config.water->textures.color.size());
-        for (const VariableAndHash<std::string>& texture : config.water->textures.color) {
+        for (const FPath& texture : config.water->textures.color) {
             blend_textures_color.push_back(primary_rendering_resources.get_blend_map_texture(texture));
         }
         std::vector<BlendMapTexture> blend_textures_alpha;
         blend_textures_alpha.reserve(config.water->textures.alpha.size());
-        for (const VariableAndHash<std::string>& texture : config.water->textures.alpha) {
+        for (const FPath& texture : config.water->textures.alpha) {
             blend_textures_alpha.push_back(primary_rendering_resources.get_blend_map_texture(texture));
         }
         for (const auto& wt : { WaterType::SHALLOW_LAKE, WaterType::UNDEFINED }) {
@@ -517,12 +566,13 @@ OsmTriangleLists::OsmTriangleLists(
                     .skidmarks = material_skidmarks(PhysicsMaterial::SURFACE_BASE_WATER),
                     .aggregate_mode = AggregateMode::NODE_TRIANGLES,
                     .has_animated_textures = (config.water->animation_duration != std::chrono::steady_clock::duration{0}),
-                    .shading = material_shading(RawShading::DEFAULT, config),
+                    .shading = material_shading(RawShading::DEFAULT, config.shading_factors),
                     .draw_distance_noperations = 1000}.compute_color_mode(),
                 Morphology{
                     .physics_material = META_WATER_MATERIAL | PhysicsMaterial::SURFACE_BASE_WATER,
                     .triangle_cluster_width = config.sparse_triangle_cluster_width
-                }));
+                },
+                ModifierBacklog{}));
         }
     }
 }
@@ -645,7 +695,7 @@ std::list<std::shared_ptr<TriangleList<CompressedScenePos>>> OsmTriangleLists::t
         tl_tunnel_crossing,
         tl_tunnel_pipe,
         tl_racing_line};
-    for (const auto& [_, e] : tl_terrain->map()) {if (e->morphology.physics_material != PhysicsMaterial::NONE) res.push_back(e);}
+    for (const auto& [_, e] : tl_terrain->map()) {if (e->meta.morphology.physics_material != PhysicsMaterial::NONE) res.push_back(e);}
     for (const auto& [_, e] : tl_terrain_visuals.map()) {res.push_back(e);}
     for (const auto& [_, e] : tl_terrain_extrusion.map()) {res.push_back(e);}
     for (const auto& [_, e] : tl_street_mud_visuals.map()) {res.push_back(e);}
@@ -664,7 +714,7 @@ std::list<std::shared_ptr<TriangleList<CompressedScenePos>>> OsmTriangleLists::t
         tl_tunnel_pipe,
         tl_racing_line};
     for (const auto& [_, e] : tl_water.map()) {res.push_back(e);}
-    for (const auto& [_, e] : tl_terrain->map()) {if (e->morphology.physics_material != PhysicsMaterial::NONE) res.push_back(e);}
+    for (const auto& [_, e] : tl_terrain->map()) {if (e->meta.morphology.physics_material != PhysicsMaterial::NONE) res.push_back(e);}
     for (const auto& [_, e] : tl_terrain_visuals.map()) {res.push_back(e);}
     for (const auto& [_, e] : tl_terrain_extrusion.map()) {res.push_back(e);}
     for (const auto& [_, e] : tl_street_mud_visuals.map()) {res.push_back(e);}

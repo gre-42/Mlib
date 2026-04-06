@@ -2,7 +2,6 @@
 #include <Mlib/Scene_Config/Scene_Precision.hpp>
 #include <Mlib/Threads/Safe_Atomic_Shared_Mutex.hpp>
 #include <cstddef>
-#include <set>
 #include <string>
 #include <vector>
 
@@ -15,14 +14,10 @@ class PlaneNd;
 template <class TPosition, size_t tnvertices>
 struct CollisionPolygonSphere;
 template <class TPosition>
-struct CollisionRidgeSphere;
-template <class TPosition>
 struct CollisionLineSphere;
 template <class TData, size_t tndim>
 class AxisAlignedBoundingBox;
 class CollisionVertices;
-template <class TData, size_t... tshape>
-class OrderableFixedArray;
 class IIntersectable;
 template <class T>
 struct TypedMesh;
@@ -50,14 +45,9 @@ public:
     virtual const std::vector<CollisionPolygonSphere<CompressedScenePos, 3>>& get_triangles_sphere() const = 0;
     virtual const std::vector<CollisionLineSphere<CompressedScenePos>>& get_lines_sphere() const = 0;
     virtual const std::vector<CollisionLineSphere<CompressedScenePos>>& get_edges_sphere() const = 0;
-    virtual const std::vector<CollisionRidgeSphere<CompressedScenePos>>& get_ridges_sphere() const = 0;
     virtual const std::vector<TypedMesh<std::shared_ptr<IIntersectable>>>& get_intersectables() const = 0;
-    const std::set<OrderableFixedArray<CompressedScenePos, 3>>& get_vertices() const;
     virtual BoundingSphere<CompressedScenePos, 3> bounding_sphere() const = 0;
     virtual AxisAlignedBoundingBox<CompressedScenePos, 3> aabb() const = 0;
-private:
-    mutable std::unique_ptr<CollisionVertices> collision_vertices_;
-    mutable SafeAtomicSharedMutex mutex_;
 };
 
 }

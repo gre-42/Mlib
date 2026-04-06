@@ -36,7 +36,7 @@ public:
         auto nl = std::sqrt(sum(squared(v.normal)));
         if (nl == 0.f) {
             if (any(nb & NormalVectorErrorBehavior::THROW)) {
-                THROW_OR_ABORT("Normal length is zero");
+                throw std::runtime_error("Normal length is zero");
             }
             if (any(nb & NormalVectorErrorBehavior::WARN)) {
                 lwarn() << "Normal length is zero";
@@ -48,7 +48,7 @@ public:
         auto tl = std::sqrt(sum(squared(v.tangent)));
         if (tl == 0.f) {
             if (tb == TriangleTangentErrorBehavior::THROW) {
-                THROW_OR_ABORT("Tangent length is zero");
+                throw std::runtime_error("Tangent length is zero");
             }
             if (tb == TriangleTangentErrorBehavior::WARN) {
                 lwarn() << "Tangent length is zero";

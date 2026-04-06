@@ -1,4 +1,6 @@
+
 #include "Up_Axis.hpp"
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -8,6 +10,6 @@ UpAxis Mlib::up_axis_from_string(const std::string& s) {
     } else if (s == "z") {
         return UpAxis::Z;
     } else {
-        THROW_OR_ABORT("Unknown up axis: \"" + s + '"');
+        throw std::runtime_error("Unknown up axis: \"" + s + '"');
     }
 }

@@ -1,7 +1,7 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Memory/Dangling_Base_Class.hpp>
-#include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
+#include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/Memory/Destruction_Observer.hpp>
 #include <Mlib/Physics/Interfaces/IAdvance_Time.hpp>
 #include <Mlib/Physics/Misc/Track_Writer_Gpx.hpp>
@@ -13,7 +13,7 @@ namespace Mlib {
 class CountdownPhysics;
 class AdvanceTimes;
 class SceneNode;
-class RigidBodyPulses;
+class RigidBodyVehicle;
 template <class TDir, class TPos, size_t n>
 class TransformationMatrix;
 
@@ -21,8 +21,8 @@ class RigidBodyRecorderGpx: public DestructionObserver<SceneNode&>, public IAdva
 public:
     RigidBodyRecorderGpx(
         const std::string& filename,
-        DanglingBaseClassRef<SceneNode> recorded_node,
-        RigidBodyPulses& rbp,
+        const DanglingBaseClassRef<SceneNode>& recorded_node,
+        const DanglingBaseClassRef<RigidBodyVehicle>& rb,
         const TransformationMatrix<double, double, 3>* geographic_coordinates,
         const CountdownPhysics* countdown_start);
     ~RigidBodyRecorderGpx();
@@ -32,7 +32,7 @@ public:
 private:
     const CountdownPhysics* countdown_start_;
     DanglingBaseClassPtr<SceneNode> recorded_node_;
-    RigidBodyPulses* rbp_;
+    DanglingBaseClassPtr<RigidBodyVehicle> rb_;
     const TransformationMatrix<double, double, 3>* geographic_coordinates_;
     TrackWriterGpx track_writer_;
     std::chrono::steady_clock::time_point start_time_;

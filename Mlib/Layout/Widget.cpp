@@ -1,8 +1,10 @@
+
 #include "Widget.hpp"
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Layout/ILayout_Pixels.hpp>
 #include <Mlib/Layout/Layout_Constraint_Parameters.hpp>
 #include <Mlib/Layout/Screen_Units.hpp>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -99,5 +101,5 @@ std::unique_ptr<IPixelRegion> Widget::evaluate(
             ::Mlib::round(ly.end_pixel - bottom_.to_pixels(ly, PixelsRoundMode::NONE), rnd),
             RegionRoundMode::DISABLED);
     }
-    THROW_OR_ABORT("Unknown y-orientation");
+    throw std::runtime_error("Unknown y-orientation");
 }

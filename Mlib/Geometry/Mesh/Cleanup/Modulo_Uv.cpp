@@ -9,15 +9,15 @@ using namespace Mlib;
 
 template <class TPos>
 void Mlib::modulo_uv(ColoredVertexArray<TPos>& cva) {
-    if (cva.material.textures_color.empty() && cva.material.textures_alpha.empty()) {
+    if (cva.meta.material.textures_color.empty() && cva.meta.material.textures_alpha.empty()) {
         return;
     }
     std::vector<const BlendMapTexture*> textures;
-    textures.reserve(cva.material.textures_color.size() + cva.material.textures_alpha.size());
-    for (const auto& t : cva.material.textures_color) {
+    textures.reserve(cva.meta.material.textures_color.size() + cva.meta.material.textures_alpha.size());
+    for (const auto& t : cva.meta.material.textures_color) {
         textures.push_back(&t);
     }
-    for (const auto& t : cva.material.textures_alpha) {
+    for (const auto& t : cva.meta.material.textures_alpha) {
         textures.push_back(&t);
     }
     std::vector<float> lcm_world_args;
@@ -29,7 +29,7 @@ void Mlib::modulo_uv(ColoredVertexArray<TPos>& cva) {
     for (const auto& t : textures) {
         if (any(t->uv_source & BlendMapUvSource::ANY_HORIZONTAL)) {
             if (t->scale(0) != t->scale(1)) {
-                THROW_OR_ABORT("Horizontal UV-coordinates require isotropic scaling. Material: " + cva.material.identifier());
+                throw std::runtime_error("Horizontal UV-coordinates require isotropic scaling. Material: " + cva.meta.material.identifier());
             }
             float scale = t->scale(0);
             if (scale != 0.f) {
@@ -48,16 +48,16 @@ void Mlib::modulo_uv(ColoredVertexArray<TPos>& cva) {
         }
     }
     if (!lcm_world_args.empty()) {
-        cva.material.period_world = least_common_multiple(lcm_world_args.begin(), lcm_world_args.end(), 1e-6f, 10'000);
-        // linfo() << "period_world " << cva.material.identifier() << ": " << cva.material.period_world;
+        cva.meta.material.period_world = least_common_multiple(lcm_world_args.begin(), lcm_world_args.end(), 1e-6f, 10'000);
+        // linfo() << "period_world " << cva.meta.material.identifier() << ": " << cva.meta.material.period_world;
     }
     for (size_t i = 0; i < 2; ++i) {
         if (!lcm_local_args(i).empty()) {
             if (detected_non_repeat(i)) {
-                THROW_OR_ABORT("Detected mixture of repeat/non-repeat wrap modes in material: " + cva.material.identifier());
+                throw std::runtime_error("Detected mixture of repeat/non-repeat wrap modes in material: " + cva.meta.material.identifier());
             }
             auto period_local = least_common_multiple(lcm_local_args(i).begin(), lcm_local_args(i).end(), 1e-6f, 10'000);
-            // linfo() << "period_local " << cva.material.identifier() << ": " << period_local;
+            // linfo() << "period_local " << cva.meta.material.identifier() << ": " << period_local;
             for (auto& tri : cva.triangles) {
                 shift_uv3(
                     period_local,

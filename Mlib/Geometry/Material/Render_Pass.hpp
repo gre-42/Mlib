@@ -6,7 +6,7 @@ namespace Mlib {
 
 /**
  * Ordering is only important for the occluded-pass, not the occluder-pass.
- * See Mlib/Render/Renderables/Renderable_Colored_Vertex_Array.cpp:
+ * See Mlib/OpenGL/Renderables/Renderable_Colored_Vertex_Array.cpp:
  *     "cva->material.occluded_pass < l.second->shadow_render_pass"
  */
 enum class ExternalRenderPassType {
@@ -35,8 +35,9 @@ enum class ExternalRenderPassType {
 
     IMPOSTER_NODE_MASK                      = (1 << 17),
     ZOOM_NODE_MASK                          = (1 << 18),
-    FOREGROUND_MASK                         = (1 << 19),
-    BACKGROUND_MASK                         = (1 << 20),
+    BILLBOARD_SCENE_MASK                    = (1 << 19),
+    FOREGROUND_MASK                         = (1 << 20),
+    BACKGROUND_MASK                         = (1 << 21),
 
     STANDARD                                = STANDARD_MASK,
 
@@ -56,6 +57,7 @@ enum class ExternalRenderPassType {
 
     IMPOSTER_NODE                           = IMPOSTER_NODE_MASK,
     ZOOM_NODE                               = ZOOM_NODE_MASK,
+    BILLBOARD_SCENE                         = BILLBOARD_SCENE_MASK,
 
     IMPOSTER_OR_ZOOM_NODE                   = IMPOSTER_NODE_MASK | ZOOM_NODE_MASK,
     STANDARD_FOREGROUND                     = STANDARD_MASK | FOREGROUND_MASK,

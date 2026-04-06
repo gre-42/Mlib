@@ -1,8 +1,9 @@
+
 #include "Particle_Trail_Generator.hpp"
 #include <Mlib/Array/Fixed_Array.hpp>
+#include <Mlib/Hashing/Variable_And_Hash.hpp>
 #include <Mlib/Physics/Smoke_Generation/Particle_Descriptor.hpp>
 #include <Mlib/Physics/Smoke_Generation/Smoke_Particle_Generator.hpp>
-#include <Mlib/Variable_And_Hash.hpp>
 
 using namespace Mlib;
 
@@ -30,7 +31,7 @@ void ParticleTrailGenerator::generate(
         case ParticleRotation::RANDOM_YANGLE:
             return FixedArray<float, 3>{0.f, yangle_rng_(), 0.f};
         }
-        THROW_OR_ABORT("Unknown particle rotation");
+        throw std::runtime_error("Unknown particle rotation");
     }();
     smoke_generator_.generate_root(
         trail.resource_name,

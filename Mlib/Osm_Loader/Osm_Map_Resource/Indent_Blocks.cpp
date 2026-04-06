@@ -6,9 +6,9 @@
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Osm_Limits.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Osm_Map_Resource_Helpers.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Osm_Map_Resource_Rectangle_2D.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
 #include <map>
 #include <set>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -33,7 +33,7 @@ NodesAndWays Mlib::indent_blocks(
                 continue;
             }
             if ((way.nd.size() < 2) || (way.nd.front() != way.nd.back())) {
-                THROW_OR_ABORT("Building contour not closed: \"" + way_id + '"');
+                throw std::runtime_error("Building contour not closed: \"" + way_id + '"');
             }
             auto way_nd = way.nd;
             // Note that this is clockwise, while the terrain regions use ccw.
@@ -64,7 +64,7 @@ NodesAndWays Mlib::indent_blocks(
                     node_successors.erase(edge.first);
                     node_predecessors.erase(edge.first);
                 } else {
-                    THROW_OR_ABORT("Unknown connector indentation");
+                    throw std::runtime_error("Unknown connector indentation");
                 }
             }
         }
@@ -110,7 +110,7 @@ NodesAndWays Mlib::indent_blocks(
                     2.f * amount,
                     2.f * amount))
             {
-                THROW_OR_ABORT("Error computing building indentation for node \"" + node_id + '"');
+                throw std::runtime_error("Error computing building indentation for node \"" + node_id + '"');
             }
             indented_contour.push_back(rect.p01_);
             indented_nodes.add(node_id, rect.p01_, node.tags);
@@ -127,7 +127,7 @@ NodesAndWays Mlib::indent_blocks(
             //     {},
             //     (CompressedScenePos)0.5f);
             if (indented_contour.size() != way.nd.size() - 1) {
-                THROW_OR_ABORT("Error indenting building \"" + way_id + '"');
+                throw std::runtime_error("Error indenting building \"" + way_id + '"');
             }
             if (!contour_is_ok(indented_contour, MIN_VERTEX_DISTANCE)) {
                 result.nodes.merge(original_nodes);

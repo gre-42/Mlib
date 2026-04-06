@@ -1,7 +1,7 @@
 #pragma once
+#include <Mlib/Hashing/Std_Hash.hpp>
 #include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/Memory/Destruction_Functions.hpp>
-#include <Mlib/Std_Hash.hpp>
 #include <compare>
 #include <type_traits>
 
@@ -26,7 +26,7 @@ public:
     template <class TDerived>
         requires std::is_convertible_v<TDerived&, T&>
     inline DestructionFunctionsTokensRef(const DanglingBaseClassRef<TDerived>& o, SourceLocation loc)
-        : DestructionFunctionsTokensRef{ o, o->on_destroy, loc }
+        : DestructionFunctionsTokensRef{ o, o->on_destroy.deflt, loc }
     {}
     inline T* operator -> () const {
         return &object_.get();

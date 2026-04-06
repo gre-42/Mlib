@@ -1,8 +1,8 @@
 #pragma once
-#include <Mlib/Object.hpp>
+#include <Mlib/Hashing/Std_Hash.hpp>
+#include <Mlib/Misc/Object.hpp>
+#include <Mlib/Misc/Source_Location.hpp>
 #include <Mlib/Os/Os.hpp>
-#include <Mlib/Source_Location.hpp>
-#include <Mlib/Std_Hash.hpp>
 #include <Mlib/Threads/Safe_Atomic_Shared_Mutex.hpp>
 #include <atomic>
 #include <shared_mutex>

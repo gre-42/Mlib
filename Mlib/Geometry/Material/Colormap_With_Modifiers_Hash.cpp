@@ -1,6 +1,7 @@
+
 #include "Colormap_With_Modifiers_Hash.hpp"
 #include <Mlib/Geometry/Material/Colormap_With_Modifiers.hpp>
-#include <Mlib/Hash.hpp>
+#include <Mlib/Hashing/Hash.hpp>
 
 using namespace Mlib;
 

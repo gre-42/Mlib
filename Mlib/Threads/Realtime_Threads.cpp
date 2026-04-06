@@ -1,7 +1,8 @@
+
 #include "Realtime_Threads.hpp"
 #include <Mlib/Os/Os.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
 #include <mutex>
+#include <stdexcept>
 #include <thread>
 #include <unordered_map>
 
@@ -19,9 +20,9 @@ static void pin_current_thread_to_cpu_range(uint32_t min, uint32_t max) {
     if (int res = sched_setaffinity(gettid(), sizeof(cpuset), &cpuset); res != 0)
     {
         switch (errno) {
-            case EFAULT: THROW_OR_ABORT("EFAULT: A supplied memory address was invalid.");
-            case EINVAL: THROW_OR_ABORT("EINVAL: Affinity bit mask contains no processors currently physically on the system and permitted to the process according to any restrictions that may be imposed by the \"cpuset\" mechanism");
-            case ESRCH: THROW_OR_ABORT("ESRCH: The process whose ID is pid could not be found");
+            case EFAULT: throw std::runtime_error("EFAULT: A supplied memory address was invalid.");
+            case EINVAL: throw std::runtime_error("EINVAL: Affinity bit mask contains no processors currently physically on the system and permitted to the process according to any restrictions that may be imposed by the \"cpuset\" mechanism");
+            case ESRCH: throw std::runtime_error("ESRCH: The process whose ID is pid could not be found");
             default: Mlib::verbose_abort("Unknown errno: " + std::to_string(errno));
         }
     }
@@ -35,10 +36,10 @@ static void pin_current_thread_to_cpu_range(uint32_t min, uint32_t max) {
     }
     if (int rc = pthread_setaffinity_np(pthread_self(), sizeof(cpu_set_t), &cpuset); rc != 0) {
         switch (rc) {
-            case EFAULT: THROW_OR_ABORT("EFAULT: A supplied memory address was invalid.");
-            case EINVAL: THROW_OR_ABORT("EINVAL: cpuset specified a CPU that was outside the set supported by the kernel");
-            case ESRCH: THROW_OR_ABORT("No thread with the ID thread could be found");
-            default: THROW_OR_ABORT("Unknown error calling pthread_setaffinity_np: " + std::to_string(rc));
+            case EFAULT: throw std::runtime_error("EFAULT: A supplied memory address was invalid.");
+            case EINVAL: throw std::runtime_error("EINVAL: cpuset specified a CPU that was outside the set supported by the kernel");
+            case ESRCH: throw std::runtime_error("No thread with the ID thread could be found");
+            default: throw std::runtime_error("Unknown error calling pthread_setaffinity_np: " + std::to_string(rc));
         }
     }
 }
@@ -53,10 +54,10 @@ std::unordered_map<uint32_t, pthread_t> cpu_2_thread_;
 void Mlib::register_realtime_thread() {
     std::scoped_lock lock{mutex_};
     if (nreserved_realtime_threads_ == UINT32_MAX) {
-        THROW_OR_ABORT("Number of realtime-threads not set");
+        throw std::runtime_error("Number of realtime-threads not set");
     }
     if (cpu_2_thread_.size() >= nreserved_realtime_threads_) {
-        THROW_OR_ABORT("Not enough real-time threads reserved");
+        throw std::runtime_error("Not enough real-time threads reserved");
     }
     for (uint32_t i = 0; i < std::thread::hardware_concurrency(); ++i) {
         if (!cpu_2_thread_.contains(i)) {
@@ -120,17 +121,17 @@ static void pin_current_thread_to_cpu_range(uint32_t min, uint32_t max) {
         affinity_mask |= (DWORD_PTR(1) << i);
     }
     if (DWORD_PTR rc = SetThreadAffinityMask(GetCurrentThread(), affinity_mask); rc == 0) {
-        THROW_OR_ABORT("Could not set thread affinity mask: " + GetLastErrorAsString());
+        throw std::runtime_error("Could not set thread affinity mask: " + GetLastErrorAsString());
     }
 }
 
 void Mlib::register_realtime_thread() {
     std::scoped_lock lock{ mutex_ };
     if (nreserved_realtime_threads_ == UINT32_MAX) {
-        THROW_OR_ABORT("Number of realtime-threads not set");
+        throw std::runtime_error("Number of realtime-threads not set");
     }
     if (cpu_2_thread_.size() >= nreserved_realtime_threads_) {
-        THROW_OR_ABORT("Not enough real-time threads reserved");
+        throw std::runtime_error("Not enough real-time threads reserved");
     }
     for (unsigned int i = 0; i < std::thread::hardware_concurrency(); ++i) {
         if (!cpu_2_thread_.contains(i)) {
@@ -160,13 +161,13 @@ void Mlib::unregister_realtime_thread() {
 void Mlib::reserve_realtime_threads(uint32_t nreserved_realtime_threads) {
     std::scoped_lock lock{ mutex_ };
     if (nreserved_realtime_threads_ != UINT32_MAX) {
-        THROW_OR_ABORT("Number of realtime-threads already set");
+        throw std::runtime_error("Number of realtime-threads already set");
     }
     if (nreserved_realtime_threads == UINT32_MAX) {
-        THROW_OR_ABORT("Invalid argument for nrealtime_threads");
+        throw std::runtime_error("Invalid argument for nrealtime_threads");
     }
     if (std::thread::hardware_concurrency() < nreserved_realtime_threads) {
-        THROW_OR_ABORT("Not enough CPUs available for number of real-time threads");
+        throw std::runtime_error("Not enough CPUs available for number of real-time threads");
     }
     nreserved_realtime_threads_ = nreserved_realtime_threads;
 }
@@ -185,7 +186,7 @@ void Mlib::unreserve_realtime_threads() {
 void Mlib::pin_background_thread() {
     std::scoped_lock lock{ mutex_ };
     if (nreserved_realtime_threads_ == UINT32_MAX) {
-        THROW_OR_ABORT("Number of realtime-threads not set");
+        throw std::runtime_error("Number of realtime-threads not set");
     }
     pin_current_thread_to_cpu_range(nreserved_realtime_threads_, std::thread::hardware_concurrency());
 }

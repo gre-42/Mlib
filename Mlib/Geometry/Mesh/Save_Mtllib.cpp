@@ -1,3 +1,4 @@
+
 #include "Save_Mtllib.hpp"
 #include <Mlib/Geometry/Mesh/Obj_Material.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
@@ -23,18 +24,21 @@ void Mlib::save_mtllib(
         if (all(material.specular != -1.f)) {
             ostr << "Ks " << material.specular << '\n';
         }
-        if (!material.color_texture.empty()) {
-            ostr << "map_Kd " << material.color_texture << '\n';
+        if (!material.diffuse_texture.empty()) {
+            ostr << "map_Kd " << material.diffuse_texture << '\n';
+        }
+        if (!material.diffuse_chrominance_texture.empty()) {
+            ostr << "map_Kdc " << material.diffuse_chrominance_texture << '\n';
         }
         if (!material.bump_texture.empty()) {
             ostr << "map_Bump " << material.bump_texture << '\n';
         }
         if (material.has_alpha_texture) {
-            ostr << "map_d " << material.color_texture << '\n';
+            ostr << "map_d " << material.diffuse_texture << '\n';
         }
     }
     ostr.flush();
     if (ostr.fail()) {
-        THROW_OR_ABORT("Could not write to file \"" + filename + '"');
+        throw std::runtime_error("Could not write to file \"" + filename + '"');
     }
 }

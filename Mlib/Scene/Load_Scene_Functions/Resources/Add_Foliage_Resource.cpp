@@ -1,12 +1,12 @@
 #include "Add_Foliage_Resource.hpp"
-#include <Mlib/Argument_List.hpp>
 #include <Mlib/Geometry/Mesh/Up_Axis.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
-#include <Mlib/Render/Modifiers/Add_Foliage_Resource.hpp>
-#include <Mlib/Render/Rendering_Context.hpp>
+#include <Mlib/Misc/Argument_List.hpp>
+#include <Mlib/OpenGL/Modifiers/Add_Foliage_Resource.hpp>
+#include <Mlib/OpenGL/Rendering_Context.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Resources/Parsed_Resource_Name.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -42,7 +42,7 @@ LoadSceneJsonUserFunction AddFoliageResource::json_user_function = [](const Load
         args.arguments.at_vector<std::string>(KnownArgs::near_grass_resource_names, parse_resource_name_func),
         args.arguments.at_vector<std::string>(KnownArgs::dirty_near_grass_resource_names, parse_resource_name_func),
         args.arguments.at<ScenePos>(KnownArgs::near_grass_distance),
-        args.arguments.path_or_variable(KnownArgs::near_grass_foliagemap).path,
+        args.arguments.path_or_variable(KnownArgs::near_grass_foliagemap).local_path(),
         1.f / args.arguments.at<float>(KnownArgs::near_grass_foliagemap_period),
         args.arguments.at<float>(KnownArgs::scale, 1.f),
         up_axis_from_string(args.arguments.at<std::string>(KnownArgs::up_axis, "y")));

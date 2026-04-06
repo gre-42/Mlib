@@ -8,7 +8,7 @@
 #include <vector>
 
 #ifdef __ANDROID__
-#include <Mlib/Android/ndk_helper/JNIHelper.h>
+#include <Mlib/Os/ndk_helper/JNIHelper.h>
 #endif
 
 namespace Mlib {
@@ -66,7 +66,7 @@ class LLog: public std::ostream {
     LLog(const LLog&) = delete;
     LLog& operator = (const LLog&) = delete;
 public:
-    explicit LLog(
+    LLog(
         LogFlags flags,
         std::function<void(const std::string&)> write);
     ~LLog() override;
@@ -113,6 +113,7 @@ void create_directories(
 ndk_helper::DirectoryIterator list_dir(const std::filesystem::path& path);
 bool is_listable(const ndk_helper::DirectoryEntry& entry);
 #else
+std::filesystem::recursive_directory_iterator list_dir_recursive(const std::filesystem::path& path);
 std::filesystem::directory_iterator list_dir(const std::filesystem::path& path);
 bool is_listable(const std::filesystem::directory_entry& entry);
 #endif

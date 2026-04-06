@@ -41,7 +41,7 @@ static bool is_loading(LocalSceneLevelLoadStatus status) {
     case LocalSceneLevelLoadStatus::RUNNING:
         return false;
     }
-    THROW_OR_ABORT("Unknown scene level load status");
+    throw std::runtime_error("Unknown scene level load status");
 }
 
 void IncrementalCommunicatorProxy::receive_from_home(std::istream& istr) {

@@ -1,3 +1,4 @@
+
 #include "Collision_Mesh.hpp"
 #include <Mlib/Geometry/Colored_Vertex.hpp>
 #include <Mlib/Geometry/Interfaces/IIntersectable.hpp>
@@ -9,7 +10,7 @@ using namespace Mlib;
 
 template <class TData>
 CollisionMesh::CollisionMesh(const ColoredVertexArray<TData>& mesh)
-    : name{ mesh.name.full_name() }
+    : name{ mesh.meta.name.full_name() }
 {
     quads.reserve(mesh.quads.size());
     mesh.quads_sphere(quads);

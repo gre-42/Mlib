@@ -1,5 +1,4 @@
 #include "Ui_Background.hpp"
-#include <Mlib/Argument_List.hpp>
 #include <Mlib/Geometry/Material/Color_Mode.hpp>
 #include <Mlib/Layout/Layout_Constraints.hpp>
 #include <Mlib/Layout/Screen_Units.hpp>
@@ -8,19 +7,20 @@
 #include <Mlib/Macro_Executor/Focus_Filter.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Memory/Object_Pool.hpp>
+#include <Mlib/Misc/Argument_List.hpp>
+#include <Mlib/OpenGL/Render_Logics/Delay_Load_Policy.hpp>
+#include <Mlib/OpenGL/Render_Logics/Fill_Pixel_Region_With_Texture_Logic.hpp>
+#include <Mlib/OpenGL/Render_Logics/Fill_With_Texture_Logic.hpp>
+#include <Mlib/OpenGL/Render_Logics/Render_Logics.hpp>
+#include <Mlib/OpenGL/Render_Logics/Resource_Update_Cycle.hpp>
+#include <Mlib/OpenGL/Rendering_Context.hpp>
+#include <Mlib/OpenGL/Resource_Managers/Rendering_Resources.hpp>
 #include <Mlib/Players/Advance_Times/Player.hpp>
 #include <Mlib/Players/Containers/Players.hpp>
 #include <Mlib/Regex/Regex_Select.hpp>
-#include <Mlib/Render/Render_Logics/Delay_Load_Policy.hpp>
-#include <Mlib/Render/Render_Logics/Fill_Pixel_Region_With_Texture_Logic.hpp>
-#include <Mlib/Render/Render_Logics/Fill_With_Texture_Logic.hpp>
-#include <Mlib/Render/Render_Logics/Render_Logics.hpp>
-#include <Mlib/Render/Render_Logics/Resource_Update_Cycle.hpp>
-#include <Mlib/Render/Rendering_Context.hpp>
-#include <Mlib/Render/Resource_Managers/Rendering_Resources.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Load_Scene_Funcs.hpp>
-#include <Mlib/Strings/To_Number.hpp>
+#include <Mlib/Strings/String_View_To_Number.hpp>
 
 using namespace Mlib;
 
@@ -56,7 +56,7 @@ void UiBackground::execute(const LoadSceneJsonUserFunctionArgs& args)
         std::make_shared<FillWithTextureLogic>(
             RenderingContextStack::primary_rendering_resources().get_texture_lazy(
                 ColormapWithModifiers{
-                    .filename = VariableAndHash{args.arguments.path_or_variable(KnownArgs::texture).path},
+                    .filename = args.arguments.path_or_variable(KnownArgs::texture),
                     .color_mode = ColorMode::RGBA,
                     .mipmap_mode = MipmapMode::WITH_MIPMAPS
                 }.compute_hash(),

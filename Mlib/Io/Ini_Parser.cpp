@@ -1,15 +1,16 @@
+
 #include "Ini_Parser.hpp"
 #include <Mlib/Iterator/Enumerate.hpp>
 #include <Mlib/Os/Os.hpp>
 #include <Mlib/Strings/Trim.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
+#include <stdexcept>
 
 using namespace Mlib;
 
 IniParser::IniParser(const std::filesystem::path& filename) {
     auto f = create_ifstream(filename);
     if (f->fail()) {
-        THROW_OR_ABORT("Could not open file \"" + filename.string() + '"');
+        throw std::runtime_error("Could not open file \"" + filename.string() + '"');
     }
     std::map<std::string, std::string>* section = &sections_.try_emplace("default", std::map<std::string, std::string>{}).first->second;
     std::string line;
@@ -32,14 +33,14 @@ IniParser::IniParser(const std::filesystem::path& filename) {
         }
         auto i = line.find('=');
         if (i == line.npos) {
-            THROW_OR_ABORT("Could not parse line of INI file: \"" + line + '"');
+            throw std::runtime_error("Could not parse line of INI file: \"" + line + '"');
         }
         if (!section->try_emplace(trim_copy(line.substr(0, i)), trim_copy(line.substr(i + 1))).second) {
-            THROW_OR_ABORT("Found duplicate key in INI file: \"" + line + '"');
+            throw std::runtime_error("Found duplicate key in INI file: \"" + line + '"');
         }
     }
     if (!f->eof()) {
-        THROW_OR_ABORT("Could not read from file \"" + filename.string() + '"');
+        throw std::runtime_error("Could not read from file \"" + filename.string() + '"');
     }
 }
 
@@ -47,11 +48,11 @@ const std::string& IniParser::get(const std::string& section, const std::string&
 {
     auto sit = sections_.find(section);
     if (sit == sections_.end()) {
-        THROW_OR_ABORT("Could not find section with name \"" + section + '"');
+        throw std::runtime_error("Could not find section with name \"" + section + '"');
     }
     auto kit = sit->second.find(key);
     if (kit == sit->second.end()) {
-        THROW_OR_ABORT("Could not find key with name \"" + key + '"');
+        throw std::runtime_error("Could not find key with name \"" + key + '"');
     }
     return kit->second;
 }

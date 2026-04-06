@@ -1,3 +1,4 @@
+
 #include "Frustum_Visibility_Check.hpp"
 #include <Mlib/Scene_Graph/Culling/Is_Visible.hpp>
 #include <Mlib/Scene_Graph/Culling/Visibility_Check.hpp>
@@ -12,7 +13,7 @@ FrustumVisibilityCheck<TData>::FrustumVisibilityCheck(const VisibilityCheck<TDat
 
 template <class TData>
 bool FrustumVisibilityCheck<TData>::is_visible(
-    const std::string& object_name,
+    const VariableAndHash<std::string>& object_name,
     const Material& material,
     const Morphology& morphology,
     BillboardId billboard_id,

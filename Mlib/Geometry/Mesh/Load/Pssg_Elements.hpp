@@ -1,8 +1,8 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
-#include <Mlib/Geometry/Intersection/Axis_Aligned_Bounding_Box.hpp>
+#include <Mlib/Geometry/Primitives/Axis_Aligned_Bounding_Box.hpp>
+#include <Mlib/Hashing/Variable_And_Hash.hpp>
 #include <Mlib/Map/Verbose_Unordered_Map.hpp>
-#include <Mlib/Variable_And_Hash.hpp>
 #include <cstdint>
 #include <functional>
 #include <list>

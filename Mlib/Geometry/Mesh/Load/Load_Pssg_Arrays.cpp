@@ -1,3 +1,4 @@
+
 #include "Load_Pssg_Arrays.hpp"
 #include <Mlib/Array/Non_Copying_Vector.hpp>
 #include <Mlib/Geometry/Instance/Rendering_Dynamics.hpp>
@@ -41,37 +42,37 @@ void strided_copy(
     const TConvert& convert)
 {
     if (src_offset > 1000) {
-        THROW_OR_ABORT("Source offset too large");
+        throw std::runtime_error("Source offset too large");
     }
     if (src_stride > 1000) {
-        THROW_OR_ABORT("Source stride too large");
+        throw std::runtime_error("Source stride too large");
     }
     if (dst_offset > 1000) {
-        THROW_OR_ABORT("Destination offset too large");
+        throw std::runtime_error("Destination offset too large");
     }
     if (dst_stride > 1000) {
-        THROW_OR_ABORT("Destination stride too large");
+        throw std::runtime_error("Destination stride too large");
     }
     if (nelements > 1'000'000'000) {
-        THROW_OR_ABORT("Element count too large");
+        throw std::runtime_error("Element count too large");
     }
     if (ndim > 1000) {
-        THROW_OR_ABORT("Destination stride too large");
+        throw std::runtime_error("Destination stride too large");
     }
     if (src_size > 1'000'000'000) {
-        THROW_OR_ABORT("Source size too large");
+        throw std::runtime_error("Source size too large");
     }
     if (dst_size > 1'000'000'000) {
-        THROW_OR_ABORT("Destination size too large");
+        throw std::runtime_error("Destination size too large");
     }
     for (uint32_t i = 0; i < nelements; ++i) {
         auto src_j = src_offset + i * src_stride;
         auto dst_j = dst_offset + i * dst_stride;
         if (src_j + ndim * sizeof(TSource) >= src_size + 1) {
-            THROW_OR_ABORT("Source data index out of bounds");
+            throw std::runtime_error("Source data index out of bounds");
         }
         if (dst_j + ndim * sizeof(TDestination) >= dst_size + 1) {
-            THROW_OR_ABORT("Destination data index out of bounds");
+            throw std::runtime_error("Destination data index out of bounds");
         }
         for (uint32_t k = 0; k < ndim; ++k) {
             const auto& s = reinterpret_cast<const TSource&>(src[src_j + k * sizeof(TSource)]);
@@ -113,19 +114,19 @@ void add_instantiables(
             if (schema.nodes.get(child.type_id).name == "RENDERSTREAMINSTANCE") {
                 auto indices = child.get_attribute("indices", schema).string();
                 if (!indices.starts_with('#')) {
-                    THROW_OR_ABORT("indices do not start with \"#\"");
+                    throw std::runtime_error("indices do not start with \"#\"");
                 }
                 auto shader = child.get_attribute("shader", schema).string();
                 if (!shader.starts_with('#')) {
-                    THROW_OR_ABORT("shader does not start with \"#\"");
+                    throw std::runtime_error("shader does not start with \"#\"");
                 }
                 if (auto shader_object = shaders.try_get(VariableAndHash<std::string>{shader.substr(1)}); shader_object != nullptr) {
                     auto& resource = *resources.get(VariableAndHash<std::string>{resource_prefix + indices.substr(1)});
-                    if (!resource.material.textures_color.empty()) {
-                        THROW_OR_ABORT("Array resource instantiated multiple times");
+                    if (!resource.meta.material.textures_color.empty()) {
+                        throw std::runtime_error("Array resource instantiated multiple times");
                     }
-                    resource.morphology.physics_material = shader_object->physics_material;
-                    resource.material = shader_object->render_material;
+                    resource.meta.morphology.physics_material = shader_object->physics_material;
+                    resource.meta.material = shader_object->render_material;
                     switch (shader_object->color_semantic) {
                     case ColorSemantic::RGBA:
                         // Do nothing
@@ -140,13 +141,13 @@ void add_instantiables(
                         resource.alpha.clear();
                         break;
                     default:
-                        THROW_OR_ABORT("Unknown color semantic");
+                        throw std::runtime_error("Unknown color semantic");
                     }
                 }
                 auto scale = sqrt(sum<0>(squared(mc.R)));
                 auto mean_scale = mean(scale);
                 if (any(abs(scale - mean_scale) > 1e-3f)) {
-                    THROW_OR_ABORT((std::stringstream() << "Scale is anisotropic: " << scale).str());
+                    throw std::runtime_error((std::stringstream() << "Scale is anisotropic: " << scale).str());
                 }
                 auto mcr = TransformationMatrix{ mc.R / mean_scale, mc.t };
                 instances.emplace_back(
@@ -179,14 +180,14 @@ struct DataBlocks {
         auto element_count = data_block.get_attribute("elementCount", model.schema).uint32();
         auto size = data_block.get_attribute("size", model.schema).uint32();
         if (element_count > 1'000'000'000) {
-            THROW_OR_ABORT("Element count too large");
+            throw std::runtime_error("Element count too large");
         }
         if (size > 1'000'000'000) {
-            THROW_OR_ABORT("Size too large");
+            throw std::runtime_error("Size too large");
         }
         const auto& data = data_block.get_child("DATABLOCKDATA", model.schema).data;
         if (data.size() < size) {
-            THROW_OR_ABORT("DATABLOCKDATA too short");
+            throw std::runtime_error("DATABLOCKDATA too short");
         }
         if (vertices.empty()) {
             vertices.resize(
@@ -198,16 +199,16 @@ struct DataBlocks {
                     fixed_zeros<float, 3>(),            // normal
                     fixed_zeros<float, 3>()));          // tangent
         } else if (vertices.size() != element_count) {
-            THROW_OR_ABORT("Element count mismatch");
+            throw std::runtime_error("Element count mismatch");
         }
         // Process DATABLOCKSTREAM
         auto offset = data_block_stream.get_attribute("offset", model.schema).uint32();
         auto stride = data_block_stream.get_attribute("stride", model.schema).uint32();
         if (offset > 1000) {
-            THROW_OR_ABORT("Offset too large");
+            throw std::runtime_error("Offset too large");
         }
         if (stride > 1000) {
-            THROW_OR_ABORT("Stride too large");
+            throw std::runtime_error("Stride too large");
         }
         auto render_type = data_block_stream.get_attribute("renderType", model.schema).string();
         auto data_type = data_block_stream.get_attribute("dataType", model.schema).string();
@@ -215,7 +216,7 @@ struct DataBlocks {
         if ((render_type == "Vertex") || (render_type == "SkinnableVertex")) {
             features |= ColoredVertexFeatures::POSITION;
             if (data_type != "float3") {
-                THROW_OR_ABORT("Unsupported vertex data type");
+                throw std::runtime_error("Unsupported vertex data type");
             }
             strided_copy<float, TPos>(
                 offset,                                                                 // src_offset
@@ -231,11 +232,11 @@ struct DataBlocks {
                 [](float f) { return (TPos)swap_endianness(f); });
         } else if (render_type == "Color") {
             if (any(features & ColoredVertexFeatures::COLOR)) {
-                THROW_OR_ABORT("Multiple color atttributes");
+                throw std::runtime_error("Multiple color atttributes");
             }
             features |= ColoredVertexFeatures::COLOR;
             if (data_type != "uint_color_argb") {
-                THROW_OR_ABORT("Unsupported color data type");
+                throw std::runtime_error("Unsupported color data type");
             }
             cweight.emplace(element_count);
             strided_copy<uint32_t, FixedArray<float, 4>>(
@@ -314,7 +315,7 @@ struct DataBlocks {
                         (std::byte*)uvx.data(),                                             // dst
                         [](float h) { return swap_endianness(h); });
                 } else {
-                    THROW_OR_ABORT("Unsupported ST data type: \"" + data_type + '"');
+                    throw std::runtime_error("Unsupported ST data type: \"" + data_type + '"');
                 }
                 uv1.push_back(uvx);
             } else {
@@ -346,12 +347,12 @@ struct DataBlocks {
                         (std::byte*)vertices.data(),                                            // dst
                         [](float h) { return swap_endianness(h); });
                 } else {
-                    THROW_OR_ABORT("Unsupported ST data type: \"" + data_type + '"');
+                    throw std::runtime_error("Unsupported ST data type: \"" + data_type + '"');
                 }
             }
         } else if (render_type == "Normal") {
             if (any(features & ColoredVertexFeatures::NORMAL)) {
-                THROW_OR_ABORT("Vertex has multiple normals");
+                throw std::runtime_error("Vertex has multiple normals");
             }
             features |= ColoredVertexFeatures::NORMAL;
             if (data_type == "half4") {
@@ -381,15 +382,15 @@ struct DataBlocks {
                     (std::byte*)vertices.data(),                                            // dst
                     [](float h) { return swap_endianness(h); });
             } else {
-                THROW_OR_ABORT("Unsupported Normal data type: \"" + data_type + '"');
+                throw std::runtime_error("Unsupported Normal data type: \"" + data_type + '"');
             }
         } else if (render_type == "Tangent") {
             if (any(features & ColoredVertexFeatures::TANGENT)) {
-                THROW_OR_ABORT("Vertex has multiple tangents");
+                throw std::runtime_error("Vertex has multiple tangents");
             }
             features |= ColoredVertexFeatures::TANGENT;
             if (data_type != "half4") {
-                THROW_OR_ABORT("Unsupported Tangent data type");
+                throw std::runtime_error("Unsupported Tangent data type");
             }
             strided_copy<uint16_t, float>(
                 offset,                                                                 // src_offset
@@ -414,7 +415,7 @@ struct DataBlocks {
         } else if (render_type == "SkinnableNormal") {
             // Do nothing
         } else {
-            THROW_OR_ABORT("Unsupported render type: \"" + render_type + '"');
+            throw std::runtime_error("Unsupported render type: \"" + render_type + '"');
         }
     }
     std::vector<ColoredVertex<TPos>> vertices;
@@ -453,7 +454,7 @@ PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
             ShaderGroup sg;
             for (const auto& input_definition : node.children) {
                 if (model.schema.nodes.get(input_definition.type_id).name != "SHADERINPUTDEFINITION") {
-                    THROW_OR_ABORT("Shader group child is not a shader input definition");
+                    throw std::runtime_error("Shader group child is not a shader input definition");
                 }
                 sg.parameters.add(
                     VariableAndHash<std::string>{input_definition.get_attribute("name", model.schema).string()},
@@ -472,7 +473,7 @@ PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
             auto node_id = VariableAndHash<std::string>{node.get_attribute("id", model.schema).string()};
             uint32_t stream_count = node.get_attribute("streamCount", model.schema).uint32();
             if (stream_count > 100) {
-                THROW_OR_ABORT("Stream count too large");
+                throw std::runtime_error("Stream count too large");
             }
             DataBlockStreams dbs{ &node };
             dbs.streams.reserve(stream_count);
@@ -484,7 +485,7 @@ PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
                 dbs.streams.push_back(&c);
             }
             if (dbs.streams.size() != stream_count) {
-                THROW_OR_ABORT("Stream count mismatch");
+                throw std::runtime_error("Stream count mismatch");
             }
             data_block_streams.add(node_id, std::move(dbs));
         }
@@ -496,7 +497,7 @@ PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
         if (s.name == "SHADERINSTANCE") {
             auto shader_group_ref = node.get_attribute("shaderGroup", model.schema).string();
             if (!shader_group_ref.starts_with('#')) {
-                THROW_OR_ABORT("Shader group reference does not start with \"#\"");
+                throw std::runtime_error("Shader group reference does not start with \"#\"");
             }
             auto node_id = VariableAndHash<std::string>{node.get_attribute("id", model.schema).string()};
             const auto& shader_group_object = shader_groups.get(VariableAndHash<std::string>{shader_group_ref.substr(1)});
@@ -526,7 +527,7 @@ PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
                         return c;
                     }
                 }
-                THROW_OR_ABORT("Could not find shader input with parameter name \"" + *parameter_name + '"');
+                throw std::runtime_error("Could not find shader input with parameter name \"" + *parameter_name + '"');
                 };
             if ((shader_group_ref == "#terrain_simple.fx") ||
                 (shader_group_ref == "#terrain_simple_nm.fx") ||
@@ -596,7 +597,7 @@ PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
                         textures_color.emplace_back(BlendMapTexture{
                             .texture_descriptor = TextureDescriptor{
                                 .color = ColormapWithModifiers{
-                                    .filename = VariableAndHash{ blend_map },
+                                    .filename = FPath::from_variable(blend_map),
                                     .color_mode = COLOR_MODE,
                                     .mipmap_mode = MipmapMode::WITH_MIPMAPS,
                                     .magnifying_interpolation_mode = InterpolationMode::LINEAR,
@@ -622,7 +623,7 @@ PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
                         textures_color.emplace_back(BlendMapTexture{
                             .texture_descriptor = TextureDescriptor{
                                 .color = ColormapWithModifiers{
-                                    .filename = VariableAndHash{ op_diffuse },
+                                    .filename = FPath::from_variable(op_diffuse),
                                     .color_mode = COLOR_MODE,
                                     .mipmap_mode = MipmapMode::WITH_MIPMAPS,
                                     .magnifying_interpolation_mode = InterpolationMode::LINEAR,
@@ -634,7 +635,7 @@ PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
                                     op_normal.ends_with("#default_n.tga.dds"))
                                     ? ColormapWithModifiers{}.compute_hash()
                                     : ColormapWithModifiers{
-                                        .filename = VariableAndHash{ op_normal },
+                                        .filename = FPath::from_variable(op_normal),
                                         .color_mode = COLOR_MODE,
                                         .mipmap_mode = MipmapMode::WITH_MIPMAPS,
                                         .magnifying_interpolation_mode = InterpolationMode::LINEAR,
@@ -679,12 +680,12 @@ PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
                 {
                     auto large_colour_map = try_get_texture(VariableAndHash<std::string>{"TlargeColourMap"});
                     if (large_colour_map.empty()) {
-                        THROW_OR_ABORT("TlargeColourMap not specified");
+                        throw std::runtime_error("TlargeColourMap not specified");
                     }
                     textures_color.push_back(BlendMapTexture{
                         .texture_descriptor = TextureDescriptor{
                             .color = ColormapWithModifiers{
-                                .filename = VariableAndHash{ large_colour_map },
+                                .filename = FPath::from_variable(large_colour_map),
                                 .color_mode = COLOR_MODE,
                                 .mipmap_mode = MipmapMode::WITH_MIPMAPS,
                                 .magnifying_interpolation_mode = InterpolationMode::LINEAR,
@@ -698,7 +699,7 @@ PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
                 {
                     auto base_diffuse = try_get_texture(VariableAndHash<std::string>{"TDiffuseSpecMap1"});
                     if (base_diffuse.empty()) {
-                        THROW_OR_ABORT("Diffuse1 texture not specified");
+                        throw std::runtime_error("Diffuse1 texture not specified");
                     }
 
                     auto base_normal = try_get_texture(VariableAndHash<std::string>{"TNormalMap1"});
@@ -706,7 +707,7 @@ PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
                     textures_color.emplace_back(BlendMapTexture{
                         .texture_descriptor = TextureDescriptor{
                             .color = ColormapWithModifiers{
-                                .filename = VariableAndHash{ base_diffuse },
+                                .filename = FPath::from_variable(base_diffuse),
                                 .color_mode = COLOR_MODE,
                                 .mipmap_mode = MipmapMode::WITH_MIPMAPS,
                                 .magnifying_interpolation_mode = InterpolationMode::LINEAR,
@@ -715,7 +716,7 @@ PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
                             .normal = (base_normal.empty() || (base_normal == "default_normal_map_n.tga.dds"))
                                 ? ColormapWithModifiers{}.compute_hash()
                                 : ColormapWithModifiers{
-                                    .filename = VariableAndHash{ base_normal },
+                                    .filename = FPath::from_variable(base_normal),
                                     .color_mode = COLOR_MODE,
                                     .mipmap_mode = MipmapMode::WITH_MIPMAPS,
                                     .magnifying_interpolation_mode = InterpolationMode::LINEAR,
@@ -745,7 +746,7 @@ PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
                     textures_color.emplace_back(BlendMapTexture{
                         .texture_descriptor = TextureDescriptor{
                             .color = ColormapWithModifiers{
-                                .filename = VariableAndHash{ blend_map },
+                                .filename = FPath::from_variable(blend_map),
                                 .color_mode = COLOR_MODE,
                                 .mipmap_mode = MipmapMode::WITH_MIPMAPS,
                                 .magnifying_interpolation_mode = InterpolationMode::LINEAR,
@@ -759,7 +760,7 @@ PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
                     textures_color.emplace_back(BlendMapTexture{
                         .texture_descriptor = TextureDescriptor{
                             .color = ColormapWithModifiers{
-                                .filename = VariableAndHash{ op_diffuse },
+                                .filename = FPath::from_variable(op_diffuse),
                                 .color_mode = COLOR_MODE,
                                 .mipmap_mode = MipmapMode::WITH_MIPMAPS,
                                 .magnifying_interpolation_mode = InterpolationMode::LINEAR,
@@ -768,7 +769,7 @@ PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
                             .normal = (op_normal.empty() || (op_normal == "default_normal_map_n.tga.dds"))
                                 ? ColormapWithModifiers{}.compute_hash()
                                 : ColormapWithModifiers{
-                                    .filename = VariableAndHash{ op_normal },
+                                    .filename = FPath::from_variable(op_normal),
                                     .color_mode = COLOR_MODE,
                                     .mipmap_mode = MipmapMode::WITH_MIPMAPS,
                                     .magnifying_interpolation_mode = InterpolationMode::LINEAR,
@@ -803,7 +804,7 @@ PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
                 auto normal = try_get_texture(VariableAndHash<std::string>{"TNormalMap"});
                 auto specular = try_get_texture(VariableAndHash<std::string>{"TSpecularMap"});
                 if (diffuse.empty()) {
-                    THROW_OR_ABORT("TDiffuseAlphaMap texture not specified");
+                    throw std::runtime_error("TDiffuseAlphaMap texture not specified");
                 }
                 shaders.add(
                     node_id,
@@ -814,21 +815,21 @@ PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
                                 BlendMapTexture{
                                     .texture_descriptor = TextureDescriptor{
                                         .color = ColormapWithModifiers{
-                                            .filename = VariableAndHash{ diffuse },
+                                            .filename = FPath::from_variable(diffuse),
                                             .color_mode = COLOR_MODE,
                                             .mipmap_mode = MipmapMode::WITH_MIPMAPS,
                                             .magnifying_interpolation_mode = InterpolationMode::LINEAR,
                                             .anisotropic_filtering_level = cfg.anisotropic_filtering_level
                                         }.compute_hash(),
                                         .specular = ColormapWithModifiers{
-                                            .filename = VariableAndHash{ specular },
+                                            .filename = FPath::from_variable(specular),
                                             .color_mode = COLOR_MODE,
                                             .mipmap_mode = MipmapMode::WITH_MIPMAPS,
                                             .magnifying_interpolation_mode = InterpolationMode::LINEAR,
                                             .anisotropic_filtering_level = cfg.anisotropic_filtering_level
                                         }.compute_hash(),
                                         .normal = ColormapWithModifiers{
-                                            .filename = VariableAndHash{ normal },
+                                            .filename = FPath::from_variable(normal),
                                             .color_mode = COLOR_MODE,
                                             .mipmap_mode = MipmapMode::WITH_MIPMAPS,
                                             .magnifying_interpolation_mode = InterpolationMode::LINEAR,
@@ -848,7 +849,7 @@ PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
             {
                 auto diffuse = try_get_texture(VariableAndHash<std::string>{"TDiffuseAlphaMap"});
                 if (diffuse.empty()) {
-                    THROW_OR_ABORT("Diffuse texture not specified");
+                    throw std::runtime_error("Diffuse texture not specified");
                 }
                 shaders.add(
                     node_id,
@@ -857,7 +858,7 @@ PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
                             .textures_color = std::vector<BlendMapTexture>{{
                                 .texture_descriptor = TextureDescriptor{
                                     .color = ColormapWithModifiers{
-                                        .filename = VariableAndHash{ diffuse },
+                                        .filename = FPath::from_variable(diffuse),
                                         .color_mode = COLOR_MODE,
                                         .mipmap_mode = MipmapMode::WITH_MIPMAPS,
                                         .magnifying_interpolation_mode = InterpolationMode::LINEAR,
@@ -884,39 +885,39 @@ PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
             // Load triangle indices
             auto primitive = node.get_attribute("primitive", model.schema).string();
             if (primitive != "triangles") {
-                THROW_OR_ABORT("Unsupported render primitive: \"" + primitive + '"');
+                throw std::runtime_error("Unsupported render primitive: \"" + primitive + '"');
             }
             const auto& index_source = node.get_child("RENDERINDEXSOURCE", model.schema);
             auto ixs_primitive = index_source.get_attribute("primitive", model.schema).string();
             if (ixs_primitive != "triangles") {
-                THROW_OR_ABORT("Unsupported render primitive: \"" + primitive + '"');
+                throw std::runtime_error("Unsupported render primitive: \"" + primitive + '"');
             }
             auto ixs_format = index_source.get_attribute("format", model.schema).string();
             if (ixs_format != "ushort") {
-                THROW_OR_ABORT("Unsupported triangle format");
+                throw std::runtime_error("Unsupported triangle format");
             }
             auto ixs_count = index_source.get_attribute("count", model.schema).uint32();
             if (ixs_count > 1'000'000'000) {
-                THROW_OR_ABORT("Triangle count too large");
+                throw std::runtime_error("Triangle count too large");
             }
             const auto& isd = index_source.get_child("INDEXSOURCEDATA", model.schema);
             if (isd.data.size() < 2 * ixs_count) {
-                THROW_OR_ABORT("Triangle buffer too small");
+                throw std::runtime_error("Triangle buffer too small");
             }
             if ((ixs_count % 3) != 0) {
-                THROW_OR_ABORT("Triangle indices not a multiple of 3");
+                throw std::runtime_error("Triangle indices not a multiple of 3");
             }
             DataBlocks<TResourcePos> dbm;
             node.for_each_node([&](const PssgNode& render_stream){
                 if (model.schema.nodes.get(render_stream.type_id).name == "RENDERSTREAM") {
                     auto data_block_name = render_stream.get_attribute("dataBlock", model.schema).string();
                     if (!data_block_name.starts_with('#')) {
-                        THROW_OR_ABORT("dataBlock does not start with \"#\"");
+                        throw std::runtime_error("dataBlock does not start with \"#\"");
                     }
                     auto sub_stream = render_stream.get_attribute("subStream", model.schema).uint32();
                     const auto& dbs = data_block_streams.get(VariableAndHash<std::string>{data_block_name.substr(1)});
                     if (sub_stream >= dbs.streams.size()) {
-                        THROW_OR_ABORT("Sub-stream index too large");
+                        throw std::runtime_error("Sub-stream index too large");
                     }
                     dbm.add(model, *dbs.data_block, *dbs.streams[sub_stream]);
                 }
@@ -938,7 +939,7 @@ PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
                 for (uint32_t j = 0; j < 3; ++j) {
                     uint16_t id = swap_endianness(reinterpret_cast<const uint16_t*>(isd.data.data())[i * 3 + j]);
                     if (id >= dbm.vertices.size()) {
-                        THROW_OR_ABORT("Vertex index out of bounds: " + std::to_string(id) + " >= " + std::to_string(dbm.vertices.size()));
+                        throw std::runtime_error("Vertex index out of bounds: " + std::to_string(id) + " >= " + std::to_string(dbm.vertices.size()));
                     }
                     triangles[i](j) = dbm.vertices[id];
                     for (const auto& [k, u] : enumerate(dbm.uv1)) {
@@ -970,7 +971,7 @@ PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
                     std::move(alpha),
                     UUVector<FixedArray<float, 4>>()));
             if (!any(dbm.features & ColoredVertexFeatures::POSITION)) {
-                THROW_OR_ABORT("Vertices have no position in node \"" + node_id + '"');
+                throw std::runtime_error("Vertices have no position in node \"" + node_id + '"');
             }
             // if (!any(dbm.features & ColoredVertexFeatures::UV)) {
             //     for (auto& t : cva.triangles) {
@@ -1051,15 +1052,15 @@ PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
             auto node_id = node.get_attribute("id", model.schema).string();
             auto width = node.get_attribute("width", model.schema).uint32();
             if (width > 10'000) {
-                THROW_OR_ABORT("Width too large");
+                throw std::runtime_error("Width too large");
             }
             auto height = node.get_attribute("height", model.schema).uint32();
             if (height > 10'000) {
-                THROW_OR_ABORT("Height too large");
+                throw std::runtime_error("Height too large");
             }
             dds_resources->add_texture(
                 ColormapWithModifiers{
-                    .filename = VariableAndHash{ resource_prefix + node_id + ".dds" },
+                    .filename = FPath::from_variable(resource_prefix + node_id + ".dds"),
                     .color_mode = COLOR_MODE,
                     .mipmap_mode = MipmapMode::WITH_MIPMAPS,
                     .magnifying_interpolation_mode = InterpolationMode::LINEAR,
@@ -1073,14 +1074,14 @@ PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
     }
     for (auto& [_, r] : result.resources) {
         if (!cfg.textures.empty()) {
-            r->material.textures_color = cfg.textures;
+            r->meta.material.textures_color = cfg.textures;
         }
-        r->material.period_world = cfg.period_world;
-        r->material.compute_color_mode();
-        r->material.shading.emissive *= cfg.emissive_factor;
-        r->material.shading.ambient *= cfg.ambient_factor;
-        r->material.shading.diffuse *= cfg.diffuse_factor;
-        r->material.shading.specular *= cfg.specular_factor;
+        r->meta.material.period_world = cfg.period_world;
+        r->meta.material.compute_color_mode();
+        r->meta.material.shading.emissive *= cfg.emissive_factor;
+        r->meta.material.shading.ambient *= cfg.ambient_factor;
+        r->meta.material.shading.diffuse *= cfg.diffuse_factor;
+        r->meta.material.shading.specular *= cfg.specular_factor;
     }
     return result;
 }

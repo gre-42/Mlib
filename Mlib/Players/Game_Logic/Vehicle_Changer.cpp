@@ -8,16 +8,16 @@
 #include <Mlib/Players/Scene_Vehicle/Scene_Vehicle.hpp>
 #include <Mlib/Players/Scene_Vehicle/Vehicle_Spawner.hpp>
 #include <Mlib/Scene_Config/Scene_Precision.hpp>
-#include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Spawn_Arguments.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
+#include <Mlib/Threads/Throwing_Lock_Guard.hpp>
+#include <stdexcept>
 
 using namespace Mlib;
 
 VehicleChanger::VehicleChanger(
     VehicleSpawners& vehicle_spawners,
-    DeleteNodeMutex& delete_node_mutex)
+    SafeAtomicRecursiveSharedMutex& delete_node_mutex)
     : vehicle_spawners_{ vehicle_spawners }
     , delete_node_mutex_{ delete_node_mutex }
 {}
@@ -35,10 +35,12 @@ bool VehicleChanger::change_vehicle(VehicleSpawner& s) {
         return false;
     }
     if (next_vehicle->get_primary_scene_vehicle()->scene_node().ptr() == p->scene_node().ptr()) {
-        THROW_OR_ABORT("Next scene node equals current node");
+        throw std::runtime_error("Next scene node equals current node");
     }
-    auto& next_rb = get_rigid_body_vehicle(next_vehicle->get_primary_scene_vehicle()->scene_node());
-    auto other_player = next_rb.drivers_.try_get(p->next_seat());
+    auto next_rb = get_rigid_body_vehicle(
+        next_vehicle->get_primary_scene_vehicle()->scene_node().get(),
+        CURRENT_SOURCE_LOCATION);
+    auto other_player = next_rb->drivers_.try_get(p->next_seat());
     if (other_player == nullptr) {
         return enter_vehicle(s, *next_vehicle.get());
     }
@@ -46,14 +48,14 @@ bool VehicleChanger::change_vehicle(VehicleSpawner& s) {
     // } else {
     //     auto* other_driver = dynamic_cast<Player*>(other_player);
     //     if (other_driver == nullptr) {
-    //         THROW_OR_ABORT("Next vehicle's driver is not a player");
+    //         throw std::runtime_error("Next vehicle's driver is not a player");
     //     }
     //     swap_vehicles(p.get(), *other_driver);
     // }
 }
 
 void VehicleChanger::change_vehicles() {
-    delete_node_mutex_.assert_this_thread_is_deleter_thread();
+    ThrowingLockGuard delete_lock{delete_node_mutex_};
     for (const auto& [_, s] : vehicle_spawners_.spawners()) {
         change_vehicle(*s);
     }
@@ -93,23 +95,23 @@ void VehicleChanger::swap_vehicles(Player& a, Player& b) {
 
 bool VehicleChanger::enter_vehicle(VehicleSpawner& a, VehicleSpawner& b) {
     if (!a.has_player()) {
-        THROW_OR_ABORT("Vehicle spawner has no player");
+        throw std::runtime_error("Vehicle spawner has no player");
     }
     auto b_rb = b.get_primary_scene_vehicle()->rb();
     if (b_rb->is_avatar() && (&a.get_primary_scene_vehicle().get() != &b.get_primary_scene_vehicle().get())) {
-        THROW_OR_ABORT("Can only enter the initial avatar");
+        throw std::runtime_error("Can only enter the initial avatar");
     }
     auto ap = a.get_player();
     if (&ap->vehicle().get() == &b.get_primary_scene_vehicle().get()) {
-        THROW_OR_ABORT("Entering the same vehicle");
+        throw std::runtime_error("Entering the same vehicle");
     }
     auto a_rb_old = ap->rigid_body();
     if (b_rb->is_activated_avatar()) {
-        THROW_OR_ABORT("Destination avatar is not deactivated: \"" + b_rb->name() + '"');
+        throw std::runtime_error("Destination avatar is not deactivated: \"" + b_rb->name() + '"');
     }
     if (b_rb->is_deactivated_avatar()) {
         if (std::isnan(a_rb_old->door_distance_)) {
-            THROW_OR_ABORT("Door distance not set: \"" + a_rb_old->name() + '"');
+            throw std::runtime_error("Door distance not set: \"" + a_rb_old->name() + '"');
         }
         auto a_trafo = a_rb_old->rbp_.abs_transformation();
         FixedArray<float, 3> a_dir = (std::abs(a_trafo.R(0, 1)) > 0.9f)
@@ -131,7 +133,7 @@ bool VehicleChanger::enter_vehicle(VehicleSpawner& a, VehicleSpawner& b) {
             return false;
         }
         if (a_rb_old->passengers_.erase(a.get_primary_scene_vehicle()->rb().ptr()) != 1) {
-            THROW_OR_ABORT(
+            throw std::runtime_error(
                 "Could not find passenger to be deleted. Vehicle: \"" + a_rb_old->name() +
                 "\". Passenger: \"" + a.get_primary_scene_vehicle()->rb()->name() + '"');
         }
@@ -160,7 +162,7 @@ bool VehicleChanger::enter_vehicle(VehicleSpawner& a, VehicleSpawner& b) {
             a.get_primary_scene_vehicle()->rb().set_loc(CURRENT_SOURCE_LOCATION).ptr(),
             CURRENT_SOURCE_LOCATION).second)
         {
-            THROW_OR_ABORT(
+            throw std::runtime_error(
                 "Passenger already exists. Vehicle: \"" + ap->rigid_body()->name() +
                 "\". Passenger: \"" + a.get_primary_scene_vehicle()->rb()->name() + '"');
         }

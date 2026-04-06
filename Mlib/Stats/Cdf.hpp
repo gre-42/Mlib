@@ -3,11 +3,11 @@
 
 namespace Mlib {
 
-template <class TData, class TFloat=TData>
+template <class TData, class TFloat>
 class Cdf {
 public:
     Cdf(const Array<TData>& data, size_t nbins = 10)
-    : hist_{data, nbins}
+        : hist_{data, nbins}
     {
         const Array<size_t>& hist = hist_.hist();
         cdf_.resize(hist.shape());
@@ -17,25 +17,31 @@ public:
             cdf_(i) = std::min((TFloat)1, cumsum);
         }
     }
-    const TFloat& operator () (const TData& v, bool check_bounds = false) {
-        return cdf_(hist_.bin_id(v, check_bounds));
+    const TFloat& operator () (const TData& v, OutOfBoundsBehavior out_of_bounds_behavior) const {
+        return cdf_(hist_.bin_id(v, out_of_bounds_behavior));
     }
-    const Array<TFloat>& cdf() {
+    const Array<TFloat>& cdf() const {
         return cdf_;
     }
-    Array<TData> bins() {
-        return hist_.bins();
+    Array<TData> bin_boundaries() const {
+        return hist_.bin_boundaries();
+    }
+    Array<TData> bin_centers() const {
+        return hist_.bin_centers();
+    }
+    size_t nbins() const {
+        return hist_.nbins();
     }
 private:
     Histogram<TData> hist_;
     Array<TFloat> cdf_;
 };
 
-template <class TData, class TFloat=TData>
+template <class TData, class TFloat>
 void cdf(const Array<TData>& data, Array<TFloat>& cdf, Array<TData>& bins, size_t nbins = 10) {
-    Cdf ccdf{data, nbins};
+    Cdf<TData, TFloat> ccdf{data, nbins};
     cdf = ccdf.cdf();
-    bins = ccdf.bins();
+    bins = ccdf.bin_centers();
 }
 
 }

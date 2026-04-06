@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Misc/Source_Location.hpp>
 
 namespace Mlib {
 
@@ -7,6 +8,6 @@ class SceneNode;
 template <class T>
 class DanglingBaseClassRef;
 
-Gun& get_gun(const DanglingBaseClassRef<SceneNode>& node);
+DanglingBaseClassRef<Gun> get_gun(SceneNode& node, SourceLocation loc);
 
 }

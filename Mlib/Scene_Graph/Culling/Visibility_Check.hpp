@@ -1,6 +1,6 @@
 #pragma once
-#include <Mlib/Billboard_Id.hpp>
-#include <Mlib/Geometry/Intersection/Frustum3.hpp>
+#include <Mlib/Geometry/Billboard_Id.hpp>
+#include <Mlib/Geometry/Primitives/Frustum3.hpp>
 #include <cmath>
 #include <cstdint>
 
@@ -13,13 +13,15 @@ struct Morphology;
 struct SceneGraphConfig;
 struct ExternalRenderPass;
 enum class ExternalRenderPassType;
+template <class T>
+class VariableAndHash;
 
 template <class TData>
 class VisibilityCheck {
 public:
     explicit VisibilityCheck(const FixedArray<TData, 4, 4>& mvp);
     bool is_visible(
-        const std::string& object_name,
+        const VariableAndHash<std::string>& object_name,
         const Material& material,
         const Morphology& morphology,
         BillboardId billboard_id,
@@ -27,7 +29,7 @@ public:
         ExternalRenderPassType external_render_pass) const;
     bool is_visible(TData max_center_distance) const;
     bool black_is_visible(
-        const std::string& object_name,
+        const VariableAndHash<std::string>& object_name,
         const Material& material,
         BillboardId billboard_id,
         const SceneGraphConfig& scene_graph_config,

@@ -1,6 +1,7 @@
+
 #include "Skill_Map.hpp"
 #include <Mlib/Physics/Ai/Control_Source.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -11,7 +12,7 @@ Skills& SkillMap::skills(ControlSource source) {
     case ControlSource::USER:
         return user_skills_;
     }
-    THROW_OR_ABORT("Unknown control source");
+    throw std::runtime_error("Unknown control source");
 }
 
 const Skills& SkillMap::skills(ControlSource source) const {

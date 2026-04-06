@@ -1,6 +1,4 @@
 #include "Create_Check_Points.hpp"
-#include <Mlib/Argument_List.hpp>
-#include <Mlib/FPath.hpp>
 #include <Mlib/Layout/Layout_Constraints.hpp>
 #include <Mlib/Layout/Widget.hpp>
 #include <Mlib/Macro_Executor/Asset_Group_Replacement_Parameters.hpp>
@@ -12,6 +10,9 @@
 #include <Mlib/Macro_Executor/Macro_Line_Executor.hpp>
 #include <Mlib/Macro_Executor/Replacement_Parameter.hpp>
 #include <Mlib/Memory/Object_Pool.hpp>
+#include <Mlib/Misc/Argument_List.hpp>
+#include <Mlib/Misc/FPath.hpp>
+#include <Mlib/OpenGL/Render_Logics/Render_Logics.hpp>
 #include <Mlib/Physics/Advance_Times/Check_Points.hpp>
 #include <Mlib/Physics/Misc/Track_Element_File.hpp>
 #include <Mlib/Physics/Misc/Track_Element_Vector.hpp>
@@ -20,7 +21,6 @@
 #include <Mlib/Players/Containers/Players.hpp>
 #include <Mlib/Players/Containers/Remote_Sites.hpp>
 #include <Mlib/Regex/Regex_Select.hpp>
-#include <Mlib/Render/Render_Logics/Render_Logics.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Load_Scene_Funcs.hpp>
 #include <Mlib/Scene/Render_Logics/Check_Points_Pacenotes.hpp>
@@ -100,7 +100,7 @@ void CreateCheckPoints::execute(const LoadSceneJsonUserFunctionArgs& args)
     if (args.arguments.contains_non_null(KnownArgs::track_filename) ==
         args.arguments.contains_non_null(KnownArgs::track))
     {
-        THROW_OR_ABORT("Require exactly one of \"track\" and \"track_filename\"");
+        throw std::runtime_error("Require exactly one of \"track\" and \"track_filename\"");
     }
     std::unique_ptr<ITrackElementSequence> sequence;
     if (args.arguments.contains_non_null(KnownArgs::track_filename)) {

@@ -1,18 +1,18 @@
 #include "Minimap.hpp"
-#include <Mlib/Argument_List.hpp>
 #include <Mlib/Layout/Layout_Constraints.hpp>
 #include <Mlib/Layout/Widget.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Memory/Object_Pool.hpp>
+#include <Mlib/Misc/Argument_List.hpp>
+#include <Mlib/OpenGL/Render_Logics/Render_Logics.hpp>
 #include <Mlib/Physics/Containers/Advance_Times.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Engine.hpp>
 #include <Mlib/Players/Advance_Times/Player.hpp>
 #include <Mlib/Players/Containers/Players.hpp>
-#include <Mlib/Render/Render_Logics/Render_Logics.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Render_Logics/Minimap_Logic.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -60,8 +60,8 @@ void Minimap::execute(const LoadSceneJsonUserFunctionArgs& args)
         render_logics,
         player,
         node,
-        VariableAndHash{ args.arguments.path_or_variable(KnownArgs::minimap).path },
-        VariableAndHash{ args.arguments.path_or_variable(KnownArgs::locator).path },
+        args.arguments.path_or_variable(KnownArgs::minimap),
+        args.arguments.path_or_variable(KnownArgs::locator),
         std::move(widget),
         args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::locator_size)),
         args.arguments.at<float>(KnownArgs::pointer_reference_length),

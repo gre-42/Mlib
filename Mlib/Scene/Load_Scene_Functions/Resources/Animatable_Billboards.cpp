@@ -1,15 +1,15 @@
 #include "Animatable_Billboards.hpp"
-#include <Mlib/Argument_List.hpp>
 #include <Mlib/Geometry/Material/Particle_Type.hpp>
 #include <Mlib/Geometry/Mesh/Animated_Colored_Vertex_Arrays.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
-#include <Mlib/Render/Batch_Renderers/Particles_Instance.hpp>
-#include <Mlib/Render/Rendering_Context.hpp>
-#include <Mlib/Render/Resource_Managers/Particle_Resources.hpp>
+#include <Mlib/Misc/Argument_List.hpp>
+#include <Mlib/OpenGL/Batch_Renderers/Particles_Instance.hpp>
+#include <Mlib/OpenGL/Rendering_Context.hpp>
+#include <Mlib/OpenGL/Resource_Managers/Particle_Resources.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Resources/Renderable_Resource_Filter.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
+#include <stdexcept>
 #include <vector>
 
 using namespace Mlib;
@@ -38,6 +38,7 @@ LoadSceneJsonUserFunction AnimatableBillboards::json_user_function = [](const Lo
         ()
         {
             auto scva = snr.get_single_precision_array(billboards, filter.cva_filter);
-            return std::make_shared<ParticlesInstance>(scva, max_num_instances, filter, type);
+            auto gvd = snr.get_gpu_vertex_data(scva, nullptr);
+            return std::make_shared<ParticlesInstance>(gvd, max_num_instances, filter, type);
         });
 };

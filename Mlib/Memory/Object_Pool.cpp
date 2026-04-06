@@ -1,8 +1,9 @@
+
 #include "Object_Pool.hpp"
 #include <Mlib/Memory/Recursive_Deletion.hpp>
 #include <Mlib/Os/Os.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
 #include <exception>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -35,7 +36,7 @@ void ObjectPool::add(std::function<void()> deallocate, Object& o, SourceLocation
         verbose_abort("ObjectPool::add called during clearing");
     }
     if (!ptrs_.emplace(std::move(deallocate), &o, loc).second) {
-        THROW_OR_ABORT("Unique pointer already exists");
+        throw std::runtime_error("Unique pointer already exists");
     }
 }
 

@@ -1,5 +1,6 @@
+
 #include "Log_Entry_Severity.hpp"
-#include <Mlib/Throw_Or_Abort.hpp>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -9,6 +10,6 @@ LogEntrySeverity Mlib::log_entry_severity_from_string(const std::string& s) {
     } else if (s == "critical") {
         return LogEntrySeverity::CRITICAL;
     } else {
-        THROW_OR_ABORT("Unknown log entry severity");
+        throw std::runtime_error("Unknown log entry severity");
     }
 }

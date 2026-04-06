@@ -1,12 +1,14 @@
 #include "Load_Osm_Resource.hpp"
-#include <Mlib/Argument_List.hpp>
-#include <Mlib/Env.hpp>
-#include <Mlib/FPath.hpp>
 #include <Mlib/Geometry/Material/Blend_Mode.hpp>
 #include <Mlib/Geometry/Mesh/Contour_Detection_Strategy.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>
 #include <Mlib/Json/Map.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
+#include <Mlib/Misc/Argument_List.hpp>
+#include <Mlib/Misc/FPath.hpp>
+#include <Mlib/OpenGL/Renderables/Triangle_Sampler/Terrain_Type.hpp>
+#include <Mlib/OpenGL/Rendering_Context.hpp>
+#include <Mlib/Os/Env.hpp>
 #include <Mlib/Os/Os.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Osm_Resource_Config.hpp>
@@ -14,17 +16,15 @@
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Waysides_Surface.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Waysides_Vertex.hpp>
 #include <Mlib/Physics/Units.hpp>
-#include <Mlib/Render/Renderables/Triangle_Sampler/Terrain_Type.hpp>
-#include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Resources/Parsed_Resource_Name.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
 #include <Mlib/Strings/String.hpp>
 #include <Mlib/Strings/Trim.hpp>
 #include <Mlib/Threads/Thread_Top.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
 #include <concepts>
 #include <filesystem>
+#include <stdexcept>
 
 static uint32_t CACHE_FILE_VERSION = 85;
 
@@ -348,15 +348,12 @@ LoadSceneJsonUserFunction LoadOsmResource::json_user_function = [](const LoadSce
     auto& scene_node_resources = RenderingContextStack::primary_scene_node_resources();
 
     auto fpathps = [&args](std::string_view name){
-        return args.arguments.pathes_or_variables(name, [](const FPath& v) { return VariableAndHash{ v.path }; });
+        return args.arguments.pathes_or_variables(name);
     };
 
     auto fpathes = [&args](std::string_view name){
         return args.arguments.pathes_or_variables(name, [](const FPath& v) {
-            if (v.is_variable) {
-                THROW_OR_ABORT("Value is a variable, not a path: \"" + v.path + '"');
-            }
-            return v.path;
+            return v.local_path();
         });
     };
 
@@ -371,7 +368,7 @@ LoadSceneJsonUserFunction LoadOsmResource::json_user_function = [](const LoadSce
             for (const auto& street_texture : street_textures) {
                 street_texture.validate(ST::options, "street texture: ");
                 RoadProperties rp{.type=road_type, .nlanes = street_texture.at<size_t>(ST::lanes)};
-                auto textures = street_texture.pathes_or_variables(ST::textures, [](const FPath& v) { return VariableAndHash{ v.path }; });
+                auto textures = street_texture.pathes_or_variables(ST::textures);
                 RoadStyle rs{
                     .textures = textures,
                     .uvx = street_texture.contains(ST::uvx)
@@ -384,7 +381,7 @@ LoadSceneJsonUserFunction LoadOsmResource::json_user_function = [](const LoadSce
             for (const auto& barrier_style : barrier_styles) {
                 barrier_style.validate(BS::options, "barrier style: ");
                 BarrierStyle as{
-                    .texture = VariableAndHash{barrier_style.path_or_variable(BS::texture).path},
+                    .texture = barrier_style.path_or_variable(BS::texture),
                     .uv = barrier_style.at<EFixedArray<float, 2>>(BS::uv),
                     .depth = barrier_style.at<float>(BS::depth),
                     .depth_color = barrier_style.at<EFixedArray<float, 3>>(BS::depth_color, fixed_ones<float, 3>()),
@@ -397,7 +394,7 @@ LoadSceneJsonUserFunction LoadOsmResource::json_user_function = [](const LoadSce
                         .specular = barrier_style.at<EOrderableFixedArray<float, 3>>(BS::specular),
                         .fresnel = barrier_style.at<FresnelAndAmbient>(BS::fresnel, FresnelAndAmbient{})} };
                 if (!styles.insert({barrier_style.at<std::string>(BS::name), as}).second) {
-                    THROW_OR_ABORT("Duplicate barrier style");
+                    throw std::runtime_error("Duplicate barrier style");
                 }
             };
         };
@@ -486,34 +483,34 @@ LoadSceneJsonUserFunction LoadOsmResource::json_user_function = [](const LoadSce
             config.terrain_textures[TerrainType::WATER_FLOOR_BASE] = fpathps(KnownArgs::terrain_water_floor_base_textures);
         }
         if (args.arguments.contains(KnownArgs::terrain_stone_reflection_map)) {
-            config.terrain_reflection_map[TerrainType::STONE] = args.arguments.at<std::string>(KnownArgs::terrain_stone_reflection_map);
+            config.terrain_reflection_map[TerrainType::STONE] = args.arguments.path_or_variable(KnownArgs::terrain_stone_reflection_map);
         }
         if (args.arguments.contains(KnownArgs::terrain_asphalt_reflection_map)) {
-            config.terrain_reflection_map[TerrainType::ASPHALT] = args.arguments.at<std::string>(KnownArgs::terrain_asphalt_reflection_map);
+            config.terrain_reflection_map[TerrainType::ASPHALT] = args.arguments.path_or_variable(KnownArgs::terrain_asphalt_reflection_map);
         }
         if (args.arguments.contains(KnownArgs::window_reflection_map)) {
-            config.window_reflection_map = args.arguments.at<std::string>(KnownArgs::window_reflection_map);
+            config.window_reflection_map = args.arguments.path_or_variable(KnownArgs::window_reflection_map);
         }
         if (args.arguments.contains(KnownArgs::stone_dirt_texture)) {
-            config.terrain_dirt_textures[TerrainType::STONE] = args.arguments.path_or_variable(KnownArgs::stone_dirt_texture).path;
+            config.terrain_dirt_textures[TerrainType::STONE] = args.arguments.path_or_variable(KnownArgs::stone_dirt_texture);
         }
         if (args.arguments.contains(KnownArgs::grass_dirt_texture)) {
-            config.terrain_dirt_textures[TerrainType::GRASS] = args.arguments.path_or_variable(KnownArgs::grass_dirt_texture).path;
+            config.terrain_dirt_textures[TerrainType::GRASS] = args.arguments.path_or_variable(KnownArgs::grass_dirt_texture);
         }
         if (args.arguments.contains(KnownArgs::flowers_dirt_texture)) {
-            config.terrain_dirt_textures[TerrainType::FLOWERS] = args.arguments.path_or_variable(KnownArgs::flowers_dirt_texture).path;
+            config.terrain_dirt_textures[TerrainType::FLOWERS] = args.arguments.path_or_variable(KnownArgs::flowers_dirt_texture);
         }
         if (args.arguments.contains(KnownArgs::trees_dirt_texture)) {
-            config.terrain_dirt_textures[TerrainType::TREES] = args.arguments.path_or_variable(KnownArgs::trees_dirt_texture).path;
+            config.terrain_dirt_textures[TerrainType::TREES] = args.arguments.path_or_variable(KnownArgs::trees_dirt_texture);
         }
         if (args.arguments.contains(KnownArgs::street_dirt_texture)) {
-            config.street_dirt_texture = args.arguments.path_or_variable(KnownArgs::street_dirt_texture).path;
+            config.street_dirt_texture = args.arguments.path_or_variable(KnownArgs::street_dirt_texture);
         }
         if (args.arguments.contains(KnownArgs::street_reflection_map)) {
-            config.street_reflection_map[RoadType::STREET] = args.arguments.at<std::string>(KnownArgs::street_reflection_map);
+            config.street_reflection_map[RoadType::STREET] = args.arguments.path_or_variable(KnownArgs::street_reflection_map);
         }
         if (args.arguments.contains(KnownArgs::path_reflection_map)) {
-            config.street_reflection_map[RoadType::PATH] = args.arguments.at<std::string>(KnownArgs::path_reflection_map);
+            config.street_reflection_map[RoadType::PATH] = args.arguments.path_or_variable(KnownArgs::path_reflection_map);
         }
         if (args.arguments.contains(KnownArgs::street_crossing_textures)) {
             config.street_crossing_textures[RoadType::STREET] = fpathps(KnownArgs::street_crossing_textures);
@@ -553,7 +550,7 @@ LoadSceneJsonUserFunction LoadOsmResource::json_user_function = [](const LoadSce
         }
         if (args.arguments.contains(KnownArgs::street_texture)) {
             RoadProperties rp{.type=RoadType::STREET, .nlanes = 1};
-            RoadStyle rs{ .textures = { VariableAndHash{args.arguments.path_or_variable(KnownArgs::street_texture).path} }, .uvx = 1.f };
+            RoadStyle rs{ .textures = { args.arguments.path_or_variable(KnownArgs::street_texture) }, .uvx = 1.f };
             config.street_texture[rp] = rs;
         }
         if (args.arguments.contains_non_null(KnownArgs::street_textures)) {
@@ -564,7 +561,7 @@ LoadSceneJsonUserFunction LoadOsmResource::json_user_function = [](const LoadSce
         }
         if (args.arguments.contains(KnownArgs::path_texture)) {
             RoadProperties rp{.type=RoadType::PATH, .nlanes = 1};
-            RoadStyle rs{ .textures = { VariableAndHash{args.arguments.path_or_variable(KnownArgs::path_texture).path} }, .uvx = 1.f };
+            RoadStyle rs{ .textures = { args.arguments.path_or_variable(KnownArgs::path_texture) }, .uvx = 1.f };
             config.street_texture[rp] = rs;
         }
         if (args.arguments.contains_non_null(KnownArgs::path_textures)) {
@@ -582,41 +579,41 @@ LoadSceneJsonUserFunction LoadOsmResource::json_user_function = [](const LoadSce
         if (args.arguments.contains_non_null(KnownArgs::wall_textures)) {
             add_street_textures(RoadType::WALL, args.arguments.children(KnownArgs::wall_textures));
         }
-        if (args.arguments.contains(KnownArgs::curb_street_texture)) {
-            config.curb_street_texture[RoadType::STREET] = args.arguments.path_or_variable(KnownArgs::curb_street_texture).path;
+        if (auto t = args.arguments.try_path_or_variable(KnownArgs::curb_street_texture); !t.empty()) {
+            config.curb_street_texture[RoadType::STREET] = t;
         }
-        if (args.arguments.contains(KnownArgs::curb_path_texture)) {
-            config.curb_street_texture[RoadType::PATH] = args.arguments.path_or_variable(KnownArgs::curb_path_texture).path;
+        if (auto t = args.arguments.try_path_or_variable(KnownArgs::curb_path_texture); !t.empty()) {
+            config.curb_street_texture[RoadType::PATH] = t;
         }
-        if (args.arguments.contains(KnownArgs::curb_wall_texture)) {
-            config.curb_street_texture[RoadType::WALL] = args.arguments.path_or_variable(KnownArgs::curb_wall_texture).path;
+        if (auto t = args.arguments.try_path_or_variable(KnownArgs::curb_wall_texture); !t.empty()) {
+            config.curb_street_texture[RoadType::WALL] = t;
         }
-        if (args.arguments.contains(KnownArgs::curb2_street_texture)) {
-            config.curb2_street_texture[RoadType::STREET] = args.arguments.path_or_variable(KnownArgs::curb2_street_texture).path;
+        if (auto t = args.arguments.try_path_or_variable(KnownArgs::curb2_street_texture); !t.empty()) {
+            config.curb2_street_texture[RoadType::STREET] = t;
         }
-        if (args.arguments.contains(KnownArgs::curb2_path_texture)) {
-            config.curb2_street_texture[RoadType::PATH] = args.arguments.path_or_variable(KnownArgs::curb2_path_texture).path;
+        if (auto t = args.arguments.try_path_or_variable(KnownArgs::curb2_path_texture); !t.empty()) {
+            config.curb2_street_texture[RoadType::PATH] = t;
         }
-        if (args.arguments.contains(KnownArgs::curb2_wall_texture)) {
-            config.curb2_street_texture[RoadType::WALL] = args.arguments.path_or_variable(KnownArgs::curb2_wall_texture).path;
+        if (auto t = args.arguments.try_path_or_variable(KnownArgs::curb2_wall_texture); !t.empty()) {
+            config.curb2_street_texture[RoadType::WALL] = t;
         }
-        if (args.arguments.contains(KnownArgs::air_curb_street_texture)) {
-            config.air_curb_street_texture[RoadType::STREET] = args.arguments.path_or_variable(KnownArgs::air_curb_street_texture).path;
+        if (auto t = args.arguments.try_path_or_variable(KnownArgs::air_curb_street_texture); !t.empty()) {
+            config.air_curb_street_texture[RoadType::STREET] = t;
         }
-        if (args.arguments.contains(KnownArgs::air_curb_path_texture)) {
-            config.air_curb_street_texture[RoadType::PATH] = args.arguments.path_or_variable(KnownArgs::air_curb_path_texture).path;
+        if (auto t = args.arguments.try_path_or_variable(KnownArgs::air_curb_path_texture); !t.empty()) {
+            config.air_curb_street_texture[RoadType::PATH] = t;
         }
-        if (args.arguments.contains(KnownArgs::air_support_texture)) {
-            config.air_support_texture = args.arguments.path_or_variable(KnownArgs::air_support_texture).path;
+        if (auto t = args.arguments.try_path_or_variable(KnownArgs::air_support_texture); !t.empty()) {
+            config.air_support_texture = t;
         }
-        if (args.arguments.contains(KnownArgs::racing_line_texture)) {
-            config.racing_line_texture = args.arguments.path_or_variable(KnownArgs::racing_line_texture).path;
+        if (auto t = args.arguments.try_path_or_variable(KnownArgs::racing_line_texture); !t.empty()) {
+            config.racing_line_texture = t;
         }
-        if (args.arguments.contains_non_null(KnownArgs::racing_line_track)) {
-            config.racing_line_track = args.arguments.path_or_variable(KnownArgs::racing_line_track).path;
+        if (auto t = args.arguments.try_path_or_variable(KnownArgs::racing_line_track); !t.empty()) {
+            config.racing_line_track = t.local_path();
         }
-        if (args.arguments.contains_non_null(KnownArgs::racing_line_playback)) {
-            config.racing_line_playback = args.arguments.path_or_variable(KnownArgs::racing_line_playback).path;
+        if (auto t = args.arguments.try_path_or_variable(KnownArgs::racing_line_playback); !t.empty()) {
+            config.racing_line_playback = t.local_path();
         }
         if (args.arguments.contains(KnownArgs::socle_height)) {
             config.socle_height = args.arguments.at<float>(KnownArgs::socle_height);
@@ -631,7 +628,7 @@ LoadSceneJsonUserFunction LoadOsmResource::json_user_function = [](const LoadSce
             config.facade_textures = args.arguments.children(KnownArgs::facade_textures, parse_facade_texture);
         }
         if (args.arguments.contains(KnownArgs::ceiling_texture)) {
-            config.ceiling_texture = args.arguments.path_or_variable(KnownArgs::ceiling_texture).path;
+            config.ceiling_texture = args.arguments.path_or_variable(KnownArgs::ceiling_texture);
         }
         if (args.arguments.contains_non_null(KnownArgs::barrier_styles)) {
             add_styles(config.barrier_styles, args.arguments.children(KnownArgs::barrier_styles));
@@ -643,10 +640,10 @@ LoadSceneJsonUserFunction LoadOsmResource::json_user_function = [](const LoadSce
             config.roof_model = args.arguments.at<std::string>(KnownArgs::roof_model);
         }
         if (args.arguments.contains(KnownArgs::roof_texture)) {
-            config.roof_texture = args.arguments.path_or_variable(KnownArgs::roof_texture).path;
+            config.roof_texture = args.arguments.path_or_variable(KnownArgs::roof_texture);
         }
         if (args.arguments.contains(KnownArgs::roof_rail_texture)) {
-            config.roof_rail_texture = args.arguments.path_or_variable(KnownArgs::roof_rail_texture).path;
+            config.roof_rail_texture = args.arguments.path_or_variable(KnownArgs::roof_rail_texture);
         }
         if (args.arguments.contains(KnownArgs::default_roof_9_2)) {
             config.default_roof_9_2 = args.arguments.at<Roof9_2>(KnownArgs::default_roof_9_2);
@@ -664,7 +661,7 @@ LoadSceneJsonUserFunction LoadOsmResource::json_user_function = [](const LoadSce
             config.bridge_pier_textures = fpathps(KnownArgs::bridge_pier_textures);
         }
         if (args.arguments.contains(KnownArgs::tunnel_pipe_texture)) {
-            config.tunnel_pipe_texture = args.arguments.path_or_variable(KnownArgs::tunnel_pipe_texture).path;
+            config.tunnel_pipe_texture = args.arguments.path_or_variable(KnownArgs::tunnel_pipe_texture);
         }
         if (args.arguments.contains(KnownArgs::tunnel_pipe_resource_name)) {
             config.tunnel_pipe_resource_name = args.arguments.at<std::string>(KnownArgs::tunnel_pipe_resource_name);
@@ -711,10 +708,14 @@ LoadSceneJsonUserFunction LoadOsmResource::json_user_function = [](const LoadSce
         if (args.arguments.contains(KnownArgs::water)) {
             config.water = args.arguments.at<WaterConfiguration>(KnownArgs::water);
             for (auto& t : config.water->textures.color) {
-                t = VariableAndHash<std::string>{ args.arguments.fpath(*t).path };
+                if (t.type() == PathType::LOCAL_PATH) {
+                    t = args.arguments.fpath(t.local_path());
+                }
             }
             for (auto& t : config.water->textures.alpha) {
-                t = VariableAndHash<std::string>{ args.arguments.fpath(*t).path };
+                if (t.type() == PathType::LOCAL_PATH) {
+                    t = args.arguments.fpath(t.local_path());
+                }
             }
         }
         if (args.arguments.contains_non_null(KnownArgs::waysides_surface)) {
@@ -1146,19 +1147,19 @@ LoadSceneJsonUserFunction LoadOsmResource::json_user_function = [](const LoadSce
             config.blend_street[RoadType::RUNWAY_DISPLACEMENT_THRESHOLD] = args.arguments.at<bool>(KnownArgs::blend_runway_displacement_threshold);
         }
         if (args.arguments.contains(KnownArgs::emissive_factor)) {
-            config.emissive_factor = args.arguments.at<EFixedArray<float, 3>>(KnownArgs::emissive_factor);
+            config.shading_factors.emissive_factor = args.arguments.at<EFixedArray<float, 3>>(KnownArgs::emissive_factor);
         }
         if (args.arguments.contains(KnownArgs::ambient_factor)) {
-            config.ambient_factor = args.arguments.at<EFixedArray<float, 3>>(KnownArgs::ambient_factor);
+            config.shading_factors.ambient_factor = args.arguments.at<EFixedArray<float, 3>>(KnownArgs::ambient_factor);
         }
         if (args.arguments.contains(KnownArgs::diffuse_factor)) {
-            config.diffuse_factor = args.arguments.at<EFixedArray<float, 3>>(KnownArgs::diffuse_factor);
+            config.shading_factors.diffuse_factor = args.arguments.at<EFixedArray<float, 3>>(KnownArgs::diffuse_factor);
         }
         if (args.arguments.contains(KnownArgs::specular_factor)) {
-            config.specular_factor = args.arguments.at<EFixedArray<float, 3>>(KnownArgs::specular_factor);
+            config.shading_factors.specular_factor = args.arguments.at<EFixedArray<float, 3>>(KnownArgs::specular_factor);
         }
         if (args.arguments.contains(KnownArgs::fresnel_ambient_factor)) {
-            config.fresnel_ambient_factor = args.arguments.at<EFixedArray<float, 3>>(KnownArgs::fresnel_ambient_factor);
+            config.shading_factors.fresnel_ambient_factor = args.arguments.at<EFixedArray<float, 3>>(KnownArgs::fresnel_ambient_factor);
         }
         if (args.arguments.contains(KnownArgs::displacementmap)) {
             config.displacementmap = args.arguments.path(KnownArgs::displacementmap);
@@ -1199,10 +1200,10 @@ LoadSceneJsonUserFunction LoadOsmResource::json_user_function = [](const LoadSce
             config.refine_explicit_waypoints = args.arguments.at<bool>(KnownArgs::refine_explicit_waypoints);
         }
         if (args.arguments.contains(KnownArgs::fog_distances)) {
-            config.fog_distances = args.arguments.at<EFixedArray<float, 2>>(KnownArgs::fog_distances) * meters;
+            config.shading_factors.fog_distances = args.arguments.at<EFixedArray<float, 2>>(KnownArgs::fog_distances) * meters;
         }
         if (args.arguments.contains(KnownArgs::fog_ambient)) {
-            config.fog_ambient = args.arguments.at<EFixedArray<float, 3>>(KnownArgs::fog_ambient) * meters;
+            config.shading_factors.fog_ambient = args.arguments.at<EFixedArray<float, 3>>(KnownArgs::fog_ambient) * meters;
         }
         config.use_terrain_holes = args.arguments.at<bool>(KnownArgs::use_terrain_holes, false);
         if (args.arguments.contains(KnownArgs::object_cluster_width)) {
@@ -1213,16 +1214,16 @@ LoadSceneJsonUserFunction LoadOsmResource::json_user_function = [](const LoadSce
         }
     }
     if (resource_name->empty()) {
-        THROW_OR_ABORT("Osm resource name not set");
+        throw std::runtime_error("Osm resource name not set");
     }
     config.layer_heights = Interp<double>(
         layer_heights_layer,
         layer_heights_height);
     if (cache_filename.empty()) {
-        THROW_OR_ABORT("Cache filename not set");
+        throw std::runtime_error("Cache filename not set");
     }
     if (!cache_filename.ends_with(".cereal.binary")) {
-        THROW_OR_ABORT("Cache filename does not end with .cereal.binary");
+        throw std::runtime_error("Cache filename does not end with .cereal.binary");
     }
     std::shared_ptr<OsmMapResource> osm_map_resource;
     bool enable_cache = getenv_default_bool("ENABLE_OSM_MAP_CACHE", true);
@@ -1234,20 +1235,31 @@ LoadSceneJsonUserFunction LoadOsmResource::json_user_function = [](const LoadSce
         if (path_exists(cache_version_filename)) {
             auto ifstr = create_ifstream(cache_version_filename);
             if (ifstr->fail()) {
-                THROW_OR_ABORT("Could not open cache version file \"" + cache_version_filename + "\" for reading");
+                throw std::runtime_error("Could not open cache version file \"" + cache_version_filename + "\" for reading");
             }
             *ifstr >> old_cache_file_version;
             if (ifstr->fail() && !ifstr->eof()) {
-                THROW_OR_ABORT("Could not read from cache version file \"" + cache_version_filename + '"');
+                throw std::runtime_error("Could not read from cache version file \"" + cache_version_filename + '"');
             }
         }
     }
-    if (enable_cache && (old_cache_file_version == CACHE_FILE_VERSION) && path_exists(cache_filename)) {
-        osm_map_resource = std::make_shared<OsmMapResource>(
-            scene_node_resources,
-            cache_filename,
-            *resource_name);
+    if (enable_cache) {
+        linfo() << "OSM resource, old/new cache file version: " << old_cache_file_version << '/' << CACHE_FILE_VERSION;
     } else {
+        linfo() << "OSM cache disabled";
+    }
+    if (enable_cache && (old_cache_file_version == CACHE_FILE_VERSION) && path_exists(cache_filename)) {
+        linfo() << "Reusing cached OSM map";
+        try {
+            osm_map_resource = std::make_shared<OsmMapResource>(
+                scene_node_resources,
+                cache_filename,
+                *resource_name);
+        } catch (const std::exception& e) {
+            throw std::runtime_error("Could not load from \"" + cache_filename + "\": " + e.what());
+        }
+    } else {
+        linfo() << "Computing new OSM map";
         FunctionGuard fg{ "Load OSM map" };
         if (enable_cache) {
             fg.update("Load OSM map (cache enabled, future loads are faster)");
@@ -1268,11 +1280,11 @@ LoadSceneJsonUserFunction LoadOsmResource::json_user_function = [](const LoadSce
                     std::ios::out,
                     FileStorageType::CACHE);
                 if (ofstr->fail()) {
-                    THROW_OR_ABORT("Could not open cache version file \"" + cache_version_filename + "\" for writing");
+                    throw std::runtime_error("Could not open cache version file \"" + cache_version_filename + "\" for writing");
                 }
                 *ofstr << CACHE_FILE_VERSION;
                 if (ofstr->fail()) {
-                    THROW_OR_ABORT("Could not write to cache version file \"" + cache_version_filename + '"');
+                    throw std::runtime_error("Could not write to cache version file \"" + cache_version_filename + '"');
                 }
             }
         }

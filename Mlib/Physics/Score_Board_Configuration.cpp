@@ -1,6 +1,6 @@
+
 #include "Score_Board_Configuration.hpp"
 #include <Mlib/Strings/String.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
 #include <map>
 #include <stdexcept>
 
@@ -23,7 +23,7 @@ static ScoreBoardConfiguration single_score_board_configuration_from_string(cons
     };
     auto it = m.find(s);
     if (it == m.end()) {
-        THROW_OR_ABORT("Unknown score board configuration: \"" + s + '"');
+        throw std::runtime_error("Unknown score board configuration: \"" + s + '"');
     }
     return it->second;
 }

@@ -1,6 +1,6 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
-#include <Mlib/Default_Uninitialized_Vector.hpp>
+#include <Mlib/Initialization/Default_Uninitialized_Vector.hpp>
 #include <Mlib/Map/Map.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Interp.hpp>

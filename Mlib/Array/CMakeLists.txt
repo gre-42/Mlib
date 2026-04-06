@@ -1,8 +1,8 @@
 include(../../CMakeCommands.cmake)
 
-set(mlib_excluded_files "")
+set(excluded_files "")
 
-my_add_library(MlibArray "1" "" "${mlib_excluded_files}")
+my_add_library(MlibArray "1" "" "${excluded_files}")
 
 target_include_directories(MlibArray PUBLIC ${Mlib_INCLUDE_DIR})
 

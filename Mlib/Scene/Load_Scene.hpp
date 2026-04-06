@@ -2,10 +2,11 @@
 #include <Mlib/Macro_Executor/Focus_Finalizer.hpp>
 #include <Mlib/Macro_Executor/Macro_Line_Executor.hpp>
 #include <Mlib/Macro_Executor/Macro_Recorder.hpp>
+#include <Mlib/OpenGL/Key_Bindings/Lockable_Key_Configurations_Fwd.hpp>
+#include <Mlib/OpenGL/Key_Bindings/Lockable_Key_Descriptions_Fwd.hpp>
 #include <Mlib/Remote/Incremental_Objects/Scene_Level.hpp>
-#include <Mlib/Render/Key_Bindings/Lockable_Key_Configurations_Fwd.hpp>
-#include <Mlib/Render/Key_Bindings/Lockable_Key_Descriptions_Fwd.hpp>
 #include <atomic>
+#include <filesystem>
 #include <functional>
 
 namespace Mlib {
@@ -38,7 +39,7 @@ class WindowLogic;
 class LoadScene {
 public:
     LoadScene(
-        const std::list<std::string>* search_path,
+        const std::vector<std::filesystem::path>& search_path,
         const std::string& script_filename,
         ThreadSafeString& next_scene_filename,
         LocalSceneLevel scene_level,

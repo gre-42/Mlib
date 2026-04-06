@@ -45,7 +45,7 @@ public:
     {
         if (any(transmitted_fields & ~(TransmittedFields::SITE_ID | TransmittedFields::END)))
         {
-            THROW_OR_ABORT("Unexpected transmitted fields");
+            throw std::runtime_error("Unexpected transmitted fields");
         }
         value_ = read_binary<int32_t>(istr, "int32", IoVerbosity::SILENT);
     }
@@ -129,7 +129,7 @@ public:
         case ObjectType::STRING:
             return { object_pool_.create<SharedString>(CURRENT_SOURCE_LOCATION, istr, id, proxy_tasks, transmitted_fields, transmission_history_reader), CURRENT_SOURCE_LOCATION };
         }
-        THROW_OR_ABORT("Unknown object type: " + std::to_string((uint32_t)t));
+        throw std::runtime_error("Unknown object type: " + std::to_string((uint32_t)t));
     }
 private:
     ObjectPool object_pool_;

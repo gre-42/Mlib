@@ -1,11 +1,12 @@
+
 #include "Gravity_Efp.hpp"
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Math/Fixed_Scaled_Unit_Vector.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Engine.hpp>
-#include <Mlib/Physics/Physics_Engine/Physics_Engine_Config.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle_Flags.hpp>
+#include <Mlib/Scene_Config/Physics_Engine_Config.hpp>
 #include <Mlib/Scene_Graph/Instances/Static_World.hpp>
 
 using namespace Mlib;
@@ -30,7 +31,7 @@ void GravityEfp::increment_external_forces(
             phase.group.rigid_bodies.contains(&rb.rigid_body->rbp_))
         {
             if (rb.rigid_body->is_deactivated_avatar()) {
-                THROW_OR_ABORT("Attempt to integrate gravity of deactivated avatar");
+                throw std::runtime_error("Attempt to integrate gravity of deactivated avatar");
             }
             auto dt = cfg.dt_substeps(phase);
             rb.rigid_body->rbp_.integrate_delta_v(world.gravity->vector * dt, dt);

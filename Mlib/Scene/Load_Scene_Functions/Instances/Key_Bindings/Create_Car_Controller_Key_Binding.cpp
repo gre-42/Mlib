@@ -1,11 +1,11 @@
 #include "Create_Car_Controller_Key_Binding.hpp"
-#include <Mlib/Argument_List.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
+#include <Mlib/Misc/Argument_List.hpp>
+#include <Mlib/OpenGL/Key_Bindings/Car_Controller_Key_Binding.hpp>
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Players/Advance_Times/Player.hpp>
 #include <Mlib/Players/Containers/Players.hpp>
 #include <Mlib/Regex/Regex_Select.hpp>
-#include <Mlib/Render/Key_Bindings/Car_Controller_Key_Binding.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Load_Scene_Funcs.hpp>
 #include <Mlib/Scene/Render_Logics/Key_Bindings.hpp>
@@ -41,7 +41,7 @@ void CreateCarControllerKeyBinding::execute(const LoadSceneJsonUserFunctionArgs&
 {
     args.arguments.validate(KnownArgs::options);
 
-    DanglingBaseClassRef<SceneNode> node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::node), DP_LOC);
+    DanglingBaseClassRef<SceneNode> node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::node), CURRENT_SOURCE_LOCATION);
     auto player = players.get_player(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::player), CURRENT_SOURCE_LOCATION);
     auto& kb = key_bindings.add_car_controller_key_binding(std::unique_ptr<CarControllerKeyBinding>(new CarControllerKeyBinding{
         .node = node.ptr(),
@@ -64,7 +64,7 @@ void CreateCarControllerKeyBinding::execute(const LoadSceneJsonUserFunctionArgs&
             args.arguments.at<uint32_t>(KnownArgs::local_user_id),
             args.arguments.at<std::string>(KnownArgs::id),
             args.arguments.at<std::string>(KnownArgs::seat) },
-        .on_node_clear{ DestructionFunctionsRemovalTokens{ node->on_clear, CURRENT_SOURCE_LOCATION }},
+        .on_node_clear{ DestructionFunctionsRemovalTokens{ node->on_clear.early, CURRENT_SOURCE_LOCATION }},
         .on_player_delete_vehicle_internals{ DestructionFunctionsRemovalTokens{ player->delete_vehicle_internals, CURRENT_SOURCE_LOCATION } }}));
     kb.on_node_clear.add([&kbs=key_bindings, &kb](){ kbs.delete_car_controller_key_binding(kb); }, CURRENT_SOURCE_LOCATION);
     kb.on_player_delete_vehicle_internals.add([&kbs=key_bindings, &kb](){ kbs.delete_car_controller_key_binding(kb); }, CURRENT_SOURCE_LOCATION);

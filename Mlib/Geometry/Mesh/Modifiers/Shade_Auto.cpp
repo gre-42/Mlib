@@ -1,3 +1,4 @@
+
 #include "Shade_Auto.hpp"
 #include <Mlib/Geometry/Colored_Vertex.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>

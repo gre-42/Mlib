@@ -1,6 +1,5 @@
 #pragma once
 #include "Interp_Fwd.hpp"
-#include <Mlib/Throw_Or_Abort.hpp>
 #include <algorithm>
 #include <cmath>
 #include <iosfwd>
@@ -36,7 +35,7 @@ public:
         , high_{ high }
     {
         if (x_.size() != y_.size()) {
-            THROW_OR_ABORT("size mismatch");
+            throw std::runtime_error("size mismatch");
         }
     }
     TDataY operator () (const TDataX& vx) const {
@@ -52,12 +51,12 @@ public:
             return (TDataY)(y_[i - 1] * (1 - alpha) + y_[i] * alpha);
             };
         if (x_.empty()) {
-            THROW_OR_ABORT("size must be >= 1");
+            throw std::runtime_error("size must be >= 1");
         }
         if (vx < x_[0]) {
             switch (out_of_range_behavior_) {
             case OutOfRangeBehavior::THROW:
-                THROW_OR_ABORT("interpolation value too small");
+                throw std::runtime_error("interpolation value too small");
             case OutOfRangeBehavior::EXPLICIT:
                 return low_;
             case OutOfRangeBehavior::CLAMP:
@@ -65,13 +64,13 @@ public:
             case OutOfRangeBehavior::EXTRAPOLATE:
                 return (x_.size() == 1) ? y_[0] : interpolate(1);
             }
-            THROW_OR_ABORT("Unknown interpolation behavior");
+            throw std::runtime_error("Unknown interpolation behavior");
         }
         auto it = std::lower_bound(x_.begin(), x_.end(), vx);
         if (it == x_.end()) {
             switch (out_of_range_behavior_) {
             case OutOfRangeBehavior::THROW:
-                THROW_OR_ABORT("interpolation value too large");
+                throw std::runtime_error("interpolation value too large");
             case OutOfRangeBehavior::EXPLICIT:
                 return high_;
             case OutOfRangeBehavior::CLAMP:
@@ -79,7 +78,7 @@ public:
             case OutOfRangeBehavior::EXTRAPOLATE:
                 return (x_.size() == 1) ? y_[0] : interpolate(x_.size() - 1);
             }
-            THROW_OR_ABORT("Unknown interpolation behavior");
+            throw std::runtime_error("Unknown interpolation behavior");
         }
         if (it == x_.begin()) {
             return y_[0];
@@ -94,7 +93,7 @@ public:
     }
     const TDataX& xmax() const {
         if (x_.empty()) {
-            THROW_OR_ABORT("x is empty");
+            throw std::runtime_error("x is empty");
         }
         return x_.back();
     }

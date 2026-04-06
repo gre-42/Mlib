@@ -2,15 +2,15 @@
 #include <Mlib/Geometry/Cameras/Camera.hpp>
 #include <Mlib/Layout/ILayout_Pixels.hpp>
 #include <Mlib/Layout/Screen_Units.hpp>
-#include <Mlib/Log.hpp>
 #include <Mlib/Macro_Executor/Expression_Watcher.hpp>
 #include <Mlib/Macro_Executor/Focus.hpp>
+#include <Mlib/Misc/Log.hpp>
+#include <Mlib/OpenGL/Render_Setup.hpp>
+#include <Mlib/OpenGL/Text/Align_Text.hpp>
+#include <Mlib/OpenGL/Text/Charsets.hpp>
+#include <Mlib/OpenGL/Text/Renderable_Text.hpp>
+#include <Mlib/OpenGL/Text/Text_Interpolation_Mode.hpp>
 #include <Mlib/Players/Containers/Players.hpp>
-#include <Mlib/Render/Render_Setup.hpp>
-#include <Mlib/Render/Text/Align_Text.hpp>
-#include <Mlib/Render/Text/Charsets.hpp>
-#include <Mlib/Render/Text/Renderable_Text.hpp>
-#include <Mlib/Render/Text/Text_Interpolation_Mode.hpp>
 #include <filesystem>
 
 namespace fs = std::filesystem;

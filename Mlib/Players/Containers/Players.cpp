@@ -1,4 +1,5 @@
 #include "Players.hpp"
+#include <Mlib/Hashing/Variable_And_Hash.hpp>
 #include <Mlib/Macro_Executor/Translator.hpp>
 #include <Mlib/Memory/Destruction_Functions_Removeal_Tokens_Ref.hpp>
 #include <Mlib/Memory/Object_Pool.hpp>
@@ -10,10 +11,9 @@
 #include <Mlib/Players/Advance_Times/Player.hpp>
 #include <Mlib/Players/Containers/Remote_Sites.hpp>
 #include <Mlib/Players/Team/Team.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
 #include <Mlib/Time/Format.hpp>
-#include <Mlib/Variable_And_Hash.hpp>
 #include <filesystem>
+#include <stdexcept>
 
 namespace fs = std::filesystem;
 
@@ -51,7 +51,7 @@ void Players::add_player(const DanglingBaseClassRef<Player>& player) {
     {
         auto pit = players_.try_emplace(player_id, player, CURRENT_SOURCE_LOCATION);
         if (!pit.second) {
-            THROW_OR_ABORT("Player with id \"" + *player_id + "\" already exists");
+            throw std::runtime_error("Player with id \"" + *player_id + "\" already exists");
         }
         pit.first->second.on_destroy([this, player_id]() { remove_player(player_id); }, CURRENT_SOURCE_LOCATION);
     }
@@ -76,7 +76,7 @@ void Players::remove_player(const VariableAndHash<std::string>& name) {
 DanglingBaseClassRef<Player> Players::get_player(const VariableAndHash<std::string>& name, SourceLocation loc) {
     auto it = players_.find(name);
     if (it == players_.end()) {
-        THROW_OR_ABORT("No player with name \"" + *name + "\" exists");
+        throw std::runtime_error("No player with name \"" + *name + "\" exists");
     }
     return it->second.object().set_loc(loc);
 }
@@ -88,7 +88,7 @@ DanglingBaseClassRef<const Player> Players::get_player(const VariableAndHash<std
 DanglingBaseClassRef<Team> Players::get_team(const std::string& name) {
     auto it = teams_.find(name);
     if (it == teams_.end()) {
-        THROW_OR_ABORT("No team with name \"" + name + "\" exists");
+        throw std::runtime_error("No team with name \"" + name + "\" exists");
     }
     return it->second.object();
 }

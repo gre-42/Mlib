@@ -1,9 +1,9 @@
-#include <Mlib/Env.hpp>
 #include <Mlib/Macro_Executor/Asset_References.hpp>
 #include <Mlib/Macro_Executor/Json_Expression.hpp>
 #include <Mlib/Macro_Executor/Macro_Line_Executor.hpp>
 #include <Mlib/Macro_Executor/Macro_Recorder.hpp>
 #include <Mlib/Macro_Executor/Notifying_Json_Macro_Arguments.hpp>
+#include <Mlib/Os/Env.hpp>
 #include <iostream>
 
 using namespace Mlib;
@@ -20,20 +20,20 @@ void test_json() {
         linfo() << "Arguments: " << arguments;
         return true;
     };
-    std::list<std::string> search_path{"."};
+    std::vector<std::filesystem::path> search_path{"."};
     NotifyingJsonMacroArguments global_substitutions;
     AssetReferences asset_references;
     MacroRecorder mr;
     MacroLineExecutor mle{
         mr,
         "script.scn.json",
-        &search_path,
+        search_path,
         json_user_function,
         "context",
         nlohmann::json::object(),
         global_substitutions,
         asset_references,
-        true};
+        true}; // verbose
     mr(mle);
 }
 

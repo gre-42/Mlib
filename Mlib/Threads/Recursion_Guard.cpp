@@ -1,5 +1,6 @@
+
 #include "Recursion_Guard.hpp"
-#include <Mlib/Throw_Or_Abort.hpp>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -9,7 +10,7 @@ RecursionCounter::RecursionCounter()
 
 void RecursionCounter::operator ++() {
     if (recursion_counter_ > 100) {
-        THROW_OR_ABORT("Possibly infinite recursion detected");
+        throw std::runtime_error("Possibly infinite recursion detected");
     }
     ++recursion_counter_;
 }

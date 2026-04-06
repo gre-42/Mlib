@@ -1,7 +1,7 @@
 #pragma once
-#include <Mlib/Billboard_Id.hpp>
-#include <Mlib/Geometry/Intersection/Extremal_Axis_Aligned_Bounding_Box.hpp>
-#include <Mlib/Geometry/Intersection/Extremal_Bounding_Sphere.hpp>
+#include <Mlib/Geometry/Billboard_Id.hpp>
+#include <Mlib/Geometry/Primitives/Extremal_Axis_Aligned_Bounding_Box.hpp>
+#include <Mlib/Geometry/Primitives/Extremal_Bounding_Sphere.hpp>
 #include <Mlib/Scene_Config/Scene_Precision.hpp>
 #include <list>
 #include <memory>
@@ -47,11 +47,11 @@ public:
     virtual int continuous_blending_z_order() const;
     virtual void render(
         const FixedArray<ScenePos, 4, 4>& mvp,
-        const TransformationMatrix<float, ScenePos, 3>& m,
-        const TransformationMatrix<float, ScenePos, 3>& iv,
+        const TransformationMatrix<SceneDir, ScenePos, 3>& m,
+        const TransformationMatrix<SceneDir, ScenePos, 3>& iv,
         const DynamicStyle* dynamic_style,
-        const std::list<std::pair<TransformationMatrix<float, ScenePos, 3>, std::shared_ptr<Light>>>& lights,
-        const std::list<std::pair<TransformationMatrix<float, ScenePos, 3>, std::shared_ptr<Skidmark>>>& skidmarks,
+        const std::list<std::pair<TransformationMatrix<SceneDir, ScenePos, 3>, std::shared_ptr<Light>>>& lights,
+        const std::list<std::pair<TransformationMatrix<SceneDir, ScenePos, 3>, std::shared_ptr<Skidmark>>>& skidmarks,
         const SceneGraphConfig& scene_graph_config,
         const RenderConfig& render_config,
         const RenderPass& render_pass,
@@ -59,13 +59,13 @@ public:
         const ColorStyle* color_style) const;
     virtual void append_sorted_aggregates_to_queue(
         const FixedArray<ScenePos, 4, 4>& mvp,
-        const TransformationMatrix<float, ScenePos, 3>& m,
+        const TransformationMatrix<SceneDir, ScenePos, 3>& m,
         const FixedArray<ScenePos, 3>& offset,
         const SceneGraphConfig& scene_graph_config,
         const ExternalRenderPass& external_render_pass,
         std::list<std::pair<float, std::shared_ptr<ColoredVertexArray<float>>>>& aggregate_queue) const;
     virtual void append_large_aggregates_to_queue(
-        const TransformationMatrix<float, ScenePos, 3>& m,
+        const TransformationMatrix<SceneDir, ScenePos, 3>& m,
         const FixedArray<ScenePos, 3>& offset,
         const SceneGraphConfig& scene_graph_config,
         std::list<std::shared_ptr<ColoredVertexArray<float>>>& aggregate_queue) const;
@@ -74,21 +74,21 @@ public:
         std::list<std::shared_ptr<ColoredVertexArray<CompressedScenePos>>>& double_queue) const;
     virtual void append_sorted_instances_to_queue(
         const FixedArray<ScenePos, 4, 4>& mvp,
-        const TransformationMatrix<float, ScenePos, 3>& m,
-        const TransformationMatrix<float, ScenePos, 3>& iv,
+        const TransformationMatrix<SceneDir, ScenePos, 3>& m,
+        const TransformationMatrix<SceneDir, ScenePos, 3>& iv,
         const FixedArray<ScenePos, 3>& offset,
         BillboardId billboard_id,
         const SceneGraphConfig& scene_graph_config,
         SmallInstancesQueues& instances_queues) const;
     virtual void append_large_instances_to_queue(
         const FixedArray<ScenePos, 4, 4>& mvp,
-        const TransformationMatrix<float, ScenePos, 3>& m,
+        const TransformationMatrix<SceneDir, ScenePos, 3>& m,
         const FixedArray<ScenePos, 3>& offset,
         BillboardId billboard_id,
         const SceneGraphConfig& scene_graph_config,
         LargeInstancesQueue& instances_queue) const;
     virtual void extend_aabb(
-        const TransformationMatrix<float, ScenePos, 3>& mv,
+        const TransformationMatrix<SceneDir, ScenePos, 3>& mv,
         ExternalRenderPassType render_pass,
         AxisAlignedBoundingBox<CompressedScenePos, 3>& aabb) const;
     virtual ExtremalAxisAlignedBoundingBox<CompressedScenePos, 3> aabb() const;

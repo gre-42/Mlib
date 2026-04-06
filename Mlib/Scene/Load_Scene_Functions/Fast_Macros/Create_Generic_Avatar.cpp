@@ -1,5 +1,4 @@
 #include "Create_Generic_Avatar.hpp"
-#include <Mlib/Argument_List.hpp>
 #include <Mlib/Geometry/Cameras/Perspective_Camera.hpp>
 #include <Mlib/Geometry/Material/Particle_Type.hpp>
 #include <Mlib/Macro_Executor/Asset_Group_Replacement_Parameters.hpp>
@@ -8,6 +7,8 @@
 #include <Mlib/Macro_Executor/Replacement_Parameter.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix_Json.hpp>
 #include <Mlib/Memory/Object_Pool.hpp>
+#include <Mlib/Misc/Argument_List.hpp>
+#include <Mlib/OpenGL/Batch_Renderers/Particle_Renderer.hpp>
 #include <Mlib/Physics/Actuators/Engine_Event_Listeners.hpp>
 #include <Mlib/Physics/Actuators/Engine_Power.hpp>
 #include <Mlib/Physics/Actuators/Rigid_Body_Engine.hpp>
@@ -27,7 +28,6 @@
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Physics/Vehicle_Controllers/Avatar_Controllers/Avatar_As_Avatar_Controller.hpp>
 #include <Mlib/Physics/Vehicle_Controllers/Car_Controllers/Avatar_As_Car_Controller.hpp>
-#include <Mlib/Render/Batch_Renderers/Particle_Renderer.hpp>
 #include <Mlib/Scene/Animation/Avatar_Animation_Updater.hpp>
 #include <Mlib/Scene/Audio/Engine_Audio.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
@@ -49,7 +49,7 @@
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
 #include <Mlib/Signal/Exponential_Smoother.hpp>
 #include <Mlib/Stats/Random_Process.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -187,7 +187,7 @@ void CreateGenericAvatar::execute(const JsonView& args)
     auto wheel_mount_0 = vdb.at<EFixedArray<float, 3>>(KnownDb::wheel_mount_0);
     auto wheel_mount_1 = vdb.at<EFixedArray<float, 3>>(KnownDb::wheel_mount_1);
 
-    DanglingBaseClassRef<SceneNode> parent_node = scene.get_node(parent, DP_LOC);
+    DanglingBaseClassRef<SceneNode> parent_node = scene.get_node(parent, CURRENT_SOURCE_LOCATION);
 
     if (if_human_style) {
         auto style = std::unique_ptr<ColorStyle>(new ColorStyle{
@@ -224,7 +224,7 @@ void CreateGenericAvatar::execute(const JsonView& args)
     create_child_node("dynamic", human_head_node2         , human_head_camera_node   , {0.f, 0.f, 0.f});
     
     {
-        DanglingBaseClassRef<SceneNode> camera_node = scene.get_node(human_head_camera_node, DP_LOC);
+        DanglingBaseClassRef<SceneNode> camera_node = scene.get_node(human_head_camera_node, CURRENT_SOURCE_LOCATION);
         {
             auto pc = std::make_unique<PerspectiveCamera>(
                 PerspectiveCameraConfig(),
@@ -252,7 +252,7 @@ void CreateGenericAvatar::execute(const JsonView& args)
         create_child_node("dynamic", main_gun_node_visual0, main_gun_node_visual, {-0.075f * meters, 0.f, 0.025f * meters}, {90 * degrees, 0.f, 90 * degrees});
     }
     if (if_with_physics) {
-        auto& rb = create_rigid_cuboid(CreateRigidCuboidArgs{
+        auto rb = create_rigid_cuboid(CreateRigidCuboidArgs{
             .node = parent,
             .name = "generic_avatar_" + asset_id + suffix,
             .asset_id = asset_id,
@@ -267,9 +267,9 @@ void CreateGenericAvatar::execute(const JsonView& args)
             .flags = RigidBodyVehicleFlags::IS_ACTIVATED_AVATAR,
             .waypoint_dy = vdb.at<CompressedScenePos>(KnownDb::waypoint_dy),
             .hitboxes = VariableAndHash<std::string>{"human_hitboxes"},
-            .collidable_mode = CollidableMode::COLLIDE | CollidableMode::MOVE});
+            .collidable_mode = CollidableMode::COLLIDE | CollidableMode::MOVE}).set_loc(CURRENT_SOURCE_LOCATION);
         
-        DanglingBaseClassRef<SceneNode> gun_node = scene.get_node(main_gun_end_node, DP_LOC);
+        DanglingBaseClassRef<SceneNode> gun_node = scene.get_node(main_gun_end_node, CURRENT_SOURCE_LOCATION);
         auto& aim_at = [&]() -> AimAt& {
             float velocity_error_std = args.at<float>(KnownArgs::velocity_error_std);
             float error_alpha = (velocity_error_std != 0.f)
@@ -299,7 +299,7 @@ void CreateGenericAvatar::execute(const JsonView& args)
         {
             Linker linker{ physics_engine.advance_times_ };
             DanglingBaseClassRef<SceneNode> yaw_node = parent_node;
-            DanglingBaseClassRef<SceneNode> pitch_node = scene.get_node(main_gun_node, DP_LOC);
+            DanglingBaseClassRef<SceneNode> pitch_node = scene.get_node(main_gun_node, CURRENT_SOURCE_LOCATION);
             float yaw_error_std = args.at<float>(KnownArgs::yaw_error_std);
             float pitch_velocity_error_std = args.at<float>(KnownArgs::pitch_error_std);
             float error_alpha = (pitch_velocity_error_std != 0.f)
@@ -318,17 +318,17 @@ void CreateGenericAvatar::execute(const JsonView& args)
                 ExponentialSmoother<float>{ error_alpha, pitch_velocity_error_std } };
 
             auto ufollower_pitch = std::make_unique<PitchLookAtNode>(
-                aim_at,
+                DanglingBaseClassRef<AimAt>{aim_at, CURRENT_SOURCE_LOCATION},
                 args.at<float>(KnownArgs::pitch_min) * degrees,
                 args.at<float>(KnownArgs::pitch_max) * degrees,
                 args.at<float>(KnownArgs::dpitch_max) * degrees,
                 increment_pitch_error);
             auto ufollower = std::make_unique<YawPitchLookAtNodes>(
-                aim_at,
-                *ufollower_pitch,
+                DanglingBaseClassRef<AimAt>{aim_at, CURRENT_SOURCE_LOCATION},
+                DanglingBaseClassRef<PitchLookAtNode>{ *ufollower_pitch, CURRENT_SOURCE_LOCATION },
                 args.at<float>(KnownArgs::dyaw_max) * degrees,
                 increment_yaw_error);
-            ufollower->pitch_look_at_node().set_head_node(scene.get_node(human_head_camera_node, DP_LOC));
+            ufollower->pitch_look_at_node()->set_head_node(scene.get_node(human_head_camera_node, CURRENT_SOURCE_LOCATION));
             linker.link_relative_movable(
                 yaw_node,
                 DanglingBaseClassRef<YawPitchLookAtNodes>{ *ufollower, CURRENT_SOURCE_LOCATION },
@@ -337,25 +337,25 @@ void CreateGenericAvatar::execute(const JsonView& args)
                 pitch_node,
                 DanglingBaseClassRef<PitchLookAtNode>{ *ufollower_pitch, CURRENT_SOURCE_LOCATION },
                 CURRENT_SOURCE_LOCATION);
-            auto& follower = *ufollower;
+            auto follower = DanglingBaseClassRef<YawPitchLookAtNodes>{*ufollower, CURRENT_SOURCE_LOCATION};
             global_object_pool.add(std::move(ufollower), CURRENT_SOURCE_LOCATION);
             global_object_pool.add(std::move(ufollower_pitch), CURRENT_SOURCE_LOCATION);
-            rb.vehicle_controller_ = std::make_unique<AvatarAsCarController>(
+            rb->vehicle_controller_ = std::make_unique<AvatarAsCarController>(
                 rb,
                 follower,
                 args.at<float>(KnownArgs::steering_multiplier));
-            rb.avatar_controller_ = std::make_unique<AvatarAsAvatarController>(rb, follower);
+            rb->avatar_controller_ = std::make_unique<AvatarAsAvatarController>(rb, follower);
         }
 
         if (with_gun) {
             auto uweapon_cycle = std::make_unique<WeaponCycle>();
             auto& weapon_cycle = *uweapon_cycle;
             parent_node->set_node_modifier(std::move(uweapon_cycle));
-            rb.inventory_.set_capacity(VH{"m4a1_ammo"}, 200);
-            rb.inventory_.set_capacity(VH{"beretta92_ammo"}, 200);
-            rb.inventory_.set_capacity(VH{"frag_grenade"}, 10);
-            rb.inventory_.set_capacity(VH{"m72_law_rocket"}, 2);
-            rb.inventory_.set_capacity(VH{"none_weapon_ammo_type"}, 0);
+            rb->inventory_.set_capacity(VH{"m4a1_ammo"}, 200);
+            rb->inventory_.set_capacity(VH{"beretta92_ammo"}, 200);
+            rb->inventory_.set_capacity(VH{"frag_grenade"}, 10);
+            rb->inventory_.set_capacity(VH{"m72_law_rocket"}, 2);
+            rb->inventory_.set_capacity(VH{"none_weapon_ammo_type"}, 0);
 
             add_weapon_to_cycle(JsonView{{
                 {"cycle_node", *parent},
@@ -452,18 +452,18 @@ void CreateGenericAvatar::execute(const JsonView& args)
                 vdb.at<std::vector<float>>(KnownDb::gear_ratios),
                 vdb.at<float>(KnownDb::w_clutch) * rpm,
                 vdb.at<float>(KnownDb::max_dw, INFINITY) * rpm / seconds };
-            rb.engines_.add(
+            rb->engines_.add(
                 engine,
                 std::move(engine_power),
                 engine_listeners);
         } else {
-            rb.engines_.add(
+            rb->engines_.add(
                 engine,
                 std::nullopt,   // power
                 nullptr);       // listeners
         }
         if (args.at<bool>(KnownArgs::parking_brake_pulled)) {
-            rb.park_vehicle();
+            rb->park_vehicle();
         }
 
         wdb.validate(KnownWheels::options);
@@ -487,7 +487,7 @@ void CreateGenericAvatar::execute(const JsonView& args)
                 // From: https://www.nanolounge.de/21977/federkonstante-und-masse-bei-auto
                 // Ds = 1000 / 4 * 9.8 / 0.02 = 122500 = 1.225e5
                 // Da * 1 = 1000 / 4 * 9.8 => Da = 1e4 / 4
-                rb.tires_.add(
+                rb->tires_.add(
                     tire_id,
                     engine,
                     delta_engine,
@@ -515,11 +515,11 @@ void CreateGenericAvatar::execute(const JsonView& args)
             wheel_mount_0,
             wheel_mount_1);
             
-        rb.drivers_.set_seats({ "driver" });
+        rb->drivers_.set_seats({ "driver" });
 
         {
-            if (rb.animation_state_updater_ != nullptr) {
-                THROW_OR_ABORT("Rigid body already has a style updater");
+            if (rb->animation_state_updater_ != nullptr) {
+                throw std::runtime_error("Rigid body already has a style updater");
             }
             auto updater = std::make_unique<AvatarAnimationUpdater>(
                 rb,
@@ -528,16 +528,16 @@ void CreateGenericAvatar::execute(const JsonView& args)
                 args.at<std::string>(KnownArgs::animation_resource_w_gun));
             AnimationStateUpdater& ref = *updater;
             parent_node->set_animation_state_updater(std::move(updater));
-            rb.animation_state_updater_ = { ref, CURRENT_SOURCE_LOCATION };
+            rb->animation_state_updater_ = { ref, CURRENT_SOURCE_LOCATION };
         }
 
-        scene.get_node(human_head_node, DP_LOC)
+        scene.get_node(human_head_node, CURRENT_SOURCE_LOCATION)
             ->set_bone(SceneNodeBone{
                 .name = VH{"head"},
                 .smoothness = 0.9f,
                 .rotation_strength = 0.2f});
 
-        scene.get_node(main_gun_node_visual0, DP_LOC)
+        scene.get_node(main_gun_node_visual0, CURRENT_SOURCE_LOCATION)
             ->set_bone(SceneNodeBone{
                 .name = VH{"hand_r"},
                 .smoothness = 0,
@@ -556,7 +556,7 @@ void CreateGenericAvatar::execute(const JsonView& args)
                 }}
             }});
             auto d = std::make_unique<Crash>(rb, 0.3f);
-            rb.collision_observers_.emplace_back(std::move(d));
+            rb->collision_observers_.emplace_back(std::move(d));
         }
     }
     if (if_with_graphics) {

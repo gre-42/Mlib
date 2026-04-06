@@ -1,3 +1,4 @@
+
 #include "Sun_Direction.hpp"
 #include <Mlib/Geography/Altitude_Azimuth.hpp>
 #include <Mlib/Geography/Idl_Mod.hpp>
@@ -127,7 +128,7 @@ std::chrono::system_clock::time_point Mlib::time_of_season(
         }
         return result;
     }
-    THROW_OR_ABORT("Unknown season");
+    throw std::runtime_error("Unknown season");
 }
 
 namespace Mlib {

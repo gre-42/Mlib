@@ -1,8 +1,9 @@
+
 #include "Interior_Textures.hpp"
 #include <Mlib/Geometry/Material/Interior_Texture_Set.hpp>
+#include <Mlib/Misc/FPath.hpp>
 #include <Mlib/Regex/Regex_Select.hpp>
-#include <Mlib/Strings/To_Number.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
+#include <Mlib/Strings/String_View_To_Number.hpp>
 #include <ostream>
 #include <stdexcept>
 
@@ -12,6 +13,7 @@ InteriorTextures::InteriorTextures()
     : set{ InteriorTextureSet::NONE }
 {}
 
+InteriorTextures::~InteriorTextures() = default;
 InteriorTextures::InteriorTextures(const InteriorTextures& other) = default;
 InteriorTextures::InteriorTextures(InteriorTextures&& other) = default;
 InteriorTextures& InteriorTextures::operator = (const InteriorTextures& other) = default;
@@ -25,47 +27,47 @@ size_t InteriorTextures::size() const {
     return names.size();
 }
 
-const VariableAndHash<std::string>& InteriorTextures::operator [](size_t index) const {
+const FPath& InteriorTextures::operator [](size_t index) const {
     if (index >= names.size()) {
-        THROW_OR_ABORT("Interior texture index out of bounds");
+        throw std::runtime_error("Interior texture index out of bounds");
     }
     return names[index];
 }
 
 void InteriorTextures::assign(
-    VariableAndHash<std::string> left,
-    VariableAndHash<std::string> right,
-    VariableAndHash<std::string> floor,
-    VariableAndHash<std::string> ceiling,
-    VariableAndHash<std::string> back,
-    VariableAndHash<std::string> back_specular,
-    VariableAndHash<std::string> front,
-    VariableAndHash<std::string> front_alpha,
-    VariableAndHash<std::string> front_specular)
+    FPath left,
+    FPath right,
+    FPath floor,
+    FPath ceiling,
+    FPath back,
+    FPath back_specular,
+    FPath front,
+    FPath front_alpha,
+    FPath front_specular)
 {
-    if (left->empty() || right->empty() || floor->empty() || ceiling->empty() || back->empty()) {
-        THROW_OR_ABORT("Interior color texture is empty");
+    if (left.empty() || right.empty() || floor.empty() || ceiling.empty() || back.empty()) {
+        throw std::runtime_error("Interior color texture is empty");
     }
-    names.reserve(5 + !back_specular->empty() + !front->empty() + !front_alpha->empty() + !front_specular->empty());
+    names.reserve(5 + !back_specular.empty() + !front.empty() + !front_alpha.empty() + !front_specular.empty());
     names.emplace_back(std::move(left));
     names.emplace_back(std::move(right));
     names.emplace_back(std::move(floor));
     names.emplace_back(std::move(ceiling));
     names.emplace_back(std::move(back));
     set |= InteriorTextureSet::INTERIOR_COLORS;
-    if (!back_specular->empty()) {
+    if (!back_specular.empty()) {
         set |= InteriorTextureSet::BACK_SPECULAR;
         names.emplace_back(std::move(back_specular));
     }
-    if (!front->empty()) {
+    if (!front.empty()) {
         set |= InteriorTextureSet::FRONT_COLOR;
         names.emplace_back(std::move(front));
     }
-    if (!front_alpha->empty()) {
+    if (!front_alpha.empty()) {
         set |= InteriorTextureSet::FRONT_ALPHA;
         names.emplace_back(std::move(front_alpha));
     }
-    if (!front_specular->empty()) {
+    if (!front_specular.empty()) {
         set |= InteriorTextureSet::FRONT_SPECULAR;
         names.emplace_back(std::move(front_specular));
     }
@@ -77,7 +79,7 @@ std::ostream& Mlib::operator << (std::ostream& ostr, const InteriorTextures& t) 
         "facade_inner_size: " << t.facade_inner_size << '\n' <<
         "interior_size: " << t.interior_size << '\n';
     for (size_t i = 0; i < t.size(); ++i) {
-        ostr << i << ": " << *t[i] << '\n';
+        ostr << i << ": " << t[i] << '\n';
     }
     return ostr;
 }

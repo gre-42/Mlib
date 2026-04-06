@@ -1,8 +1,8 @@
 #include "Instantiate_Grass.hpp"
-#include <Mlib/Argument_List.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
+#include <Mlib/Misc/Argument_List.hpp>
+#include <Mlib/OpenGL/Renderables/Triangle_Sampler/Resource_Name_Cycle.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Engine.hpp>
-#include <Mlib/Render/Renderables/Triangle_Sampler/Resource_Name_Cycle.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Instantiation/Read_Grs.hpp>
 #include <Mlib/Scene_Graph/Instantiation/Root_Instantiation_Options.hpp>
@@ -42,9 +42,9 @@ void InstantiateGrass::execute(const LoadSceneJsonUserFunctionArgs &args) {
     auto resource_names = args.arguments.at_vector<std::string>(KnownArgs::resources, parse_resource_name_func);
     ResourceNameCycle rnc{ resource_names };
     for (const auto& fpath : args.arguments.try_pathes_or_variables(KnownArgs::filenames)) {
-        FunctionGuard fg{ "Load \"" + short_path(fpath.path) + '"' };
+        FunctionGuard fg{ "Load \"" + short_path(fpath.local_path()) + '"' };
         auto model = Grs::load_grs(
-            fpath.path,
+            fpath.local_path(),
             IoVerbosity::SILENT);
         for (const auto& cell : model.cells) {
             for (const auto& p16 : cell.coords16) {

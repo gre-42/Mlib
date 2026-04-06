@@ -1,3 +1,4 @@
+
 #include "Engine_Power_Delta_Intent.hpp"
 #include <ostream>
 

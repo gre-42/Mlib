@@ -1,10 +1,10 @@
 #pragma once
-#include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
+#include <Mlib/Hashing/Variable_And_Hash.hpp>
+#include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/Memory/Object_Pool.hpp>
 #include <Mlib/Memory/Optional_Cast.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Interfaces/INode_Setter.hpp>
-#include <Mlib/Variable_And_Hash.hpp>
 
 namespace Mlib {
 
@@ -32,7 +32,7 @@ public:
         , loc_{ loc }
     {
         if (node->absolute_movable_ != nullptr) {
-            THROW_OR_ABORT("Absolute movable already set (0)");
+            throw std::runtime_error("Absolute movable already set (0)");
         }
         absolute_movable->set_absolute_model_matrix(node->absolute_model_matrix());
         // Initialize after check above so the absolute_movable unique_ptr is not
@@ -52,7 +52,7 @@ public:
         , loc_{ loc }
     {
         if (node->absolute_movable_ != nullptr) {
-            THROW_OR_ABORT("Absolute movable already set (1)");
+            throw std::runtime_error("Absolute movable already set (1)");
         }
         absolute_movable->set_absolute_model_matrix(node->absolute_model_matrix());
         // Initialize after check above so the absolute_movable unique_ptr is not

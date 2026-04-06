@@ -6,7 +6,7 @@
 #include <string>
 
 #ifndef NV_DDS_NO_GL_SUPPORT
-    #include <Mlib/Render/Any_Gl.hpp>
+    #include <Mlib/OpenGL/Any_Gl.hpp>
 #endif
 
 namespace nv_dds {

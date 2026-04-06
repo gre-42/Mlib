@@ -1,13 +1,12 @@
 #pragma once
+#include <Mlib/Hashing/Variable_And_Hash.hpp>
 #include <Mlib/Math/Interp.hpp>
 #include <Mlib/Physics/Actuators/Base_Rotor.hpp>
 #include <Mlib/Physics/Collision/Pacejkas_Magic_Formula.hpp>
-#include <Mlib/Variable_And_Hash.hpp>
 #include <string>
 
 namespace Mlib {
 
-class RigidBodyPulses;
 struct NormalImpulse;
 
 /**
@@ -22,7 +21,7 @@ public:
     Tire(
         const VariableAndHash<std::string>& engine,
         std::optional<VariableAndHash<std::string>> delta_engine,
-        RigidBodyPulses* rbp,
+        const DanglingBaseClassPtr<RigidBodyVehicle>& rb,
         float brake_force,
         float brake_torque,
         float sKs,

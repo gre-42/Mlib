@@ -1,11 +1,12 @@
+
 #include "Macro_Recorder.hpp"
-#include <Mlib/Argument_List.hpp>
 #include <Mlib/Macro_Executor/Macro_Line_Executor.hpp>
 #include <Mlib/Macro_Executor/Replacement_Parameter.hpp>
+#include <Mlib/Misc/Argument_List.hpp>
 #include <Mlib/Os/Os.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
 #include <fstream>
 #include <iostream>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -15,7 +16,7 @@ MacroRecorder::~MacroRecorder() = default;
 
 void MacroRecorder::operator()(const MacroLineExecutor& macro_line_executor)
 {
-    if (macro_line_executor.script_filename_.ends_with(".scn.json")) {
+    if (macro_line_executor.script_filename_.string().ends_with(".scn.json")) {
         std::scoped_lock lock{ include_mutex_ };
         if (included_files_.contains(macro_line_executor.script_filename_)) {
             return;
@@ -25,7 +26,7 @@ void MacroRecorder::operator()(const MacroLineExecutor& macro_line_executor)
         }
         auto ifs = create_ifstream(macro_line_executor.script_filename_);
         if (ifs->fail()) {
-            THROW_OR_ABORT("Could not open script file \"" + macro_line_executor.script_filename_ + '"');
+            throw std::runtime_error("Could not open script file \"" + macro_line_executor.script_filename_.string() + '"');
         }
         if (macro_line_executor.verbose_) {
             linfo() << "Processing JSON scene file \"" << macro_line_executor.script_filename_ << '"';
@@ -34,19 +35,19 @@ void MacroRecorder::operator()(const MacroLineExecutor& macro_line_executor)
         try {
             *ifs >> j;
         } catch (const nlohmann::json::exception& e) {
-            throw std::runtime_error("Error loading file \"" + macro_line_executor.script_filename_ + "\": " + e.what());
+            throw std::runtime_error("Error loading file \"" + macro_line_executor.script_filename_.string() + "\": " + e.what());
         }
         if (!ifs->eof() && ifs->fail()) {
-            THROW_OR_ABORT("Error reading from file: \"" + macro_line_executor.script_filename_ + '"');
+            throw std::runtime_error("Error reading from file: \"" + macro_line_executor.script_filename_.string() + '"');
         }
         macro_line_executor(j, nullptr);
-    } else if (macro_line_executor.script_filename_.ends_with(".json")) {
+    } else if (macro_line_executor.script_filename_.extension() == ".json") {
         auto rp = ReplacementParameterAndFilename::from_json(macro_line_executor.script_filename_);
         if (macro_line_executor.verbose_) {
             linfo() << "Processing JSON macro \"" << rp.rp.on_execute << '"';
         }
         macro_line_executor(rp.rp.on_execute, nullptr);
     } else {
-        THROW_OR_ABORT("Unknown script file extension: \"" + macro_line_executor.script_filename_ + '"');
+        throw std::runtime_error("Unknown script file extension: \"" + macro_line_executor.script_filename_.string() + '"');
     }
 }

@@ -1,25 +1,18 @@
 #include "Keep_Offset_From_Camera.hpp"
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
-#include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
+#include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/Memory/Object_Pool.hpp>
-#include <Mlib/Physics/Containers/Advance_Times.hpp>
-#include <Mlib/Render/Selected_Cameras/Selected_Cameras.hpp>
-#include <Mlib/Scene_Graph/Containers/Scene.hpp>
-#include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
+#include <Mlib/OpenGL/Selected_Cameras/Selected_Cameras.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 
 using namespace Mlib;
 
 KeepOffsetFromCamera::KeepOffsetFromCamera(
-    AdvanceTimes& advance_times,
-    Scene& scene,
     SelectedCameras& cameras,
     const FixedArray<float, 3>& offset,
     const FixedArray<float, 3>& grid,
     const DanglingBaseClassRef<SceneNode>& follower_node)
     : on_destroy_follower_node_{ nullptr, CURRENT_SOURCE_LOCATION }
-    , advance_times_{ advance_times }
-    , scene_{ scene }
     , cameras_{ cameras }
     , offset_{ offset }
     , grid_{ grid }
@@ -53,7 +46,7 @@ void KeepOffsetFromCamera::advance_time(float dt, const StaticWorld& world) {
 }
 
 void KeepOffsetFromCamera::advance_time(float dt) {
-    auto new_position_abs = cameras_.camera(DP_LOC).node->absolute_model_matrix().t + offset_.casted<ScenePos>();
+    auto new_position_abs = cameras_.camera(CURRENT_SOURCE_LOCATION).node->absolute_model_matrix().t + offset_.casted<ScenePos>();
     if (all(grid_ == 0.f)) {
         transformation_matrix_.t = new_position_abs;
     } else {
@@ -84,10 +77,10 @@ void KeepOffsetFromCamera::set_scene_node(
     VariableAndHash<std::string> node_name,
     SourceLocation loc)
 {
-    on_destroy_follower_node_.set(node->on_clear, loc);
+    on_destroy_follower_node_.set(node->on_clear.early, loc);
     on_destroy_follower_node_.add([this, node](){
         if (node->has_absolute_movable()) {
-            if (&node->get_absolute_movable() != this) {
+            if (&node->get_absolute_movable(CURRENT_SOURCE_LOCATION).get() != this) {
                 verbose_abort("Unexpected absolute movable");
             }
             node->clear_absolute_movable();

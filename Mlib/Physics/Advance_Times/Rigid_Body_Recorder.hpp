@@ -1,7 +1,7 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Memory/Dangling_Base_Class.hpp>
-#include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
+#include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/Memory/Destruction_Observer.hpp>
 #include <Mlib/Physics/Interfaces/IAdvance_Time.hpp>
 #include <Mlib/Physics/Misc/Track_Writer.hpp>
@@ -12,15 +12,15 @@ namespace Mlib {
 
 class CountdownPhysics;
 class SceneNode;
-class RigidBodyPulses;
+class RigidBodyVehicle;
 
 class RigidBodyRecorder: public DestructionObserver<SceneNode&>, public IAdvanceTime, public virtual DanglingBaseClass {
 public:
     RigidBodyRecorder(
         const std::string& filename,
         const TransformationMatrix<double, double, 3>* geographic_mapping,
-        DanglingBaseClassRef<SceneNode> recorded_node,
-        RigidBodyPulses& rbp,
+        const DanglingBaseClassRef<SceneNode>& recorded_node,
+        const DanglingBaseClassRef<RigidBodyVehicle>& rb,
         const CountdownPhysics* countdown_start);
     ~RigidBodyRecorder();
     virtual void advance_time(float dt, const StaticWorld& world) override;
@@ -29,7 +29,7 @@ public:
 private:
     const CountdownPhysics* countdown_start_;
     DanglingBaseClassPtr<SceneNode> recorded_node_;
-    RigidBodyPulses* rbp_;
+    DanglingBaseClassPtr<RigidBodyVehicle> rb_;
     TrackWriter track_writer_;
     std::chrono::steady_clock::time_point start_time_;
 };

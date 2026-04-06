@@ -1,3 +1,4 @@
+
 #include "Track_Element_File.hpp"
 #include <Mlib/Physics/Misc/Track_Element_Extended.hpp>
 #include <istream>
@@ -12,9 +13,9 @@ TrackElementFile::TrackElementFile(
 {
     if (istr_->fail()) {
         if (filename_.empty()) {
-            THROW_OR_ABORT("Could not open track stream");
+            throw std::runtime_error("Could not open track stream");
         } else {
-            THROW_OR_ABORT("Could not open track reader file \"" + filename_ + '"');
+            throw std::runtime_error("Could not open track reader file \"" + filename_ + '"');
         }
     }
 }
@@ -31,9 +32,9 @@ TrackElementExtended TrackElementFile::read(
         TrackElement::from_stream(*istr_, inverse_geographic_mapping, ntransformations));
     if (istr_->fail() && !istr_->eof()) {
         if (filename_.empty()) {
-            THROW_OR_ABORT("Could not read from track stream");
+            throw std::runtime_error("Could not read from track stream");
         } else {
-            THROW_OR_ABORT("Could not read from file \"" + filename_ + '"');
+            throw std::runtime_error("Could not read from file \"" + filename_ + '"');
         }
     }
     return result;

@@ -1,16 +1,16 @@
 #include "Status_Writer.hpp"
 #include <Mlib/Strings/String.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
 #include <map>
+#include <stdexcept>
 
 using namespace Mlib;
 
 void StatusWriter::write_status(std::ostream& ostr, StatusComponents status_components, const StaticWorld& world) const {
-    THROW_OR_ABORT("StatusWriter::write_status not implemented");
+    throw std::runtime_error("StatusWriter::write_status not implemented");
 }
 
 float StatusWriter::get_value(StatusComponents status_components) const {
-    THROW_OR_ABORT("StatusWriter::get_value not implemented");
+    throw std::runtime_error("StatusWriter::get_value not implemented");
 }
 
 StatusComponents single_status_component_from_string(const std::string& s) {

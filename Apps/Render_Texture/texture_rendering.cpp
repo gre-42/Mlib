@@ -1,4 +1,3 @@
-#include <Mlib/Arg_Parser.hpp>
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Geometry/Material/Color_Mode.hpp>
 #include <Mlib/Geometry/Material/Texture_Descriptor.hpp>
@@ -7,23 +6,26 @@
 #include <Mlib/Geometry/Mesh/Load/Raster_Config.hpp>
 #include <Mlib/Geometry/Texture/Uv_Tile.hpp>
 #include <Mlib/Images/Flip_Mode.hpp>
+#include <Mlib/Io/Arg_Parser.hpp>
 #include <Mlib/Iterator/Enumerate.hpp>
 #include <Mlib/Memory/Destruction_Guard.hpp>
+#include <Mlib/OpenGL/CHK.hpp>
+#include <Mlib/OpenGL/Context_Query.hpp>
+#include <Mlib/OpenGL/Gl_Context_Guard.hpp>
+#include <Mlib/OpenGL/OpenGL_Object_Factory.hpp>
+#include <Mlib/OpenGL/Raster/Raster_Factory.hpp>
+#include <Mlib/OpenGL/Render_Logics/Clear_Mode.hpp>
+#include <Mlib/OpenGL/Render_Logics/Fill_With_Texture_Logic.hpp>
+#include <Mlib/OpenGL/Render_Logics/Resource_Update_Cycle.hpp>
+#include <Mlib/OpenGL/Render_Texture_Atlas.hpp>
+#include <Mlib/OpenGL/Renderables/OpenGL_Vertex_Array_Renderer.hpp>
+#include <Mlib/OpenGL/Rendering_Context.hpp>
+#include <Mlib/OpenGL/Resource_Managers/Particle_Resources.hpp>
+#include <Mlib/OpenGL/Resource_Managers/Rendering_Resources.hpp>
+#include <Mlib/OpenGL/Resource_Managers/Trail_Resources.hpp>
+#include <Mlib/OpenGL/Text/Renderable_Text.hpp>
+#include <Mlib/OpenGL/Window.hpp>
 #include <Mlib/Regex/Regex_Select.hpp>
-#include <Mlib/Render/CHK.hpp>
-#include <Mlib/Render/Context_Query.hpp>
-#include <Mlib/Render/Gl_Context_Guard.hpp>
-#include <Mlib/Render/Raster/Raster_Factory.hpp>
-#include <Mlib/Render/Render_Logics/Clear_Mode.hpp>
-#include <Mlib/Render/Render_Logics/Fill_With_Texture_Logic.hpp>
-#include <Mlib/Render/Render_Logics/Resource_Update_Cycle.hpp>
-#include <Mlib/Render/Render_Texture_Atlas.hpp>
-#include <Mlib/Render/Rendering_Context.hpp>
-#include <Mlib/Render/Resource_Managers/Particle_Resources.hpp>
-#include <Mlib/Render/Resource_Managers/Rendering_Resources.hpp>
-#include <Mlib/Render/Resource_Managers/Trail_Resources.hpp>
-#include <Mlib/Render/Text/Renderable_Text.hpp>
-#include <Mlib/Render/Window.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
 #include <Mlib/Threads/Realtime_Threads.hpp>
 
@@ -73,17 +75,21 @@ int main(int argc, char** argv)
 
         // Resources
         // ---------
-        SceneNodeResources scene_node_resources;
+        OpenGLObjectFactory gpu_object_factory;
+        SceneNodeResources scene_node_resources{gpu_object_factory};
         ParticleResources particle_resources;
         TrailResources trail_resources;
         RenderingResources rendering_resources{
             "primary_rendering_resources",
             16 };
+        OpenGLVertexArrayRenderer gpu_vertex_array_renderer{rendering_resources, rendering_resources};
         RenderingContext primary_rendering_context{
             .scene_node_resources = scene_node_resources,
             .particle_resources = particle_resources,
             .trail_resources = trail_resources,
             .rendering_resources = rendering_resources,
+            .gpu_object_factory = gpu_object_factory,
+            .gpu_vertex_array_renderer = gpu_vertex_array_renderer,
             .z_order = 0 };
         RenderingContextGuard rcg{ primary_rendering_context };
 
@@ -103,7 +109,7 @@ int main(int argc, char** argv)
                     }
                     linfo() << "Matched: " << *name;
                     auto cm = ColormapWithModifiers{
-                        .filename = name,
+                        .filename = FPath::from_variable_and_hash(name),
                         .color_mode = ColorMode::RGBA,
                         .mipmap_mode = MipmapMode::WITH_MIPMAPS
                     }.compute_hash();
@@ -131,7 +137,7 @@ int main(int argc, char** argv)
                     }
                     linfo() << "Matched: " << *tx->name;
                     auto cm = ColormapWithModifiers{
-                            .filename = tx->name,
+                            .filename = FPath::from_variable_and_hash(tx->name),
                             .color_mode = ColorMode::RGBA,
                             .mipmap_mode = MipmapMode::WITH_MIPMAPS
                         }.compute_hash();
@@ -147,12 +153,12 @@ int main(int argc, char** argv)
                 }
             }
             if (names.empty()) {
-                THROW_OR_ABORT("Could not find a single texture matching \"" + parsed.named_value("--filter") + '"');
+                throw std::runtime_error("Could not find a single texture matching \"" + parsed.named_value("--filter") + '"');
             }
             rendering_resources.generate_auto_texture_atlas(
                 &atlas,
                 ColormapWithModifiers{
-                    .filename = tmp_texture,
+                    .filename = FPath::from_variable_and_hash(tmp_texture),
                     .color_mode = ColorMode::RGBA,
                     .anisotropic_filtering_level = safe_stou(parsed.named_value("--aniso", "0"))
                 }.compute_hash(),
@@ -168,19 +174,19 @@ int main(int argc, char** argv)
             if (auto filename = parsed.try_named_value("--texname"); filename != nullptr) {
                 ftl.emplace(
                     rendering_resources.get_texture(ColormapWithModifiers{
-                        .filename = VariableAndHash{ *filename },
+                        .filename = FPath::from_variable(*filename),
                         .color_mode = ColorMode::RGBA,
                         .mipmap_mode = MipmapMode::WITH_MIPMAPS
                     }.compute_hash()));
             } else if (!parsed.has_named("--rerender_atlas")) {
                 auto layer = safe_stoz(parsed.named_value("--atlas_layer"));
                 if (layer >= atlas.tiles.size()) {
-                    THROW_OR_ABORT("Layer index out of bounds");
+                    throw std::runtime_error("Layer index out of bounds");
                 }
                 ftl.emplace(
                     rendering_resources.get_texture(
                         ColormapWithModifiers{
-                            .filename = tmp_texture,
+                            .filename = FPath::from_variable_and_hash(tmp_texture),
                             .color_mode = ColorMode::RGBA,
                             .mipmap_mode = MipmapMode::WITH_MIPMAPS}.compute_hash()),
                     CullFaceMode::CULL,
@@ -189,7 +195,7 @@ int main(int argc, char** argv)
                     layer);
                 rendering_resources.preload({
                     .color = {
-                        .filename = tmp_texture,
+                        .filename = FPath::from_variable_and_hash(tmp_texture),
                         .color_mode = ColorMode::RGBA,
                         .mipmap_mode = MipmapMode::WITH_MIPMAPS
                     }});
@@ -199,16 +205,16 @@ int main(int argc, char** argv)
                 tmp_texture,
                 TextureDescriptor{
                     .color = {
-                        .filename = VariableAndHash{ parsed.unnamed_value(0) },
+                        .filename = FPath::from_variable(parsed.unnamed_value(0)),
                         .color_mode = ColorMode::RGBA,
                         .mipmap_mode = MipmapMode::WITH_MIPMAPS}});
             ftl.emplace(
                 rendering_resources.get_texture(ColormapWithModifiers{
-                    .filename = tmp_texture,
+                    .filename = FPath::from_variable_and_hash(tmp_texture),
                     .color_mode = ColorMode::RGBA,
                     .mipmap_mode = MipmapMode::WITH_MIPMAPS}.compute_hash()));
         } else {
-            THROW_OR_ABORT("Expected 0 or 1 unnamed arguments");
+            throw std::runtime_error("Expected 0 or 1 unnamed arguments");
         }
 
         // render loop
@@ -231,11 +237,11 @@ int main(int argc, char** argv)
             } else if (!atlas.tiles.empty()) {
                 auto layer = safe_stoz(parsed.named_value("--atlas_layer"));
                 if (layer >= atlas.tiles.size()) {
-                    THROW_OR_ABORT("Layer index out of bounds");
+                    throw std::runtime_error("Layer index out of bounds");
                 }
                 float scale = std::pow(2.f, -safe_stof(parsed.named_value("--mip_level")));
                 if (std::isnan(scale)) {
-                    THROW_OR_ABORT("Scale is NAN");
+                    throw std::runtime_error("Scale is NAN");
                 }
                 render_texture_atlas(
                     rendering_resources,

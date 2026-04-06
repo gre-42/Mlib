@@ -1,7 +1,7 @@
 #pragma once
-#include <Mlib/Hash.hpp>
-#include <Mlib/Std_Hash.hpp>
-#include <Mlib/Variable_And_Hash.hpp>
+#include <Mlib/Hashing/Hash.hpp>
+#include <Mlib/Hashing/Std_Hash.hpp>
+#include <Mlib/Hashing/Variable_And_Hash.hpp>
 #include <nlohmann/json_fwd.hpp>
 #include <string>
 

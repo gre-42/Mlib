@@ -1,15 +1,15 @@
 #include "Animatable_Trails.hpp"
-#include <Mlib/Argument_List.hpp>
 #include <Mlib/Geometry/Material/Shading.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
+#include <Mlib/Misc/Argument_List.hpp>
+#include <Mlib/OpenGL/Batch_Renderers/Trails_Instance.hpp>
+#include <Mlib/OpenGL/Rendering_Context.hpp>
+#include <Mlib/OpenGL/Resource_Managers/Trail_Resources.hpp>
 #include <Mlib/Physics/Units.hpp>
-#include <Mlib/Render/Batch_Renderers/Trails_Instance.hpp>
-#include <Mlib/Render/Rendering_Context.hpp>
-#include <Mlib/Render/Resource_Managers/Trail_Resources.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Resources/Renderable_Resource_Filter.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
+#include <stdexcept>
 #include <vector>
 
 using namespace Mlib;
@@ -41,7 +41,7 @@ LoadSceneJsonUserFunction AnimatableTrails::json_user_function = [](const LoadSc
     RenderingContextStack::primary_trail_resources().insert_instance_instantiator(
         args.arguments.at<VariableAndHash<std::string>>(KnownArgs::name),
         [&snr = RenderingContextStack::primary_scene_node_resources(),
-         texture = args.arguments.at<VariableAndHash<std::string>>(KnownArgs::texture),
+         texture = args.arguments.path_or_variable(KnownArgs::texture),
          shading = Shading{
             .emissive = make_orderable(args.arguments.at<EFixedArray<float, 3>>(KnownArgs::emissive, zeros3)),
             .ambient = make_orderable(args.arguments.at<EFixedArray<float, 3>>(KnownArgs::ambient, zeros3)),

@@ -1,7 +1,7 @@
 #include "Create_Missile_Controller.hpp"
-#include <Mlib/Argument_List.hpp>
 #include <Mlib/Components/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
+#include <Mlib/Misc/Argument_List.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Physics/Vehicle_Controllers/Missile_Controllers/Missile_Controller.hpp>
@@ -9,7 +9,7 @@
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -73,12 +73,12 @@ void CreateMissileController::execute(const LoadSceneJsonUserFunctionArgs& args)
         pid(1) / meters,
         pid(2) / meters,
         pid_alpha};
-    DanglingBaseClassRef<SceneNode> node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::node), DP_LOC);
-    auto& rb = get_rigid_body_vehicle(node);
-    if (rb.missile_controller_ != nullptr) {
-        THROW_OR_ABORT("Missile controller already set");
+    DanglingBaseClassRef<SceneNode> node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::node), CURRENT_SOURCE_LOCATION);
+    auto rb = get_rigid_body_vehicle(node.get(), CURRENT_SOURCE_LOCATION);
+    if (rb->missile_controller_ != nullptr) {
+        throw std::runtime_error("Missile controller already set");
     }
-    rb.missile_controller_ = std::make_unique<MissileController>(
+    rb->missile_controller_ = std::make_unique<MissileController>(
         rb,
         args.arguments.at<float>(KnownArgs::dt_ref) * seconds,
         pid_controller,

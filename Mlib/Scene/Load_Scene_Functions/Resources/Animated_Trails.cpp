@@ -1,18 +1,18 @@
 #include "Animated_Trails.hpp"
-#include <Mlib/Argument_List.hpp>
 #include <Mlib/Geometry/Mesh/Animated_Colored_Vertex_Arrays.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array_Filter.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
+#include <Mlib/Misc/Argument_List.hpp>
+#include <Mlib/OpenGL/Batch_Renderers/Trails_Instance.hpp>
+#include <Mlib/OpenGL/Rendering_Context.hpp>
+#include <Mlib/OpenGL/Resource_Managers/Trail_Resources.hpp>
+#include <Mlib/OpenGL/Resources/Colored_Vertex_Array_Resource/Trail_Extender.hpp>
+#include <Mlib/OpenGL/Resources/Colored_Vertex_Array_Resource/Trail_Storage.hpp>
 #include <Mlib/Physics/Units.hpp>
-#include <Mlib/Render/Batch_Renderers/Trails_Instance.hpp>
-#include <Mlib/Render/Rendering_Context.hpp>
-#include <Mlib/Render/Resource_Managers/Trail_Resources.hpp>
-#include <Mlib/Render/Resources/Colored_Vertex_Array_Resource/Trail_Extender.hpp>
-#include <Mlib/Render/Resources/Colored_Vertex_Array_Resource/Trail_Storage.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
+#include <stdexcept>
 #include <vector>
 
 using namespace Mlib;

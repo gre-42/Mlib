@@ -11,7 +11,6 @@ namespace Mlib {
 
 struct PhysicsEngineConfig;
 class RigidBodies;
-class SatTracker;
 class ContactSmokeGenerator;
 class ITrailRenderer;
 struct Beacon;
@@ -34,7 +33,6 @@ struct CollisionHistory {
     const PhysicsEngineConfig& cfg;
     const PhysicsPhase& phase;
     const StaticWorld& world;
-    const SatTracker& st;
     const SurfaceContactDb& surface_contact_db;
     ContactSmokeGenerator& csg;
     ITrailRenderer& tr;
@@ -43,8 +41,6 @@ struct CollisionHistory {
     std::unordered_map<OrderableFixedArray<CompressedScenePos, 2, 3>, IntersectionSceneAndContact>& raycast_intersections;
     std::unordered_map<RigidBodyVehicle*, std::list<IntersectionSceneAndContact>>& concave_t0_intersections;
     std::unordered_map<RigidBodyVehicle*, GrindInfo>& grind_infos;
-    std::unordered_map<RigidBodyVehicle*, std::list<FixedArray<ScenePos, 3>>>& ridge_intersection_points;
-    RidgeMap& ridge_map;
     BaseLog* base_log;
 };
 

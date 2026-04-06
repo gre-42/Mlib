@@ -2,6 +2,7 @@
 #include <Mlib/Array/Array.hpp>
 #include <Mlib/Memory/Float_To_Integral.hpp>
 #include <Mlib/Stats/Min_Max.hpp>
+#include <stdexcept>
 
 namespace Mlib {
 
@@ -37,7 +38,7 @@ Array<TSigma> gaussian_kernel(
         }
     }
     if (!coeffs.initialized()) {
-        THROW_OR_ABORT("Unknown kernel shape type");
+        throw std::runtime_error("Unknown kernel shape type");
     }
     switch (normalization) {
     case NormalizationType::SUM:
@@ -47,7 +48,7 @@ Array<TSigma> gaussian_kernel(
         coeffs /= max(coeffs);
         return coeffs;
     }
-    THROW_OR_ABORT("Unknown normalization type");
+    throw std::runtime_error("Unknown normalization type");
 }
 
 }

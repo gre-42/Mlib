@@ -1,6 +1,6 @@
 #pragma once
+#include <Mlib/Json/Base.hpp>
 #include <chrono>
-#include <nlohmann/json.hpp>
 
 // std::chrono::steady_clock::time_point
 namespace nlohmann

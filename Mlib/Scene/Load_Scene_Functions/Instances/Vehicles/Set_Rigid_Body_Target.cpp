@@ -1,12 +1,12 @@
 #include "Set_Rigid_Body_Target.hpp"
-#include <Mlib/Argument_List.hpp>
 #include <Mlib/Components/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
+#include <Mlib/Misc/Argument_List.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -30,10 +30,10 @@ SetRigidBodyTarget::SetRigidBodyTarget(PhysicsScene& physics_scene)
 
 void SetRigidBodyTarget::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    DanglingBaseClassRef<SceneNode> node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::node), DP_LOC);
-    auto& rb = get_rigid_body_vehicle(node);
-    if (any(rb.target_ != 0.f)) {
-        THROW_OR_ABORT("Rigid body target already set");
+    DanglingBaseClassRef<SceneNode> node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::node), CURRENT_SOURCE_LOCATION);
+    auto rb = get_rigid_body_vehicle(node.get(), CURRENT_SOURCE_LOCATION);
+    if (any(rb->target_ != 0.f)) {
+        throw std::runtime_error("Rigid body target already set");
     }
-    rb.target_ = args.arguments.at<EFixedArray<float, 3>>(KnownArgs::target);
+    rb->target_ = args.arguments.at<EFixedArray<float, 3>>(KnownArgs::target);
 }

@@ -1,6 +1,6 @@
 #pragma once
-#include <Mlib/Render/Key_Bindings/Lockable_Key_Configurations_Fwd.hpp>
-#include <Mlib/Render/Key_Bindings/Lockable_Key_Descriptions_Fwd.hpp>
+#include <Mlib/OpenGL/Key_Bindings/Lockable_Key_Configurations_Fwd.hpp>
+#include <Mlib/OpenGL/Key_Bindings/Lockable_Key_Descriptions_Fwd.hpp>
 #include <atomic>
 #include <functional>
 #include <list>

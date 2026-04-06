@@ -1,3 +1,4 @@
+
 #include "Cluster_Triangles.hpp"
 #include <Mlib/Geometry/Colored_Vertex.hpp>
 #include <Mlib/Geometry/Material.hpp>
@@ -13,6 +14,7 @@ using namespace Mlib;
 
 template <class TPos>
 struct Clustered {
+    std::list<const ColoredVertexArray<TPos>*> cvas;
     std::list<FixedArray<ColoredVertex<TPos>, 3>> triangles;
     std::list<FixedArray<uint8_t, 3>> discrete_triangle_texture_layers;
     std::list<FixedArray<float, 3>> alpha;
@@ -30,25 +32,26 @@ std::list<PositionAndMeshes<TPos>> Mlib::cluster_triangles(
         if (!cva->discrete_triangle_texture_layers.empty() &&
             (cva->discrete_triangle_texture_layers.size() != cva->triangles.size()))
         {
-            THROW_OR_ABORT("cluster_triangles: discrete_triangle_texture_layers size mismatch");
+            throw std::runtime_error("cluster_triangles: discrete_triangle_texture_layers size mismatch");
         }
         if (!cva->alpha.empty() &&
             (cva->alpha.size() != cva->triangles.size()))
         {
-            THROW_OR_ABORT("cluster_triangles: alpha size mismatch");
+            throw std::runtime_error("cluster_triangles: alpha size mismatch");
         }
         if (!cva->interiormap_uvmaps.empty() &&
             (cva->interiormap_uvmaps.size() != cva->triangles.size()))
         {
-            THROW_OR_ABORT("cluster_triangles: interiormap_uvmaps size mismatch");
+            throw std::runtime_error("cluster_triangles: interiormap_uvmaps size mismatch");
         }
-        if (cva->modifier_backlog != ModifierBacklog{}) {
-            THROW_OR_ABORT("cluster_triangles: modifier_backlog is not empty: " + modifier_backlog_to_string(cva->modifier_backlog));
+        if (cva->meta.modifier_backlog != ModifierBacklog{}) {
+            throw std::runtime_error("cluster_triangles: modifier_backlog is not empty: " + modifier_backlog_to_string(cva->meta.modifier_backlog));
         }
-        auto mm = MaterialAndMorphology{cva->material, cva->morphology};
+        auto mm = MaterialAndMorphology{cva->meta.material, cva->meta.morphology};
         for (const auto& [i, tri] : enumerate(cva->triangles)) {
             auto center = get_cluster_center(*tri);
             auto& cluster = clustered[make_orderable(center)][mm];
+            cluster.cvas.push_back(cva.get());
             cluster.triangles.push_back(tri);
             if (!cva->discrete_triangle_texture_layers.empty()) {
                 cluster.discrete_triangle_texture_layers.push_back(cva->discrete_triangle_texture_layers[i]);
@@ -64,6 +67,8 @@ std::list<PositionAndMeshes<TPos>> Mlib::cluster_triangles(
     size_t i = 0;
     std::list<PositionAndMeshes<TPos>> result;
     for (const auto& [center, lists] : clustered) {
+        size_t nelements = 0;
+        std::unordered_map<const ColoredVertexArray<TPos>*, size_t> cva_nelements;
         auto& pm = result.emplace_back(center);
         for (const auto& [mm, c] : lists) {
             auto& ccva = pm.cvas[mm.material.continuous_blending_z_order].emplace_back(
@@ -82,10 +87,20 @@ std::list<PositionAndMeshes<TPos>> Mlib::cluster_triangles(
                     std::vector<UUVector<FixedArray<float, 3>>>{},
                     UUVector<FixedArray<float, 3>>(c.alpha.begin(), c.alpha.end()),
                     UUVector<FixedArray<float, 4>>(c.interiormap_uvmaps.begin(), c.interiormap_uvmaps.end())));
-            if (ccva->material.aggregate_mode != AggregateMode::NODE_TRIANGLES) {
-                THROW_OR_ABORT("cluster_triangles: aggregate mode is not \"NODE_TRIANGLES\"");
+            if (ccva->meta.material.aggregate_mode != AggregateMode::NODE_TRIANGLES) {
+                throw std::runtime_error("cluster_triangles: aggregate mode is not \"NODE_TRIANGLES\"");
             }
-            ccva->material.aggregate_mode = AggregateMode::NONE;
+            ccva->meta.material.aggregate_mode = AggregateMode::NONE;
+            for (const auto& cva : c.cvas) {
+                ++cva_nelements[cva];
+            }
+            nelements += ccva->nelements();
+        }
+        if (nelements > 1'000'000) {
+            for (const auto& [cva, nelements] : cva_nelements) {
+                lerr() << "Name: " << cva->meta.name.full_name() << ", #elements: " << nelements;
+            }
+            throw std::runtime_error("cluster_triangles: too many elements: " + std::to_string(nelements));
         }
     }
     return result;

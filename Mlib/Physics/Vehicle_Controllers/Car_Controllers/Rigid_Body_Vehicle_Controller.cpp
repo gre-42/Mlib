@@ -2,13 +2,13 @@
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Threads/Recursion_Guard.hpp>
 #include <Mlib/Threads/Thread_Local.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
 #include <cmath>
+#include <stdexcept>
 
 using namespace Mlib;
 
 RigidBodyVehicleController::RigidBodyVehicleController(
-    RigidBodyVehicle& rb,
+    const DanglingBaseClassRef<RigidBodyVehicle>& rb,
     SteeringType steering_type)
     : steering_type{ steering_type }
     , rb_{ rb }
@@ -125,12 +125,12 @@ void RigidBodyVehicleController::set_trailer(
     const DanglingBaseClassRef<RigidBodyVehicleController>& trailer)
 {
     if (trailer_ != nullptr) {
-        THROW_OR_ABORT("Trailer already set (0)");
+        throw std::runtime_error("Trailer already set (0)");
     }
     if (on_destroy_trailer_.has_value()) {
-        THROW_OR_ABORT("Trailer already set (1)");
+        throw std::runtime_error("Trailer already set (1)");
     }
-    on_destroy_trailer_.emplace(trailer->on_destroy, CURRENT_SOURCE_LOCATION);
+    on_destroy_trailer_.emplace(trailer->on_destroy.deflt, CURRENT_SOURCE_LOCATION);
     on_destroy_trailer_->add([this](){
         trailer_ = nullptr;
         on_destroy_trailer_.reset();

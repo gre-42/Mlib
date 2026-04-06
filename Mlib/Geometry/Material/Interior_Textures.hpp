@@ -1,6 +1,6 @@
 #pragma once
 #include <Mlib/Math/Orderable_Fixed_Array.hpp>
-#include <Mlib/Variable_And_Hash.hpp>
+#include <Mlib/Misc/FPath.hpp>
 #include <cstdint>
 #include <iosfwd>
 #include <string>
@@ -27,10 +27,11 @@ struct InteriorTextures {
     InteriorTextures(InteriorTextures&& other);
     InteriorTextures& operator = (const InteriorTextures& other);
     InteriorTextures& operator = (InteriorTextures&& other);
+    ~InteriorTextures();
     std::strong_ordering operator <=> (const InteriorTextures&) const = default;
     bool empty() const;
     size_t size() const;
-    const VariableAndHash<std::string>& operator [](size_t index) const;
+    const FPath& operator [](size_t index) const;
     template <class Archive>
     void serialize(Archive& archive) {
         archive(facade_edge_size);
@@ -42,18 +43,18 @@ struct InteriorTextures {
     OrderableFixedArray<float, 2> facade_edge_size{ 0.f, 0.f };
     OrderableFixedArray<float, 2> facade_inner_size{ 0.f, 0.f };
     OrderableFixedArray<float, 3> interior_size{ 0.f, 0.f, 0.f };
-    std::vector<VariableAndHash<std::string>> names;
+    std::vector<FPath> names;
     InteriorTextureSet set;
     void assign(
-        VariableAndHash<std::string> left,
-        VariableAndHash<std::string> right,
-        VariableAndHash<std::string> floor,
-        VariableAndHash<std::string> ceiling,
-        VariableAndHash<std::string> back,
-        VariableAndHash<std::string> back_specular,
-        VariableAndHash<std::string> front,
-        VariableAndHash<std::string> front_alpha,
-        VariableAndHash<std::string> front_specular);
+        FPath left,
+        FPath right,
+        FPath floor,
+        FPath ceiling,
+        FPath back,
+        FPath back_specular,
+        FPath front,
+        FPath front_alpha,
+        FPath front_specular);
 };
 
 std::ostream& operator << (std::ostream& ostr, const InteriorTextures& t);

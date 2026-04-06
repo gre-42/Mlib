@@ -2,8 +2,8 @@
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/Memory/Destruction_Functions.hpp>
-#include <Mlib/Render/Render_Logic.hpp>
-#include <Mlib/Render/Render_Logics/Render_Text_Logic.hpp>
+#include <Mlib/OpenGL/Render_Logic.hpp>
+#include <Mlib/OpenGL/Render_Logics/Render_Text_Logic.hpp>
 
 namespace Mlib {
 

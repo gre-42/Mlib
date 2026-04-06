@@ -1,11 +1,11 @@
 #include "Playback_Winner_Track.hpp"
-#include <Mlib/Argument_List.hpp>
 #include <Mlib/Iterator/Enumerate.hpp>
 #include <Mlib/Macro_Executor/Asset_Group_Replacement_Parameters.hpp>
 #include <Mlib/Macro_Executor/Asset_References.hpp>
 #include <Mlib/Macro_Executor/Focus.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Macro_Executor/Replacement_Parameter.hpp>
+#include <Mlib/Misc/Argument_List.hpp>
 #include <Mlib/Physics/Advance_Times/Movables/Rigid_Body_Playback.hpp>
 #include <Mlib/Physics/Containers/Race_History.hpp>
 #include <Mlib/Physics/Misc/Track_Element_File.hpp>
@@ -16,8 +16,8 @@
 #include <Mlib/Scene_Graph/Elements/Absolute_Movable_Setter.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
-#include <Mlib/Strings/To_Number.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
+#include <Mlib/Strings/String_View_To_Number.hpp>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -46,7 +46,7 @@ void PlaybackWinnerTrack::execute(const LoadSceneJsonUserFunctionArgs& args)
     auto rank = args.arguments.at<size_t>(KnownArgs::rank);
     auto wt = players.get_winner_track_filename(rank);
     if (!wt.has_value()) {
-        THROW_OR_ABORT("Winner with rank " + std::to_string(rank) + " does not exist");
+        throw std::runtime_error("Winner with rank " + std::to_string(rank) + " does not exist");
     }
     auto asset_id = args.arguments.at<std::string>(KnownArgs::asset_id);
     const auto& vars = args
@@ -65,7 +65,7 @@ void PlaybackWinnerTrack::execute(const LoadSceneJsonUserFunctionArgs& args)
 
     auto suffix = args.arguments.at<std::string>(KnownArgs::suffix);
     for (const auto& [i, prefix] : enumerate(node_prefixes)) {
-        DanglingBaseClassRef<SceneNode> node = scene.get_node(VariableAndHash<std::string>{prefix + suffix}, DP_LOC);
+        DanglingBaseClassRef<SceneNode> node = scene.get_node(VariableAndHash<std::string>{prefix + suffix}, CURRENT_SOURCE_LOCATION);
         node->clearing_pointers.add(playback);
         auto playback_object = playback->get_playback_object(i);
         node->set_absolute_movable(playback_object);

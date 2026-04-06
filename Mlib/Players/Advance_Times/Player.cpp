@@ -1,5 +1,4 @@
 #include "Player.hpp"
-#include <Mlib/Assert.hpp>
 #include <Mlib/Components/Aim_At.hpp>
 #include <Mlib/Components/Gun.hpp>
 #include <Mlib/Components/Weapon_Cycle.hpp>
@@ -24,7 +23,6 @@
 #include <Mlib/Physics/Misc/Track_Element.hpp>
 #include <Mlib/Physics/Misc/Weapon_Cycle.hpp>
 #include <Mlib/Physics/Misc/When_To_Equip.hpp>
-#include <Mlib/Physics/Physics_Engine/Physics_Engine_Config.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Phase.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Physics/Vehicle_Controllers/Car_Controllers/Rigid_Body_Vehicle_Controller.hpp>
@@ -40,9 +38,9 @@
 #include <Mlib/Players/Scene_Vehicle/Vehicle_Spawner.hpp>
 #include <Mlib/Players/Team/Team.hpp>
 #include <Mlib/Players/User_Account/User_Account.hpp>
+#include <Mlib/Scene_Config/Physics_Engine_Config.hpp>
 #include <Mlib/Scene_Graph/Animation/Animation_State_Updater.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
-#include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
 #include <Mlib/Scene_Graph/Driving_Direction.hpp>
 #include <Mlib/Scene_Graph/Elements/Color_Style.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
@@ -52,8 +50,10 @@
 #include <Mlib/Scene_Graph/Spawn_Arguments.hpp>
 #include <Mlib/Scene_Graph/Spawn_Point.hpp>
 #include <Mlib/Scene_Graph/Way_Point_Location.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
+#include <Mlib/Testing/Assert.hpp>
+#include <Mlib/Threads/Throwing_Lock_Guard.hpp>
 #include <fstream>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -65,7 +65,7 @@ GameMode Mlib::game_mode_from_string(const std::string& game_mode) {
     };
     auto it = m.find(game_mode);
     if (it == m.end()) {
-        THROW_OR_ABORT("Unknown game mode: \"" + game_mode + '"');
+        throw std::runtime_error("Unknown game mode: \"" + game_mode + '"');
     }
     return it->second;
 }
@@ -79,7 +79,7 @@ std::string Mlib::game_mode_to_string(GameMode game_mode) {
     case GameMode::TEAM_DEATHMATCH:
         return "team_deathmatch";
     }
-    THROW_OR_ABORT("Unknown game mode: " + std::to_string((uint32_t)game_mode));
+    throw std::runtime_error("Unknown game mode: " + std::to_string((uint32_t)game_mode));
 }
 
 PlayerRole Mlib::player_role_from_string(const std::string& role) {
@@ -89,7 +89,7 @@ PlayerRole Mlib::player_role_from_string(const std::string& role) {
     };
     auto it = m.find(role);
     if (it == m.end()) {
-        THROW_OR_ABORT("Unknown player role: \"" + role + '"');
+        throw std::runtime_error("Unknown player role: \"" + role + '"');
     }
     return it->second;
 }
@@ -101,7 +101,7 @@ std::string Mlib::player_role_to_string(PlayerRole role) {
     case PlayerRole::BYSTANDER:
         return "bystander";
     }
-    THROW_OR_ABORT("Unknown player role: " + std::to_string((uint32_t)role));
+    throw std::runtime_error("Unknown player role: " + std::to_string((uint32_t)role));
 }
 
 
@@ -113,7 +113,7 @@ UnstuckMode Mlib::unstuck_mode_from_string(const std::string& unstuck_mode) {
     };
     auto it = m.find(unstuck_mode);
     if (it == m.end()) {
-        THROW_OR_ABORT("Unknown unstuck mode: \"" + unstuck_mode + '"');
+        throw std::runtime_error("Unknown unstuck mode: \"" + unstuck_mode + '"');
     }
     return it->second;
 }
@@ -127,18 +127,18 @@ std::string Mlib::unstuck_mode_to_string(UnstuckMode unstuck_mode) {
     case UnstuckMode::DELETE:
         return "delete";
     }
-    THROW_OR_ABORT("Unknown unstuck mode: " + std::to_string((uint32_t)unstuck_mode));
+    throw std::runtime_error("Unknown unstuck mode: " + std::to_string((uint32_t)unstuck_mode));
 }
 
 bool PlayerControlled::has_aim_at() const {
     return (gun_node != nullptr) && Mlib::has_aim_at(*gun_node);
 }
 
-AimAt& PlayerControlled::aim_at() {
+DanglingBaseClassRef<AimAt> PlayerControlled::aim_at() {
     if (gun_node == nullptr) {
-        THROW_OR_ABORT("Gun node is null");
+        throw std::runtime_error("Gun node is null");
     }
-    return get_aim_at(*gun_node);
+    return get_aim_at((*gun_node).get(), CURRENT_SOURCE_LOCATION);
 }
 
 Player::Player(
@@ -161,10 +161,10 @@ Player::Player(
     UnstuckMode unstuck_mode,
     std::string behavior,
     DrivingDirection driving_direction,
-    DeleteNodeMutex& delete_node_mutex,
+    SafeAtomicRecursiveSharedMutex& delete_node_mutex,
     const CountdownPhysics& countdown_start)
-    : car_movement{ *this }
-    , avatar_movement{ *this }
+    : car_movement{ {*this, CURRENT_SOURCE_LOCATION} }
+    , avatar_movement{ {*this, CURRENT_SOURCE_LOCATION} }
     , on_clear_user_{ nullptr, CURRENT_SOURCE_LOCATION }
     , on_avatar_destroyed_{ nullptr, CURRENT_SOURCE_LOCATION }
     , on_vehicle_destroyed_{ nullptr, CURRENT_SOURCE_LOCATION }
@@ -200,7 +200,7 @@ Player::Player(
     , reset_vehicle_to_last_checkpoint_requested_{ false }
     , externals_mode_{ ExternalsMode::NONE }
     , single_waypoint_{ { *this, CURRENT_SOURCE_LOCATION } }
-    , pathfinding_waypoints_{ *this, cfg }
+    , pathfinding_waypoints_{ *this }
     , playback_waypoints_{ *this }
     , countdown_start_{ countdown_start }
     , select_opponent_hysteresis_factor_{ (ScenePos)0.9 }
@@ -211,15 +211,16 @@ Player::Player(
     , spawner_{ spawner }
     , user_account_{ std::move(user_account) }
 {
-    delete_node_mutex_.assert_this_thread_is_deleter_thread();
+    ThrowingLockGuard delete_lock{delete_node_mutex_};
     if (user_info_ != nullptr) {
-        on_clear_user_.set(user_info_->on_destroy, CURRENT_SOURCE_LOCATION);
+        on_clear_user_.set(user_info_->on_destroy.deflt, CURRENT_SOURCE_LOCATION);
         on_clear_user_.add([this](){ user_info_ = nullptr; }, CURRENT_SOURCE_LOCATION);
     }
 }
 
 Player::~Player() {
-    delete_node_mutex_.assert_this_thread_is_deleter_thread();
+    ThrowingLockGuard delete_lock{delete_node_mutex_};
+    reset_node();
     on_destroy.clear();
     destruction_observers_.clear();
 }
@@ -265,12 +266,17 @@ void Player::set_select_opponent_hysteresis_factor(ScenePos factor) {
 }
 
 void Player::reset_node() {
-    delete_node_mutex_.assert_this_thread_is_deleter_thread();
+    ThrowingLockGuard delete_lock{delete_node_mutex_};
     {
         std::scoped_lock lock{ mutex_ };
         if (vehicle_ != nullptr) {
-            if (vehicle_->rb()->remote_object_id_.has_value()) {
-                vehicle_->rb()->owner_site_id_ = vehicle_->rb()->remote_object_id_->site_id;
+            if (vehicle_->scene_node()->shutdown_phase() == ShutdownPhase::NONE) {
+                if (vehicle_->rb()->remote_object_id_.has_value()) {
+                    vehicle_->rb()->owner_site_id_ = vehicle_->rb()->remote_object_id_->site_id;
+                }
+                if (has_weapon_cycle()) {
+                    weapon_cycle()->clear_player();
+                }
             }
             on_clear_vehicle_.clear();
             // The avatar can be destroyed during its dying
@@ -292,7 +298,7 @@ void Player::reset_node() {
         }
         if (controlled_.gun_node != nullptr) {
             if (controlled_.has_aim_at()) {
-                controlled_.aim_at().set_followed(nullptr);
+                controlled_.aim_at()->set_followed(nullptr);
             }
             change_gun_node(nullptr);
         }
@@ -326,21 +332,21 @@ void Player::set_scene_vehicle(
     const std::string& desired_seat)
 {
     std::scoped_lock lock{ mutex_ };
-    delete_node_mutex_.assert_this_thread_is_deleter_thread();
+    ThrowingLockGuard delete_lock{delete_node_mutex_};
     if (vehicle_spawner_ != nullptr) {
-        THROW_OR_ABORT("Vehicle spawner already set");
+        throw std::runtime_error("Vehicle spawner already set");
     }
     if (!internals_mode_.seat.empty()) {
-        THROW_OR_ABORT("Old seat is not empty");
+        throw std::runtime_error("Old seat is not empty");
     }
     if (desired_seat.empty()) {
-        THROW_OR_ABORT("Desired seat is empty");
+        throw std::runtime_error("Desired seat is empty");
     }
     if (!vehicle.rb()->drivers_.seat_exists(desired_seat)) {
-        THROW_OR_ABORT("Seat \"" + desired_seat + "\" does not exist in vehicle \"" + vehicle.rb()->name() + '"');
+        throw std::runtime_error("Seat \"" + desired_seat + "\" does not exist in vehicle \"" + vehicle.rb()->name() + '"');
     }
     if (!vehicle.rb()->drivers_.seat_is_free(desired_seat)) {
-        THROW_OR_ABORT("Seat \"" + desired_seat + "\" is already occupied in vehicle \"" + vehicle.rb()->name() + '"');
+        throw std::runtime_error("Seat \"" + desired_seat + "\" is already occupied in vehicle \"" + vehicle.rb()->name() + '"');
     }
     vehicle.rb()->drivers_.add(desired_seat, { *this, CURRENT_SOURCE_LOCATION }, CURRENT_SOURCE_LOCATION);
     if ((user_info_ != nullptr) && (user_info_->site_id.has_value()) && (desired_seat == "driver")) {
@@ -349,11 +355,11 @@ void Player::set_scene_vehicle(
     if (vehicle.rb()->is_avatar()) {
         // The avatar can be destroyed during its dying
         // animation or while sitting in a vehicle.
-        on_avatar_destroyed_.set(vehicle.on_destroy, CURRENT_SOURCE_LOCATION);
+        on_avatar_destroyed_.set(vehicle.on_destroy.deflt, CURRENT_SOURCE_LOCATION);
         on_avatar_destroyed_.add([this](){ reset_node(); }, CURRENT_SOURCE_LOCATION);
         on_vehicle_destroyed_.clear();
     } else {
-        on_vehicle_destroyed_.set(vehicle.on_destroy, CURRENT_SOURCE_LOCATION);
+        on_vehicle_destroyed_.set(vehicle.on_destroy.deflt, CURRENT_SOURCE_LOCATION);
         on_vehicle_destroyed_.add([this](){ reset_node(); }, CURRENT_SOURCE_LOCATION);
     }
     internals_mode_.seat = desired_seat;
@@ -365,9 +371,9 @@ void Player::set_vehicle_spawner(
     const std::string& desired_seat)
 {
     std::scoped_lock lock{ mutex_ };
-    delete_node_mutex_.assert_this_thread_is_deleter_thread();
+    ThrowingLockGuard delete_lock{delete_node_mutex_};
     if (vehicle_spawner_ != nullptr) {
-        THROW_OR_ABORT("Vehicle spawner already set");
+        throw std::runtime_error("Vehicle spawner already set");
     }
     set_scene_vehicle(spawner.get_primary_scene_vehicle().get(), desired_seat);
     vehicle_spawner_ = { spawner, CURRENT_SOURCE_LOCATION };
@@ -375,9 +381,9 @@ void Player::set_vehicle_spawner(
 
 DanglingBaseClassRef<RigidBodyVehicle> Player::rigid_body() {
     std::shared_lock lock{ mutex_ };
-    delete_node_mutex_.assert_this_thread_is_deleter_thread();
+    ThrowingLockGuard delete_lock{delete_node_mutex_};
     if (!has_scene_vehicle()) {
-        THROW_OR_ABORT("Player has no rigid body");
+        throw std::runtime_error("Player has no rigid body");
     }
     return vehicle_->rb();
 }
@@ -394,7 +400,7 @@ const VariableAndHash<std::string>& Player::scene_node_name() const {
 void Player::set_gun_node(const DanglingBaseClassRef<SceneNode>& gun_node) {
     std::scoped_lock lock{ mutex_ };
     if (controlled_.gun_node != nullptr) {
-        THROW_OR_ABORT("gun already set");
+        throw std::runtime_error("gun already set");
     }
     change_gun_node(gun_node.ptr());
 }
@@ -406,13 +412,13 @@ void Player::change_gun_node(const DanglingBaseClassPtr<SceneNode>& gun_node) {
     }
     controlled_.gun_node = gun_node;
     if (gun_node != nullptr) {
-        on_gun_node_destroyed_.set(gun_node->on_destroy, CURRENT_SOURCE_LOCATION);
+        on_gun_node_destroyed_.set(gun_node->on_destroy.deflt, CURRENT_SOURCE_LOCATION);
         on_gun_node_destroyed_.add([this](){ controlled_.gun_node = nullptr; }, CURRENT_SOURCE_LOCATION);
     }
 }
 
 DanglingBaseClassPtr<const UserInfo> Player::user_info() const {
-    delete_node_mutex_.assert_this_thread_is_deleter_thread();
+    ThrowingLockGuard delete_lock{delete_node_mutex_};
     return user_info_;
 }
 
@@ -465,7 +471,7 @@ float Player::car_health() const {
 std::string Player::vehicle_name() const {
     std::shared_lock lock{ mutex_ };
     if (!has_scene_vehicle()) {
-        THROW_OR_ABORT("Player has no scene vehicle, cannot get vehicle name");
+        throw std::runtime_error("Player has no scene vehicle, cannot get vehicle name");
     }
     return vehicle_->rb()->name();
 }
@@ -491,7 +497,7 @@ bool Player::can_see(
 {
     std::shared_lock lock{ mutex_ };
     if (!has_scene_vehicle()) {
-        THROW_OR_ABORT("Player::can_see requires rb");
+        throw std::runtime_error("Player::can_see requires rb");
     }
     return collision_query_.can_see(
         vehicle_->rb().get(),
@@ -510,7 +516,7 @@ bool Player::can_see(
 {
     std::shared_lock lock{ mutex_ };
     if (!has_scene_vehicle()) {
-        THROW_OR_ABORT("Player::can_see requires rb");
+        throw std::runtime_error("Player::can_see requires rb");
     }
     return collision_query_.can_see(
         vehicle_->rb().get(),
@@ -529,7 +535,7 @@ bool Player::can_see(
 {
     std::shared_lock lock{ mutex_ };
     if (!has_scene_vehicle()) {
-        THROW_OR_ABORT("Player::can_see requires vehicle");
+        throw std::runtime_error("Player::can_see requires vehicle");
     }
     return collision_query_.can_see(
         vehicle_->rb().get(),
@@ -546,7 +552,7 @@ bool Player::can_see(
 {
     std::shared_lock lock{ mutex_ };
     if (!player.has_scene_vehicle()) {
-        THROW_OR_ABORT("Player::can_see requires target rb");
+        throw std::runtime_error("Player::can_see requires target rb");
     }
     return can_see(
         player.vehicle().get(),
@@ -556,7 +562,7 @@ bool Player::can_see(
 
 void Player::advance_time(float dt, const StaticWorld& world) {
     std::scoped_lock lock{ mutex_ };
-    delete_node_mutex_.assert_this_thread_is_deleter_thread();
+    ThrowingLockGuard delete_lock{delete_node_mutex_};
     aim_and_shoot();
     select_best_weapon_in_inventory();
     for (const auto& [time, weapon] : shot_history) {
@@ -585,7 +591,7 @@ void Player::increment_external_forces(
     const StaticWorld& world)
 {
     std::scoped_lock lock{ mutex_ };
-    delete_node_mutex_.assert_this_thread_is_deleter_thread();
+    ThrowingLockGuard delete_lock{delete_node_mutex_};
     if (!any(site_privileges_ & PlayerSitePrivileges::CONTROLLER)) {
         return;
     }
@@ -604,7 +610,7 @@ void Player::increment_external_forces(
     if (countdown_start_.counting()) {
         car_movement.step_on_brakes();
         car_movement.steer(0.f);
-        vehicle_->rb()->vehicle_controller().apply();
+        vehicle_->rb()->vehicle_controller(CURRENT_SOURCE_LOCATION)->apply();
         return;
     }
     bool unstucking = false;
@@ -631,21 +637,21 @@ void Player::increment_external_forces(
 
 bool Player::unstuck() {
     std::scoped_lock lock{ mutex_ };
-    delete_node_mutex_.assert_this_thread_is_deleter_thread();
+    ThrowingLockGuard delete_lock{delete_node_mutex_};
     if (unstuck_mode_ == UnstuckMode::OFF) {
-        THROW_OR_ABORT("Player::unstuck called but unstuck-mode is off");
+        throw std::runtime_error("Player::unstuck called but unstuck-mode is off");
     }
     if (!has_scene_vehicle()) {
         return false;
     }
     if (std::isnan(stuck_velocity_)) {
-        THROW_OR_ABORT("Stuck velocity not set");
+        throw std::runtime_error("Stuck velocity not set");
     }
     if (std::isnan(stuck_duration_)) {
-        THROW_OR_ABORT("Stuck duration not set");
+        throw std::runtime_error("Stuck duration not set");
     }
     if (std::isnan(unstuck_duration_)) {
-        THROW_OR_ABORT("Unstuck duration not set");
+        throw std::runtime_error("Unstuck duration not set");
     }
     if ((sum(squared(vehicle_->rb()->rbp_.v_com_)) > squared(stuck_velocity_)) ||
         (unstuck_start_ != std::chrono::steady_clock::time_point()))
@@ -668,14 +674,14 @@ bool Player::unstuck() {
             // }
             if (unstuck_mode_ == UnstuckMode::REVERSE) {
                 car_movement.drive_backwards();
-                vehicle_->rb()->vehicle_controller().steer(0, 1.f);
-                vehicle_->rb()->vehicle_controller().apply();
+                vehicle_->rb()->vehicle_controller(CURRENT_SOURCE_LOCATION)->steer(0, 1.f);
+                vehicle_->rb()->vehicle_controller(CURRENT_SOURCE_LOCATION)->apply();
             } else if (unstuck_mode_ == UnstuckMode::DELETE) {
                 // std::scoped_lock lock{ mutex_ };
                 // scene_.delete_root_node(vehicle_.scene_node_name);
                 scene_.delete_root_node(vehicle_->scene_node_name());
             } else {
-                THROW_OR_ABORT("Unsupported unstuck mode");
+                throw std::runtime_error("Unsupported unstuck mode");
             }
             return true;
         }
@@ -686,30 +692,30 @@ bool Player::unstuck() {
 FixedArray<float, 3> Player::gun_direction() const {
     std::shared_lock lock{ mutex_ };
     if (controlled_.gun_node == nullptr) {
-        THROW_OR_ABORT("gun_direction despite gun nullptr in player \"" + *id() + '"');
+        throw std::runtime_error("gun_direction despite gun nullptr in player \"" + *id() + '"');
     }
-    return -z3_from_3x3(gun().absolute_model_matrix().R);
+    return -z3_from_3x3(gun()->absolute_model_matrix().R);
 }
 
 FixedArray<float, 3> Player::punch_angle() const {
     std::scoped_lock lock{ mutex_ };
     if (controlled_.gun_node == nullptr) {
-        THROW_OR_ABORT("punch_angle despite gun nullptr in player \"" + *id() + '"');
+        throw std::runtime_error("punch_angle despite gun nullptr in player \"" + *id() + '"');
     }
-    return gun().punch_angle();
+    return gun()->punch_angle();
 }
 
 void Player::trigger_gun() {
     std::scoped_lock lock{ mutex_ };
-    delete_node_mutex_.assert_this_thread_is_deleter_thread();
+    ThrowingLockGuard delete_lock{delete_node_mutex_};
     if (controlled_.gun_node == nullptr) {
-        THROW_OR_ABORT("Player::trigger despite gun nullptr");
+        throw std::runtime_error("Player::trigger despite gun nullptr");
     }
-    gun().trigger(this, &team().get());
+    gun()->trigger({this, CURRENT_SOURCE_LOCATION}, team().ptr());
 }
 
 bool Player::has_weapon() const {
-    return has_weapon_cycle() || (has_gun_node() && !gun().is_none_gun());
+    return has_weapon_cycle() || (has_gun_node() && !gun()->is_none_gun());
 }
 
 bool Player::has_gun_node() const {
@@ -729,19 +735,19 @@ bool Player::has_weapon_cycle() const {
     return Mlib::has_weapon_cycle(scene_node());
 }
 
-WeaponCycle& Player::weapon_cycle() {
-    return Mlib::get_weapon_cycle(scene_node());
+DanglingBaseClassRef<WeaponCycle> Player::weapon_cycle() {
+    return Mlib::get_weapon_cycle(scene_node().get(), CURRENT_SOURCE_LOCATION);
 }
 
-const WeaponCycle& Player::weapon_cycle() const {
-    return Mlib::get_weapon_cycle(scene_node());
+DanglingBaseClassRef<const WeaponCycle> Player::weapon_cycle() const {
+    return Mlib::get_weapon_cycle(scene_node().get(), CURRENT_SOURCE_LOCATION);
 }
 
 void Player::set_desired_weapon(const std::string& name, WhenToEquip when_to_equip) {
     if (!has_weapon_cycle()) {
-        THROW_OR_ABORT("Player has no weapon cycle");
+        throw std::runtime_error("Player has no weapon cycle");
     }
-    weapon_cycle().set_desired_weapon(id_, name, when_to_equip);
+    weapon_cycle()->set_desired_weapon(id_, name, when_to_equip);
 }
 
 bool Player::needs_supplies() const {
@@ -753,12 +759,12 @@ bool Player::needs_supplies() const {
 }
 
 size_t Player::nbullets_available() const {
-    return gun().nbullets_available();
+    return gun()->nbullets_available();
 }
 
 std::optional<std::string> Player::best_weapon_in_inventory() const {
     std::shared_lock lock{ mutex_ };
-    auto& wc = weapon_cycle();
+    auto wc = weapon_cycle();
     if ((target_rb_ == nullptr) ||
         !has_scene_vehicle())
     {
@@ -769,7 +775,7 @@ std::optional<std::string> Player::best_weapon_in_inventory() const {
         target_rb_->rbp_.abs_position() - rigid_body()->rbp_.abs_position())));
     float best_score = -INFINITY;
     std::optional<std::string> best_weapon_name;
-    for (const auto& [name, info] : wc.weapon_infos()) {
+    for (const auto& [name, info] : wc->weapon_infos()) {
         if (inventy.navailable(info.ammo_type) == 0) {
             continue;
         }
@@ -789,7 +795,7 @@ bool Player::has_scene_vehicle() const {
     }
     // Only checked for deleter-threads, because non-deleter-threads
     // can prevent deletion by acquiring a lock.
-    if (delete_node_mutex_.this_thread_is_deleter_thread()) {
+    if (delete_node_mutex_.is_owner()) {
         if (vehicle_->scene_node()->shutdown_phase() != ShutdownPhase::NONE) {
             verbose_abort("Player::has_rigid_body: Scene node shutting down");
         }
@@ -799,28 +805,28 @@ bool Player::has_scene_vehicle() const {
 
 bool Player::has_vehicle_controller() const {
     std::shared_lock lock{ mutex_ };
-    delete_node_mutex_.assert_this_thread_is_deleter_thread();
+    ThrowingLockGuard delete_lock{delete_node_mutex_};
     return rigid_body()->has_vehicle_controller();
 }
 
-const Gun& Player::gun() const {
+DanglingBaseClassRef<const Gun> Player::gun() const {
     return const_cast<Player*>(this)->gun();
 }
 
-Gun& Player::gun() {
+DanglingBaseClassRef<Gun> Player::gun() {
     std::shared_lock lock{ mutex_ };
-    delete_node_mutex_.assert_this_thread_is_deleter_thread();
+    ThrowingLockGuard delete_lock{delete_node_mutex_};
     if (controlled_.gun_node == nullptr) {
-        THROW_OR_ABORT("Gun node not set");
+        throw std::runtime_error("Gun node not set");
     }
-    return get_gun(*controlled_.gun_node);
+    return get_gun((*controlled_.gun_node).get(), CURRENT_SOURCE_LOCATION);
 }
 
 bool Player::has_gun_yaw() const {
     if (!has_gun_node()) {
         return false;
     }
-    auto ypln_node = gun().get_ypln_node();
+    auto ypln_node = gun()->get_ypln_node();
     if (ypln_node == nullptr) {
         return false;
     }
@@ -832,36 +838,36 @@ bool Player::has_gun_yaw() const {
 
 float Player::get_gun_yaw() const {
     if (!has_gun_node()) {
-        THROW_OR_ABORT("Player has no gun node");
+        throw std::runtime_error("Player has no gun node");
     }
-    auto ypln_node = gun().get_ypln_node();
+    auto ypln_node = gun()->get_ypln_node();
     if (ypln_node == nullptr) {
-        THROW_OR_ABORT("Player gun has no ypln node");
+        throw std::runtime_error("Player gun has no ypln node");
     }
     if (ypln_node == scene_node().ptr()) {
-        THROW_OR_ABORT("Player gun has no dedicated yaw node");
+        throw std::runtime_error("Player gun has no dedicated yaw node");
     }
-    auto& ypln = get_yaw_pitch_look_at_nodes(*ypln_node);
-    return ypln.get_yaw();
+    auto ypln = get_yaw_pitch_look_at_nodes((*ypln_node).get(), CURRENT_SOURCE_LOCATION);
+    return ypln->get_yaw();
 }
 
 void Player::set_gun_yaw(float value) {
     if (!has_gun_node()) {
-        THROW_OR_ABORT("Player has no gun node");
+        throw std::runtime_error("Player has no gun node");
     }
-    auto ypln_node = gun().get_ypln_node();
+    auto ypln_node = gun()->get_ypln_node();
     if (ypln_node == nullptr) {
-        THROW_OR_ABORT("Player gun has no ypln node");
+        throw std::runtime_error("Player gun has no ypln node");
     }
-    auto& ypln = get_yaw_pitch_look_at_nodes(*ypln_node);
-    return ypln.set_yaw(value);
+    auto ypln = get_yaw_pitch_look_at_nodes((*ypln_node).get(), CURRENT_SOURCE_LOCATION);
+    return ypln->set_yaw(value);
 }
 
 bool Player::has_gun_pitch() const {
     if (!has_gun_node()) {
         return false;
     }
-    auto ypln_node = gun().get_ypln_node();
+    auto ypln_node = gun()->get_ypln_node();
     if (ypln_node == nullptr) {
         return false;
     }
@@ -870,26 +876,26 @@ bool Player::has_gun_pitch() const {
 
 float Player::get_gun_pitch() const {
     if (!has_gun_node()) {
-        THROW_OR_ABORT("Player has no gun node");
+        throw std::runtime_error("Player has no gun node");
     }
-    auto ypln_node = gun().get_ypln_node();
+    auto ypln_node = gun()->get_ypln_node();
     if (ypln_node == nullptr) {
-        THROW_OR_ABORT("Player gun has no ypln node");
+        throw std::runtime_error("Player gun has no ypln node");
     }
-    auto& ypln = get_yaw_pitch_look_at_nodes(*ypln_node);
-    return ypln.pitch_look_at_node().get_pitch();
+    auto ypln = get_yaw_pitch_look_at_nodes((*ypln_node).get(), CURRENT_SOURCE_LOCATION);
+    return ypln->pitch_look_at_node()->get_pitch();
 }
 
 void Player::set_gun_pitch(float value) {
     if (!has_gun_node()) {
-        THROW_OR_ABORT("Player has no gun node");
+        throw std::runtime_error("Player has no gun node");
     }
-    auto ypln_node = gun().get_ypln_node();
+    auto ypln_node = gun()->get_ypln_node();
     if (ypln_node == nullptr) {
-        THROW_OR_ABORT("Player gun has no ypln node");
+        throw std::runtime_error("Player gun has no ypln node");
     }
-    auto& ypln = get_yaw_pitch_look_at_nodes(*ypln_node);
-    return ypln.pitch_look_at_node().set_pitch(value);
+    auto ypln = get_yaw_pitch_look_at_nodes((*ypln_node).get(), CURRENT_SOURCE_LOCATION);
+    return ypln->pitch_look_at_node()->set_pitch(value);
 }
 
 bool Player::is_pedestrian() const {
@@ -904,7 +910,7 @@ bool Player::is_parking() const {
 
 void Player::aim_and_shoot() {
     std::scoped_lock lock{ mutex_ };
-    delete_node_mutex_.assert_this_thread_is_deleter_thread();
+    ThrowingLockGuard delete_lock{delete_node_mutex_};
     if (!skills_.skills(ControlSource::AI).can_aim) {
         return;
     }
@@ -920,21 +926,21 @@ void Player::aim_and_shoot() {
     }
     assert_true((vehicle_ == nullptr) ||
                 (vehicle_->scene_node().ptr() != target_scene_node_));
-    controlled_.aim_at().set_followed(target_scene_node_);
+    controlled_.aim_at()->set_followed(target_scene_node_);
     if (controlled_.gun_node == nullptr) {
         return;
     }
     if (!skills_.skills(ControlSource::AI).can_shoot) {
         return;
     }
-    if ((target_scene_node_ != nullptr) && (controlled_.aim_at().target_locked_on())) {
-        gun().trigger(this, &team().get());
+    if ((target_scene_node_ != nullptr) && (controlled_.aim_at()->target_locked_on())) {
+        gun()->trigger({this, CURRENT_SOURCE_LOCATION}, team().ptr());
     }
 }
 
 void Player::select_best_weapon_in_inventory() {
     std::scoped_lock lock{ mutex_ };
-    delete_node_mutex_.assert_this_thread_is_deleter_thread();
+    ThrowingLockGuard delete_lock{delete_node_mutex_};
     if (!skills_.skills(ControlSource::AI).can_select_weapon) {
         return;
     }
@@ -973,12 +979,12 @@ DanglingBaseClassPtr<const RigidBodyVehicle> Player::target_rb() const {
 
 void Player::select_opponent(OpponentSelectionStrategy strategy) {
     std::scoped_lock lock{ mutex_ };
-    delete_node_mutex_.assert_this_thread_is_deleter_thread();
+    ThrowingLockGuard delete_lock{delete_node_mutex_};
     if (!has_scene_vehicle()) {
         return;
     }
     if (players_.players().empty()) {
-        THROW_OR_ABORT("List of players is empty");
+        throw std::runtime_error("List of players is empty");
     }
     size_t current_opponent_index = SIZE_MAX;
     std::vector<Player*> players_vec;
@@ -989,7 +995,7 @@ void Player::select_opponent(OpponentSelectionStrategy strategy) {
             (target_scene_node_ == p->vehicle_->scene_node().ptr()))
         {
             if (current_opponent_index != SIZE_MAX) {
-                THROW_OR_ABORT("Found multiple players with target node");
+                throw std::runtime_error("Found multiple players with target node");
             }
             current_opponent_index = players_vec.size();
         }
@@ -1029,7 +1035,7 @@ void Player::select_opponent(OpponentSelectionStrategy strategy) {
             return -dist_squared;
         }
         }
-        THROW_OR_ABORT("Unknown opponent selection strategy");
+        throw std::runtime_error("Unknown opponent selection strategy");
         };
     ScenePos best_score = -INFINITY;
     Player* best_opponent = nullptr;
@@ -1080,7 +1086,7 @@ void Player::select_opponent(OpponentSelectionStrategy strategy) {
 void Player::clear_opponent() {
     std::scoped_lock lock{ mutex_ };
     if (target_scene_node_ == nullptr) {
-        THROW_OR_ABORT("Player has no opponent");
+        throw std::runtime_error("Player has no opponent");
     }
     on_target_scene_node_cleared_.clear();
     on_target_rigid_body_destroyed_.clear();
@@ -1092,24 +1098,24 @@ void Player::clear_opponent() {
 void Player::set_opponent(Player& opponent) {
     std::scoped_lock lock{ mutex_ };
     if (target_scene_node_ != nullptr) {
-        THROW_OR_ABORT("Player already has an opponent");
+        throw std::runtime_error("Player already has an opponent");
     }
     if (opponent.vehicle_ == nullptr) {
-        THROW_OR_ABORT("Opponent has no avatar or vehicle");
+        throw std::runtime_error("Opponent has no avatar or vehicle");
     }
     target_id_ = opponent.vehicle_->scene_node_name();
     target_scene_node_ = opponent.vehicle_->scene_node().ptr();
     target_rb_ = opponent.vehicle_->rb().ptr().set_loc(CURRENT_SOURCE_LOCATION);
-    on_target_scene_node_cleared_.set(target_scene_node_->on_clear, CURRENT_SOURCE_LOCATION);
+    on_target_scene_node_cleared_.set(target_scene_node_->on_clear.early, CURRENT_SOURCE_LOCATION);
     on_target_scene_node_cleared_.add([this](){ clear_opponent(); }, CURRENT_SOURCE_LOCATION);
-    on_target_rigid_body_destroyed_.set(target_rb_->on_destroy, CURRENT_SOURCE_LOCATION);
+    on_target_rigid_body_destroyed_.set(target_rb_->on_destroy.deflt, CURRENT_SOURCE_LOCATION);
     on_target_rigid_body_destroyed_.add([this](){ clear_opponent(); }, CURRENT_SOURCE_LOCATION);
 }
 
 DanglingBaseClassRef<SceneNode> Player::scene_node() {
     std::shared_lock lock{ mutex_ };
     if (!has_scene_vehicle()) {
-        THROW_OR_ABORT("Player has no scene node");
+        throw std::runtime_error("Player has no scene node");
     }
     return vehicle_->scene_node();
 }
@@ -1135,7 +1141,7 @@ const std::string& Player::next_seat() const {
 DanglingBaseClassRef<SceneVehicle> Player::vehicle() {
     std::shared_lock lock{ mutex_ };
     if (vehicle_ == nullptr) {
-        THROW_OR_ABORT("Vehicle is null");
+        throw std::runtime_error("Vehicle is null");
     }
     return *vehicle_;
 }
@@ -1146,7 +1152,7 @@ DanglingBaseClassRef<const SceneVehicle> Player::vehicle() const {
 
 DanglingBaseClassRef<VehicleSpawner> Player::vehicle_spawner() {
     if (vehicle_spawner_ == nullptr) {
-        THROW_OR_ABORT("Player has no vehicle spawner");
+        throw std::runtime_error("Player has no vehicle spawner");
     }
     return *vehicle_spawner_;
 }
@@ -1163,7 +1169,7 @@ void Player::set_next_vehicle(
     clear_next_vehicle();
     next_scene_vehicle_ = { &spawner, CURRENT_SOURCE_LOCATION };
     next_seat_ = seat;
-    on_next_vehicle_destroyed_.set(vehicle.on_destroy, CURRENT_SOURCE_LOCATION);
+    on_next_vehicle_destroyed_.set(vehicle.on_destroy.deflt, CURRENT_SOURCE_LOCATION);
     on_next_vehicle_destroyed_.add([this](){
         next_scene_vehicle_ = nullptr;
     }, CURRENT_SOURCE_LOCATION);
@@ -1210,7 +1216,7 @@ void Player::select_next_vehicle(
             if (s->has_player() && (&s->get_player().get() == this)) {
                 const auto* free_seat = v->rb()->drivers_.first_free_seat();
                 if (free_seat == nullptr) {
-                    THROW_OR_ABORT("Avatar \"" + v->rb()->name() + "\" has no free seat");
+                    throw std::runtime_error("Avatar \"" + v->rb()->name() + "\" has no free seat");
                 }
                 set_next_vehicle(*s, v.get(), *free_seat);
                 return;
@@ -1268,7 +1274,7 @@ bool Player::can_reset_vehicle(
     const TransformationMatrix<SceneDir, ScenePos, 3>& trafo) const
 {
     if (vehicle_spawner_ == nullptr) {
-        THROW_OR_ABORT("Player has no vehicle spawner");
+        throw std::runtime_error("Player has no vehicle spawner");
     }
     return spawner_.can_spawn_at_spawn_point(
         *vehicle_spawner_.get(),
@@ -1279,7 +1285,7 @@ bool Player::can_reset_vehicle(
 bool Player::try_reset_vehicle(
     const TransformationMatrix<SceneDir, ScenePos, 3>& trafo)
 {
-    delete_node_mutex_.assert_this_thread_is_deleter_thread();
+    ThrowingLockGuard delete_lock{delete_node_mutex_};
     {
         std::scoped_lock lock{ mutex_ };
         reset_vehicle_to_last_checkpoint_requested_ = false;    
@@ -1323,20 +1329,20 @@ std::vector<DanglingBaseClassPtr<SceneNode>> Player::moving_nodes() const {
 }
 
 void Player::create_vehicle_externals(ExternalsMode externals_mode) {
-    delete_node_mutex_.assert_this_thread_is_deleter_thread();
+    ThrowingLockGuard delete_lock{delete_node_mutex_};
     if (externals_mode_ != ExternalsMode::NONE) {
-        THROW_OR_ABORT("Externals already created (0)");
+        throw std::runtime_error("Externals already created (0)");
     }
     if (!has_scene_vehicle()) {
-        THROW_OR_ABORT("Create vehicle externals without scene vehicle");
+        throw std::runtime_error("Create vehicle externals without scene vehicle");
     }
     if (!delete_vehicle_externals.empty()) {
         delete_vehicle_externals.print_source_locations();
-        THROW_OR_ABORT("Vehicle externals set after deleters were added");
+        throw std::runtime_error("Vehicle externals set after deleters were added");
     }
     if (!delete_vehicle_internals.empty()) {
         delete_vehicle_internals.print_source_locations();
-        THROW_OR_ABORT("Vehicle internals not empty while adding externals");
+        throw std::runtime_error("Vehicle internals not empty while adding externals");
     }
     vehicle_->create_vehicle_externals(*this, externals_mode);
     std::scoped_lock lock{ mutex_ };
@@ -1344,19 +1350,19 @@ void Player::create_vehicle_externals(ExternalsMode externals_mode) {
 }
 
 void Player::create_vehicle_internals(const InternalsMode& internals_mode) {
-    delete_node_mutex_.assert_this_thread_is_deleter_thread();
+    ThrowingLockGuard delete_lock{delete_node_mutex_};
     if (externals_mode_ == ExternalsMode::NONE) {
-        THROW_OR_ABORT("Internals set before vehicle externals");
+        throw std::runtime_error("Internals set before vehicle externals");
     }
     if (internals_mode.seat.empty()) {
-        THROW_OR_ABORT("Attempt to set empty seat");
+        throw std::runtime_error("Attempt to set empty seat");
     }
     if (!has_scene_vehicle()) {
-        THROW_OR_ABORT("Create internals without scene vehicle");
+        throw std::runtime_error("Create internals without scene vehicle");
     }
     if (!delete_vehicle_internals.empty()) {
         delete_vehicle_internals.print_source_locations();
-        THROW_OR_ABORT("Create internals set after deleters were added");
+        throw std::runtime_error("Create internals set after deleters were added");
     }
     vehicle_->create_vehicle_internals(*this, internals_mode);
     std::scoped_lock lock{ mutex_ };
@@ -1365,14 +1371,14 @@ void Player::create_vehicle_internals(const InternalsMode& internals_mode) {
 
 void Player::create_gun_externals() {
     if (has_weapon_cycle()) {
-        weapon_cycle().create_externals(id());
+        weapon_cycle()->set_player(id());
     }
 }
 
 void Player::set_seat(const std::string& seat) {
     std::scoped_lock lock{ mutex_ };
     if (externals_mode_ == ExternalsMode::NONE) {
-        THROW_OR_ABORT("Attempt to set seat before vehicle externals");
+        throw std::runtime_error("Attempt to set seat before vehicle externals");
     }
     if (!delete_vehicle_internals.empty()) {
         delete_vehicle_internals.clear();
@@ -1426,17 +1432,17 @@ ExternalsMode Player::externals_mode() const {
 }
 
 const InternalsMode& Player::internals_mode() const {
-    delete_node_mutex_.assert_this_thread_is_deleter_thread();
+    ThrowingLockGuard delete_lock{delete_node_mutex_};
     return internals_mode_;
 }
 
 UnstuckMode Player::unstuck_mode() const {
-    delete_node_mutex_.assert_this_thread_is_deleter_thread();
+    ThrowingLockGuard delete_lock{delete_node_mutex_};
     return unstuck_mode_;
 }
 
 const std::string& Player::behavior() const {
-    delete_node_mutex_.assert_this_thread_is_deleter_thread();
+    ThrowingLockGuard delete_lock{delete_node_mutex_};
     return behavior_;
 }
 
@@ -1446,24 +1452,24 @@ SingleWaypoint& Player::single_waypoint() {
 
 PathfindingWaypoints& Player::pathfinding_waypoints() {
     if (game_mode_ == GameMode::RALLY) {
-        THROW_OR_ABORT("Player::pathfinding_waypoints called, but game mode is rally");
+        throw std::runtime_error("Player::pathfinding_waypoints called, but game mode is rally");
     }
     return pathfinding_waypoints_;
 }
 
 PlaybackWaypoints& Player::playback_waypoints() {
     if (game_mode_ != GameMode::RALLY) {
-        THROW_OR_ABORT("Player::playback_waypoints called, but game mode is not rally");
+        throw std::runtime_error("Player::playback_waypoints called, but game mode is not rally");
     }
     return playback_waypoints_;
 }
 
 void Player::append_dependent_node(VariableAndHash<std::string> node_name) {
     std::scoped_lock lock{ mutex_ };
-    auto node = scene_.get_node(node_name, DP_LOC);
-    auto res = dependent_nodes_.try_emplace(std::move(node_name), node->on_clear, CURRENT_SOURCE_LOCATION);
+    auto node = scene_.get_node(node_name, CURRENT_SOURCE_LOCATION);
+    auto res = dependent_nodes_.try_emplace(std::move(node_name), node->on_clear.early, CURRENT_SOURCE_LOCATION);
     if (!res.second) {
-        THROW_OR_ABORT("Node \"" + *node_name + "\" already is a dependent node of player \"" + *id() + '"');
+        throw std::runtime_error("Node \"" + *node_name + "\" already is a dependent node of player \"" + *id() + '"');
     }
     res.first->second.add(
         [this, it=res.first->first](){ dependent_nodes_.erase(it); },
@@ -1483,9 +1489,9 @@ RaceState Player::notify_lap_finished(
     const std::list<TrackElement>& track)
 {
     std::scoped_lock lock{ mutex_ };
-    delete_node_mutex_.assert_this_thread_is_deleter_thread();
+    ThrowingLockGuard delete_lock{delete_node_mutex_};
     if (lap_times_seconds.empty()) {
-        THROW_OR_ABORT("Lap times list is empty");
+        throw std::runtime_error("Lap times list is empty");
     }
     stats_.best_lap_time = std::min(stats_.best_lap_time, lap_times_seconds.back());
     stats_.nlaps = integral_cast<uint32_t>(lap_times_seconds.size());
@@ -1504,11 +1510,11 @@ RaceState Player::notify_lap_finished(
 
 void Player::notify_kill(RigidBodyVehicle& rigid_body_vehicle) {
     std::scoped_lock lock{ mutex_ };
-    delete_node_mutex_.assert_this_thread_is_deleter_thread();
+    ThrowingLockGuard delete_lock{delete_node_mutex_};
     for (const auto& [_, iplayer] : rigid_body_vehicle.drivers_.players_map()) {
         Player* player = dynamic_cast<Player*>(&iplayer.get());
         if (player == nullptr) {
-            THROW_OR_ABORT("Driver is not a player");
+            throw std::runtime_error("Driver is not a player");
         }
         if (player->team_name() != team_name()) {
             ++stats_.nkills;
@@ -1520,12 +1526,12 @@ void Player::notify_kill(RigidBodyVehicle& rigid_body_vehicle) {
 void Player::notify_bullet_generated(std::chrono::steady_clock::time_point time) {
     std::scoped_lock lock{ mutex_ };
     if ((time >= old_world_time_) && has_weapon_cycle()) {
-        shot_history.try_emplace(time, weapon_cycle().weapon_name());
+        shot_history.try_emplace(time, weapon_cycle()->weapon_name());
     }
 }
 
 DestructionFunctions& Player::on_destroy_player() {
-    return on_destroy;
+    return on_destroy.deflt;
 }
 
 DestructionFunctions& Player::on_clear_vehicle() {
@@ -1540,7 +1546,7 @@ bool Player::has_way_points() const {
 void Player::set_way_point_location_filter(JoinedWayPointSandbox filter) {
     std::scoped_lock lock{ mutex_ };
     if (!navigate_.has_way_points()) {
-        THROW_OR_ABORT("Player \"" + *id_ + "\" has no waypoints");
+        throw std::runtime_error("Player \"" + *id_ + "\" has no waypoints");
     }
     auto final_filter = joined_way_point_sandbox_ & filter;
     size_t nfound = 0;
@@ -1549,7 +1555,7 @@ void Player::set_way_point_location_filter(JoinedWayPointSandbox filter) {
             continue;
         }
         if (nfound != 0) {
-            THROW_OR_ABORT(
+            throw std::runtime_error(
                 "Player \"" + *id_ + "\": Found multiple waypoints for final filter \"" +
                 joined_way_point_sandbox_to_string(final_filter) + '"');
         }
@@ -1558,7 +1564,7 @@ void Player::set_way_point_location_filter(JoinedWayPointSandbox filter) {
         ++nfound;
     }
     if (nfound == 0) {
-        THROW_OR_ABORT(
+        throw std::runtime_error(
             "Player \"" + *id_ + "\": Could not find waypoints for final filter \"" +
             joined_way_point_sandbox_to_string(final_filter) + '"');
     }

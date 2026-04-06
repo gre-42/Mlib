@@ -1,9 +1,10 @@
+
 #include "Track_Reader.hpp"
-#include <Mlib/Assert.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Physics/Misc/ITrack_Element_Sequence.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
+#include <Mlib/Testing/Assert.hpp>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -28,7 +29,7 @@ TrackReader::TrackReader(
     , track_element1_{std::nullopt}
 {
     if (finished()) {
-        THROW_OR_ABORT("Number of frames or number of laps must be at least 1");
+        throw std::runtime_error("Number of frames or number of laps must be at least 1");
     }
 }
 
@@ -36,7 +37,7 @@ TrackReader::~TrackReader() = default;
 
 bool TrackReader::read(double& progress) {
     if (inverse_geographic_mapping_ == nullptr) {
-        THROW_OR_ABORT("TrackReader::read without geographic mapping");
+        throw std::runtime_error("TrackReader::read without geographic mapping");
     }
     history_.clear();
     if (!sequence_->eof()) {
@@ -61,7 +62,7 @@ bool TrackReader::read(double& progress) {
                         return false;
                     }
                     if (!track_element1_.has_value()) {
-                        THROW_OR_ABORT("Received empty and periodic track");
+                        throw std::runtime_error("Received empty and periodic track");
                     }
                     // This assumes that the last element of the track equals the first element,
                     // i.e. that the start the track looks like [0 1 2 3 4 0].
@@ -97,7 +98,7 @@ bool TrackReader::read(double& progress) {
             if (interpolation_mode_ == TrackReaderInterpolationMode::NEAREST_NEIGHBOR) {
                 alpha = std::round(alpha);
             } else if (interpolation_mode_ != TrackReaderInterpolationMode::LINEAR) {
-                THROW_OR_ABORT("Unknown track-reader interpolation-mode");
+                throw std::runtime_error("Unknown track-reader interpolation-mode");
             }
             track_element_ = interpolated(*track_element0_, *track_element1_, alpha);
         }

@@ -1,3 +1,4 @@
+
 #include "Barrier_Triangle_Hitbox.hpp"
 #include <Mlib/Geometry/Exceptions/Triangle_Exception.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
@@ -68,14 +69,14 @@ std::vector<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::create_barrier_tria
     float half_width,
     PhysicsMaterial destination_physics_material)
 {
-    if (!any(cva.morphology.physics_material & PhysicsMaterial::ATTR_TWO_SIDED)) {
-        THROW_OR_ABORT("Terrain not marked as two-sided");
+    if (!any(cva.meta.morphology.physics_material & PhysicsMaterial::ATTR_TWO_SIDED)) {
+        throw std::runtime_error("Terrain not marked as two-sided");
     }
-    if (!any(cva.morphology.physics_material & PhysicsMaterial::ATTR_COLLIDE)) {
-        THROW_OR_ABORT("Terrain to be decomposed is not collidable");
+    if (!any(cva.meta.morphology.physics_material & PhysicsMaterial::ATTR_COLLIDE)) {
+        throw std::runtime_error("Terrain to be decomposed is not collidable");
     }
     if (!any(destination_physics_material & PhysicsMaterial::ATTR_CONCAVE)) {
-        THROW_OR_ABORT("Destination mesh is not tagged as concave");
+        throw std::runtime_error("Destination mesh is not tagged as concave");
     }
     std::list<const FixedArray<ColoredVertex<TPos>, 3>*> triangle_ptrs;
     for (const auto& t : cva.triangles) {
@@ -91,10 +92,10 @@ std::vector<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::create_barrier_tria
     result.reserve(2);
     result.push_back(
         std::make_shared<ColoredVertexArray<TPos>>(
-            cva.name + "_visual",
-            cva.material,
-            cva.morphology - PhysicsMaterial::ATTR_COLLIDE,
-            cva.modifier_backlog,
+            cva.meta.name + "_visual",
+            cva.meta.material,
+            cva.meta.morphology - PhysicsMaterial::ATTR_COLLIDE,
+            cva.meta.modifier_backlog,
             std::vector{cva.quads},
             std::vector{cva.triangles},
             std::vector{cva.lines},
@@ -121,7 +122,7 @@ std::vector<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::create_barrier_tria
         for (const auto& s : hitbox) {
             const auto zeros2 = fixed_zeros<float, 2>();
             if (decomposition.capacity() == decomposition.size()) {
-                THROW_OR_ABORT("create_barrier_triangle_hitboxes internal error (0)");
+                throw std::runtime_error("create_barrier_triangle_hitboxes internal error (0)");
             }
             auto n = triangle_normal(s).template casted<float>();
             decomposition.emplace_back(
@@ -131,7 +132,7 @@ std::vector<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::create_barrier_tria
         }
     }
     if (decomposition.capacity() != decomposition.size()) {
-        THROW_OR_ABORT("create_barrier_triangle_hitboxes internal error (1)");
+        throw std::runtime_error("create_barrier_triangle_hitboxes internal error (1)");
     }
     auto removed_attributes =
         PhysicsMaterial::ATTR_VISIBLE |
@@ -141,12 +142,12 @@ std::vector<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::create_barrier_tria
         PhysicsMaterial::ATTR_CONCAVE;
     result.push_back(
         std::make_shared<ColoredVertexArray<TPos>>(
-            cva.name + "_blk",
+            cva.meta.name + "_blk",
             Material{
                 .aggregate_mode = AggregateMode::ONCE
             },
-            (cva.morphology - removed_attributes) + destination_physics_material,
-            cva.modifier_backlog,
+            (cva.meta.morphology - removed_attributes) + destination_physics_material,
+            cva.meta.modifier_backlog,
             UUVector<FixedArray<ColoredVertex<TPos>, 4>>{},
             std::move(decomposition),
             UUVector<FixedArray<ColoredVertex<TPos>, 2>>{},

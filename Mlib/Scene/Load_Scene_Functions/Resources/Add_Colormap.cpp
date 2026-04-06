@@ -1,9 +1,9 @@
-#include <Mlib/Argument_List.hpp>
 #include <Mlib/Geometry/Material/Interpolation_Mode.hpp>
 #include <Mlib/Geometry/Material/Texture_Descriptor.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
-#include <Mlib/Render/Rendering_Context.hpp>
-#include <Mlib/Render/Resource_Managers/Rendering_Resources.hpp>
+#include <Mlib/Misc/Argument_List.hpp>
+#include <Mlib/OpenGL/Rendering_Context.hpp>
+#include <Mlib/OpenGL/Resource_Managers/Rendering_Resources.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Load_Scene_Funcs.hpp>
 
@@ -13,6 +13,7 @@ namespace KnownArgs {
 BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(name);
 DECLARE_ARGUMENT(filename);
+DECLARE_ARGUMENT(chrominance);
 DECLARE_ARGUMENT(alpha);
 DECLARE_ARGUMENT(color_mode);
 DECLARE_ARGUMENT(alpha_fac);
@@ -73,14 +74,15 @@ struct RegisterJsonUserFunction {
     auto depth_interpolation = interpolation_mode_from_string(
         args.arguments.at<std::string>(KnownArgs::depth_interpolation, "nearest"));
     auto colormap = ColormapWithModifiers{
-        .filename = VariableAndHash{args.arguments.path_or_variable(KnownArgs::filename).path},
+        .filename = args.arguments.path_or_variable(KnownArgs::filename),
+        .chrominance = args.arguments.try_path_or_variable(KnownArgs::chrominance),
         .desaturate = args.arguments.at<float>(KnownArgs::desaturate, 0.f),
         .desaturation_exponent = args.arguments.at<float>(KnownArgs::desaturation_exponent, 0.f),
-        .alpha = args.arguments.try_path_or_variable(KnownArgs::alpha).path,
-        .histogram = args.arguments.try_path_or_variable(KnownArgs::histogram).path,
-        .average = "",
-        .multiply = args.arguments.try_path_or_variable(KnownArgs::multiply_color).path,
-        .alpha_blend = args.arguments.try_path_or_variable(KnownArgs::alpha_blend).path,
+        .alpha = args.arguments.try_path_or_variable(KnownArgs::alpha),
+        .histogram = args.arguments.try_path_or_variable(KnownArgs::histogram),
+        .average = FPath{},
+        .multiply = args.arguments.try_path_or_variable(KnownArgs::multiply_color),
+        .alpha_blend = args.arguments.try_path_or_variable(KnownArgs::alpha_blend),
         .mean_color = args.arguments.at<EOrderableFixedArray<float, 3>>(KnownArgs::mean_color, OrderableFixedArray<float, 3>(-1.f)),
         .lighten = args.arguments.at<EOrderableFixedArray<float, 3>>(KnownArgs::lighten, OrderableFixedArray<float, 3>(0.f)),
         .lighten_left = args.arguments.at<EOrderableFixedArray<float, 3>>(KnownArgs::lighten_left, OrderableFixedArray<float, 3>(0.f)),

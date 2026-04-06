@@ -1,3 +1,4 @@
+#pragma once
 #include <Mlib/Stats/Linspace.hpp>
 
 namespace Mlib {

@@ -1,6 +1,6 @@
 #pragma once
 #include "Generic_Scenes.hpp"
-#include <Mlib/Throw_Or_Abort.hpp>
+#include <stdexcept>
 
 namespace Mlib {
 
@@ -97,7 +97,7 @@ TScene& GenericScenes<TScene>::operator[](const std::string& name) {
     }
     auto wit = generic_scenes_.find(name);
     if (wit == generic_scenes_.end()) {
-        THROW_OR_ABORT(collection_name_ + "Could not find scene with name \"" + name + '"');
+        throw std::runtime_error(collection_name_ + "Could not find scene with name \"" + name + '"');
     }
     return wit->second;
 }

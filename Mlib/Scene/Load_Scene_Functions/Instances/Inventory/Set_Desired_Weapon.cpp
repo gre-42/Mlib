@@ -1,13 +1,13 @@
 #include "Set_Desired_Weapon.hpp"
-#include <Mlib/Argument_List.hpp>
 #include <Mlib/Components/Weapon_Cycle.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
+#include <Mlib/Misc/Argument_List.hpp>
 #include <Mlib/Physics/Misc/Weapon_Cycle.hpp>
 #include <Mlib/Physics/Misc/When_To_Equip.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -33,13 +33,13 @@ SetDesiredWeapon::SetDesiredWeapon(PhysicsScene& physics_scene)
 
 void SetDesiredWeapon::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    DanglingBaseClassRef<SceneNode> cycle_node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::cycle_node), DP_LOC);
+    DanglingBaseClassRef<SceneNode> cycle_node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::cycle_node), CURRENT_SOURCE_LOCATION);
     auto player_name = args.arguments.try_at_non_null<VariableAndHash<std::string>>(KnownArgs::player);
     std::string weapon_name = args.arguments.at<std::string>(KnownArgs::weapon);
-    auto& wc = get_weapon_cycle(cycle_node);
+    auto wc = get_weapon_cycle(cycle_node.get(), CURRENT_SOURCE_LOCATION);
     if (args.arguments.at<bool>(KnownArgs::equip_instantly)) {
-        wc.set_desired_weapon(player_name, weapon_name, WhenToEquip::EQUIP_INSTANTLY);
+        wc->set_desired_weapon(player_name, weapon_name, WhenToEquip::EQUIP_INSTANTLY);
     } else {
-        wc.set_desired_weapon(player_name, weapon_name, WhenToEquip::EQUIP_LATER);
+        wc->set_desired_weapon(player_name, weapon_name, WhenToEquip::EQUIP_LATER);
     }
 }

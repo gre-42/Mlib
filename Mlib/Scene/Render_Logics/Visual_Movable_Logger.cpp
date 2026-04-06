@@ -1,16 +1,16 @@
 #include "Visual_Movable_Logger.hpp"
 #include <Mlib/Geometry/Cameras/Camera.hpp>
-#include <Mlib/Log.hpp>
 #include <Mlib/Macro_Executor/Focus.hpp>
-#include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
+#include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/Memory/Object_Pool.hpp>
+#include <Mlib/Misc/Log.hpp>
+#include <Mlib/Misc/Source_Location.hpp>
+#include <Mlib/OpenGL/Render_Logics/Render_Logics.hpp>
+#include <Mlib/OpenGL/Render_Setup.hpp>
 #include <Mlib/Physics/Containers/Advance_Times.hpp>
 #include <Mlib/Players/Advance_Times/Player.hpp>
-#include <Mlib/Render/Render_Logics/Render_Logics.hpp>
-#include <Mlib/Render/Render_Setup.hpp>
 #include <Mlib/Scene/Render_Logics/Visual_Movable_Logger_View.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
-#include <Mlib/Source_Location.hpp>
 #include <ostream>
 
 using namespace Mlib;
@@ -22,11 +22,10 @@ VisualMovableLogger::VisualMovableLogger(
     DanglingBaseClassRef<SceneNode> node,
     DanglingBaseClassPtr<Player> player,
     FocusFilter focus_filter)
-    : player_{ player }
-    , node_{ node }
+    : node_{ node }
     , advance_times_ { advance_times }
     , render_logics_{ render_logics }
-    , on_node_clear_{ node->on_clear, CURRENT_SOURCE_LOCATION }
+    , on_node_clear_{ node->on_clear.early, CURRENT_SOURCE_LOCATION }
     , on_player_delete_vehicle_internals_{ player != nullptr ? &player->delete_vehicle_internals : nullptr, CURRENT_SOURCE_LOCATION }
     , focus_filter_{ std::move(focus_filter) }
 {

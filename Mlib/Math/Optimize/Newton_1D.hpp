@@ -1,5 +1,4 @@
 #pragma once
-#include <Mlib/Throw_Or_Abort.hpp>
 #include <cstddef>
 #include <stdexcept>
 #include <string>
@@ -23,7 +22,7 @@ TFloat newton_1d(
         x += dx;
     }
     if (werror) {
-        THROW_OR_ABORT("Newton did not converge after " + std::to_string(niterations) + " steps");
+        throw std::runtime_error("Newton did not converge after " + std::to_string(niterations) + " steps");
     } else {
         return NAN;
     }

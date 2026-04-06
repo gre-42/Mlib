@@ -1,6 +1,6 @@
 #include "Invalidate_Aggregate_Renderers.hpp"
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
-#include <Mlib/Render/Render_Logics/Aggregate_Render_Logic.hpp>
+#include <Mlib/OpenGL/Render_Logics/Aggregate_Render_Logic.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Renderable_Scene.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>

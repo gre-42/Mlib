@@ -1,19 +1,20 @@
+
 #include "Is_Visible.hpp"
-#include <Mlib/Assert.hpp>
-#include <Mlib/Geometry/Intersection/Extremal_Axis_Aligned_Bounding_Box.hpp>
 #include <Mlib/Geometry/Material.hpp>
 #include <Mlib/Geometry/Morphology.hpp>
+#include <Mlib/Geometry/Primitives/Extremal_Axis_Aligned_Bounding_Box.hpp>
+#include <Mlib/Scene_Config/Scene_Graph_Config.hpp>
 #include <Mlib/Scene_Graph/Culling/Visibility_Check.hpp>
 #include <Mlib/Scene_Graph/Interfaces/IRenderable_Hider.hpp>
-#include <Mlib/Scene_Graph/Scene_Graph_Config.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
+#include <Mlib/Testing/Assert.hpp>
+#include <stdexcept>
 
 using namespace Mlib;
 
 template <class TData>
 bool Mlib::is_visible(
     const VisibilityCheck<TData>& vc,
-    const std::string& object_name,
+    const VariableAndHash<std::string>& object_name,
     const Material& material,
     const Morphology& morphology,
     BillboardId billboard_id,
@@ -23,7 +24,7 @@ bool Mlib::is_visible(
     const ExtremalAxisAlignedBoundingBox<TData, 3>* aabb)
 {
     if ((billboard_id == BILLBOARD_ID_NONE) != material.billboard_atlas_instances.empty()) {
-        THROW_OR_ABORT(
+        throw std::runtime_error(
             "Material " + material.identifier() +
             " (0): Billboard id = " + std::to_string(billboard_id) +
             ", atlas size = " + std::to_string(material.billboard_atlas_instances.size()));
@@ -38,7 +39,7 @@ bool Mlib::is_visible(
         if (any(external_render_pass & ExternalRenderPassType::LIGHTMAP_ANY_MASK) ||
             any(external_render_pass & ExternalRenderPassType::DIRTMAP_MASK))
         {
-            ExternalRenderPassType occluder_pass = material.get_occluder_pass(billboard_id, object_name);
+            ExternalRenderPassType occluder_pass = material.get_occluder_pass(billboard_id, *object_name);
             return (occluder_pass & external_render_pass) == external_render_pass;
         }
         if (material.blend_mode == BlendMode::INVISIBLE) {
@@ -49,17 +50,19 @@ bool Mlib::is_visible(
         return morphology.center_distances2(1) == INFINITY;
     } else if (any(external_render_pass & ExternalRenderPassType::ZOOM_NODE)) {
         return morphology.center_distances2(0) == 0.f;
-    } else if (any(external_render_pass & ExternalRenderPassType::STANDARD_MASK)) {
+    } else if (any(external_render_pass & ExternalRenderPassType::STANDARD_MASK) ||
+               (external_render_pass == ExternalRenderPassType::BILLBOARD_SCENE))
+    {
         if (vc.orthographic()) {
             return true;
         }
-        TData max_center_distance2 = (TData)material.max_center_distance2(billboard_id, morphology, object_name);
+        TData max_center_distance2 = (TData)material.max_center_distance2(billboard_id, morphology, *object_name);
         TData dist2 = vc.distance_squared();
         if (!((dist2 >= morphology.center_distances2(0)) && (dist2 < max_center_distance2))) {
             return false;
         }
         if (!frustum != !aabb) {
-            THROW_OR_ABORT("Inconsistent frustum and AABB NAN-ness");
+            throw std::runtime_error("Inconsistent frustum and AABB NAN-ness");
         }
         if (frustum == nullptr) {
             return true;
@@ -67,12 +70,12 @@ bool Mlib::is_visible(
             return aabb->full() || frustum->intersects(aabb->data());
         }
     }
-    THROW_OR_ABORT("VisibilityCheck::is_visible received unknown render pass type");
+    throw std::runtime_error("VisibilityCheck::is_visible received unknown render pass type");
 }
 
 template bool Mlib::is_visible<float>(
     const VisibilityCheck<float>& vc,
-    const std::string& object_name,
+    const VariableAndHash<std::string>& object_name,
     const Material& material,
     const Morphology& morphology,
     BillboardId billboard_id,
@@ -83,7 +86,7 @@ template bool Mlib::is_visible<float>(
 
 template bool Mlib::is_visible<double>(
     const VisibilityCheck<double>& vc,
-    const std::string& object_name,
+    const VariableAndHash<std::string>& object_name,
     const Material& material,
     const Morphology& morphology,
     BillboardId billboard_id,

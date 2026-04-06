@@ -1,9 +1,9 @@
 #include "Create_Wheel.hpp"
-#include <Mlib/Argument_List.hpp>
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Components/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Math/Interp.hpp>
+#include <Mlib/Misc/Argument_List.hpp>
 #include <Mlib/Physics/Actuators/Tire.hpp>
 #include <Mlib/Physics/Advance_Times/Movables/Wheel.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Engine.hpp>
@@ -15,7 +15,7 @@
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Strings/String.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -70,12 +70,12 @@ void CreateWheel::execute(const LoadSceneJsonUserFunctionArgs& args)
         OutOfRangeBehavior::CLAMP};
     size_t tire_id = args.arguments.at<size_t>(KnownArgs::tire_id);
 
-    auto& rb = get_rigid_body_vehicle(scene.get_node(vehicle, DP_LOC));
-    RigidBodyPulses* wheel_rbp = nullptr;
+    auto rb = get_rigid_body_vehicle(scene.get_node(vehicle, CURRENT_SOURCE_LOCATION).get(), CURRENT_SOURCE_LOCATION);
+    DanglingBaseClassPtr<RigidBodyVehicle> wheel_rb = nullptr;
     if (wheel_node_name.has_value()) {
-        auto wheel_node = scene.get_node(*wheel_node_name, DP_LOC);
+        auto wheel_node = scene.get_node(*wheel_node_name, CURRENT_SOURCE_LOCATION);
         if (has_rigid_body_vehicle(wheel_node)) {
-            wheel_rbp = &get_rigid_body_vehicle(wheel_node).rbp_;
+            wheel_rb = get_rigid_body_vehicle(wheel_node.get(), CURRENT_SOURCE_LOCATION).ptr();
         } else {
             auto wheel = std::make_unique<Wheel>(
                 rb,
@@ -93,11 +93,11 @@ void CreateWheel::execute(const LoadSceneJsonUserFunctionArgs& args)
         // From: https://www.nanolounge.de/21977/federkonstante-und-masse-bei-auto
         // Ds = 1000 / 4 * 9.8 / 0.02 = 122500 = 1.225e5
         // Da * 1 = 1000 / 4 * 9.8 => Da = 1e4 / 4
-        rb.tires_.add(
+        rb->tires_.add(
             tire_id,
             engine,
             std::move(delta_engine),
-            wheel_rbp,
+            wheel_rb,
             args.arguments.at<float>(KnownArgs::brake_force) * N,
             args.arguments.at<float>(KnownArgs::brake_torque) * N * meters,
             args.arguments.at<float>(KnownArgs::Ks) * N,

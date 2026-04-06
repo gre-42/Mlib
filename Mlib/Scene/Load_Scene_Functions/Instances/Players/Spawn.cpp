@@ -1,16 +1,16 @@
 #include "Spawn.hpp"
-#include <Mlib/Argument_List.hpp>
 #include <Mlib/Geometry/Coordinates/Homogeneous.hpp>
-#include <Mlib/Geometry/Intersection/Axis_Aligned_Bounding_Box.hpp>
+#include <Mlib/Geometry/Primitives/Axis_Aligned_Bounding_Box.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Macro_Executor/Macro_Line_Executor.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
+#include <Mlib/Misc/Argument_List.hpp>
+#include <Mlib/OpenGL/Rendering_Context.hpp>
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Players/Advance_Times/Game_Logic.hpp>
 #include <Mlib/Players/Containers/Vehicle_Spawners.hpp>
 #include <Mlib/Players/Scene_Vehicle/Vehicle_Spawner.hpp>
 #include <Mlib/Regex/Regex_Select.hpp>
-#include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Load_Scene_Funcs.hpp>
 #include <Mlib/Scene/Parse_Position.hpp>
@@ -33,6 +33,7 @@ Spawn::Spawn(PhysicsScene& physics_scene)
 
 void Spawn::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
+    args.arguments.validate(KnownArgs::options);
     auto spawner_name = args.arguments.at<VariableAndHash<std::string>>(KnownArgs::spawner);
     if (!game_logic->spawner.try_spawn_at_spawn_point(
         vehicle_spawners.get(spawner_name),
@@ -42,7 +43,7 @@ void Spawn::execute(const LoadSceneJsonUserFunctionArgs& args)
         },
         AxisAlignedBoundingBox<CompressedScenePos, 3>::zero()))
     {
-        THROW_OR_ABORT("Could not spawn \"" + *spawner_name + '"');
+        throw std::runtime_error("Could not spawn \"" + *spawner_name + '"');
     }
 }
 
@@ -54,7 +55,6 @@ struct RegisterJsonUserFunction {
             "spawn",
             [](const LoadSceneJsonUserFunctionArgs& args)
             {
-                args.arguments.validate(KnownArgs::options);
                 Spawn(args.physics_scene()).execute(args);
             });
     }

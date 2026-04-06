@@ -1,13 +1,13 @@
 #include "Create_Vehicle_Follower_Ai.hpp"
-#include <Mlib/Argument_List.hpp>
 #include <Mlib/Components/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Memory/Object_Pool.hpp>
+#include <Mlib/Misc/Argument_List.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Engine.hpp>
 #include <Mlib/Players/Advance_Times/Follower_Ai.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -31,11 +31,13 @@ CreateVehicleFollowerAi::CreateVehicleFollowerAi(PhysicsScene& physics_scene)
 
 void CreateVehicleFollowerAi::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    auto& missile_vehicle = get_rigid_body_vehicle(scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::missile), DP_LOC));
-    auto& target_vehicle = get_rigid_body_vehicle(scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::target), DP_LOC));
+    auto missile_node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::missile), CURRENT_SOURCE_LOCATION);
+    auto target_node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::target), CURRENT_SOURCE_LOCATION);
+    auto missile_vehicle = get_rigid_body_vehicle(missile_node.get(), CURRENT_SOURCE_LOCATION);
+    auto target_vehicle = get_rigid_body_vehicle(target_node.get(), CURRENT_SOURCE_LOCATION);
     global_object_pool.create<FollowerAi>(
         CURRENT_SOURCE_LOCATION,
         physics_engine.advance_times_,
-        DanglingBaseClassRef<RigidBodyVehicle>{ missile_vehicle, CURRENT_SOURCE_LOCATION },
-        DanglingBaseClassRef<RigidBodyVehicle>{ target_vehicle, CURRENT_SOURCE_LOCATION });
+        missile_vehicle,
+        target_vehicle);
 }

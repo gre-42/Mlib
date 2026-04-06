@@ -1,7 +1,7 @@
 #include "Create_Car_Controller.hpp"
-#include <Mlib/Argument_List.hpp>
 #include <Mlib/Components/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
+#include <Mlib/Misc/Argument_List.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Physics/Vehicle_Controllers/Car_Controllers/Car_Controller.hpp>
@@ -10,7 +10,7 @@
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Strings/String.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -47,13 +47,13 @@ inline float stoa(float v) {
 
 void CreateCarController::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    DanglingBaseClassRef<SceneNode> node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::node), DP_LOC);
-    auto& rb = get_rigid_body_vehicle(node);
-    if (rb.vehicle_controller_ != nullptr) {
-        THROW_OR_ABORT("Car controller already set");
+    DanglingBaseClassRef<SceneNode> node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::node), CURRENT_SOURCE_LOCATION);
+    auto rb = get_rigid_body_vehicle(node.get(), CURRENT_SOURCE_LOCATION);
+    if (rb->vehicle_controller_ != nullptr) {
+        throw std::runtime_error("Car controller already set");
     }
     auto front_tire_ids = args.arguments.at_non_null<std::vector<size_t>>(KnownArgs::front_tire_ids, {});
-    rb.vehicle_controller_ = std::make_unique<CarController>(
+    rb->vehicle_controller_ = std::make_unique<CarController>(
         rb,
         args.arguments.at<VariableAndHash<std::string>>(KnownArgs::front_engine),
         args.arguments.at<VariableAndHash<std::string>>(KnownArgs::rear_engine),

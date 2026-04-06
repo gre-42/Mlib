@@ -3,8 +3,8 @@
 #include <Mlib/Memory/Integral_Cast.hpp>
 #include <Mlib/Os/Os.hpp>
 #include <Mlib/Stats/Min_Max.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
 #include <fstream>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -92,7 +92,7 @@ PgmImage PgmImage::load_from_file(const std::string& filename) {
     try {
         return load_from_stream(*istream, '"' + filename + ": ");
     } catch (const std::runtime_error& e) {
-        THROW_OR_ABORT(e.what() + std::string(": ") + filename);
+        throw std::runtime_error(e.what() + std::string(": ") + filename);
     }
 }
 
@@ -108,40 +108,40 @@ static void skip_comments(std::istream& istr) {
 
 PgmImage PgmImage::load_from_stream(std::istream& istream, const std::string& name) {
     if (istream.fail()) {
-        THROW_OR_ABORT(name + "Could not open");
+        throw std::runtime_error(name + "Could not open");
     }
     PgmImage result;
     std::string header;
     istream >> header;
     if (istream.fail()) {
-        THROW_OR_ABORT(name + "Could not read header");
+        throw std::runtime_error(name + "Could not read header");
     }
     if (header != "P5") {
-        THROW_OR_ABORT(name + "Header does not equal P5");
+        throw std::runtime_error(name + "Header does not equal P5");
     }
     skip_comments(istream);
     size_t width;
     istream >> width;
     if (istream.fail()) {
-        THROW_OR_ABORT(name + "Could not read width");
+        throw std::runtime_error(name + "Could not read width");
     }
     size_t height;
     istream >> height;
     if (istream.fail()) {
-        THROW_OR_ABORT(name + "Could not read height");
+        throw std::runtime_error(name + "Could not read height");
     }
     size_t nUINT16_MAX;
     istream >> nUINT16_MAX;
     if (istream.fail()) {
-        THROW_OR_ABORT(name + "Could not read maximum value");
+        throw std::runtime_error(name + "Could not read maximum value");
     }
     if (nUINT16_MAX != UINT16_MAX) {
-        THROW_OR_ABORT(name + "Maximum value does not equal 65535");
+        throw std::runtime_error(name + "Maximum value does not equal 65535");
     }
     char c;
     istream.read(&c, 1);
     if (istream.fail() || (c != '\n')) {
-        THROW_OR_ABORT(name + "Could not read newline");
+        throw std::runtime_error(name + "Could not read newline");
     }
     result.do_resize(ArrayShape{height, width});
     istream.read(reinterpret_cast<char*>(&result(0, 0)), integral_cast<std::streamsize>(result.nbytes()));
@@ -149,7 +149,7 @@ PgmImage PgmImage::load_from_stream(std::istream& istream, const std::string& na
         v = ((v & 0xFF00) >> 8) | ((v & 0xFF) << 8);
     }
     if (istream.fail()) {
-        THROW_OR_ABORT(name + "Could not read pgm image");
+        throw std::runtime_error(name + "Could not read pgm image");
     }
     return result;
 }
@@ -159,13 +159,13 @@ void PgmImage::save_to_file(const std::string& filename) const {
         std::ofstream ostream(filename, std::ios::binary);
         save_to_stream(ostream);
     } catch (const std::runtime_error& e) {
-        THROW_OR_ABORT("Could not save to file " + filename + "; " + e.what());
+        throw std::runtime_error("Could not save to file " + filename + "; " + e.what());
     }
 }
 
 void PgmImage::save_to_stream(std::ostream& ostream) const {
     if (ndim() != 2) {
-        THROW_OR_ABORT("save_to_stream: image does not have ndim=2, but " + shape().str());
+        throw std::runtime_error("save_to_stream: image does not have ndim=2, but " + shape().str());
     }
     std::string header{"P5\n" + std::to_string(shape(1)) + " " + std::to_string(shape(0)) + "\n65535\n"};
     ostream.write(header.c_str(), integral_cast<std::streamsize>(header.length()));
@@ -175,13 +175,13 @@ void PgmImage::save_to_stream(std::ostream& ostream) const {
     }
     ostream.flush();
     if (ostream.fail()) {
-        THROW_OR_ABORT("Could not write PGM");
+        throw std::runtime_error("Could not write PGM");
     }
 }
 
 PgmImage PgmImage::from_float(const Array<float>& grayscale) {
     if (grayscale.ndim() != 2) {
-        THROW_OR_ABORT("from_float: grayscale image does not have ndim=2, but " + grayscale.shape().str());
+        throw std::runtime_error("from_float: grayscale image does not have ndim=2, but " + grayscale.shape().str());
     }
     PgmImage result(grayscale.shape());
     Array<uint16_t> f = result.flattened();

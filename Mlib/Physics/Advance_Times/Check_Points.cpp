@@ -1,3 +1,4 @@
+
 #include "Check_Points.hpp"
 #include <Mlib/Geometry/Coordinates/Homogeneous.hpp>
 #include <Mlib/Geometry/Instance/Rendering_Dynamics.hpp>
@@ -11,7 +12,6 @@
 #include <Mlib/Physics/Interfaces/IPlayer.hpp>
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
-#include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
 #include <Mlib/Scene_Graph/Elements/Color_Style.hpp>
 #include <Mlib/Scene_Graph/Elements/Make_Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
@@ -20,8 +20,9 @@
 #include <Mlib/Scene_Graph/Interfaces/Scene_Node/IAbsolute_Movable.hpp>
 #include <Mlib/Scene_Graph/Resources/Renderable_Resource_Filter.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
+#include <Mlib/Threads/Throwing_Lock_Guard.hpp>
 #include <Mlib/Time/Format.hpp>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -41,7 +42,7 @@ CheckPoints::CheckPoints(
     RenderingResources* rendering_resources,
     SceneNodeResources& scene_node_resources,
     Scene& scene,
-    DeleteNodeMutex& delete_node_mutex,
+    SafeAtomicRecursiveSharedMutex& delete_node_mutex,
     const CountdownPhysics* countdown_start,
     bool enable_height_changed_mode,
     const FixedArray<float, 3>& selection_emissive,
@@ -84,15 +85,15 @@ CheckPoints::CheckPoints(
     , on_finish_{ on_finish }
 {
     if (nbeacons == 0) {
-        THROW_OR_ABORT("Need at least one beacon node");
+        throw std::runtime_error("Need at least one beacon node");
     }
     if (distance_ <= 1e-12) {
-        THROW_OR_ABORT("Checkpoint distance too small");
+        throw std::runtime_error("Checkpoint distance too small");
     }
     moving_nodes_ = player_->moving_nodes();
     movings_.reserve(moving_nodes_.size());
     for (auto& n : moving_nodes_) {
-        movings_.push_back(&n->get_absolute_movable());
+        movings_.push_back(n->get_absolute_movable(CURRENT_SOURCE_LOCATION).ptr());
     }
     beacon_nodes_.reserve(nbeacons);
     advance_time(0.f);
@@ -273,7 +274,7 @@ void CheckPoints::advance_time(float dt) {
                     }
                     const auto& style = n->color_style(chassis);
                     if (style.ambient != style.diffuse) {
-                        THROW_OR_ABORT("Could not determine unique vehicle color");
+                        throw std::runtime_error("Could not determine unique vehicle color");
                     }
                     vehicle_colors.emplace_back(style.ambient);
                 }
@@ -290,12 +291,12 @@ void CheckPoints::advance_time(float dt) {
                 last_reached_checkpoint_.reset();
                 on_finish_();
             } else {
-                THROW_OR_ABORT("Unknown race state");
+                throw std::runtime_error("Unknown race state");
             }
         } else if ((lap_index_ != lap_times_seconds_.size()) &&
                    (lap_index_ != lap_times_seconds_.size() - 1))
         {
-            THROW_OR_ABORT("Unexpected lap index");
+            throw std::runtime_error("Unexpected lap index");
         }
     }
 }
@@ -319,7 +320,7 @@ void CheckPoints::reset_player() {
             moving_nodes_ = player_->moving_nodes();
             movings_.reserve(moving_nodes_.size());
             for (auto& n : moving_nodes_) {
-                movings_.push_back(&n->get_absolute_movable());
+                movings_.push_back(n->get_absolute_movable(CURRENT_SOURCE_LOCATION).ptr());
                 n->clearing_observers.add({ *this, CURRENT_SOURCE_LOCATION });
             }
             break;
@@ -328,7 +329,7 @@ void CheckPoints::reset_player() {
 }
 
 void CheckPoints::notify_destroyed(SceneNode& destroyed_object) {
-    delete_node_mutex_.assert_this_thread_is_deleter_thread();
+    ThrowingLockGuard lock{delete_node_mutex_};
     for (auto& n : moving_nodes_) {
         if (n->shutdown_phase() == ShutdownPhase::NONE) {
             n->clearing_observers.remove({ *this, CURRENT_SOURCE_LOCATION });
@@ -360,7 +361,7 @@ bool CheckPoints::has_meters_to_start() const {
 
 double CheckPoints::meters_to_start() const {
     if (checkpoints_ahead_.empty()) {
-        THROW_OR_ABORT("meters_to_start on empty checkpoints list");
+        throw std::runtime_error("meters_to_start on empty checkpoints list");
     }
     return checkpoints_ahead_.front().track_element.meters_to_start;
 }

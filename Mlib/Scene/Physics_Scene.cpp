@@ -3,11 +3,12 @@
 #include <Mlib/Audio/Audio_Resource_Context.hpp>
 #include <Mlib/Audio/Audio_Resources.hpp>
 #include <Mlib/Audio/One_Shot_Audio.hpp>
-#include <Mlib/Env.hpp>
 #include <Mlib/Geometry/Material/Particle_Type.hpp>
 #include <Mlib/Io/Binary.hpp>
 #include <Mlib/Macro_Executor/Asset_References.hpp>
 #include <Mlib/Macro_Executor/Notifying_Json_Macro_Arguments.hpp>
+#include <Mlib/OpenGL/Batch_Renderers/Trail_Renderer.hpp>
+#include <Mlib/Os/Env.hpp>
 #include <Mlib/Physics/Dynamic_Lights/Dynamic_Lights.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Iteration.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Loop.hpp>
@@ -15,7 +16,6 @@
 #include <Mlib/Players/Containers/Remote_Sites.hpp>
 #include <Mlib/Remote/Incremental_Objects/Scene_Level.hpp>
 #include <Mlib/Remote/Remote_Params.hpp>
-#include <Mlib/Render/Batch_Renderers/Trail_Renderer.hpp>
 #include <Mlib/Scene/Remote/Remote_Scene.hpp>
 #include <Mlib/Scene/Scene_Config.hpp>
 #include <Mlib/Scene_Graph/Interfaces/IParticle_Renderer.hpp>
@@ -70,7 +70,6 @@ PhysicsScene::PhysicsScene(
     , physics_engine_{ scene_config.physics_engine_config }
     , scene_{
         name_,
-        delete_node_mutex_,
         &scene_node_resources,
         trail_renderer_.get(),
         dynamic_lights_.get()}
@@ -179,7 +178,7 @@ PhysicsScene::PhysicsScene(
 {
     try {
         if (translator_ == nullptr) {
-            THROW_OR_ABORT("Physics scene translator is null");
+            throw std::runtime_error("Physics scene translator is null");
         }
         air_particles_.smoke_particle_generator.set_bullet_generator(bullet_generator_);
         physics_engine_.set_surface_contact_db(surface_contact_db);
@@ -224,7 +223,6 @@ PhysicsScene::PhysicsScene(
                 dynamic_world_,
                 physics_engine_,
                 std::move(send_and_receive),
-                delete_node_mutex_,
                 scene_config_.physics_engine_config,
                 &fifo_log_);
         }
@@ -251,10 +249,10 @@ void PhysicsScene::start_physics_loop(
     std::function<bool()> loading)
 {
     if (physics_loop_ != nullptr) {
-        THROW_OR_ABORT("physics loop already started");
+        throw std::runtime_error("physics loop already started");
     }
     if (physics_iteration_ == nullptr) {
-        THROW_OR_ABORT("physics iteration not created");
+        throw std::runtime_error("physics iteration not created");
     }
     physics_loop_ = std::make_unique<PhysicsLoop>(
         thread_name,
@@ -267,7 +265,7 @@ void PhysicsScene::start_physics_loop(
 
 void PhysicsScene::physics_iteration(const TimeAndPause<std::chrono::steady_clock::time_point>& time) {
     if (physics_iteration_ == nullptr) {
-        THROW_OR_ABORT("physics iteration not created");
+        throw std::runtime_error("physics iteration not created");
     }
     (*physics_iteration_)(time);
 }
@@ -302,7 +300,7 @@ void PhysicsScene::shutdown() {
 
 void PhysicsScene::instantiate_game_logic(std::function<void()> setup_new_round) {
     if (game_logic_ != nullptr) {
-        THROW_OR_ABORT("Game logic already instantiated");
+        throw std::runtime_error("Game logic already instantiated");
     }
     game_logic_ = std::make_unique<GameLogic>(
         scene_,
@@ -310,6 +308,5 @@ void PhysicsScene::instantiate_game_logic(std::function<void()> setup_new_round)
         vehicle_spawners_,
         players_,
         supply_depots_,
-        delete_node_mutex_,
         std::move(setup_new_round));
 }

@@ -1,7 +1,8 @@
+
 #include <Mlib/Regex/Regex_Select.hpp>
 #include <Mlib/Strings/String.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
 #include <list>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -28,7 +29,7 @@ std::list<std::string> Mlib::string_to_list(const std::string& str, const Mlib::
         res.push_back(*it);
     }
     if ((expected_length != SIZE_MAX) && (res.size() != expected_length)) {
-        THROW_OR_ABORT("Expected " + std::to_string(expected_length) + " elements, but got " + std::to_string(res.size()));
+        throw std::runtime_error("Expected " + std::to_string(expected_length) + " elements, but got " + std::to_string(res.size()));
     }
     return res;
 }

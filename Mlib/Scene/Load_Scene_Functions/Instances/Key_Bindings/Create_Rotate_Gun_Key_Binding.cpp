@@ -1,13 +1,13 @@
 #include "Create_Rotate_Gun_Key_Binding.hpp"
-#include <Mlib/Argument_List.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
+#include <Mlib/Misc/Argument_List.hpp>
+#include <Mlib/OpenGL/Key_Bindings/Relative_Movable_Key_Binding.hpp>
+#include <Mlib/OpenGL/Ui/Cursor_Movement.hpp>
 #include <Mlib/Physics/Advance_Times/Gun.hpp>
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Players/Advance_Times/Player.hpp>
 #include <Mlib/Players/Containers/Players.hpp>
-#include <Mlib/Render/Key_Bindings/Relative_Movable_Key_Binding.hpp>
-#include <Mlib/Render/Ui/Cursor_Movement.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Load_Scene_Funcs.hpp>
 #include <Mlib/Scene/Render_Logics/Key_Bindings.hpp>
@@ -44,7 +44,7 @@ void CreateRotateGunKeyBinding::execute(const LoadSceneJsonUserFunctionArgs& arg
             if (!player->has_gun_node()) {
                 return nullptr;
             }
-            return player->gun().get_ypln_node();
+            return player->gun()->get_ypln_node();
         },
         .translation = fixed_zeros<ScenePos, 3>(),
         .rotation_axis = args.arguments.at<EFixedArray<float, 3>>(KnownArgs::rotation_axis, fixed_zeros<float, 3>()),

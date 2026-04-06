@@ -20,7 +20,7 @@ RespawnAllPlayers::RespawnAllPlayers(PhysicsScene& physics_scene)
 void RespawnAllPlayers::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     if (game_logic == nullptr) {
-        THROW_OR_ABORT("Scene has no game logic");
+        throw std::runtime_error("Scene has no game logic");
     }
     game_logic->spawner.respawn_all_players();
 }

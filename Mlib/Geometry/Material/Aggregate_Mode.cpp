@@ -1,6 +1,7 @@
+
 #include "Aggregate_Mode.hpp"
-#include <Mlib/Throw_Or_Abort.hpp>
 #include <map>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -17,7 +18,7 @@ AggregateMode Mlib::aggregate_mode_from_string(const std::string& str) {
         {"instances_mask", AggregateMode::INSTANCES_MASK}};
     auto it = m.find(str);
     if (it == m.end()) {
-        THROW_OR_ABORT("Unknown aggregate mode: \"" + str + '"');
+        throw std::runtime_error("Unknown aggregate mode: \"" + str + '"');
     }
     return it->second;
 }
@@ -34,5 +35,5 @@ std::string Mlib::aggregate_mode_to_string(AggregateMode aggregate_mode) {
     case AggregateMode::OBJECT_MASK: return "object_mask";
     case AggregateMode::INSTANCES_MASK: return "instances_mask";
     }
-    THROW_OR_ABORT("Unknown aggregate mode: \"" + std::to_string((int)aggregate_mode) + '"');
+    throw std::runtime_error("Unknown aggregate mode: \"" + std::to_string((int)aggregate_mode) + '"');
 }

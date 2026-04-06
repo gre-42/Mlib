@@ -18,11 +18,11 @@ static FixedArray<ScenePos, 3> parse_geographic_position(
     bool mx = Mlib::re::regex_match(x_str, match_x, re);
     bool my = Mlib::re::regex_match(y_str, match_y, re);
     if (mx != my) {
-        THROW_OR_ABORT("Inconsistent positions: " + x_str + ", " + y_str);
+        throw std::runtime_error("Inconsistent positions: " + x_str + ", " + y_str);
     }
     if (mx) {
         if (inverse_geographic_coordinates == nullptr) {
-            THROW_OR_ABORT("World coordinates not defined");
+            throw std::runtime_error("World coordinates not defined");
         }
         return inverse_geographic_coordinates->transform(
             FixedArray<double, 3>{

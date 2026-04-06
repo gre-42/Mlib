@@ -12,7 +12,7 @@ enum class VehicleDomain;
 class HeliController final: public RigidBodyVehicleController {
 public:
     HeliController(
-        RigidBodyVehicle& rb,
+        const DanglingBaseClassRef<RigidBodyVehicle>& rb,
         std::map<size_t, float> tire_angles,
         size_t main_rotor_id,
         FixedArray<float, 3> angle_multipliers,

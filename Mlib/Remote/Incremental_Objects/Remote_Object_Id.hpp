@@ -1,7 +1,7 @@
 #pragma once
-#include <Mlib/Hash.hpp>
+#include <Mlib/Hashing/Hash.hpp>
+#include <Mlib/Hashing/Std_Hash.hpp>
 #include <Mlib/Remote/Remote_Site_Id.hpp>
-#include <Mlib/Std_Hash.hpp>
 #include <compare>
 #include <iosfwd>
 #include <string>

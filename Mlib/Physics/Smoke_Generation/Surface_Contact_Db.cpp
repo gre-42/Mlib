@@ -1,8 +1,9 @@
+
 #include "Surface_Contact_Db.hpp"
 #include <Mlib/Geometry/Physics_Material.hpp>
 #include <Mlib/Physics/Collision/Record/Intersection_Scene.hpp>
 #include <Mlib/Physics/Smoke_Generation/Surface_Contact_Info.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -16,13 +17,13 @@ void SurfaceContactDb::store_contact_info(
     PhysicsMaterial material1)
 {
     if ((material0 & PhysicsMaterial::SURFACE_MASK) != material0) {
-        THROW_OR_ABORT("Material 0 has modifiers");
+        throw std::runtime_error("Material 0 has modifiers");
     }
     if ((material1 & PhysicsMaterial::SURFACE_MASK) != material1) {
-        THROW_OR_ABORT("Material 1 has modifiers");
+        throw std::runtime_error("Material 1 has modifiers");
     }
     if (!surface_contact_infos_.try_emplace(CommutativeMaterialPair{material0, material1}, std::move(info)).second) {
-        THROW_OR_ABORT("Surface contact info already stored for materials");
+        throw std::runtime_error("Surface contact info already stored for materials");
     }
 }
 

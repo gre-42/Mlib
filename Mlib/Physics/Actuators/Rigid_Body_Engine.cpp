@@ -1,6 +1,6 @@
 #include "Rigid_Body_Engine.hpp"
 #include <Mlib/Math/Fixed_Math.hpp>
-#include <Mlib/Math/Signed_Min.hpp>
+#include <Mlib/Math/Sigmoid/Signed_Min.hpp>
 #include <Mlib/Physics/Actuators/Engine_Event_Listeners.hpp>
 #include <Mlib/Physics/Actuators/Engine_Power_Delta_Intent.hpp>
 #include <Mlib/Physics/Actuators/IEngine_Event_Listener.hpp>
@@ -24,25 +24,33 @@ RigidBodyEngine::RigidBodyEngine(
     , listener_{ std::move(listener) }
 {
     if (!engine_power.has_value() && (listener_ != nullptr)) {
-        THROW_OR_ABORT("Engine listener is set but no engine was provided");
+        throw std::runtime_error("Engine listener is set but no engine was provided");
     }
 }
 
 RigidBodyEngine::~RigidBodyEngine() = default;
 
+StatusComponents RigidBodyEngine::status_component() const {
+    auto result = StatusComponents::NONE;
+    if (engine_power_.has_value()) {
+        result |= StatusComponents::ABS_ANGULAR_VELOCITY;
+    }
+    return result;
+}
+
 void RigidBodyEngine::write_status(std::ostream& ostr, StatusComponents status_components, const StaticWorld& world) const {
-    THROW_OR_ABORT("Unsupported status component: " + std::to_string((unsigned int)status_components));
+    throw std::runtime_error("Unsupported status component: " + std::to_string((unsigned int)status_components));
 }
 
 float RigidBodyEngine::get_value(StatusComponents status_components) const {
     if (status_components == StatusComponents::ABS_ANGULAR_VELOCITY) {
         return std::abs(engine_w() / rpm);
     }
-    THROW_OR_ABORT("Unsupported status component: " + std::to_string((unsigned int)status_components));
+    throw std::runtime_error("Unsupported status component: " + std::to_string((unsigned int)status_components));
 }
 
-StatusWriter& RigidBodyEngine::child_status_writer(const std::vector<VariableAndHash<std::string>>& name) {
-    THROW_OR_ABORT("RigidBodyEngine has no children");
+DanglingBaseClassRef<StatusWriter> RigidBodyEngine::child_status_writer(const std::vector<VariableAndHash<std::string>>& name) {
+    throw std::runtime_error("RigidBodyEngine has no children");
 }
 
 void RigidBodyEngine::reset_forces() {
@@ -217,7 +225,7 @@ void RigidBodyEngine::advance_time(
 
 float RigidBodyEngine::engine_w() const {
     if (!engine_power_.has_value()) {
-        THROW_OR_ABORT("RigidBodyEngine::engine_w() requested but no engine provided");
+        throw std::runtime_error("RigidBodyEngine::engine_w() requested but no engine power provided");
     }
     return engine_power_->engine_w();
 }

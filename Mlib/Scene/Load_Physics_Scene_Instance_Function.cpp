@@ -42,7 +42,7 @@ LoadPhysicsSceneInstanceFunction::LoadPhysicsSceneInstanceFunction(
     , countdown_start{ physics_scene.countdown_start_ }
     , ui_focus{ physics_scene.ui_focus_ }
     , base_log{ physics_scene.fifo_log_ }
-    , delete_node_mutex{ physics_scene.delete_node_mutex_ }
+    , delete_node_mutex{ physics_scene.scene_.delete_node_mutex }
     , on_user_loaded_level_token{ physics_scene.on_user_loaded_level_token_ }
     , on_all_users_loaded_level_token{ physics_scene.on_all_users_loaded_level_token_ }
     , late_join_player_factory{ physics_scene.late_join_player_factory_ }

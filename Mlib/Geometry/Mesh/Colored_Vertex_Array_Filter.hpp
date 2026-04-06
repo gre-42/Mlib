@@ -9,6 +9,7 @@ namespace Mlib {
 
 template <class TPos>
 class ColoredVertexArray;
+struct MeshMeta;
 
 struct ColoredVertexArrayFilter {
     ~ColoredVertexArrayFilter();
@@ -16,6 +17,7 @@ struct ColoredVertexArrayFilter {
     PhysicsMaterial excluded_tags = PhysicsMaterial::NONE;
     Mlib::re::cregex included_names = ALWAYS;
     Mlib::re::cregex excluded_names = NEVER;
+    bool matches(const MeshMeta& meta) const;
     template <class TPos>
     bool matches(const ColoredVertexArray<TPos>& cva) const;
 };
@@ -24,6 +26,7 @@ class ColoredVertexArrayFilters {
 public:
     ColoredVertexArrayFilters();
     ColoredVertexArrayFilters(std::vector<ColoredVertexArrayFilter> filters);
+    bool matches(const MeshMeta& meta) const;
     template <class TPos>
     bool matches(const ColoredVertexArray<TPos>& cva) const;
 private:

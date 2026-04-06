@@ -1,7 +1,7 @@
 #include "Append_Externals_Deleter.hpp"
-#include <Mlib/Argument_List.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Macro_Executor/Macro_Line_Executor.hpp>
+#include <Mlib/Misc/Argument_List.hpp>
 #include <Mlib/Players/Advance_Times/Player.hpp>
 #include <Mlib/Players/Containers/Players.hpp>
 #include <Mlib/Regex/Regex_Select.hpp>
@@ -24,7 +24,7 @@ AppendExternalsDeleter::AppendExternalsDeleter(PhysicsScene& physics_scene)
 void AppendExternalsDeleter::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     auto node_name = args.arguments.at<VariableAndHash<std::string>>(KnownArgs::node);
-    DanglingBaseClassRef<SceneNode> node = scene.get_node(node_name, DP_LOC);
+    DanglingBaseClassRef<SceneNode> node = scene.get_node(node_name, CURRENT_SOURCE_LOCATION);
     // players.get_player(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::player)).append_delete_externals(
     //     node.ptr(),
     //     [&scene = scene, node_name]()

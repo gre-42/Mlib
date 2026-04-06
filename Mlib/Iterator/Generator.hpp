@@ -2,7 +2,7 @@
 
 #ifdef _MSC_VER
 #include <experimental/generator>
-#elif defined(__clang__)
+#elif defined(__ANDROID__)
 #include <generator.hpp>
 #else
 #include <generator>

@@ -1,3 +1,4 @@
+
 #include "Merge_Meshes.hpp"
 #include <Mlib/Geometry/Colored_Vertex.hpp>
 #include <Mlib/Geometry/Material.hpp>
@@ -14,7 +15,7 @@ std::shared_ptr<ColoredVertexArray<TPos>> Mlib::merge_meshes(
     const Morphology& morphology)
 {
     if (cvas.empty()) {
-        THROW_OR_ABORT("Attempt to merge empty list of meshes");
+        throw std::runtime_error("Attempt to merge empty list of meshes");
     }
     std::list<FixedArray<ColoredVertex<TPos>, 3>> triangles;
     std::list<FixedArray<uint8_t, 3>> discrete_triangle_texture_layers;
@@ -24,17 +25,17 @@ std::shared_ptr<ColoredVertexArray<TPos>> Mlib::merge_meshes(
         if (!cva->discrete_triangle_texture_layers.empty() &&
             (cva->discrete_triangle_texture_layers.size() != cva->triangles.size()))
         {
-            THROW_OR_ABORT("merge_meshes: discrete_triangle_texture_layers size mismatch");
+            throw std::runtime_error("merge_meshes: discrete_triangle_texture_layers size mismatch");
         }
         if (!cva->alpha.empty() &&
             (cva->alpha.size() != cva->triangles.size()))
         {
-            THROW_OR_ABORT("merge_meshes: alpha size mismatch");
+            throw std::runtime_error("merge_meshes: alpha size mismatch");
         }
         if (!cva->interiormap_uvmaps.empty() &&
             (cva->interiormap_uvmaps.size() != cva->triangles.size()))
         {
-            THROW_OR_ABORT("merge_meshes: interiormap_uvmaps size mismatch");
+            throw std::runtime_error("merge_meshes: interiormap_uvmaps size mismatch");
         }
         for (const auto& t : cva->triangles) {
             triangles.push_back(t);

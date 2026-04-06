@@ -25,28 +25,28 @@ struct AudioSourceNode {
 };
 
 class AudioScene {
-	AudioScene() = delete;
-	AudioScene(const AudioScene&) = delete;
-	AudioScene &operator=(const AudioScene&) = delete;
+    AudioScene() = delete;
+    AudioScene(const AudioScene&) = delete;
+    AudioScene &operator=(const AudioScene&) = delete;
 public:
-	static void set_default_alpha(float alpha);
-	static void add_source(AudioSource& source, float alpha);
-	static void remove_source(AudioSource& source);
-	static void set_listener(
-		const DanglingBaseClassRef<SceneNode>& node,
-		std::chrono::steady_clock::time_point time,
-		std::chrono::steady_clock::duration velocity_dt);
-	static void set_source_transformation(
-		AudioSource& source,
-		const AudioSourceState<ScenePos>& state);
-	static void set_distance_model(AudioDistanceModel model);
-	static void print(std::ostream& ostr);
+    static void set_default_alpha(float alpha);
+    static void add_source(AudioSource& source, float alpha);
+    static void remove_source(AudioSource& source);
+    static void set_listener(
+        const DanglingBaseClassRef<SceneNode>& node,
+        std::chrono::steady_clock::time_point time,
+        std::chrono::steady_clock::duration velocity_dt);
+    static void set_source_transformation(
+        AudioSource& source,
+        const AudioSourceState<ScenePos>& state);
+    static void set_distance_model(AudioDistanceModel model);
+    static void print(std::ostream& ostr);
 private:
-	static FastMutex mutex_;
-	static float default_alpha_;
-	static VerboseUnorderedMap<const AudioSource*, AudioSourceNode> source_nodes_;
-	static DanglingBaseClassPtr<SceneNode> listener_node_;
-	static std::optional<DestructionFunctionsRemovalTokens> on_destroy_;
+    static FastMutex mutex_;
+    static float default_alpha_;
+    static VerboseUnorderedMap<const AudioSource*, AudioSourceNode> source_nodes_;
+    static DanglingBaseClassPtr<SceneNode> listener_node_;
+    static std::optional<DestructionFunctionsRemovalTokens> on_destroy_;
 };
 
 }

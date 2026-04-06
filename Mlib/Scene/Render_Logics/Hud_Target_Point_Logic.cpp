@@ -1,18 +1,18 @@
 #include "Hud_Target_Point_Logic.hpp"
 #include <Mlib/Geometry/Cameras/Camera.hpp>
-#include <Mlib/Log.hpp>
 #include <Mlib/Memory/Object_Pool.hpp>
+#include <Mlib/Misc/Log.hpp>
+#include <Mlib/OpenGL/Render_Logics/Render_Logics.hpp>
+#include <Mlib/OpenGL/Render_Setup.hpp>
 #include <Mlib/Physics/Advance_Times/Movables/Pitch_Look_At_Node.hpp>
 #include <Mlib/Physics/Advance_Times/Movables/Yaw_Pitch_Look_At_Nodes.hpp>
 #include <Mlib/Physics/Containers/Advance_Times.hpp>
 #include <Mlib/Physics/Containers/Collision_Query.hpp>
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Players/Advance_Times/Player.hpp>
-#include <Mlib/Render/Render_Logics/Render_Logics.hpp>
-#include <Mlib/Render/Render_Setup.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
 #include <sstream>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -22,9 +22,9 @@ HudTargetPointLogic::HudTargetPointLogic(
     RenderLogics& render_logics,
     const DanglingBaseClassRef<Player>& player,
     CollisionQuery& collision_query,
-    DanglingBaseClassRef<SceneNode> gun_node,
+    const DanglingBaseClassRef<SceneNode>& gun_node,
     const std::optional<std::vector<DanglingBaseClassPtr<const SceneNode>>>& exclusive_nodes,
-    YawPitchLookAtNodes* ypln,
+    const DanglingBaseClassPtr<YawPitchLookAtNodes>& ypln,
     AdvanceTimes& advance_times,
     const std::shared_ptr<ITextureHandle>& texture,
     const FixedArray<float, 2>& center,
@@ -42,22 +42,27 @@ HudTargetPointLogic::HudTargetPointLogic(
         size,
         texture }
     , on_player_delete_vehicle_internals_{ player->delete_vehicle_internals, CURRENT_SOURCE_LOCATION }
-    , on_destroy_gun_node_{ gun_node->on_destroy, CURRENT_SOURCE_LOCATION }
+    , on_destroy_gun_node_{ gun_node->on_destroy.deflt, CURRENT_SOURCE_LOCATION }
+    , on_destroy_ypln_{ (ypln_ != nullptr) ? &ypln_->on_destroy.deflt : nullptr, CURRENT_SOURCE_LOCATION }
     , render_logics_{ render_logics }
 {
     render_logics_.append({ *this, CURRENT_SOURCE_LOCATION }, 0 /* z_order */, CURRENT_SOURCE_LOCATION);
     on_player_delete_vehicle_internals_.add([this]() { object_pool_.remove(this); }, CURRENT_SOURCE_LOCATION);
     on_destroy_gun_node_.add([this, &object_pool]() { object_pool.remove(this); }, CURRENT_SOURCE_LOCATION);
+    if (ypln_ != nullptr) {
+        on_destroy_ypln_.add([this, &object_pool]() { object_pool.remove(this); }, CURRENT_SOURCE_LOCATION);
+    }
     advance_times.add_advance_time({ *this, CURRENT_SOURCE_LOCATION }, CURRENT_SOURCE_LOCATION);
 }
 
 HudTargetPointLogic::~HudTargetPointLogic() {
+    ypln_ = nullptr;
     on_destroy.clear();
 }
 
 void HudTargetPointLogic::advance_time(float dt, const StaticWorld& world) {
     if (ypln_ != nullptr) {
-        float dpitch_head = ypln_->pitch_look_at_node().get_dpitch_head();
+        float dpitch_head = ypln_->pitch_look_at_node()->get_dpitch_head();
         if (!std::isnan(dpitch_head) && (dpitch_head != 0.f)) {
             hud_tracker_.invalidate();
             return;

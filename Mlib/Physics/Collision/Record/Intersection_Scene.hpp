@@ -1,9 +1,9 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
-#include <Mlib/Geometry/Intersection/Collision_Line.hpp>
-#include <Mlib/Geometry/Intersection/Collision_Polygon.hpp>
-#include <Mlib/Geometry/Intersection/Collision_Ridge.hpp>
-#include <Mlib/Geometry/Intersection/Intersectors/Intersection_Info.hpp>
+#include <Mlib/Geometry/Primitives/Collision_Line.hpp>
+#include <Mlib/Geometry/Primitives/Collision_Polygon.hpp>
+#include <Mlib/Geometry/Primitives/Collision_Ridge.hpp>
+#include <Mlib/Geometry/Primitives/Intersectors/Intersection_Info.hpp>
 #include <Mlib/Scene_Config/Scene_Precision.hpp>
 #include <cstdint>
 #include <memory>

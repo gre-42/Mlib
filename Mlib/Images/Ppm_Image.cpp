@@ -3,8 +3,8 @@
 #include <Mlib/Memory/Integral_Cast.hpp>
 #include <Mlib/Os/Os.hpp>
 #include <Mlib/Stats/Min_Max.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
 #include <fstream>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -103,13 +103,13 @@ void PpmImage::draw_streamline(
 
 PpmImage PpmImage::load_from_file(const std::string& filename) {
     if (!filename.ends_with(".ppm")) {
-        THROW_OR_ABORT("Filename does not have ppm extension: \"" + filename + '"');
+        throw std::runtime_error("Filename does not have ppm extension: \"" + filename + '"');
     }
     auto istream = create_ifstream(filename, std::ios_base::binary);
     try {
         return load_from_stream(*istream);
     } catch (const std::runtime_error& e) {
-        THROW_OR_ABORT(e.what() + std::string(": ") + filename);
+        throw std::runtime_error(e.what() + std::string(": ") + filename);
     }
 }
 
@@ -128,74 +128,74 @@ PpmImage PpmImage::load_from_stream(std::istream& istream) {
     std::string header;
     istream >> header;
     if (istream.fail()) {
-        THROW_OR_ABORT("Could not read header");
+        throw std::runtime_error("Could not read header");
     }
     if (header != "P6") {
-        THROW_OR_ABORT("Header does not equal P6");
+        throw std::runtime_error("Header does not equal P6");
     }
     skip_comments(istream);
     size_t width;
     istream >> width;
     if (istream.fail()) {
-        THROW_OR_ABORT("Could not read width");
+        throw std::runtime_error("Could not read width");
     }
     size_t height;
     istream >> height;
     if (istream.fail()) {
-        THROW_OR_ABORT("Could not read height");
+        throw std::runtime_error("Could not read height");
     }
     size_t n255;
     istream >> n255;
     if (istream.fail()) {
-        THROW_OR_ABORT("Could not read maximum value");
+        throw std::runtime_error("Could not read maximum value");
     }
     if (n255 != 255) {
-        THROW_OR_ABORT("Maximum value does not equal 255");
+        throw std::runtime_error("Maximum value does not equal 255");
     }
     char c;
     istream.read(&c, 1);
     if (istream.fail() || (c != '\n')) {
-        THROW_OR_ABORT("Could not read newline");
+        throw std::runtime_error("Could not read newline");
     }
     result.do_resize(ArrayShape{height, width});
     istream.read(reinterpret_cast<char*>(&result(0, 0)), integral_cast<std::streamsize>(result.nbytes()));
     if (istream.fail()) {
-        THROW_OR_ABORT("Could not read raw image");
+        throw std::runtime_error("Could not read raw image");
     }
     return result;
 }
 
 void PpmImage::save_to_file(const std::string& filename) const {
     if (!filename.ends_with(".ppm")) {
-        THROW_OR_ABORT("Filename does not have ppm extension: \"" + filename + '"');
+        throw std::runtime_error("Filename does not have ppm extension: \"" + filename + '"');
     }
     try {
         std::ofstream ostream(filename, std::ios::binary);
         save_to_stream(ostream);
     } catch (const std::runtime_error& e) {
-        THROW_OR_ABORT("Could not save to file " + filename + "; " + e.what());
+        throw std::runtime_error("Could not save to file " + filename + "; " + e.what());
     }
 }
 
 void PpmImage::save_to_stream(std::ostream& ostream) const {
     if (ndim() != 2) {
-        THROW_OR_ABORT("save_to_stream: image does not have ndim=2, but " + shape().str());
+        throw std::runtime_error("save_to_stream: image does not have ndim=2, but " + shape().str());
     }
     std::string header{"P6\n" + std::to_string(shape(1)) + " " + std::to_string(shape(0)) + "\n255\n"};
     ostream.write(header.c_str(), integral_cast<std::streamsize>(header.length()));
     ostream.write((const char*)flat_iterable().begin(), integral_cast<std::streamsize>(nbytes()));
     ostream.flush();
     if (ostream.fail()) {
-        THROW_OR_ABORT("Could not write PPM");
+        throw std::runtime_error("Could not write PPM");
     }
 }
 
 PpmImage PpmImage::from_float_rgb(const Array<float>& rgb) {
     if (rgb.ndim() != 3) {
-        THROW_OR_ABORT("from_float: rgb image does not have ndim=3, but " + rgb.shape().str());
+        throw std::runtime_error("from_float: rgb image does not have ndim=3, but " + rgb.shape().str());
     }
     if (rgb.shape(0) != 3) {
-        THROW_OR_ABORT("from_float: rgb image does not have shape(0)=3, but " + rgb.shape().str());
+        throw std::runtime_error("from_float: rgb image does not have shape(0)=3, but " + rgb.shape().str());
     }
     PpmImage result(rgb.shape().erased_first());
     Array<Rgb24> f = result.flattened();
@@ -210,7 +210,7 @@ PpmImage PpmImage::from_float_rgb(const Array<float>& rgb) {
 
 PpmImage PpmImage::from_float_grayscale(const Array<float>& grayscale) {
     if (grayscale.ndim() != 2) {
-        THROW_OR_ABORT("from_float_grayscale: grayscale image does not have ndim=2, but " + grayscale.shape().str());
+        throw std::runtime_error("from_float_grayscale: grayscale image does not have ndim=2, but " + grayscale.shape().str());
     }
     PpmImage result(grayscale.shape());
     Array<Rgb24> f = result.flattened();

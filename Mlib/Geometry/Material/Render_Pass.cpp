@@ -1,7 +1,8 @@
+
 #include "Render_Pass.hpp"
-#include <Mlib/Throw_Or_Abort.hpp>
 #include <map>
 #include <ostream>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -22,7 +23,7 @@ ExternalRenderPassType Mlib::external_render_pass_type_from_string(const std::st
     };
     auto it = m.find(str);
     if (it == m.end()) {
-        THROW_OR_ABORT("Unknown render pass type: \"" + str + '"');
+        throw std::runtime_error("Unknown render pass type: \"" + str + '"');
     }
     return it->second;
 }
@@ -31,6 +32,7 @@ std::string Mlib::external_render_pass_type_to_string(ExternalRenderPassType pas
     switch (pass) {
     case ExternalRenderPassType::STANDARD: return "standard";
     case ExternalRenderPassType::DIRTMAP: return "dirtmap";
+    case ExternalRenderPassType::LIGHTMAP_BLOBS: return "lightmap_blobs";
     case ExternalRenderPassType::LIGHTMAP_DEPTH: return "lightmap_depth";
     case ExternalRenderPassType::LIGHTMAP_GLOBAL_STATIC: return "lightmap_global_static";
     case ExternalRenderPassType::LIGHTMAP_GLOBAL_DYNAMIC: return "lightmap_global_dynamic";
@@ -39,11 +41,14 @@ std::string Mlib::external_render_pass_type_to_string(ExternalRenderPassType pas
     case ExternalRenderPassType::LIGHTMAP_BLACK_MOVABLES: return "lightmap_black_movables";
     case ExternalRenderPassType::LIGHTMAP_BLACK_NODE: return "lightmap_black_node";
     case ExternalRenderPassType::LIGHTMAP_BLACK_GLOBAL_AND_LOCAL: return "lightmap_black_global_and_local";
-    case ExternalRenderPassType::LIGHTMAP_BLOBS: return "lightmap_blobs";
+    case ExternalRenderPassType::STANDARD_AND_LOCAL_LIGHTMAP: return "standard_and_local_lightmap";
+    case ExternalRenderPassType::IMPOSTER_NODE: return "imposter_node";
+    case ExternalRenderPassType::ZOOM_NODE: return "zoom_node";
+    case ExternalRenderPassType::BILLBOARD_SCENE: return "billboard_scene";
     case ExternalRenderPassType::STANDARD_FOREGROUND: return "standard|foreground";
     case ExternalRenderPassType::STANDARD_BACKGROUND: return "standard|background";
     default:
-        THROW_OR_ABORT("Unknown render pass type");
+        throw std::runtime_error("Unknown render pass type: " + std::to_string((int)pass));
     }
 }
 

@@ -6,6 +6,9 @@
 #include <Mlib/Memory/Event_Emitter.hpp>
 #include <Mlib/Memory/Object_Pool.hpp>
 #include <Mlib/Memory/Usage_Counter.hpp>
+#include <Mlib/OpenGL/Deferred_Instantiator.hpp>
+#include <Mlib/OpenGL/Render_Logics/Render_Logics.hpp>
+#include <Mlib/OpenGL/Resource_Managers/Rendering_Resources.hpp>
 #include <Mlib/Physics/Advance_Times/Countdown_Physics.hpp>
 #include <Mlib/Physics/Bullets/Bullet_Generator.hpp>
 #include <Mlib/Physics/Misc/Gravity_Efp.hpp>
@@ -16,17 +19,14 @@
 #include <Mlib/Players/Game_Logic/Late_Join_Player_Factory.hpp>
 #include <Mlib/Players/Game_Logic/Supply_Depots.hpp>
 #include <Mlib/Remote/Remote_Site_Id.hpp>
-#include <Mlib/Render/Deferred_Instantiator.hpp>
-#include <Mlib/Render/Render_Logics/Render_Logics.hpp>
-#include <Mlib/Render/Resource_Managers/Rendering_Resources.hpp>
 #include <Mlib/Scene/Scene_Particles.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
-#include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
 #include <Mlib/Scene_Graph/Fifo_Log.hpp>
 #include <Mlib/Scene_Graph/Instances/Dynamic_World.hpp>
 #include <Mlib/Time/Fps/Dependent_Sleeper.hpp>
 #include <Mlib/Time/Fps/Realtime_Sleeper.hpp>
 #include <Mlib/Time/Fps/Set_Fps.hpp>
+#include <memory>
 
 namespace Mlib {
 
@@ -101,7 +101,6 @@ public:
     void instantiate_game_logic(std::function<void()> setup_new_round);
 
     DestructionFunctions on_stop_and_join_;
-    DeleteNodeMutex delete_node_mutex_;
     MacroLineExecutor macro_line_executor_;
     DanglingBaseClassRef<RemoteSites> remote_sites_;
     UiFocus& ui_focus_;

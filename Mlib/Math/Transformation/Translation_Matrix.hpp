@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
+#include <iosfwd>
 
 namespace Mlib {
 
@@ -38,6 +39,22 @@ FixedArray<T, n+1, n+1> operator * (const FixedArray<T, n+1, n+1>& a, const Tran
 template <class TDir, class TPos, size_t n>
 TransformationMatrix<TDir, TPos, n> operator * (const TransformationMatrix<TDir, TPos, n>& a, const TranslationMatrix<TPos, n>& b) {
     return TransformationMatrix<TDir, TPos, n>{a.R, a.transform(b.t)};
+}
+
+template <class TDir, class TPos, size_t n>
+TransformationMatrix<TDir, TPos, n> operator * (const TranslationMatrix<TPos, n>& a, const TransformationMatrix<TDir, TPos, n>& b) {
+    return TransformationMatrix<TDir, TPos, n>{b.R, a.t + b.t};
+}
+
+template <class TPos, size_t n>
+TranslationMatrix<TPos, n> operator * (const TranslationMatrix<TPos, n>& a, const TranslationMatrix<TPos, n>& b) {
+    return TranslationMatrix<TPos, n>{a.t + b.t};
+}
+
+template <class TPos, size_t n>
+std::ostream& operator << (std::ostream& ostr, const TranslationMatrix<TPos, n>& t) {
+    ostr << t.t;
+    return ostr;
 }
 
 }

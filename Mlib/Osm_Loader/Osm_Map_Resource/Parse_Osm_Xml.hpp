@@ -1,6 +1,7 @@
+#pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Geometry/Coordinates/Normalized_Points_Fixed.hpp>
-#include <Mlib/Geometry/Intersection/Axis_Aligned_Bounding_Box.hpp>
+#include <Mlib/Geometry/Primitives/Axis_Aligned_Bounding_Box.hpp>
 #include <map>
 #include <optional>
 #include <string>

@@ -2,7 +2,7 @@
 #include <Mlib/Physics/Advance_Times/Bullet.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Players/Advance_Times/Player.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -27,7 +27,7 @@ void Team::notify_kill(RigidBodyVehicle& rigid_body_vehicle) {
     for (const auto& [_, iplayer] : rigid_body_vehicle.drivers_.players_map()) {
         auto* player = dynamic_cast<Player*>(&iplayer.get());
         if (player == nullptr) {
-            THROW_OR_ABORT("Driver is not a player");
+            throw std::runtime_error("Driver is not a player");
         }
         if (&player->team().get() != this) {
             ++nkills_;
@@ -36,12 +36,12 @@ void Team::notify_kill(RigidBodyVehicle& rigid_body_vehicle) {
 }
 
 DestructionFunctions& Team::on_destroy_team() {
-    return on_destroy;
+    return on_destroy.deflt;
 }
 
 void Team::add_player(const VariableAndHash<std::string>& player) {
     if (!players_.insert(player).second) {
-        THROW_OR_ABORT("Team already contains a player with name \"" + *player + '"');
+        throw std::runtime_error("Team already contains a player with name \"" + *player + '"');
     }
 }
 

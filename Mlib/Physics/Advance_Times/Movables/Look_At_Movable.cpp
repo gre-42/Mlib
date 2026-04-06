@@ -1,33 +1,39 @@
+
 #include "Look_At_Movable.hpp"
 #include <Mlib/Geometry/Coordinates/Gl_Look_At.hpp>
 #include <Mlib/Geometry/Coordinates/Homogeneous.hpp>
 #include <Mlib/Memory/Object_Pool.hpp>
-#include <Mlib/Physics/Containers/Advance_Times.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
-#include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
+#include <Mlib/Threads/Throwing_Lock_Guard.hpp>
 
 using namespace Mlib;
 
 LookAtMovable::LookAtMovable(
-    AdvanceTimes& advance_times,
     Scene& scene,
     VariableAndHash<std::string> follower_name,
-    DanglingBaseClassRef<SceneNode> follower_node,
-    DanglingBaseClassRef<SceneNode> followed_node,
-    IAbsoluteMovable& followed)
+    const DanglingBaseClassRef<SceneNode>& follower_node,
+    const DanglingBaseClassRef<SceneNode>& followed_node,
+    const DanglingBaseClassRef<IAbsoluteMovable>& followed)
     : follower_setter{ *this }
     , followed_setter{ *this }
-    , advance_times_{ advance_times }
     , scene_{ scene }
     , follower_name_{ std::move(follower_name) }
     , follower_node_{ follower_node.ptr() }
     , followed_node_{ followed_node.ptr() }
-    , followed_{ &followed }
+    , followed_{ followed.ptr() }
     , transformation_matrix_{ fixed_nans<float, 3, 3>(), fixed_nans<ScenePos, 3>() }
 {}
 
 LookAtMovable::~LookAtMovable() {
+    if ((follower_node_ != nullptr) && follower_node_->has_absolute_movable()) {
+        if (&follower_node_->get_absolute_movable(CURRENT_SOURCE_LOCATION).get() != this) {
+            verbose_abort("Unexpected absolute movable");
+        }
+        follower_node_->clear_absolute_movable();
+    }
+    follower_node_ = nullptr;
+    followed_node_ = nullptr;
     on_destroy.clear();
 }
 
@@ -52,27 +58,21 @@ TransformationMatrix<float, ScenePos, 3> LookAtMovable::get_new_absolute_model_m
 }
 
 void LookAtMovable::notify_destroyed(SceneNode& destroyed_object) {
-    scene_.delete_node_mutex().assert_this_thread_is_deleter_thread();
-    if ((follower_node_ == nullptr) != (followed_node_ == nullptr)) {
-        verbose_abort("LookAtMovable in inconsistent state");
-    }
-    if (follower_node_ == nullptr) {
-        return;
-    }
+    ThrowingLockGuard lock{scene_.delete_node_mutex};
     if (&destroyed_object == followed_node_.get()) {
-        if (follower_node_->shutdown_phase() == ShutdownPhase::NONE) {
-            follower_node_ = nullptr;
+        followed_ = nullptr;
+        followed_node_ = nullptr;
+        if ((follower_node_ != nullptr) &&
+            (follower_node_->shutdown_phase() == ShutdownPhase::NONE))
+        {
             scene_.delete_root_node(follower_name_);
         }
-    } else if (follower_node_->has_absolute_movable()) {
-        if (&follower_node_->get_absolute_movable() != this) {
-            verbose_abort("Unexpected absolute movable");
-        }
-        follower_node_->clear_absolute_movable();
     }
-    follower_node_ = nullptr;
-    followed_node_ = nullptr;
-    global_object_pool.remove(this);
+    if (&destroyed_object == follower_node_.get()) {
+        follower_node_->clear_absolute_movable();
+        follower_node_ = nullptr;
+        global_object_pool.remove(this);
+    }
 }
 
 LookAtMovableFollowerNodeSetter::LookAtMovableFollowerNodeSetter(LookAtMovable& look_at_movable)
@@ -86,7 +86,7 @@ void LookAtMovableFollowerNodeSetter::set_scene_node(
     VariableAndHash<std::string> node_name,
     SourceLocation loc)
 {
-    removal_tokens_.set(node->on_clear, loc);
+    removal_tokens_.set(node->on_clear.early, loc);
     removal_tokens_.add([this, node](){
         look_at_movable_.notify_destroyed(node.get());
     }, loc);
@@ -104,7 +104,7 @@ void LookAtMovableFollowedNodeSetter::set_scene_node(
     VariableAndHash<std::string> node_name,
     SourceLocation loc)
 {
-    removal_tokens_.set(node->on_clear, loc);
+    removal_tokens_.set(node->on_clear.early, loc);
     removal_tokens_.add([this, node](){
         look_at_movable_.notify_destroyed(node.get());
     }, loc);

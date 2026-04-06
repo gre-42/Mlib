@@ -1,27 +1,12 @@
 #pragma once
 #include <Mlib/Array/Array.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
+#include <Mlib/Images/I16.hpp>
+#include <stdexcept>
 #include <string>
 
 namespace Mlib {
 
 class PgmImage;
-
-static const uint16_t uint16_nan = (1 << 8);
-
-static inline uint16_t uint16_from_float(float grayscale) {
-    if (std::isnan(grayscale)) {
-        return uint16_nan;
-    }
-    // consider using grayscale.clip(0, 1) if this fails
-    if (grayscale < 0) {
-        THROW_OR_ABORT("PgmImage::from_float received " + std::to_string(grayscale) + "<0");
-    }
-    if (grayscale > 1) {
-        THROW_OR_ABORT("PgmImage::from_float received " + std::to_string(grayscale) + ">1");
-    }
-    return (uint16_t)(grayscale * UINT16_MAX + 0.5f);
-}
 
 class PgmImage: public Array<uint16_t> {
 public:

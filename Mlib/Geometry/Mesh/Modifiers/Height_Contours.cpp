@@ -1,3 +1,4 @@
+
 #include "Height_Contours.hpp"
 #include <Mlib/Geometry/Colored_Vertex.hpp>
 #include <Mlib/Geometry/Exceptions/Edge_Exception.hpp>
@@ -112,8 +113,8 @@ void HeightContoursByEdge::add_triangle(const FixedArray<CompressedScenePos, 3, 
             // linfo() << "Add neighbor " << v0 << " -> " << v1;
             auto res = edge_neighbors_.try_emplace(ne0, ne1);
             if (!res.second && (res.first->second != ne1)) {
-                // THROW_OR_ABORT2((EdgeException{v0, v1, "Vertex has multiple neighbors"}));
-                THROW_OR_ABORT2((EdgeException{ne0.first, ne0.second, "Edge has multiple neighbors"}));
+                // throw EdgeException{v0, v1, "Vertex has multiple neighbors"};
+                throw EdgeException{ne0.first, ne0.second, "Edge has multiple neighbors"};
             }
         };
         if (es[0] != es[1]) {
@@ -217,8 +218,8 @@ void HeightContoursByVertex::add_triangle(const FixedArray<CompressedScenePos, 3
             // linfo() << "Add neighbor " << v0 << " -> " << v1;
             auto res = neighbors_.try_emplace(OrderableFixedArray<CompressedScenePos, 2>{v0}, v1);
             if (!res.second && any(res.first->second != v1)) {
-                // THROW_OR_ABORT2((EdgeException{v0, v1, "Vertex has multiple neighbors"}));
-                THROW_OR_ABORT2((EdgeException{a, b, "Vertex has multiple neighbors"}));
+                // throw EdgeException{v0, v1, "Vertex has multiple neighbors"};
+                throw EdgeException{a, b, "Vertex has multiple neighbors"};
             }
         };
         auto add_edge = [&](

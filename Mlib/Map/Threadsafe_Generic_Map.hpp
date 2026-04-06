@@ -1,8 +1,8 @@
 #pragma once
 #include <Mlib/Threads/Recursive_Shared_Mutex.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
 #include <functional>
 #include <mutex>
+#include <stdexcept>
 #include <string>
 
 namespace Mlib {
@@ -61,7 +61,7 @@ public:
         std::scoped_lock lock{ mutex_ };
         auto res = elements_.try_emplace(std::move(key), std::forward<Args>(args)...);
         if (!res.second) {
-            THROW_OR_ABORT(value_name_ + " with key \"" + key_to_string_(key) +
+            throw std::runtime_error(value_name_ + " with key \"" + key_to_string_(key) +
                 "\" already exists");
         }
         return res.first->second;
@@ -71,7 +71,7 @@ public:
         std::shared_lock lock{ mutex_ };
         auto it = elements_.insert(std::move(node));
         if (!it.inserted) {
-            THROW_OR_ABORT(value_name_ + " with name \"" + key_to_string_(node.key()) + "\" already exists");
+            throw std::runtime_error(value_name_ + " with name \"" + key_to_string_(node.key()) + "\" already exists");
         }
         return it.position->second;
     }
@@ -115,7 +115,7 @@ public:
         std::scoped_lock lock{ mutex_ };
         auto res = elements_.extract(key);
         if (res.empty()) {
-            THROW_OR_ABORT(value_name_ + " with name \"" + key_to_string_(key) + "\" does not exist");
+            throw std::runtime_error(value_name_ + " with name \"" + key_to_string_(key) + "\" does not exist");
         }
         return res;
     }
@@ -129,7 +129,7 @@ public:
         std::shared_lock lock{ mutex_ };
         auto it = elements_.find(key);
         if (it == elements_.end()) {
-            THROW_OR_ABORT(value_name_ + " with key \"" + key_to_string_(key) +
+            throw std::runtime_error(value_name_ + " with key \"" + key_to_string_(key) +
                 "\" does not exist");
         }
         return it->second;

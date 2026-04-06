@@ -1,7 +1,8 @@
+
 #include "Engine_Power_Intent.hpp"
-#include <Mlib/Argument_List.hpp>
 #include <Mlib/Json/Json_View.hpp>
 #include <Mlib/Math/Math.hpp>
+#include <Mlib/Misc/Argument_List.hpp>
 #include <map>
 #include <ostream>
 
@@ -47,7 +48,7 @@ void Mlib::from_json(const nlohmann::json& j, EngineState& s) {
     auto str = j.get<std::string>();
     auto it = m.find(str);
     if (it == m.end()) {
-        THROW_OR_ABORT("Unknown engine state: \"" + str + '"');
+        throw std::runtime_error("Unknown engine state: \"" + str + '"');
     }
     s = it->second;
 }

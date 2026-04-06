@@ -1,5 +1,4 @@
 #include "Load_Mesh_Config_Json.hpp"
-#include <Mlib/Argument_List.hpp>
 #include <Mlib/Geometry/Delaunay_Error_Behavior.hpp>
 #include <Mlib/Geometry/Interfaces/IRace_Logic.hpp>
 #include <Mlib/Geometry/Material/Aggregate_Mode.hpp>
@@ -13,10 +12,11 @@
 #include <Mlib/Geometry/Rectangle_Triangulation_Mode.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
+#include <Mlib/Misc/Argument_List.hpp>
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Scene/Json/Blend_Map_Texture_Json.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
+#include <stdexcept>
 
 namespace KnownArgs {
 BEGIN_ARGUMENT_LIST;
@@ -87,7 +87,7 @@ LoadMeshConfig<TPos> Mlib::load_mesh_config_from_json(const JsonMacroArguments& 
         .aggregate_mode = aggregate_mode_from_string(j.at<std::string>(KnownArgs::aggregate_mode)),
         .transformation_mode = transformation_mode_from_string(j.at<std::string>(KnownArgs::transformation_mode)),
         .billboard_atlas_instances = j.at<std::vector<BillboardAtlasInstance>>(KnownArgs::billboards, {}),
-        .reflection_map = VariableAndHash{ j.at_non_null<std::string>(KnownArgs::reflection_map, "") },
+        .reflection_map = j.try_path_or_variable(KnownArgs::reflection_map),
         .shading = j.at<Shading>(KnownArgs::shading, Shading{}),
         .emissive_factor = j.at<EFixedArray<float, 3>>(KnownArgs::emissive_factor, fixed_ones<float, 3>()),
         .ambient_factor = j.at<EFixedArray<float, 3>>(KnownArgs::ambient_factor, fixed_ones<float, 3>()),
@@ -95,7 +95,7 @@ LoadMeshConfig<TPos> Mlib::load_mesh_config_from_json(const JsonMacroArguments& 
         .specular_factor = j.at<EFixedArray<float, 3>>(KnownArgs::specular_factor, fixed_ones<float, 3>()),
         .desaturate = j.at<float>(KnownArgs::desaturate, 0.f),
         .desaturation_exponent = j.at<float>(KnownArgs::desaturation_exponent, 0.f),
-        .histogram = j.try_path_or_variable(KnownArgs::histogram).path,
+        .histogram = j.try_path_or_variable(KnownArgs::histogram),
         .lighten = j.at<EFixedArray<float, 3>>(KnownArgs::lighten, fixed_zeros<float, 3>()),
         .textures = blend_map_textures_from_json(j, KnownArgs::textures),
         .period_world = j.contains(KnownArgs::period_world)
@@ -107,8 +107,8 @@ LoadMeshConfig<TPos> Mlib::load_mesh_config_from_json(const JsonMacroArguments& 
         .apply_static_lighting = false,
         .laplace_ao_strength = 0.f,
         .dynamically_lighted = j.at<bool>(KnownArgs::dynamically_lighted, false),
-        .physics_material = physics_material_from_string(j.at<std::string>(KnownArgs::physics_material, "attr_visible|attr_collide")),
-        .rectangle_triangulation_mode = rectangle_triangulation_mode_from_string(j.at<std::string>(KnownArgs::rectangle_triangulation_mode, "delaunay")),
+        .physics_material = physics_material_from_string(j.at_non_null<std::string>(KnownArgs::physics_material, "attr_visible")),
+        .rectangle_triangulation_mode = rectangle_triangulation_mode_from_string(j.at_non_null<std::string>(KnownArgs::rectangle_triangulation_mode, "delaunay")),
         .delaunay_error_behavior = delaunay_error_behavior_from_string(j.at<std::string>(KnownArgs::delaunay_error_behavior, "throw")),
         .werror = j.at<bool>(KnownArgs::werror, true)};
 }

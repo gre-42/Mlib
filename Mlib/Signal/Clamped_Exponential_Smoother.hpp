@@ -1,7 +1,7 @@
 #pragma once
-#include <Mlib/Geometry/Intersection/Interval.hpp>
+#include <Mlib/Geometry/Primitives/Interval.hpp>
+#include <Mlib/Initialization/Uninitialized.hpp>
 #include <Mlib/Math/Lerp.hpp>
-#include <Mlib/Uninitialized.hpp>
 #include <algorithm>
 #include <cmath>
 #include <optional>

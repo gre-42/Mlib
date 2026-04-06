@@ -1,16 +1,17 @@
 #pragma once
 #include <Mlib/Physics/Advance_Times/Movables/Yaw_Pitch_Look_At_Nodes.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
+#include <stdexcept>
 
 namespace Mlib {
 
-inline YawPitchLookAtNodes& get_yaw_pitch_look_at_nodes(const DanglingBaseClassRef<SceneNode>& node) {
-    auto ypln = dynamic_cast<YawPitchLookAtNodes*>(&node->get_relative_movable());
+inline DanglingBaseClassRef<YawPitchLookAtNodes> get_yaw_pitch_look_at_nodes(SceneNode& node, SourceLocation loc) {
+    auto rm = node.get_relative_movable(loc);
+    auto ypln = dynamic_cast<YawPitchLookAtNodes*>(&rm.get());
     if (ypln == nullptr) {
-        THROW_OR_ABORT("Relative movable is not a ypln");
+        throw std::runtime_error("Relative movable is not a ypln");
     }
-    return *ypln;
+    return {*ypln, loc};
 }
 
 }

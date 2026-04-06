@@ -1,0 +1,10 @@
+find_path(LAME_INCLUDE_DIR lame/lame.h)
+find_library(LAME_LIBRARIES NAMES mp3lame)
+
+if (LAME_INCLUDE_DIR AND LAME_LIBRARIES)
+    SET(LAME_FOUND TRUE)
+else()
+    if (LAME_FIND_REQUIRED)
+        message(FATAL_ERROR "Could NOT find LAME")
+    endif()
+endif()

@@ -1,3 +1,4 @@
+
 #include "Physics_Iteration.hpp"
 #include <Mlib/Geometry/Instance/Rendering_Dynamics.hpp>
 #include <Mlib/Iterator/Enumerate.hpp>
@@ -7,10 +8,9 @@
 #include <Mlib/Physics/Misc/Beacon.hpp>
 #include <Mlib/Physics/Physics_Engine/Beacons.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Engine.hpp>
-#include <Mlib/Physics/Physics_Engine/Physics_Engine_Config.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Phase.hpp>
+#include <Mlib/Scene_Config/Physics_Engine_Config.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
-#include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
 #include <Mlib/Scene_Graph/Elements/Make_Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Instances/Dynamic_World.hpp>
@@ -30,7 +30,6 @@ PhysicsIteration::PhysicsIteration(
     DynamicWorld& dynamic_world,
     PhysicsEngine& physics_engine,
     std::function<void(const TimeAndPause<std::chrono::steady_clock::time_point>&)> send_and_receive,
-    DeleteNodeMutex& delete_node_mutex,
     const PhysicsEngineConfig& physics_cfg,
     BaseLog* base_log)
     : scene_node_resources_{ scene_node_resources }
@@ -39,7 +38,6 @@ PhysicsIteration::PhysicsIteration(
     , dynamic_world_{ dynamic_world }
     , physics_engine_{ physics_engine }
     , send_and_receive_{ std::move(send_and_receive) }
-    , delete_node_mutex_{ delete_node_mutex }
     , physics_cfg_{ physics_cfg }
     , base_log_{ base_log }
 {}

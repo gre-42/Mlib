@@ -1,10 +1,10 @@
+
 #include "Static_Transformed_Mesh.hpp"
 #include <Mlib/Geometry/Interfaces/IIntersectable.hpp>
-#include <Mlib/Geometry/Intersection/Collision_Line.hpp>
-#include <Mlib/Geometry/Intersection/Collision_Polygon.hpp>
-#include <Mlib/Geometry/Intersection/Collision_Ridge.hpp>
 #include <Mlib/Geometry/Mesh/Typed_Mesh.hpp>
-#include <Mlib/Geometry/Plane_Nd.hpp>
+#include <Mlib/Geometry/Primitives/Collision_Line.hpp>
+#include <Mlib/Geometry/Primitives/Collision_Polygon.hpp>
+#include <Mlib/Geometry/Primitives/Plane_Nd.hpp>
 
 using namespace Mlib;
 
@@ -21,7 +21,6 @@ StaticTransformedMesh::StaticTransformedMesh(
     std::vector<CollisionPolygonSphere<CompressedScenePos, 3>>&& triangles,
     std::vector<CollisionLineSphere<CompressedScenePos>>&& lines,
     std::vector<CollisionLineSphere<CompressedScenePos>>&& edges,
-    std::vector<CollisionRidgeSphere<CompressedScenePos>>&& ridges,
     std::vector<TypedMesh<std::shared_ptr<IIntersectable>>>&& intersectables)
     : name_{ std::move(name) }
     , aabb_{ aabb }
@@ -30,7 +29,6 @@ StaticTransformedMesh::StaticTransformedMesh(
     , triangles_{ std::move(triangles) }
     , lines_{ std::move(lines) }
     , edges_{ std::move(edges) }
-    , ridges_{ std::move(ridges) }
     , intersectables_{ std::move(intersectables) }
 {}
 
@@ -58,10 +56,6 @@ const std::vector<CollisionLineSphere<CompressedScenePos>>& StaticTransformedMes
 
 const std::vector<CollisionLineSphere<CompressedScenePos>>& StaticTransformedMesh::get_edges_sphere() const {
     return edges_;
-}
-
-const std::vector<CollisionRidgeSphere<CompressedScenePos>>& StaticTransformedMesh::get_ridges_sphere() const {
-    return ridges_;
 }
 
 const std::vector<TypedMesh<std::shared_ptr<IIntersectable>>>& StaticTransformedMesh::get_intersectables() const

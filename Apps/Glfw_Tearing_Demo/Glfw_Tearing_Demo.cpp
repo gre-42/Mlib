@@ -36,7 +36,7 @@
 #include <stdlib.h>
 #include <math.h>
 
-#include <Mlib/Render/linmath.hpp>
+#include <Mlib/OpenGL/linmath.hpp>
 
 static const struct
 {

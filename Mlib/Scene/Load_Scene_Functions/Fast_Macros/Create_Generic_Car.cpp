@@ -1,5 +1,4 @@
 #include "Create_Generic_Car.hpp"
-#include <Mlib/Argument_List.hpp>
 #include <Mlib/Geometry/Material/Particle_Type.hpp>
 #include <Mlib/Macro_Executor/Asset_Group_Replacement_Parameters.hpp>
 #include <Mlib/Macro_Executor/Asset_References.hpp>
@@ -7,6 +6,8 @@
 #include <Mlib/Macro_Executor/Replacement_Parameter.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix_Json.hpp>
 #include <Mlib/Memory/Object_Pool.hpp>
+#include <Mlib/Misc/Argument_List.hpp>
+#include <Mlib/OpenGL/Batch_Renderers/Particle_Renderer.hpp>
 #include <Mlib/Physics/Actuators/Engine_Event_Listeners.hpp>
 #include <Mlib/Physics/Actuators/Engine_Exhaust.hpp>
 #include <Mlib/Physics/Actuators/Engine_Power.hpp>
@@ -21,7 +22,6 @@
 #include <Mlib/Physics/Rigid_Body/Vehicle_Type.hpp>
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Physics/Vehicle_Controllers/Car_Controllers/Car_Controller.hpp>
-#include <Mlib/Render/Batch_Renderers/Particle_Renderer.hpp>
 #include <Mlib/Scene/Audio/Engine_Audio.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Linker.hpp>
@@ -36,7 +36,7 @@
 #include <Mlib/Scene/Scene_Particles.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -60,6 +60,8 @@ DECLARE_ARGUMENT(velocity_error_std);   // currently not in use
 DECLARE_ARGUMENT(yaw_error_std);        // currently not in use
 DECLARE_ARGUMENT(pitch_error_std);      // currently not in use
 DECLARE_ARGUMENT(error_alpha);          // currently not in use
+DECLARE_ARGUMENT(show_hitbox);
+DECLARE_ARGUMENT(show_massbox);
 }
 
 namespace KnownDb {
@@ -184,7 +186,7 @@ void CreateGenericCar::execute(const JsonView& args)
     create_child_node("dynamic", parent, VH{"wheel_left_rear_node" + suffix}, wheel_left_rear_mount_0.casted<ScenePos>());
     create_child_node("dynamic", parent, VH{"wheel_right_rear_node" + suffix}, wheel_right_rear_mount_0.casted<ScenePos>());
 
-    DanglingBaseClassRef<SceneNode> parent_node = scene.get_node(parent, DP_LOC);
+    DanglingBaseClassRef<SceneNode> parent_node = scene.get_node(parent, CURRENT_SOURCE_LOCATION);
 
     if (if_car_body_renderable_style) {
         auto style = std::unique_ptr<ColorStyle>(new ColorStyle{
@@ -207,6 +209,12 @@ void CreateGenericCar::execute(const JsonView& args)
                 child_renderable_instance("wheel" + suffix1, VH{"wheel_left_rear_node" + suffix}, VH{asset_id + "/wheel_rear" + decimate1});
                 child_renderable_instance("wheel" + suffix1, VH{"wheel_right_rear_node_visual" + suffix}, VH{asset_id + "/wheel_rear" + decimate1});
             }
+            if (args.at<bool>(KnownArgs::show_hitbox, false)) {
+                child_renderable_instance("generic_car_hitbox" + suffix1, parent, VH{asset_id + "_hitbox"});
+            }
+            if (args.at<bool>(KnownArgs::show_massbox, false)) {
+                child_renderable_instance("generic_car_massbox" + suffix1, parent, VH{asset_id + "_massbox"});
+            }
             };
         create_graphics(suffix, decimate);
         create_graphics("_lowres" + suffix, "_lowres");
@@ -222,7 +230,7 @@ void CreateGenericCar::execute(const JsonView& args)
         create_lights();
     }
     auto create_physics = [&](){
-        auto& rb = create_rigid_cuboid(CreateRigidCuboidArgs{
+        auto rb = create_rigid_cuboid(CreateRigidCuboidArgs{
             .node = parent,
             .name = "generic_car_" + asset_id + suffix,
             .asset_id = asset_id,
@@ -236,7 +244,7 @@ void CreateGenericCar::execute(const JsonView& args)
             .geographic_coordinates = scene_node_resources.get_geographic_mapping(WORLD),
             .waypoint_dy = vdb.at<CompressedScenePos>(KnownDb::waypoint_dy),
             .hitboxes = VariableAndHash<std::string>{asset_id + "_hitboxes"},
-            .collidable_mode = CollidableMode::COLLIDE | CollidableMode::MOVE});
+            .collidable_mode = CollidableMode::COLLIDE | CollidableMode::MOVE}).set_loc(CURRENT_SOURCE_LOCATION);
 
         std::shared_ptr<EngineEventListeners> engine_listeners;
         auto add_engine_listener = [&](std::shared_ptr<IEngineEventListener> l){
@@ -260,7 +268,7 @@ void CreateGenericCar::execute(const JsonView& args)
         }
         if (auto engine_exhausts = vdb.try_at_non_null<std::vector<nlohmann::json>>(KnownDb::engine_exhaust); engine_exhausts.has_value()) {
             if (engine_exhausts->empty()) {
-                THROW_OR_ABORT("Engine exhaust array is empty");
+                throw std::runtime_error("Engine exhaust array is empty");
             }
             auto particle_renderer = std::make_shared<ParticleRenderer>(particle_resources, ParticleType::SMOKE);
             parent_node->add_renderable(
@@ -297,7 +305,7 @@ void CreateGenericCar::execute(const JsonView& args)
                     vdb.at<std::vector<float>>(KnownDb::gear_ratios),
                     vdb.at<float>(KnownDb::w_clutch) * rpm,
                     vdb.at<float>(KnownDb::max_dw, INFINITY) * rpm / seconds };
-                rb.engines_.add(
+                rb->engines_.add(
                     front_engine,
                     std::move(engine_power),
                     engine_listeners);
@@ -311,7 +319,7 @@ void CreateGenericCar::execute(const JsonView& args)
                     vdb.at<std::vector<float>>(KnownDb::gear_ratios),
                     vdb.at<float>(KnownDb::w_clutch) * rpm,
                     vdb.at<float>(KnownDb::max_dw, INFINITY) * rpm / seconds };
-                rb.engines_.add(
+                rb->engines_.add(
                     rear_engine,
                     std::move(engine_power),
                     engine_listeners);
@@ -325,18 +333,18 @@ void CreateGenericCar::execute(const JsonView& args)
                 vdb.at<std::vector<float>>(KnownDb::gear_ratios),
                 vdb.at<float>(KnownDb::w_clutch) * rpm,
                 vdb.at<float>(KnownDb::max_dw, INFINITY) * rpm / seconds };
-            rb.engines_.add(
+            rb->engines_.add(
                 front_engine,
                 std::move(engine_power),
                 engine_listeners);
         } else {
-            rb.engines_.add(
+            rb->engines_.add(
                 front_engine,
                 std::nullopt,   // power
                 nullptr);       // listeners
         }
         if (args.at<bool>(KnownArgs::parking_brake_pulled)) {
-            rb.park_vehicle();
+            rb->park_vehicle();
         }
 
         wdb.validate(KnownWheels::options);
@@ -361,9 +369,9 @@ void CreateGenericCar::execute(const JsonView& args)
             const FixedArray<float, 3>& vehicle_mount_0,
             const FixedArray<float, 3>& vehicle_mount_1)
             {
-                RigidBodyVehicle* wheel = nullptr;
+                DanglingBaseClassPtr<RigidBodyVehicle> wheel_rb = nullptr;
                 if (wheel_mass != 0.f) {
-                    wheel = &create_rigid_disk(CreateRigidDiskArgs{
+                    wheel_rb = create_rigid_disk(CreateRigidDiskArgs{
                         .node = node,
                         .name = name,
                         .asset_id = asset_id,
@@ -381,15 +389,12 @@ void CreateGenericCar::execute(const JsonView& args)
                         .hitbox_filter = ColoredVertexArrayFilter{
                             .included_tags = PhysicsMaterial::ATTR_COLLIDE
                         },
-                        .collidable_mode = CollidableMode::NONE });
+                        .collidable_mode = CollidableMode::NONE }).ptr().set_loc(CURRENT_SOURCE_LOCATION);
                 }
 
-                RigidBodyPulses* wheel_rbp = nullptr;
                 if (!node->empty()) {
-                    auto wheel_node = scene.get_node(node, DP_LOC);
-                    if (wheel != nullptr) {
-                        wheel_rbp = &wheel->rbp_;
-                    } else {
+                    auto wheel_node = scene.get_node(node, CURRENT_SOURCE_LOCATION);
+                    if (wheel_rb == nullptr) {
                         auto wheel = std::make_unique<Wheel>(
                             rb,
                             physics_engine.advance_times_,
@@ -406,11 +411,11 @@ void CreateGenericCar::execute(const JsonView& args)
                     // From: https://www.nanolounge.de/21977/federkonstante-und-masse-bei-auto
                     // Ds = 1000 / 4 * 9.8 / 0.02 = 122500 = 1.225e5
                     // Da * 1 = 1000 / 4 * 9.8 => Da = 1e4 / 4
-                    rb.tires_.add(
+                    rb->tires_.add(
                         tire_id,
                         engine,
                         delta_engine,
-                        wheel_rbp,
+                        wheel_rb,
                         wheel_brake_force,
                         wheel_brake_torque,
                         wheel_Ks,
@@ -466,14 +471,14 @@ void CreateGenericCar::execute(const JsonView& args)
             wheel_right_rear_mount_1);
 
         if (auto pos = vdb.at("trailer_hitch_position_female"); pos.type() != nlohmann::detail::value_t::null) {
-            rb.trailer_hitches_.set_position_female(pos.get<UFixedArray<float, 3>>());
+            rb->trailer_hitches_.set_position_female(pos.get<UFixedArray<float, 3>>());
         }
         if (auto pos = vdb.at("trailer_hitch_position_male"); pos.type() != nlohmann::detail::value_t::null) {
-            rb.trailer_hitches_.set_position_male(pos.get<UFixedArray<float, 3>>());
+            rb->trailer_hitches_.set_position_male(pos.get<UFixedArray<float, 3>>());
         }
 
         auto front_tire_ids = std::vector<size_t>{ 0, 1 };
-        rb.vehicle_controller_ = std::make_unique<CarController>(
+        rb->vehicle_controller_ = std::make_unique<CarController>(
             rb,
             front_engine,
             rear_engine,
@@ -485,8 +490,8 @@ void CreateGenericCar::execute(const JsonView& args)
                 OutOfRangeBehavior::CLAMP},
                 physics_engine);
 
-        rb.drivers_.set_seats({ "driver" });
-        rb.door_distance_ = vdb.at<float>(KnownDb::door_distance) * meters;
+        rb->drivers_.set_seats({ "driver" });
+        rb->door_distance_ = vdb.at<float>(KnownDb::door_distance) * meters;
 
         if (args.at<bool>(KnownArgs::if_damageable)) {
             create_damageable.execute(JsonView{std::map<std::string, nlohmann::json>{
@@ -507,8 +512,8 @@ void CreateGenericCar::execute(const JsonView& args)
                     }
                 }}
             }});
-            rb.collision_observers_.emplace_back(std::make_unique<Crash>(rb, 0.3f));
-            rb.damage_absorption_direction_ = FixedArray<float, 3>{0.f, 0.f, 1.f};
+            rb->collision_observers_.emplace_back(std::make_unique<Crash>(rb, 0.3f));
+            rb->damage_absorption_direction_ = FixedArray<float, 3>{0.f, 0.f, 1.f};
         }
         };
     if (if_with_physics) {

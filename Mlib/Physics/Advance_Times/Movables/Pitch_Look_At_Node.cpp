@@ -1,22 +1,22 @@
 #include "Pitch_Look_At_Node.hpp"
-#include <Mlib/Assert.hpp>
 #include <Mlib/Geometry/Angle.hpp>
 #include <Mlib/Geometry/Coordinates/Homogeneous.hpp>
 #include <Mlib/Geometry/Coordinates/To_Tait_Bryan_Angles.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
-#include <Mlib/Math/Signed_Min.hpp>
+#include <Mlib/Math/Sigmoid/Signed_Min.hpp>
 #include <Mlib/Memory/Object_Pool.hpp>
 #include <Mlib/Physics/Advance_Times/Movables/Aim_At.hpp>
 #include <Mlib/Physics/Misc/Aim.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
+#include <Mlib/Testing/Assert.hpp>
+#include <stdexcept>
 
 using namespace Mlib;
 
 PitchLookAtNode::PitchLookAtNode(
-    AimAt& aim_at,
+    const DanglingBaseClassRef<AimAt>& aim_at,
     float pitch_min,
     float pitch_max,
     float dpitch_max,
@@ -51,8 +51,8 @@ void PitchLookAtNode::set_updated_relative_model_matrix(const TransformationMatr
 }
 
 void PitchLookAtNode::set_absolute_model_matrix(const TransformationMatrix<float, ScenePos, 3>& absolute_model_matrix) {
-    if (!any(isnan(aim_at_node_.relative_point_to_aim_at()))) {
-        float dpitch = z_to_pitch(-aim_at_node_.relative_point_to_aim_at());
+    if (!any(isnan(aim_at_node_->relative_point_to_aim_at()))) {
+        float dpitch = z_to_pitch(-aim_at_node_->relative_point_to_aim_at());
         float epitch = increment_pitch_error_();
         increment_pitch(dpitch + epitch, 1.f);
     }
@@ -91,7 +91,7 @@ TransformationMatrix<float, ScenePos, 3> PitchLookAtNode::get_new_relative_model
 
 void PitchLookAtNode::set_head_node(DanglingBaseClassRef<SceneNode> head_node) {
     if (head_node_ != nullptr) {
-        THROW_OR_ABORT("Head node already set");
+        throw std::runtime_error("Head node already set");
     }
     head_node_ = head_node.ptr();
     head_node_->clearing_observers.add({ *this, CURRENT_SOURCE_LOCATION });
@@ -102,7 +102,7 @@ void PitchLookAtNode::notify_destroyed(SceneNode& destroyed_object) {
         head_node_ = nullptr;
     } else {
         if (destroyed_object.has_relative_movable()) {
-            if (&destroyed_object.get_relative_movable() != this) {
+            if (&destroyed_object.get_relative_movable(CURRENT_SOURCE_LOCATION).get() != this) {
                 verbose_abort("Unexpected relative movable");
             }
             destroyed_object.clear_relative_movable();

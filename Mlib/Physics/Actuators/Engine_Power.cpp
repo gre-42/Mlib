@@ -1,6 +1,7 @@
+
 #include "Engine_Power.hpp"
-#include <Mlib/Throw_Or_Abort.hpp>
 #include <ostream>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -25,20 +26,20 @@ EnginePower::EnginePower(
   gear_ratios_{gear_ratios}
 {
     if (gear_ratios.empty()) {
-        THROW_OR_ABORT("gear_ratios is empty");
+        throw std::runtime_error("gear_ratios is empty");
     }
     gear_ = gear_ratios.size() - 1;
     // if (w_to_power(0) == 0.f) {
-    //     THROW_OR_ABORT("The power at angular velocity \"zero\" cannot be \"zero\". Please specify a small, positive value.");
+    //     throw std::runtime_error("The power at angular velocity \"zero\" cannot be \"zero\". Please specify a small, positive value.");
     // }
 }
 
 void EnginePower::auto_set_gear(float dt, float tire_w) {
     if (std::isnan(tire_w)) {
-        THROW_OR_ABORT("tire_w is NAN in auto_set_gear");
+        throw std::runtime_error("tire_w is NAN in auto_set_gear");
     }
     if (gear_ratios_.empty()) {
-        THROW_OR_ABORT("Gear ratio array is empty");
+        throw std::runtime_error("Gear ratio array is empty");
     }
     auto it = std::max_element(
         gear_ratios_.begin(),
@@ -46,21 +47,21 @@ void EnginePower::auto_set_gear(float dt, float tire_w) {
         [this, &tire_w](float r0, float r1){
             return get_power(tire_w, r0) < get_power(tire_w, r1);});
     if (it == gear_ratios_.end()) {
-        THROW_OR_ABORT("auto_set_gear internal error");
+        throw std::runtime_error("auto_set_gear internal error");
     }
     if (get_power(tire_w, *it) > get_power(tire_w, gear_ratios_[gear_])) {
         gear_ = size_t(it - gear_ratios_.begin());
     }
     float target_engine_w = ::engine_w(tire_w, gear_ratios_[gear_], w_clutch_);
     if (std::isnan(target_engine_w)) {
-        THROW_OR_ABORT("Target engine w is NAN");
+        throw std::runtime_error("Target engine w is NAN");
     }
     engine_w_ += std::clamp(target_engine_w - engine_w_, -max_dw_ * dt, max_dw_ * dt);
 }
 
 float EnginePower::engine_w() const {
     if (std::isnan(engine_w_)) {
-        THROW_OR_ABORT("engine_w is NAN in engine_w");
+        throw std::runtime_error("engine_w is NAN in engine_w");
     }
     return engine_w_;
 }

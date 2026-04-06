@@ -1,10 +1,10 @@
+
 #include "Rotor.hpp"
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Math/Fixed_Scaled_Unit_Vector.hpp>
-#include <Mlib/Math/Signed_Min.hpp>
-#include <Mlib/Scene_Graph/Containers/Scene.hpp>
+#include <Mlib/Math/Sigmoid/Signed_Min.hpp>
 #include <Mlib/Scene_Graph/Instances/Static_World.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -16,7 +16,7 @@ GravityCorrection Mlib::gravity_correction_from_string(const std::string& str) {
     } else if (str == "move") {
         return GravityCorrection::MOVE;
     } else {
-        THROW_OR_ABORT("Unknown rotor movement");
+        throw std::runtime_error("Unknown rotor movement");
     }
 }
 
@@ -37,7 +37,7 @@ Rotor::Rotor(
     const FixedArray<float, 3>& vehicle_mount_1,
     const FixedArray<float, 3>& blades_mount_0,
     const FixedArray<float, 3>& blades_mount_1,
-    RigidBodyPulses* rotor_rb)
+    const DanglingBaseClassPtr<RigidBodyVehicle>& rotor_rb)
     : BaseRotor{ engine, delta_engine, rotor_rb, NAN }  // NAN = brake_torque (currently only used for tires)
     , rest_location{ rest_location }
     , angles{ 0.f, 0.f, 0.f }
@@ -69,7 +69,7 @@ TransformationMatrix<float, ScenePos, 3> Rotor::rotated_location(
             return fixed_zeros<ScenePos, 3>();
         } else {
             if (std::isnan(radius_)) {
-                THROW_OR_ABORT("Rotor radius not set");
+                throw std::runtime_error("Rotor radius not set");
             }
             return pos * radius_ / ScenePos(2);
         }
@@ -80,13 +80,13 @@ TransformationMatrix<float, ScenePos, 3> Rotor::rotated_location(
         scaled_movement(movement)};
     if (gravity_correction_ != GravityCorrection::NONE) {
         if (std::isnan(max_align_to_gravity_)) {
-            THROW_OR_ABORT("max_align_to_gravity not set");
+            throw std::runtime_error("max_align_to_gravity not set");
         }
         if (std::isnan(drift_reduction_factor_)) {
-            THROW_OR_ABORT("drift_reduction_factor not set");
+            throw std::runtime_error("drift_reduction_factor not set");
         }
         if (std::isnan(drift_reduction_reference_velocity_)) {
-            THROW_OR_ABORT("drift_reduction_reference_velocity not set");
+            throw std::runtime_error("drift_reduction_reference_velocity not set");
         }
         // Drift is defined as the velocity along the x-axis.
         // => Project velocity onto the x-axis.
@@ -103,7 +103,7 @@ TransformationMatrix<float, ScenePos, 3> Rotor::rotated_location(
         // Without adding dg the rotor would gimbal to be
         // exactly parallel to the gravity vector.
         if ((static_world.gravity == nullptr) || (static_world.gravity->magnitude == 0.f)) {
-            THROW_OR_ABORT("Rotor gravity correction requires gravity");
+            throw std::runtime_error("Rotor gravity correction requires gravity");
         }
         FixedArray<float, 3> g = abs_rest_location.inverted().rotate(static_world.gravity->direction + dg);
         float g_len2 = sum(squared(g));
@@ -118,7 +118,7 @@ TransformationMatrix<float, ScenePos, 3> Rotor::rotated_location(
                     d(2)};
                 // Abort if we are already aligned to the z-axis.
                 if (std::abs(d(2)) > 1e-6) {
-                    THROW_OR_ABORT("Invalid rotor rotation");
+                    throw std::runtime_error("Invalid rotor rotation");
                 }
                 float d_len2 = sum(squared(d));
                 if (d_len2 > 1e-12) {
@@ -139,7 +139,7 @@ TransformationMatrix<float, ScenePos, 3> Rotor::rotated_location(
                 TransformationMatrix<float, ScenePos, 3> M{ fixed_identity_array<float, 3>(), scaled_movement(pos) };
                 return abs_rest_location * M * r_controller;
             } else {
-                THROW_OR_ABORT("Unknown rotor movement");
+                throw std::runtime_error("Unknown rotor movement");
             }
         }
     }

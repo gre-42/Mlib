@@ -1,6 +1,7 @@
+
 #include "Blending_Pass_Type.hpp"
-#include <Mlib/Throw_Or_Abort.hpp>
 #include <map>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -12,7 +13,7 @@ BlendingPassType Mlib::blending_pass_type_from_string(const std::string& str) {
     };
     auto it = m.find(str);
     if (it == m.end()) {
-        THROW_OR_ABORT("Unknown blending pass type: \"" + str + '"');
+        throw std::runtime_error("Unknown blending pass type: \"" + str + '"');
     }
     return it->second;
 }

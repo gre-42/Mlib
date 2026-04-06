@@ -1,11 +1,12 @@
 #pragma once
+#include <Mlib/Memory/Dangling_Base_Class.hpp>
 
 namespace Mlib {
 
 class RigidBodyVehicle;
 class DestructionFunctions;
 
-class ITeam {
+class ITeam: public virtual DanglingBaseClass {
 public:
     virtual void notify_kill(RigidBodyVehicle& rigid_body_vehicle) = 0;
     virtual DestructionFunctions& on_destroy_team() = 0;

@@ -3,7 +3,7 @@
 #include <Mlib/Physics/Containers/Collision_Query.hpp>
 #include <Mlib/Physics/Containers/Permanent_Contacts.hpp>
 #include <Mlib/Physics/Containers/Rigid_Bodies.hpp>
-#include <Mlib/Physics/Physics_Engine/Physics_Engine_Config.hpp>
+#include <Mlib/Scene_Config/Physics_Engine_Config.hpp>
 #include <chrono>
 #include <list>
 #include <set>

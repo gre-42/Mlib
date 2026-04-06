@@ -1,3 +1,4 @@
+
 #include "Rigid_Body_Avatar_Controller.hpp"
 #include <Mlib/Math/Fixed_Math.hpp>
 

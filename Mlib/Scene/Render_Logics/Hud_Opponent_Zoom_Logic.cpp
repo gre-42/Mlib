@@ -2,40 +2,34 @@
 #include <Mlib/Geometry/Cameras/Camera.hpp>
 #include <Mlib/Geometry/Cameras/Perspective_Camera.hpp>
 #include <Mlib/Geometry/Coordinates/Gl_Look_At_Bounding_Sphere.hpp>
-#include <Mlib/Geometry/Intersection/Extremal_Bounding_Sphere.hpp>
+#include <Mlib/Geometry/Primitives/Extremal_Bounding_Sphere.hpp>
 #include <Mlib/Layout/IWidget.hpp>
 #include <Mlib/Layout/Layout_Constraint_Parameters.hpp>
-#include <Mlib/Log.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Memory/Object_Pool.hpp>
+#include <Mlib/Misc/Log.hpp>
+#include <Mlib/OpenGL/Render_Logics/Render_Logics.hpp>
+#include <Mlib/OpenGL/Render_Setup.hpp>
+#include <Mlib/OpenGL/Viewport_Guard.hpp>
 #include <Mlib/Players/Advance_Times/Player.hpp>
-#include <Mlib/Render/Render_Logics/Render_Logics.hpp>
-#include <Mlib/Render/Render_Setup.hpp>
-#include <Mlib/Render/Viewport_Guard.hpp>
-#include <Mlib/Scene_Graph/Containers/Scene.hpp>
-#include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
 #include <Mlib/Scene_Graph/Elements/Make_Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Rendered_Scene_Descriptor.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
 #include <sstream>
+#include <stdexcept>
 
 using namespace Mlib;
 
 HudOpponentZoomLogic::HudOpponentZoomLogic(
     ObjectPool& object_pool,
-    Scene& scene,
     std::unique_ptr<RenderLogic>&& scene_logic,
     RenderLogics& render_logics,
-    Players& players,
     const DanglingBaseClassRef<Player>& player,
     const std::optional<std::vector<DanglingBaseClassPtr<const SceneNode>>>& exclusive_nodes,
     std::unique_ptr<IWidget>&& widget,
     float fov,
     float zoom)
-    : scene_{ scene }
-    , players_{ players }
-    , player_{ player }
+    : player_{ player }
     , on_player_delete_vehicle_internals_{ player->delete_vehicle_internals, CURRENT_SOURCE_LOCATION }
     , scene_logic_{ std::move(scene_logic) }
     , widget_{ std::move(widget) }
@@ -48,7 +42,7 @@ HudOpponentZoomLogic::HudOpponentZoomLogic(
         exclusive_nodes_.emplace();
         for (const auto& element : *exclusive_nodes) {
             if (!exclusive_nodes_->emplace(element, CURRENT_SOURCE_LOCATION).second) {
-                THROW_OR_ABORT("Duplicate exclusive nodes");
+                throw std::runtime_error("Duplicate exclusive nodes");
             }
         }
     }

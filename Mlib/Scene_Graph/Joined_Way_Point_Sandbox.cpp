@@ -1,7 +1,8 @@
+
 #include "Joined_Way_Point_Sandbox.hpp"
 #include <Mlib/Strings/String.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
 #include <map>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -26,7 +27,7 @@ std::string Mlib::joined_way_point_sandbox_to_string(JoinedWayPointSandbox t) {
         }
     }
     if (cmp != t) {
-        THROW_OR_ABORT("Unknown joined waypoint sandbox");
+        throw std::runtime_error("Unknown joined waypoint sandbox");
     }
     return result;
 }
@@ -37,7 +38,7 @@ JoinedWayPointSandbox Mlib::joined_way_point_sandbox_from_string(const std::stri
     for (const auto& t : string_to_list(s, re)) {
         auto it = m.find(t);
         if (it == m.end()) {
-            THROW_OR_ABORT("Unknown joined waypoint sandbox: \"" + t + '"');
+            throw std::runtime_error("Unknown joined waypoint sandbox: \"" + t + '"');
         }
         result |= it->second;
     }

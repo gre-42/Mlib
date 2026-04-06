@@ -1,3 +1,4 @@
+
 #include "Read_Texture_Native_D3d.hpp"
 #include <Mlib/Geometry/Mesh/Load/IRaster_D3d8.hpp>
 #include <Mlib/Geometry/Mesh/Load/IRaster_Factory.hpp>
@@ -16,7 +17,7 @@ std::shared_ptr<Texture> Mlib::Dff::read_texture_native_d3d8(
     IoVerbosity verbosity)
 {
     if ((raster_factory != nullptr) && (raster_config == nullptr)) {
-        THROW_OR_ABORT("Received raster factory without config");
+        throw std::runtime_error("Received raster factory without config");
     }
     auto texture = std::make_shared<Texture>();
     // Texture
@@ -81,7 +82,7 @@ std::shared_ptr<Texture> Mlib::Dff::read_texture_native_d3d8(
         if (i < raster_d3d8->num_levels()) {
             auto expected_size = raster_d3d8->mipmap_level(i).size();
             if (size != expected_size) {
-                THROW_OR_ABORT((std::stringstream() << "Unexpected mipmap size. Expected: " << expected_size << ", actual: " << size).str());
+                throw std::runtime_error((std::stringstream() << "Unexpected mipmap size. Expected: " << expected_size << ", actual: " << size).str());
             }
             uint8_t* data = raster_d3d8->lock(i, Raster::LOCKWRITE | Raster::LOCKNOFETCH);
             read_vector(istr, std::span{ data, size }, "data", verbosity);
@@ -103,5 +104,5 @@ std::shared_ptr<Texture> Mlib::Dff::read_texture_native_d3d9(
     const std::list<std::unique_ptr<IPlugin>>& plugins,
     IoVerbosity verbosity)
 {
-    THROW_OR_ABORT("read_texture_native_d3d9 not yet implemented");
+    throw std::runtime_error("read_texture_native_d3d9 not yet implemented");
 }

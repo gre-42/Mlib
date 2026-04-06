@@ -2,8 +2,8 @@
 #include <Mlib/Geometry/Mesh/Contour.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Compute_Area.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Osm_Map_Resource_Helpers.hpp>
-#include <Mlib/Strings/To_Number.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
+#include <Mlib/Strings/String_View_To_Number.hpp>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -27,7 +27,7 @@ void Mlib::report_osm_problems(
         std::string n_old;
         for (const auto& n : w.second.nd) {
             if (n.empty()) {
-                THROW_OR_ABORT("Node id is empty");
+                throw std::runtime_error("Node id is empty");
             }
             if (!n_old.empty()) {
                 auto edge = std::make_pair(n_old, n);

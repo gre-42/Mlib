@@ -70,7 +70,7 @@ private:
     JsonMacroArguments json_macro_arguments_;
     std::list<std::function<void()>> observers_;
     std::list<std::function<void()>> finalizers_;
-    std::atomic_uint32_t notification_counter_;
+    std::atomic<std::uint32_t> notification_counter_;
 };
 
 class JsonMacroArgumentsAndLock {

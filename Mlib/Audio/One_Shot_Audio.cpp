@@ -1,7 +1,8 @@
+
 #include "One_Shot_Audio.hpp"
 #include <Mlib/Audio/Audio_Periodicity.hpp>
 #include <Mlib/Audio/Audio_Scene.hpp>
-#include <Mlib/Geometry/Intersection/Interval.hpp>
+#include <Mlib/Geometry/Primitives/Interval.hpp>
 #include <Mlib/Memory/Event_Emitter.hpp>
 #include <Mlib/Os/Os.hpp>
 #include <mutex>

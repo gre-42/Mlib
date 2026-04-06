@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/Physics/Interfaces/Collision_Observer.hpp>
 
 namespace Mlib {
@@ -6,7 +7,7 @@ namespace Mlib {
 class Crash: public CollisionObserver {
 public:
     explicit Crash(
-        RigidBodyVehicle& rigid_body,
+        const DanglingBaseClassRef<RigidBodyVehicle>& rigid_body,
         float damage);
     virtual void notify_impact(
         RigidBodyVehicle& rigid_body,
@@ -16,7 +17,7 @@ public:
         float lambda_final,
         BaseLog* base_log) override;
 private:
-    RigidBodyVehicle& rigid_body_;
+    DanglingBaseClassRef<RigidBodyVehicle> rigid_body_;
     float damage_;
 };
 

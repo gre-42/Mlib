@@ -4,21 +4,23 @@
 #include <Mlib/Layout/Screen_Units.hpp>
 #include <Mlib/Layout/Widget.hpp>
 #include <Mlib/Memory/Destruction_Guard.hpp>
+#include <Mlib/OpenGL/CHK.hpp>
+#include <Mlib/OpenGL/Context_Query.hpp>
+#include <Mlib/OpenGL/Data_Display/Circular_Data_Display.hpp>
+#include <Mlib/OpenGL/Data_Display/Pointer_Image_Logic.hpp>
+#include <Mlib/OpenGL/Gl_Context_Guard.hpp>
+#include <Mlib/OpenGL/OpenGL_Object_Factory.hpp>
+#include <Mlib/OpenGL/Renderables/OpenGL_Vertex_Array_Renderer.hpp>
+#include <Mlib/OpenGL/Rendering_Context.hpp>
+#include <Mlib/OpenGL/Resource_Managers/Particle_Resources.hpp>
+#include <Mlib/OpenGL/Resource_Managers/Rendering_Resources.hpp>
+#include <Mlib/OpenGL/Resource_Managers/Trail_Resources.hpp>
+#include <Mlib/OpenGL/Text/Align_Text.hpp>
+#include <Mlib/OpenGL/Text/Charsets.hpp>
+#include <Mlib/OpenGL/Text/Renderable_Text.hpp>
+#include <Mlib/OpenGL/Text/Text_Interpolation_Mode.hpp>
+#include <Mlib/OpenGL/Window.hpp>
 #include <Mlib/Physics/Units.hpp>
-#include <Mlib/Render/CHK.hpp>
-#include <Mlib/Render/Context_Query.hpp>
-#include <Mlib/Render/Data_Display/Circular_Data_Display.hpp>
-#include <Mlib/Render/Data_Display/Pointer_Image_Logic.hpp>
-#include <Mlib/Render/Gl_Context_Guard.hpp>
-#include <Mlib/Render/Rendering_Context.hpp>
-#include <Mlib/Render/Resource_Managers/Particle_Resources.hpp>
-#include <Mlib/Render/Resource_Managers/Rendering_Resources.hpp>
-#include <Mlib/Render/Resource_Managers/Trail_Resources.hpp>
-#include <Mlib/Render/Text/Align_Text.hpp>
-#include <Mlib/Render/Text/Charsets.hpp>
-#include <Mlib/Render/Text/Renderable_Text.hpp>
-#include <Mlib/Render/Text/Text_Interpolation_Mode.hpp>
-#include <Mlib/Render/Window.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
 #include <Mlib/Threads/Realtime_Threads.hpp>
 #include <iostream>
@@ -64,17 +66,21 @@ int main(int argc, char** argv)
 
         // Resources
         // ---------
-        SceneNodeResources scene_node_resources;
+        OpenGLObjectFactory gpu_object_factory;
+        SceneNodeResources scene_node_resources{gpu_object_factory};
         ParticleResources particle_resources;
         TrailResources trail_resources;
         RenderingResources rendering_resources{
             "primary_rendering_resources",
             16 };
+        OpenGLVertexArrayRenderer gpu_vertex_array_renderer{rendering_resources, rendering_resources};
         RenderingContext primary_rendering_context{
             .scene_node_resources = scene_node_resources,
             .particle_resources = particle_resources,
             .trail_resources = trail_resources,
             .rendering_resources = rendering_resources,
+            .gpu_object_factory = gpu_object_factory,
+            .gpu_vertex_array_renderer = gpu_vertex_array_renderer,
             .z_order = 0 };
         RenderingContextGuard rcg{ primary_rendering_context };
 
@@ -99,7 +105,7 @@ int main(int argc, char** argv)
         }
         PointerImageLogic pointer_image_logic{
             rendering_resources.get_texture(ColormapWithModifiers{
-                .filename = VariableAndHash<std::string>{ argv[2] },
+                .filename = FPath::from_variable(argv[2]),
                 .color_mode = ColorMode::RGBA,
                 .mipmap_mode = MipmapMode::WITH_MIPMAPS
             }.compute_hash())
