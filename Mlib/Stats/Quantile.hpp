@@ -12,7 +12,7 @@ public:
     explicit Quantiles(const Array<TDataX>& x)
         : sx_(sorted(x))
     {
-        if (x.length() == 0) {
+        if (sx_.length() == 0) {
             throw std::runtime_error("Cannot compute quantiles for an empty array");
         }
     }

@@ -59,7 +59,7 @@ Array<TData> nan_sorted(const Array<TData>& x, size_t axis) {
 
 template <class TData>
 Array<TData> sorted(const Array<TData>& a) {
-    Array<TData> af(a.copy());
+    Array<TData> af(a.flattened().copy());
     sort(af);
     return af;
 }
