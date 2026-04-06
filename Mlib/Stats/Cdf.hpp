@@ -9,11 +9,14 @@ public:
     Cdf(const Array<TData>& data, size_t nbins = 10)
         : hist_{data, nbins}
     {
+        if (hist_.nobservations == 0) {
+            throw std::runtime_error("CDF received no observations");
+        }
         const Array<size_t>& hist = hist_.hist();
         cdf_.resize(hist.shape());
         TFloat cumsum = 0;
         for (size_t i = 0; i < hist.length(); ++i) {
-            cumsum += TFloat(hist(i)) / TFloat(data.nelements());
+            cumsum += TFloat(hist(i)) / TFloat(hist_.nobservations);
             cdf_(i) = std::min((TFloat)1, cumsum);
         }
     }

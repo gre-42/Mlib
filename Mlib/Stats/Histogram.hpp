@@ -24,6 +24,7 @@ public:
         Array<TData> fdata = data[Mlib::isfinite(data)];
         mi_ = min(fdata);
         ma_ = max(fdata);
+        nobservations = fdata.length();
         if ((ma_ - mi_) < 1e-12) {
             nbins = 1;
         }
@@ -75,6 +76,7 @@ public:
     size_t nbins() const {
         return hist_.length();
     }
+    size_t nobservations;
 private:
     Array<size_t> hist_;
     TData mi_;
