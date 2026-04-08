@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/Scene_Config/Scene_Precision.hpp>
 #include <chrono>
 #include <cstddef>
@@ -8,7 +9,7 @@ namespace Mlib {
 template <typename TData, size_t... tshape>
 class FixedArray;
 
-class IDynamicLight {
+class IDynamicLight: public DanglingBaseClass {
 public:
     virtual ~IDynamicLight() = default;
     virtual void append_time(std::chrono::steady_clock::time_point time) = 0;

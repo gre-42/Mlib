@@ -10,6 +10,7 @@
 #include <Mlib/Physics/Misc/Aim.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
+#include <Mlib/Scene_Graph/Elements/Scene_Time.hpp>
 #include <Mlib/Testing/Assert.hpp>
 #include <stdexcept>
 
@@ -82,7 +83,7 @@ TransformationMatrix<float, ScenePos, 3> PitchLookAtNode::get_new_relative_model
     if (head_node_ != nullptr) {
         head_node_->set_rotation(
             FixedArray<float, 3>{pitch_ + (std::isnan(dpitch_head_) ? 0.f : dpitch_head_), 0.f, 0.f},
-            SUCCESSOR_POSE);
+            SceneTime::successor());
     }
     return TransformationMatrix<float, ScenePos, 3>{
         tait_bryan_angles_2_matrix(FixedArray<float, 3>{pitch_, 0.f, 0.f}),

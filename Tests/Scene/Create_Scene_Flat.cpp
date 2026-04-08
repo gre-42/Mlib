@@ -25,6 +25,7 @@
 #include <Mlib/Scene_Graph/Elements/Make_Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Elements/Rendering_Strategies.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
+#include <Mlib/Scene_Graph/Elements/Scene_Time.hpp>
 #include <Mlib/Scene_Graph/Instantiation/Child_Instantiation_Options.hpp>
 #include <Mlib/Scene_Graph/Interfaces/IScene_Node_Resource.hpp>
 #include <Mlib/Scene_Graph/Resources/Renderable_Resource_Filter.hpp>
@@ -185,15 +186,15 @@ void Mlib::create_scene_flat(
         .scene_node = scene_node1_2.ref(CURRENT_SOURCE_LOCATION),
         .renderable_resource_filter = RenderableResourceFilter{}});
     if (getenv_default_bool("STACK", false)) {
-        scene_node1_1->set_position(FixedArray<ScenePos, 3>{0.f, 4.f, 0.f}, INITIAL_POSE);
-        scene_node1_2->set_position(FixedArray<ScenePos, 3>{0.f, 8.f, 0.f}, INITIAL_POSE);
+        scene_node1_1->set_position(FixedArray<ScenePos, 3>{0.f, 4.f, 0.f}, SceneTime::initial());
+        scene_node1_2->set_position(FixedArray<ScenePos, 3>{0.f, 8.f, 0.f}, SceneTime::initial());
     } else {
-        scene_node0->set_rotation(FixedArray<float, 3>{0.f, 0.f, 0.001f * float(M_PI)}, INITIAL_POSE);
-        scene_node1_1->set_position(FixedArray<ScenePos, 3>{0.1f + prng(), 4.f + prng(), 0.5f + prng()}, INITIAL_POSE);
-        scene_node1_2->set_position(FixedArray<ScenePos, 3>{0.1f + prng(), 8.f + prng(), 0.5f + prng()}, INITIAL_POSE);
-        scene_node1_0->set_rotation(FixedArray<float, 3>{0.f + rrng(), 0.f + rrng(), 0.1f * float(M_PI) + rrng()}, INITIAL_POSE);
-        scene_node1_1->set_rotation(FixedArray<float, 3>{0.f + rrng(), 0.f + rrng(), 0.05f * float(M_PI) + rrng()}, INITIAL_POSE);
-        scene_node1_2->set_rotation(FixedArray<float, 3>{0.f + rrng(), 0.f + rrng(), 0.05f * float(M_PI) + rrng()}, INITIAL_POSE);
+        scene_node0->set_rotation(FixedArray<float, 3>{0.f, 0.f, 0.001f * float(M_PI)}, SceneTime::initial());
+        scene_node1_1->set_position(FixedArray<ScenePos, 3>{0.1f + prng(), 4.f + prng(), 0.5f + prng()}, SceneTime::initial());
+        scene_node1_2->set_position(FixedArray<ScenePos, 3>{0.1f + prng(), 8.f + prng(), 0.5f + prng()}, SceneTime::initial());
+        scene_node1_0->set_rotation(FixedArray<float, 3>{0.f + rrng(), 0.f + rrng(), 0.1f * float(M_PI) + rrng()}, SceneTime::initial());
+        scene_node1_1->set_rotation(FixedArray<float, 3>{0.f + rrng(), 0.f + rrng(), 0.05f * float(M_PI) + rrng()}, SceneTime::initial());
+        scene_node1_2->set_rotation(FixedArray<float, 3>{0.f + rrng(), 0.f + rrng(), 0.05f * float(M_PI) + rrng()}, SceneTime::initial());
     }
 
     scene_nodeR->add_child(N0, std::move(scene_node0));
@@ -204,9 +205,9 @@ void Mlib::create_scene_flat(
     scene.register_node(N1_0, scene_node1_0.ref(CURRENT_SOURCE_LOCATION));
     scene.register_node(N1_1, scene_node1_1.ref(CURRENT_SOURCE_LOCATION));
     scene.register_node(N1_2, scene_node1_2.ref(CURRENT_SOURCE_LOCATION));
-    scene_nodeR->set_position({0.f, -1.f, -40.f}, INITIAL_POSE);
-    scene_nodeL->set_position({0.f, 50.f, -40.f}, INITIAL_POSE);
-    scene_nodeL->set_rotation({-90.f * degrees, 0.f, 0.f}, INITIAL_POSE);
+    scene_nodeR->set_position({0.f, -1.f, -40.f}, SceneTime::initial());
+    scene_nodeL->set_position({0.f, 50.f, -40.f}, SceneTime::initial());
+    scene_nodeL->set_rotation({-90.f * degrees, 0.f, 0.f}, SceneTime::initial());
 
     scene.auto_add_root_node(OBJ, std::move(scene_nodeR), RenderingDynamics::MOVING);
     scene.add_root_node(VariableAndHash<std::string>{"follower_camera_0"}, make_unique_scene_node(), RenderingDynamics::MOVING, RenderingStrategies::OBJECT);
@@ -238,6 +239,6 @@ void Mlib::create_scene_flat(
     // Check if the initialization does not change the node positions.
     // Not that only "physics advance time" can change the positions.
     assert_allclose(scene.get_node(OBJ, CURRENT_SOURCE_LOCATION)->get_child(N0)->position(), fixed_zeros<ScenePos, 3>());
-    scene.move(physics_cfg.dt, std::chrono::steady_clock::now());
+    scene.move(physics_cfg.dt, SceneTime::standard(std::chrono::steady_clock::now()));
     assert_allclose(scene.get_node(OBJ, CURRENT_SOURCE_LOCATION)->get_child(N0)->position(), fixed_zeros<ScenePos, 3>());
 }

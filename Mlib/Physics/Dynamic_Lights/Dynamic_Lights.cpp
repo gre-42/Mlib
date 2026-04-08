@@ -16,7 +16,8 @@ DynamicLights::~DynamicLights() = default;
 std::unique_ptr<IDynamicLight> DynamicLights::instantiate(
     const std::string& name,
     const std::function<FixedArray<ScenePos, 3>()>& get_position,
-    std::chrono::steady_clock::time_point time)
+    std::chrono::steady_clock::time_point time,
+    SourceLocation loc)
 {
     const auto& config = db_.get(name);
     std::unique_ptr<IDynamicLight> result;
@@ -28,7 +29,7 @@ std::unique_ptr<IDynamicLight> DynamicLights::instantiate(
         throw std::runtime_error("Unknown dynamic light type");
     }
     std::scoped_lock lock{ mutex_ };
-    if (!instances_.insert(result.get()).second) {
+    if (!instances_.emplace(result.get(), loc).second) {
         verbose_abort("DynamicLights::instantiate internal error");
     }
     return result;
@@ -36,9 +37,16 @@ std::unique_ptr<IDynamicLight> DynamicLights::instantiate(
 
 void DynamicLights::erase(IDynamicLight& light) {
     std::scoped_lock lock{ mutex_ };
-    if (instances_.erase(&light) != 1) {
+    auto it = instances_.find(light);
+    if (it == instances_.end()) {
         verbose_abort("Could not delete dynamic light");
     }
+    instances_.erase(it);
+}
+
+bool DynamicLights::empty() const {
+    std::scoped_lock lock{ mutex_ };
+    return instances_.empty();    
 }
 
 void DynamicLights::append_time(std::chrono::steady_clock::time_point time) {
@@ -51,7 +59,7 @@ void DynamicLights::append_time(std::chrono::steady_clock::time_point time) {
 void DynamicLights::set_time(std::chrono::steady_clock::time_point time) {
     std::scoped_lock lock{ mutex_ };
     for (auto it = instances_.begin(); it != instances_.end(); ) {
-        auto& l = **it;
+        auto& l = *it->get();
         if (l.animation_completed(time)) {
             instances_.erase(it++);
         } else {

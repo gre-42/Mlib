@@ -29,6 +29,7 @@
 #include <Mlib/Scene_Graph/Elements/Renderable.hpp>
 #include <Mlib/Scene_Graph/Elements/Renderable_With_Style.hpp>
 #include <Mlib/Scene_Graph/Elements/Rendering_Strategies.hpp>
+#include <Mlib/Scene_Graph/Elements/Scene_Time.hpp>
 #include <Mlib/Scene_Graph/Elements/Skidmark.hpp>
 #include <Mlib/Scene_Graph/Interfaces/IDynamic_Lights.hpp>
 #include <Mlib/Scene_Graph/Interfaces/IParticle_Renderer.hpp>
@@ -846,7 +847,7 @@ void SceneNode::set_animation_state_updater(std::unique_ptr<AnimationStateUpdate
 void SceneNode::move(
     const TransformationMatrix<float, ScenePos, 3>& v,
     float dt,
-    std::chrono::steady_clock::time_point time,
+    const SceneTime& time,
     SceneNodeResources* scene_node_resources,
     const AnimationState* animation_state)
 {
@@ -906,7 +907,7 @@ void SceneNode::move(
                     res_pose.t,
                     res_pose.q.to_tait_bryan_angles(),
                     scale(),
-                    SUCCESSOR_POSE);
+                    SceneTime::successor());
             };
             if (estate->aperiodic_animation_frame.active()) {
                 apply_scene_node_animation(
@@ -929,20 +930,20 @@ void SceneNode::move(
             relative_movable_->set_updated_relative_model_matrix(mr);
             relative_movable_->set_absolute_model_matrix(ma);
             auto mr2 = relative_movable_->get_new_relative_model_matrix();
-            set_relative_pose(mr2.t, matrix_2_tait_bryan_angles(mr2.R), 1.f, SUCCESSOR_POSE);
+            set_relative_pose(mr2.t, matrix_2_tait_bryan_angles(mr2.R), 1.f, SceneTime::successor());
             v2 = relative_view_matrix() * v;
             absolute_movable_->set_absolute_model_matrix(v2.inverted_scaled());
         } else {
             if (absolute_movable_ != nullptr) {
                 auto m = absolute_movable_->get_new_absolute_model_matrix();
                 m = v * m;
-                set_relative_pose(m.t, matrix_2_tait_bryan_angles(m.R), 1, SUCCESSOR_POSE);
+                set_relative_pose(m.t, matrix_2_tait_bryan_angles(m.R), 1, SceneTime::successor());
             }
             v2 = relative_view_matrix() * v;
             if (relative_movable_ != nullptr) {
                 relative_movable_->set_absolute_model_matrix(v2.inverted_scaled());
                 auto m = relative_movable_->get_new_relative_model_matrix();
-                set_relative_pose(m.t, matrix_2_tait_bryan_angles(m.R), 1, SUCCESSOR_POSE);
+                set_relative_pose(m.t, matrix_2_tait_bryan_angles(m.R), 1, SceneTime::successor());
                 v2 = relative_view_matrix() * v;
             }
         }
@@ -975,7 +976,8 @@ void SceneNode::move(
     }
     std::scoped_lock lock{ pose_mutex_ };
     if ((interpolation_mode_ == PoseInterpolationMode::DISABLED) ||
-        trafo_history_invalidated_)
+        trafo_history_invalidated_ ||
+        (any(time.type() & SceneTimeType::INITIAL)))
     {
         trafo_history_.clear();
         trafo_history_invalidated_ = false;
@@ -991,24 +993,32 @@ void SceneNode::move(
             throw std::runtime_error(sstr.str());
         }
     }
-    trafo_history_.append(trafo_, time);
+    if (any(time.type() & SceneTimeType::WITH_TIME)) {
+        trafo_history_.append(trafo_, time.time());
+    }
 }
 
-bool SceneNode::to_be_deleted(std::chrono::steady_clock::time_point time) const {
+bool SceneNode::to_be_deleted(const SceneTime& time) const {
     std::shared_lock lock{ mutex_ };
+    if ((animation_state_ == nullptr) ||
+        !animation_state_->delete_node_when_aperiodic_animation_finished)
+    {
+        return false;
+    }
+    if (!any(time.type() & SceneTimeType::WITH_TIME)) {
+        throw std::runtime_error("Animated nodes require time");
+    }
     return
-        (animation_state_ != nullptr) &&
-        animation_state_->delete_node_when_aperiodic_animation_finished &&
-        (animation_state_->aperiodic_animation_frame.ran_to_completion() ||
-         std::visit(
+        animation_state_->aperiodic_animation_frame.ran_to_completion() ||
+        std::visit(
             [&time]<class RefTime>(const RefTime& reference_time) -> bool
             {
                 if constexpr (std::is_same_v<RefTime, AperiodicReferenceTime>) {
-                    return reference_time.ran_to_completion(time);
+                    return reference_time.ran_to_completion(time.time());
                 }
                 return false;
             },
-            animation_state_->reference_time));
+            animation_state_->reference_time);
 }
 
 void SceneNode::set_bone(const SceneNodeBone& bone) {
@@ -1483,7 +1493,7 @@ float SceneNode::scale() const {
 
 void SceneNode::set_position(
     const FixedArray<ScenePos, 3>& position,
-    std::optional<std::chrono::steady_clock::time_point> time)
+    const SceneTime& time)
 {
     {
         std::scoped_lock lock{ mutex_ };
@@ -1493,22 +1503,20 @@ void SceneNode::set_position(
     }
     std::scoped_lock lock{ pose_mutex_ };
     trafo_.t = position;
-    if (!time.has_value()) {
-        // Do nothing
-    } else if (*time == std::chrono::steady_clock::time_point()) {
+    if (any(time.type() & SceneTimeType::INITIAL)) {
         trafo_history_.clear();
-        trafo_history_.append(trafo_, std::chrono::steady_clock::now());
-    } else {
+    }
+    if (any(time.type() & SceneTimeType::WITH_TIME)) {
         if (interpolation_mode_ == PoseInterpolationMode::DISABLED) {
             throw std::runtime_error("Attempt to set interpolated position of a node with interpolation disabled");
         }
-        trafo_history_.append(trafo_, *time);
+        trafo_history_.append(trafo_, time.time());
     }
 }
 
 void SceneNode::set_rotation(
     const FixedArray<float, 3>& rotation,
-    std::optional<std::chrono::steady_clock::time_point> time)
+    const SceneTime& time)
 {
     {
         std::scoped_lock lock{ mutex_ };
@@ -1519,16 +1527,14 @@ void SceneNode::set_rotation(
     std::scoped_lock lock{ pose_mutex_ };
     trafo_.q = Quaternion<float>::from_tait_bryan_angles(rotation);
     rotation_matrix_ = tait_bryan_angles_2_matrix(rotation);
-    if (!time.has_value()) {
-        // Do nothing
-    } else if (*time == std::chrono::steady_clock::time_point()) {
+    if (any(time.type() & SceneTimeType::INITIAL)) {
         trafo_history_.clear();
-        trafo_history_.append(trafo_, std::chrono::steady_clock::now());
-    } else {
+    }
+    if (any(time.type() & SceneTimeType::WITH_TIME)) {
         if (interpolation_mode_ == PoseInterpolationMode::DISABLED) {
             throw std::runtime_error("Attempt to set interpolated rotation of a node with interpolation disabled");
         }
-        trafo_history_.append(trafo_, *time);
+        trafo_history_.append(trafo_, time.time());
     }
 }
 
@@ -1545,28 +1551,26 @@ void SceneNode::set_relative_pose(
     const FixedArray<ScenePos, 3>& position,
     const FixedArray<float, 3>& rotation,
     float scale,
-    std::optional<std::chrono::steady_clock::time_point> time)
+    const SceneTime& time)
 {
     std::scoped_lock lock{ pose_mutex_ };
-    set_position(position, SUCCESSOR_POSE);
-    set_rotation(rotation, SUCCESSOR_POSE);
+    set_position(position, SceneTime::successor());
+    set_rotation(rotation, SceneTime::successor());
     set_scale(scale);
-    if (!time.has_value()) {
-        // Do nothing
-    } else if (*time == std::chrono::steady_clock::time_point()) {
+    if (any(time.type() & SceneTimeType::INITIAL)) {
         trafo_history_.clear();
-        trafo_history_.append(trafo_, std::chrono::steady_clock::now());
-    } else {
+    }
+    if (any(time.type() & SceneTimeType::WITH_TIME)) {
         if (interpolation_mode_ == PoseInterpolationMode::DISABLED) {
             throw std::runtime_error("Attempt to set interpolated position of a node with interpolation disabled");
         }
-        trafo_history_.append(trafo_, *time);
+        trafo_history_.append(trafo_, time.time());
     }
 }
 
 TransformationMatrix<float, ScenePos, 3> SceneNode::relative_model_matrix(std::chrono::steady_clock::time_point time) const {
     std::shared_lock lock{ pose_mutex_ };
-    if (trafo_history_invalidated_ && (time == std::chrono::steady_clock::time_point())) {
+    if (trafo_history_invalidated_ && (time != std::chrono::steady_clock::time_point())) {
         throw std::runtime_error("Attempt to access invalidated transformation");
     }
     if ((time == std::chrono::steady_clock::time_point()) ||
@@ -1594,7 +1598,7 @@ TransformationMatrix<float, ScenePos, 3> SceneNode::absolute_model_matrix(std::c
 
 TransformationMatrix<float, ScenePos, 3> SceneNode::relative_view_matrix(std::chrono::steady_clock::time_point time) const {
     std::shared_lock lock{ pose_mutex_ };
-    if (trafo_history_invalidated_ && (time == std::chrono::steady_clock::time_point())) {
+    if (trafo_history_invalidated_ && (time != std::chrono::steady_clock::time_point())) {
         throw std::runtime_error("Attempt to access invalidated transformation");
     }
     if ((time == std::chrono::steady_clock::time_point()) ||
@@ -1654,7 +1658,7 @@ void SceneNode::set_absolute_pose(
     const FixedArray<ScenePos, 3>& position,
     const FixedArray<float, 3>& rotation,
     float scale,
-    std::optional<std::chrono::steady_clock::time_point> time)
+    const SceneTime& time)
 {
     std::scoped_lock lock{ pose_mutex_ };
     if (parent_ == nullptr) {
@@ -1887,7 +1891,7 @@ void SceneNode::clear_transformation_history(
     if (absolute_movable_ != nullptr) {
         absolute_movable_->set_absolute_model_matrix(m);
     }
-    set_absolute_pose(m.t, matrix_2_tait_bryan_angles(m.R), scale_, INITIAL_POSE);
+    set_absolute_pose(m.t, matrix_2_tait_bryan_angles(m.R), scale_, SceneTime::initial());
     for (const auto& [_, c] : children_) {
         c.scene_node->clear_transformation_history(m);
     }

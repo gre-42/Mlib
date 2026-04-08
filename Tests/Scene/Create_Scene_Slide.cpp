@@ -22,6 +22,7 @@
 #include <Mlib/Scene_Graph/Elements/Make_Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Elements/Rendering_Strategies.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
+#include <Mlib/Scene_Graph/Elements/Scene_Time.hpp>
 #include <Mlib/Scene_Graph/Instantiation/Child_Instantiation_Options.hpp>
 #include <Mlib/Scene_Graph/Interfaces/IScene_Node_Resource.hpp>
 #include <Mlib/Scene_Graph/Resources/Renderable_Resource_Filter.hpp>
@@ -125,13 +126,13 @@ void Mlib::create_scene_slide(
         .instance_name = VariableAndHash<std::string>{ "obj1_0" },
         .scene_node = scene_node_box.ref(CURRENT_SOURCE_LOCATION),
         .renderable_resource_filter = RenderableResourceFilter{}});
-    scene_node_slide->set_rotation({0.f, -90.f * degrees, 0.f}, INITIAL_POSE);
-    scene_node_slide->set_position({-5.f, 0.f, -90.f}, INITIAL_POSE);
-    scene_node_box->set_rotation({0.f, 0.f, 10.f * degrees}, INITIAL_POSE);
-    scene_node_box->set_position({-10.f, 10.f, -90.f}, INITIAL_POSE);
+    scene_node_slide->set_rotation({0.f, -90.f * degrees, 0.f}, SceneTime::initial());
+    scene_node_slide->set_position({-5.f, 0.f, -90.f}, SceneTime::initial());
+    scene_node_box->set_rotation({0.f, 0.f, 10.f * degrees}, SceneTime::initial());
+    scene_node_box->set_position({-10.f, 10.f, -90.f}, SceneTime::initial());
 
-    scene_node_light->set_position({0.f, 50.f, -90.f}, INITIAL_POSE);
-    scene_node_light->set_rotation({-90.f * degrees, 0.f, 0.f}, INITIAL_POSE);
+    scene_node_light->set_position({0.f, 50.f, -90.f}, SceneTime::initial());
+    scene_node_light->set_rotation({-90.f * degrees, 0.f, 0.f}, SceneTime::initial());
 
     scene.auto_add_root_node(OBJ_SLIDE, std::move(scene_node_slide), RenderingDynamics::STATIC);
     scene.auto_add_root_node(OBJ_BOX, std::move(scene_node_box), RenderingDynamics::MOVING);

@@ -25,6 +25,7 @@ class Scene;
 struct BeaconNode;
 enum class RaceState;
 class RenderingResources;
+class SceneTime;
 
 struct CheckPointPose {
     TrackElementExtended track_element;
@@ -77,7 +78,7 @@ public:
     double meters_to_start() const;
     size_t lap_index() const;
 private:
-    void advance_time(float dt);
+    void advance_time_only(float dt, const SceneTime& time);
     void reset_player();
     TrackReader track_reader_;
     size_t nlaps_;

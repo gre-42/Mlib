@@ -4,6 +4,7 @@
 #include <Mlib/Physics/Physics_Engine/Physics_Engine.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
+#include <Mlib/Scene_Graph/Elements/Scene_Time.hpp>
 #include <Mlib/Scene_Graph/Instances/Dynamic_World.hpp>
 #include <Mlib/Scene_Graph/Instances/Static_World.hpp>
 #include <Mlib/Threads/Thread_Top.hpp>
@@ -36,8 +37,8 @@ void BurnIn::execute(const LoadSceneJsonUserFunctionArgs& args)
         .inverse_geographic_mapping = dynamic_world.get_inverse_geographic_mapping(),
         .gravity = dynamic_world.get_gravity(),
         .wind = dynamic_world.get_wind(),
-        .time = std::chrono::steady_clock::now()
+        .time = dynamic_world.get_time()
     };
     physics_engine.burn_in(world, args.arguments.at<float>(KnownArgs::seconds) * seconds);
-    scene.move(0.f, std::chrono::steady_clock::now()); // dt
+    scene.move(0.f, SceneTime::standard(dynamic_world.get_time())); // dt
 }

@@ -21,6 +21,7 @@
 #include <Mlib/Scene_Graph/Elements/Make_Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Elements/Rendering_Strategies.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
+#include <Mlib/Scene_Graph/Elements/Scene_Time.hpp>
 
 using namespace Mlib;
 
@@ -287,8 +288,7 @@ void RemoteRigidBodyVehicle::read(
             position,
             rotation,
             1.f,
-            INITIAL_POSE);
-        rb_->scene_node_->clear_transformation_history();
+            SceneTime::initial(physics_scene_->dynamic_world_.get_time()));
     }
     if (update_position) {
         rb_->rbp_.set_pose(tait_bryan_angles_2_matrix(rotation), position);

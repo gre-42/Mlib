@@ -1,4 +1,3 @@
-
 #include "Check_Points.hpp"
 #include <Mlib/Geometry/Coordinates/Homogeneous.hpp>
 #include <Mlib/Geometry/Instance/Rendering_Dynamics.hpp>
@@ -15,6 +14,8 @@
 #include <Mlib/Scene_Graph/Elements/Color_Style.hpp>
 #include <Mlib/Scene_Graph/Elements/Make_Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
+#include <Mlib/Scene_Graph/Elements/Scene_Time.hpp>
+#include <Mlib/Scene_Graph/Instances/Static_World.hpp>
 #include <Mlib/Scene_Graph/Instantiation/Child_Instantiation_Options.hpp>
 #include <Mlib/Scene_Graph/Interfaces/IScene_Node_Resource.hpp>
 #include <Mlib/Scene_Graph/Interfaces/Scene_Node/IAbsolute_Movable.hpp>
@@ -96,7 +97,7 @@ CheckPoints::CheckPoints(
         movings_.push_back(n->get_absolute_movable(CURRENT_SOURCE_LOCATION).ptr());
     }
     beacon_nodes_.reserve(nbeacons);
-    advance_time(0.f);
+    advance_time_only(0.f, SceneTime::initial());
     // "moving_node_->clearing_observers.add" must be at the end of the constructor
     // in case the ctor throws an exception, because in this case the CheckPoints
     // object is not added to the "advance_times" list.
@@ -110,11 +111,11 @@ CheckPoints::~CheckPoints() {
 }
 
 void CheckPoints::advance_time(float dt, const StaticWorld& world) {
-    advance_time(dt);
+    advance_time_only(dt, SceneTime::standard(world.time));
     reset_player();
 }
 
-void CheckPoints::advance_time(float dt) {
+void CheckPoints::advance_time_only(float dt, const SceneTime& time) {
     if (moving_nodes_.size() != movings_.size()) {
         verbose_abort("Inconsistent movings size");
     }
@@ -197,7 +198,7 @@ void CheckPoints::advance_time(float dt) {
             t.position,
             t.rotation,
             1,
-            INITIAL_POSE);
+            time);
         i01_ = (i01_ + 1) % nbeacons_;
     }
 
@@ -206,7 +207,7 @@ void CheckPoints::advance_time(float dt) {
         for (auto& b : beacon_nodes_) {
             auto pos = b.beacon_node->position();
             pos(1) = y;
-            b.beacon_node->set_position(pos, INITIAL_POSE);
+            b.beacon_node->set_position(pos, time);
         }
         if (!checkpoints_ahead_.empty()) {
             checkpoints_ahead_.front().track_element.set_y_position(y);

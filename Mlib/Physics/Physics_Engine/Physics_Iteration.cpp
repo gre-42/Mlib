@@ -13,6 +13,7 @@
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Make_Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
+#include <Mlib/Scene_Graph/Elements/Scene_Time.hpp>
 #include <Mlib/Scene_Graph/Instances/Dynamic_World.hpp>
 #include <Mlib/Scene_Graph/Instances/Static_World.hpp>
 #include <Mlib/Scene_Graph/Instantiation/Child_Instantiation_Options.hpp>
@@ -61,7 +62,9 @@ void PhysicsIteration::operator()(const TimeAndPause<std::chrono::steady_clock::
                 std::list<Beacon>* bcns = (i == g.nsubsteps - 1)
                     ? &beacons
                     : nullptr;
-                world.time = time.time() - (g.nsubsteps - 1 - i) * idt;
+                auto substep_time = time.time() - (g.nsubsteps - 1 - i) * idt;
+                world.time = substep_time;
+                dynamic_world_.set_time (substep_time);
                 auto phase = PhysicsPhase{
                     .burn_in = false,
                     .substep = i,
@@ -112,7 +115,7 @@ void PhysicsIteration::operator()(const TimeAndPause<std::chrono::steady_clock::
                 }
             }
             // TimeGuard tg1{"scene.move"};
-            scene_.move(physics_cfg_.dt, time.time());
+            scene_.move(physics_cfg_.dt, SceneTime::standard(time.time()));
         }
         physics_engine_.move_advance_times(world);
     }

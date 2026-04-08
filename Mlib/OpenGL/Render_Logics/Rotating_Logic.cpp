@@ -1,4 +1,3 @@
-
 #ifndef __ANDROID__
 
 #include "Rotating_Logic.hpp"
@@ -16,6 +15,7 @@
 #include <Mlib/OpenGL/Key_Bindings/Lockable_Key_Configurations.hpp>
 #include <Mlib/OpenGL/Render_Config.hpp>
 #include <Mlib/OpenGL/Render_Setup.hpp>
+#include <Mlib/Scene_Graph/Elements/Scene_Time.hpp>
 #include <Mlib/Scene_Graph/Rendered_Scene_Descriptor.hpp>
 #include <Mlib/OpenGL/Ui/Button_Press.hpp>
 #include <Mlib/OpenGL/Ui/Button_States.hpp>
@@ -163,7 +163,7 @@ void RotatingLogic::render_with_setup(
     DanglingBaseClassRef<SceneNode> cn = scene_.get_node(VariableAndHash<std::string>{"camera"}, CURRENT_SOURCE_LOCATION);
     cn->set_position(
         FixedArray<ScenePos, 3>{0.f, 0.f, user_object_.camera_z},
-        std::nullopt);
+        SceneTime::initial());
     auto co = cn->get_camera(CURRENT_SOURCE_LOCATION)->copy();
     co->set_aspect_ratio(aspect_ratio);
     auto bi = cn->absolute_bijection(frame_id.external_render_pass.time);
@@ -178,7 +178,7 @@ void RotatingLogic::render_with_setup(
             user_object_.angle_x,
             rotate_ ? (float)glfwGetTime() : user_object_.angle_y,
             0.f},
-            std::nullopt);
+            SceneTime::initial());
     }
     if ((user_object_.beacon_locations != nullptr) && !user_object_.beacon_locations->empty()) {
         DanglingBaseClassRef<SceneNode> bn = scene_
@@ -187,7 +187,7 @@ void RotatingLogic::render_with_setup(
         size_t beacon_index = std::clamp<size_t>(user_object_.beacon_index, 0, user_object_.beacon_locations->size() - 1);
         const TransformationMatrix<float, ScenePos, 3> pose = (*user_object_.beacon_locations)[beacon_index];
         float scale = pose.get_scale();
-        bn->set_relative_pose(pose.t, matrix_2_tait_bryan_angles(pose.R / scale), scale, std::nullopt);
+        bn->set_relative_pose(pose.t, matrix_2_tait_bryan_angles(pose.R / scale), scale, SceneTime::initial());
     }
 
     RenderConfigGuard rcg{ render_config, frame_id.external_render_pass.pass };

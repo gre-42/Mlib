@@ -9,6 +9,7 @@
 #include <Mlib/Physics/Containers/Advance_Times.hpp>
 #include <Mlib/Physics/Interfaces/IPlayer.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
+#include <Mlib/Scene_Graph/Elements/Scene_Time.hpp>
 #include <Mlib/Scene_Graph/Instances/Static_World.hpp>
 
 using namespace Mlib;
@@ -79,7 +80,7 @@ void Gun::advance_time(float dt, const StaticWorld& world) {
     time_since_last_shot_ = std::min(time_since_last_shot_, cool_down_);
     punch_angle_ = punch_angle_rng_(maybe_generate_bullet(world));
     if (punch_angle_node_ != nullptr) {
-        punch_angle_node_->set_rotation(punch_angle_, SUCCESSOR_POSE);
+        punch_angle_node_->set_rotation(punch_angle_, SceneTime::standard(world.time));
     }
     triggered_ = false;
 }

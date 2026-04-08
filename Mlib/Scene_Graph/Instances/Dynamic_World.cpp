@@ -1,6 +1,6 @@
-
 #include "Dynamic_World.hpp"
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -27,4 +27,14 @@ const FixedScaledUnitVector<float, 3>* DynamicWorld::get_gravity() const
 
 const FixedScaledUnitVector<float, 3>* DynamicWorld::get_wind() const {
     return scene_node_resources_.get_wind(name_);
+}
+
+std::chrono::steady_clock::time_point DynamicWorld::get_time() const {
+    if (time_ == std::chrono::steady_clock::time_point()) {
+        throw std::runtime_error("DynamicWorld time not set");
+    }
+    return time_;
+}
+void DynamicWorld::set_time(std::chrono::steady_clock::time_point time) {
+    time_ = time;
 }

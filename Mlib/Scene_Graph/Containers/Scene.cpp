@@ -1,4 +1,3 @@
-
 #include "Scene.hpp"
 #include <Mlib/Array/Chunked_Array.hpp>
 #include <Mlib/Geometry/Coordinates/Homogeneous.hpp>
@@ -15,6 +14,7 @@
 #include <Mlib/Scene_Graph/Elements/Light.hpp>
 #include <Mlib/Scene_Graph/Elements/Rendering_Strategies.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
+#include <Mlib/Scene_Graph/Elements/Scene_Time.hpp>
 #include <Mlib/Scene_Graph/Instances/Large_Instances_Queue.hpp>
 #include <Mlib/Scene_Graph/Instances/Small_Instances_Queues.hpp>
 #include <Mlib/Scene_Graph/Instances/Vertex_Data_And_Sorted_Instances.hpp>
@@ -857,7 +857,7 @@ void Scene::render(
     }
 }
 
-void Scene::move(float dt, std::chrono::steady_clock::time_point time) {
+void Scene::move(float dt, const SceneTime& time) {
     LOG_FUNCTION("Scene::move");
     ThrowingLockGuard delete_lock{ delete_node_mutex };
     {
@@ -891,7 +891,13 @@ void Scene::move(float dt, std::chrono::steady_clock::time_point time) {
             }
         }
         if (dynamic_lights_ != nullptr) {
-            dynamic_lights_->append_time(time);
+            if (!any(time.type() & SceneTimeType::WITH_TIME)) {
+                if (!dynamic_lights_->empty()) {
+                    throw std::runtime_error("Dynamic lights require time");
+                }
+            } else {
+                dynamic_lights_->append_time(time.time());
+            }
         }
         // times_.append(time);
     }

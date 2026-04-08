@@ -286,8 +286,16 @@ namespace std {
 template <class T>
 struct hash<Mlib::DanglingBaseClassPtr<T>>
 {
+    using is_transparent = void;
+
     std::size_t operator()(const Mlib::DanglingBaseClassPtr<T>& s) const noexcept {
         return std::hash<T*>()(s.get());
+    }
+    std::size_t operator()(const T* s) const noexcept {
+        return std::hash<const T*>()(s);
+    }
+    std::size_t operator()(const T& s) const noexcept {
+        return std::hash<const T*>()(&s);
     }
 };
 

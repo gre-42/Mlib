@@ -62,7 +62,7 @@ Bullet::Bullet(
 {
     if (!props_.dynamic_light_configuration_before_impact.empty()) {
         auto func = [this]() { return rigid_body_vehicle_->rbp_.abs_position(); };
-        light_before_impact_ = dynamic_lights_.instantiate(props_.dynamic_light_configuration_before_impact, func, world.time);
+        light_before_impact_ = dynamic_lights_.instantiate(props_.dynamic_light_configuration_before_impact, func, world.time, CURRENT_SOURCE_LOCATION);
     }
     if (!gunner_on_destroy_.is_null()) {
         gunner_on_destroy_.add([this](){ gunner_ = nullptr; }, CURRENT_SOURCE_LOCATION);
@@ -141,7 +141,7 @@ void Bullet::notify_collided(
     cause_damage(intersection_point, rigid_body);
     if (!props_.dynamic_light_configuration_after_impact.empty()) {
         auto func = [&b = rigid_body.rbp_]() { return b.abs_position(); };
-        light_after_impact_ = dynamic_lights_.instantiate(props_.dynamic_light_configuration_after_impact, func, world.time);
+        light_after_impact_ = dynamic_lights_.instantiate(props_.dynamic_light_configuration_after_impact, func, world.time, CURRENT_SOURCE_LOCATION);
     }
     if (light_before_impact_ != nullptr) {
         light_before_impact_ = nullptr;

@@ -6,6 +6,8 @@
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
+#include <Mlib/Scene_Graph/Elements/Scene_Time.hpp>
+#include <Mlib/Scene_Graph/Instances/Dynamic_World.hpp>
 
 using namespace Mlib;
 
@@ -32,5 +34,5 @@ void SetNodeRotation::execute(const LoadSceneJsonUserFunctionArgs& args)
     DanglingBaseClassRef<SceneNode> node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::name), CURRENT_SOURCE_LOCATION);
     node->set_rotation(
         args.arguments.at<EFixedArray<float, 3>>(KnownArgs::rotation) * degrees,
-        SUCCESSOR_POSE);
+        SceneTime::standard(dynamic_world.get_time()));
 }

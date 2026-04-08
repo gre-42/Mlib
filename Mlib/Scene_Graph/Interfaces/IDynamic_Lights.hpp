@@ -12,6 +12,7 @@ class FixedArray;
 class IDynamicLights {
 public:
     virtual ~IDynamicLights() = default;
+    virtual bool empty() const = 0;
     virtual void append_time(std::chrono::steady_clock::time_point time) = 0;
     virtual void set_time(std::chrono::steady_clock::time_point time) = 0;
     virtual FixedArray<float, 3> get_color(const FixedArray<ScenePos, 3>& target_position) const = 0;

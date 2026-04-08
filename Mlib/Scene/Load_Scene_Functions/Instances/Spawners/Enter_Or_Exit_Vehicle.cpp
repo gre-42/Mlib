@@ -9,6 +9,8 @@
 #include <Mlib/Players/Scene_Vehicle/Vehicle_Spawner.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Load_Scene_Funcs.hpp>
+#include <Mlib/Scene_Graph/Elements/Scene_Time.hpp>
+#include <Mlib/Scene_Graph/Instances/Dynamic_World.hpp>
 #include <stdexcept>
 
 using namespace Mlib;
@@ -35,7 +37,7 @@ void EnterOrExitVehicle::execute(const LoadSceneJsonUserFunctionArgs& args)
     auto& destination = vehicle_spawners.get(destination_name);
     auto seat = args.arguments.at<std::string>(KnownArgs::seat);
     player->set_next_vehicle(destination, destination.get_primary_scene_vehicle().get(), seat);
-    if (!game_logic->vehicle_changer.change_vehicle(player->vehicle_spawner().get())) {
+    if (!game_logic->vehicle_changer.change_vehicle(player->vehicle_spawner().get(), SceneTime::standard(dynamic_world.get_time()))) {
         throw std::runtime_error("Player \"" + *player_name + "\" could not enter \"" + *destination_name + '"');
     }
 }

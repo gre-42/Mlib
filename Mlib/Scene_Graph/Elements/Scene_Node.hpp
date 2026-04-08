@@ -64,6 +64,7 @@ class LargeInstancesQueue;
 class Blended;
 template <class T>
 struct Bijection;
+class SceneTime;
 
 struct SceneNodeBone {
     VariableAndHash<std::string> name;
@@ -137,9 +138,6 @@ enum class PhysicsMaterial: uint32_t;
 enum class RenderingStrategies;
 
 class RenderableWithStyle;
-
-static const auto INITIAL_POSE = std::chrono::steady_clock::time_point();
-static const auto SUCCESSOR_POSE = std::nullopt;
 
 class SceneNode final: public virtual DestructionNotifier, public virtual DanglingBaseClass {
     template <class TAbsoluteMovable>
@@ -248,7 +246,7 @@ public:
     void move(
         const TransformationMatrix<float, ScenePos, 3>& v,
         float dt,
-        std::chrono::steady_clock::time_point time,
+        const SceneTime& time,
         SceneNodeResources* scene_node_resources,
         const AnimationState* animation_state);
     PhysicsMaterial physics_attributes() const;
@@ -312,21 +310,21 @@ public:
     float scale() const;
     void set_position(
         const FixedArray<ScenePos, 3>& position,
-        std::optional<std::chrono::steady_clock::time_point> time);
+        const SceneTime& time);
     void set_rotation(
         const FixedArray<float, 3>& rotation,
-        std::optional<std::chrono::steady_clock::time_point> time);
+        const SceneTime& time);
     void set_scale(float scale);
     void set_relative_pose(
         const FixedArray<ScenePos, 3>& position,
         const FixedArray<float, 3>& rotation,
         float scale,
-        std::optional<std::chrono::steady_clock::time_point> time);
+        const SceneTime& time);
     void set_absolute_pose(
         const FixedArray<ScenePos, 3>& position,
         const FixedArray<float, 3>& rotation,
         float scale,
-        std::optional<std::chrono::steady_clock::time_point> time);
+        const SceneTime& time);
     TransformationMatrix<float, ScenePos, 3> relative_model_matrix(std::chrono::steady_clock::time_point time = std::chrono::steady_clock::time_point()) const;
     TransformationMatrix<float, ScenePos, 3> absolute_model_matrix(std::chrono::steady_clock::time_point time = std::chrono::steady_clock::time_point()) const;
     TransformationMatrix<float, ScenePos, 3> relative_view_matrix(std::chrono::steady_clock::time_point time = std::chrono::steady_clock::time_point()) const;
@@ -350,7 +348,7 @@ public:
         std::unique_ptr<AnimationState>&& animation_state,
         AnimationStateAlreadyExistsBehavior already_exists_behavior);
     void set_animation_state_updater(std::unique_ptr<AnimationStateUpdater>&& animation_state_updater);
-    bool to_be_deleted(std::chrono::steady_clock::time_point time) const;
+    bool to_be_deleted(const SceneTime& time) const;
     void set_bone(const SceneNodeBone& bone);
     void set_periodic_animation(const VariableAndHash<std::string>& name);
     void set_aperiodic_animation(const VariableAndHash<std::string>& name);

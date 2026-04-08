@@ -1,4 +1,3 @@
-
 #include "Flying_Camera_Logic.hpp"
 #include <Mlib/Geometry/Cameras/Camera.hpp>
 #include <Mlib/Macro_Executor/Focus.hpp>
@@ -18,6 +17,7 @@
 #include <Mlib/Scene_Config/Scene_Graph_Config.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
+#include <Mlib/Scene_Graph/Elements/Scene_Time.hpp>
 #include <Mlib/Scene_Graph/Rendered_Scene_Descriptor.hpp>
 #include <Mlib/Threads/Termination_Manager.hpp>
 #include <Mlib/Time/Fps/Set_Fps.hpp>
@@ -177,15 +177,15 @@ std::optional<RenderSetup> FlyingCameraLogic::try_render_setup(
     DanglingBaseClassRef<SceneNode> cn = user_object_.cameras.camera(CURRENT_SOURCE_LOCATION).node;
     if (fly_) {
         flying_key_callback(user_object_, *keys_);
-        cn->set_position(user_object_.position, SUCCESSOR_POSE);
-        cn->set_rotation(user_object_.angles, SUCCESSOR_POSE);
+        cn->set_position(user_object_.position, SceneTime::successor());
+        cn->set_rotation(user_object_.angles, SceneTime::successor());
     } else {
         nofly_key_callback(user_object_, *keys_);
     }
     if (rotate_) {
         DanglingBaseClassRef<SceneNode> on = scene_.get_node(user_object_.obj_node_name, CURRENT_SOURCE_LOCATION);
-        on->set_position(user_object_.obj_position, SUCCESSOR_POSE);
-        on->set_rotation(user_object_.obj_angles, SUCCESSOR_POSE);
+        on->set_position(user_object_.obj_position, SceneTime::successor());
+        on->set_rotation(user_object_.obj_angles, SceneTime::successor());
     }
     return std::nullopt;
 }

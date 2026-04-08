@@ -78,6 +78,7 @@
 #include <Mlib/Scene_Graph/Elements/Make_Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Elements/Rendering_Strategies.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
+#include <Mlib/Scene_Graph/Elements/Scene_Time.hpp>
 #include <Mlib/Scene_Graph/Instantiation/Child_Instantiation_Options.hpp>
 #include <Mlib/Scene_Graph/Modifiers/Add_Cleanup_Mesh_Modifier.hpp>
 #include <Mlib/Scene_Graph/Render/Batch_Renderers/Array_Instances_Renderer.hpp>
@@ -1108,7 +1109,7 @@ int main(int argc, char** argv) {
                 FrustumCamera::Postprocessing::ENABLED));
             scene.get_node(VariableAndHash<std::string>{"follower_camera_0"}, CURRENT_SOURCE_LOCATION)->set_rotation(
                 matrix_2_tait_bryan_angles(la->extrinsic_R),
-                std::chrono::steady_clock::time_point());
+                SceneTime::initial());
         } else {
             scene.add_root_node(
                 VariableAndHash<std::string>{"follower_camera_0"},

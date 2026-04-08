@@ -109,7 +109,8 @@ for path, dirs, files in os.walk('.'):
         'glad_gl.cpp',
         'glad_vulkan.cpp',
         'Incomplete_Beta_Distribution.hpp',
-        'Svd4.cpp'}]
+        'Svd4.cpp',
+        'stb_image_write_png16.hpp'}]
     for file in files:
         filename = os.path.join(path, file)
         if filename.endswith('.cpp') or filename.endswith('.hpp'):

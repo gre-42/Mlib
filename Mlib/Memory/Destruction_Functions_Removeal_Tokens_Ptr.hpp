@@ -67,6 +67,9 @@ private:
     const T* get(const DanglingBaseClassRef<T>& v) const {
         return &v.get();
     }
+    const T* get(const T* v) const {
+        return v;
+    }
     const T* get(const T& v) const {
         return &v;
     }
@@ -90,8 +93,11 @@ struct hash<Mlib::DestructionFunctionsTokensPtr<T>>
     std::size_t operator()(const Mlib::DanglingBaseClassRef<T>& s) const noexcept {
         return std::hash<T*>()(&s.get());
     }
+    std::size_t operator()(const T* s) const noexcept {
+        return std::hash<const T*>()(s);
+    }
     std::size_t operator()(const T& s) const noexcept {
-        return std::hash<T*>()(&s);
+        return std::hash<const T*>()(&s);
     }
 };
 

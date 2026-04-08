@@ -9,6 +9,7 @@
 #include <Mlib/Players/Scene_Vehicle/Vehicle_Spawner.hpp>
 #include <Mlib/Scene_Config/Scene_Precision.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
+#include <Mlib/Scene_Graph/Elements/Scene_Time.hpp>
 #include <Mlib/Scene_Graph/Spawn_Arguments.hpp>
 #include <Mlib/Threads/Throwing_Lock_Guard.hpp>
 #include <stdexcept>
@@ -22,7 +23,7 @@ VehicleChanger::VehicleChanger(
     , delete_node_mutex_{ delete_node_mutex }
 {}
 
-bool VehicleChanger::change_vehicle(VehicleSpawner& s) {
+bool VehicleChanger::change_vehicle(VehicleSpawner& s, const SceneTime& time) {
     if (!s.has_player()) {
         return false;
     }
@@ -42,7 +43,7 @@ bool VehicleChanger::change_vehicle(VehicleSpawner& s) {
         CURRENT_SOURCE_LOCATION);
     auto other_player = next_rb->drivers_.try_get(p->next_seat());
     if (other_player == nullptr) {
-        return enter_vehicle(s, *next_vehicle.get());
+        return enter_vehicle(s, *next_vehicle.get(), time);
     }
     return false;
     // } else {
@@ -54,10 +55,10 @@ bool VehicleChanger::change_vehicle(VehicleSpawner& s) {
     // }
 }
 
-void VehicleChanger::change_vehicles() {
+void VehicleChanger::change_vehicles(const SceneTime& time) {
     ThrowingLockGuard delete_lock{delete_node_mutex_};
     for (const auto& [_, s] : vehicle_spawners_.spawners()) {
-        change_vehicle(*s);
+        change_vehicle(*s, time);
     }
 }
 
@@ -93,7 +94,7 @@ void VehicleChanger::swap_vehicles(Player& a, Player& b) {
     b.create_gun_externals();
 }
 
-bool VehicleChanger::enter_vehicle(VehicleSpawner& a, VehicleSpawner& b) {
+bool VehicleChanger::enter_vehicle(VehicleSpawner& a, VehicleSpawner& b, const SceneTime& time) {
     if (!a.has_player()) {
         throw std::runtime_error("Vehicle spawner has no player");
     }
@@ -144,7 +145,7 @@ bool VehicleChanger::enter_vehicle(VehicleSpawner& a, VehicleSpawner& b) {
             b_new_trafo.t,
             matrix_2_tait_bryan_angles(b_new_trafo.R),
             1.f,
-            INITIAL_POSE);
+            time);
         b_rb->activate_avatar();
         a_rb_old->park_vehicle();
     } else {

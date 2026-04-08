@@ -4,6 +4,7 @@
 #include <Mlib/Memory/Object_Pool.hpp>
 #include <Mlib/OpenGL/Selected_Cameras/Selected_Cameras.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
+#include <Mlib/Scene_Graph/Elements/Scene_Time.hpp>
 
 using namespace Mlib;
 
@@ -31,7 +32,7 @@ KeepOffsetFromCamera::KeepOffsetFromCamera(
                 trafo.t,
                 matrix_2_tait_bryan_angles(trafo.R),
                 1.f,
-                INITIAL_POSE);
+                SceneTime::initial());
             }
     }
 {}

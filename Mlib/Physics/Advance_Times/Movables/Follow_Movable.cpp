@@ -1,4 +1,3 @@
-
 #include "Follow_Movable.hpp"
 #include <Mlib/Geometry/Coordinates/Gl_Look_At.hpp>
 #include <Mlib/Geometry/Coordinates/Homogeneous.hpp>
@@ -9,6 +8,8 @@
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Memory/Object_Pool.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
+#include <Mlib/Scene_Graph/Elements/Scene_Time.hpp>
+#include <Mlib/Scene_Graph/Elements/Scene_Time.hpp>
 #include <stdexcept>
 
 using namespace Mlib;
@@ -56,7 +57,7 @@ void FollowMovable::initialize(const DanglingBaseClassRef<SceneNode>& follower_n
         transformation_matrix_.t,
         matrix_2_tait_bryan_angles(transformation_matrix_.R),
         1,
-        INITIAL_POSE);
+        SceneTime::initial());
 }
 
 void FollowMovable::advance_time(float dt, const StaticWorld& world) {

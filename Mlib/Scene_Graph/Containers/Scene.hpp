@@ -43,6 +43,7 @@ class RenderableWithStyle;
 template <class T>
 class VariableAndHash;
 enum class AnimationStateAlreadyExistsBehavior;
+class SceneTime;
 
 class Scene: public virtual DanglingBaseClass {
     friend RootNodes;
@@ -126,7 +127,7 @@ public:
         const SceneGraphConfig& scene_graph_config,
         const RenderedSceneDescriptor& frame_id,
         const std::function<std::function<void()>(std::function<void()>)>& run_in_background = [](std::function<void()> f){return f;}) const;
-    void move(float dt, std::chrono::steady_clock::time_point time);
+    void move(float dt, const SceneTime& time);
     void append_physics_to_queue(
         std::list<std::pair<TransformationMatrix<float, ScenePos, 3>, std::shared_ptr<ColoredVertexArray<float>>>>& float_queue,
         std::list<std::pair<TransformationMatrix<float, ScenePos, 3>, std::shared_ptr<ColoredVertexArray<CompressedScenePos>>>>& double_queue) const;

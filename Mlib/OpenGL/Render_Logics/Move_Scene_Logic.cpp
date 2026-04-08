@@ -1,4 +1,3 @@
-
 #include "Move_Scene_Logic.hpp"
 #include <Mlib/Geometry/Cameras/Camera.hpp>
 #include <Mlib/Misc/Log.hpp>
@@ -6,6 +5,7 @@
 #include <Mlib/OpenGL/Render_Config.hpp>
 #include <Mlib/OpenGL/Render_Setup.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
+#include <Mlib/Scene_Graph/Elements/Scene_Time.hpp>
 #include <Mlib/Scene_Graph/Rendered_Scene_Descriptor.hpp>
 
 using namespace Mlib;
@@ -45,7 +45,7 @@ void MoveSceneLogic::render_without_setup(
         last_time_ = time;
         first_render_ = false;
     } else {
-        scene_.move(std::chrono::duration<float>(time - last_time_).count() * speed_, time);
+        scene_.move(std::chrono::duration<float>(time - last_time_).count() * speed_, SceneTime::standard(time));
     }
 }
 
