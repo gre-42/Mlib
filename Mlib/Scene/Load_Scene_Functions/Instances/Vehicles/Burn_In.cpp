@@ -37,8 +37,8 @@ void BurnIn::execute(const LoadSceneJsonUserFunctionArgs& args)
         .inverse_geographic_mapping = dynamic_world.get_inverse_geographic_mapping(),
         .gravity = dynamic_world.get_gravity(),
         .wind = dynamic_world.get_wind(),
-        .time = dynamic_world.get_time()
+        .time = std::chrono::steady_clock::time_point()
     };
     physics_engine.burn_in(world, args.arguments.at<float>(KnownArgs::seconds) * seconds);
-    scene.move(0.f, SceneTime::standard(dynamic_world.get_time())); // dt
+    scene.move(0.f, SceneTime::initial()); // dt
 }
