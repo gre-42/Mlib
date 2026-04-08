@@ -121,6 +121,7 @@ void BatchResourceInstantiator::instantiate_root_renderables(
                 cm.t,
                 matrix_2_tait_bryan_angles(cm.R),
                 p.scale,
+                std::nullopt,
                 PoseInterpolationMode::DISABLED);
 
             scene_node_resources.instantiate_child_renderable(
@@ -172,6 +173,7 @@ void BatchResourceInstantiator::instantiate_root_renderables(
                 options.absolute_model_matrix.t,
                 matrix_2_tait_bryan_angles(options.absolute_model_matrix.R),
                 1.f,
+                std::nullopt,
                 PoseInterpolationMode::DISABLED);
             auto scale = options.absolute_model_matrix.get_scale();
 
@@ -180,6 +182,7 @@ void BatchResourceInstantiator::instantiate_root_renderables(
                     fixed_zeros<ScenePos, 3>(),
                     rotation_,
                     scale,
+                    std::nullopt,
                     PoseInterpolationMode::DISABLED);
                 scene_node_resources.instantiate_child_renderable(
                     name,

@@ -1,4 +1,3 @@
-
 #include "Colored_Vertex_Array_Resource.hpp"
 #include <Mlib/Geometry/Colored_Vertex.hpp>
 #include <Mlib/Geometry/Coordinates/Homogeneous.hpp>
@@ -41,6 +40,7 @@
 #include <Mlib/Scene_Graph/Elements/Make_Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Elements/Skidmark.hpp>
+#include <Mlib/Scene_Graph/Instances/Dynamic_World.hpp>
 #include <Mlib/Scene_Graph/Instances/Transformation_And_Billboard_Id.hpp>
 #include <Mlib/Scene_Graph/Instantiation/Child_Instantiation_Options.hpp>
 #include <Mlib/Scene_Graph/Instantiation/IInstantiation_Reference.hpp>
@@ -223,6 +223,7 @@ void ColoredVertexArrayResource::instantiate_root_renderables(const RootInstanti
             trafo.t,
             matrix_2_tait_bryan_angles(trafo.R),
             trafo.get_scale(),
+            std::nullopt,
             PoseInterpolationMode::DISABLED);
         for (const auto& [continuous_blending_z_order, cvas] : cs.cvas) {
             std::list<std::shared_ptr<ColoredVertexArray<float>>> scvas;
@@ -306,6 +307,7 @@ void ColoredVertexArrayResource::instantiate_root_renderables(const RootInstanti
             options.absolute_model_matrix.t,
             matrix_2_tait_bryan_angles(options.absolute_model_matrix.R),
             options.absolute_model_matrix.get_scale(),
+            std::nullopt,
             PoseInterpolationMode::DISABLED);
         instantiate_child_renderable(ChildInstantiationOptions{
             .rendering_resources = options.rendering_resources,

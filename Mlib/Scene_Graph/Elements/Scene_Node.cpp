@@ -54,6 +54,7 @@ SceneNode::SceneNode(
     const FixedArray<ScenePos, 3>& position,
     const FixedArray<float, 3>& rotation,
     float scale,
+    std::optional<std::chrono::steady_clock::time_point> time,
     PoseInterpolationMode interpolation_mode,
     SceneNodeDomain domain,
     const ViewableRemoteObject& remote_viewable)
@@ -82,8 +83,16 @@ SceneNode::SceneNode(
     , state_{ SceneNodeState::DETACHED }
     , shutdown_phase_{ ShutdownPhase::NONE }
 {
-    if (interpolation_mode == PoseInterpolationMode::UNDEFINED) {
+    switch (interpolation_mode) {
+    case PoseInterpolationMode::UNDEFINED:
         throw std::runtime_error("Scene node pose interpolation mode is undefined");
+    case PoseInterpolationMode::DISABLED:
+        break;
+    case PoseInterpolationMode::ENABLED:
+    case PoseInterpolationMode::ENABLED_WO_CHECKS:
+        if (time.has_value()) {
+            trafo_history_.append(trafo_, *time);
+        }
     }
 }
 
@@ -95,6 +104,7 @@ SceneNode::SceneNode(
         fixed_zeros<ScenePos, 3>(),
         fixed_zeros<float, 3>(),
         1.f,
+        std::nullopt,
         interpolation_mode,
         domain,
         remote_viewable}
@@ -1209,26 +1219,30 @@ void SceneNode::render(
             }
         }
     }
-    for (const auto& [_, c] : children_) {
+    for (const auto& [n, c] : children_) {
         if (!c.scene_node->is_visible_for_user(frame_id.external_render_pass.observer)) {
             continue;
         }
         OptionalUnlockGuard ulock{ lock, state_ == SceneNodeState::STATIC };
-        c.scene_node->render(
-            mvp,
-            m,
-            iv,
-            camera_node,
-            dynamic_lights,
-            lights,
-            skidmarks,
-            blended,
-            render_config,
-            scene_graph_config,
-            frame_id,
-            estate,
-            ecolor_styles,
-            visibility);
+        try {
+            c.scene_node->render(
+                mvp,
+                m,
+                iv,
+                camera_node,
+                dynamic_lights,
+                lights,
+                skidmarks,
+                blended,
+                render_config,
+                scene_graph_config,
+                frame_id,
+                estate,
+                ecolor_styles,
+                visibility);
+        } catch (const std::runtime_error& e) {
+            throw std::runtime_error("Could not render \"" + *n + "\": " + e.what());
+        }
     }
 }
 
@@ -1578,7 +1592,7 @@ TransformationMatrix<float, ScenePos, 3> SceneNode::relative_model_matrix(std::c
     {
         return TransformationMatrix{rotation_matrix_ * scale_, trafo_.t};
     } else {
-        auto res = trafo_history_.get(time);
+        auto res = trafo_history_.empty() ? trafo_ : trafo_history_.get(time);
         return TransformationMatrix{res.q.to_rotation_matrix() * scale_, res.t};
     }
 }
@@ -1606,7 +1620,7 @@ TransformationMatrix<float, ScenePos, 3> SceneNode::relative_view_matrix(std::ch
     {
         return TransformationMatrix<float, ScenePos, 3>::inverse(rotation_matrix_ / scale_, trafo_.t);
     } else {
-        auto res = trafo_history_.get(time);
+        auto res = trafo_history_.empty() ? trafo_ : trafo_history_.get(time);
         return TransformationMatrix<float, ScenePos, 3>::inverse(res.q.to_rotation_matrix() / scale_, res.t);
     }
 }

@@ -8,6 +8,7 @@
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Make_Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
+#include <Mlib/Scene_Graph/Instances/Dynamic_World.hpp>
 #include <stdexcept>
 
 using namespace Mlib;
@@ -53,6 +54,7 @@ void CreateChildNode::operator () (
         position,
         rotation,
         scale,
+        dynamic_world.try_get_time(),
         interpolation);
     DanglingBaseClassRef<SceneNode> nparent = scene.get_node(parent, CURRENT_SOURCE_LOCATION);
     auto node_ref = node.ref(CURRENT_SOURCE_LOCATION);

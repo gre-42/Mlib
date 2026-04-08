@@ -114,7 +114,8 @@ static void add_reference_bone(
         b.initial_absolute_transformation.t.casted<ScenePos>(),
         b.initial_absolute_transformation.q.to_tait_bryan_angles(),
         1.f,
-        PoseInterpolationMode::ENABLED);
+        std::nullopt,
+        PoseInterpolationMode::DISABLED);
     scene_node_resources.instantiate_child_renderable(
         VariableAndHash<std::string>{ "reference_bone" },
         ChildInstantiationOptions{
@@ -145,13 +146,14 @@ static void add_bone_frame(
         frame.at(b.index).t.casted<ScenePos>(),
         frame.at(b.index).q.to_tait_bryan_angles(),
         1.f,
-        PoseInterpolationMode::ENABLED);
+        std::nullopt,
+        PoseInterpolationMode::DISABLED);
     scene_node_resources.instantiate_child_renderable(
         VariableAndHash<std::string>{ "frame_bone" },
         ChildInstantiationOptions{
             .instance_name = VariableAndHash<std::string>{ "frame_bone" },
             .scene_node = bone_node.ref(CURRENT_SOURCE_LOCATION),
-            .interpolation_mode = PoseInterpolationMode::ENABLED,
+            .interpolation_mode = PoseInterpolationMode::DISABLED,
             .renderable_resource_filter = RenderableResourceFilter{}});
     auto parent = bone_node.ref(CURRENT_SOURCE_LOCATION);
     parent_node->add_child(VariableAndHash<std::string>{ "frame_bone" + std::to_string(b.index) }, std::move(bone_node));
@@ -597,7 +599,9 @@ int main(int argc, char** argv) {
                 safe_stof(args.named_value("--angle_x", "0")) * degrees,
                 safe_stof(args.named_value("--angle_y", "0")) * degrees,
                 safe_stof(args.named_value("--angle_z", "0")) * degrees},
-            safe_stof(args.named_value("--node_scale", "1")));
+            safe_stof(args.named_value("--node_scale", "1")),
+            std::nullopt,
+            PoseInterpolationMode::DISABLED);
         // Setting style before adding renderables to avoid race condition.
         if (light_configuration == "emissive") {
             scene_node->add_color_style(std::unique_ptr<ColorStyle>(new ColorStyle{
@@ -968,7 +972,9 @@ int main(int argc, char** argv) {
                         safe_stof(args.named_value("--light_angle_x", "-45")) * degrees,
                         safe_stof(args.named_value("--light_angle_y", "0")) * degrees,
                         safe_stof(args.named_value("--light_angle_z", "0")) * degrees},
-                    1.f),
+                    1.f,
+                    std::nullopt,
+                    PoseInterpolationMode::DISABLED),
                 RenderingDynamics::MOVING,
                 RenderingStrategies::OBJECT);
             auto light = create_light();
@@ -1004,7 +1010,9 @@ int main(int argc, char** argv) {
                     make_unique_scene_node(
                         FixedArray<ScenePos, 3>{r * std::cos(a) + center(0), center(1), r * std::sin(a) + center(2)},
                         matrix_2_tait_bryan_angles(*R).casted<float>(),
-                        1.f),
+                        1.f,
+                        std::nullopt,
+                        PoseInterpolationMode::DISABLED),
                     RenderingDynamics::MOVING,
                     RenderingStrategies::OBJECT);
                 auto light = create_light();
@@ -1032,7 +1040,9 @@ int main(int argc, char** argv) {
                         make_unique_scene_node(
                             FixedArray<ScenePos, 3>{r * std::cos(a) + center(0), center(1), r * std::sin(a) + center(2)},
                             matrix_2_tait_bryan_angles(*R).casted<float>(),
-                            1.f),
+                            1.f,
+                            std::nullopt,
+                            PoseInterpolationMode::DISABLED),
                         RenderingDynamics::MOVING,
                         RenderingStrategies::OBJECT);
                     auto light = create_light();
@@ -1122,7 +1132,9 @@ int main(int argc, char** argv) {
                         safe_stof(args.named_value("--camera_angle_x", "0")) * degrees,
                         safe_stof(args.named_value("--camera_angle_y", "0")) * degrees,
                         safe_stof(args.named_value("--camera_angle_z", "0")) * degrees},
-                    1.f),
+                    1.f,
+                    std::nullopt,
+                    PoseInterpolationMode::DISABLED),
                 RenderingDynamics::MOVING,
                 RenderingStrategies::OBJECT);
             scene.get_node(VariableAndHash<std::string>{"follower_camera_0"}, CURRENT_SOURCE_LOCATION)->set_camera(std::make_unique<PerspectiveCamera>(

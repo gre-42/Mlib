@@ -170,7 +170,8 @@ void ImposterLogic::add_imposter(
         FixedArray<ScenePos, 3>{orig_node_position(0), camera_y, orig_node_position(2)},
         FixedArray<float, 3>{0.f, angle_y, 0.f},
         1.f,
-        PoseInterpolationMode::ENABLED,
+        std::nullopt,
+        PoseInterpolationMode::DISABLED,
         SceneNodeDomain::RENDER);
     res.instantiate_child_renderable(ChildInstantiationOptions{
         .rendering_resources = &rendering_resources_,
@@ -337,7 +338,9 @@ void ImposterLogic::render_without_setup(
         auto imposter_camera_node = make_unique_scene_node(
             camera_position,
             matrix_2_tait_bryan_angles(la->extrinsic_R),
-            1.f);
+            1.f,
+            std::nullopt,
+            PoseInterpolationMode::DISABLED);
         imposter_camera_node->set_camera(
             std::make_unique<FrustumCamera>(
                 FrustumCameraConfig::from_sensor_aabb(

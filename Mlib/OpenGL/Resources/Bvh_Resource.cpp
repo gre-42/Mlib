@@ -50,7 +50,9 @@ static void instantiate_bvh(
         auto node = make_unique_scene_node(
             (center - position_shift).casted<ScenePos>(),
             fixed_zeros<float, 3>(),
-            1.f);
+            1.f,
+            std::nullopt,
+            PoseInterpolationMode::DISABLED);
         std::list<std::shared_ptr<ColoredVertexArray<float>>> lcvas;
         for (const auto& [mm, cva] : cvas) {
             UUVector<FixedArray<ColoredVertex<float>, 3>> vcva(cva.size());
@@ -94,7 +96,9 @@ static void instantiate_bvh(
         auto node = make_unique_scene_node(
             (c->first.center() - position_shift).casted<ScenePos>(),
             fixed_zeros<float, 3>(),
-            1.f);
+            1.f,
+            std::nullopt,
+            PoseInterpolationMode::DISABLED);
         instantiate_bvh(
             name,
             node.ref(CURRENT_SOURCE_LOCATION),

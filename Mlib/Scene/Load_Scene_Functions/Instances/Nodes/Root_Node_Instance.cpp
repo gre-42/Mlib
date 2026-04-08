@@ -11,6 +11,7 @@
 #include <Mlib/Scene_Graph/Elements/Make_Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Elements/Rendering_Strategies.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
+#include <Mlib/Scene_Graph/Instances/Dynamic_World.hpp>
 #include <stdexcept>
 
 using namespace Mlib;
@@ -49,6 +50,7 @@ void RootNodeInstance::execute(const LoadSceneJsonUserFunctionArgs& args)
         pos.casted<ScenePos>() * (ScenePos)meters,
         args.arguments.at<EFixedArray<float, 3>>(KnownArgs::rotation) * degrees,
         args.arguments.at<float>(KnownArgs::scale, 1.f),
+        dynamic_world.try_get_time(),
         pose_interpolation_mode_from_string(args.arguments.at<std::string>(KnownArgs::interpolation, "enabled")),
         SceneNodeDomain::RENDER | SceneNodeDomain::PHYSICS,
         viewable);

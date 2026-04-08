@@ -9,6 +9,7 @@
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Load_Scene_Funcs.hpp>
 #include <Mlib/Scene/Renderable_Scene.hpp>
+#include <Mlib/Scene_Graph/Instances/Dynamic_World.hpp>
 #include <Mlib/Scene_Graph/Instantiation/Instantiate_Frames.hpp>
 #include <Mlib/Scene_Graph/Instantiation/Read_Ipl.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
@@ -50,6 +51,7 @@ void Instantiate::execute(const LoadSceneJsonUserFunctionArgs &args) {
             instantiate(
                 scene,
                 info,
+                dynamic_world.try_get_time(),
                 scene_node_resources,
                 rendering_resources,
                 required_prefixes,
@@ -63,6 +65,7 @@ void Instantiate::execute(const LoadSceneJsonUserFunctionArgs &args) {
         instantiate(
             scene,
             scene_node_resources.instantiable(name),
+            dynamic_world.try_get_time(),
             scene_node_resources,
             rendering_resources,
             required_prefixes,

@@ -14,6 +14,7 @@
 #include <Mlib/Scene_Graph/Elements/Make_Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Elements/Rendering_Strategies.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
+#include <Mlib/Scene_Graph/Instances/Dynamic_World.hpp>
 #include <stdexcept>
 
 using namespace Mlib;
@@ -54,7 +55,8 @@ void CreateTrailerNode::execute(const LoadSceneJsonUserFunctionArgs& args)
     auto node = make_unique_scene_node(
         pose1.t,
         matrix_2_tait_bryan_angles(pose1.R),
-        pose1.get_scale());
+        pose1.get_scale(),
+        dynamic_world.try_get_time());
     scene.add_root_node(
         args.arguments.at<VariableAndHash<std::string>>(KnownArgs::trailer_node),
         std::move(node),

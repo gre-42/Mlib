@@ -17,6 +17,7 @@ using namespace Mlib;
 void Mlib::instantiate(
     Scene& scene,
     const InstanceInformation<ScenePos>& info,
+    std::optional<std::chrono::steady_clock::time_point> time,
     SceneNodeResources& scene_node_resources,
     RenderingResources& rendering_resources,
     const std::set<std::string>& required_prefixes,
@@ -38,6 +39,7 @@ void Mlib::instantiate(
         info.trafo.t,
         matrix_2_tait_bryan_angles(info.trafo.R),
         info.scale,
+        time,
         info.rendering_dynamics == RenderingDynamics::STATIC
             ? PoseInterpolationMode::DISABLED
             : PoseInterpolationMode::ENABLED);

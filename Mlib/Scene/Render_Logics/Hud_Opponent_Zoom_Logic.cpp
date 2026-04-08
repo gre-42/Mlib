@@ -101,7 +101,9 @@ void HudOpponentZoomLogic::render_with_setup(
     auto zoom_camera_node = make_unique_scene_node(
         la->camera_model_matrix.t,
         matrix_2_tait_bryan_angles(la->camera_model_matrix.R),
-        1.f);
+        1.f,
+        std::nullopt,
+        PoseInterpolationMode::DISABLED);
     zoom_camera_node->set_camera(
         std::make_unique<PerspectiveCamera>(
             PerspectiveCameraConfig{

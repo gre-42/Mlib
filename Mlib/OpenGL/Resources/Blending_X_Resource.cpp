@@ -93,11 +93,13 @@ void BlendingXResource::instantiate_child_renderable(const ChildInstantiationOpt
             FixedArray<ScenePos, 3>{(square_(1, 0) - square_(0, 0)) / 4.f, 0.f, 0.f },
             fixed_zeros<float, 3>(),
             1.f,
+            options.time,
             options.interpolation_mode);
         rva_(1)->instantiate_child_renderable(ChildInstantiationOptions{
             .rendering_resources = options.rendering_resources,
             .instance_name = VariableAndHash<std::string>{ "plane" },
             .scene_node = node.ref(CURRENT_SOURCE_LOCATION),
+            .time = options.time,
             .interpolation_mode = options.interpolation_mode,
             .renderable_resource_filter = RenderableResourceFilter{}});
         if (aggregate_modes_(1) == AggregateMode::SORTED_CONTINUOUSLY) {
@@ -119,11 +121,14 @@ void BlendingXResource::instantiate_child_renderable(const ChildInstantiationOpt
                 0.f,
                 0.f },
             fixed_zeros<float, 3>(),
-            1.f);
+            1.f,
+            options.time,
+            options.interpolation_mode);
         rva_(0)->instantiate_child_renderable(ChildInstantiationOptions{
             .rendering_resources = options.rendering_resources,
             .instance_name = VariableAndHash<std::string>{ "plane" },
             .scene_node = node.ref(CURRENT_SOURCE_LOCATION),
+            .time = options.time,
             .interpolation_mode = options.interpolation_mode,
             .renderable_resource_filter = RenderableResourceFilter{}});
         if (aggregate_modes_(0) == AggregateMode::SORTED_CONTINUOUSLY) {
@@ -142,11 +147,14 @@ void BlendingXResource::instantiate_child_renderable(const ChildInstantiationOpt
         auto node = make_unique_scene_node(
             FixedArray<ScenePos, 3>{0.f, 0.f, (square_(1, 1) - square_(0, 1)) / 4.f },
             FixedArray<float, 3>{0.f, -90.f * degrees, 0.f },
-            1.f);
+            1.f,
+            options.time,
+            options.interpolation_mode);
         rva_(1)->instantiate_child_renderable(ChildInstantiationOptions{
             .rendering_resources = options.rendering_resources,
             .instance_name = VariableAndHash<std::string>{ "plane" },
             .scene_node = node.ref(CURRENT_SOURCE_LOCATION),
+            .time = options.time,
             .interpolation_mode = options.interpolation_mode,
             .renderable_resource_filter = RenderableResourceFilter{}});
         if (aggregate_modes_(1) == AggregateMode::SORTED_CONTINUOUSLY) {
@@ -168,11 +176,14 @@ void BlendingXResource::instantiate_child_renderable(const ChildInstantiationOpt
                 0.f,
                 -(square_(1, 1) - square_(0, 1)) / 4.f },
             FixedArray<float, 3>{0.f, -90.f * degrees, 0.f },
-            1.f);
+            1.f,
+            options.time,
+            options.interpolation_mode);
         rva_(0)->instantiate_child_renderable(ChildInstantiationOptions{
             .rendering_resources = options.rendering_resources,
             .instance_name = VariableAndHash<std::string>{ "plane" },
             .scene_node = node.ref(CURRENT_SOURCE_LOCATION),
+            .time = options.time,
             .interpolation_mode = options.interpolation_mode,
             .renderable_resource_filter = RenderableResourceFilter{}});
         if (aggregate_modes_(0) == AggregateMode::SORTED_CONTINUOUSLY) {

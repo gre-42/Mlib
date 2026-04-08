@@ -100,6 +100,7 @@ void PhysicsIteration::operator()(const TimeAndPause<std::chrono::steady_clock::
                         beacon.location.t,
                         matrix_2_tait_bryan_angles<float>(beacon.location.R),
                         beacon.location.get_scale(),
+                        std::nullopt,
                         PoseInterpolationMode::DISABLED);
                     scene_node_resources_.instantiate_child_renderable(
                         beacon.resource_name,

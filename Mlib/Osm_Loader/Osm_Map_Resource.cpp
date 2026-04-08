@@ -2042,6 +2042,7 @@ void OsmMapResource::instantiate_root_renderables(const RootInstantiationOptions
             options.absolute_model_matrix.t,
             matrix_2_tait_bryan_angles(options.absolute_model_matrix.R),
             options.absolute_model_matrix.get_scale(),
+            std::nullopt,
             PoseInterpolationMode::DISABLED);
         node->add_renderable(VariableAndHash<std::string>{ "osm_map_near" }, std::make_shared<RenderableTriangleSampler>(
             scene_node_resources_,

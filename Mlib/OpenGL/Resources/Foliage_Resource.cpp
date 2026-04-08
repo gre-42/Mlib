@@ -70,6 +70,7 @@ void FoliageResource::instantiate_root_renderables(const RootInstantiationOption
         options.absolute_model_matrix.t,
         matrix_2_tait_bryan_angles(options.absolute_model_matrix.R),
         options.absolute_model_matrix.get_scale(),
+        std::nullopt,
         PoseInterpolationMode::DISABLED);
     instantiate_child_renderable(ChildInstantiationOptions{
         .rendering_resources = options.rendering_resources,

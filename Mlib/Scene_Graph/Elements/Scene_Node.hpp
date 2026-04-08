@@ -19,6 +19,7 @@
 #include <Mlib/Scene_Graph/Remote_User_Filter.hpp>
 #include <Mlib/Threads/Recursive_Shared_Mutex.hpp>
 #include <atomic>
+#include <chrono>
 #include <cstdint>
 #include <iosfwd>
 #include <map>
@@ -153,6 +154,7 @@ public:
         const FixedArray<ScenePos, 3>& position,
         const FixedArray<float, 3>& rotation,
         float scale,
+        std::optional<std::chrono::steady_clock::time_point> time,
         PoseInterpolationMode interpolation_mode = PoseInterpolationMode::ENABLED,
         SceneNodeDomain domain = SceneNodeDomain::RENDER | SceneNodeDomain::PHYSICS,
         const ViewableRemoteObject& remote_viewable = ViewableRemoteObject::all());

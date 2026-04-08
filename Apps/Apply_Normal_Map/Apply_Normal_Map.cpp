@@ -177,7 +177,9 @@ int main(int argc, char** argv) {
                         safe_stof(args.named_value("--light_angle_x", "-45")) * degrees,
                         safe_stof(args.named_value("--light_angle_y", "0")) * degrees,
                         safe_stof(args.named_value("--light_angle_z", "0")) * degrees},
-                    1.f),
+                    1.f,
+                    std::nullopt,
+                    PoseInterpolationMode::DISABLED),
                 RenderingDynamics::STATIC,
                 RenderingStrategies::OBJECT);
             auto light = std::make_unique<Light>(Light{
@@ -211,7 +213,9 @@ int main(int argc, char** argv) {
                             center(1),
                             ScenePos(r * std::sin(a)) + center(2)},
                         matrix_2_tait_bryan_angles(*R).casted<float>(),
-                        1.f),
+                        1.f,
+                        std::nullopt,
+                        PoseInterpolationMode::DISABLED),
                     RenderingDynamics::STATIC,
                     RenderingStrategies::OBJECT);
                 auto light = std::make_unique<Light>(Light{

@@ -29,12 +29,17 @@ const FixedScaledUnitVector<float, 3>* DynamicWorld::get_wind() const {
     return scene_node_resources_.get_wind(name_);
 }
 
+std::chrono::steady_clock::time_point DynamicWorld::try_get_time() const {
+    return time_;
+}
+
 std::chrono::steady_clock::time_point DynamicWorld::get_time() const {
     if (time_ == std::chrono::steady_clock::time_point()) {
         throw std::runtime_error("DynamicWorld time not set");
     }
     return time_;
 }
+
 void DynamicWorld::set_time(std::chrono::steady_clock::time_point time) {
     time_ = time;
 }

@@ -82,7 +82,8 @@ void BulletGenerator::generate_bullet(
     auto node = make_unique_scene_node(
         location.t,
         matrix_2_tait_bryan_angles(location.R),
-        1.f);
+        1.f,
+        dynamic_world_.get_time());
     std::string suffix = "_bullet" + scene_.get_temporary_instance_suffix();
     auto bullet_node_name = VariableAndHash<std::string>{"car_node" + suffix};
     UpdateAudioSourceState update_audio_source_state;

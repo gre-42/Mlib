@@ -343,6 +343,7 @@ void android_main(android_app* app) {
         "    [--flavor <flavor>]\n"
         "    [--mesh <obj.gz>]\n"
         "    [--animated_mesh <mhx2.gz>]\n"
+        "    [--audio <mp3>]\n"
         "    [--devel_mode]\n"
         "    [--parking_brake_velocity <x>]\n"
         "    [--slow_velocity <x>]\n"
@@ -428,6 +429,7 @@ void android_main(android_app* app) {
         {"--record_track_basename",
          "--mesh",
          "--animated_mesh"
+         "--audio"
          "--swap_interval",
          "--nsamples_msaa",
          "--lightmap_nsamples_msaa",
@@ -651,6 +653,7 @@ void android_main(android_app* app) {
                 {"flavor", AUi::GetFlavor()},
                 {"mesh", args.named_value("--mesh", "obj")},
                 {"animated_mesh", args.named_value("--animated_mesh", "mhx2")},
+                {"audio", args.named_value("--audio", "wav")},
                 {"scene_lightmap_width", safe_stoi(args.named_value("--scene_lightmap_width", "2048"))},
                 {"scene_lightmap_height", safe_stoi(args.named_value("--scene_lightmap_height", "2048"))},
                 {"black_lightmap_width", safe_stoi(args.named_value("--black_lightmap_width", "1024"))},

@@ -150,6 +150,7 @@ DanglingBaseClassPtr<RemoteRigidBodyVehicle> RemoteRigidBodyVehicle::try_create_
         position,
         rotation,
         1.f, // scale
+        physics_scene.dynamic_world_.try_get_time(),
         PoseInterpolationMode::ENABLED,
         SceneNodeDomain::RENDER | SceneNodeDomain::PHYSICS,
         ViewableRemoteObject::all());

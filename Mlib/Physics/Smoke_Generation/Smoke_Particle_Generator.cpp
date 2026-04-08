@@ -155,6 +155,7 @@ void SmokeParticleGenerator::generate_root_node(
         position,
         rotation,
         1.f,
+        std::nullopt,
         PoseInterpolationMode::DISABLED);
     node->set_animation_state(
         std::unique_ptr<AnimationState>(new AnimationState{
@@ -186,6 +187,7 @@ void SmokeParticleGenerator::generate_child_node(
         relative_position,
         fixed_zeros<float, 3>(),
         1.f,
+        std::nullopt,
         PoseInterpolationMode::DISABLED);
     child_node->set_animation_state(
         std::unique_ptr<AnimationState>(new AnimationState{

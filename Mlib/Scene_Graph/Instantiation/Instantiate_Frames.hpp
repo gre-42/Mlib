@@ -1,6 +1,8 @@
 #pragma once
 #include <Mlib/Scene_Config/Scene_Precision.hpp>
+#include <chrono>
 #include <list>
+#include <optional>
 #include <set>
 #include <string>
 
@@ -17,6 +19,7 @@ class RenderingResources;
 void instantiate(
     Scene& scene,
     const InstanceInformation<ScenePos>& info,
+    std::optional<std::chrono::steady_clock::time_point> time,
     SceneNodeResources& scene_node_resources,
     RenderingResources& rendering_resources,
     const std::set<std::string>& required_prefixes,

@@ -23,6 +23,7 @@ public:
     const TransformationMatrix<double, double, 3>* get_inverse_geographic_mapping() const;
     const FixedScaledUnitVector<float, 3>* get_gravity() const;
     const FixedScaledUnitVector<float, 3>* get_wind() const;
+    std::chrono::steady_clock::time_point try_get_time() const;
     std::chrono::steady_clock::time_point get_time() const;
     void set_time(std::chrono::steady_clock::time_point time);
 private:
