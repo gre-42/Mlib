@@ -32,9 +32,9 @@ float TireContactSlip::sin_lateral_slip_angle(float parking_brake_velocity) cons
     // {
     //     float vvx = dot0d(vv, n3_);
     //     auto vvt = vv - n3_ * vvx;
-    //     auto vvv = vvt + n3_ * (std::abs(vvx) + std::max(0.f, cfg_.parking_brake_velocity - std::abs(vvx)));
+    //     auto vvv = vvt + n3_ * (std::abs(vvx) + std::max(0.f, parking_brake_velocity - std::abs(vvx)));
     //     auto vvn = vvv / std::sqrt(sum(squared(vvv)));
-    //     sin_lateral_slip_angle = std::sqrt(std::max(0.f, 1 - squared(dot0d(vvn, n3_))));
+    //     return std::sqrt(std::max(0.f, 1 - squared(dot0d(vvn, n3_))));
     // }
     // Optimized implementation (sin_lateral_slip_angle):
     auto ccc = std::max(0.f, sum(squared(vv)) - squared(vvx));
