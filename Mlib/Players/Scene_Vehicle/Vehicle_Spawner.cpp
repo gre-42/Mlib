@@ -55,7 +55,7 @@ VehicleSpawner::VehicleSpawner(
     , time_since_spawn_{ NAN }
     , time_since_deletion_{ 0.f }
     , time_since_spotted_by_vip_{ NAN }
-    , respawn_cooldown_time_{ 0 }
+    , respawn_cooldown_time_{ 0.f }
 {}
 
 VehicleSpawner::~VehicleSpawner() {
@@ -181,7 +181,7 @@ void VehicleSpawner::set_scene_vehicles(
             CURRENT_SOURCE_LOCATION);
         l.release();
         res->on_destroy([this](){
-            if (scene_vehicles_.empty()) {
+            if (scene_vehicles_.size() == 1) {
                 time_since_spawn_ = NAN;
                 time_since_deletion_ = 0.f;
                 time_since_spotted_by_vip_ = NAN;
