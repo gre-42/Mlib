@@ -53,7 +53,7 @@ FPath::FPath(PathType type, VariableAndHash<std::string> path_or_variable)
 
 FPath::~FPath() = default;
 
-FPath FPath::from_local_path(const std::filesystem::path& path) {
+FPath FPath::from_local_path(const Utf8Path& path) {
     if (path.empty()) {
         throw std::runtime_error("FPath local path is empty");
     }
@@ -82,7 +82,7 @@ bool FPath::empty() const {
     return type_ == PathType::EMPTY;
 }
 
-std::filesystem::path FPath::local_path() const {
+Utf8Path FPath::local_path() const {
     if (type_ != PathType::LOCAL_PATH) {
         throw std::runtime_error("URI is not a local path: \"" + *path_or_variable_ + '"');
     }

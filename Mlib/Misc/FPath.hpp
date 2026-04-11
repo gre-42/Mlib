@@ -1,8 +1,8 @@
 #pragma once
 #include <Mlib/Hashing/Std_Hash.hpp>
 #include <Mlib/Hashing/Variable_And_Hash.hpp>
+#include <Mlib/Os/Utf8_Path.hpp>
 #include <compare>
-#include <filesystem>
 #include <iosfwd>
 #include <list>
 #include <string>
@@ -21,12 +21,12 @@ public:
     FPath();
     explicit FPath(const std::string_view& uri);
     ~FPath();
-    static FPath from_local_path(const std::filesystem::path& path);
+    static FPath from_local_path(const Utf8Path& path);
     static FPath from_variable(std::string name);
     static FPath from_variable_and_hash(VariableAndHash<std::string> name);
     PathType type() const;
     bool empty() const;
-    std::filesystem::path local_path() const;
+    Utf8Path local_path() const;
     std::string variable() const;
     std::string string() const;
     VariableAndHash<std::string> variable_and_hash() const;
