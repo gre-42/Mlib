@@ -30,11 +30,7 @@ option(BUILD_CORK "Build the Cork Boolean/CSG library" OFF)
 option(BUILD_SCENE "Build the scene library" ON)
 option(WITH_OPENSSL "Build against OpenSSL" ON)
 option(WITH_ZLIB "Build aganst zlib" ON)
-if (ANDROID)
-    option(WITH_LAME "Build aganst LAME" OFF)
-else()
-    option(WITH_LAME "Build aganst LAME" ON)
-endif()
+option(WITH_LAME "Build aganst LAME" OFF)
 
 ####################
 # Add dependencies #
