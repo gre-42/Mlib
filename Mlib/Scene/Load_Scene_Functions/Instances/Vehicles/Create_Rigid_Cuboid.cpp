@@ -111,8 +111,8 @@ DanglingBaseClassRef<RigidBodyVehicle> CreateRigidCuboid::operator () (const Cre
         intersectables = scene_node_resources.get_intersectables(*args.hitboxes);
     }
     // 1. Set movable, which updates the transformation-matrix.
-    auto result = DanglingBaseClassRef<RigidBodyVehicle>{*rb, CURRENT_SOURCE_LOCATION};
     AbsoluteMovableSetter ams{ scene, scene.get_node(args.node, CURRENT_SOURCE_LOCATION), args.node, std::move(rb), CURRENT_SOURCE_LOCATION };
+    auto result = DanglingBaseClassRef<RigidBodyVehicle>{*ams.absolute_movable, CURRENT_SOURCE_LOCATION};
     // 2. Add to physics engine.
     try {
         physics_engine.rigid_bodies_.add_rigid_body(
