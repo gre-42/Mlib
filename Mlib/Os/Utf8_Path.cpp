@@ -131,12 +131,8 @@ std::u8string Utf8Path::u8string() const {
 }
 
 const char* Utf8Path::c_str() const {
-    if constexpr (std::is_same_v<std::filesystem::path::value_type, char>) {
-        return path_.c_str();
-    } else {
-        u8path_ = path_.u8string();
-        return U8::str(u8path_.c_str());
-    }
+    u8path_ = path_.u8string();
+    return U8::str(u8path_.c_str());
 }
 
 // Queries
