@@ -2948,7 +2948,7 @@ inline std::wstring u8string_to_wstring(const char *s) {
   if (!wlen) { return std::wstring(); }
 
   std::wstring ws;
-  ws.resize(wlen);
+  ws.resize((size_t)wlen);
   wlen = ::MultiByteToWideChar(
       CP_UTF8, 0, s, len,
       const_cast<LPWSTR>(reinterpret_cast<LPCWSTR>(ws.data())), wlen);
