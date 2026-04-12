@@ -1,6 +1,7 @@
 [submodule "recastnavigation"]
 	path = recastnavigation
 	url = https://github.com/gre-42/recastnavigation.git
+	branch = WithRtti
 [submodule "cereal"]
 	path = cereal
 	url = https://github.com/gre-42/cereal.git
