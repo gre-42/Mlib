@@ -1,21 +1,19 @@
 #pragma once
 
-#ifdef _MSC_VER
-#include <experimental/generator>
-#elif defined(__ANDROID__)
-#include <generator.hpp>
+#include <version> // Essential for feature-test macros
+
+#if defined(__cpp_lib_generator)
+    #include <generator>
+    #define MLIB_GENERATOR_NS std
+#elif __has_include(<experimental/generator>)
+    #include <experimental/generator>
+    #define MLIB_GENERATOR_NS std::experimental
 #else
-#include <generator>
+    #include <generator.hpp>
+    #define MLIB_GENERATOR_NS std 
 #endif
 
 namespace Mlib {
-
-#ifdef _MSC_VER
-template <class T>
-using Generator = std::experimental::generator<T>;
-#else
-template <class T>
-using Generator = std::generator<T>;
-#endif
-
+    template <class T>
+    using Generator = MLIB_GENERATOR_NS::generator<T>;
 }
