@@ -221,6 +221,7 @@ class __manual_lifetime<_T&&> {
 
 struct use_allocator_arg {};
 
+#if !__has_include(<ranges>)
 namespace ranges {
 
 template <typename _Rng, typename _Allocator = use_allocator_arg>
@@ -259,6 +260,7 @@ template <typename _Rng, typename Allocator>
 elements_of(_Rng &&, Allocator&&) -> elements_of<_Rng, Allocator>;
 
 } // namespace ranges
+#endif
 
 template <typename _Alloc>
 static constexpr bool __allocator_needs_to_be_stored =
