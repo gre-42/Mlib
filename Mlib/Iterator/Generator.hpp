@@ -1,5 +1,4 @@
 #pragma once
-
 #include <version> // Essential for feature-test macros
 
 #if defined(__cpp_lib_generator)
