@@ -15,15 +15,15 @@
 
 using namespace Mlib;
 
-PssgModel Mlib::load_pssg(const std::string& filename, IoVerbosity verbosity) {
+PssgModel Mlib::load_pssg(const Utf8Path& filename, IoVerbosity verbosity) {
     auto f = create_ifstream(filename, std::ios::binary);
     if (f->fail()) {
-        throw std::runtime_error("Could not open file \"" + filename + '"');
+        throw std::runtime_error("Could not open file \"" + filename.string() + '"');
     }
     try {
         return load_pssg(*f, filename, std::numeric_limits<std::streamoff>::max(), verbosity);
     } catch (const std::runtime_error& e) {
-        throw std::runtime_error("Error reading from file \"" + filename + "\": " + e.what());
+        throw std::runtime_error("Error reading from file \"" + filename.string() + "\": " + e.what());
     }
 }
 
@@ -262,7 +262,7 @@ PssgModel load_uncompressed_pssg(std::istream& istr, IoVerbosity verbosity) {
 
 PssgModel Mlib::load_pssg(
     std::istream& istr,
-    const std::string& filename,
+    const Utf8Path& filename,
     std::streamoff nbytes,
     IoVerbosity verbosity)
 {

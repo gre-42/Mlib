@@ -287,12 +287,12 @@ void PostProcessingLogic::render_with_setup(
     }
 }
 
-void PostProcessingLogic::set_soft_light_filename(const VariableAndHash<std::string>& soft_light_filename) {
+void PostProcessingLogic::set_soft_light_filename(FPath soft_light_filename) {
     if (soft_light_texture_ != nullptr) {
         throw std::runtime_error("Soft light filename already set");
     }
     soft_light_texture_ = rendering_resources_.get_texture({
-        .filename = FPath::from_variable_and_hash(soft_light_filename),
+        .filename = std::move(soft_light_filename),
         .color_mode = ColorMode::RGB,
         .mipmap_mode = MipmapMode::NO_MIPMAPS},
         TextureRole::COLOR_FROM_DB);

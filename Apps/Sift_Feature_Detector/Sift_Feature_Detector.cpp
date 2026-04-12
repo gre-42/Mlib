@@ -81,7 +81,7 @@ int main(int argc, char** argv) {
                 highlight_features(
                     corners0,
                     bmp,
-                    safe_stoi(args.named_value("--size", "1")));
+                    safe_stoi(args.named_svalue("--size", "1")));
                 bmp.save_to_file(args.unnamed_value(1));
             }
         }
@@ -123,7 +123,7 @@ int main(int argc, char** argv) {
                 highlight_features(
                     corners0,
                     bmp,
-                    safe_stoi(args.named_value("--size", "1")));
+                    safe_stoi(args.named_svalue("--size", "1")));
                 bmp.save_to_file(args.unnamed_value(1));
             }
         }
@@ -142,7 +142,7 @@ int main(int argc, char** argv) {
                     highlight_features(
                         corners1,
                         bmp,
-                        safe_stoi(args.named_value("--size", "1")));
+                        safe_stoi(args.named_svalue("--size", "1")));
                     bmp.save_to_file(args.named_value("--response1"));
                 }
             } else if (impl == SiftImpl::TWO) {
@@ -156,7 +156,7 @@ int main(int argc, char** argv) {
                     highlight_features(
                         corners1,
                         bmp,
-                        safe_stoi(args.named_value("--size", "1")));
+                        safe_stoi(args.named_svalue("--size", "1")));
                     bmp.save_to_file(args.named_value("--response1"));
                 }
             } else {

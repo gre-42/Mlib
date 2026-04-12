@@ -90,8 +90,8 @@ int main(int argc, char **argv)
     const auto args = parser.parsed(argc, argv);
 
     Bush bush = generate_bush(
-        safe_stou(args.named_value("--nplanes")),
-        safe_stou(args.named_value("--seed")));
+        safe_stou(args.named_svalue("--nplanes")),
+        safe_stou(args.named_svalue("--seed")));
     {
         auto file = create_ofstream("bush.obj");
         if (file->fail()) {

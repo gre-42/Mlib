@@ -1,11 +1,11 @@
 #pragma once
 #include <Mlib/Images/Flip_Mode.hpp>
+#include <Mlib/Os/Utf8_Path.hpp>
 #include <cstddef>
 #include <cstdint>
 #include <memory>
 #include <stb/stb_image.h>
 #include <stdexcept>
-#include <string>
 #include <variant>
 #include <vector>
 
@@ -84,11 +84,11 @@ template <class TData>
 void stb_image_flip_horizontally(StbInfo<TData>& image);
 
 std::variant<StbInfo<uint8_t>, StbInfo<uint16_t>> stb_load(
-    const std::string& filename,
+    const Mlib::Utf8Path& filename,
     Mlib::FlipMode flip_mode,
     const std::vector<std::byte>* data = nullptr);
 StbInfo<uint8_t> stb_load8(
-    const std::string& filename,
+    const Mlib::Utf8Path& filename,
     Mlib::FlipMode flip_mode,
     const std::vector<std::byte>* data = nullptr,
     IncorrectDatasizeBehavior datasize_behavior = IncorrectDatasizeBehavior::THROW);

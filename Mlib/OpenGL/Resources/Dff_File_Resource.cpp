@@ -29,7 +29,7 @@ std::shared_ptr<ISceneNodeResource> Mlib::load_renderable_dff(
 
 template <class TPos>
 std::shared_ptr<ISceneNodeResource> Mlib::load_renderable_dff(
-    const std::string& filename,
+    const Utf8Path& filename,
     const LoadMeshConfig<TPos>& cfg,
     const SceneNodeResources& scene_node_resources,
     const DrawDistanceDb& dddb)
@@ -63,13 +63,13 @@ template std::shared_ptr<ISceneNodeResource> load_renderable_dff<CompressedScene
     const DrawDistanceDb& dddb);
 
 template std::shared_ptr<ISceneNodeResource> load_renderable_dff<float>(
-    const std::string& filename,
+    const Utf8Path& filename,
     const LoadMeshConfig<float>& cfg,
     const SceneNodeResources& scene_node_resources,
     const DrawDistanceDb& dddb);
 
 template std::shared_ptr<ISceneNodeResource> load_renderable_dff<CompressedScenePos>(
-    const std::string& filename,
+    const Utf8Path& filename,
     const LoadMeshConfig<CompressedScenePos>& cfg,
     const SceneNodeResources& scene_node_resources,
     const DrawDistanceDb& dddb);

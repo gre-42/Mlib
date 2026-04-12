@@ -39,10 +39,10 @@ int main(int argc, char** argv) {
         args.assert_num_unnamed(0);
         BrightnessImageFiles bi{
             args.named_value("--source"),
-            safe_stoz(args.named_value("--color_width")),
-            safe_stoz(args.named_value("--color_height")),
-            safe_stoz(args.named_value("--structure_width")),
-            safe_stoz(args.named_value("--structure_height")),
+            safe_stoz(args.named_svalue("--color_width")),
+            safe_stoz(args.named_svalue("--color_height")),
+            safe_stoz(args.named_svalue("--structure_width")),
+            safe_stoz(args.named_svalue("--structure_height")),
             TargetShapeMode::SOURCE_WHEN_ZERO};
         if (auto dest_color = args.try_named_value("--dest_color"); dest_color != nullptr) {
             bi.save_color(*dest_color);

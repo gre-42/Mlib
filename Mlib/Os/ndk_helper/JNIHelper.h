@@ -15,12 +15,12 @@
  */
 #pragma once
 
+#include <Mlib/Os/Utf8_Path.hpp>
 #include <jni.h>
 #include <list>
 #include <vector>
 #include <string>
 #include <functional>
-#include <filesystem>
 #include <assert.h>
 #include <mutex>
 
@@ -69,13 +69,13 @@ inline bool any(StorageType s) {
 class DirectoryEntry {
 public:
   DirectoryEntry(
-    std::filesystem::path path,
+    Utf8Path path,
     bool is_listable);
-  const std::filesystem::path& path() const;
-  operator const std::filesystem::path& () const;
+  const Utf8Path& path() const;
+  operator const Utf8Path& () const;
   bool is_listable() const;
 private:
-  std::filesystem::path path_;
+  Utf8Path path_;
   bool is_listable_;
 };
 

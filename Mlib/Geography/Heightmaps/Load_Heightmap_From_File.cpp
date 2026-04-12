@@ -9,7 +9,7 @@
 using namespace Mlib;
 
 template <class TData>
-Array<TData> Mlib::load_heightmap_from_file(const std::string& filename) {
+Array<TData> Mlib::load_heightmap_from_file(const Utf8Path& filename) {
     if (filename.ends_with(".pgm")) {
         return cities_skylines_to_meters<TData>(PgmImage::load_from_file(filename));
     }
@@ -35,5 +35,5 @@ Array<TData> Mlib::load_heightmap_from_file(const std::string& filename) {
     throw std::runtime_error("Image does not have 8 or 16 bit");
 }
 
-template Array<float> Mlib::load_heightmap_from_file<float>(const std::string&);
-template Array<double> Mlib::load_heightmap_from_file<double>(const std::string&);
+template Array<float> Mlib::load_heightmap_from_file<float>(const Utf8Path&);
+template Array<double> Mlib::load_heightmap_from_file<double>(const Utf8Path&);

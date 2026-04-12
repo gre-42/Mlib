@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/Array/Array.hpp>
 #include <Mlib/Images/Ia16.hpp>
+#include <Mlib/Os/Utf8_Path.hpp>
 #include <cstdint>
 #include <string>
 
@@ -28,9 +29,9 @@ public:
     void draw_mask(const Array<bool>& mask, const Ia16& color);
     void draw_streamline(const FixedArray<size_t, 2>& center, const Array<float>& velocity, size_t size, size_t length, const Ia16& color);
 
-    static StbImage2 load_from_file(const std::string& filename);
+    static StbImage2 load_from_file(const Utf8Path& filename);
 
-    void save_to_file(const std::string &filename, int jpg_quality = 95) const;
+    void save_to_file(const Utf8Path& filename, int jpg_quality = 95) const;
 
     static StbImage2 from_ia(const Array<uint8_t>& grayscale);
     static StbImage2 from_float_ia(const Array<float>& grayscale);

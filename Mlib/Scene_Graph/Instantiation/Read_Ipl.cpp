@@ -25,7 +25,7 @@ static const auto t_to_world = fixed_zeros<ScenePos, 3>();
 static const TransformationMatrix<float, ScenePos, 3> trafo_to_world{ r_to_world, t_to_world };
 
 std::list<InstanceInformation<ScenePos>> Mlib::read_ipl(
-    const std::filesystem::path& filename,
+    const Utf8Path& filename,
     RenderingDynamics rendering_dynamics)
 {
     auto istr = create_ifstream(filename, std::ios::binary);

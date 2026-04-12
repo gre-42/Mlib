@@ -1,7 +1,8 @@
 #pragma once
 #include <Mlib/Json/Json_View.hpp>
 #include <Mlib/Misc/FPath.hpp>
-#include <filesystem>
+#include <Mlib/Misc/FPath_Json.hpp>
+#include <Mlib/Os/Utf8_Path.hpp>
 #include <functional>
 #include <iosfwd>
 #include <list>
@@ -45,17 +46,17 @@ public:
     void insert_json(const nlohmann::json& j, Filter::With, const std::set<std::string>& with);
     void insert_json(const nlohmann::json& j, Filter::Without, const std::set<std::string>& without);
     void insert_json(std::string_view key, nlohmann::json j);
-    void set_fpathes(std::function<std::list<std::filesystem::path>(const std::filesystem::path& f)> fpathes);
-    void set_fpath(std::function<FPath(const std::filesystem::path& f)> fpath);
-    void set_spath(std::function<std::filesystem::path(const std::filesystem::path& f)> spath);
-    std::list<std::filesystem::path> fpathes(const std::filesystem::path& f) const;
-    FPath fpath(const std::filesystem::path& f) const;
-    std::string spath(const std::filesystem::path& f) const;
+    void set_fpathes(std::function<std::list<Utf8Path>(const Utf8Path& f)> fpathes);
+    void set_fpath(std::function<FPath(const FPath& f)> fpath);
+    void set_spath(std::function<Utf8Path(const Utf8Path& f)> spath);
+    std::list<Utf8Path> fpathes(const Utf8Path& f) const;
+    FPath fpath(const FPath& f) const;
+    std::string spath(const Utf8Path& f) const;
     std::string get_multiline_string() const;
     std::string at_multiline_string(std::string_view name) const;
     std::string at_multiline_string(std::string_view name, std::string_view default_) const;
-    std::string path(std::string_view name) const;
-    std::string path(std::string_view name, std::string_view deflt) const;
+    Utf8Path path(std::string_view name) const;
+    Utf8Path path(std::string_view name, const Utf8Path& deflt) const;
     FPath path_or_variable(std::string_view name) const;
     FPath try_path_or_variable(std::string_view name) const;
     std::vector<FPath> pathes_or_variables(std::string_view name) const;
@@ -66,7 +67,7 @@ public:
         if (el.type() != nlohmann::detail::value_t::array) {
             throw std::runtime_error("Not an array: \"" + std::string{ name } + '"');
         }
-        return Mlib::get_vector<std::string>(el, [this, &op](const std::string& s){return op(fpath_(s));});
+        return Mlib::get_vector<FPath>(el, [this, &op](const FPath& s){return op(fpath_(s));});
     }
     template <class TOperation>
     auto try_pathes_or_variables(std::string_view name, const TOperation& op) const {
@@ -75,7 +76,7 @@ public:
         }
         return pathes_or_variables(name, op);
     }
-    std::list<std::filesystem::path> path_list(std::string_view name) const;
+    std::list<Utf8Path> path_list(std::string_view name) const;
     std::string spath(std::string_view name) const;
     std::vector<JsonMacroArguments> children(std::string_view name) const;
     template <class TOperation>
@@ -120,9 +121,9 @@ private:
     template <JsonKey Key>
     void set_generic(const Key& key, nlohmann::json value);
     nlohmann::json j_;
-    std::function<std::list<std::filesystem::path>(const std::filesystem::path& f)> fpathes_;
-    std::function<FPath(const std::filesystem::path& f)> fpath_;
-    std::function<std::filesystem::path(const std::filesystem::path& f)> spath_;
+    std::function<std::list<Utf8Path>(const Utf8Path& f)> fpathes_;
+    std::function<FPath(const FPath& f)> fpath_;
+    std::function<Utf8Path(const Utf8Path& f)> spath_;
 };
 
 }

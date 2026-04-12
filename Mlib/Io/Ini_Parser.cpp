@@ -7,7 +7,7 @@
 
 using namespace Mlib;
 
-IniParser::IniParser(const std::filesystem::path& filename) {
+IniParser::IniParser(const Utf8Path& filename) {
     auto f = create_ifstream(filename);
     if (f->fail()) {
         throw std::runtime_error("Could not open file \"" + filename.string() + '"');

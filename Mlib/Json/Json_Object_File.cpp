@@ -11,7 +11,7 @@ JsonObjectFile::JsonObjectFile()
 
 JsonObjectFile::~JsonObjectFile() = default;
 
-void JsonObjectFile::load_from_file(const std::filesystem::path& filename) {
+void JsonObjectFile::load_from_file(const Utf8Path& filename) {
     nlohmann::json j;
     auto f = create_ifstream(filename);
     if (f->fail()) {

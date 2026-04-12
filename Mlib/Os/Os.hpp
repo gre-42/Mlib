@@ -1,6 +1,6 @@
 #pragma once
+#include <Mlib/Os/Utf8_Path.hpp>
 #include <cstdint>
-#include <filesystem>
 #include <functional>
 #include <istream>
 #include <memory>
@@ -84,37 +84,37 @@ LLog lraw(LogFlags flags = LogFlags::NONE);
 LLog lout(LogFlags flags = LogFlags::NONE);
 
 std::unique_ptr<std::istream> create_ifstream(
-    const std::filesystem::path& filename,
+    const Utf8Path& filename,
     std::ios_base::openmode mode = std::ios_base::in);
 
 std::unique_ptr<std::ostream> create_ofstream(
-    const std::filesystem::path& filename,
+    const Utf8Path& filename,
     std::ios_base::openmode mode = std::ios_base::out,
     FileStorageType storage_type = FileStorageType::EXTERNAL);
 
-std::vector<uint8_t> read_file_bytes(const std::filesystem::path& filename);
+std::vector<uint8_t> read_file_bytes(const Utf8Path& filename);
 
-bool path_exists(const std::filesystem::path& filename);
+bool path_exists(const Utf8Path& filename);
 
 void remove_path(
-    const std::filesystem::path& path,
+    const Utf8Path& path,
     FileStorageType storage_type = FileStorageType::EXTERNAL);
 
 void rename_path(
-    const std::filesystem::path& from,
-    const std::filesystem::path& to,
+    const Utf8Path& from,
+    const Utf8Path& to,
     FileStorageType storage_type = FileStorageType::EXTERNAL);
 
 void create_directories(
-    const std::filesystem::path& dirname,
+    const Utf8Path& dirname,
     FileStorageType storage_type = FileStorageType::EXTERNAL);
 
 #ifdef __ANDROID__
-ndk_helper::DirectoryIterator list_dir(const std::filesystem::path& path);
+ndk_helper::DirectoryIterator list_dir(const Utf8Path& path);
 bool is_listable(const ndk_helper::DirectoryEntry& entry);
 #else
-std::filesystem::recursive_directory_iterator list_dir_recursive(const std::filesystem::path& path);
-std::filesystem::directory_iterator list_dir(const std::filesystem::path& path);
+std::filesystem::recursive_directory_iterator list_dir_recursive(const Utf8Path& path);
+std::filesystem::directory_iterator list_dir(const Utf8Path& path);
 bool is_listable(const std::filesystem::directory_entry& entry);
 #endif
 

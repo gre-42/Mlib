@@ -88,8 +88,8 @@ void test_dangling_unique2() {
 
 void test_template_regex() {
     using namespace TemplateRegex;
-    auto re_hello = str("hello");
-    auto re_world = str("world");
+    auto re_hello = TemplateRegex::str("hello");
+    auto re_world = TemplateRegex::str("world");
     SMatch<1> match0;
     SMatch<2> match1;
     assert_true(regex_match("hello world", match0, re_hello));

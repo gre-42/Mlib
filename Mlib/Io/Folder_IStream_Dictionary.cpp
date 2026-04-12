@@ -3,6 +3,7 @@
 #include <Mlib/Hashing/Variable_And_Hash.hpp>
 #include <Mlib/Memory/Integral_Cast.hpp>
 #include <Mlib/Os/Os.hpp>
+#include <Mlib/Os/Utf8_Path.hpp>
 #include <list>
 
 using namespace Mlib;
@@ -26,7 +27,7 @@ StreamAndSize FolderIStreamDictionary::read(
     std::ios::openmode openmode,
     SourceLocation loc)
 {
-    auto f = std::filesystem::path{ folder_ } / *name;
+    auto f = Utf8Path{ folder_ } / *name;
     auto stream = create_ifstream(f, openmode);
     stream->seekg(0, std::ios::end);
     auto size = stream->tellg();

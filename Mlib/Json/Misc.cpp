@@ -1,8 +1,13 @@
 
 #include "Misc.hpp"
+#include <Mlib/Strings/Str.hpp>
 #include <Mlib/Strings/String.hpp>
 
 using namespace Mlib;
+
+void Mlib::from_json(const nlohmann::json& j, Utf8Path& v) {
+    v = U8::u8str(json_get<std::string>(j));
+}
 
 std::string Mlib::get_multiline_string(const nlohmann::json& j) {
     return Mlib::join("\n", j.get<std::vector<std::string>>());

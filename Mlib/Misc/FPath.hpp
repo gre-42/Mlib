@@ -19,7 +19,7 @@ enum class PathType {
 class FPath {
 public:
     FPath();
-    explicit FPath(const std::string_view& uri);
+    explicit FPath(const std::u8string_view& uri);
     ~FPath();
     static FPath from_local_path(const Utf8Path& path);
     static FPath from_variable(std::string name);

@@ -1,5 +1,5 @@
 #pragma once
-#include <filesystem>
+#include <Mlib/Os/Utf8_Path.hpp>
 #include <iosfwd>
 #include <sstream>
 #include <string>
@@ -13,7 +13,7 @@ std::istringstream uncompress_stream(
     size_t chunk_size = 512);
 
 void decompress_file(
-    const std::filesystem::path& source,
-    const std::filesystem::path& destination);
+    const Utf8Path& source,
+    const Utf8Path& destination);
 
 }

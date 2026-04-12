@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Os/Utf8_Path.hpp>
 #include <cstddef>
 #include <optional>
 #include <string>
@@ -15,10 +16,10 @@ size_t getenv_default_size_t(const char* n, size_t deflt);
 bool getenv_default_bool(const char* n, bool deflt);
 
 #ifndef __ANDROID__
-void set_app_reldir(const std::string& app_reldir);
+void set_app_reldir(const Utf8Path& app_reldir);
 #endif
 
-std::string get_appdata_directory();
-std::string get_path_in_appdata_directory(const std::initializer_list<std::string>& child_path);
+Utf8Path get_appdata_directory();
+Utf8Path get_path_in_appdata_directory(const std::initializer_list<Utf8Path>& child_path);
 
 }

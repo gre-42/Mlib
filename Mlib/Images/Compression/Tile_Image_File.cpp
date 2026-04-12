@@ -75,7 +75,7 @@ void Mlib::from_json(const nlohmann::json& j, FragmentAssembly& fa) {
     }
 }
 
-void Mlib::save_fragment_assembly(const std::filesystem::path& filename, const FragmentAssembly& fa) {
+void Mlib::save_fragment_assembly(const Utf8Path& filename, const FragmentAssembly& fa) {
     auto f = create_ofstream(filename);
     if (f->fail()) {
         throw std::runtime_error("Could not open for write: \"" + filename.string() + '"');
@@ -87,7 +87,7 @@ void Mlib::save_fragment_assembly(const std::filesystem::path& filename, const F
     }
 }
 
-FragmentAssembly Mlib::load_fragment_assembly(const std::filesystem::path& filename) {
+FragmentAssembly Mlib::load_fragment_assembly(const Utf8Path& filename) {
     auto f = create_ifstream(filename);
     if (f->fail()) {
         throw std::runtime_error("Could not open for read: \"" + filename.string() + '"');
@@ -102,7 +102,7 @@ FragmentAssembly Mlib::load_fragment_assembly(const std::filesystem::path& filen
     return res;
 }
 
-void FragmentAssembly::make_pathes_absolute(const std::filesystem::path& filename) {
+void FragmentAssembly::make_pathes_absolute(const Utf8Path& filename) {
     color = FPath::from_local_path(filename.parent_path() / color.local_path());
     if (!alpha.empty()) {
         alpha = FPath::from_local_path(filename.parent_path() / alpha.local_path());

@@ -42,7 +42,7 @@ AudioBuffer::~AudioBuffer() {
 //     }
 // }
 
-std::shared_ptr<AudioBuffer> AudioBuffer::from_wave(const std::filesystem::path& filename) {
+std::shared_ptr<AudioBuffer> AudioBuffer::from_wave(const Utf8Path& filename) {
     // WaveInfo* wave = WaveOpenFileForReading(filename.c_str());
     // if (wave == nullptr) {
     //     throw std::runtime_error("Failed to read wave file: \"" + filename + '"');
@@ -87,7 +87,7 @@ std::shared_ptr<AudioBuffer> AudioBuffer::from_wave(const std::filesystem::path&
     return std::make_shared<AudioBuffer>(buffer);
 }
 
-std::shared_ptr<AudioBuffer> AudioBuffer::from_mp3(const std::filesystem::path& filename) {
+std::shared_ptr<AudioBuffer> AudioBuffer::from_mp3(const Utf8Path& filename) {
     auto file_data = read_file_bytes(filename);
     mp3dec_ex_t dec;
     if (mp3dec_ex_open_buf(&dec, file_data.data(), file_data.size(), MP3D_SEEK_TO_SAMPLE) != 0) {
@@ -107,7 +107,7 @@ std::shared_ptr<AudioBuffer> AudioBuffer::from_mp3(const std::filesystem::path& 
     return result;
 }
 
-std::shared_ptr<AudioBuffer> AudioBuffer::from_file(const std::filesystem::path& filename) {
+std::shared_ptr<AudioBuffer> AudioBuffer::from_file(const Utf8Path& filename) {
     if (filename.extension() == ".wav") {
         return from_wave(filename);
     }

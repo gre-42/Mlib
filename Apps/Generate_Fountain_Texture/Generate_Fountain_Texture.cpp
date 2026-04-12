@@ -26,15 +26,15 @@ int main(int argc, char** argv) {
     try {
         const auto args = parser.parsed(argc, argv);
         args.assert_num_unnamed(1);
-        auto destination_prefix = args.unnamed_value(0);
+        auto destination_prefix = Utf8Path(args.unnamed_value(0));
         auto out_alpha = Array<float>(ArrayShape{
-            safe_stoz(args.named_value("--height", "256")),
-            safe_stoz(args.named_value("--width", "256"))});
-        auto nimages = safe_stoz(args.named_value("--nimages", "5"));
+            safe_stoz(args.named_svalue("--height", "256")),
+            safe_stoz(args.named_svalue("--width", "256"))});
+        auto nimages = safe_stoz(args.named_svalue("--nimages", "5"));
         auto color = FixedArray<float, 3>{
-            safe_stof(args.named_value("-r", "1")),
-            safe_stof(args.named_value("-g", "1")),
-            safe_stof(args.named_value("-b", "1"))};
+            safe_stof(args.named_svalue("-r", "1")),
+            safe_stof(args.named_svalue("-g", "1")),
+            safe_stof(args.named_svalue("-b", "1"))};
         size_t nparticles = 50;
         float initial_velocity_mean = 400 * cm / seconds;
         float initial_velocity_std = 300 * cm / seconds;

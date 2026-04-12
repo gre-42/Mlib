@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Array/Array.hpp>
+#include <Mlib/Os/Utf8_Path.hpp>
 #include <cmath>
 #include <string>
 
@@ -43,9 +44,9 @@ public:
     void draw_mask(const Array<bool>& mask, uint8_t color);
     void draw_streamline(const FixedArray<size_t, 2>& center, const Array<float>& velocity, size_t size, size_t length, uint8_t color);
 
-    static StbImage1 load_from_file(const std::string& filename);
+    static StbImage1 load_from_file(const Utf8Path& filename);
 
-    void save_to_file(const std::string &filename, int jpg_quality = 95) const;
+    void save_to_file(const Utf8Path& filename, int jpg_quality = 95) const;
 
     static StbImage1 from_float_grayscale(const Array<float>& grayscale);
 

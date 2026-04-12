@@ -80,7 +80,7 @@ std::ostream& LLog::ref() const {
 
 #ifdef __ANDROID__
 
-static std::filesystem::path get_path_in_files_dir(
+static Utf8Path get_path_in_files_dir(
     const std::initializer_list<std::string>& child_path,
     FileStorageType storage_type)
 {
@@ -170,18 +170,18 @@ LLog Mlib::lout(LogFlags flags) {
 }
 
 std::unique_ptr<std::istream> Mlib::create_ifstream(
-    const std::filesystem::path& filename,
+    const Utf8Path& filename,
     std::ios_base::openmode mode)
 {
     return AUi::OpenFile(filename, mode);
 }
 
-std::vector<uint8_t> Mlib::read_file_bytes(const std::filesystem::path& filename) {
+std::vector<uint8_t> Mlib::read_file_bytes(const Utf8Path& filename) {
     return AUi::ReadFile(filename);
 }
 
 std::unique_ptr<std::ostream> Mlib::create_ofstream(
-    const std::filesystem::path& filename,
+    const Utf8Path& filename,
     std::ios_base::openmode mode,
     FileStorageType storage_type)
 {
@@ -189,12 +189,12 @@ std::unique_ptr<std::ostream> Mlib::create_ofstream(
     return std::make_unique<std::ofstream>(fn, mode);
 }
 
-bool Mlib::path_exists(const std::filesystem::path& filename) {
+bool Mlib::path_exists(const Utf8Path& filename) {
     return AUi::PathExists(filename);
 }
 
 void Mlib::remove_path(
-    const std::filesystem::path& path,
+    const Utf8Path& path,
     FileStorageType storage_type)
  {
     std::error_code ec;
@@ -204,8 +204,8 @@ void Mlib::remove_path(
 }
 
 void Mlib::rename_path(
-    const std::filesystem::path& from,
-    const std::filesystem::path& to,
+    const Utf8Path& from,
+    const Utf8Path& to,
     FileStorageType storage_type)
 {
     std::error_code ec;
@@ -219,7 +219,7 @@ void Mlib::rename_path(
 }
 
 void Mlib::create_directories(
-    const std::filesystem::path& dirname,
+    const Utf8Path& dirname,
     FileStorageType storage_type)
 {
     std::error_code ec;
@@ -229,7 +229,7 @@ void Mlib::create_directories(
     }
 }
 
-ndk_helper::DirectoryIterator Mlib::list_dir(const std::filesystem::path& path) {
+ndk_helper::DirectoryIterator Mlib::list_dir(const Utf8Path& path) {
     return AUi::ListDir(path.c_str());
 }
 
@@ -309,13 +309,13 @@ LLog Mlib::lout(LogFlags flags) {
 }
 
 std::unique_ptr<std::istream> Mlib::create_ifstream(
-    const std::filesystem::path& filename,
+    const Utf8Path& filename,
     std::ios_base::openmode mode)
 {
     return std::make_unique<std::ifstream>(filename, mode);
 }
 
-std::vector<uint8_t> Mlib::read_file_bytes(const std::filesystem::path& filename) {
+std::vector<uint8_t> Mlib::read_file_bytes(const Utf8Path& filename) {
     std::ifstream f{filename, std::ios::binary};
     if (f.fail()) {
         throw std::runtime_error("Could not open file for read: \"" + filename.string() + '"');
@@ -334,14 +334,14 @@ std::vector<uint8_t> Mlib::read_file_bytes(const std::filesystem::path& filename
 }
 
 std::unique_ptr<std::ostream> Mlib::create_ofstream(
-    const std::filesystem::path& filename,
+    const Utf8Path& filename,
     std::ios_base::openmode mode,
     FileStorageType storage_type)
 {
     return std::make_unique<std::ofstream>(filename, mode);
 }
 
-bool Mlib::path_exists(const std::filesystem::path& path) {
+bool Mlib::path_exists(const Utf8Path& path) {
     std::error_code ec;
     bool exists = std::filesystem::exists(path, ec);
     if (ec) {
@@ -351,7 +351,7 @@ bool Mlib::path_exists(const std::filesystem::path& path) {
 }
 
 void Mlib::remove_path(
-    const std::filesystem::path& path,
+    const Utf8Path& path,
     FileStorageType storage_type)
 {
     std::error_code ec;
@@ -361,8 +361,8 @@ void Mlib::remove_path(
 }
 
 void Mlib::rename_path(
-    const std::filesystem::path& from,
-    const std::filesystem::path& to,
+    const Utf8Path& from,
+    const Utf8Path& to,
     FileStorageType storage_type)
 {
     std::error_code ec;
@@ -373,7 +373,7 @@ void Mlib::rename_path(
 }
 
 void Mlib::create_directories(
-    const std::filesystem::path& dirname,
+    const Utf8Path& dirname,
     FileStorageType storage_type)
 {
     std::error_code ec;
@@ -383,11 +383,11 @@ void Mlib::create_directories(
     }
 }
 
-std::filesystem::recursive_directory_iterator Mlib::list_dir_recursive(const std::filesystem::path& path) {
+std::filesystem::recursive_directory_iterator Mlib::list_dir_recursive(const Utf8Path& path) {
     return std::filesystem::recursive_directory_iterator(path);
 }
 
-std::filesystem::directory_iterator Mlib::list_dir(const std::filesystem::path& path) {
+std::filesystem::directory_iterator Mlib::list_dir(const Utf8Path& path) {
     return std::filesystem::directory_iterator(path);
 }
 

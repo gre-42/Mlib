@@ -5,8 +5,6 @@
 #include <filesystem>
 #include <stdexcept>
 
-namespace fs = std::filesystem;
-
 using namespace Mlib;
 
 static std::string g_app_reldir;
@@ -83,7 +81,7 @@ std::string Mlib::get_appdata_directory() {
     return "/";
 }
 #else
-void Mlib::set_app_reldir(const std::string& app_reldir) {
+void Mlib::set_app_reldir(const Utf8Path& app_reldir) {
     if (!g_app_reldir.empty()) {
         throw std::runtime_error("App reldir already set");
     }
@@ -93,7 +91,7 @@ void Mlib::set_app_reldir(const std::string& app_reldir) {
     g_app_reldir = app_reldir;
 }
 
-std::string Mlib::get_appdata_directory() {
+Utf8Path Mlib::get_appdata_directory() {
     if (g_app_reldir.empty()) {
         throw std::runtime_error("set_app_reldir not called before get_appdata_directory");
     }
@@ -107,14 +105,14 @@ std::string Mlib::get_appdata_directory() {
     if (parent == nullptr) {
         throw std::runtime_error("Could not determine home directory");
     }
-    return (fs::path{parent} / fs::path{g_app_reldir}).string();
+    return Utf8Path{parent} / g_app_reldir;
 }
 #endif
 
-std::string Mlib::get_path_in_appdata_directory(const std::initializer_list<std::string>& child_path) {
-    fs::path res = get_appdata_directory();
+Utf8Path Mlib::get_path_in_appdata_directory(const std::initializer_list<Utf8Path>& child_path) {
+    auto res = get_appdata_directory();
     for (const auto& s : child_path) {
-        res /= fs::path(s);
+        res /= s;
     }
-    return res.string();
+    return res;
 }

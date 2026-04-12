@@ -1,4 +1,3 @@
-
 #include "Load_Dff.hpp"
 #include <Mlib/Geometry/Mesh/Load/IRaster.hpp>
 #include <Mlib/Geometry/Mesh/Load/IRaster_Factory.hpp>
@@ -1353,7 +1352,7 @@ TexDictionary Mlib::Dff::read_txd(
 }
 
 TexDictionary Mlib::Dff::read_txd(
-    const std::filesystem::path& path,
+    const Utf8Path& path,
     const IRasterFactory* raster_factory,
     const RasterConfig* raster_config,
     IoVerbosity verbosity)

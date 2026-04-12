@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/Array/Array.hpp>
 #include <Mlib/Images/Rgb24.hpp>
+#include <Mlib/Os/Utf8_Path.hpp>
 #include <string>
 
 namespace Mlib {
@@ -24,10 +25,10 @@ public:
     void draw_mask(const Array<bool>& mask, const Rgb24& color);
     void draw_streamline(const FixedArray<size_t, 2>& center, const Array<float>& velocity, size_t size, size_t length, const Rgb24& color);
 
-    static PpmImage load_from_file(const std::string& filename);
+    static PpmImage load_from_file(const Utf8Path& filename);
     static PpmImage load_from_stream(std::istream& istream);
 
-    void save_to_file(const std::string &filename) const;
+    void save_to_file(const Utf8Path &filename) const;
     void save_to_stream(std::ostream& ostream) const;
 
     static PpmImage from_float_rgb(const Array<float>& grayscale);

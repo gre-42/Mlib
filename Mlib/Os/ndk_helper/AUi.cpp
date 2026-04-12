@@ -40,7 +40,7 @@ void AUi::RequestReadExternalStoragePermission() {
 }
 
 std::unique_ptr<std::istream> AUi::OpenFile(
-    const std::filesystem::path& filename,
+    const Utf8Path& filename,
     std::ios_base::openmode mode)
 {
     std::vector<uint8_t> buffer;
@@ -53,7 +53,7 @@ std::unique_ptr<std::istream> AUi::OpenFile(
         std::string((char*)buffer.data(), buffer.size()));
 }
 
-std::vector<uint8_t> AUi::ReadFile(const std::filesystem::path& filename) {
+std::vector<uint8_t> AUi::ReadFile(const Utf8Path& filename) {
     std::vector<uint8_t> buffer;
     if (!ndk_helper::JNIHelper::GetInstance()->ReadFile(filename.lexically_normal().c_str(), &buffer)) {
         Mlib::verbose_abort("Could not read from file \"" + filename.string() + '"');
@@ -61,11 +61,11 @@ std::vector<uint8_t> AUi::ReadFile(const std::filesystem::path& filename) {
     return buffer;
 }
 
-bool AUi::PathExists(const std::filesystem::path& path) {
+bool AUi::PathExists(const Utf8Path& path) {
     return ndk_helper::JNIHelper::GetInstance()->PathExists(path.lexically_normal().c_str());
 }
 
-ndk_helper::DirectoryIterator AUi::ListDir(const std::filesystem::path& dirname) {
+ndk_helper::DirectoryIterator AUi::ListDir(const Utf8Path& dirname) {
     return ndk_helper::JNIHelper::GetInstance()->ListDir(dirname.lexically_normal().c_str());
 }
 

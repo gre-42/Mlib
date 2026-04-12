@@ -20,12 +20,12 @@ int main(int argc, char** argv) {
 
         list_audio_devices(linfo(LogFlags::NO_APPEND_NEWLINE).ref());
         AudioDevice device;
-        AudioContext context{ device, safe_stou(args.named_value("--audio_frequency", "0")) };
+        AudioContext context{ device, safe_stou(args.named_svalue("--audio_frequency", "0")) };
         auto buffer = AudioBuffer::from_wave(args.unnamed_value(0));
         AudioSource source{*buffer, PositionRequirement::POSITION_NOT_REQUIRED};
         source.set_loop(args.has_named("--loop"));
-        source.set_pitch(safe_stof(args.named_value("--pitch", "1")));
-        source.set_gain(safe_stof(args.named_value("--gain", "1")));
+        source.set_pitch(safe_stof(args.named_svalue("--pitch", "1")));
+        source.set_gain(safe_stof(args.named_svalue("--gain", "1")));
         source.play();
         source.join();
     } catch (const std::runtime_error& e) {

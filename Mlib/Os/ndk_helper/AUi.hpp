@@ -1,6 +1,6 @@
 #pragma once
+#include <Mlib/Os/Utf8_Path.hpp>
 #include <Mlib/Os/ndk_helper/JNIHelper.h>
-#include <filesystem>
 #include <iostream>
 #include <memory>
 #include <string>
@@ -19,11 +19,11 @@ public:
         const std::string& title,
         const std::string& message);
     static std::unique_ptr<std::istream> OpenFile(
-        const std::filesystem::path& filename,
+        const Utf8Path& filename,
         std::ios_base::openmode mode);
-    static std::vector<uint8_t> ReadFile(const std::filesystem::path& filename);
-    static bool PathExists(const std::filesystem::path& path);
-    static ndk_helper::DirectoryIterator ListDir(const std::filesystem::path& dirname);
+    static std::vector<uint8_t> ReadFile(const Utf8Path& filename);
+    static bool PathExists(const Utf8Path& path);
+    static ndk_helper::DirectoryIterator ListDir(const Utf8Path& dirname);
     static std::string GetFilesDir(ndk_helper::StorageType storage_type);
     static std::string GetFlavor();
     static void SetRequestedScreenOrientation(ScreenOrientation orientation);

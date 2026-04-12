@@ -66,10 +66,10 @@ int main(int argc, char** argv) {
             { return VariableAndHash{ *dds_name + ".png" }; };
         auto gen_optional_png_name = [&gen_png_name](const VariableAndHash<std::string>& dds_name)
             { return dds_name->empty() ? VariableAndHash<std::string>{} : gen_png_name(dds_name); };
-        const auto& source_filename = args.unnamed_value(0);
+        auto source_filename = Utf8Path{args.unnamed_value(0)};
         auto source = create_ifstream(source_filename, std::ios::binary);
         if (source->fail()) {
-            throw std::runtime_error("Could not open file for read: \"" + source_filename + '"');
+            throw std::runtime_error("Could not open file for read: \"" + source_filename.string() + '"');
         }
         auto kn5 = load_kn5(*source, false /* verbose */, kn5LoadOptions::MATERIALS);
         std::map<std::string, kn5Texture> destination_textures;

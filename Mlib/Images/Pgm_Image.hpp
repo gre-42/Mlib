@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/Array/Array.hpp>
 #include <Mlib/Images/I16.hpp>
+#include <Mlib/Os/Utf8_Path.hpp>
 #include <stdexcept>
 #include <string>
 
@@ -22,10 +23,10 @@ public:
     void draw_mask(const Array<bool>& mask, uint16_t color);
     void draw_streamline(const FixedArray<size_t, 2>& center, const Array<float>& velocity, size_t size, size_t length, uint16_t color);
 
-    static PgmImage load_from_file(const std::string& filename);
-    static PgmImage load_from_stream(std::istream& istream, const std::string& name);
+    static PgmImage load_from_file(const Utf8Path& filename);
+    static PgmImage load_from_stream(std::istream& istream, const Utf8Path& name);
 
-    void save_to_file(const std::string &filename) const;
+    void save_to_file(const Utf8Path &filename) const;
     void save_to_stream(std::ostream& ostream) const;
 
     static PgmImage from_float(const Array<float>& grayscale);

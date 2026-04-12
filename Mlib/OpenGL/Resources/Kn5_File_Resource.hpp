@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Os/Utf8_Path.hpp>
 #include <memory>
 #include <string>
 
@@ -13,7 +14,7 @@ class IRaceLogic;
 
 template <class TPos>
 std::shared_ptr<ISceneNodeResource> load_renderable_kn5(
-    const std::string& file_or_directory,
+    const Utf8Path& file_or_directory,
     const LoadMeshConfig<TPos>& cfg,
     const SceneNodeResources& scene_node_resources,
     IDdsResources* dds_resources,

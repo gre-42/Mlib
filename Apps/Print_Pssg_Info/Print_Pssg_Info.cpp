@@ -7,8 +7,9 @@
 #include <Mlib/Io/Arg_Parser.hpp>
 #include <Mlib/Io/Binary.hpp>
 #include <Mlib/Os/Os.hpp>
+#include <Mlib/Os/Utf8_Path.hpp>
 #include <Mlib/Regex/Regex_Select.hpp>
-#include <filesystem>
+#include <boost/regex/icu.hpp>
 
 using namespace Mlib;
 
@@ -32,7 +33,7 @@ int main(int argc, char **argv) {
                     IoVerbosity::METADATA);
             }
             if (args.has_named_value("--export")) {
-                DECLARE_REGEX(re, args.named_value("--export"));
+                auto re = boost::make_u32regex(args.named_value("--export"));
                 model.root.for_each_node([&](const PssgNode& node) {
                     if (model.schema.nodes.get(node.type_id).name != "TEXTURE") {
                         return true;
@@ -41,7 +42,7 @@ int main(int argc, char **argv) {
                     if (node_id.length() > 1'000) {
                         throw std::runtime_error("Node ID too long");
                     }
-                    if (!Mlib::re::regex_search(node_id, re)) {
+                    if (!boost::u32regex_search(node_id, re)) {
                         return true;
                     }
                     auto width = node.get_attribute("width", model.schema).uint32();
@@ -71,7 +72,7 @@ int main(int argc, char **argv) {
                         return true;
                     }, '_');
                     auto data = node.texture(model.schema);
-                    auto tex_filename = std::filesystem::path{ "textures" } / (node_id + ".dds");
+                    auto tex_filename = Utf8Path{ "textures" } / (node_id + ".dds");
                     auto f = create_ofstream(tex_filename, std::ios::binary);
                     if (f->fail()) {
                         throw std::runtime_error("Could not open file for write: \"" + tex_filename.string() + '"');

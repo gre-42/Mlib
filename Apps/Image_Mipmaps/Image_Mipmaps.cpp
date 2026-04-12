@@ -1,15 +1,16 @@
 #include <Mlib/Io/Arg_Parser.hpp>
 #include <Mlib/Os/Os.hpp>
+#include <Mlib/Os/Utf8_Path.hpp>
 #include <stb/stb_image.h>
 #include <stb/stb_image_write.h>
 #include <stb_cpp/stb_mipmaps.hpp>
 
 using namespace Mlib;
 
-void downsample_file(const char* in_filename, const char* out_prefix) {
+void downsample_file(const Utf8Path& in_filename, const Utf8Path& out_prefix) {
     int width, height, channels;
     stbi_uc* data = stbi_load(
-        in_filename,
+        in_filename.c_str(),
         &width,
         &height,
         &channels,
@@ -43,7 +44,7 @@ int main(int argc, char** argv) {
     try {
         const auto args = parser.parsed(argc, argv);
         args.assert_num_unnamed(2);
-        downsample_file(args.unnamed_value(0).c_str(), args.unnamed_value(1).c_str());
+        downsample_file(args.unnamed_value(0), args.unnamed_value(1));
     } catch (const CommandLineArgumentError& e) {
         lerr() << e.what();
         return 1;

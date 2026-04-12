@@ -1,27 +1,28 @@
 #include "Pathes.hpp"
 #include <Mlib/Regex/Regex_Select.hpp>
+#include <Mlib/Strings/Str.hpp>
 #include <Mlib/Strings/String.hpp>
 #include <stdexcept>
 
 using namespace Mlib;
 
-std::vector<std::filesystem::path>
-    Mlib::split_semicolon_separated_pathes(const std::string& s)
+std::vector<Utf8Path>
+    Mlib::split_semicolon_separated_pathes(const std::u8string& s)
 {
-    static const DECLARE_REGEX(re, ";");
-    return string_to_vector(s, re, [](const auto& s){ return std::filesystem::path{s}; });
+    static const auto re = boost::make_u32regex(";");
+    return string_to_vector(s, re, [](const auto& s){ return Utf8Path{s}; });
 }
 
-std::vector<std::pair<std::filesystem::path, std::filesystem::path>>
-    Mlib::split_semicolon_separated_pairs_of_pathes(const std::string& s)
+std::vector<std::pair<Utf8Path, Utf8Path>>
+    Mlib::split_semicolon_separated_pairs_of_pathes(const std::u8string& s)
 {
-    static const DECLARE_REGEX(re, ";");
+    static const auto re = boost::make_u32regex(";");
     return string_to_vector(s, re, [](const auto& s)
     {
-        static const DECLARE_REGEX(re, "=");
-        auto v = string_to_vector(s, re, [](const auto& s){ return std::filesystem::path{s}; });
+        static const auto re = boost::make_u32regex("=");
+        auto v = string_to_vector(s, re, [](const auto& s){ return Utf8Path{s}; });
         if (v.size() != 2) {
-            throw std::runtime_error("Could not parse as key=value: " + std::string{s});
+            throw std::runtime_error("Could not parse as key=value: " + U8::str(s));
         }
         return std::make_pair(v[0], v[1]);
     });

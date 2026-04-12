@@ -5,12 +5,12 @@
 
 using namespace Mlib;
 
-CompressedFile::CompressedFile(std::filesystem::path p)
+CompressedFile::CompressedFile(Utf8Path p)
     : path_{std::move(p)}
 {}
 
 CompressedFile CompressedFile::sibling(
-    const std::filesystem::path& filename) const
+    const Utf8Path& filename) const
 {
     if (path_.extension() == ".gz") {
         return CompressedFile{path_.parent_path() / (filename.string() + ".gz")};
@@ -19,7 +19,7 @@ CompressedFile CompressedFile::sibling(
     }
 }
 
-std::filesystem::path CompressedFile::path() const {
+Utf8Path CompressedFile::path() const {
     return path_;
 }
 

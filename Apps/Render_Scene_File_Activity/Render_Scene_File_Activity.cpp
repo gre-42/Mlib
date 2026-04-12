@@ -254,7 +254,7 @@ JThread loader_thread(
             AudioResourceContext arc;
             {
                 AudioResourceContextGuard arcg{ arc };
-                AudioListener::set_gain(safe_stof(args.named_value("--audio_gain", "1")));
+                AudioListener::set_gain(safe_stof(args.named_svalue("--audio_gain", "1")));
                 // GlContextGuard gcg{ render2.window() };
                 load_scene();
                 renderable_scenes["primary_scene_" + remote_sites.get_local_user(0)->full_name].instantiate_audio_listener(
@@ -516,16 +516,16 @@ void android_main(android_app* app) {
         list_audio_devices(linfo(LogFlags::NO_APPEND_NEWLINE).ref());
         AudioDevice audio_device;
         linfo() << "Selected audio device: " << audio_device.get_name();
-        AudioContext audio_context{audio_device, safe_stou(args.named_value("--audio_frequency", "0"))};
+        AudioContext audio_context{audio_device, safe_stou(args.named_svalue("--audio_frequency", "0"))};
         linfo() << "Audio frequency: " << audio_device.get_frequency();
-        AudioScene::set_default_alpha(safe_stof(args.named_value("--audio_alpha", "0.1")));
+        AudioScene::set_default_alpha(safe_stof(args.named_svalue("--audio_alpha", "0.1")));
         AudioScene::set_distance_model(audio_distance_model_from_string(args.named_value("--audio_distance_model", "inverse_distance_clamped")));
 
         std::atomic_size_t num_renderings;
         RenderConfig render_config{
-            .nsamples_msaa = safe_stoi(args.named_value("--nsamples_msaa", "1")),
-            .lightmap_nsamples_msaa = safe_stoi(args.named_value("--lightmap_nsamples_msaa", "1")),
-            .min_sample_shading = safe_stof(args.named_value("--min_sample_shading", "0")),
+            .nsamples_msaa = safe_stoi(args.named_svalue("--nsamples_msaa", "1")),
+            .lightmap_nsamples_msaa = safe_stoi(args.named_svalue("--lightmap_nsamples_msaa", "1")),
+            .min_sample_shading = safe_stof(args.named_svalue("--min_sample_shading", "0")),
             .vfx = args.has_named("--vfx"),
             .fxaa = args.has_named("--fxaa"),
             .cull_faces = args.has_named("--cull_faces")
@@ -535,39 +535,39 @@ void android_main(android_app* app) {
                 ? BoolRenderOption::ON
                 : BoolRenderOption::UNCHANGED,
             .window_title = main_scene_filename,
-            .windowed_width = safe_stoi(args.named_value("--windowed_width", "800")),
-            .windowed_height = safe_stoi(args.named_value("--windowed_height", "600")),
-            .fullscreen_width = safe_stoi(args.named_value("--fullscreen_width", "0")),
-            .fullscreen_height = safe_stoi(args.named_value("--fullscreen_height", "0")),
+            .windowed_width = safe_stoi(args.named_svalue("--windowed_width", "800")),
+            .windowed_height = safe_stoi(args.named_svalue("--windowed_height", "600")),
+            .fullscreen_width = safe_stoi(args.named_svalue("--fullscreen_width", "0")),
+            .fullscreen_height = safe_stoi(args.named_svalue("--fullscreen_height", "0")),
             .motion_interpolation = args.has_named("--motion_interpolation"),
             .fullscreen = args.has_named("--fullscreen"),
             .double_buffer = !args.has_named("--no_double_buffer"),
-            .anisotropic_filtering_level = safe_stou(args.named_value("--anisotropic_filtering_level", "0")),
+            .anisotropic_filtering_level = safe_stou(args.named_svalue("--anisotropic_filtering_level", "0")),
             .normalmaps = !args.has_named("--no_normalmaps"),
             .show_mouse_cursor = args.has_named("--show_mouse_cursor"),
-            .swap_interval = safe_stoi(args.named_value("--swap_interval", "1")),
-            .fullscreen_refresh_rate = safe_stoi(args.named_value("--fullscreen_refresh_rate", "0")),
-            .draw_distance_add = safe_stof(args.named_value("--draw_distance_add", "inf"))};
-        auto physics_dt = safe_stof(args.named_value("--physics_dt", "0.01667"));
+            .swap_interval = safe_stoi(args.named_svalue("--swap_interval", "1")),
+            .fullscreen_refresh_rate = safe_stoi(args.named_svalue("--fullscreen_refresh_rate", "0")),
+            .draw_distance_add = safe_stof(args.named_svalue("--draw_distance_add", "inf"))};
+        auto physics_dt = safe_stof(args.named_svalue("--physics_dt", "0.01667"));
         auto render_delay = std::chrono::duration_cast<std::chrono::steady_clock::duration>(
             std::chrono::duration<float>{ 1.0f * physics_dt });
         auto velocity_dt = std::chrono::duration_cast<std::chrono::steady_clock::duration>(
             std::chrono::duration<float>{ 0.1f * physics_dt });
         RealtimeDependentFps render_set_fps{
             "Render set FPS: ",
-            safe_stof(args.named_value("--render_dt", "0.01667")),
+            safe_stof(args.named_svalue("--render_dt", "0.01667")),
             render_delay,
-            safe_stof(args.named_value("--render_max_residual_time", "0.5")),
+            safe_stof(args.named_svalue("--render_max_residual_time", "0.5")),
             args.has_named("--control_render_fps"),
             args.has_named("--print_render_residual_time"),
             0.05f,
             0.05f,
-            safe_stou(args.named_value("--print_render_fps_interval", "-1"))};
+            safe_stou(args.named_svalue("--print_render_fps_interval", "-1"))};
 
         SceneGraphConfig scene_graph_config{
-            .max_distance_black = safe_stof(args.named_value("--max_distance_black", "200")) * meters,
-            .small_aggregate_update_interval = safe_stoz(args.named_value("--small_aggregate_update_interval", "60")),
-            .large_max_offset_deviation = safe_stof(args.named_value("--large_max_offset_deviation", "200")) * meters};
+            .max_distance_black = safe_stof(args.named_svalue("--max_distance_black", "200")) * meters,
+            .small_aggregate_update_interval = safe_stoz(args.named_svalue("--small_aggregate_update_interval", "60")),
+            .large_max_offset_deviation = safe_stof(args.named_svalue("--large_max_offset_deviation", "200")) * meters};
 
         ButtonStates button_states;
         CursorStates cursor_states;
@@ -607,12 +607,12 @@ void android_main(android_app* app) {
         std::optional<RemoteParams> remote_params;
         if (args.has_named_value("--remote_role")) {
             remote_params.emplace(
-                safe_sto<RemoteSiteId>(args.named_value("--remote_site_id")),
+                safe_sto<RemoteSiteId>(args.named_svalue("--remote_site_id")),
                 remote_role_from_string(args.named_value("--remote_role")),
                 args.named_value("--remote_ip"),
-                safe_sto<uint16_t>(args.named_value("--remote_port")));
+                safe_sto<uint16_t>(args.named_svalue("--remote_port")));
         }
-        auto user_count = safe_sto<uint32_t>(args.named_value("--user_count", "1"));
+        auto user_count = safe_sto<uint32_t>(args.named_svalue("--user_count", "1"));
         Users users;
         RemoteSites remote_sites{ {users, CURRENT_SOURCE_LOCATION}, remote_params };
         remote_sites.set_local_user_count(user_count);
@@ -626,19 +626,19 @@ void android_main(android_app* app) {
                 {"primary_scene_low_pass", args.has_named("--low_pass")},
                 {"primary_scene_high_pass", args.has_named("--high_pass")},
                 {"primary_scene_bloom_iterations", FixedArray<unsigned int, 2>{
-                    safe_stou(args.named_value("--bloom_x", "3")),
-                    safe_stou(args.named_value("--bloom_y", "3"))}},
+                    safe_stou(args.named_svalue("--bloom_x", "3")),
+                    safe_stou(args.named_svalue("--bloom_y", "3"))}},
                 {"primary_scene_bloom_thresholds", fixed_full<float, 3>(
-                    safe_stof(args.named_value("--bloom_threshold", "1")))},
+                    safe_stof(args.named_svalue("--bloom_threshold", "1")))},
                 {"primary_scene_bloom_std", fixed_full<float, 2>(
-                    safe_stof(args.named_value("--bloom_std", "4")))},
+                    safe_stof(args.named_svalue("--bloom_std", "4")))},
                 {"primary_scene_bloom_intensities", fixed_full<float, 3>(
-                    safe_stof(args.named_value("--bloom_intensities", "4")))},
+                    safe_stof(args.named_svalue("--bloom_intensities", "4")))},
                 {"primary_scene_bloom_mode", args.named_value("--bloom_mode", "sky")},
                 {"primary_scene_with_skybox", true},
                 {"primary_scene_with_flying_logic", true},
                 {"primary_scene_save_playback", args.has_named("--save_playback")},
-                {"far_plane", safe_stof(args.named_value("--far_plane", "10000"))},
+                {"far_plane", safe_stof(args.named_svalue("--far_plane", "10000"))},
                 {"record_track_basename", (record_track_basename == nullptr)
                     ? nlohmann::json()
                     : nlohmann::json(*record_track_basename)},
@@ -654,22 +654,22 @@ void android_main(android_app* app) {
                 {"mesh", args.named_value("--mesh", "obj")},
                 {"animated_mesh", args.named_value("--animated_mesh", "mhx2")},
                 {"audio", args.named_value("--audio", "wav")},
-                {"scene_lightmap_width", safe_stoi(args.named_value("--scene_lightmap_width", "2048"))},
-                {"scene_lightmap_height", safe_stoi(args.named_value("--scene_lightmap_height", "2048"))},
-                {"black_lightmap_width", safe_stoi(args.named_value("--black_lightmap_width", "1024"))},
-                {"black_lightmap_height", safe_stoi(args.named_value("--black_lightmap_height", "1024"))},
-                {"scene_skidmarks_width", safe_stoi(args.named_value("--scene_skidmarks_width", "2048"))},
-                {"scene_skidmarks_height", safe_stoi(args.named_value("--scene_skidmarks_height", "2048"))},
-                {"scene_water_waves_width", safe_stoi(args.named_value("--scene_water_waves_width", "512"))},
-                {"scene_water_waves_height", safe_stoi(args.named_value("--scene_water_waves_height", "512"))},
-                {"scene_sea_spray_width", safe_stoi(args.named_value("--scene_sea_spray_width", "2048"))},
-                {"scene_sea_spray_height", safe_stoi(args.named_value("--scene_sea_spray_height", "2048"))},
+                {"scene_lightmap_width", safe_stoi(args.named_svalue("--scene_lightmap_width", "2048"))},
+                {"scene_lightmap_height", safe_stoi(args.named_svalue("--scene_lightmap_height", "2048"))},
+                {"black_lightmap_width", safe_stoi(args.named_svalue("--black_lightmap_width", "1024"))},
+                {"black_lightmap_height", safe_stoi(args.named_svalue("--black_lightmap_height", "1024"))},
+                {"scene_skidmarks_width", safe_stoi(args.named_svalue("--scene_skidmarks_width", "2048"))},
+                {"scene_skidmarks_height", safe_stoi(args.named_svalue("--scene_skidmarks_height", "2048"))},
+                {"scene_water_waves_width", safe_stoi(args.named_svalue("--scene_water_waves_width", "512"))},
+                {"scene_water_waves_height", safe_stoi(args.named_svalue("--scene_water_waves_height", "512"))},
+                {"scene_sea_spray_width", safe_stoi(args.named_svalue("--scene_sea_spray_width", "2048"))},
+                {"scene_sea_spray_height", safe_stoi(args.named_svalue("--scene_sea_spray_height", "2048"))},
                 {"selected_user_count", user_count},
                 {"remote_role", args.named_value("--remote_role", "none")},
-                {"sparse_triangle_cluster_width", safe_stof(args.named_value("--sparse_triangle_cluster_width", "3e3"))},
-                {"medium_triangle_cluster_width", safe_stof(args.named_value("--medium_triangle_cluster_width", "700"))},
-                {"dense_triangle_cluster_width", safe_stof(args.named_value("--dense_triangle_cluster_width", "250"))},
-                {"object_cluster_width", safe_stof(args.named_value("--object_cluster_width", "500"))}};
+                {"sparse_triangle_cluster_width", safe_stof(args.named_svalue("--sparse_triangle_cluster_width", "3e3"))},
+                {"medium_triangle_cluster_width", safe_stof(args.named_svalue("--medium_triangle_cluster_width", "700"))},
+                {"dense_triangle_cluster_width", safe_stof(args.named_svalue("--dense_triangle_cluster_width", "250"))},
+                {"object_cluster_width", safe_stof(args.named_svalue("--object_cluster_width", "500"))}};
                 if (remote_params.has_value()) {
                     j["remote_params"] = *remote_params;
                 } else {
@@ -717,7 +717,7 @@ void android_main(android_app* app) {
             ui_focuses.try_save();
         });
         LocalSceneLevel local_scene_level;
-        size_t args_num_renderings = safe_stoz(args.named_value("--num_renderings", "-1"));
+        size_t args_num_renderings = safe_stoz(args.named_svalue("--num_renderings", "-1"));
         while (!render_loop.destroy_requested() && !unhandled_exceptions_occured()) {
             num_renderings = args_num_renderings;
             ui_focuses.clear();
@@ -728,23 +728,23 @@ void android_main(android_app* app) {
                 .control_fps = !args.has_named("--no_control_physics_fps"),
                 .print_residual_time = args.has_named("--print_physics_residual_time"),
                 // BVH
-                .static_radius = (CompressedScenePos)(safe_stof(args.named_value("--static_radius", "20")) * meters),
-                .bvh_max_size = (CompressedScenePos)(safe_stof(args.named_value("--bvh_max_size", "2")) * meters),
+                .static_radius = (CompressedScenePos)(safe_stof(args.named_svalue("--static_radius", "20")) * meters),
+                .bvh_max_size = (CompressedScenePos)(safe_stof(args.named_svalue("--bvh_max_size", "2")) * meters),
                 // Collision/Friction misc.
-                .max_extra_friction = safe_stof(args.named_value("--max_extra_friction", "0")),
-                .max_extra_w = safe_stof(args.named_value("--max_extra_w", "0")),
+                .max_extra_friction = safe_stof(args.named_svalue("--max_extra_friction", "0")),
+                .max_extra_w = safe_stof(args.named_svalue("--max_extra_w", "0")),
                 .avoid_burnout = !args.has_named("--no_avoid_burnout"),
                 .no_slip = args.has_named("--no_slip"),
-                .parking_brake_velocity = safe_stof(args.named_value("--parking_brake_velocity", "5")) * kph,
-                .slow_velocity = safe_stof(args.named_value("--slow_velocity", "40")) * kph,
+                .parking_brake_velocity = safe_stof(args.named_svalue("--parking_brake_velocity", "5")) * kph,
+                .slow_velocity = safe_stof(args.named_svalue("--slow_velocity", "40")) * kph,
                 // Friction
-                .stiction_coefficient = safe_stof(args.named_value("--stiction_coefficient", "0.5")),
-                .friction_coefficient = safe_stof(args.named_value("--friction_coefficient", "0.5")),
-                .longitudinal_friction_steepness = safe_stof(args.named_value("--longitudinal_friction_steepness", "20")),
-                .lateral_friction_steepness = safe_stof(args.named_value("--lateral_friction_steepness", "20")),
+                .stiction_coefficient = safe_stof(args.named_svalue("--stiction_coefficient", "0.5")),
+                .friction_coefficient = safe_stof(args.named_svalue("--friction_coefficient", "0.5")),
+                .longitudinal_friction_steepness = safe_stof(args.named_svalue("--longitudinal_friction_steepness", "20")),
+                .lateral_friction_steepness = safe_stof(args.named_svalue("--lateral_friction_steepness", "20")),
                 // Collision
-                .wheel_penetration_depth = safe_stof(args.named_value("--wheel_penetration_depth", "0.25")),
-                .nsubsteps = safe_stoz(args.named_value("--nsubsteps", "8"))};
+                .wheel_penetration_depth = safe_stof(args.named_svalue("--wheel_penetration_depth", "0.25")),
+                .nsubsteps = safe_stoz(args.named_svalue("--nsubsteps", "8"))};
 
             SceneConfig scene_config{
                 .render_config = render_config,

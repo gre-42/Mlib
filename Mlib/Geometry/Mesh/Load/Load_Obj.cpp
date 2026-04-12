@@ -14,15 +14,13 @@
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Os/Os.hpp>
+#include <Mlib/Os/Utf8_Path.hpp>
 #include <Mlib/Os/Weakly_Canonical_Preserve_Symlinks.hpp>
 #include <Mlib/Regex/Regex_Select.hpp>
 #include <Mlib/Regex/Template_Regex.hpp>
 #include <Mlib/Strings/String_View_To_Scene_Pos.hpp>
 #include <Mlib/Testing/Assert.hpp>
-#include <filesystem>
 #include <vector>
-
-namespace fs = std::filesystem;
 
 using namespace Mlib;
 using namespace Mlib::TemplateRegex;
@@ -47,9 +45,9 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_obj(
 {
     using Triangle = FixedArray<TPos, 3, 3>;
 
-    std::string prefix = std::filesystem::path{ filename }.stem().string() + "/";
+    std::string prefix = Utf8Path{ filename }.stem().string() + "/";
     std::map<std::string, ObjMaterial> mtllib;
-    std::filesystem::path mtllib_path;
+    Utf8Path mtllib_path;
     std::vector<ColoredVertexX<TPos>> obj_vertices;
     UUVector<FixedArray<float, 2>> obj_uvs;
     UUVector<FixedArray<float, 3>> obj_normals;
@@ -352,11 +350,11 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_obj(
                 auto material_name = std::string{ match[1].str() };
                 current_mtl = mtllib.at(material_name);
                 TextureDescriptor td;
-                auto gen_texture_path = [&mtllib_path](const std::filesystem::path& child){
+                auto gen_texture_path = [&mtllib_path](const Utf8Path& child){
                     if (child.empty()) {
                         return FPath{};
                     }
-                    fs::path p = fs::path(mtllib_path).parent_path();
+                    auto p = mtllib_path.parent_path();
                     return FPath::from_local_path(p.empty() ? child : weakly_canonical_preserve_symlinks(p / child));
                 };
                 if (!current_mtl.diffuse_texture.empty()) {

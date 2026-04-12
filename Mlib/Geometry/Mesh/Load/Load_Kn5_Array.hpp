@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Os/Utf8_Path.hpp>
 #include <list>
 #include <memory>
 #include <string>
@@ -14,7 +15,7 @@ class IRaceLogic;
 
 template <class TPos>
 std::list<std::shared_ptr<ColoredVertexArray<TPos>>> load_kn5_array(
-    const std::string& filename,
+    const Utf8Path& filename,
     const LoadMeshConfig<TPos>& cfg,
     IDdsResources* dds_resources,
     IRaceLogic* race_logic);

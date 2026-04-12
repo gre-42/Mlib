@@ -255,13 +255,13 @@ static void readNodes(
 }
 
 kn5Model Mlib::load_kn5(
-    const std::string& filename,
+    const Utf8Path& filename,
     bool verbose,
     kn5LoadOptions opts)
 {
     auto binStream = create_ifstream(filename, std::ios::binary);
     if (binStream->fail()) {
-        throw std::runtime_error("Could not open file \"" + filename + '"');
+        throw std::runtime_error("Could not open file \"" + filename.string() + '"');
     }
     return load_kn5(*binStream, verbose, opts);
 }

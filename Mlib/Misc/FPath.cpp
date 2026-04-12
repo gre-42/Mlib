@@ -2,6 +2,7 @@
 #include "FPath.hpp"
 #include <Mlib/Hashing/Hash.hpp>
 #include <Mlib/Os/Os.hpp>
+#include <Mlib/Strings/Str.hpp>
 #include <sstream>
 #include <stdexcept>
 #include <string_view>
@@ -9,17 +10,17 @@
 using namespace Mlib;
 using namespace std::literals;
 
-static const auto LOCAL_PATH_PREFIX = "file://"sv;
-static const auto VARIABLE_PREFIX = "#"sv;
+static const auto LOCAL_PATH_PREFIX = u8"file://"sv;
+static const auto VARIABLE_PREFIX = u8"#"sv;
 
 FPath::FPath()
     : type_{PathType::EMPTY}
 {}
 
-FPath::FPath(const std::string_view& uri) {
+FPath::FPath(const std::u8string_view& uri) {
     if (uri.starts_with(LOCAL_PATH_PREFIX)) {
         type_ = PathType::LOCAL_PATH;
-        path_or_variable_ = VariableAndHash{(std::string)uri.substr(LOCAL_PATH_PREFIX.length())};
+        path_or_variable_ = VariableAndHash{(std::string)U8::str(uri.substr(LOCAL_PATH_PREFIX.length()))};
         if (path_or_variable_->empty()) {
             throw std::runtime_error("Path is empty");
         }
@@ -27,13 +28,13 @@ FPath::FPath(const std::string_view& uri) {
     }
     if (uri.starts_with(VARIABLE_PREFIX)) {
         type_ = PathType::VARIABLE;
-        path_or_variable_ = VariableAndHash{(std::string)uri.substr(VARIABLE_PREFIX.length())};
+        path_or_variable_ = VariableAndHash{(std::string)U8::str(uri.substr(VARIABLE_PREFIX.length()))};
         if (path_or_variable_->empty()) {
             throw std::runtime_error("Variable name is empty");
         }
         return;
     }
-    throw std::runtime_error("Unkown URI type: \"" + std::string{uri} + '"');
+    throw std::runtime_error("Unkown URI type: \"" + (std::string)U8::str(uri) + '"');
 }
 
 FPath::FPath(PathType type, const std::string_view& path_or_variable)

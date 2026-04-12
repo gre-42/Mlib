@@ -13,9 +13,9 @@
 #include <Mlib/Misc/FPath_Json.hpp>
 #include <Mlib/Misc/Floating_Point_Exceptions.hpp>
 #include <Mlib/Os/Pathes.hpp>
+#include <Mlib/Os/Utf8_Path.hpp>
 #include <Mlib/Regex/Regex_Select.hpp>
 #include <Mlib/Strings/String.hpp>
-#include <filesystem>
 #include <optional>
 #include <regex>
 #include <set>
@@ -83,7 +83,7 @@ namespace Mlib {
 struct LumaChrominance {
     FixedArray<size_t, 2> luma = uninitialized;
     FixedArray<size_t, 2> chrominance = uninitialized;
-    std::optional<std::filesystem::path> file_extension;
+    std::optional<Utf8Path> file_extension;
 };
 
 void from_json(const nlohmann::json& j, LumaChrominance& lc) {
@@ -91,7 +91,7 @@ void from_json(const nlohmann::json& j, LumaChrominance& lc) {
     jv.validate(LumaChrominanceArgs::options);
     lc.luma = jv.at<EFixedArray<size_t, 2>>(LumaChrominanceArgs::luma);
     lc.chrominance = jv.at<EFixedArray<size_t, 2>>(LumaChrominanceArgs::chrominance);
-    lc.file_extension = jv.try_at<std::filesystem::path>(LumaChrominanceArgs::file_extension);
+    lc.file_extension = jv.try_at<Utf8Path>(LumaChrominanceArgs::file_extension);
 }
 
 struct Fragment {
@@ -130,7 +130,7 @@ struct Resize {
     FixedArray<size_t, 2> size = uninitialized;
     bool periodic;
     int jpg_quality;
-    std::optional<std::filesystem::path> file_extension;
+    std::optional<Utf8Path> file_extension;
 };
 
 void from_json(const nlohmann::json& j, Resize& resize) {
@@ -139,7 +139,7 @@ void from_json(const nlohmann::json& j, Resize& resize) {
     resize.size = jv.at<EFixedArray<size_t, 2>>(ResizeArgs::size);
     resize.periodic = jv.at<bool>(ResizeArgs::periodic);
     resize.jpg_quality = jv.at<int>(ResizeArgs::jpg_quality, 95);
-    resize.file_extension = jv.try_at<std::filesystem::path>(ResizeArgs::file_extension);
+    resize.file_extension = jv.try_at<Utf8Path>(ResizeArgs::file_extension);
     if ((resize.jpg_quality < 0) || (resize.jpg_quality > 100)) {
         throw std::runtime_error("JPG quality must be 0-100");
     }
@@ -176,7 +176,7 @@ void from_json(const nlohmann::json& j, Audio& audio) {
     audio.bitrate = jv.at<uint32_t>(AudioArgs::bitrate);
 }
 struct CompressionModes {
-    std::filesystem::path path;
+    Utf8Path path;
     std::optional<Glob> glob;
     std::optional<Resize> resize;
     std::optional<LumaOnly> luma;
@@ -191,7 +191,7 @@ struct CompressionModes {
 void from_json(const nlohmann::json& j, CompressionModes& cm) {
     JsonView jv{j};
     jv.validate(CompressionModesArgs::options);
-    cm.path = jv.at<std::filesystem::path>(CompressionModesArgs::path);
+    cm.path = jv.at<Utf8Path>(CompressionModesArgs::path);
     cm.glob = jv.try_at<Glob>(CompressionModesArgs::glob);
     cm.resize = jv.try_at<Resize>(CompressionModesArgs::resize);
     cm.luma = jv.try_at<LumaOnly>(CompressionModesArgs::luma);
@@ -206,8 +206,8 @@ void from_json(const nlohmann::json& j, CompressionModes& cm) {
 }
 
 static bool file_missing_or_outdated(
-    const std::filesystem::path& source,
-    const std::filesystem::path& target)
+    const Utf8Path& source,
+    const Utf8Path& target)
 {
     if (!path_exists(target)) {
         return true;
@@ -219,8 +219,8 @@ static bool file_missing_or_outdated(
 }
 
 void sed(
-    const std::filesystem::path& source,
-    const std::filesystem::path& destination,
+    const Utf8Path& source,
+    const Utf8Path& destination,
     const Sed& sed)
 {
     auto fi = create_ifstream(source, std::ios::binary);
@@ -250,14 +250,14 @@ void sed(
 }
 
 void convert(
-    const std::filesystem::path& source_dir,
-    const std::filesystem::path& dest_dir,
-    const std::filesystem::path& source_name,
+    const Utf8Path& source_dir,
+    const Utf8Path& dest_dir,
+    const Utf8Path& source_name,
     const CompressionModes& cm,
     const ParsedArgs& args)
 {
     bool overwrite_existing = args.has_named("--overwrite_existing");
-    auto rel_path = std::filesystem::path{source_name};
+    auto rel_path = Utf8Path{source_name};
     auto dest_parent = dest_dir / rel_path.parent_path();
     auto stem = rel_path.stem();
     auto extension = rel_path.extension();
@@ -267,7 +267,7 @@ void convert(
     auto derived_dest_extension = [&](const std::string& extension){
         return dest_parent / (stem.string() + extension);
     };
-    auto verbose_update_intended = [&](const std::filesystem::path& dest){
+    auto verbose_update_intended = [&](const Utf8Path& dest){
         if (overwrite_existing || file_missing_or_outdated(source_dir / rel_path, dest)) {
             linfo() << "Updating " << source_dir / rel_path << " -> " << dest;
             return true;
@@ -385,7 +385,7 @@ void convert(
     }
     if (cm.audio.has_value()) {
         if (cm.audio->format == "MP3") {
-            auto mp3 = std::filesystem::path{rel_path}.replace_extension(".mp3");
+            auto mp3 = Utf8Path{rel_path}.replace_extension(".mp3");
             auto dest_path = dest_dir / mp3;
             if (overwrite_existing || verbose_update_intended(dest_path)) {
                 std::filesystem::create_directories(dest_parent);
@@ -435,7 +435,7 @@ int main(int argc, char** argv) {
             auto source_dirs = split_semicolon_separated_pathes(args.named_value("--source_dirs"));
             for (const auto& cm : j.get<std::vector<CompressionModes>>()) {
                 if (cm.glob.has_value()) {
-                    std::set<std::filesystem::path> rel_source_names;
+                    std::set<Utf8Path> rel_source_names;
                     auto re = std::regex{*cm.glob};
                     for (const auto& source_dir : source_dirs) {
                         if (!path_exists(source_dir / cm.path)) {
@@ -445,7 +445,7 @@ int main(int argc, char** argv) {
                             if (source_name.is_directory()) {
                                 continue;
                             }
-                            auto rel_source_name = source_name.path().lexically_relative(source_dir);
+                            auto rel_source_name = Utf8Path::from_path(source_name.path().lexically_relative(source_dir));
                             if (!std::regex_search(rel_source_name.string(), re)) {
                                 continue;
                             }

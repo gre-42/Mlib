@@ -28,6 +28,7 @@
 #include <Mlib/Regex/Regex_Select.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
 #include <Mlib/Threads/Realtime_Threads.hpp>
+#include <boost/regex/icu.hpp>
 
 using namespace Mlib;
 
@@ -41,7 +42,7 @@ int main(int argc, char** argv)
         {"--kn5", "--txd", "--filter", "--size", "--mip_level_count", "--mip_level", "--aniso", "--atlas_layer", "--texname"});
 
     try {
-        auto parsed = parser.parsed(argc, argv);
+        auto args = parser.parsed(argc, argv);
 
         reserve_realtime_threads(0);
 
@@ -97,14 +98,14 @@ int main(int argc, char** argv)
         // ------------
         AutoTextureAtlasDescriptor atlas;
         std::optional<FillWithTextureLogic> ftl;
-        auto unnamed = parsed.unnamed_values();
+        auto unnamed = args.unnamed_values();
         if (unnamed.empty()) {
-            static const DECLARE_REGEX(re, parsed.named_value("--filter"));
+            static const auto re = boost::make_u32regex(args.named_value("--filter"));
             std::list<ColormapWithModifiers> names;
-            if (auto filename = parsed.try_named_value("--kn5"); filename != nullptr) {
+            if (auto filename = args.try_named_value("--kn5"); filename != nullptr) {
                 auto kn5 = load_kn5(*filename);
                 for (auto& [name, data] : kn5.textures) {
-                    if (!Mlib::re::regex_search(*name, re)) {
+                    if (!boost::u32regex_search(*name, re)) {
                         continue;
                     }
                     linfo() << "Matched: " << *name;
@@ -121,7 +122,7 @@ int main(int argc, char** argv)
                         TextureAlreadyExistsBehavior::RAISE);
                 }
             }
-            if (auto filename = parsed.try_named_value("--txd"); filename != nullptr) {
+            if (auto filename = args.try_named_value("--txd"); filename != nullptr) {
                 auto txd = Dff::read_txd(
                     *filename,
                     rvalue_address(Dff::RasterFactory()),
@@ -131,7 +132,7 @@ int main(int argc, char** argv)
                         .flip_gl_y_axis = true}),
                     IoVerbosity::SILENT);
                 for (auto& tx : txd.textures) {
-                    if (!Mlib::re::regex_search(*tx->name, re)) {
+                    if (!boost::u32regex_search(*tx->name, re)) {
                         linfo() << "Skipping: " << *tx->name;
                         continue;
                     }
@@ -153,33 +154,33 @@ int main(int argc, char** argv)
                 }
             }
             if (names.empty()) {
-                throw std::runtime_error("Could not find a single texture matching \"" + parsed.named_value("--filter") + '"');
+                throw std::runtime_error("Could not find a single texture matching \"" + U8::str(args.named_value("--filter")) + '"');
             }
             rendering_resources.generate_auto_texture_atlas(
                 &atlas,
                 ColormapWithModifiers{
                     .filename = FPath::from_variable_and_hash(tmp_texture),
                     .color_mode = ColorMode::RGBA,
-                    .anisotropic_filtering_level = safe_stou(parsed.named_value("--aniso", "0"))
+                    .anisotropic_filtering_level = safe_stou(args.named_svalue("--aniso", "0"))
                 }.compute_hash(),
                 std::vector(names.begin(), names.end()),
-                safe_stoi(parsed.named_value("--mip_level_count")),
-                safe_stoi(parsed.named_value("--size", "4096")));
+                safe_stoi(args.named_svalue("--mip_level_count")),
+                safe_stoi(args.named_svalue("--size", "4096")));
             for (const auto& [i, t] : enumerate(atlas.tiles)) {
                 linfo() << "Layer: " << i;
                 for (const auto& d : t) {
                     linfo() << "  Filename: " << (const std::string&)d.name.filename << ' ' << d.width << 'x' << d.height;
                 }
             }
-            if (auto filename = parsed.try_named_value("--texname"); filename != nullptr) {
+            if (auto filename = args.try_named_value("--texname"); filename != nullptr) {
                 ftl.emplace(
                     rendering_resources.get_texture(ColormapWithModifiers{
-                        .filename = FPath::from_variable(*filename),
+                        .filename = FPath::from_variable(U8::str(*filename)),
                         .color_mode = ColorMode::RGBA,
                         .mipmap_mode = MipmapMode::WITH_MIPMAPS
                     }.compute_hash()));
-            } else if (!parsed.has_named("--rerender_atlas")) {
-                auto layer = safe_stoz(parsed.named_value("--atlas_layer"));
+            } else if (!args.has_named("--rerender_atlas")) {
+                auto layer = safe_stoz(args.named_svalue("--atlas_layer"));
                 if (layer >= atlas.tiles.size()) {
                     throw std::runtime_error("Layer index out of bounds");
                 }
@@ -205,7 +206,7 @@ int main(int argc, char** argv)
                 tmp_texture,
                 TextureDescriptor{
                     .color = {
-                        .filename = FPath::from_variable(parsed.unnamed_value(0)),
+                        .filename = FPath::from_variable(U8::str(args.unnamed_value(0))),
                         .color_mode = ColorMode::RGBA,
                         .mipmap_mode = MipmapMode::WITH_MIPMAPS}});
             ftl.emplace(
@@ -235,11 +236,11 @@ int main(int argc, char** argv)
                 // CHK(glViewport(0, 0, 1024, 1024));
                 ftl->render(ClearMode::OFF);
             } else if (!atlas.tiles.empty()) {
-                auto layer = safe_stoz(parsed.named_value("--atlas_layer"));
+                auto layer = safe_stoz(args.named_svalue("--atlas_layer"));
                 if (layer >= atlas.tiles.size()) {
                     throw std::runtime_error("Layer index out of bounds");
                 }
-                float scale = std::pow(2.f, -safe_stof(parsed.named_value("--mip_level")));
+                float scale = std::pow(2.f, -safe_stof(args.named_svalue("--mip_level")));
                 if (std::isnan(scale)) {
                     throw std::runtime_error("Scale is NAN");
                 }

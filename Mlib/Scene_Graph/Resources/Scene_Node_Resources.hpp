@@ -2,6 +2,7 @@
 #include <Mlib/Map/String_With_Hash_Unordered_Map.hpp>
 #include <Mlib/Map/Threadsafe_String_With_Hash_Unordered_Map.hpp>
 #include <Mlib/Map/Verbose_Unordered_Map.hpp>
+#include <Mlib/Os/Utf8_Path.hpp>
 #include <Mlib/Scene_Config/Scene_Precision.hpp>
 #include <Mlib/Scene_Graph/Interfaces/Way_Points_Fwd.hpp>
 #include <Mlib/Scene_Graph/Preload_Behavior.hpp>
@@ -57,9 +58,9 @@ public:
     ~SceneNodeResources();
 
     // Preload
-    void write_loaded_resources(const std::string& filename) const;
+    void write_loaded_resources(const Utf8Path& filename) const;
     void preload_many(
-        const std::string& filename,
+        const Utf8Path& filename,
         const RenderableResourceFilter& filter) const;
     void preload_single(
         const VariableAndHash<std::string>& name,

@@ -24,13 +24,13 @@ int main(int argc, char** argv) {
         if (args.has_named("--grayscale")) {
             auto dest = make_symmetric_2d(
                 StbImage1::load_from_file(args.named_value("--src")).to_float_grayscale(),
-                safe_stoz(args.named_value("--overlap")));
+                safe_stoz(args.named_svalue("--overlap")));
 
             StbImage1::from_float_grayscale(dest).save_to_file(args.named_value("--dest"));
         } else {
             auto dest = make_symmetric_2d_multichannel(
                 StbImage3::load_from_file(args.named_value("--src")).to_float_rgb(),
-                safe_stoz(args.named_value("--overlap")));
+                safe_stoz(args.named_svalue("--overlap")));
 
             StbImage3::from_float_rgb(dest).save_to_file(args.named_value("--dest"));
         }

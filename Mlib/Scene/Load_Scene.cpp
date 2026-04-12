@@ -163,7 +163,7 @@ using namespace Mlib;
 using namespace LoadSceneFuncs;
 
 LoadScene::LoadScene(
-    const std::vector<std::filesystem::path>& search_path,
+    const std::vector<Utf8Path>& search_path,
     const std::string& script_filename,
     ThreadSafeString& next_scene_filename,
     LocalSceneLevel scene_level,

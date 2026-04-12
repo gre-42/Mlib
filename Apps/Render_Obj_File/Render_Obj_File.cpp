@@ -71,6 +71,7 @@
 #include <Mlib/OpenGL/Selected_Cameras/Selected_Cameras.hpp>
 #include <Mlib/OpenGL/Ui/Button_States.hpp>
 #include <Mlib/OpenGL/Ui/Cursor_States.hpp>
+#include <Mlib/Os/Utf8_Path.hpp>
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Animation_State.hpp>
@@ -174,28 +175,28 @@ static LoadMeshConfig<TPos> cfg(const ParsedArgs& args, const std::string& light
     if (args.has_named_value("--multilayer_diffuse")) {
         textures = {BlendMapTexture{
             .texture_descriptor = {
-                .color = {.filename = FPath::from_variable_and_hash(VariableAndHash{args.named_value("--multilayer_diffuse")}), .mipmap_mode = MipmapMode::WITH_MIPMAPS},
-                .normal = {.filename = FPath::from_variable_and_hash(VariableAndHash{args.named_value("--multilayer_normal", "")}), .color_mode = ColorMode::RGB, .mipmap_mode = MipmapMode::WITH_MIPMAPS}},
+                .color = {.filename = FPath::from_variable_and_hash(VariableAndHash{args.named_svalue("--multilayer_diffuse")}), .mipmap_mode = MipmapMode::WITH_MIPMAPS},
+                .normal = {.filename = FPath::from_variable_and_hash(VariableAndHash{args.named_svalue("--multilayer_normal", "")}), .color_mode = ColorMode::RGB, .mipmap_mode = MipmapMode::WITH_MIPMAPS}},
             .role = BlendMapRole::DETAIL_BASE,
             .reweight_mode = BlendMapReweightMode::DISABLED}};
         std::vector<float> lcm_world_args;
         for (uint32_t i = 0; i < 4; ++i) {
-            auto detail = args.named_value("--multilayer_detail" + std::to_string(i), "");
+            auto detail = args.named_svalue("--multilayer_detail" + std::to_string(i), "");
             if (detail.empty()) {
                 continue;
             }
-            float multilayer_scale = safe_stof(args.named_value("--multilayer_scale" + std::to_string(i)));
+            float multilayer_scale = safe_stof(args.named_svalue("--multilayer_scale" + std::to_string(i)));
             if (args.has_named_value("--multilayer_mask")) {
                 textures.push_back(BlendMapTexture{
                     .texture_descriptor = {
-                        .color = {.filename = FPath::from_variable_and_hash(VariableAndHash{args.named_value("--multilayer_mask")}), .mipmap_mode = MipmapMode::WITH_MIPMAPS}},
+                        .color = {.filename = FPath::from_variable_and_hash(VariableAndHash{args.named_svalue("--multilayer_mask")}), .mipmap_mode = MipmapMode::WITH_MIPMAPS}},
                     .role = BlendMapRole::DETAIL_MASK_R + i});
             }
             textures.push_back(BlendMapTexture{
                 .texture_descriptor = {
                     .color = {.filename = FPath::from_variable_and_hash(VariableAndHash{detail}), .mipmap_mode = MipmapMode::WITH_MIPMAPS},
                     .normal = {
-                        .filename = FPath::from_variable_and_hash(VariableAndHash{args.named_value("--multilayer_detail_normal" + std::to_string(i), "")}),
+                        .filename = FPath::from_variable_and_hash(VariableAndHash{args.named_svalue("--multilayer_detail_normal" + std::to_string(i), "")}),
                         .color_mode = ColorMode::RGB,
                         .mipmap_mode = MipmapMode::WITH_MIPMAPS}},
                 .scale = OrderableFixedArray<float, 2>(multilayer_scale),
@@ -211,37 +212,37 @@ static LoadMeshConfig<TPos> cfg(const ParsedArgs& args, const std::string& light
         .position = fixed_zeros<TPos, 3>(),
         .rotation = fixed_zeros<float, 3>(),
         .scale = FixedArray<float, 3>{
-            safe_stof(args.named_value("--scale_x", "1")),
-            safe_stof(args.named_value("--scale_y", "1")),
-            safe_stof(args.named_value("--scale_z", "1"))} * safe_stof(args.named_value("--scale", "1")),
-        .blend_mode = blend_mode_from_string(args.named_value("--blend_mode", "binary_05")),
+            safe_stof(args.named_svalue("--scale_x", "1")),
+            safe_stof(args.named_svalue("--scale_y", "1")),
+            safe_stof(args.named_svalue("--scale_z", "1"))} * safe_stof(args.named_svalue("--scale", "1")),
+        .blend_mode = blend_mode_from_string(args.named_svalue("--blend_mode", "binary_05")),
         .cull_faces_default = !args.has_named("--no_cull_faces_default"),
         .cull_faces_alpha = args.has_named("--cull_faces_alpha"),
         .occluded_pass = args.has_named("--no_shadows") || (light_configuration == "none") || (light_configuration == "emissive")
             ? ExternalRenderPassType::NONE
             : ExternalRenderPassType::LIGHTMAP_DEPTH,
         .occluder_pass = ExternalRenderPassType::LIGHTMAP_DEPTH,
-        .magnifying_interpolation_mode = interpolation_mode_from_string(args.named_value("--magnifying_interpolation_mode", "linear")),
-        .aggregate_mode = aggregate_mode_from_string(args.named_value("--aggregate_mode", "none")),
+        .magnifying_interpolation_mode = interpolation_mode_from_string(args.named_svalue("--magnifying_interpolation_mode", "linear")),
+        .aggregate_mode = aggregate_mode_from_string(args.named_svalue("--aggregate_mode", "none")),
         .transformation_mode = TransformationMode::ALL,
         .shading = {
             .fresnel = {
                 .reflectance = {
-                    .min = safe_stof(args.named_value("--fresnel_min", "0")),
-                    .max = safe_stof(args.named_value("--fresnel_max", "0")),
-                    .exponent = safe_stof(args.named_value("--fresnel_exponent", "0"))
+                    .min = safe_stof(args.named_svalue("--fresnel_min", "0")),
+                    .max = safe_stof(args.named_svalue("--fresnel_max", "0")),
+                    .exponent = safe_stof(args.named_svalue("--fresnel_exponent", "0"))
                 },
                 .ambient = {
-                    safe_stof(args.named_value("--fresnel_r", "0")),
-                    safe_stof(args.named_value("--fresnel_g", "0")),
-                    safe_stof(args.named_value("--fresnel_b", "0"))}
+                    safe_stof(args.named_svalue("--fresnel_r", "0")),
+                    safe_stof(args.named_svalue("--fresnel_g", "0")),
+                    safe_stof(args.named_svalue("--fresnel_b", "0"))}
             }
         },
         .textures = textures,
         .period_world = period_world,
-        .triangle_tangent_error_behavior = triangle_tangent_error_behavior_from_string(args.named_value("--triangle_tangent_error_behavior", "warn")),
+        .triangle_tangent_error_behavior = triangle_tangent_error_behavior_from_string(args.named_svalue("--triangle_tangent_error_behavior", "warn")),
         .apply_static_lighting = args.has_named("--apply_static_lighting"),
-        .laplace_ao_strength = safe_stof(args.named_value("--laplace_ao_strength", "0")),
+        .laplace_ao_strength = safe_stof(args.named_svalue("--laplace_ao_strength", "0")),
         .physics_material =  PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE,
         .rectangle_triangulation_mode = RectangleTriangulationMode::DELAUNAY,
         .werror = !args.has_named("--no_werror")};
@@ -505,33 +506,33 @@ int main(int argc, char** argv) {
         RenderedSceneDescriptor rsd{
             .external_render_pass = ExternalRenderPass{
                 .pass = args.has_named_value("--output_pass")
-                    ? external_render_pass_type_from_string(args.named_value("--output_pass"))
+                    ? external_render_pass_type_from_string(args.named_svalue("--output_pass"))
                     : ExternalRenderPassType::STANDARD} };
         auto is_interactive = !args.has_named_value("--output");
         if (!is_interactive) {
             render_results.outputs[rsd] = RenderResult{
-                .width = safe_stoi(args.named_value("--output_width", "512")),
-                .height = safe_stoi(args.named_value("--output_height", "512"))};
+                .width = safe_stoi(args.named_svalue("--output_width", "512")),
+                .height = safe_stoi(args.named_svalue("--output_height", "512"))};
         }
         RenderConfig render_config{
-            .nsamples_msaa = safe_stoi(args.named_value("--nsamples_msaa", "4")),
-            .lightmap_nsamples_msaa = safe_stoi(args.named_value("--lightmap_nsamples_msaa", "1")),
+            .nsamples_msaa = safe_stoi(args.named_svalue("--nsamples_msaa", "4")),
+            .lightmap_nsamples_msaa = safe_stoi(args.named_svalue("--lightmap_nsamples_msaa", "1")),
             .cull_faces = args.has_named("--cull_faces_render")
                 ? BoolRenderOption::ON
                 : BoolRenderOption::UNCHANGED,
             .wire_frame = args.has_named("--wire_frame")
                 ? BoolRenderOption::ON
                 : BoolRenderOption::UNCHANGED,
-            .windowed_width = safe_stoi(args.named_value("--width", "640")),
-            .windowed_height = safe_stoi(args.named_value("--height", "480")),
+            .windowed_width = safe_stoi(args.named_svalue("--width", "640")),
+            .windowed_height = safe_stoi(args.named_svalue("--height", "480")),
             .double_buffer = !args.has_named("--no_double_buffer"),
             .normalmaps = !args.has_named("--no_normalmaps"),
             .show_mouse_cursor = true};
         InputConfig input_config;
-        FixedTimeSleeper sleeper{ safe_stof(args.named_value("--sleep_dt", "0.01667")) };
+        FixedTimeSleeper sleeper{ safe_stof(args.named_svalue("--sleep_dt", "0.01667")) };
         MeasureFps mf{
             0.005f,
-            safe_stou(args.named_value("--print_render_fps_interval", "-1"))};
+            safe_stou(args.named_svalue("--print_render_fps_interval", "-1"))};
         SleeperSequence sls{{ &mf, &sleeper }};
         SetFps set_fps{
             &sls,
@@ -589,17 +590,17 @@ int main(int argc, char** argv) {
         DestructionGuard scene_destruction_guard{[&](){
             scene.shutdown();
         }};
-        std::string light_configuration = args.named_value("--light_configuration", "one");
+        std::string light_configuration = args.named_svalue("--light_configuration", "one");
         auto scene_node = make_unique_scene_node(
             FixedArray<ScenePos, 3>{
-                safe_sto<ScenePos>(args.named_value("--x", "0")),
-                safe_sto<ScenePos>(args.named_value("--y", "0")),
-                safe_sto<ScenePos>(args.named_value("--z", "-40"))},
+                safe_sto<ScenePos>(args.named_svalue("--x", "0")),
+                safe_sto<ScenePos>(args.named_svalue("--y", "0")),
+                safe_sto<ScenePos>(args.named_svalue("--z", "-40"))},
             FixedArray<float, 3>{
-                safe_stof(args.named_value("--angle_x", "0")) * degrees,
-                safe_stof(args.named_value("--angle_y", "0")) * degrees,
-                safe_stof(args.named_value("--angle_z", "0")) * degrees},
-            safe_stof(args.named_value("--node_scale", "1")),
+                safe_stof(args.named_svalue("--angle_x", "0")) * degrees,
+                safe_stof(args.named_svalue("--angle_y", "0")) * degrees,
+                safe_stof(args.named_svalue("--angle_z", "0")) * degrees},
+            safe_stof(args.named_svalue("--node_scale", "1")),
             std::nullopt,
             PoseInterpolationMode::DISABLED);
         // Setting style before adding renderables to avoid race condition.
@@ -610,15 +611,15 @@ int main(int argc, char** argv) {
         auto create_light = [&args]() {
             if (args.has_named("--no_shadows")) {
                 return std::make_shared<Light>(Light{
-                    .ambient = fixed_full<float, 3>(safe_stof(args.named_value("--ambient", "1"))),
-                    .diffuse = fixed_full<float, 3>(safe_stof(args.named_value("--diffuse", "1"))),
-                    .specular = fixed_full<float, 3>(safe_stof(args.named_value("--specular", "1"))),
+                    .ambient = fixed_full<float, 3>(safe_stof(args.named_svalue("--ambient", "1"))),
+                    .diffuse = fixed_full<float, 3>(safe_stof(args.named_svalue("--diffuse", "1"))),
+                    .specular = fixed_full<float, 3>(safe_stof(args.named_svalue("--specular", "1"))),
                     .shadow_render_pass = ExternalRenderPassType::NONE});
             } else {
                 return std::make_shared<Light>(Light{
-                    .ambient = fixed_full<float, 3>(safe_stof(args.named_value("--ambient", "1"))),
-                    .diffuse = fixed_full<float, 3>(safe_stof(args.named_value("--diffuse", "1"))),
-                    .specular = fixed_full<float, 3>(safe_stof(args.named_value("--specular", "1"))),
+                    .ambient = fixed_full<float, 3>(safe_stof(args.named_svalue("--ambient", "1"))),
+                    .diffuse = fixed_full<float, 3>(safe_stof(args.named_svalue("--diffuse", "1"))),
+                    .specular = fixed_full<float, 3>(safe_stof(args.named_svalue("--specular", "1"))),
                     .lightmap_depth = nullptr,
                     .shadow_render_pass = ExternalRenderPassType::LIGHTMAP_DEPTH});
             }
@@ -627,10 +628,11 @@ int main(int argc, char** argv) {
             auto filenames = args.unnamed_values();
             std::list<VariableAndHash<std::string>> resource_names;
             ColoredVertexArrayFilter cva_filer{
-                .included_names = Mlib::compile_regex(args.named_value("--include", "")),
-                .excluded_names = Mlib::compile_regex(args.named_value("--exclude", "$ ^"))};
+                .included_names = Mlib::compile_regex(args.named_svalue("--include", "")),
+                .excluded_names = Mlib::compile_regex(args.named_svalue("--exclude", "$ ^"))};
             ColoredVertexArrayFilters cva_filters{{ cva_filer }};
-            for (const auto& [i, filename] : enumerate(filenames)) {
+            for (const auto& [i, filename_string] : enumerate(filenames)) {
+                auto filename = Utf8Path{filename_string};
                 if (filename.ends_with(".obj")) {
                     const auto& name = resource_names.emplace_back("obj-" + std::to_string(i));
                     if (!args.has_named("--large_object_mode")) {
@@ -671,11 +673,11 @@ int main(int argc, char** argv) {
                             model,
                             cfg<float>(args, light_configuration),
                             &rr,
-                            std::filesystem::path{ filename }.filename().string() + '#',
+                            Utf8Path{ filename }.filename().string() + '#',
                             IoVerbosity::SILENT);
                         load_renderable_pssg(arrays, cva_filters, sr, resource_names, added_instantiables);
                     } catch (const std::runtime_error& e) {
-                        throw std::runtime_error("Error interpreting file \"" + filename + "\": " + e.what());
+                        throw std::runtime_error("Error interpreting file \"" + filename.string() + "\": " + e.what());
                     }
                 } else if (filename.ends_with(".dff")) {
                     const auto& name = resource_names.emplace_back("dff-" + std::to_string(i));
@@ -695,14 +697,14 @@ int main(int argc, char** argv) {
                             .periodic_skelletal_animation_name = VariableAndHash<std::string>{"anim"},
                             .periodic_skelletal_animation_frame = {
                                 AnimationFrame {
-                                    .begin = safe_stof(args.named_value("--loop_begin", "0")),
-                                    .end = safe_stof(args.named_value("--loop_end", "2")),
-                                    .time = safe_stof(args.named_value("--loop_time", "1"))}}}),
+                                    .begin = safe_stof(args.named_svalue("--loop_begin", "0")),
+                                    .end = safe_stof(args.named_svalue("--loop_end", "2")),
+                                    .time = safe_stof(args.named_svalue("--loop_time", "1"))}}}),
                         AnimationStateAlreadyExistsBehavior::THROW);
                     LoadMeshConfig<float> bone_cfg{
                         .position = fixed_zeros<float, 3>(),
                         .rotation = fixed_zeros<float, 3>(),
-                        .scale = fixed_full<float, 3>(safe_stof(args.named_value("--bone_scale", "1"))),
+                        .scale = fixed_full<float, 3>(safe_stof(args.named_svalue("--bone_scale", "1"))),
                         .blend_mode = BlendMode::OFF,
                         .cull_faces_default = !args.has_named("--no_cull_faces_default"),
                         .cull_faces_alpha = args.has_named("--cull_faces_alpha"),
@@ -711,7 +713,7 @@ int main(int argc, char** argv) {
                         .magnifying_interpolation_mode = InterpolationMode::NEAREST,
                         .aggregate_mode = AggregateMode::NONE,
                         .transformation_mode = TransformationMode::ALL,
-                        .triangle_tangent_error_behavior = triangle_tangent_error_behavior_from_string(args.named_value("--triangle_tangent_error_behavior", "warn")),
+                        .triangle_tangent_error_behavior = triangle_tangent_error_behavior_from_string(args.named_svalue("--triangle_tangent_error_behavior", "warn")),
                         .apply_static_lighting = false,
                         .laplace_ao_strength = 0.f,
                         .physics_material =  PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE,
@@ -726,20 +728,20 @@ int main(int argc, char** argv) {
                     }
                     if (args.has_named_value("--bvh")) {
                         BvhConfig bvh_config{
-                            .demean = args.has_named_value("--bvh_demean") ? safe_stob(args.named_value("--bvh_demean")) : blender_bvh_config.demean,
-                            .scale = args.has_named_value("--bvh_scale") ? safe_stof(args.named_value("--bvh_scale")) : blender_bvh_config.scale,
+                            .demean = args.has_named_value("--bvh_demean") ? safe_stob(args.named_svalue("--bvh_demean")) : blender_bvh_config.demean,
+                            .scale = args.has_named_value("--bvh_scale") ? safe_stof(args.named_svalue("--bvh_scale")) : blender_bvh_config.scale,
                             .rotation_order = FixedArray<size_t, 3>{
-                                args.has_named_value("--bvh_rotation_0") ? safe_stoz(args.named_value("--bvh_rotation_0")) : blender_bvh_config.rotation_order(0),
-                                args.has_named_value("--bvh_rotation_1") ? safe_stoz(args.named_value("--bvh_rotation_1")) : blender_bvh_config.rotation_order(1),
-                                args.has_named_value("--bvh_rotation_2") ? safe_stoz(args.named_value("--bvh_rotation_2")) : blender_bvh_config.rotation_order(2)},
+                                args.has_named_value("--bvh_rotation_0") ? safe_stoz(args.named_svalue("--bvh_rotation_0")) : blender_bvh_config.rotation_order(0),
+                                args.has_named_value("--bvh_rotation_1") ? safe_stoz(args.named_svalue("--bvh_rotation_1")) : blender_bvh_config.rotation_order(1),
+                                args.has_named_value("--bvh_rotation_2") ? safe_stoz(args.named_svalue("--bvh_rotation_2")) : blender_bvh_config.rotation_order(2)},
                             .parameter_transformation = args.has_named_value("--bvh_trafo")
-                                ? get_parameter_transformation(args.named_value("--bvh_trafo"))
+                                ? get_parameter_transformation(args.named_svalue("--bvh_trafo"))
                                 : blender_bvh_config.parameter_transformation};
                         scene_node_resources.add_resource(
                             VariableAndHash<std::string>{"anim"},
-                            std::make_shared<BvhFileResource>(args.named_value("--bvh"), bvh_config));
+                            std::make_shared<BvhFileResource>(args.named_svalue("--bvh"), bvh_config));
                         if (args.has_named_value("--frame_bone")) {
-                            float bone_frame = safe_stof(args.named_value("--bone_frame"));
+                            float bone_frame = safe_stof(args.named_svalue("--bone_frame"));
                             scene_node_resources.add_resource(
                                 VariableAndHash<std::string>{"frame_bone"},
                                 load_renderable_obj(
@@ -756,14 +758,14 @@ int main(int argc, char** argv) {
                         }
                         // This invalidates the bone weights and clears the skeleton => must be after "add_bone_frame"
                         if (args.has_named_value("--animation_frame")) {
-                            float animation_frame = safe_stof(args.named_value("--animation_frame"));
+                            float animation_frame = safe_stof(args.named_svalue("--animation_frame"));
                             scene_node_resources.set_relative_joint_poses(name, scene_node_resources.get_relative_poses(
                                 VariableAndHash<std::string>{"anim"},
                                 animation_frame));
                         }
                     }
                 } else {
-                    throw std::runtime_error("File has unknown extension: " + filename);
+                    throw std::runtime_error("File has unknown extension: \"" + filename.string() + '"');
                 }
             }
             scene_node_resources.add_resource(VariableAndHash<std::string>{"objs"}, std::make_shared<CompoundResource>(
@@ -809,7 +811,7 @@ int main(int argc, char** argv) {
                                 ? PoseInterpolationMode::DISABLED
                                 : PoseInterpolationMode::ENABLED,
                             .renderable_resource_filter = RenderableResourceFilter{
-                                .min_num = safe_stoz(args.named_value("--min_num", "0")),
+                                .min_num = safe_stoz(args.named_svalue("--min_num", "0")),
                                 .cva_filter = cva_filer}},
                         PreloadBehavior::NO_PRELOAD);
                 }
@@ -818,10 +820,10 @@ int main(int argc, char** argv) {
                     {
                         using I = funpack_t<TPos>;
                         Interp<I> interp{
-                            {safe_sto<I>(args.named_value("--color_gradient_min_x")),
-                            safe_sto<I>(args.named_value("--color_gradient_max_x"))},
-                            {safe_sto<float>(args.named_value("--color_gradient_min_c")),
-                            safe_sto<float>(args.named_value("--color_gradient_max_c"))},
+                            {safe_sto<I>(args.named_svalue("--color_gradient_min_x")),
+                            safe_sto<I>(args.named_svalue("--color_gradient_max_x"))},
+                            {safe_sto<float>(args.named_svalue("--color_gradient_min_c")),
+                            safe_sto<float>(args.named_svalue("--color_gradient_max_c"))},
                             OutOfRangeBehavior::CLAMP};
                         for (auto& m : cvas) {
                             for (auto& t : m->triangles) {
@@ -841,15 +843,15 @@ int main(int argc, char** argv) {
                     {
                         using I = funpack_t<TPos>;
                         Interp<I> interp{
-                            {safe_sto<I>(args.named_value("--color_radial_min_r")),
-                            safe_sto<I>(args.named_value("--color_radial_max_r"))},
-                            {safe_sto<float>(args.named_value("--color_radial_min_c")),
-                            safe_sto<float>(args.named_value("--color_radial_max_c"))},
+                            {safe_sto<I>(args.named_svalue("--color_radial_min_r")),
+                            safe_sto<I>(args.named_svalue("--color_radial_max_r"))},
+                            {safe_sto<float>(args.named_svalue("--color_radial_min_c")),
+                            safe_sto<float>(args.named_svalue("--color_radial_max_c"))},
                             OutOfRangeBehavior::CLAMP};
                         FixedArray<TPos, 3> center{
-                            safe_sto<TPos>(args.named_value("--color_radial_center_x", "0")),
-                            safe_sto<TPos>(args.named_value("--color_radial_center_y", "0")),
-                            safe_sto<TPos>(args.named_value("--color_radial_center_z", "0"))};
+                            safe_sto<TPos>(args.named_svalue("--color_radial_center_x", "0")),
+                            safe_sto<TPos>(args.named_svalue("--color_radial_center_y", "0")),
+                            safe_sto<TPos>(args.named_svalue("--color_radial_center_z", "0"))};
                         for (auto& m : cvas) {
                             for (auto& t : m->triangles) {
                                 for (auto& v : t.flat_iterable()) {
@@ -867,15 +869,15 @@ int main(int argc, char** argv) {
                     auto apply_cone_colors = [&args]<typename TPos>(std::list<std::shared_ptr<ColoredVertexArray<TPos>>>& cvas) {
                         using I = funpack_t<TPos>;
                         Interp<I> interp{
-                            {safe_sto<I>(args.named_value("--color_cone_min_r")),
-                            safe_sto<I>(args.named_value("--color_cone_max_r"))},
-                            {safe_sto<float>(args.named_value("--color_cone_min_c")),
-                            safe_sto<float>(args.named_value("--color_cone_max_c"))},
+                            {safe_sto<I>(args.named_svalue("--color_cone_min_r")),
+                            safe_sto<I>(args.named_svalue("--color_cone_max_r"))},
+                            {safe_sto<float>(args.named_svalue("--color_cone_min_c")),
+                            safe_sto<float>(args.named_svalue("--color_cone_max_c"))},
                             OutOfRangeBehavior::CLAMP};
-                        I bottom = safe_sto<I>(args.named_value("--color_cone_bottom", "0"));
-                        I top = safe_sto<I>(args.named_value("--color_cone_top"));
-                        I cx = safe_sto<I>(args.named_value("--color_cone_x", "0"));
-                        I cz = safe_sto<I>(args.named_value("--color_cone_z", "0"));
+                        I bottom = safe_sto<I>(args.named_svalue("--color_cone_bottom", "0"));
+                        I top = safe_sto<I>(args.named_svalue("--color_cone_top"));
+                        I cx = safe_sto<I>(args.named_svalue("--color_cone_x", "0"));
+                        I cz = safe_sto<I>(args.named_svalue("--color_cone_z", "0"));
                         for (auto& m : cvas) {
                             for (auto& t : m->triangles) {
                                 for (auto& v : t.flat_iterable()) {
@@ -894,9 +896,9 @@ int main(int argc, char** argv) {
                 }
                 auto apply_constant_color = [&args]<typename TPos>(std::list<std::shared_ptr<ColoredVertexArray<TPos>>>& cvas) {
                     FixedArray<float, 3> color{
-                        safe_sto<float>(args.named_value("--color_r", "-1")),
-                        safe_sto<float>(args.named_value("--color_g", "-1")),
-                        safe_sto<float>(args.named_value("--color_b", "-1"))};
+                        safe_sto<float>(args.named_svalue("--color_r", "-1")),
+                        safe_sto<float>(args.named_svalue("--color_g", "-1")),
+                        safe_sto<float>(args.named_svalue("--color_b", "-1"))};
                     if (any(color != -1.f)) {
                         for (auto& m : cvas) {
                             for (auto& t : m->triangles) {
@@ -929,8 +931,8 @@ int main(int argc, char** argv) {
             LoadMeshConfig<float> cfg{
                 .position = fixed_zeros<float, 3>(),
                 .rotation = fixed_zeros<float, 3>(),
-                .scale = fixed_full<float, 3>(safe_stof(args.named_value("--light_beacon_scale", "1"))),
-                .blend_mode = blend_mode_from_string(args.named_value("--blend_mode", "binary_05")),
+                .scale = fixed_full<float, 3>(safe_stof(args.named_svalue("--light_beacon_scale", "1"))),
+                .blend_mode = blend_mode_from_string(args.named_svalue("--blend_mode", "binary_05")),
                 .cull_faces_default = !args.has_named("--no_cull_faces_default"),
                 .cull_faces_alpha = args.has_named("--cull_faces_alpha"),
                 .occluded_pass = ExternalRenderPassType::NONE,
@@ -938,7 +940,7 @@ int main(int argc, char** argv) {
                 .magnifying_interpolation_mode = InterpolationMode::NEAREST,
                 .aggregate_mode = AggregateMode::NONE,
                 .transformation_mode = TransformationMode::ALL,
-                .triangle_tangent_error_behavior = triangle_tangent_error_behavior_from_string(args.named_value("--triangle_tangent_error_behavior", "warn")),
+                .triangle_tangent_error_behavior = triangle_tangent_error_behavior_from_string(args.named_svalue("--triangle_tangent_error_behavior", "warn")),
                 .apply_static_lighting = args.has_named("--apply_static_lighting"),
                 .laplace_ao_strength = 0.f,
                 .physics_material =  PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE,
@@ -965,13 +967,13 @@ int main(int argc, char** argv) {
                 VariableAndHash<std::string>{"light_node0"},
                 make_unique_scene_node(
                     FixedArray<ScenePos, 3>{
-                        safe_stof(args.named_value("--light_x", "0")),
-                        safe_stof(args.named_value("--light_y", "50")),
-                        safe_stof(args.named_value("--light_z", "0"))},
+                        safe_stof(args.named_svalue("--light_x", "0")),
+                        safe_stof(args.named_svalue("--light_y", "50")),
+                        safe_stof(args.named_svalue("--light_z", "0"))},
                     FixedArray<float, 3>{
-                        safe_stof(args.named_value("--light_angle_x", "-45")) * degrees,
-                        safe_stof(args.named_value("--light_angle_y", "0")) * degrees,
-                        safe_stof(args.named_value("--light_angle_z", "0")) * degrees},
+                        safe_stof(args.named_svalue("--light_angle_x", "-45")) * degrees,
+                        safe_stof(args.named_svalue("--light_angle_y", "0")) * degrees,
+                        safe_stof(args.named_svalue("--light_angle_z", "0")) * degrees},
                     1.f,
                     std::nullopt,
                     PoseInterpolationMode::DISABLED),
@@ -1072,7 +1074,7 @@ int main(int argc, char** argv) {
             scene.get_node(name, CURRENT_SOURCE_LOCATION)->set_camera(std::make_unique<PerspectiveCamera>(
                 PerspectiveCameraConfig(),
                 PerspectiveCamera::Postprocessing::ENABLED));
-            light->ambient = FixedArray<float, 3>{1.f, 1.f, 1.f} * safe_stof(args.named_value("--background_light_ambience"));
+            light->ambient = FixedArray<float, 3>{1.f, 1.f, 1.f} * safe_stof(args.named_svalue("--background_light_ambience"));
             light->diffuse = 0.f;
             light->specular = 0.f;
         }
@@ -1125,13 +1127,13 @@ int main(int argc, char** argv) {
                 VariableAndHash<std::string>{"follower_camera_0"},
                 make_unique_scene_node(
                     FixedArray<ScenePos, 3>{
-                        safe_stof(args.named_value("--camera_x", "0")),
-                        safe_stof(args.named_value("--camera_y", "0")),
-                        safe_stof(args.named_value("--camera_z", "0"))},
+                        safe_stof(args.named_svalue("--camera_x", "0")),
+                        safe_stof(args.named_svalue("--camera_y", "0")),
+                        safe_stof(args.named_svalue("--camera_z", "0"))},
                     FixedArray<float, 3>{
-                        safe_stof(args.named_value("--camera_angle_x", "0")) * degrees,
-                        safe_stof(args.named_value("--camera_angle_y", "0")) * degrees,
-                        safe_stof(args.named_value("--camera_angle_z", "0")) * degrees},
+                        safe_stof(args.named_svalue("--camera_angle_x", "0")) * degrees,
+                        safe_stof(args.named_svalue("--camera_angle_y", "0")) * degrees,
+                        safe_stof(args.named_svalue("--camera_angle_z", "0")) * degrees},
                     1.f,
                     std::nullopt,
                     PoseInterpolationMode::DISABLED),
@@ -1139,7 +1141,7 @@ int main(int argc, char** argv) {
                 RenderingStrategies::OBJECT);
             scene.get_node(VariableAndHash<std::string>{"follower_camera_0"}, CURRENT_SOURCE_LOCATION)->set_camera(std::make_unique<PerspectiveCamera>(
                 PerspectiveCameraConfig{
-                    .y_fov = safe_stof(args.named_value("--y_fov", "90")) * degrees},
+                    .y_fov = safe_stof(args.named_svalue("--y_fov", "90")) * degrees},
                 PerspectiveCamera::Postprocessing::ENABLED));
         }
         
@@ -1158,9 +1160,9 @@ int main(int argc, char** argv) {
             scene,
             standard_camera_logic,
             {
-                safe_stof(args.named_value("--background_r", "1")),
-                safe_stof(args.named_value("--background_g", "0")),
-                safe_stof(args.named_value("--background_b", "1"))},
+                safe_stof(args.named_svalue("--background_r", "1")),
+                safe_stof(args.named_svalue("--background_g", "0")),
+                safe_stof(args.named_svalue("--background_b", "1"))},
             ClearMode::COLOR_AND_DEPTH };
         AggregateRenderLogic aggregate_render_logic{
             rendering_resources,
@@ -1226,7 +1228,7 @@ int main(int argc, char** argv) {
                 object_pool.create<MoveSceneLogic>(
                     CURRENT_SOURCE_LOCATION,
                     scene,
-                    safe_stof(args.named_value("--speed", "1"))),
+                    safe_stof(args.named_svalue("--speed", "1"))),
                 CURRENT_SOURCE_LOCATION
             },
             0 /* z_order */,

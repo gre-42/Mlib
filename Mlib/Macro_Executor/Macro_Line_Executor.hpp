@@ -1,8 +1,8 @@
 #pragma once
 #include <Mlib/Macro_Executor/Boolean_Expression.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
+#include <Mlib/Os/Utf8_Path.hpp>
 #include <Mlib/Regex/Misc.hpp>
-#include <filesystem>
 #include <functional>
 #include <map>
 #include <string>
@@ -31,7 +31,7 @@ public:
     MacroLineExecutor(
         MacroRecorder& macro_recorder,
         std::string script_filename,
-        const std::vector<std::filesystem::path>& search_path,
+        const std::vector<Utf8Path>& search_path,
         JsonUserFunction json_user_function,
         std::string context,
         nlohmann::json block_arguments,
@@ -72,8 +72,8 @@ public:
     JsonView block_arguments() const;
 private:
     MacroRecorder& macro_recorder_;
-    std::filesystem::path script_filename_;
-    const std::vector<std::filesystem::path>& search_path_;
+    Utf8Path script_filename_;
+    const std::vector<Utf8Path>& search_path_;
     JsonUserFunction json_user_function_;
     std::string context_;
     nlohmann::json block_arguments_;

@@ -5,7 +5,7 @@
 #include <Mlib/Hashing/Variable_And_Hash.hpp>
 #include <Mlib/Initialization/Default_Uninitialized_Vector.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
-#include <filesystem>
+#include <Mlib/Os/Utf8_Path.hpp>
 #include <iosfwd>
 #include <map>
 #include <memory>
@@ -474,7 +474,7 @@ public:
 Clump read_dff(std::istream& istr, IoVerbosity verbosity);
 
 TexDictionary read_txd(
-    const std::filesystem::path& path,
+    const Utf8Path& path,
     const IRasterFactory* raster_factory,
     const RasterConfig* raster_config,
     IoVerbosity verbosity);

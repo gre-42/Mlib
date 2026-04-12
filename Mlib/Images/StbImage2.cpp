@@ -114,25 +114,25 @@ void StbImage2::draw_streamline(
     });
 }
 
-StbImage2 StbImage2::load_from_file(const std::string& filename) {
+StbImage2 StbImage2::load_from_file(const Utf8Path& filename) {
     auto image = stb_load8(filename, FlipMode::NONE);
     if (image.nrChannels != 2) {
-        throw std::runtime_error("Image does not have 2 channels: \"" + filename + '"');
+        throw std::runtime_error("Image does not have 2 channels: \"" + filename.string() + '"');
     }
     return StbImage2{image};
 }
 
-void StbImage2::save_to_file(const std::string& filename, int jpg_quality) const {
+void StbImage2::save_to_file(const Utf8Path& filename, int jpg_quality) const {
     if (filename.ends_with(".png")) {
         if (!stbi_write_png(filename.c_str(), (int)shape(1), (int)shape(0), 2, flat_begin(), 0)) {
-            throw std::runtime_error("Could not save to file: \"" + filename + '"');
+            throw std::runtime_error("Could not save to file: \"" + filename.string() + '"');
         }
     } else if (filename.ends_with(".jpg")) {
         if (!stbi_write_jpg(filename.c_str(), (int)shape(1), (int)shape(0), 2, flat_begin(), jpg_quality)) {
-            throw std::runtime_error("Could not save to file: \"" + filename + '"');
+            throw std::runtime_error("Could not save to file: \"" + filename.string() + '"');
         }
     } else {
-        throw std::runtime_error("Filename does not have png or jpg extension: \"" + filename + '"');
+        throw std::runtime_error("Filename does not have png or jpg extension: \"" + filename.string() + '"');
     }
 }
 

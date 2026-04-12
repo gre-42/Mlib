@@ -258,17 +258,17 @@ bool JNIHelper::PathExists(
 }
 
 DirectoryEntry::DirectoryEntry(
-  std::filesystem::path path,
+  Utf8Path path,
   bool is_listable)
 : path_{std::move(path)},
   is_listable_{is_listable}
 {}
 
-const std::filesystem::path& DirectoryEntry::path() const {
+const Utf8Path& DirectoryEntry::path() const {
   return path_;
 }
 
-DirectoryEntry::operator const std::filesystem::path& () const {
+DirectoryEntry::operator const Utf8Path& () const {
   return path_;
 }
 

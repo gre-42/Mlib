@@ -6,9 +6,9 @@
 using namespace Mlib;
 
 NavigationMeshBuilder::NavigationMeshBuilder(
-    const std::string& filename,
+    const Utf8Path& filename,
     const NavigationMeshConfig& cfg)
-: ssm{ctx_, geom_}
+    : ssm{ctx_, geom_}
 {
     if (!geom_.load(&ctx_, filename)) {
         throw std::runtime_error("Could not load obj file");

@@ -3,6 +3,7 @@
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Misc/Argument_List.hpp>
 #include <Mlib/Misc/FPath.hpp>
+#include <Mlib/Misc/FPath_Json.hpp>
 #include <Mlib/OpenGL/Rendering_Context.hpp>
 #include <Mlib/OpenGL/Resource_Managers/Rendering_Resources.hpp>
 
@@ -60,7 +61,7 @@ std::vector<BlendMapTexture> Mlib::blend_map_textures_from_json(
     auto& rr = RenderingContextStack::primary_rendering_resources();
     return j.at_vector_non_null_optional<nlohmann::json>(name, [&](const auto& c){
         if (c.type() == nlohmann::detail::value_t::string) {
-            return rr.get_blend_map_texture(FPath{c.template get<std::string>()});
+            return rr.get_blend_map_texture(c.template get<FPath>());
         } else {
             return blend_map_texture_from_json(j.as_child(c));
         }

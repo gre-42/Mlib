@@ -23,16 +23,16 @@ using namespace Mlib;
 class PathResolver {
 public:
     explicit PathResolver(
-        const std::vector<std::filesystem::path>& search_path,
+        const std::vector<Utf8Path>& search_path,
         std::string script_filename)
     : search_path_{search_path},
       script_filename_{std::move(script_filename)}
     {}
-    std::list<std::filesystem::path> fpathes(const std::filesystem::path& f) const {
+    std::list<Utf8Path> fpathes(const Utf8Path& f) const {
         if (f.is_absolute()) {
             return { f };
         } else {
-            std::list<std::filesystem::path> result;
+            std::list<Utf8Path> result;
             for (const auto& wdir : search_path_) {
                 auto path = weakly_canonical_preserve_symlinks(wdir / f);
                 if (path_exists(path)) {
@@ -45,16 +45,15 @@ public:
             return result;
         }
     }
-    FPath fpath(const std::string& f) const {
-        auto result = FPath{f};
-        switch (result.type()) {
+    FPath fpath(const FPath& f) const {
+        switch (f.type()) {
         case PathType::EMPTY:
             throw std::runtime_error("Path is empty");
         case PathType::LOCAL_PATH:
             {
-                auto filename = result.local_path();
+                auto filename = f.local_path();
                 if (filename.is_absolute()) {
-                    return result;
+                    return f;
                 }
                 for (const auto& parent : search_path_) {
                     auto path = weakly_canonical_preserve_symlinks(parent / filename);
@@ -62,14 +61,14 @@ public:
                         return FPath::from_local_path(path);
                     }
                 }
-                throw std::runtime_error("Could not find relative path \"" + f + "\" in search directories");
+                throw std::runtime_error("Could not find relative path \"" + f.string() + "\" in search directories");
             }
         case PathType::VARIABLE:
-            return result;
+            return f;
         }
-        throw std::runtime_error("Unknown path type: " + std::to_string((int)result.type()));
+        throw std::runtime_error("Unknown path type: " + std::to_string((int)f.type()));
     }
-    std::string spath(const std::filesystem::path& f) const {
+    std::string spath(const Utf8Path& f) const {
         if (f.empty()) {
             throw std::runtime_error("Received empty script path");
         } else if (f.is_absolute()) {
@@ -91,8 +90,8 @@ public:
         }
     }
 private:
-    const std::vector<std::filesystem::path>& search_path_;
-    std::filesystem::path script_filename_;
+    const std::vector<Utf8Path>& search_path_;
+    Utf8Path script_filename_;
 };
 
 namespace DeclareMacroArgs {
@@ -107,7 +106,7 @@ DECLARE_ARGUMENT(let);
 MacroLineExecutor::MacroLineExecutor(
     MacroRecorder& macro_recorder,
     std::string script_filename,
-    const std::vector<std::filesystem::path>& search_path,
+    const std::vector<Utf8Path>& search_path,
     JsonUserFunction json_user_function,
     std::string context,
     nlohmann::json block_arguments,
@@ -351,9 +350,9 @@ void MacroLineExecutor::operator () (
                 JsonMacroArguments let{ block_arguments_, Filter::without, without };
                 insert_let(let);
                 JsonMacroArguments args;
-                args.set_fpathes([path_resolver](const std::filesystem::path& path){return path_resolver.fpathes(path);});
-                args.set_fpath([path_resolver](const std::filesystem::path& path){return path_resolver.fpath(path);});
-                args.set_spath([path_resolver](const std::filesystem::path& path){return path_resolver.spath(path);});
+                args.set_fpathes([path_resolver](const Utf8Path& path){return path_resolver.fpathes(path);});
+                args.set_fpath([path_resolver](const FPath& path){return path_resolver.fpath(path);});
+                args.set_spath([path_resolver](const Utf8Path& path){return path_resolver.spath(path);});
                 try {
                     if (jv.contains(MacroKeys::arguments)) {
                         args.insert_json(merged_args.subst_and_replace(jv.at(MacroKeys::arguments), global_args, asset_references_, SubstitutionMode::DEFAULT));

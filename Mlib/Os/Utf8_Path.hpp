@@ -5,66 +5,54 @@
 namespace Mlib {
 
 class Utf8Path {
+    static const struct ConstructPathType {} construct_path;
+    friend std::ostream& operator << (std::ostream& ostr, const Utf8Path& p);
+    friend bool operator == (const Utf8Path& a, const Utf8Path& b);
+    friend bool operator != (const Utf8Path& a, const Utf8Path& b);
 public:
-    inline Utf8Path(const std::string& s)
-        : path_{std::u8string((char8_t*)s.data(), s.size())}
-    {}
-    inline Utf8Path(std::filesystem::path p)
-        : path_{std::move(p)}
-    {}
-    inline ~Utf8Path() = default;
+    Utf8Path();
+    static Utf8Path from_path(const std::filesystem::path& p);
+    Utf8Path(std::u8string s);
+    Utf8Path(std::string s);
+    Utf8Path(std::string_view s);
+    Utf8Path(const char* s);
+    ~Utf8Path();
     // Concatenation
-    Utf8Path& operator /= (const Utf8Path& rhs) {
-        path_ /= rhs.path_;
-        return *this;
-    }
-    Utf8Path& operator += (const Utf8Path& rhs) {
-        path_ += rhs.path_;
-        return *this;
-    }
+    Utf8Path& operator /= (const Utf8Path& rhs);
+    Utf8Path& operator += (const Utf8Path& rhs);
+    Utf8Path operator + (const Utf8Path& rhs) const;
+    Utf8Path operator / (const Utf8Path& rhs) const;
+    // Modifiers
+    Utf8Path& replace_extension(const Utf8Path& replacement);
+    // Generation
+    Utf8Path lexically_relative( const Utf8Path& base ) const;
+    Utf8Path lexically_normal() const;
+    Utf8Path absolute() const;
     // Decomposition
-    Utf8Path relative_path() const {
-        return path_.relative_path();
-    }
-    Utf8Path parent_path() const {
-        return path_.parent_path();
-    }
-    Utf8Path filename() const {
-        return path_.filename();
-    }
-    Utf8Path stem() const {
-        return path_.stem();
-    }
-    Utf8Path extension() const {
-        return path_.extension();
-    }
+    Utf8Path relative_path() const;
+    Utf8Path parent_path() const;
+    Utf8Path filename() const;
+    Utf8Path stem() const;
+    Utf8Path extension() const;
+    bool ends_with(const Utf8Path& suffix) const;
     // Format observers
-    inline operator const std::filesystem::path& () const {
-        return path_;
-    }
-    inline operator std::string () const {
-        return this->string();
-    }
-    inline std::string string() const {
-        auto res = path_.u8string();
-        return std::string((char*)res.data(), res.size());
-    }
+    operator const std::filesystem::path& () const;
+    operator std::string () const;
+    std::string string() const;
+    std::u8string u8string() const;
+    const char* c_str() const;
     // Queries
-    inline bool empty() const {
-        return path_.empty();
-    }
-    inline bool is_absolute() const {
-        return path_.is_absolute();
-    }
-    inline bool is_relative() const {
-        return path_.is_relative();
-    }
-    // IO
-    std::ostream& operator << (std::ostream& ostr) const {
-        return ostr << path_;
-    }
+    bool empty() const;
+    bool is_absolute() const;
+    bool is_relative() const;
+    std::strong_ordering operator <=> (const Utf8Path& rhs) const;
 private:
+    Utf8Path(std::filesystem::path p, ConstructPathType);
     std::filesystem::path path_;
 };
+
+std::ostream& operator << (std::ostream& ostr, const Utf8Path& p);
+bool operator == (const Utf8Path& a, const Utf8Path& b);
+bool operator != (const Utf8Path& a, const Utf8Path& b);
 
 }

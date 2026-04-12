@@ -6,14 +6,15 @@
 #include <Mlib/Images/StbImage1.hpp>
 #include <Mlib/Images/StbImage3.hpp>
 #include <Mlib/Io/Arg_Parser.hpp>
+#include <Mlib/Os/Utf8_Path.hpp>
 #include <Mlib/Strings/String_View_To_Number.hpp>
 #include <iostream>
 
 using namespace Mlib;
 
 void laplace_filter_file(
-    const std::string& source,
-    const std::string& destination,
+    const Utf8Path& source,
+    const Utf8Path& destination,
     float sigma,
     bool is_heightmap)
 {
@@ -44,7 +45,7 @@ int main(int argc, char **argv) {
         laplace_filter_file(
             args.unnamed_value(0),
             args.unnamed_value(1),
-            safe_stof(args.named_value("--sigma")),
+            safe_stof(args.named_svalue("--sigma")),
             args.has_named("--is_heightmap"));
     } catch (const std::runtime_error& e) {
         lerr() << e.what();

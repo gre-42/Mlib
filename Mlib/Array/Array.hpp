@@ -18,6 +18,7 @@
 #include <Mlib/Initialization/Uninitialized.hpp>
 #include <Mlib/Iterator/Sized_Iterable.hpp>
 #include <Mlib/Os/Os.hpp>
+#include <Mlib/Os/Utf8_Path.hpp>
 #include <Mlib/Strings/String_View_To_Number.hpp>
 #include <stdexcept>
 #include <cassert>
@@ -970,11 +971,11 @@ public:
         return blocked(row_ids).unblocked(row_ids, length(), fill_value);
     }
 
-    void save_txt_2d(const std::string& filename) const {
+    void save_txt_2d(const Utf8Path& filename) const {
         assert(ndim() == 2);
         std::ofstream ofs(filename);
         if (ofs.fail()) {
-            throw std::runtime_error("Could not open file \"" + filename + '"');
+            throw std::runtime_error("Could not open file \"" + filename.string() + '"');
         }
         ofs.setf(std::ios_base::scientific);
         ofs.precision(10);
@@ -986,19 +987,19 @@ public:
         }
         ofs.flush();
         if (ofs.fail()) {
-            throw std::runtime_error("Could not save to file \"" + filename + '"');
+            throw std::runtime_error("Could not save to file \"" + filename.string() + '"');
         }
     }
 
     static Array load_txt_2d(
-        const std::string& filename,
+        const Utf8Path& filename,
         const ArrayShape& empty_shape = ArrayShape())
     {
         std::list<Array> result;
         auto ifs_p = create_ifstream(filename);
         auto& ifs = *ifs_p;
         if (ifs.fail()) {
-            throw std::runtime_error("Could not open file \"" + filename + '"');
+            throw std::runtime_error("Could not open file \"" + filename.string() + '"');
         }
         std::string line;
         while(std::getline(ifs, line)) {
@@ -1012,7 +1013,7 @@ public:
             }
             #pragma GCC diagnostic pop
             if (srow.fail() && !srow.eof()) {
-                throw std::runtime_error("Could not read line of file \"" + filename + '"');
+                throw std::runtime_error("Could not read line of file \"" + filename.string() + '"');
             }
             Array arow(ArrayShape{rowv.size()});
             for (size_t c = 0; c < arow.length(); ++c) {
@@ -1021,15 +1022,15 @@ public:
             result.push_back(arow);
         }
         if (ifs.fail() && !ifs.eof()) {
-            throw std::runtime_error("Could not read line of file \"" + filename + '"');
+            throw std::runtime_error("Could not read line of file \"" + filename.string() + '"');
         }
         return Array(result, empty_shape);
     }
 
-    void save_binary(const std::string& filename) const {
+    void save_binary(const Utf8Path& filename) const {
         std::ofstream ofs(filename, std::ios::binary);
         if (ofs.fail()) {
-            throw std::runtime_error("Could not open file \"" + filename + '"');
+            throw std::runtime_error("Could not open file \"" + filename.string() + '"');
         }
         ofs << "BinaryArray\n" << ndim();
         for (size_t i = 0; i < ndim(); ++i) {
@@ -1039,52 +1040,52 @@ public:
         ofs.write((const char*)flat_iterable().begin(), integral_cast<std::streamsize>(nbytes()));
         ofs.flush();
         if (ofs.fail()) {
-            throw std::runtime_error("Could not save to file \"" + filename + '"');
+            throw std::runtime_error("Could not save to file \"" + filename.string() + '"');
         }
     }
 
-    static Array load_binary(const std::string& filename) {
+    static Array load_binary(const Utf8Path& filename) {
         auto ifs_p = create_ifstream(filename, std::ios::binary);
         auto& ifs = *ifs_p;
         if (ifs.fail()) {
-            throw std::runtime_error("Could not open file \"" + filename + '"');
+            throw std::runtime_error("Could not open file \"" + filename.string() + '"');
         }
         std::string first_line;
         ifs >> first_line;
         if (first_line != "BinaryArray") {
-            throw std::runtime_error("File \"" + filename + "\" has no first line \"BinaryArray\"");
+            throw std::runtime_error("File \"" + filename.string() + "\" has no first line \"BinaryArray\"");
         }
         size_t ndim;
         ifs >> ndim;
         if (ifs.fail()) {
-            throw std::runtime_error("Could not read ndim from file \"" + filename + '"');
+            throw std::runtime_error("Could not read ndim from file \"" + filename.string() + '"');
         }
         ArrayShape s(ndim);
         for (size_t i = 0; i < ndim; ++i) {
             ifs >> s(i);
         }
         if (ifs.fail()) {
-            throw std::runtime_error("Could not read shape from file \"" + filename + '"');
+            throw std::runtime_error("Could not read shape from file \"" + filename.string() + '"');
         }
         size_t element_size;
         ifs >> element_size;
         if (ifs.fail()) {
-            throw std::runtime_error("Could not element size from file \"" + filename + '"');
+            throw std::runtime_error("Could not element size from file \"" + filename.string() + '"');
         }
         if (element_size != sizeof(TData)) {
-            throw std::runtime_error("Wrong element size in file \"" + filename + '"');
+            throw std::runtime_error("Wrong element size in file \"" + filename.string() + '"');
         }
         auto c = read_binary<char>(ifs, "newline character", IoVerbosity::SILENT);
         if (ifs.fail()) {
-            throw std::runtime_error("Could not read newline-character of file \"" + filename + '"');
+            throw std::runtime_error("Could not read newline-character of file \"" + filename.string() + '"');
         }
         if (c != '\n') {
-            throw std::runtime_error("Did not find newline-character in file \"" + filename + '"');
+            throw std::runtime_error("Did not find newline-character in file \"" + filename.string() + '"');
         }
         Array res{s};
         ifs.read((char*)res.flat_iterable().begin(), integral_cast<std::streamsize>(res.nbytes()));
         if (ifs.fail()) {
-            throw std::runtime_error("Could not read data from file \"" + filename + '"');
+            throw std::runtime_error("Could not read data from file \"" + filename.string() + '"');
         }
         return res;
     }

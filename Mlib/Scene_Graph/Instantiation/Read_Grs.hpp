@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Geometry/Primitives/Axis_Aligned_Bounding_Box.hpp>
+#include <Mlib/Os/Utf8_Path.hpp>
 #include <cstdint>
 #include <iosfwd>
 
@@ -38,7 +39,7 @@ struct Model {
 };
 
 Model load_grs(std::istream& istr, IoVerbosity verbosity);
-Model load_grs(const std::string& filename, IoVerbosity verbosity);
+Model load_grs(const Utf8Path& filename, IoVerbosity verbosity);
 
 }
 }

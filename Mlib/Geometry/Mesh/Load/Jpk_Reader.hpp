@@ -2,6 +2,7 @@
 #include <Mlib/Io/IIStream_Dictionary.hpp>
 #include <Mlib/Map/String_With_Hash_Unordered_Map.hpp>
 #include <Mlib/Memory/Dangling_Base_Class.hpp>
+#include <Mlib/Os/Utf8_Path.hpp>
 #include <memory>
 #include <mutex>
 #include <string>
@@ -20,7 +21,7 @@ class JpkReader: public IIStreamDictionary, public virtual DanglingBaseClass {
 public:
     JpkReader(std::unique_ptr<std::istream>&& data, IoVerbosity verbosity);
     static std::shared_ptr<IIStreamDictionary> load_from_file(
-        const std::string& filename,
+        const Utf8Path& filename,
         IoVerbosity verbosity);
     virtual ~JpkReader() override;
     virtual std::vector<VariableAndHash<std::string>> names() const override;

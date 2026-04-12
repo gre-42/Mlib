@@ -115,25 +115,25 @@ void StbImage1_16::draw_streamline(
     });
 }
 
-StbImage1_16 StbImage1_16::load_from_file(const std::string& filename) {
+StbImage1_16 StbImage1_16::load_from_file(const Utf8Path& filename) {
     auto vimage = stb_load(filename, FlipMode::NONE);
     if (vimage.index() != 1) {
-        throw std::runtime_error("Image does not have 16 bits: \"" + filename + '"');
+        throw std::runtime_error("Image does not have 16 bits: \"" + filename.string() + '"');
     }
     const auto& image = std::get<1>(vimage);
     if (image.nrChannels != 1) {
-        throw std::runtime_error("Image does not have 1 channel: \"" + filename + '"');
+        throw std::runtime_error("Image does not have 1 channel: \"" + filename.string() + '"');
     }
     return StbImage1_16{image};
 }
 
-void StbImage1_16::save_to_file(const std::string& filename, int jpg_quality) const {
+void StbImage1_16::save_to_file(const Utf8Path& filename, int jpg_quality) const {
     if (filename.ends_with(".png")) {
         if (!png16::stbi_write_png16(filename.c_str(), (int)shape(1), (int)shape(0), 1, flat_begin(), 0)) {
-            throw std::runtime_error("Could not save to file: \"" + filename + '"');
+            throw std::runtime_error("Could not save to file: \"" + filename.string() + '"');
         }
     } else {
-        throw std::runtime_error("Filename does not have png extension: \"" + filename + '"');
+        throw std::runtime_error("Filename does not have png extension: \"" + filename.string() + '"');
     }
 }
 

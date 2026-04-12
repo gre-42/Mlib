@@ -25,7 +25,7 @@ void UnorderedSetOfStrings::try_insert(const VariableAndHash<std::string>& name,
     }
 }
 
-void UnorderedSetOfStrings::load_from_file(const std::filesystem::path& filename) {
+void UnorderedSetOfStrings::load_from_file(const Utf8Path& filename) {
     auto f = create_ifstream(filename);
     if (f->fail()) {
         lwarn() << "Could not open for loading: \"" << filename.string() << '"';
@@ -50,7 +50,7 @@ void UnorderedSetOfStrings::load_from_file(const std::filesystem::path& filename
     }
 }
 
-void UnorderedSetOfStrings::save_to_file(const std::filesystem::path& filename) const {
+void UnorderedSetOfStrings::save_to_file(const Utf8Path& filename) const {
     auto f = create_ofstream(filename);
     if (f->fail()) {
         lwarn() << "Could not open for writing: \"" << filename.string() << '"';

@@ -10,7 +10,7 @@ using namespace Mlib;
 
 FileRenderableHider::FileRenderableHider(
     const ButtonStates& button_states,
-    std::filesystem::path filename)
+    Utf8Path filename)
     : filename_{std::move(filename)}
     , load_{ button_states, key_configurations_, 0, "load", "" }
     , save_{ button_states, key_configurations_, 0, "save", "" }

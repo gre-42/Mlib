@@ -1,6 +1,7 @@
 
 #include "Image_Info.hpp"
 #include <Mlib/Images/Dds_Info.hpp>
+#include <Mlib/Os/Utf8_Path.hpp>
 #include <algorithm>
 #include <stb_cpp/stb_image_load.hpp>
 #include <stdexcept>
@@ -12,7 +13,7 @@ ImageInfo ImageInfo::load(const std::string& filename, const std::vector<std::by
     ImageInfo result{
         .size = uninitialized
     };
-    auto extension = std::filesystem::path{filename}.extension().string();
+    auto extension = Utf8Path{filename}.extension().string();
     std::transform(extension.begin(), extension.end(), extension.begin(),
         ::tolower);
     if ((extension == ".jpg") ||

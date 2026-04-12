@@ -41,7 +41,7 @@ static StbInfo<TData> stb_wrap_and_postprocess(TData* data, int width, int heigh
 }
 
 std::variant<StbInfo<uint8_t>, StbInfo<uint16_t>> stb_load(
-    const std::string& filename,
+    const Utf8Path& filename,
     FlipMode flip_mode,
     const std::vector<std::byte>* data)
 {
@@ -95,7 +95,7 @@ std::variant<StbInfo<uint8_t>, StbInfo<uint16_t>> stb_load(
 #endif
     }
     if (image == nullptr) {
-        throw std::runtime_error("Could not load \"" + filename + '"');
+        throw std::runtime_error("Could not load \"" + filename.string() + '"');
     }
     if (bytes_per_pixel == 8) {
         return stb_wrap_and_postprocess((uint8_t*)image, width, height, nrChannels, any(flip_mode & FlipMode::HORIZONTAL));
@@ -108,7 +108,7 @@ std::variant<StbInfo<uint8_t>, StbInfo<uint16_t>> stb_load(
 }
 
 StbInfo<uint8_t> stb_load8(
-    const std::string& filename,
+    const Utf8Path& filename,
     FlipMode flip_mode,
     const std::vector<std::byte>* data,
     IncorrectDatasizeBehavior datasize_behavior)
@@ -117,7 +117,7 @@ StbInfo<uint8_t> stb_load8(
     auto* res8 = std::get_if<StbInfo<uint8_t>>(&res);
     if (res8 == nullptr) {
         if (datasize_behavior == IncorrectDatasizeBehavior::THROW) {
-            throw std::runtime_error("Image \"" + filename + "\" does not have 8 bits");
+            throw std::runtime_error("Image \"" + filename.string() + "\" does not have 8 bits");
         } else if (datasize_behavior == IncorrectDatasizeBehavior::CONVERT) {
             auto* res16 = std::get_if<StbInfo<uint16_t>>(&res);
             if (res16 == nullptr) {

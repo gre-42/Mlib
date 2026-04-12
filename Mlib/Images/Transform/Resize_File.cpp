@@ -11,8 +11,8 @@
 #include <stb_cpp/stb_image_load.hpp>
 
 void Mlib::resize_file(
-    const std::filesystem::path& source,
-    const std::filesystem::path& dest,
+    const Utf8Path& source,
+    const Utf8Path& dest,
     const FixedArray<size_t, 2>& target_size,
     FilterExtension filter_extension,
     TargetShapeMode target_shape_mode,

@@ -76,12 +76,12 @@ JpkReader::JpkReader(std::unique_ptr<std::istream>&& data, IoVerbosity verbosity
 }
 
 std::shared_ptr<IIStreamDictionary> JpkReader::load_from_file(
-    const std::string& filename,
+    const Utf8Path& filename,
     IoVerbosity verbosity)
 {
     auto f = create_ifstream(filename, std::ios::binary);
     if (f->fail()) {
-        throw std::runtime_error("Could not open \"" + filename + '"');
+        throw std::runtime_error("Could not open \"" + filename.string() + '"');
     }
     return std::make_shared<JpkReader>(std::move(f), verbosity);
 }

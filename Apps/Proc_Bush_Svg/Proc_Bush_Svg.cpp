@@ -1,5 +1,6 @@
 #include <Mlib/Images/Svg.hpp>
 #include <Mlib/Io/Arg_Parser.hpp>
+#include <Mlib/Os/Utf8_Path.hpp>
 #include <Mlib/Strings/String_View_To_Number.hpp>
 #include <fstream>
 #include <iosfwd>
@@ -13,7 +14,7 @@ void generate_bush(
     std::ostream& ostr,
     float width,
     float height,
-    const std::string& twig_filename,
+    const Utf8Path& twig_filename,
     float twig_width,
     float twig_height,
     size_t ntwigs,
@@ -46,17 +47,17 @@ int main(int argc, char** argv) {
 
     const auto args = parser.parsed(argc, argv);
 
-    std::string svg_filename = args.named_value("--result");
+    std::string svg_filename = Utf8Path{args.named_value("--result")};
     std::ofstream f{svg_filename};
     generate_bush(
         f,
         800.f,
         600.f,
         args.named_value("--twig"),
-        safe_stof(args.named_value("--twig_width")),
-        safe_stof(args.named_value("--twig_height")),
-        safe_stoz(args.named_value("--ntwigs")),
-        safe_stou(args.named_value("--seed", "0")));
+        safe_stof(args.named_svalue("--twig_width")),
+        safe_stof(args.named_svalue("--twig_height")),
+        safe_stoz(args.named_svalue("--ntwigs")),
+        safe_stou(args.named_svalue("--seed", "0")));
     f.flush();
     if (f.fail()) {
         throw std::runtime_error("Could not write " + svg_filename);

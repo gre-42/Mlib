@@ -87,12 +87,12 @@ void PgmImage::draw_streamline(
     });
 }
 
-PgmImage PgmImage::load_from_file(const std::string& filename) {
+PgmImage PgmImage::load_from_file(const Utf8Path& filename) {
     auto istream = create_ifstream(filename, std::ios_base::binary);
     try {
-        return load_from_stream(*istream, '"' + filename + ": ");
+        return load_from_stream(*istream, '"' + filename.string() + ": ");
     } catch (const std::runtime_error& e) {
-        throw std::runtime_error(e.what() + std::string(": ") + filename);
+        throw std::runtime_error(e.what() + std::string(": ") + filename.string());
     }
 }
 
@@ -106,7 +106,7 @@ static void skip_comments(std::istream& istr) {
     }
 }
 
-PgmImage PgmImage::load_from_stream(std::istream& istream, const std::string& name) {
+PgmImage PgmImage::load_from_stream(std::istream& istream, const Utf8Path& name) {
     if (istream.fail()) {
         throw std::runtime_error(name + "Could not open");
     }
@@ -154,12 +154,12 @@ PgmImage PgmImage::load_from_stream(std::istream& istream, const std::string& na
     return result;
 }
 
-void PgmImage::save_to_file(const std::string& filename) const {
+void PgmImage::save_to_file(const Utf8Path& filename) const {
     try {
         std::ofstream ostream(filename, std::ios::binary);
         save_to_stream(ostream);
     } catch (const std::runtime_error& e) {
-        throw std::runtime_error("Could not save to file " + filename + "; " + e.what());
+        throw std::runtime_error("Could not save to file " + filename.string() + "; " + e.what());
     }
 }
 

@@ -25,5 +25,5 @@ SetSoftLight::SetSoftLight(RenderableScene& renderable_scene)
 
 void SetSoftLight::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    post_processing_logic.set_soft_light_filename(VariableAndHash{ args.arguments.path(KnownArgs::filename) });
+    post_processing_logic.set_soft_light_filename(args.arguments.path_or_variable(KnownArgs::filename));
 }

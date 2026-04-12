@@ -4,6 +4,7 @@
 #include <Mlib/Geometry/Mesh/Obj_Material.hpp>
 #include <Mlib/Os/Os.hpp>
 #include <Mlib/Regex/Regex_Select.hpp>
+#include <Mlib/Strings/Str.hpp>
 #include <Mlib/Strings/String_View_To_Number.hpp>
 
 using namespace Mlib;
@@ -99,21 +100,21 @@ std::map<std::string, ObjMaterial> Mlib::load_mtllib(const std::string& filename
         } else if (Mlib::re::regex_match(line, match, map_Ke_reg)) {
             // do nothing
         } else if (Mlib::re::regex_match(line, match, map_Kd_reg)) {
-            mtllib.at(mtl).diffuse_texture = match[1].str();
+            mtllib.at(mtl).diffuse_texture = U8::u8str(match[1].str());
         } else if (Mlib::re::regex_match(line, match, map_Kdc_reg)) {
             mtllib.at(mtl).diffuse_chrominance_texture = match[1].str();
         } else if (Mlib::re::regex_match(line, match, map_Ks_reg) ||
                    Mlib::re::regex_match(line, match, map_refl_reg))
         {
-            mtllib.at(mtl).specular_texture = match[1].str();
+            mtllib.at(mtl).specular_texture = U8::u8str(match[1].str());
         } else if (Mlib::re::regex_match(line, match, map_bump_reg)) {
-            mtllib.at(mtl).bump_texture = match[1].str();
+            mtllib.at(mtl).bump_texture = U8::u8str(match[1].str());
         } else if (Mlib::re::regex_match(line, match, map_Ns_reg)) {
             // do nothing
         } else if (Mlib::re::regex_match(line, match, refl_reg)) {
             // do nothing
         } else if (Mlib::re::regex_match(line, match, map_d_reg)) {
-            if (match[1].str() != mtllib.at(mtl).diffuse_texture) {
+            if (U8::u8str(match[1].str()) != mtllib.at(mtl).diffuse_texture) {
                 throw std::runtime_error("map_d differs from map_Kd");
             }
             mtllib.at(mtl).has_alpha_texture = true;

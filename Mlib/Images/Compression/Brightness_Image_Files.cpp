@@ -10,39 +10,39 @@
 
 using namespace Mlib;
 
-static Array<float> load_reconstructed_as_array(const std::string& filename, FlipMode flip_mode) {
+static Array<float> load_reconstructed_as_array(const Utf8Path& filename, FlipMode flip_mode) {
     auto image = stb_load8(filename, flip_mode);
     if (image.nrChannels == 3) {
         return StbImage3{image}.to_float_rgb();
     } else if (image.nrChannels == 4) {
         return StbImage4{image}.to_float_rgba();
     } else {
-        throw std::runtime_error("Unsupported number of channels: \"" + filename + '"');
+        throw std::runtime_error("Unsupported number of channels: \"" + filename.string() + '"');
     }
 }
 
-static Array<float> load_luma_as_array(const std::string& filename, FlipMode flip_mode) {
+static Array<float> load_luma_as_array(const Utf8Path& filename, FlipMode flip_mode) {
     auto image = stb_load8(filename, flip_mode);
     if (image.nrChannels == 1) {
         return StbImage1{image}.to_float_grayscale();
     } else if (image.nrChannels == 2) {
         return StbImage2{image}.to_float_ia();
     } else {
-        throw std::runtime_error("Unsupported number of channels: \"" + filename + '"');
+        throw std::runtime_error("Unsupported number of channels: \"" + filename.string() + '"');
     }
 }
 
-static Array<float> load_chrominance_as_array(const std::string& filename, FlipMode flip_mode) {
+static Array<float> load_chrominance_as_array(const Utf8Path& filename, FlipMode flip_mode) {
     auto image = stb_load8(filename, flip_mode);
     if (image.nrChannels == 3) {
         return StbImage3{image}.to_float_rgb();
     } else {
-        throw std::runtime_error("Unsupported number of channels: \"" + filename + '"');
+        throw std::runtime_error("Unsupported number of channels: \"" + filename.string() + '"');
     }
 }
 
 BrightnessImageFiles::BrightnessImageFiles(
-    const std::string& source,
+    const Utf8Path& source,
     size_t color_width,
     size_t color_height,
     size_t structure_width,
@@ -57,7 +57,7 @@ BrightnessImageFiles::BrightnessImageFiles(
         target_shape_mode}
 {}
 
-void BrightnessImageFiles::save_reconstructed(const std::string& filename) const {
+void BrightnessImageFiles::save_reconstructed(const Utf8Path& filename) const {
     const auto& ba = brightness_image.brightness_and_alpha;
     if (ba.ndim() == 2) {
         StbImage3::from_float_rgb(clipped(brightness_image.reconstructed(ba.shape(1), ba.shape(0), TargetShapeMode::DEST), 0.f, 1.f)).save_to_file(filename);
@@ -68,11 +68,11 @@ void BrightnessImageFiles::save_reconstructed(const std::string& filename) const
     }
 }
 
-void BrightnessImageFiles::save_color(const std::string& filename) const {
+void BrightnessImageFiles::save_color(const Utf8Path& filename) const {
     StbImage3::from_float_rgb(clipped(brightness_image.color, 0.f, 1.f)).save_to_file(filename);
 }
 
-void BrightnessImageFiles::save_brightness_and_alpha(const std::string& filename) const {
+void BrightnessImageFiles::save_brightness_and_alpha(const Utf8Path& filename) const {
     const auto& ba = brightness_image.brightness_and_alpha;
     if (ba.ndim() == 2) {
         StbImage1::from_float_grayscale(clipped(ba, 0.f, 1.f)).save_to_file(filename);
@@ -84,8 +84,8 @@ void BrightnessImageFiles::save_brightness_and_alpha(const std::string& filename
 }
 
 StbInfo<uint8_t> Mlib::reconstruct_from_luma_and_chrominance(
-    const std::string& luma,
-    const std::string& chrominance,
+    const Utf8Path& luma,
+    const Utf8Path& chrominance,
     FlipMode flip_mode)
 {
     BrightnessImage bi{

@@ -12,8 +12,8 @@
 #include <Mlib/Map/String_With_Hash_Unordered_Map.hpp>
 #include <Mlib/Math/Fixed_Cholesky.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
+#include <Mlib/Os/Utf8_Path.hpp>
 #include <Mlib/Os/Weakly_Canonical_Preserve_Symlinks.hpp>
-#include <filesystem>
 
 using namespace Mlib;
 
@@ -28,8 +28,8 @@ using namespace Mlib;
 
 FPath gen_filename(const std::string& f, const std::string& texture_name) {
     if (!texture_name.empty()) {
-        std::filesystem::path p = std::filesystem::path(f).parent_path();
-        return FPath::from_local_path(p.empty() ? std::filesystem::path{texture_name} : weakly_canonical_preserve_symlinks(p / texture_name));
+        Utf8Path p = Utf8Path(f).parent_path();
+        return FPath::from_local_path(p.empty() ? Utf8Path{texture_name} : weakly_canonical_preserve_symlinks(p / texture_name));
     } else {
         return FPath{};
     }

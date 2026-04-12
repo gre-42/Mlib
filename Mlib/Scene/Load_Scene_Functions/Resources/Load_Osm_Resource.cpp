@@ -708,14 +708,10 @@ LoadSceneJsonUserFunction LoadOsmResource::json_user_function = [](const LoadSce
         if (args.arguments.contains(KnownArgs::water)) {
             config.water = args.arguments.at<WaterConfiguration>(KnownArgs::water);
             for (auto& t : config.water->textures.color) {
-                if (t.type() == PathType::LOCAL_PATH) {
-                    t = args.arguments.fpath(t.local_path());
-                }
+                t = args.arguments.fpath(t);
             }
             for (auto& t : config.water->textures.alpha) {
-                if (t.type() == PathType::LOCAL_PATH) {
-                    t = args.arguments.fpath(t.local_path());
-                }
+                t = args.arguments.fpath(t);
             }
         }
         if (args.arguments.contains_non_null(KnownArgs::waysides_surface)) {

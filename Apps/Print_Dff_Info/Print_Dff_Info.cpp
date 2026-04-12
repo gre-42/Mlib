@@ -4,8 +4,8 @@
 #include <Mlib/Io/Arg_Parser.hpp>
 #include <Mlib/Io/Folder_IStream_Dictionary.hpp>
 #include <Mlib/Os/Os.hpp>
+#include <Mlib/Os/Utf8_Path.hpp>
 #include <Mlib/Regex/Regex_Select.hpp>
-#include <filesystem>
 
 using namespace Mlib;
 
@@ -13,7 +13,7 @@ static void add_resource(
     const VariableAndHash<std::string>& name,
     const std::shared_ptr<IIStreamDictionary>& img)
 {
-    auto extension = std::filesystem::path{ *name }.extension().string();
+    auto extension = Utf8Path{ *name }.extension().string();
     std::transform(extension.begin(), extension.end(), extension.begin(),
         ::tolower);
     if (extension == ".dff") {
@@ -32,9 +32,9 @@ static void add_resource(
     }
 }
 
-static void add_file_resource(const std::string& name)
+static void add_file_resource(const Utf8Path& name)
 {
-    auto extension = std::filesystem::path{ name }.extension().string();
+    auto extension = Utf8Path{ name }.extension().string();
     std::transform(extension.begin(), extension.end(), extension.begin(),
         ::tolower);
     if (extension == ".img") {
@@ -45,7 +45,7 @@ static void add_file_resource(const std::string& name)
         }
     } else {
         linfo() << "path: " << name;
-        auto path = std::filesystem::path{ name };
+        auto path = Utf8Path{ name };
         auto dir = std::make_shared<FolderIStreamDictionary>(path.parent_path().string());
         add_resource(VariableAndHash<std::string>{path.filename().string()}, dir);
     }

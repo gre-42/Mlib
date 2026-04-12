@@ -19,6 +19,7 @@
 #include <Mlib/OpenGL/Resource_Managers/Rendering_Resources.hpp>
 #include <Mlib/OpenGL/Resources/Dff_File_Resource.hpp>
 #include <Mlib/OpenGL/Resources/Pssg_File_Resource.hpp>
+#include <Mlib/Os/Utf8_Path.hpp>
 #include <Mlib/Scene/Json/Load_Mesh_Config_Json.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Load_Scene_Funcs.hpp>
@@ -49,7 +50,7 @@ static void add_rw_resource(
     const std::shared_ptr<DrawDistanceDb>& dddb,
     std::list<VariableAndHash<std::string>>& added_scene_node_resources)
 {
-    auto extension = std::filesystem::path{ *name }.extension().string();
+    auto extension = Utf8Path{ *name }.extension().string();
     std::transform(extension.begin(), extension.end(), extension.begin(),
         ::tolower);
     if (extension == ".dff") {
@@ -101,7 +102,7 @@ static void add_rw_resource(
 
 template <class TPosition>
 static void add_rw_file_resource(
-    const std::filesystem::path& path,
+    const Utf8Path& path,
     const std::shared_ptr<LoadMeshConfig<TPosition>>& cfg,
     const std::shared_ptr<DrawDistanceDb>& dddb,
     std::list<VariableAndHash<std::string>>& added_scene_node_resources)

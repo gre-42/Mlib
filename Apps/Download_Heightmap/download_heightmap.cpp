@@ -19,7 +19,7 @@ StbInfo<uint8_t> download_tile(
     size_t x,
     size_t y,
     const std::string& api_key,
-    const std::string& filename)
+    const Utf8Path& filename)
 {
     httplib::Client cli("https://tile.nextzen.org");
     std::stringstream sstr;
@@ -51,7 +51,7 @@ StbInfo<uint8_t> download_tile(
         }
         ofstr.flush();
         if (ofstr.fail()) {
-            throw std::runtime_error("Could not write tile file \"" + filename + '"');
+            throw std::runtime_error("Could not write tile file \"" + filename.string() + '"');
         }
         return stb_load8(filename, FlipMode::NONE);
     }
@@ -136,15 +136,15 @@ int main(int argc, char** argv) {
             return 0;
         }
         args.assert_num_unnamed(0);
-        size_t zoom = safe_stoz(args.named_value("--zoom"));
-        double min_lat = safe_stod(args.named_value("--min_lat"));
-        double min_lon = safe_stod(args.named_value("--min_lon"));
-        double max_lat = safe_stod(args.named_value("--max_lat"));
-        double max_lon = safe_stod(args.named_value("--max_lon"));
-        size_t tile_pixels = safe_stoz(args.named_value("--tile_pixels"));
-        size_t result_width = safe_stoz(args.named_value("--result_width"));
-        size_t result_height = safe_stoz(args.named_value("--result_height"));
-        std::string tmp_png = args.named_value("--tmp_png", "");
+        size_t zoom = safe_stoz(args.named_svalue("--zoom"));
+        double min_lat = safe_stod(args.named_svalue("--min_lat"));
+        double min_lon = safe_stod(args.named_svalue("--min_lon"));
+        double max_lat = safe_stod(args.named_svalue("--max_lat"));
+        double max_lon = safe_stod(args.named_svalue("--max_lon"));
+        size_t tile_pixels = safe_stoz(args.named_svalue("--tile_pixels"));
+        size_t result_width = safe_stoz(args.named_svalue("--result_width"));
+        size_t result_height = safe_stoz(args.named_svalue("--result_height"));
+        Utf8Path tmp_png = args.named_value("--tmp_png", "");
 
         // From: https://epsg.io/3857
         double max_y_global = M_PI;  // get_y(85.06 * degrees);
@@ -191,7 +191,7 @@ int main(int argc, char** argv) {
                     zoom,
                     x,
                     y,
-                    args.named_value("--api_key", "LmmWmJx5QWGLTYXKJtAogg"),
+                    args.named_svalue("--api_key", "LmmWmJx5QWGLTYXKJtAogg"),
                     tmp_png);
                 if (image.nrChannels != 3 && image.nrChannels != 4) {
                     throw std::runtime_error("Only 3 or 4 channels are supported");
@@ -249,8 +249,8 @@ int main(int argc, char** argv) {
             if (any(stitched.shape() > INT_MAX)) {
                 throw std::runtime_error("Stitched image too large");
             }
-            if (!stbi_write_png(args.named_value("--stitched_png").c_str(), (int)stitched.shape(1), (int)stitched.shape(0), 3, stitched_rgb.data(), 0)) {
-                throw std::runtime_error("Could not write \"" + args.named_value("--stitched_png") + '"');
+            if (!stbi_write_png(args.named_svalue("--stitched_png").c_str(), (int)stitched.shape(1), (int)stitched.shape(0), 3, stitched_rgb.data(), 0)) {
+                throw std::runtime_error("Could not write \"" + args.named_svalue("--stitched_png") + '"');
             }
         }
         if (args.has_named_value("--stitched_normalized_png")) {

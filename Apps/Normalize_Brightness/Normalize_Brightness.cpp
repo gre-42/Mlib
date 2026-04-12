@@ -2,13 +2,14 @@
 #include <Mlib/Images/Normalize.hpp>
 #include <Mlib/Images/Ppm_Image.hpp>
 #include <Mlib/Io/Arg_Parser.hpp>
+#include <Mlib/Os/Utf8_Path.hpp>
 #include <Mlib/Strings/String_View_To_Number.hpp>
 
 using namespace Mlib;
 
 void normalize_brightness(
-    const std::string& source,
-    const std::string& destination,
+    const Utf8Path& source,
+    const Utf8Path& destination,
     float sigma)
 {
     auto bitmap = PpmImage::load_from_file(source);
@@ -32,6 +33,6 @@ int main(int argc, char **argv) {
     normalize_brightness(
         args.unnamed_value(0),
         args.unnamed_value(1),
-        safe_stof(args.named_value("--sigma")));
+        safe_stof(args.named_svalue("--sigma")));
     return 0;
 }

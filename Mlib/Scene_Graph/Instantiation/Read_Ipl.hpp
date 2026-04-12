@@ -1,6 +1,6 @@
 #pragma once
+#include <Mlib/Os/Utf8_Path.hpp>
 #include <Mlib/Scene_Config/Scene_Precision.hpp>
-#include <filesystem>
 #include <iosfwd>
 #include <list>
 
@@ -11,7 +11,7 @@ struct InstanceInformation;
 enum class RenderingDynamics;
 
 std::list<InstanceInformation<ScenePos>> read_ipl(
-    const std::filesystem::path& filename,
+    const Utf8Path& filename,
     RenderingDynamics rendering_dynamics);
 
 std::list<InstanceInformation<ScenePos>> read_ipl(

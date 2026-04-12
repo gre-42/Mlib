@@ -32,7 +32,7 @@ LoadSceneJsonUserFunction LoadReplacementParameters::json_user_function = [](con
             if (!is_listable(level_dir)) {
                 continue;
             }
-            for (const auto& candidate_file : list_dir(level_dir)) {
+            for (const auto& candidate_file : list_dir(Utf8Path::from_path(level_dir.path()))) {
                 if (!Mlib::re::regex_match(candidate_file.path().filename().string(), manifest_regex)) {
                     continue;
                 }

@@ -101,15 +101,15 @@ void PpmImage::draw_streamline(
     });
 }
 
-PpmImage PpmImage::load_from_file(const std::string& filename) {
+PpmImage PpmImage::load_from_file(const Utf8Path& filename) {
     if (!filename.ends_with(".ppm")) {
-        throw std::runtime_error("Filename does not have ppm extension: \"" + filename + '"');
+        throw std::runtime_error("Filename does not have ppm extension: \"" + filename.string() + '"');
     }
     auto istream = create_ifstream(filename, std::ios_base::binary);
     try {
         return load_from_stream(*istream);
     } catch (const std::runtime_error& e) {
-        throw std::runtime_error(e.what() + std::string(": ") + filename);
+        throw std::runtime_error(e.what() + std::string(": ") + filename.string());
     }
 }
 
@@ -165,15 +165,15 @@ PpmImage PpmImage::load_from_stream(std::istream& istream) {
     return result;
 }
 
-void PpmImage::save_to_file(const std::string& filename) const {
+void PpmImage::save_to_file(const Utf8Path& filename) const {
     if (!filename.ends_with(".ppm")) {
-        throw std::runtime_error("Filename does not have ppm extension: \"" + filename + '"');
+        throw std::runtime_error("Filename does not have ppm extension: \"" + filename.string() + '"');
     }
     try {
         std::ofstream ostream(filename, std::ios::binary);
         save_to_stream(ostream);
     } catch (const std::runtime_error& e) {
-        throw std::runtime_error("Could not save to file " + filename + "; " + e.what());
+        throw std::runtime_error("Could not save to file " + filename.string() + "; " + e.what());
     }
 }
 

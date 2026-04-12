@@ -50,10 +50,10 @@
 #include <Mlib/OpenGL/Viewport_Guard.hpp>
 #include <Mlib/Os/Env.hpp>
 #include <Mlib/Os/Os.hpp>
+#include <Mlib/Os/Utf8_Path.hpp>
 #include <Mlib/Testing/Assert.hpp>
 #include <Mlib/Threads/Recursion_Guard.hpp>
 #include <Mlib/Threads/Thread_Local.hpp>
-#include <filesystem>
 #include <iostream>
 #include <memory>
 #include <mutex>
@@ -172,7 +172,7 @@ static int log2(int n) {
 }
 
 static StbInfo<uint8_t> stb_load_texture(
-    const std::filesystem::path& filename,
+    const Utf8Path& filename,
     int nchannels,
     FlipMode flip_mode,
     TextureWarnFlags suppressed_warnings,
@@ -1979,7 +1979,7 @@ void RenderingResources::add_texture(
         }
         throw std::runtime_error("Non-DDS-texture with name \"" + filename + "\" already exists");
     }
-    auto extension = std::filesystem::path{ filename }.extension().string();
+    auto extension = Utf8Path{ filename }.extension().string();
     std::transform(extension.begin(), extension.end(), extension.begin(),
         ::tolower);
     if ((extension == ".jpg") ||

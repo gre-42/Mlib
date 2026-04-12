@@ -6,8 +6,8 @@
 using namespace Mlib;
 
 void Mlib::convert_to_mp3(
-    const std::filesystem::path& source,
-    const std::filesystem::path& destination,
+    const Utf8Path& source,
+    const Utf8Path& destination,
     uint32_t bitrate)
 {
     throw std::runtime_error("convert_to_mp3 not implemented on Android");
@@ -41,8 +41,8 @@ std::vector<std::byte> Mlib::convert_to_mp3(
 using namespace Mlib;
 
 void Mlib::convert_to_mp3(
-    const std::filesystem::path& source,
-    const std::filesystem::path& destination,
+    const Utf8Path& source,
+    const Utf8Path& destination,
     uint32_t bitrate)
 {
     // if (destination.extension() != ".mp3") {

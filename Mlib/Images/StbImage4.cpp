@@ -115,21 +115,21 @@ void StbImage4::draw_streamline(
     });
 }
 
-StbImage4 StbImage4::load_from_file(const std::string& filename) {
+StbImage4 StbImage4::load_from_file(const Utf8Path& filename) {
     auto image = stb_load8(filename, FlipMode::NONE);
     if (image.nrChannels != 4) {
-        throw std::runtime_error("Image does not have 4 channels: \"" + filename + '"');
+        throw std::runtime_error("Image does not have 4 channels: \"" + filename.string() + '"');
     }
     return StbImage4{image};
 }
 
-void StbImage4::save_to_file(const std::string& filename, int jpg_quality) const {
+void StbImage4::save_to_file(const Utf8Path& filename, int jpg_quality) const {
     if (filename.ends_with(".png")) {
         if (!stbi_write_png(filename.c_str(), (int)shape(1), (int)shape(0), 4, flat_begin(), 0)) {
-            throw std::runtime_error("Could not save to file: \"" + filename + '"');
+            throw std::runtime_error("Could not save to file: \"" + filename.string() + '"');
         }
     } else {
-        throw std::runtime_error("Filename does not have png extension: \"" + filename + '"');
+        throw std::runtime_error("Filename does not have png extension: \"" + filename.string() + '"');
     }
 }
 

@@ -1,7 +1,7 @@
 #pragma once
 #include <Mlib/Audio/OpenAL_al.h>
+#include <Mlib/Os/Utf8_Path.hpp>
 #include <cstdint>
-#include <filesystem>
 #include <memory>
 #include <string>
 
@@ -17,9 +17,9 @@ class AudioBuffer {
 public:
     explicit AudioBuffer(ALuint handle);
     ~AudioBuffer();
-    static std::shared_ptr<AudioBuffer> from_wave(const std::filesystem::path& filename);
-    static std::shared_ptr<AudioBuffer> from_mp3(const std::filesystem::path& filename);
-    static std::shared_ptr<AudioBuffer> from_file(const std::filesystem::path& filename);
+    static std::shared_ptr<AudioBuffer> from_wave(const Utf8Path& filename);
+    static std::shared_ptr<AudioBuffer> from_mp3(const Utf8Path& filename);
+    static std::shared_ptr<AudioBuffer> from_file(const Utf8Path& filename);
     uint32_t nchannels() const;
 
 private:

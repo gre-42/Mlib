@@ -52,7 +52,7 @@ int main(int argc, char** argv) {
             return 0;
         }
         args.assert_num_unnamed(0);
-        auto to_opt = [](const std::string* s) -> FPath {
+        auto to_opt = [](const std::u8string* s) -> FPath {
             if (s == nullptr) {
                 return {};
             }
@@ -66,12 +66,12 @@ int main(int argc, char** argv) {
                     .color = FPath{args.named_value("--template")},
                     .alpha = to_opt(args.try_named_value("--alpha")),
                     .alpha_fac = to_opt(args.try_named_value("--alpha_fac")),
-                    .size = {safe_sto<uint32_t>(args.named_value("--width")), safe_sto<uint32_t>(args.named_value("--height"))},
-                    .stepsize = safe_stof(args.named_value("--stepsize")),
-                    .randsize = safe_stof(args.named_value("--randsize")),
-                    .channels = safe_sto<uint32_t>(args.named_value("--channels")),
+                    .size = {safe_sto<uint32_t>(args.named_svalue("--width")), safe_sto<uint32_t>(args.named_svalue("--height"))},
+                    .stepsize = safe_stof(args.named_svalue("--stepsize")),
+                    .randsize = safe_stof(args.named_svalue("--randsize")),
+                    .channels = safe_sto<uint32_t>(args.named_svalue("--channels")),
                     .add = args.has_named("--add"),
-                    .upsampling = safe_sto<uint32_t>(args.named_value("--upsampling", "1")),
+                    .upsampling = safe_sto<uint32_t>(args.named_svalue("--upsampling", "1")),
                     .ols = args.has_named("--ols")
                         ? std::vector<OlsCoefficient>()
                         : std::optional<std::vector<OlsCoefficient>>{}

@@ -7,11 +7,11 @@ struct ReplacementParameterAndFilename;
 
 class LoadAcLevel: public IAssetLoader {
 public:
-    explicit LoadAcLevel(std::string script_filename);
+    explicit LoadAcLevel(Utf8Path script_filename);
     virtual ~LoadAcLevel() override;
-    virtual std::list<ReplacementParameterAndFilename> try_load(const std::string& path) override;
+    virtual std::list<ReplacementParameterAndFilename> try_load(const Utf8Path& path) override;
 private:
-    std::string script_filename_;
+    Utf8Path script_filename_;
 };
 
 }

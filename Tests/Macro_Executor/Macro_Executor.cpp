@@ -4,6 +4,7 @@
 #include <Mlib/Macro_Executor/Macro_Recorder.hpp>
 #include <Mlib/Macro_Executor/Notifying_Json_Macro_Arguments.hpp>
 #include <Mlib/Os/Env.hpp>
+#include <Mlib/Os/Utf8_Path.hpp>
 #include <iostream>
 
 using namespace Mlib;
@@ -20,7 +21,7 @@ void test_json() {
         linfo() << "Arguments: " << arguments;
         return true;
     };
-    std::vector<std::filesystem::path> search_path{"."};
+    std::vector<Utf8Path> search_path{"."};
     NotifyingJsonMacroArguments global_substitutions;
     AssetReferences asset_references;
     MacroRecorder mr;

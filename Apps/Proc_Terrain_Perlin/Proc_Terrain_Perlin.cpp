@@ -37,11 +37,11 @@ int main(int argc, char** argv) {
     try {
         const auto args = parser.parsed(argc, argv);
 
-        float frequency = safe_stof(args.named_value("--frequency"));
-        int octaves = safe_stoi(args.named_value("--octaves"));
-        unsigned int seed = safe_stou(args.named_value("--seed"));
+        float frequency = safe_stof(args.named_svalue("--frequency"));
+        int octaves = safe_stoi(args.named_svalue("--octaves"));
+        unsigned int seed = safe_stou(args.named_svalue("--seed"));
 
-        Array<float> out{ArrayShape{ safe_stoz(args.named_value("--size")), safe_stoz(args.named_value("--size")) }};
+        Array<float> out{ArrayShape{ safe_stoz(args.named_svalue("--size")), safe_stoz(args.named_svalue("--size")) }};
 
         const siv::PerlinNoise perlin(seed);
         const float fx = float(out.shape(1)) / frequency;
@@ -54,12 +54,12 @@ int main(int argc, char** argv) {
                 out(y, x) = (float)perlin.accumulatedOctaveNoise2D_0_1(float(x) / fx, float(y) / fy, octaves);
             }
         }
-        if (float sigma = safe_stof(args.named_value("--sigma", "0")); sigma != 0) {
+        if (float sigma = safe_stof(args.named_svalue("--sigma", "0")); sigma != 0) {
             out = gaussian_filter_NWE(out, sigma, float{NAN});
         }
-        float dmin = safe_stof(args.named_value("--min", "0"));
-        float dmax = safe_stof(args.named_value("--max", "1"));
-        if (float alpha = safe_stof(args.named_value("--alpha", "1")); alpha != 1) {
+        float dmin = safe_stof(args.named_svalue("--min", "0"));
+        float dmax = safe_stof(args.named_svalue("--max", "1"));
+        if (float alpha = safe_stof(args.named_svalue("--alpha", "1")); alpha != 1) {
             out = out.applied([alpha](float v){return std::pow(v, alpha);});
             out = normalized_and_clipped(out, std::pow(dmin, alpha), std::pow(dmax, alpha));
         } else if ((dmin != 0.f) || (dmax != 1.f)) {
@@ -68,7 +68,7 @@ int main(int argc, char** argv) {
         if (args.has_named("--invert")) {
             out = 1.f - out;
         }
-        if (size_t seamless_overlap = safe_stoz(args.named_value("--seamless_overlap", "0")); seamless_overlap != 0) {
+        if (size_t seamless_overlap = safe_stoz(args.named_svalue("--seamless_overlap", "0")); seamless_overlap != 0) {
             out = clipped(make_symmetric_2d(out, seamless_overlap), 0.f, 1.f);
         }
         StbImage1::from_float_grayscale(out).save_to_file(args.named_value("--out"));

@@ -10,7 +10,7 @@ using namespace Mlib;
 
 template <class TPos>
 std::shared_ptr<ISceneNodeResource> Mlib::load_renderable_kn5(
-    const std::string& file_or_directory,
+    const Utf8Path& file_or_directory,
     const LoadMeshConfig<TPos>& cfg,
     const SceneNodeResources& scene_node_resources,
     IDdsResources* dds_resources,
@@ -27,13 +27,13 @@ std::shared_ptr<ISceneNodeResource> Mlib::load_renderable_kn5(
 
 namespace Mlib {
 template std::shared_ptr<ISceneNodeResource> load_renderable_kn5(
-    const std::string& file_or_directory,
+    const Utf8Path& file_or_directory,
     const LoadMeshConfig<float>&,
     const SceneNodeResources&,
     IDdsResources*,
     IRaceLogic*);
 template std::shared_ptr<ISceneNodeResource> load_renderable_kn5(
-    const std::string& file_or_directory,
+    const Utf8Path& file_or_directory,
     const LoadMeshConfig<CompressedScenePos>&,
     const SceneNodeResources&,
     IDdsResources*,

@@ -1,6 +1,6 @@
 #pragma once
+#include <Mlib/Os/Utf8_Path.hpp>
 #include <cstddef>
-#include <filesystem>
 
 namespace Mlib {
 
@@ -10,8 +10,8 @@ enum class FilterExtension;
 enum class TargetShapeMode;
 
 void resize_file(
-    const std::filesystem::path& source,
-    const std::filesystem::path& dest,
+    const Utf8Path& source,
+    const Utf8Path& dest,
     const FixedArray<size_t, 2>& target_size,
     FilterExtension filter_extension,
     TargetShapeMode target_shape_mode,

@@ -3,6 +3,7 @@
 #include <Mlib/Json/Base.hpp>
 #include <Mlib/Math/Fixed_Point_Number.hpp>
 #include <Mlib/Math/Orderable_Fixed_Array.hpp>
+#include <Mlib/Os/Utf8_Path.hpp>
 #include <map>
 #include <string_view>
 #include <unordered_map>
@@ -104,6 +105,8 @@ auto get_vector_non_null(const nlohmann::json& j, const TOperation& op) {
     }
     return get_vector<TData>(j, op);
 }
+
+void from_json(const nlohmann::json& j, Utf8Path& v);
 
 std::string get_multiline_string(const nlohmann::json& j);
 void validate(const nlohmann::json& j, const std::set<std::string_view>& known_keys, std::string_view prefix = "");

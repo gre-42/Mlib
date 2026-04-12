@@ -24,9 +24,9 @@ int main(int argc, char** argv) {
         auto im_in = StbImage3::load_from_file(args.unnamed_value(0));
         auto im_out = StbImage1{ im_in.shape() };
         short color[3] = {
-            safe_stox<short>(args.named_value("-r")),
-            safe_stox<short>(args.named_value("-g")),
-            safe_stox<short>(args.named_value("-b"))};
+            safe_stox<short>(args.named_svalue("-r")),
+            safe_stox<short>(args.named_svalue("-g")),
+            safe_stox<short>(args.named_svalue("-b"))};
         stb_generate_color_mask(
             &im_in.flat_begin()->r,
             im_out.flat_begin(),
@@ -34,8 +34,8 @@ int main(int argc, char** argv) {
             integral_cast<int>(im_in.shape(0)),
             3,
             color,
-            safe_stox<unsigned short>(args.named_value("--near")),
-            safe_stox<unsigned short>(args.named_value("--far")));
+            safe_stox<unsigned short>(args.named_svalue("--near")),
+            safe_stox<unsigned short>(args.named_svalue("--far")));
         if (args.has_named("--invert")) {
             stb_transform(
                 im_out.flat_begin(),

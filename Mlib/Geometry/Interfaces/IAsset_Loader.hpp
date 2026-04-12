@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Os/Utf8_Path.hpp>
 #include <list>
 #include <string>
 
@@ -9,7 +10,7 @@ struct ReplacementParameterAndFilename;
 class IAssetLoader {
 public:
     virtual ~IAssetLoader() = default;
-    virtual std::list<ReplacementParameterAndFilename> try_load(const std::string& path) = 0;
+    virtual std::list<ReplacementParameterAndFilename> try_load(const Utf8Path& path) = 0;
 };
 
 }

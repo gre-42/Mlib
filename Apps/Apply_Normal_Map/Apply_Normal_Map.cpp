@@ -88,10 +88,10 @@ int main(int argc, char** argv) {
         }
         auto in_color = StbImage3::load_from_file(args.named_value("--color"));
         RenderConfig render_config{
-            .windowed_width = args.has_named_value("--width") ? safe_stoi(args.named_value("--width")) : (int)in_color.shape(1),
-            .windowed_height = args.has_named_value("--height") ? safe_stoi(args.named_value("--height")) : (int)in_color.shape(0)};
+            .windowed_width = args.has_named_value("--width") ? safe_stoi(args.named_svalue("--width")) : (int)in_color.shape(1),
+            .windowed_height = args.has_named_value("--height") ? safe_stoi(args.named_svalue("--height")) : (int)in_color.shape(0)};
         InputConfig input_config;
-        FixedTimeSleeper sleeper{ safe_stof(args.named_value("--sleep_dt", "0.01667")) };
+        FixedTimeSleeper sleeper{ safe_stof(args.named_svalue("--sleep_dt", "0.01667")) };
         SetFps set_fps{ &sleeper };
         Render render{
             render_config,
@@ -121,7 +121,7 @@ int main(int argc, char** argv) {
             .z_order = 0 };
         RenderingContextGuard rcg{ primary_rendering_context };
         Scene scene{ "main_scene" };
-        std::string light_configuration = args.named_value("--light_configuration", "one");
+        std::string light_configuration = args.named_svalue("--light_configuration", "one");
         auto scene_node = make_unique_scene_node();
         {
             const auto* histogram = args.try_named_value("--histogram");
@@ -148,10 +148,10 @@ int main(int argc, char** argv) {
                 Colors::WHITE,
                 Colors::WHITE,
                 Colors::WHITE,
-                FixedArray<float, 2>{0.f, 0.f} * safe_stof(args.named_value("--uv_scale", "1")),
-                FixedArray<float, 2>{1.f, 0.f} * safe_stof(args.named_value("--uv_scale", "1")),
-                FixedArray<float, 2>{1.f, 1.f} * safe_stof(args.named_value("--uv_scale", "1")),
-                FixedArray<float, 2>{0.f, 1.f} * safe_stof(args.named_value("--uv_scale", "1")));
+                FixedArray<float, 2>{0.f, 0.f} * safe_stof(args.named_svalue("--uv_scale", "1")),
+                FixedArray<float, 2>{1.f, 0.f} * safe_stof(args.named_svalue("--uv_scale", "1")),
+                FixedArray<float, 2>{1.f, 1.f} * safe_stof(args.named_svalue("--uv_scale", "1")),
+                FixedArray<float, 2>{0.f, 1.f} * safe_stof(args.named_svalue("--uv_scale", "1")));
             auto cva = std::make_shared<ColoredVertexArrayResource>(tl.triangle_array());
             scene_node_resources.add_resource(VariableAndHash<std::string>{ "tl" }, cva);
             scene_node_resources.instantiate_child_renderable(
@@ -170,13 +170,13 @@ int main(int argc, char** argv) {
                 VariableAndHash<std::string>{ "light_node0" },
                 make_unique_scene_node(
                     FixedArray<ScenePos, 3>{
-                        safe_stox<ScenePos>(args.named_value("--light_x", "0")),
-                        safe_stox<ScenePos>(args.named_value("--light_y", "50")),
-                        safe_stox<ScenePos>(args.named_value("--light_z", "0"))},
+                        safe_stox<ScenePos>(args.named_svalue("--light_x", "0")),
+                        safe_stox<ScenePos>(args.named_svalue("--light_y", "50")),
+                        safe_stox<ScenePos>(args.named_svalue("--light_z", "0"))},
                     FixedArray<float, 3>{
-                        safe_stof(args.named_value("--light_angle_x", "-45")) * degrees,
-                        safe_stof(args.named_value("--light_angle_y", "0")) * degrees,
-                        safe_stof(args.named_value("--light_angle_z", "0")) * degrees},
+                        safe_stof(args.named_svalue("--light_angle_x", "-45")) * degrees,
+                        safe_stof(args.named_svalue("--light_angle_y", "0")) * degrees,
+                        safe_stof(args.named_svalue("--light_angle_z", "0")) * degrees},
                     1.f,
                     std::nullopt,
                     PoseInterpolationMode::DISABLED),

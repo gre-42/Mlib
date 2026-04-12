@@ -49,7 +49,7 @@ int main(int argc, char** argv) {
         if (!all(height.shape() == color.shape().erased_first())) {
             throw std::runtime_error("Depth and image shape differ");
         }
-        for (size_t i = 0; i < safe_stoz(args.named_value("--down_sample", "0")); ++i) {
+        for (size_t i = 0; i < safe_stoz(args.named_svalue("--down_sample", "0")); ++i) {
             height.move() = down_sample2(height);
             color.move() = multichannel_down_sample2(color);
         }
@@ -60,7 +60,7 @@ int main(int argc, char** argv) {
         std::atomic_size_t num_renderings = SIZE_MAX;
         RenderConfig render_config;
         InputConfig input_config;
-        FixedTimeSleeper sleeper{ safe_stof(args.named_value("--sleep_dt", "0.01667")) };
+        FixedTimeSleeper sleeper{ safe_stof(args.named_svalue("--sleep_dt", "0.01667")) };
         SetFps set_fps{ &sleeper };
         Render render{
             render_config,
@@ -89,9 +89,9 @@ int main(int argc, char** argv) {
         render_height_map(
             render,
             color,
-            height * safe_stof(args.named_value("--z_scale", "0.001")),
-            np.normalization_matrix().pre_scaled(safe_stof(args.named_value("--xy_scale", "1"))),
-            normal_type_from_string(args.named_value("--normal_type", "face")),
+            height * safe_stof(args.named_svalue("--z_scale", "0.001")),
+            np.normalization_matrix().pre_scaled(safe_stof(args.named_svalue("--xy_scale", "1"))),
+            normal_type_from_string(args.named_svalue("--normal_type", "face")),
             args.has_named("--rotate"));
         if (unhandled_exceptions_occured()) {
             print_unhandled_exceptions();

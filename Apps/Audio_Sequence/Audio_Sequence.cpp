@@ -49,8 +49,8 @@ int main(int argc, char** argv) {
 
         list_audio_devices(linfo(LogFlags::NO_APPEND_NEWLINE).ref());
         AudioDevice device;
-        AudioContext context{device, safe_stou(args.named_value("--audio_frequency", "0"))};
-        std::string meta_filename = args.unnamed_value(0);
+        AudioContext context{device, safe_stou(args.named_svalue("--audio_frequency", "0"))};
+        auto meta_filename = Utf8Path{args.unnamed_value(0)};
 
         auto items = load_audio_file_sequence(meta_filename);
         std::list<AudioBufferAndFrequency> buffers;
@@ -60,24 +60,24 @@ int main(int argc, char** argv) {
                 .frequency = i.frequency});
         }
         AudioBufferSequence buffer_seq{std::vector(buffers.begin(), buffers.end())};
-        float dgain = safe_stof(args.named_value("--dgain", "0.02"));
-        float dt_fade = safe_stof(args.named_value("--dt_fade", "0.01"));
-        float dt_append = safe_stof(args.named_value("--dt_append", "0.1"));
-        float pitch = safe_stof(args.named_value("--pitch", "1"));
-        float gain_factor = safe_stof(args.named_value("--gain", "1"));
+        float dgain = safe_stof(args.named_svalue("--dgain", "0.02"));
+        float dt_fade = safe_stof(args.named_svalue("--dt_fade", "0.01"));
+        float dt_append = safe_stof(args.named_svalue("--dt_append", "0.1"));
+        float pitch = safe_stof(args.named_svalue("--pitch", "1"));
+        float gain_factor = safe_stof(args.named_svalue("--gain", "1"));
         auto paused = [](){return false;};
         EventEmitter paused_changed;
         CrossFade cross_fade{ PositionRequirement::POSITION_NOT_REQUIRED, paused, paused_changed, dgain };
         cross_fade.start_background_thread(dt_fade);
         for (float f : Linspace<float>{
-            safe_stof(args.named_value("--f0")),
-            safe_stof(args.named_value("--f1")),
-            safe_stoz(args.named_value("--niter", "100"))})
+            safe_stof(args.named_svalue("--f0")),
+            safe_stof(args.named_svalue("--f1")),
+            safe_stoz(args.named_svalue("--niter", "100"))})
         {
             auto& bf = buffer_seq.get_buffer_and_frequency(
                 f,
                 pitch_adjustment_strategy_from_string(
-                    args.named_value("--pitch_adjustment", "up_sampling")));
+                    args.named_svalue("--pitch_adjustment", "up_sampling")));
             if (args.has_named("--verbose")) {
                 linfo() << "Requested frequency: " << f << "Hz. Template frequency: " << bf.frequency;
             }

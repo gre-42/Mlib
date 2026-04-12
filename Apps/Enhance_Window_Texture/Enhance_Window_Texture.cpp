@@ -47,15 +47,16 @@ int main(int argc, char **argv) {
             }
         }
     }
+    auto out_path = Utf8Path{args.named_value("--out")};
     if (!stbi_write_png(
-        args.named_value("--out").c_str(),
+        out_path.c_str(),
         out.width,
         out.height,
         out.nrChannels,
         out.data(),
         0))
     {
-        throw std::runtime_error("Could not write " + args.named_value("--out"));
+        throw std::runtime_error("Could not write \"" + out_path.string() + '"');
     }
     return 0;
 }

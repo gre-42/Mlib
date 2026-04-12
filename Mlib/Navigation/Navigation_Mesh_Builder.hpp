@@ -2,6 +2,7 @@
 #include <Mlib/Navigation/InputGeom.hpp>
 #include <Mlib/Navigation/Sample_SoloMesh.hpp>
 #include <Mlib/Navigation/StderrContext.hpp>
+#include <Mlib/Os/Utf8_Path.hpp>
 #include <string>
 
 namespace Mlib {
@@ -17,7 +18,7 @@ struct NavigationMeshConfig {
 class NavigationMeshBuilder {
 public:
     explicit NavigationMeshBuilder(
-        const std::string& filename,
+        const Utf8Path& filename,
         const NavigationMeshConfig& cfg);
     explicit NavigationMeshBuilder(
         const IndexedFaceSet<float, float, size_t>& indexed_face_set,

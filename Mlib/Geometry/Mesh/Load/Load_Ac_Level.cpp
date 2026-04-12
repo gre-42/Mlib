@@ -6,26 +6,24 @@
 #include <Mlib/Json/Misc.hpp>
 #include <Mlib/Macro_Executor/Replacement_Parameter.hpp>
 #include <Mlib/Os/Os.hpp>
-#include <filesystem>
 #include <stdexcept>
 
-namespace fs = std::filesystem;
 using namespace Mlib;
 
-LoadAcLevel::LoadAcLevel(std::string script_filename)
+LoadAcLevel::LoadAcLevel(Utf8Path script_filename)
     : script_filename_{ std::move(script_filename) }
 {}
 
 LoadAcLevel::~LoadAcLevel() = default;
 
-std::list<ReplacementParameterAndFilename> LoadAcLevel::try_load(const std::string& path) {
+std::list<ReplacementParameterAndFilename> LoadAcLevel::try_load(const Utf8Path& path) {
     std::list<ReplacementParameterAndFilename> result;
     auto add_level = [this, &result](
-        const fs::path& stage_filename,
-        const fs::path& preview_filename,
-        const fs::path& ui_track_filename,
-        const fs::path& minimap_filename,
-        const fs::path& minimap_ini_filename,
+        const Utf8Path& stage_filename,
+        const Utf8Path& preview_filename,
+        const Utf8Path& ui_track_filename,
+        const Utf8Path& minimap_filename,
+        const Utf8Path& minimap_ini_filename,
         const std::string& level_id)
     {
         nlohmann::json j;
@@ -111,56 +109,59 @@ std::list<ReplacementParameterAndFilename> LoadAcLevel::try_load(const std::stri
             },
             .filename = script_filename_ });
     };
-    for (const auto& level_dir : list_dir(path)) {
-        auto ui_dir = level_dir / fs::path{ "ui" };
+    for (const auto& level_dir_entry : list_dir(path)) {
+        auto level_dir = Utf8Path{level_dir_entry.path()};
+        auto ui_dir = level_dir / "ui";
         if (!path_exists(ui_dir)) {
             continue;
         }
         // Single stage vs. multi stage
-        if (auto ui_track_filename = ui_dir / fs::path{ "ui_track.json" }; path_exists(ui_track_filename))
+        if (auto ui_track_filename = ui_dir / "ui_track.json"; path_exists(ui_track_filename))
         {
             // .ini file vs. single .kn5 file
-            if (auto models_filename = level_dir / fs::path{ "models.ini" }; path_exists(models_filename)) {
-                auto level_id = level_dir.path().filename();
+            if (auto models_filename = level_dir / "models.ini"; path_exists(models_filename)) {
+                auto level_id = level_dir.filename();
                 add_level(
                     models_filename,
-                    ui_dir / fs::path{ "preview.png" },
+                    ui_dir / "preview.png",
                     ui_track_filename,
-                    level_dir / fs::path{ "map.png" },
-                    level_dir / fs::path{ "data" } / fs::path{ "map.ini" },
+                    level_dir / "map.png",
+                    level_dir / "data" / "map.ini",
                     level_id.string());
             } else {
-                std::list<fs::path> kn5_candidates;
-                for (const auto& kn5_file : list_dir(level_dir)) {
-                    if (kn5_file.path().extension() == ".kn5") {
+                std::list<Utf8Path> kn5_candidates;
+                for (const auto& kn5_file_entry : list_dir(level_dir)) {
+                    auto kn5_file = Utf8Path::from_path(kn5_file_entry);
+                    if (kn5_file.extension() == ".kn5") {
                         kn5_candidates.push_back(kn5_file);
                     }
                 }
                 if (kn5_candidates.size() != 1) {
-                    throw std::runtime_error("Did not find exactly one .kn5-file in \"" + level_dir.path().string() + '"');
+                    throw std::runtime_error("Did not find exactly one .kn5-file in \"" + level_dir.string() + '"');
                 }
                 add_level(
                     kn5_candidates.front(),
-                    ui_dir / fs::path{ "preview.png" },
+                    ui_dir / "preview.png",
                     ui_track_filename,
-                    level_dir / fs::path{ "map.png" },
-                    level_dir / fs::path{ "data" } / fs::path{ "map.ini" },
+                    level_dir / "map.png",
+                    level_dir / "data" / "map.ini",
                     kn5_candidates.front().stem().string());
             }
         } else {
-            for (const auto& stage_dir : list_dir(ui_dir)) {
-                if (!is_listable(stage_dir)) {
+            for (const auto& stage_dir_entry : list_dir(ui_dir)) {
+                if (!is_listable(stage_dir_entry)) {
                     continue;
                 }
-                auto stage = stage_dir.path().filename();
-                if (auto ui_track_filename = stage_dir / fs::path{ "ui_track.json" }; path_exists(ui_track_filename)) {
-                    auto level_id = level_dir.path().filename().string() + '_' + stage.string();
+                auto stage_dir = Utf8Path{stage_dir_entry.path()};
+                auto stage = stage_dir.filename();
+                if (auto ui_track_filename = stage_dir / "ui_track.json"; path_exists(ui_track_filename)) {
+                    auto level_id = level_dir.filename().string() + '_' + stage.string();
                     add_level(
-                        (level_dir / fs::path{ "models_" + stage.string() }).string() + ".ini",
-                        stage_dir / fs::path{ "preview.png" },
+                        level_dir / ("models_" + stage.string()) + ".ini",
+                        stage_dir / "preview.png",
                         ui_track_filename,
-                        level_dir / stage / fs::path{ "map.png" },
-                        level_dir / stage / fs::path{ "data" } / fs::path{ "map.ini" },
+                        level_dir / stage / "map.png",
+                        level_dir / stage / "data" / "map.ini",
                         level_id);
                 }
             }

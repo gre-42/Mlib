@@ -24,16 +24,16 @@ int main(int argc, char** argv) {
 
         list_audio_devices(linfo(LogFlags::NO_APPEND_NEWLINE).ref());
         AudioDevice device;
-        AudioContext context{device, safe_stou(args.named_value("--audio_frequency", "0"))};
+        AudioContext context{device, safe_stou(args.named_svalue("--audio_frequency", "0"))};
         std::list<std::shared_ptr<AudioBuffer>> buffers;
         for (const auto& l : args.unnamed_values()) {
             buffers.emplace_back(AudioBuffer::from_wave(l));
         }
-        float dgain = safe_stof(args.named_value("--dgain"));
-        float dt_fade = safe_stof(args.named_value("--dt_fade"));
-        float dt_append = safe_stof(args.named_value("--dt_append"));
-        float pitch = safe_stof(args.named_value("--pitch", "1"));
-        float gain_factor = safe_stof(args.named_value("--gain", "1"));
+        float dgain = safe_stof(args.named_svalue("--dgain"));
+        float dt_fade = safe_stof(args.named_svalue("--dt_fade"));
+        float dt_append = safe_stof(args.named_svalue("--dt_append"));
+        float pitch = safe_stof(args.named_svalue("--pitch", "1"));
+        float gain_factor = safe_stof(args.named_svalue("--gain", "1"));
         auto paused = [](){return false;};
         EventEmitter paused_changed;
         CrossFade cross_fade{ PositionRequirement::POSITION_NOT_REQUIRED, paused, paused_changed, dgain };

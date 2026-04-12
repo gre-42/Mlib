@@ -1,8 +1,8 @@
 #pragma once
-#include <filesystem>
+#include <Mlib/Os/Utf8_Path.hpp>
 
 namespace Mlib {
 
-std::filesystem::path weakly_canonical_preserve_symlinks(const std::filesystem::path& path);
+Utf8Path weakly_canonical_preserve_symlinks(const Utf8Path& path);
 
 }

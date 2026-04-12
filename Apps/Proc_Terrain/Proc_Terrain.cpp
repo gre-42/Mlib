@@ -73,38 +73,39 @@ int main(int argc, char** argv) {
         // PgmImage res = PgmImage::from_float(heightmap);
         // PgmImage res = PgmImage::from_float(noise);
         // res.save_to_file(args.named_value("--result"));
-        float alpha = safe_stof(args.named_value("--alpha"));
+        float alpha = safe_stof(args.named_svalue("--alpha"));
         Array<float> grf = gaussian_random_field(
             [alpha](float k){return std::pow(k, alpha);},
-            safe_stoz(args.named_value("--size")),
-            safe_stou(args.named_value("--seed")));
+            safe_stoz(args.named_svalue("--size")),
+            safe_stou(args.named_svalue("--seed")));
         grf *= (float)std::sqrt(grf.nelements());
         // lerr() << min(grf) << " " << max(grf);
-        grf = normalized_and_clipped(grf, safe_stof(args.named_value("--min")), safe_stof(args.named_value("--max")));
-        if (float scale = safe_stof(args.named_value("--scale", "1")); scale != 1)
+        grf = normalized_and_clipped(grf, safe_stof(args.named_svalue("--min")), safe_stof(args.named_svalue("--max")));
+        if (float scale = safe_stof(args.named_svalue("--scale", "1")); scale != 1)
         {
             grf *= scale;
         }
-        if (float offset = safe_stof(args.named_value("--offset", "0")); offset != 0)
+        if (float offset = safe_stof(args.named_svalue("--offset", "0")); offset != 0)
         {
             grf += offset;
         }
-        if (float beta = safe_stof(args.named_value("--beta", "1")); beta != 1)
+        if (float beta = safe_stof(args.named_svalue("--beta", "1")); beta != 1)
         {
             grf = grf.applied([&](float v){return std::pow(v, beta);});
         }
         grf = normalized_and_clipped(grf);
-        if (float post_scale = safe_stof(args.named_value("--post_scale", "1")); post_scale != 1) {
+        if (float post_scale = safe_stof(args.named_svalue("--post_scale", "1")); post_scale != 1) {
             grf *= post_scale;
         }
-        if (float post_offset = safe_stof(args.named_value("--post_offset", "0")); post_offset != 0) {
+        if (float post_offset = safe_stof(args.named_svalue("--post_offset", "0")); post_offset != 0) {
             grf += post_offset;
         }
-        if (args.has_named_value("--grf")) {
-            if (args.named_value("--grf").ends_with(".pgm")) {
-                PgmImage::from_float(grf).save_to_file(args.named_value("--grf"));
+        if (auto grf_string = args.try_named_value("--grf")) {
+            auto grf_path = Utf8Path{*grf_string};
+            if (grf_path.ends_with(".pgm")) {
+                PgmImage::from_float(grf).save_to_file(grf_path);
             } else {
-                StbImage3::from_rgb(meters_to_terrarium(grf)).save_to_file(args.named_value("--grf"));
+                StbImage3::from_rgb(meters_to_terrarium(grf)).save_to_file(grf_path);
             }
         }
         if (args.has_named_value("--binary_grf")) {

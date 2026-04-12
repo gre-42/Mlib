@@ -124,15 +124,15 @@ Model Mlib::Grs::load_grs(std::istream& istr, IoVerbosity verbosity) {
     return result;
 }
 
-Model Mlib::Grs::load_grs(const std::string& filename, IoVerbosity verbosity) {
+Model Mlib::Grs::load_grs(const Utf8Path& filename, IoVerbosity verbosity) {
     auto f = create_ifstream(filename, std::ios::binary);
     if (f->fail()) {
-        throw std::runtime_error("Could not open \"" + filename + '"');
+        throw std::runtime_error("Could not open \"" + filename.string() + '"');
     }
     try {
         return load_grs(*f, verbosity);
     } catch (const std::runtime_error& e) {
-        throw std::runtime_error("Error reading from file \"" + filename + "\": " + e.what());
+        throw std::runtime_error("Error reading from file \"" + filename.string() + "\": " + e.what());
     }
 }
 

@@ -111,8 +111,9 @@ find_package(SDL2)
 # MlibOpenGL contains glad_gl.cpp and glad_vulkan.cpp
 find_package(Vulkan)
 find_package(OpenCV OPTIONAL_COMPONENTS features2d)
+find_package(ICU REQUIRED COMPONENTS uc i18n)
 # The "system" component was required by Asio, but it is header-only now.
-find_package(Boost CONFIG REQUIRED)
+find_package(Boost CONFIG REQUIRED COMPONENTS regex)
 if (WITH_OPENSSL)
     find_package(OpenSSL REQUIRED)
 endif()

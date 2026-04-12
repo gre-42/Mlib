@@ -1,5 +1,5 @@
 #pragma once
-#include <filesystem>
+#include <Mlib/Os/Utf8_Path.hpp>
 #include <functional>
 #include <memory>
 #include <ostream>
@@ -56,8 +56,8 @@ public:
 namespace Mlib {
 
 void compress_file(
-    const std::filesystem::path& source,
-    const std::filesystem::path& destination);
+    const Utf8Path& source,
+    const Utf8Path& destination);
 
 std::string compressed_string(const std::string& source);
 

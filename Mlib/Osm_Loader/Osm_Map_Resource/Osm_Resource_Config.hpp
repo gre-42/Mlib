@@ -13,6 +13,7 @@
 #include <Mlib/OpenGL/Renderables/Triangle_Sampler/Terrain_Style.hpp>
 #include <Mlib/OpenGL/Renderables/Triangle_Sampler/Terrain_Type.hpp>
 #include <Mlib/OpenGL/Renderables/Triangle_Sampler/Triangle_Sampler_Resource_Config.hpp>
+#include <Mlib/Os/Utf8_Path.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Barrier_Style.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Building.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Facade_Texture.hpp>
@@ -25,7 +26,6 @@
 #include <chrono>
 #include <cmath>
 #include <cstdint>
-#include <filesystem>
 #include <list>
 #include <map>
 #include <nlohmann/json_fwd.hpp>
@@ -83,7 +83,7 @@ struct OsmResourceConfig {
     OsmResourceConfig& operator = (const OsmResourceConfig&) = delete;
     OsmResourceConfig();
     ~OsmResourceConfig();
-    std::vector<std::filesystem::path> filenames;
+    std::vector<Utf8Path> filenames;
     std::string heightmap;
     std::string heightmap_mask;
     size_t heightmap_extension = 0;
@@ -123,8 +123,8 @@ struct OsmResourceConfig {
     float racing_line_width_x = 3.0f;
     float racing_line_scale_y = 0.1f;
     FPath racing_line_texture;
-    std::filesystem::path racing_line_track;
-    std::filesystem::path racing_line_playback;
+    Utf8Path racing_line_track;
+    Utf8Path racing_line_playback;
     FPath air_support_texture;
     std::vector<SocleTexture> socle_textures;
     std::vector<FacadeTexture> entrance_textures;

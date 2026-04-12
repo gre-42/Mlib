@@ -31,4 +31,4 @@ else()
     my_add_library(MlibOs "0" "" "${excluded_files}")
 endif()
 
-target_link_libraries(MlibOs PUBLIC MlibStrings)
+target_link_libraries(MlibOs PUBLIC MlibStrings Boost::regex ICU::i18n ICU::uc)

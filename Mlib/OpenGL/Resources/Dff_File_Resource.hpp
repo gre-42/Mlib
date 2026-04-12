@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Os/Utf8_Path.hpp>
 #include <iosfwd>
 #include <memory>
 #include <string>
@@ -21,7 +22,7 @@ std::shared_ptr<ISceneNodeResource> load_renderable_dff(
 
 template <class TPos>
 std::shared_ptr<ISceneNodeResource> load_renderable_dff(
-    const std::string& filename,
+    const Utf8Path& filename,
     const LoadMeshConfig<TPos>& cfg,
     const SceneNodeResources& scene_node_resources,
     const DrawDistanceDb& dddb);

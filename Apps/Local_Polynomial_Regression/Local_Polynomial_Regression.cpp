@@ -5,14 +5,15 @@
 #include <Mlib/Io/Arg_Parser.hpp>
 #include <Mlib/Misc/Floating_Point_Exceptions.hpp>
 #include <Mlib/Os/Os.hpp>
+#include <Mlib/Os/Utf8_Path.hpp>
 #include <Mlib/Strings/String_View_To_Number.hpp>
 #include <iostream>
 
 using namespace Mlib;
 
 void lpr(
-    const std::string& source,
-    const std::string& destination,
+    const Utf8Path& source,
+    const Utf8Path& destination,
     double sigma,
     size_t degree,
     FilterExtension fc)
@@ -44,8 +45,8 @@ int main(int argc, char **argv) {
         lpr(
             args.unnamed_value(0),
             args.unnamed_value(1),
-            safe_stod(args.named_value("--sigma")),
-            safe_stoz(args.named_value("--degree")),
+            safe_stod(args.named_svalue("--sigma")),
+            safe_stoz(args.named_svalue("--degree")),
             args.has_named("--periodic")
                 ? FilterExtension::PERIODIC
                 : FilterExtension::NONE);

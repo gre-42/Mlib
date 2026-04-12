@@ -1,6 +1,6 @@
 #pragma once
+#include <Mlib/Os/Utf8_Path.hpp>
 #include <Mlib/Strings/String_View_To_Number.hpp>
-#include <filesystem>
 #include <iosfwd>
 #include <list>
 #include <map>
@@ -11,7 +11,7 @@ namespace Mlib {
 
 class IniParser {
 public:
-    explicit IniParser(const std::filesystem::path& filename);
+    explicit IniParser(const Utf8Path& filename);
     const std::string& get(const std::string& section, const std::string& key) const;
     template <class T>
     T get(const std::string& section, const std::string& key) const {

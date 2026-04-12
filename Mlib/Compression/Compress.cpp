@@ -83,8 +83,8 @@ CompressedOStream::~CompressedOStream() = default;
 #endif
 
 void Mlib::compress_file(
-    const std::filesystem::path& source,
-    const std::filesystem::path& destination)
+    const Utf8Path& source,
+    const Utf8Path& destination)
 {
     auto i = create_ifstream(source, std::ios::binary);
     if (i->fail()) {

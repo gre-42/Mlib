@@ -1,5 +1,5 @@
 #pragma once
-#include <filesystem>
+#include <Mlib/Os/Utf8_Path.hpp>
 #include <iosfwd>
 #include <memory>
 
@@ -7,9 +7,9 @@ namespace Mlib {
 
 class CompressedFile {
 public:
-    explicit CompressedFile(std::filesystem::path p);
-    CompressedFile sibling(const std::filesystem::path& filename) const;
-    std::filesystem::path path() const;
+    explicit CompressedFile(Utf8Path p);
+    CompressedFile sibling(const Utf8Path& filename) const;
+    Utf8Path path() const;
     bool has_any_extension(std::initializer_list<std::string> candidates) const;
     template <class... TArgs>
     bool has_any_extension(TArgs&&... args) const {
@@ -17,7 +17,7 @@ public:
     }
     std::unique_ptr<std::istream> decompressed_ifstream() const;
 private:
-    std::filesystem::path path_;
+    Utf8Path path_;
 };
 
 }

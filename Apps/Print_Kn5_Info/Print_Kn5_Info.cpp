@@ -1,8 +1,9 @@
 #include <Mlib/Geometry/Mesh/Load/Load_Kn5.hpp>
 #include <Mlib/Io/Arg_Parser.hpp>
 #include <Mlib/Os/Os.hpp>
+#include <Mlib/Os/Utf8_Path.hpp>
 #include <Mlib/Regex/Regex_Select.hpp>
-#include <filesystem>
+#include <boost/regex/icu.hpp>
 
 using namespace Mlib;
 
@@ -14,16 +15,17 @@ int main(int argc, char **argv) {
     try {
         const auto args = parser.parsed(argc, argv);
         args.assert_num_unnamed_atleast(1);
-        for (const auto& file : args.unnamed_values()) {
+        for (const auto& file_string : args.unnamed_values()) {
+            auto file = Utf8Path{file_string};
             linfo() << "Processing file " << file;
             auto kn5 = load_kn5(file, true /* verbose */);
             if (args.has_named_value("--export")) {
-                DECLARE_REGEX(re, args.named_value("--export"));
+                auto re = boost::make_u32regex(args.named_value("--export"));
                 for (const auto& [name, data] : kn5.textures) {
-                    if (!Mlib::re::regex_search(*name, re)) {
+                    if (!boost::u32regex_search(*name, re)) {
                         continue;
                     }
-                    auto tex_filename = std::filesystem::path{ "textures" } / *name;
+                    auto tex_filename = Utf8Path{ "textures" } / *name;
                     auto f = create_ofstream(tex_filename, std::ios::binary);
                     if (f->fail()) {
                         throw std::runtime_error("Could not open file for write: \"" + tex_filename.string() + '"');

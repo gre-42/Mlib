@@ -2,6 +2,6 @@
 
 using namespace Mlib;
 
-std::filesystem::path Mlib::weakly_canonical_preserve_symlinks(const std::filesystem::path& path) {
-    return std::filesystem::absolute(path).lexically_normal();
+Utf8Path Mlib::weakly_canonical_preserve_symlinks(const Utf8Path& path) {
+    return path.absolute().lexically_normal();
 }

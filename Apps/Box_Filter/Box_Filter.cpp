@@ -1,14 +1,15 @@
 #include <Mlib/Images/Filters/Box_Filter.hpp>
 #include <Mlib/Images/StbImage3.hpp>
 #include <Mlib/Io/Arg_Parser.hpp>
+#include <Mlib/Os/Utf8_Path.hpp>
 #include <Mlib/Strings/String_View_To_Number.hpp>
 #include <iostream>
 
 using namespace Mlib;
 
 void box_filter_file(
-    const std::string& source,
-    const std::string& destination,
+    const Utf8Path& source,
+    const Utf8Path& destination,
     size_t width,
     size_t niter)
 {
@@ -32,7 +33,7 @@ int main(int argc, char **argv) {
     box_filter_file(
         args.unnamed_value(0),
         args.unnamed_value(1),
-        safe_stoz(args.named_value("--width")),
-        safe_stoz(args.named_value("--niter")));
+        safe_stoz(args.named_svalue("--width")),
+        safe_stoz(args.named_svalue("--niter")));
     return 0;
 }

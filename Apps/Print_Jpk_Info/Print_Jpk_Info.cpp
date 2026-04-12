@@ -2,8 +2,9 @@
 #include <Mlib/Io/Arg_Parser.hpp>
 #include <Mlib/Io/Binary.hpp>
 #include <Mlib/Os/Os.hpp>
+#include <Mlib/Os/Utf8_Path.hpp>
 #include <Mlib/Regex/Regex_Select.hpp>
-#include <filesystem>
+#include <boost/regex/icu.hpp>
 
 using namespace Mlib;
 
@@ -15,16 +16,17 @@ int main(int argc, char **argv) {
     try {
         const auto args = parser.parsed(argc, argv);
         args.assert_num_unnamed_atleast(1);
-        for (const auto& file : args.unnamed_values()) {
+        for (const auto& file_string : args.unnamed_values()) {
+            auto file = Utf8Path(file_string);
             linfo() << "Processing file " << file;
             auto reader = JpkReader::load_from_file(file, IoVerbosity::METADATA);
             if (args.has_named_value("--export")) {
-                DECLARE_REGEX(re, args.named_value("--export"));
+                auto re = boost::make_u32regex(args.named_value("--export"));
                 for (const auto& name : reader->names()) {
-                    if (!Mlib::re::regex_search(*name, re)) {
+                    if (!boost::u32regex_search(*name, re)) {
                         continue;
                     }
-                    auto element_filename = std::filesystem::path{ "jpk_element" } / *name;
+                    auto element_filename = Utf8Path{ "jpk_element" } / *name;
                     auto f = create_ofstream(element_filename, std::ios::binary);
                     if (f->fail()) {
                         throw std::runtime_error("Could not open file for write: \"" + element_filename.string() + '"');
@@ -34,7 +36,7 @@ int main(int argc, char **argv) {
                         char c;
                         *s.stream >> c;
                         if (s.stream->fail()) {
-                            throw std::runtime_error("Could not read from \"" + file + '"');
+                            throw std::runtime_error("Could not read from \"" + file.string() + '"');
                         }
                         *f << c;
                         if (f->fail()) {

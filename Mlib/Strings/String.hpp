@@ -1,6 +1,8 @@
 #pragma once
 #include <Mlib/Regex/Regex_Select.hpp>
+#include <boost/regex/icu.hpp>
 #include <compare>
+#include <filesystem>
 #include <list>
 #include <set>
 #include <string>
@@ -15,6 +17,7 @@ namespace Mlib {
 
 std::strong_ordering operator <=> (const std::string& a, const std::string& b);
 std::list<std::string> string_to_list(const std::string& str, const Mlib::re::cregex& re, size_t expected_length = SIZE_MAX);
+std::list<std::u8string> string_to_list(const std::u8string& str, const boost::u32regex& re, size_t expected_length = SIZE_MAX);
 std::list<std::string> string_to_list(const std::string& str, size_t expected_length = SIZE_MAX);
 std::vector<std::string> string_to_vector(const std::string& str);
 std::set<std::string> string_to_set(const std::string& str);
@@ -44,12 +47,12 @@ std::string join(const std::string& delimiter, const TContainer& lst, const TOpe
     return res;
 }
 
-template <class TOperation>
-auto string_to_vector(const std::string& str, const Mlib::re::cregex& re, const TOperation& op, size_t expected_length = SIZE_MAX) {
-    std::list<std::string> sresult = string_to_list(str, re, expected_length);
-    std::vector<decltype(op(""))> result;
+template <class TString, class TRegex, class TOperation>
+auto string_to_vector(const TString& str, const TRegex& re, const TOperation& op, size_t expected_length = SIZE_MAX) {
+    std::list<TString> sresult = string_to_list(str, re, expected_length);
+    std::vector<decltype(op(TString{}))> result;
     result.reserve(sresult.size());
-    for (const std::string& s : sresult) {
+    for (const TString& s : sresult) {
         result.push_back(op(s));
     }
     return result;

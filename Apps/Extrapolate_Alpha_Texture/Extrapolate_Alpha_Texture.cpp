@@ -26,8 +26,8 @@ int main(int argc, char** argv) {
         args.assert_num_unnamed(2);
         auto xp = extrapolate_rgba_colors(
             StbImage4::load_from_file(args.unnamed_value(0)),
-            safe_stof(args.named_value("--sigma")),
-            safe_stoz(args.named_value("--niterations")));
+            safe_stof(args.named_svalue("--sigma")),
+            safe_stoz(args.named_svalue("--niterations")));
         if (args.has_named("--remove_alpha")) {
             xp.to_rgb().save_to_file(args.unnamed_value(1));
         } else {

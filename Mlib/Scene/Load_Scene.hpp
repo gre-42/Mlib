@@ -4,9 +4,9 @@
 #include <Mlib/Macro_Executor/Macro_Recorder.hpp>
 #include <Mlib/OpenGL/Key_Bindings/Lockable_Key_Configurations_Fwd.hpp>
 #include <Mlib/OpenGL/Key_Bindings/Lockable_Key_Descriptions_Fwd.hpp>
+#include <Mlib/Os/Utf8_Path.hpp>
 #include <Mlib/Remote/Incremental_Objects/Scene_Level.hpp>
 #include <atomic>
-#include <filesystem>
 #include <functional>
 
 namespace Mlib {
@@ -39,7 +39,7 @@ class WindowLogic;
 class LoadScene {
 public:
     LoadScene(
-        const std::vector<std::filesystem::path>& search_path,
+        const std::vector<Utf8Path>& search_path,
         const std::string& script_filename,
         ThreadSafeString& next_scene_filename,
         LocalSceneLevel scene_level,

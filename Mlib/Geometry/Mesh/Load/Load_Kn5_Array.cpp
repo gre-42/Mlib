@@ -24,8 +24,6 @@
 #include <unordered_map>
 #include <vector>
 
-namespace fs = std::filesystem;
-
 using namespace Mlib;
 
 static const FixedArray<ScenePos, 3> SPAWN_OFFSET = {0.f, 2.f, 0.f};
@@ -201,7 +199,7 @@ void from_json(const nlohmann::json& j, SettingsJson& v) {
 
 template <class TPos>
 std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
-    const std::string& filename,
+    const Utf8Path& filename,
     const LoadMeshConfig<TPos>& cfg,
     IDdsResources* dds_resources,
     IRaceLogic* race_logic)
@@ -217,12 +215,12 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
     // bool raceway_is_circular = true;
     SettingsJson settings_json;
 
-    auto append_kn5 = [&](const std::string& kn5_filename) {
+    auto append_kn5 = [&](const Utf8Path& kn5_filename) {
         auto kn5 = load_kn5(kn5_filename);
         while (!kn5.textures.empty()) {
             textures.insert(kn5.textures.extract(kn5.textures.begin()));
         }
-        bool is_physics_file = fs::path{ kn5_filename }.filename().string().starts_with("physics_");
+        bool is_physics_file = kn5_filename.filename().string().starts_with("physics_");
         for (auto& [_, m] : kn5.materials) {
             if (settings_json.materials.contains(m.name)) {
                 const auto& ms = settings_json.materials.at(m.name);
@@ -736,9 +734,7 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
         }
     };
     {
-        auto settings_json_filename =
-            fs::path{filename}.parent_path() /
-            fs::path{"settings.json"};
+        auto settings_json_filename = filename.parent_path() / "settings.json";
         if (path_exists(settings_json_filename)) {
             auto f = create_ifstream(settings_json_filename);
             if (f->fail()) {
@@ -753,10 +749,7 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
         }
     }
     {
-        auto ext_config_ini_filename =
-            fs::path{filename}.parent_path() /
-            fs::path{"extension"} /
-            fs::path{"ext_config.ini"};
+        auto ext_config_ini_filename = filename.parent_path() / "extension" / "ext_config.ini";
         if (path_exists(ext_config_ini_filename)) {
             IniParser ext_config{ext_config_ini_filename};
             static const DECLARE_REGEX(re, "\\, *");
@@ -793,9 +786,9 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
             if (name.starts_with("MODEL_")) {
                 auto it = section.find("FILE");
                 if (it == section.end()) {
-                    throw std::runtime_error("Could not find FILE variable in section of INI file: \"" + filename + '"');
+                    throw std::runtime_error("Could not find FILE variable in section of INI file: \"" + filename.string() + '"');
                 }
-                append_kn5((fs::path{filename}.parent_path() / it->second).string());
+                append_kn5(filename.parent_path() / it->second);
             }
         }
     } else {
@@ -875,12 +868,12 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
 }
 
 template std::list<std::shared_ptr<ColoredVertexArray<float>>> Mlib::load_kn5_array<float>(
-    const std::string& file_or_directory,
+    const Utf8Path& file_or_directory,
     const LoadMeshConfig<float>&,
     IDdsResources*,
     IRaceLogic*);
 template std::list<std::shared_ptr<ColoredVertexArray<CompressedScenePos>>> Mlib::load_kn5_array<CompressedScenePos>(
-    const std::string& file_or_directory,
+    const Utf8Path& file_or_directory,
     const LoadMeshConfig<CompressedScenePos>&,
     IDdsResources*,
     IRaceLogic*);

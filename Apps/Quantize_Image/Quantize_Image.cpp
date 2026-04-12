@@ -146,18 +146,18 @@ int main(int argc, char** argv) {
             throw std::runtime_error("Unsupported number of channels");
         }
         auto k_means_images = KMeansImages{
-            safe_stoz(args.named_value("--k")),
-            safe_stof(args.named_value("--std")),
+            safe_stoz(args.named_svalue("--k")),
+            safe_stof(args.named_svalue("--std")),
             colors,
             alpha,
-            safe_stoz(args.named_value("--iterations"))};
+            safe_stoz(args.named_svalue("--iterations"))};
         if (auto dest_p_prefix = args.try_named_value("--dest_p_prefix"); dest_p_prefix != nullptr) {
             for (const auto& [i, p] : enumerate(k_means_images.probabilities)) {
-                StbImage1::from_float_grayscale(p).save_to_file(*dest_p_prefix + std::to_string(i) + ".png");
+                StbImage1::from_float_grayscale(p).save_to_file(Utf8Path{*dest_p_prefix} + std::to_string(i) + ".png");
             }
         }
         if (auto dest_reconstructed = args.try_named_value("--dest_reconstructed"); dest_reconstructed != nullptr) {
-            auto gamma = safe_stof(args.named_value("--gamma"));
+            auto gamma = safe_stof(args.named_svalue("--gamma"));
             auto recon = k_means_images.reconstructed(gamma);
             if (image.nrChannels == 3) {
                 StbImage3::from_float_rgb(recon).save_to_file(*dest_reconstructed);

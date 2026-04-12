@@ -33,7 +33,7 @@ static void WriteStream(std::ostream& ostr, std::istream& istr) {
 }
 
 void Mlib::save_kn5(
-    const std::string& filename,
+    const Utf8Path& filename,
     int32_t version,
     std::optional<int32_t> unknownNo,
     const std::map<std::string, kn5Texture>& textures,

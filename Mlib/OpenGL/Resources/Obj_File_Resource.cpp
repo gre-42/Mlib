@@ -8,7 +8,7 @@ using namespace Mlib;
 
 template <class TPos>
 std::shared_ptr<ISceneNodeResource> Mlib::load_renderable_obj(
-    const std::string& filename,
+    const Utf8Path& filename,
     const LoadMeshConfig<TPos>& cfg,
     const SceneNodeResources& scene_node_resources)
 {
@@ -24,10 +24,10 @@ std::shared_ptr<ISceneNodeResource> Mlib::load_renderable_obj(
 }
 
 template std::shared_ptr<ISceneNodeResource> Mlib::load_renderable_obj<float>(
-    const std::string& filename,
+    const Utf8Path& filename,
     const LoadMeshConfig<float>& cfg,
     const SceneNodeResources& scene_node_resources);
 template std::shared_ptr<ISceneNodeResource> Mlib::load_renderable_obj<CompressedScenePos>(
-    const std::string& filename,
+    const Utf8Path& filename,
     const LoadMeshConfig<CompressedScenePos>& cfg,
     const SceneNodeResources& scene_node_resources);

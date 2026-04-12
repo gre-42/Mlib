@@ -1,4 +1,3 @@
-
 #include "Load_Dff_Array.hpp"
 #include <Mlib/Array/Non_Copying_Vector.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
@@ -11,6 +10,7 @@
 #include <Mlib/Geometry/Physics_Material.hpp>
 #include <Mlib/Math/Nan_To_Num.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
+#include <Mlib/Os/Utf8_Path.hpp>
 #include <algorithm>
 
 using namespace Mlib;
@@ -29,7 +29,7 @@ DffArrays<TPosition> Mlib::load_dff(
     try {
         return load_dff(
             *ifs,
-            std::filesystem::path{ filename }.filename().string() + '_',
+            Utf8Path{ filename }.filename().string() + '_',
             cfg,
             dddb,
             frame_transformation);

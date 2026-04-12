@@ -1,14 +1,15 @@
 #pragma once
 #include <Mlib/Math/Fixed_Math.hpp>
+#include <Mlib/Os/Utf8_Path.hpp>
 #include <string>
 
 namespace Mlib {
 
 struct ObjMaterial {
-    std::filesystem::path diffuse_texture;
-    std::filesystem::path diffuse_chrominance_texture;
-    std::filesystem::path specular_texture;
-    std::filesystem::path bump_texture;
+    Utf8Path diffuse_texture;
+    Utf8Path diffuse_chrominance_texture;
+    Utf8Path specular_texture;
+    Utf8Path bump_texture;
     float alpha = 1.f;
     bool has_alpha_texture = false;
     FixedArray<float, 3> emissive = fixed_zeros<float, 3>();    // Defaults to zero because it is non-standard and therefore absent in most files

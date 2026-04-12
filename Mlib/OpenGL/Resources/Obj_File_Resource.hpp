@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Os/Utf8_Path.hpp>
 #include <memory>
 #include <string>
 
@@ -11,7 +12,7 @@ class SceneNodeResources;
 
 template <class TPos>
 std::shared_ptr<ISceneNodeResource> load_renderable_obj(
-    const std::string& filename,
+    const Utf8Path& filename,
     const LoadMeshConfig<TPos>& cfg,
     const SceneNodeResources& scene_node_resources);
 

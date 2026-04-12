@@ -8,7 +8,7 @@ using namespace Mlib;
 
 static void crop_image(
     const StbInfo<uint8_t>& source,
-    const std::filesystem::path& destination,
+    const Utf8Path& destination,
     const FixedArray<size_t, 2>& begin,
     const FixedArray<size_t, 2>& end,
     int jpg_quality)
@@ -45,8 +45,8 @@ static void crop_image(
 }
 
 void Mlib::crop_image_file(
-    const std::filesystem::path& source,
-    const std::filesystem::path& destination,
+    const Utf8Path& source,
+    const Utf8Path& destination,
     const FixedArray<size_t, 2>& begin,
     const FixedArray<size_t, 2>& end,
     int jpg_quality)
@@ -56,8 +56,8 @@ void Mlib::crop_image_file(
 }
 
 void Mlib::crop_image_file(
-    const std::filesystem::path& source,
-    const std::filesystem::path& destination,
+    const Utf8Path& source,
+    const Utf8Path& destination,
     const FixedArray<size_t, 2>& size,
     int jpg_quality)
 {

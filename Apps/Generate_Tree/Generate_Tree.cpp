@@ -25,13 +25,13 @@ int main(int argc, char** argv) {
         auto mask_gray = sum(mask, 0) / float(mask.shape(0));
         auto guidance = stb_image_2_array(stb_load8(args.named_value("--guidance"), FlipMode::VERTICAL)).casted<float>() / 255.f;
         auto guidance_gray = sum(guidance, 0) / float(guidance.shape(0));
-        size_t b = safe_stoz(args.named_value("--box-size"));
+        size_t b = safe_stoz(args.named_svalue("--box-size"));
         if (any(mask_gray.shape() != guidance_gray.shape())) {
             throw std::runtime_error("Images do not have identical sizes");
         }
         auto filt = mask_gray;
-        for (size_t i = 0; i < safe_stoz(args.named_value("--niter")); ++i) {
-            filt = guided_filter(guidance_gray, filt, ArrayShape{b, b}, float(safe_stof(args.named_value("--eps"))));
+        for (size_t i = 0; i < safe_stoz(args.named_svalue("--niter")); ++i) {
+            filt = guided_filter(guidance_gray, filt, ArrayShape{b, b}, float(safe_stof(args.named_svalue("--eps"))));
         }
         PpmImage::from_float_rgb(clipped(Array<float>({filt, filt, filt}), 0.f, 1.f)).save_to_file(args.named_value("--output"));
     } catch (const CommandLineArgumentError& e) {

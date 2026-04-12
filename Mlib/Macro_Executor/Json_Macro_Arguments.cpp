@@ -232,67 +232,67 @@ void JsonMacroArguments::insert_json(std::string_view key, nlohmann::json j) {
     j_[key] = std::move(j);
 }
 
-void JsonMacroArguments::set_fpathes(std::function<std::list<std::filesystem::path>(const std::filesystem::path& f)> fpathes) {
+void JsonMacroArguments::set_fpathes(std::function<std::list<Utf8Path>(const Utf8Path& f)> fpathes) {
     if (fpathes_) {
         throw std::runtime_error("fpathes already set");
     }
     fpathes_ = std::move(fpathes);
 }
 
-void JsonMacroArguments::set_fpath(std::function<FPath(const std::filesystem::path& f)> fpath) {
+void JsonMacroArguments::set_fpath(std::function<FPath(const FPath& f)> fpath) {
     if (fpath_) {
         throw std::runtime_error("fpath already set");
     }
     fpath_ = std::move(fpath);
 }
 
-void JsonMacroArguments::set_spath(std::function<std::filesystem::path(const std::filesystem::path& f)> spath) {
+void JsonMacroArguments::set_spath(std::function<Utf8Path(const Utf8Path& f)> spath) {
     if (spath_) {
         throw std::runtime_error("spath already set");
     }
     spath_ = std::move(spath);
 }
 
-std::list<std::filesystem::path> JsonMacroArguments::fpathes(const std::filesystem::path& f) const {
+std::list<Utf8Path> JsonMacroArguments::fpathes(const Utf8Path& f) const {
     return fpathes_(f);
 }
 
-FPath JsonMacroArguments::fpath(const std::filesystem::path& f) const {
+FPath JsonMacroArguments::fpath(const FPath& f) const {
     return fpath_(f);
 }
 
-std::string JsonMacroArguments::spath(const std::filesystem::path& f) const {
+std::string JsonMacroArguments::spath(const Utf8Path& f) const {
     return spath_(f);
 }
 
-std::string JsonMacroArguments::path(std::string_view name) const {
-    auto res = fpath_(at<std::string>(name));
+Utf8Path JsonMacroArguments::path(std::string_view name) const {
+    auto res = fpath_(at<FPath>(name));
     return res.local_path();
 }
 
-std::string JsonMacroArguments::path(std::string_view name, std::string_view deflt) const {
+Utf8Path JsonMacroArguments::path(std::string_view name, const Utf8Path& deflt) const {
     return contains_non_null(name)
-        ? std::string{ path(name) }
-        : std::string{ deflt };
+        ? path(name)
+        : deflt;
 }
 
 FPath JsonMacroArguments::path_or_variable(std::string_view name) const {
-    return fpath_(at<std::string>(name));
+    return fpath_(at<FPath>(name));
 }
 
 FPath JsonMacroArguments::try_path_or_variable(std::string_view name) const {
     if (!contains_non_null(name)) {
         return {};
     }
-    return fpath_(at<std::string>(name));
+    return fpath_(at<FPath>(name));
 }
 
-std::list<std::filesystem::path> JsonMacroArguments::path_list(std::string_view name) const {
-    return fpathes_(at<std::filesystem::path>(name));
+std::list<Utf8Path> JsonMacroArguments::path_list(std::string_view name) const {
+    return fpathes_(at<Utf8Path>(name));
 }
 
 std::vector<FPath> JsonMacroArguments::pathes_or_variables(std::string_view name) const {
-    return at_vector<std::string>(name, fpath_);
+    return at_vector<FPath>(name, fpath_);
 }
 
 std::vector<FPath> JsonMacroArguments::try_pathes_or_variables(
