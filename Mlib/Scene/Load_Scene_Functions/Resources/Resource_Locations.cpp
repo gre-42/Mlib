@@ -19,12 +19,12 @@
 #include <Mlib/OpenGL/Resource_Managers/Rendering_Resources.hpp>
 #include <Mlib/OpenGL/Resources/Dff_File_Resource.hpp>
 #include <Mlib/OpenGL/Resources/Pssg_File_Resource.hpp>
-#include <Mlib/Os/Utf8_Path.hpp>
 #include <Mlib/Scene/Json/Load_Mesh_Config_Json.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Load_Scene_Funcs.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
 #include <Mlib/Strings/Filesystem_Path.hpp>
+#include <Mlib/Strings/Utf8_Path.hpp>
 #include <Mlib/Threads/Thread_Top.hpp>
 
 using namespace Mlib;

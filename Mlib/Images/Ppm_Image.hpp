@@ -1,7 +1,7 @@
 #pragma once
 #include <Mlib/Array/Array.hpp>
 #include <Mlib/Images/Rgb24.hpp>
-#include <Mlib/Os/Utf8_Path.hpp>
+#include <Mlib/Strings/Utf8_Path.hpp>
 #include <string>
 
 namespace Mlib {

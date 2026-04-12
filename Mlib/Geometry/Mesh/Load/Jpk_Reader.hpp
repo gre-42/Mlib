@@ -2,7 +2,7 @@
 #include <Mlib/Io/IIStream_Dictionary.hpp>
 #include <Mlib/Map/String_With_Hash_Unordered_Map.hpp>
 #include <Mlib/Memory/Dangling_Base_Class.hpp>
-#include <Mlib/Os/Utf8_Path.hpp>
+#include <Mlib/Strings/Utf8_Path.hpp>
 #include <memory>
 #include <mutex>
 #include <string>

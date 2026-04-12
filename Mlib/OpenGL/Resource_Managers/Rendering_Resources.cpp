@@ -50,7 +50,7 @@
 #include <Mlib/OpenGL/Viewport_Guard.hpp>
 #include <Mlib/Os/Env.hpp>
 #include <Mlib/Os/Os.hpp>
-#include <Mlib/Os/Utf8_Path.hpp>
+#include <Mlib/Strings/Utf8_Path.hpp>
 #include <Mlib/Testing/Assert.hpp>
 #include <Mlib/Threads/Recursion_Guard.hpp>
 #include <Mlib/Threads/Thread_Local.hpp>

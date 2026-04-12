@@ -3,7 +3,7 @@
 #include <Mlib/Hashing/Variable_And_Hash.hpp>
 #include <Mlib/Memory/Integral_Cast.hpp>
 #include <Mlib/Os/Os.hpp>
-#include <Mlib/Os/Utf8_Path.hpp>
+#include <Mlib/Strings/Utf8_Path.hpp>
 #include <list>
 
 using namespace Mlib;

@@ -2,7 +2,7 @@
 #include <Mlib/Navigation/InputGeom.hpp>
 #include <Mlib/Navigation/Sample_SoloMesh.hpp>
 #include <Mlib/Navigation/StderrContext.hpp>
-#include <Mlib/Os/Utf8_Path.hpp>
+#include <Mlib/Strings/Utf8_Path.hpp>
 #include <string>
 
 namespace Mlib {

@@ -71,7 +71,6 @@
 #include <Mlib/OpenGL/Selected_Cameras/Selected_Cameras.hpp>
 #include <Mlib/OpenGL/Ui/Button_States.hpp>
 #include <Mlib/OpenGL/Ui/Cursor_States.hpp>
-#include <Mlib/Os/Utf8_Path.hpp>
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Animation_State.hpp>
@@ -91,6 +90,7 @@
 #include <Mlib/Stats/Min_Max.hpp>
 #include <Mlib/Strings/String_View_To_Number.hpp>
 #include <Mlib/Strings/String_View_To_Scene_Pos.hpp>
+#include <Mlib/Strings/Utf8_Path.hpp>
 #include <Mlib/Threads/Realtime_Threads.hpp>
 #include <Mlib/Threads/Termination_Manager.hpp>
 #include <Mlib/Time/Fps/Fixed_Time_Sleeper.hpp>

@@ -1,6 +1,6 @@
 #pragma once
 #include <Mlib/Images/Flip_Mode.hpp>
-#include <Mlib/Os/Utf8_Path.hpp>
+#include <Mlib/Strings/Utf8_Path.hpp>
 #include <cstddef>
 #include <cstdint>
 #include <memory>

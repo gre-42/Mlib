@@ -3,7 +3,7 @@
 #include <Mlib/Json/Base.hpp>
 #include <Mlib/Math/Fixed_Point_Number.hpp>
 #include <Mlib/Math/Orderable_Fixed_Array.hpp>
-#include <Mlib/Os/Utf8_Path.hpp>
+#include <Mlib/Strings/Utf8_Path.hpp>
 #include <map>
 #include <string_view>
 #include <unordered_map>

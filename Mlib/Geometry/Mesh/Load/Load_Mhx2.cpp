@@ -12,8 +12,8 @@
 #include <Mlib/Map/String_With_Hash_Unordered_Map.hpp>
 #include <Mlib/Math/Fixed_Cholesky.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
-#include <Mlib/Os/Utf8_Path.hpp>
 #include <Mlib/Os/Weakly_Canonical_Preserve_Symlinks.hpp>
+#include <Mlib/Strings/Utf8_Path.hpp>
 
 using namespace Mlib;
 

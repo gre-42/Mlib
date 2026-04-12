@@ -13,7 +13,6 @@
 #include <Mlib/OpenGL/Renderables/Triangle_Sampler/Terrain_Style.hpp>
 #include <Mlib/OpenGL/Renderables/Triangle_Sampler/Terrain_Type.hpp>
 #include <Mlib/OpenGL/Renderables/Triangle_Sampler/Triangle_Sampler_Resource_Config.hpp>
-#include <Mlib/Os/Utf8_Path.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Barrier_Style.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Building.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Facade_Texture.hpp>
@@ -23,6 +22,7 @@
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Scene_Graph/Driving_Direction.hpp>
 #include <Mlib/Scene_Graph/Resources/Parsed_Resource_Name.hpp>
+#include <Mlib/Strings/Utf8_Path.hpp>
 #include <chrono>
 #include <cmath>
 #include <cstdint>

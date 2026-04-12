@@ -1,7 +1,7 @@
 #pragma once
 #include <Mlib/Images/Compression/Brightness_Image.hpp>
 #include <Mlib/Images/Flip_Mode.hpp>
-#include <Mlib/Os/Utf8_Path.hpp>
+#include <Mlib/Strings/Utf8_Path.hpp>
 #include <cstdint>
 #include <string>
 

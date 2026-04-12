@@ -1,7 +1,7 @@
 
 #include "Image_Info.hpp"
 #include <Mlib/Images/Dds_Info.hpp>
-#include <Mlib/Os/Utf8_Path.hpp>
+#include <Mlib/Strings/Utf8_Path.hpp>
 #include <algorithm>
 #include <stb_cpp/stb_image_load.hpp>
 #include <stdexcept>

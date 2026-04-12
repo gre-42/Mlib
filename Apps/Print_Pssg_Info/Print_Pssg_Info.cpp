@@ -7,8 +7,8 @@
 #include <Mlib/Io/Arg_Parser.hpp>
 #include <Mlib/Io/Binary.hpp>
 #include <Mlib/Os/Os.hpp>
-#include <Mlib/Os/Utf8_Path.hpp>
 #include <Mlib/Regex/Regex_Select.hpp>
+#include <Mlib/Strings/Utf8_Path.hpp>
 #include <boost/regex/icu.hpp>
 
 using namespace Mlib;

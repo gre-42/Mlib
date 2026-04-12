@@ -1,6 +1,6 @@
 #include <Mlib/Io/Arg_Parser.hpp>
 #include <Mlib/Os/Os.hpp>
-#include <Mlib/Os/Utf8_Path.hpp>
+#include <Mlib/Strings/Utf8_Path.hpp>
 #include <stb/stb_image.h>
 #include <stb/stb_image_write.h>
 #include <stb_cpp/stb_mipmaps.hpp>

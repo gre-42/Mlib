@@ -2,8 +2,8 @@
 #include <Mlib/OpenGL/Key_Bindings/Lockable_Key_Configurations.hpp>
 #include <Mlib/OpenGL/Ui/Button_Press.hpp>
 #include <Mlib/OpenGL/Ui/Renderable_Hider/Unordered_Set_Of_Strings.hpp>
-#include <Mlib/Os/Utf8_Path.hpp>
 #include <Mlib/Scene_Graph/Interfaces/IRenderable_Hider.hpp>
+#include <Mlib/Strings/Utf8_Path.hpp>
 #include <Mlib/Threads/Safe_Atomic_Shared_Mutex.hpp>
 
 namespace Mlib {

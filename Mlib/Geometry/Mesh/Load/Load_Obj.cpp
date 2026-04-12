@@ -14,11 +14,11 @@
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Os/Os.hpp>
-#include <Mlib/Os/Utf8_Path.hpp>
 #include <Mlib/Os/Weakly_Canonical_Preserve_Symlinks.hpp>
 #include <Mlib/Regex/Regex_Select.hpp>
 #include <Mlib/Regex/Template_Regex.hpp>
 #include <Mlib/Strings/String_View_To_Scene_Pos.hpp>
+#include <Mlib/Strings/Utf8_Path.hpp>
 #include <Mlib/Testing/Assert.hpp>
 #include <vector>
 

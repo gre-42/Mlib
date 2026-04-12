@@ -1,7 +1,7 @@
 #pragma once
 #include <Mlib/Hashing/Std_Hash.hpp>
 #include <Mlib/Hashing/Variable_And_Hash.hpp>
-#include <Mlib/Os/Utf8_Path.hpp>
+#include <Mlib/Strings/Utf8_Path.hpp>
 #include <compare>
 #include <iosfwd>
 #include <list>
