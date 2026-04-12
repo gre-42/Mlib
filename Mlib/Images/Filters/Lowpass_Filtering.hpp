@@ -42,11 +42,11 @@ Array<TData> lowpass_filter_1d_NWE(const Array<TData>& image, const Array<TCoeff
                 }
             };
             if (sc == 0) {
-                result_axis(i) = boundary_value;
+                result_axis((size_t)i) = boundary_value;
             } else if (any(fc & FilterExtension::NWE)) {
-                result_axis(i) = convert(v / sc);
+                result_axis((size_t)i) = convert(v / sc);
             } else {
-                result_axis(i) = convert(v);
+                result_axis((size_t)i) = convert(v);
             }
         }
     });
