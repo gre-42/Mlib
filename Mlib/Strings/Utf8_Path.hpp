@@ -11,7 +11,7 @@ class Utf8Path {
     friend bool operator != (const Utf8Path& a, const Utf8Path& b);
 public:
     Utf8Path();
-    static Utf8Path from_path(const std::filesystem::path& p);
+    static Utf8Path from_path(std::filesystem::path p);
     Utf8Path(std::u8string s);
     Utf8Path(std::string s);
     Utf8Path(std::string_view s);

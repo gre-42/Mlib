@@ -10,8 +10,8 @@ inline bool is_ascii(char c) {
 
 Utf8Path::Utf8Path() = default;
 
-Utf8Path Utf8Path::from_path(const std::filesystem::path& p) {
-    return {p, construct_path};
+Utf8Path Utf8Path::from_path(std::filesystem::path p) {
+    return {std::move(p), construct_path};
 }
 
 Utf8Path::Utf8Path(std::u8string s)
