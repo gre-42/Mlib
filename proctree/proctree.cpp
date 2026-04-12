@@ -26,6 +26,7 @@
 
 #include "proctree.hpp"
 #include <cmath>
+#include <cstdlib>
 #include <string.h>
 
 #ifndef M_PI
@@ -125,7 +126,7 @@ namespace Proctree
 
     float Properties::random()
     {
-        return float(rand()) / float(RAND_MAX);
+        return float(std::rand()) / float(RAND_MAX);
     }
 
 
