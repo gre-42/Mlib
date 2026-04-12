@@ -14,6 +14,3 @@ if (MINGW)
     # https://social.msdn.microsoft.com/Forums/en-US/b0faf4bc-5949-409c-aaf8-c5541710a4b6/using-wincrypth?forum=Vsexpressvc
     target_link_libraries(MlibCppHttplib PUBLIC -lws2_32 -ladvapi32 -lcrypt32)
 endif()
-if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
-    target_compile_options(MlibCppHttplib PRIVATE -Wno-sign-conversion)
-endif()
