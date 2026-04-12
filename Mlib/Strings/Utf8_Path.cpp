@@ -1,5 +1,6 @@
 #include "Utf8_Path.hpp"
 #include <Mlib/Strings/Str.hpp>
+#include <ostream>
 #include <stdexcept>
 
 using namespace Mlib;
