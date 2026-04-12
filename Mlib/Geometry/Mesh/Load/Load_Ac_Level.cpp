@@ -152,7 +152,7 @@ std::list<ReplacementParameterAndFilename> LoadAcLevel::try_load(const Utf8Path&
                 if (!is_listable(stage_dir_entry)) {
                     continue;
                 }
-                auto stage_dir = Utf8Path{stage_dir_entry.path()};
+                auto stage_dir = Utf8Path::from_path(stage_dir_entry.path());
                 auto stage = stage_dir.filename();
                 if (auto ui_track_filename = stage_dir / "ui_track.json"; path_exists(ui_track_filename)) {
                     auto level_id = level_dir.filename().string() + '_' + stage.string();
