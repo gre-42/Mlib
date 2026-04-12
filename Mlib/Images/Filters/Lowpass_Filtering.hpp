@@ -19,13 +19,13 @@ Array<TData> lowpass_filter_1d_NWE(const Array<TData>& image, const Array<TCoeff
         ArrayAxisView<TData> result_axis(result, index0, axis);
         size_t cdist = coeffs.length() / 2;
         #pragma omp parallel for if (result_axis.length() > 25)
-        for (size_t i = 0; i < result_axis.length(); i++) {
+        for (int i = 0; i < integral_cast<int>(result_axis.length()); i++) {
             decltype(TCoeffs() * TData()) v = 0;
             TCoeffs sc = 0;
             for (size_t d = 0; d < coeffs.length(); ++d) {
                 size_t idi = any(fc & FilterExtension::PERIODIC)
-                    ? (size_t)positive_modulo((int)(i + d - cdist), (int)result_axis.length())
-                    : i + d - cdist;
+                    ? (size_t)positive_modulo((int)((size_t)i + d - cdist), (int)result_axis.length())
+                    : (size_t)i + d - cdist;
                 if (idi < result_axis.length()) {
                     TData ic = image_axis(idi);
                     if (!scalar_isnan(ic)) {
