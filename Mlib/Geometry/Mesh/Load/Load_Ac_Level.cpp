@@ -110,7 +110,7 @@ std::list<ReplacementParameterAndFilename> LoadAcLevel::try_load(const Utf8Path&
             .filename = script_filename_ });
     };
     for (const auto& level_dir_entry : list_dir(path)) {
-        auto level_dir = Utf8Path{level_dir_entry.path()};
+        auto level_dir = Utf8Path::from_path(level_dir_entry.path());
         auto ui_dir = level_dir / "ui";
         if (!path_exists(ui_dir)) {
             continue;
