@@ -595,11 +595,8 @@ public:
         if (empty()) {
             reference_point_ = center(d.primitive());
         }
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
         auto cd = compress(d, reference_point_);
         auto ucd = decompress(cd, reference_point_);
-#pragma GCC diagnostic pop
         if (ucd == d) {
             small_data_.emplace_back(cd);
         } else {
@@ -608,10 +605,7 @@ public:
     }
     void fill(auto& container) const {
         for (const auto& d : small_data_) {
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
             container.insert(decompress(d, reference_point_));
-#pragma GCC diagnostic pop
         }
         for (const auto& d : large_data_) {
             container.insert(d);
@@ -619,10 +613,7 @@ public:
     }
     bool visit(const auto& aabb, const auto& visitor) const {
         for (const auto& d : small_data_) {
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
             auto ud = decompress(d, reference_point_);
-#pragma GCC diagnostic pop
             if (intersects(aabb, ud.primitive())) {
                 if (!visitor(ud.payload())) {
                     return false;
@@ -640,10 +631,7 @@ public:
     }
     bool visit_all(const auto& visitor) const {
         for (const auto& d : small_data_) {
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
             if (!visitor(decompress(d,  reference_point_))) {
-#pragma GCC diagnostic pop
                 return false;
             }
         }
@@ -656,10 +644,7 @@ public:
     }
     bool visit_pairs(const auto& aabb, const auto& visitor) const {
         for (const auto& d : small_data_) {
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
             auto ud = decompress(d, reference_point_);
-#pragma GCC diagnostic pop
             if (intersects(aabb, ud.primitive())) {
                 if (!visitor(ud)) {
                     return false;
@@ -677,10 +662,7 @@ public:
     }
     void print(std::ostream& ostr, size_t rec = 0) const {
         for (const auto& d : small_data_) {
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
             decompress(d, reference_point_).aabb().print(ostr, rec + 1);
-#pragma GCC diagnostic pop
             ostr << '\n';
         }
         for (const auto& d : large_data_) {
