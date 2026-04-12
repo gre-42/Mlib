@@ -25,7 +25,7 @@ public:
     decltype(auto) emplace(const DanglingBaseClassPtr<T>& element, SourceLocation loc) {
         auto it = elements_.emplace(element, element->on_destroy.deflt, loc);
         if (it.second) {
-            it.first->on_destroy([this, it=it.first](){ [[maybe_unused]] elements_.extract(it); }, loc);
+            it.first->on_destroy([this, it=it.first](){ [[maybe_unused]] auto node = elements_.extract(it); }, loc);
         }
         return it;
     }
