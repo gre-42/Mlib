@@ -49,6 +49,7 @@ public:
 private:
     Utf8Path(std::filesystem::path p, ConstructPathType);
     std::filesystem::path path_;
+    mutable std::u8string u8path_;
 };
 
 std::ostream& operator << (std::ostream& ostr, const Utf8Path& p);
