@@ -18,7 +18,6 @@ endif()
 set_ehsc()
 avoid_floating_point_exceptions()
 enable_absolute_diagnostic_pathes()
-enable_experimental_clang_features()  # required for <generator>
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_POSITION_INDEPENDENT_CODE TRUE)
 

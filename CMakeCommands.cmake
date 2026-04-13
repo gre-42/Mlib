@@ -406,12 +406,6 @@ macro(enable_absolute_diagnostic_pathes)
     endif()
 endmacro()
 
-macro(enable_experimental_clang_features)
-    if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fexperimental-library")
-    endif()
-endmacro()
-
 # https://stackoverflow.com/questions/46055431/cmake-on-android-find-library-fail-to-find-with-custom-path
 macro(enable_cross_compiling)
     set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY BOTH)
