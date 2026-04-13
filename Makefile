@@ -1,4 +1,5 @@
 .PHONY: all recastnavigation cmake build
+SHELL := /bin/bash
 
 CMAKE_BUILD_TYPE ?= Release
 MAKE_TARGET ?= build
@@ -6,7 +7,16 @@ MAKE_TARGET ?= build
 all: recastnavigation cmake build
 
 ENV =
-BUILD_DIR = U$(CMAKE_BUILD_TYPE)
+PLATFORM_CHAR !=                          \
+    if [[ "$(ostype)" = MSYS* ]] ||       \
+       [[ "$(ostype)" = CYGWIN* ]] ||     \
+       [[ "$(ostype)" = MINGW* ]];        \
+    then                                  \
+        echo M;                           \
+    else                                  \
+        echo U;                           \
+    fi
+BUILD_DIR = $(PLATFORM_CHAR)$(CMAKE_BUILD_TYPE)
 # ASAN
 ENV !=                                            \
     if [ "$(ASAN)" = 1 ]; then                    \
@@ -80,6 +90,9 @@ BUILD_DIR !=                                      \
     else                                          \
         echo "$(BUILD_DIR)";                      \
     fi
+
+echo_platform_char:
+	@echo "$(PLATFORM_CHAR)"
 
 echo_build_dir:
 	@echo "$(BUILD_DIR)"
