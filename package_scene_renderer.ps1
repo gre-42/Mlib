@@ -29,6 +29,10 @@ $files = "openal-soft\build\Release\OpenAL32.dll",
          "VSZlibBuild\Release\zlib.dll",
          "glfw_vc2022\lib\glfw3.dll"
 
+$icu_dlls = (Get-ChildItem -Path "$env:VCPKG_INSTALLATION_ROOT\installed\x64-windows\bin\icu*.dll" -Exclude "icuio*.dll").FullName
+
+$files += $icu_dlls
+
 $dest_dir = "${BUILD_PREFIX}GVS\Bin\$CMAKE_BUILD_TYPE\"
 foreach ($file in $files) {
     Write-Host "Copy $file -> $dest_dir"
