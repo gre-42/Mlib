@@ -1,20 +1,25 @@
 .PHONY: all recastnavigation cmake build
 SHELL := /bin/bash
 
+ostype != uname
+
 CMAKE_BUILD_TYPE ?= Release
 MAKE_TARGET ?= build
 
 all: recastnavigation cmake build
 
 ENV =
-PLATFORM_CHAR !=                          \
-    if [[ "$(ostype)" = MSYS* ]] ||       \
-       [[ "$(ostype)" = CYGWIN* ]] ||     \
-       [[ "$(ostype)" = MINGW* ]];        \
-    then                                  \
-        echo M;                           \
-    else                                  \
-        echo U;                           \
+PLATFORM_CHAR !=                                                    \
+    echo "Determine platform char by OS type \"$(ostype)\"". 1>&2;  \
+    if [[ "$(ostype)" = MSYS* ]] ||                                 \
+       [[ "$(ostype)" = CYGWIN* ]] ||                               \
+       [[ "$(ostype)" = MINGW* ]];                                  \
+    then                                                            \
+        echo "Detected platform \"MSYS2\"." 1>&2;                   \
+        echo M;                                                     \
+    else                                                            \
+        echo "Detected platform \"Linux\"." 1>&2;                   \
+        echo U;                                                     \
     fi
 BUILD_DIR = $(PLATFORM_CHAR)$(CMAKE_BUILD_TYPE)
 # ASAN
