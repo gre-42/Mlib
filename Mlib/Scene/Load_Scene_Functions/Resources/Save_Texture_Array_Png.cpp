@@ -15,8 +15,6 @@ namespace KnownArgs {
 BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(name);
 DECLARE_ARGUMENT(filename_prefix);
-DECLARE_ARGUMENT(color_mode);
-DECLARE_ARGUMENT(mipmap_mode);
 }
 
 const std::string SaveTextureArrayPng::key = "save_texture_array_png";
