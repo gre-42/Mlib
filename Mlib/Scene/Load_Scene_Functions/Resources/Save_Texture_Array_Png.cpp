@@ -30,7 +30,7 @@ LoadSceneJsonUserFunction SaveTextureArrayPng::json_user_function = [](const Loa
 void SaveTextureArrayPng::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     RenderingContextStack::primary_rendering_resources().save_array_to_file(
-        args.arguments.at<std::string>(KnownArgs::filename_prefix),
+        args.arguments.path_or_variable(KnownArgs::filename_prefix).local_path(),
         RenderingContextStack::primary_rendering_resources().get_colormap(args.arguments.path_or_variable(KnownArgs::name)),
         TextureRole::COLOR);
 }
