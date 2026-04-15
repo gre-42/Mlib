@@ -6,10 +6,14 @@
 
 namespace Mlib {
 
+enum class BlendMode;
+enum class DepthFunc;
 class IGpuVertexData;
 
 struct SortableDeferredVertexData {
-    int32_t layer;
+    BlendMode blend_mode;
+    int32_t continuous_blending_z_order;
+    DepthFunc depth_func;
     std::shared_ptr<IGpuVertexData> vertex_array;
     std::strong_ordering operator <=> (const SortableDeferredVertexData&) const = default;
 };

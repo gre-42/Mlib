@@ -64,6 +64,7 @@
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Instances/Dynamic_World.hpp>
 #include <Mlib/Scene_Graph/Instantiation/Child_Instantiation_Options.hpp>
+#include <Mlib/Scene_Graph/Render/Caching_Gpu_Object_Factory.hpp>
 #include <Mlib/Scene_Graph/Resources/Renderable_Resource_Filter.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
 #include <Mlib/Threads/Realtime_Threads.hpp>
@@ -127,7 +128,8 @@ void test_physics_engine(unsigned int seed) {
     PhysicsEngine pe{ physics_cfg };
 
     OpenGLObjectFactory gpu_object_factory;
-    SceneNodeResources scene_node_resources{gpu_object_factory};
+    CachingGpuObjectFactory caching_gpu_object_factory{gpu_object_factory};
+    SceneNodeResources scene_node_resources{caching_gpu_object_factory};
     ParticleResources particle_resources;
     TrailResources trail_resources;
     Scene scene{ "main_scene" };
@@ -164,7 +166,7 @@ void test_physics_engine(unsigned int seed) {
         .particle_resources = particle_resources,
         .trail_resources = trail_resources,
         .rendering_resources = rendering_resources,
-        .gpu_object_factory = gpu_object_factory,
+        .gpu_object_factory = caching_gpu_object_factory,
         .gpu_vertex_array_renderer = gpu_vertex_array_renderer,
         .z_order = 0};
     RenderingContextGuard rcg{ primary_rendering_context };

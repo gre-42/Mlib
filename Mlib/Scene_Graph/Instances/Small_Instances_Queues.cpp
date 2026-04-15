@@ -48,7 +48,9 @@ void SmallInstancesQueues::insert(
                 invisible_queue_[scva].insert(m_shifted_i, billboard_id);
             } else {
                 auto key = SortableDeferredVertexData{
+                    meta.material.blend_mode,
                     meta.material.continuous_blending_z_order,
+                    meta.material.depth_func,
                     scva};
                 standard_queue_[key].insert(m_shifted_i, (float)vc.sorting_key(meta.material), billboard_id);
             }

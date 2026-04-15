@@ -17,6 +17,7 @@
 #include <Mlib/OpenGL/Resource_Managers/Particle_Resources.hpp>
 #include <Mlib/OpenGL/Resource_Managers/Rendering_Resources.hpp>
 #include <Mlib/OpenGL/Resource_Managers/Trail_Resources.hpp>
+#include <Mlib/Scene_Graph/Render/Caching_Gpu_Object_Factory.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
 #include <Mlib/Strings/String_View_To_Number.hpp>
 #include <Mlib/Threads/Realtime_Threads.hpp>
@@ -70,7 +71,8 @@ int main(int argc, char** argv) {
             []() { return std::chrono::steady_clock::now(); }
         };
         OpenGLObjectFactory gpu_object_factory;
-        SceneNodeResources scene_node_resources{gpu_object_factory};
+        CachingGpuObjectFactory caching_gpu_object_factory{gpu_object_factory};
+        SceneNodeResources scene_node_resources{caching_gpu_object_factory};
         ParticleResources particle_resources;
         TrailResources trail_resources;
         RenderingResources rendering_resources{
@@ -82,7 +84,7 @@ int main(int argc, char** argv) {
             .particle_resources = particle_resources,
             .trail_resources = trail_resources,
             .rendering_resources = rendering_resources,
-            .gpu_object_factory = gpu_object_factory,
+            .gpu_object_factory = caching_gpu_object_factory,
             .gpu_vertex_array_renderer = gpu_vertex_array_renderer,
             .z_order = 0 };
         RenderingContextGuard rcg{ primary_rendering_context };

@@ -71,6 +71,7 @@
 #include <Mlib/Scene/Renderable_Scenes.hpp>
 #include <Mlib/Scene/Scene_Config.hpp>
 #include <Mlib/Scene_Config/Scene_Graph_Config.hpp>
+#include <Mlib/Scene_Graph/Render/Caching_Gpu_Object_Factory.hpp>
 #include <Mlib/Scene_Graph/Rendered_Scene_Descriptor.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
 #include <Mlib/Strings/Iterate_Over_Chunks_Of_String.hpp>
@@ -780,7 +781,7 @@ void android_main(android_app* app) {
                     .particle_resources = particle_resources,
                     .trail_resources = trail_resources,
                     .rendering_resources = rendering_resources,
-                    .gpu_object_factory = gpu_object_factory,
+                    .gpu_object_factory = caching_gpu_object_factory,
                     .gpu_vertex_array_renderer = gpu_vertex_array_renderer,
                     .z_order = 0
                 };

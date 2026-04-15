@@ -56,6 +56,7 @@
 #include <Mlib/Scene/Renderable_Scene.hpp>
 #include <Mlib/Scene/Renderable_Scenes.hpp>
 #include <Mlib/Scene/Scene_Config.hpp>
+#include <Mlib/Scene_Graph/Render/Caching_Gpu_Object_Factory.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
 #include <Mlib/Strings/String_View_To_Number.hpp>
 #include <Mlib/Threads/Containers/Thread_Safe_String.hpp>
@@ -764,7 +765,8 @@ int main(int argc, char** argv) {
                 .physics_engine_config = physics_engine_config};
 
             OpenGLObjectFactory gpu_object_factory;
-            SceneNodeResources scene_node_resources{gpu_object_factory};
+            CachingGpuObjectFactory caching_gpu_object_factory{gpu_object_factory};
+            SceneNodeResources scene_node_resources{caching_gpu_object_factory};
             ParticleResources particle_resources;
             TrailResources trail_resources;
             SurfaceContactDb surface_contact_db;
@@ -792,7 +794,7 @@ int main(int argc, char** argv) {
                     .particle_resources = particle_resources,
                     .trail_resources = trail_resources,
                     .rendering_resources = rendering_resources,
-                    .gpu_object_factory = gpu_object_factory,
+                    .gpu_object_factory = caching_gpu_object_factory,
                     .gpu_vertex_array_renderer = gpu_vertex_array_renderer,
                     .z_order = 0
                 };

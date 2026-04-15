@@ -32,6 +32,7 @@
 #include <Mlib/Scene_Graph/Elements/Rendering_Strategies.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Instantiation/Child_Instantiation_Options.hpp>
+#include <Mlib/Scene_Graph/Render/Caching_Gpu_Object_Factory.hpp>
 #include <Mlib/Scene_Graph/Resources/Renderable_Resource_Filter.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
 #include <Mlib/Stats/Linspace.hpp>
@@ -104,7 +105,8 @@ int main(int argc, char** argv) {
         render.print_hardware_info(linfo(LogFlags::NO_APPEND_NEWLINE).ref());
 
         OpenGLObjectFactory gpu_object_factory;
-        SceneNodeResources scene_node_resources{gpu_object_factory};
+        CachingGpuObjectFactory caching_gpu_object_factory{gpu_object_factory};
+        SceneNodeResources scene_node_resources{caching_gpu_object_factory};
         ParticleResources particle_resources;
         TrailResources trail_resources;
         RenderingResources rendering_resources{
@@ -116,7 +118,7 @@ int main(int argc, char** argv) {
             .particle_resources = particle_resources,
             .trail_resources = trail_resources,
             .rendering_resources = rendering_resources,
-            .gpu_object_factory = gpu_object_factory,
+            .gpu_object_factory = caching_gpu_object_factory,
             .gpu_vertex_array_renderer = gpu_vertex_array_renderer,
             .z_order = 0 };
         RenderingContextGuard rcg{ primary_rendering_context };

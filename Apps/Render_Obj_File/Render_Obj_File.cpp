@@ -83,6 +83,7 @@
 #include <Mlib/Scene_Graph/Modifiers/Add_Cleanup_Mesh_Modifier.hpp>
 #include <Mlib/Scene_Graph/Render/Batch_Renderers/Array_Instances_Renderer.hpp>
 #include <Mlib/Scene_Graph/Render/Batch_Renderers/Array_Instances_Renderers.hpp>
+#include <Mlib/Scene_Graph/Render/Caching_Gpu_Object_Factory.hpp>
 #include <Mlib/Scene_Graph/Resources/Compound_Resource.hpp>
 #include <Mlib/Scene_Graph/Resources/Renderable_Resource_Filter.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
@@ -556,7 +557,8 @@ int main(int argc, char** argv) {
         ClearWrapperGuard clear_wrapper_guard;
 
         OpenGLObjectFactory gpu_object_factory;
-        SceneNodeResources scene_node_resources{gpu_object_factory};
+        CachingGpuObjectFactory caching_gpu_object_factory{gpu_object_factory};
+        SceneNodeResources scene_node_resources{caching_gpu_object_factory};
         ParticleResources particle_resources;
         TrailResources trail_resources;
         RenderingResources rendering_resources{
@@ -568,7 +570,7 @@ int main(int argc, char** argv) {
             .particle_resources = particle_resources,
             .trail_resources = trail_resources,
             .rendering_resources = rendering_resources,
-            .gpu_object_factory = gpu_object_factory,
+            .gpu_object_factory = caching_gpu_object_factory,
             .gpu_vertex_array_renderer = gpu_vertex_array_renderer,
             .z_order = 0 };
         RenderingContextGuard rcg{ primary_rendering_context };
@@ -584,8 +586,8 @@ int main(int argc, char** argv) {
         InstancesRendererGuard instances_renderer_guard{
             &small_instances_bg_worker,
             &large_instances_bg_worker,
-            std::make_shared<ArrayInstancesRenderers>(gpu_object_factory, gpu_vertex_array_renderer),
-            std::make_shared<ArrayInstancesRenderer>(gpu_object_factory, gpu_vertex_array_renderer)};
+            std::make_shared<ArrayInstancesRenderers>(caching_gpu_object_factory, gpu_vertex_array_renderer),
+            std::make_shared<ArrayInstancesRenderer>(caching_gpu_object_factory, gpu_vertex_array_renderer)};
         Scene scene{ "main_scene" };
         DestructionGuard scene_destruction_guard{[&](){
             scene.shutdown();

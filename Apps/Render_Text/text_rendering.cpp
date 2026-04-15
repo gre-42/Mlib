@@ -21,6 +21,7 @@
 #include <Mlib/OpenGL/Text/Text_Interpolation_Mode.hpp>
 #include <Mlib/OpenGL/Window.hpp>
 #include <Mlib/Physics/Units.hpp>
+#include <Mlib/Scene_Graph/Render/Caching_Gpu_Object_Factory.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
 #include <Mlib/Threads/Realtime_Threads.hpp>
 #include <iostream>
@@ -67,7 +68,8 @@ int main(int argc, char** argv)
         // Resources
         // ---------
         OpenGLObjectFactory gpu_object_factory;
-        SceneNodeResources scene_node_resources{gpu_object_factory};
+        CachingGpuObjectFactory caching_gpu_object_factory{gpu_object_factory};
+        SceneNodeResources scene_node_resources{caching_gpu_object_factory};
         ParticleResources particle_resources;
         TrailResources trail_resources;
         RenderingResources rendering_resources{
@@ -79,7 +81,7 @@ int main(int argc, char** argv)
             .particle_resources = particle_resources,
             .trail_resources = trail_resources,
             .rendering_resources = rendering_resources,
-            .gpu_object_factory = gpu_object_factory,
+            .gpu_object_factory = caching_gpu_object_factory,
             .gpu_vertex_array_renderer = gpu_vertex_array_renderer,
             .z_order = 0 };
         RenderingContextGuard rcg{ primary_rendering_context };
