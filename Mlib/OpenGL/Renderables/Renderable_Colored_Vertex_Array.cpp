@@ -64,20 +64,32 @@ inline bool has_instances(const ColoredVertexArray<T>& v) {
     return false;
 }
 
-inline std::shared_ptr<IGpuVertexData> RenderableColoredVertexArray::to_gpu_data(std::shared_ptr<IGpuVertexData> v) const {
+inline std::shared_ptr<IGpuVertexData> RenderableColoredVertexArray::to_gpu_data(
+    std::shared_ptr<IGpuVertexData> v,
+    CachingBehavior) const
+{
     return v;
 }
 
-inline std::shared_ptr<IGpuVertexData> RenderableColoredVertexArray::to_gpu_data(std::shared_ptr<ColoredVertexArray<float>> v) const {
-    return rcva_->gpu_object_factory_.create_vertex_data(v, rcva_->triangles_res_, TaskLocation::BACKGROUND);
+inline std::shared_ptr<IGpuVertexData> RenderableColoredVertexArray::to_gpu_data(
+    std::shared_ptr<ColoredVertexArray<float>> v,
+    CachingBehavior caching_behavior) const
+{
+    return rcva_->gpu_object_factory_.create_vertex_data(v, rcva_->triangles_res_, caching_behavior, TaskLocation::BACKGROUND);
 }
 
-inline std::shared_ptr<IGpuVertexArray> RenderableColoredVertexArray::to_gpu_array(std::shared_ptr<IGpuVertexArray> v) const {
+inline std::shared_ptr<IGpuVertexArray> RenderableColoredVertexArray::to_gpu_array(
+    std::shared_ptr<IGpuVertexArray> v,
+    CachingBehavior) const
+{
     return v;
 }
 
-inline std::shared_ptr<IGpuVertexArray> RenderableColoredVertexArray::to_gpu_array(std::shared_ptr<ColoredVertexArray<float>> v) const {
-    return rcva_->gpu_object_factory_.create_vertex_array(v, rcva_->triangles_res_, TaskLocation::BACKGROUND);
+inline std::shared_ptr<IGpuVertexArray> RenderableColoredVertexArray::to_gpu_array(
+    std::shared_ptr<ColoredVertexArray<float>> v,
+    CachingBehavior caching_behavior) const
+{
+    return rcva_->gpu_object_factory_.create_vertex_array(v, rcva_->triangles_res_, caching_behavior, TaskLocation::BACKGROUND);
 }
 
 inline const MeshMeta& get_meta(const std::shared_ptr<IGpuVertexData>& v) {
@@ -119,6 +131,7 @@ struct FloatingPointType<ColoredVertexArray<CompressedScenePos>> {
 RenderableColoredVertexArray::RenderableColoredVertexArray(
     RenderingResources& rendering_resources,
     const std::shared_ptr<const ColoredVertexArrayResource>& rcva,
+    CachingBehavior caching_behavior,
     const RenderableResourceFilter& renderable_resource_filter)
     : rcva_{ rcva }
     , continuous_blending_z_order_{ CONTINUOUS_BLENDING_Z_ORDER_UNDEFINED }
@@ -141,7 +154,7 @@ RenderableColoredVertexArray::RenderableColoredVertexArray(
                         has_instances(*t))
                     {
                         if constexpr (!std::is_same_v<TArray, IGpuVertexData> && std::is_same_v<TPos, float>) {
-                            aggregate_off_.push_back(to_gpu_array(t));
+                            aggregate_off_.push_back(to_gpu_array(t, caching_behavior));
                             required_occluder_passes_.insert(meta.material.occluder_pass);
                         } else {
                             throw std::runtime_error("Instances and aggregate=off require single precision (material: " + meta.material.identifier() + ')');
@@ -162,13 +175,13 @@ RenderableColoredVertexArray::RenderableColoredVertexArray(
                         }
                     } else if (meta.material.aggregate_mode == AggregateMode::INSTANCES_ONCE) {
                         if constexpr (!std::is_same_v<TArray, IGpuVertexArray> && std::is_same_v<TPos, float>) {
-                            instances_once_.push_back(to_gpu_data(t));
+                            instances_once_.push_back(to_gpu_data(t, caching_behavior));
                         } else {
                             throw std::runtime_error("Aggregate=instances_once requires single precision (material: " + meta.material.identifier() + ')');
                         }
                     } else if (meta.material.aggregate_mode == AggregateMode::INSTANCES_SORTED_CONTINUOUSLY) {
                         if constexpr (!std::is_same_v<TArray, IGpuVertexArray> && std::is_same_v<TPos, float>) {
-                            instances_sorted_continuously_.push_back(to_gpu_data(t));
+                            instances_sorted_continuously_.push_back(to_gpu_data(t, caching_behavior));
                         } else {
                             throw std::runtime_error("Aggregate=instances_sorted_continuously requires single precision (material: " + meta.material.identifier() + ')');
                         }

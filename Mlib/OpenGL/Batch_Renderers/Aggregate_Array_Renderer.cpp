@@ -14,6 +14,7 @@
 #include <Mlib/OpenGL/Yield.hpp>
 #include <Mlib/Scene_Graph/Elements/Color_Style.hpp>
 #include <Mlib/Scene_Graph/Render/Batch_Renderers/Task_Location.hpp>
+#include <Mlib/Scene_Graph/Render/Caching_Behavior.hpp>
 #include <Mlib/Scene_Graph/Render_Pass.hpp>
 #include <Mlib/Scene_Graph/Resources/Renderable_Resource_Filter.hpp>
 #include <Mlib/Testing/Assert.hpp>
@@ -378,7 +379,7 @@ void AggregateArrayRenderer::update_aggregates(
         std::list<std::shared_ptr<ColoredVertexArray<CompressedScenePos>>>{});
     auto rcvai = mat_vectors.empty()
         ? nullptr
-        : std::make_unique<RenderableColoredVertexArray>(rendering_resources_, rcva, RenderableResourceFilter{});
+        : std::make_unique<RenderableColoredVertexArray>(rendering_resources_, rcva, CachingBehavior::DISABLED, RenderableResourceFilter{});
     {
         std::scoped_lock lock_guard{ mutex_ };
         if (next_rcvai_ != nullptr) {

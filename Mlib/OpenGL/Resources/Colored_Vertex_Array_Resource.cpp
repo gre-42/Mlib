@@ -46,6 +46,7 @@
 #include <Mlib/Scene_Graph/Instantiation/IInstantiation_Reference.hpp>
 #include <Mlib/Scene_Graph/Instantiation/Root_Instantiation_Options.hpp>
 #include <Mlib/Scene_Graph/Interfaces/IImposters.hpp>
+#include <Mlib/Scene_Graph/Render/Caching_Behavior.hpp>
 #include <Mlib/Scene_Graph/Render/IGpu_Instance_Buffers.hpp>
 #include <Mlib/Scene_Graph/Render/IGpu_Object_Factory.hpp>
 #include <Mlib/Scene_Graph/Render/IGpu_Vertex_Array.hpp>
@@ -194,6 +195,7 @@ void ColoredVertexArrayResource::instantiate_child_renderable(const ChildInstant
     options.scene_node->add_renderable(options.instance_name, std::make_shared<RenderableColoredVertexArray>(
         *options.rendering_resources,
         shared_from_this(),
+        CachingBehavior::ENABLED,
         options.renderable_resource_filter));
 }
 

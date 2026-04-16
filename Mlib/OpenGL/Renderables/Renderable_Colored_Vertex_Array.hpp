@@ -19,12 +19,14 @@ enum class ExternalRenderPassType;
 struct RenderPass;
 class IGpuVertexArray;
 class IGpuVertexData;
+enum class CachingBehavior;
 
 class RenderableColoredVertexArray final: public Renderable {
 public:
     RenderableColoredVertexArray(
         RenderingResources& rendering_resources,
         const std::shared_ptr<const ColoredVertexArrayResource>& rcva,
+        CachingBehavior caching_behavior,
         const RenderableResourceFilter& renderable_resource_filter);
     ~RenderableColoredVertexArray();
     virtual PhysicsMaterial physics_attributes() const override;
@@ -87,10 +89,10 @@ public:
     void wait() const;
 private:
     UUVector<OffsetAndQuaternion<float, float>> calculate_absolute_bone_transformations(const AnimationState* animation_state) const;
-    std::shared_ptr<IGpuVertexData> to_gpu_data(std::shared_ptr<IGpuVertexData> v) const;
-    std::shared_ptr<IGpuVertexData> to_gpu_data(std::shared_ptr<ColoredVertexArray<float>> v) const;
-    std::shared_ptr<IGpuVertexArray> to_gpu_array(std::shared_ptr<IGpuVertexArray> v) const;
-    std::shared_ptr<IGpuVertexArray> to_gpu_array(std::shared_ptr<ColoredVertexArray<float>> v) const;
+    std::shared_ptr<IGpuVertexData> to_gpu_data(std::shared_ptr<IGpuVertexData> v, CachingBehavior caching_behavior) const;
+    std::shared_ptr<IGpuVertexData> to_gpu_data(std::shared_ptr<ColoredVertexArray<float>> v, CachingBehavior caching_behavior) const;
+    std::shared_ptr<IGpuVertexArray> to_gpu_array(std::shared_ptr<IGpuVertexArray> v, CachingBehavior caching_behavior) const;
+    std::shared_ptr<IGpuVertexArray> to_gpu_array(std::shared_ptr<ColoredVertexArray<float>> v, CachingBehavior caching_behavior) const;
 
     std::shared_ptr<const ColoredVertexArrayResource> rcva_;
     std::list<std::shared_ptr<IGpuVertexArray>> aggregate_off_;

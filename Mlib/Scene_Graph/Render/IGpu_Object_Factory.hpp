@@ -11,12 +11,14 @@ class ColoredVertexArray;
 class IGpuVertexArray;
 class IGpuVertexData;
 enum class TaskLocation;
+enum class CachingBehavior;
 
 class IGpuObjectFactory {
 public:
     virtual std::shared_ptr<IGpuVertexData> create_vertex_data(
         const std::shared_ptr<ColoredVertexArray<float>>& cva,
         const std::shared_ptr<AnimatedColoredVertexArrays>& animation,
+        CachingBehavior caching_behavior,
         TaskLocation task_location) const = 0;
     virtual std::shared_ptr<IGpuVertexArray> create_vertex_array_with_static_instances(
         const std::shared_ptr<IGpuVertexData>& cvas,
@@ -32,9 +34,10 @@ public:
     inline std::shared_ptr<IGpuVertexArray> create_vertex_array(
         const std::shared_ptr<ColoredVertexArray<float>>& cva,
         const std::shared_ptr<AnimatedColoredVertexArrays>& animation,
+        CachingBehavior caching_behavior,
         TaskLocation task_location) const
     {
-        return create_vertex_array(create_vertex_data(cva, animation, task_location), nullptr);
+        return create_vertex_array(create_vertex_data(cva, animation, caching_behavior, task_location), nullptr);
     }
 };
 

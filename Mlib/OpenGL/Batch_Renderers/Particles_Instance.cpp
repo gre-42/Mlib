@@ -1,4 +1,3 @@
-
 #include "Particles_Instance.hpp"
 #include <Mlib/Geometry/Material/Particle_Type.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
@@ -11,6 +10,7 @@
 #include <Mlib/OpenGL/Resources/Colored_Vertex_Array_Resource/Clear_On_Update.hpp>
 #include <Mlib/OpenGL/Resources/Colored_Vertex_Array_Resource/Dynamic_Instance_Buffers.hpp>
 #include <Mlib/Scene_Graph/Instances/Static_World.hpp>
+#include <Mlib/Scene_Graph/Render/Caching_Behavior.hpp>
 #include <Mlib/Scene_Graph/Render/IGpu_Vertex_Data.hpp>
 #include <Mlib/Scene_Graph/Render_Pass.hpp>
 
@@ -40,7 +40,7 @@ ParticlesInstance::ParticlesInstance(
         get_has_per_instance_continuous_texture_layer(vertex_data->mesh_meta()),
         get_clear_on_update(particle_type)) }
     , cvar_{ std::make_shared<ColoredVertexArrayResource>(vertex_data, dynamic_instance_buffers_) }
-    , rcva_{ std::make_unique<RenderableColoredVertexArray>(RenderingContextStack::primary_rendering_resources(), cvar_, filter) }
+    , rcva_{ std::make_unique<RenderableColoredVertexArray>(RenderingContextStack::primary_rendering_resources(), cvar_, CachingBehavior::DISABLED, filter) }
     , particle_type_{ particle_type }
 {}
 

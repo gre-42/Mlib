@@ -1,4 +1,3 @@
-
 #include "Scene_Node_Resources.hpp"
 #include <Mlib/Geometry/Graph/Point_And_Flags.hpp>
 #include <Mlib/Geometry/Graph/Points_And_Adjacency.hpp>
@@ -20,6 +19,7 @@
 #include <Mlib/Scene_Graph/Interfaces/IScene_Node_Resource.hpp>
 #include <Mlib/Scene_Graph/Interfaces/Way_Points.hpp>
 #include <Mlib/Scene_Graph/Render/Batch_Renderers/Task_Location.hpp>
+#include <Mlib/Scene_Graph/Render/Caching_Behavior.hpp>
 #include <Mlib/Scene_Graph/Render/Gpu_Vertex_Datas.hpp>
 #include <Mlib/Scene_Graph/Render/IGpu_Object_Factory.hpp>
 #include <Mlib/Scene_Graph/Resources/Renderable_Resource_Filter.hpp>
@@ -674,7 +674,7 @@ const GpuVertexDatas& SceneNodeResources::get_gpu_vertex_data_group(
         *transformation_modes.begin()};
     for (const auto& acva : acvas) {
         for (const auto& scva : acva->scvas) {
-            result.vertex_data.emplace_back(gpu_object_factory_.create_vertex_data(scva, acva, TaskLocation::BACKGROUND));
+            result.vertex_data.emplace_back(gpu_object_factory_.create_vertex_data(scva, acva, CachingBehavior::ENABLED, TaskLocation::BACKGROUND));
         }
     }
     return gpu_vertex_data_groups_.add(name, std::move(result));
@@ -694,5 +694,5 @@ std::shared_ptr<IGpuVertexData> SceneNodeResources::get_gpu_vertex_data(
     if (auto it = gpu_vertex_datas_.try_get(scva); it != nullptr) {
         return *it;
     }
-    return gpu_vertex_datas_.add(scva, gpu_object_factory_.create_vertex_data(scva, acvas, TaskLocation::BACKGROUND));
+    return gpu_vertex_datas_.add(scva, gpu_object_factory_.create_vertex_data(scva, acvas, CachingBehavior::ENABLED, TaskLocation::BACKGROUND));
 }

@@ -1,4 +1,3 @@
-
 #include "Trails_Instance.hpp"
 #include <Mlib/Geometry/Colored_Vertex.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
@@ -8,6 +7,7 @@
 #include <Mlib/OpenGL/Rendering_Context.hpp>
 #include <Mlib/OpenGL/Resources/Colored_Vertex_Array_Resource.hpp>
 #include <Mlib/OpenGL/Resources/Colored_Vertex_Array_Resource/Animated_Texture_Layer.hpp>
+#include <Mlib/Scene_Graph/Render/Caching_Behavior.hpp>
 #include <Mlib/Scene_Graph/Render_Pass.hpp>
 
 using namespace Mlib;
@@ -49,7 +49,7 @@ TrailsInstance::TrailsInstance(
     , dynamic_vertex_buffers_{ std::make_shared<AnimatedTextureLayerBuffers>(max_num_segments, gen_meta(texture, shading, continuous_layer_x, continuous_layer_y)) }
     , dynamic_vertex_array_{ std::make_shared<GpuRenderableColoredVertexArray>(dynamic_vertex_buffers_, nullptr) }
     , cvar_{ std::make_shared<ColoredVertexArrayResource>(dynamic_vertex_array_) }
-    , rcva_{ std::make_unique<RenderableColoredVertexArray>(RenderingContextStack::primary_rendering_resources(), cvar_, filter) }
+    , rcva_{ std::make_unique<RenderableColoredVertexArray>(RenderingContextStack::primary_rendering_resources(), cvar_, CachingBehavior::DISABLED, filter) }
     , filter_{ filter }
 {}
 

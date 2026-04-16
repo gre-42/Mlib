@@ -1,4 +1,3 @@
-
 #include "OpenGL_Object_Factory.hpp"
 #include <Mlib/Geometry/Colored_Vertex.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
@@ -9,6 +8,7 @@
 #include <Mlib/OpenGL/Resources/Colored_Vertex_Array_Resource/Static_Instance_Buffers.hpp>
 #include <Mlib/Scene_Graph/Instances/Billboard_Container.hpp>
 #include <Mlib/Scene_Graph/Instances/Sorted_Vertex_Array_Instances.hpp>
+#include <Mlib/Scene_Graph/Render/Caching_Behavior.hpp>
 
 using namespace Mlib;
 
@@ -26,10 +26,14 @@ OpenGLObjectFactory::~OpenGLObjectFactory() = default;
 std::shared_ptr<IGpuVertexData> OpenGLObjectFactory::create_vertex_data(
     const std::shared_ptr<ColoredVertexArray<float>>& cva,
     const std::shared_ptr<AnimatedColoredVertexArrays>& animation,
+    CachingBehavior caching_behavior,
     TaskLocation task_location) const
 {
     if (cva->triangles.empty()) {
         throw std::runtime_error("OpenGLObjectFactory::create_vertex_data on empty array \"" + cva->meta.name.full_name() + '"');
+    }
+    if (caching_behavior != CachingBehavior::DISABLED) {
+        throw std::runtime_error("OpenGLObjectFactory::create_vertex_data does not support caching, please use the caching decorator");
     }
     return std::make_shared<DistantTriangleHider>(
         cva,

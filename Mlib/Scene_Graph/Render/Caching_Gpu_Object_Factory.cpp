@@ -1,5 +1,6 @@
 #include "Caching_Gpu_Object_Factory.hpp"
 #include <Mlib/Os/Os.hpp>
+#include <Mlib/Scene_Graph/Render/Caching_Behavior.hpp>
 
 using namespace Mlib;
 
@@ -12,13 +13,17 @@ CachingGpuObjectFactory::~CachingGpuObjectFactory() = default;
 std::shared_ptr<IGpuVertexData> CachingGpuObjectFactory::create_vertex_data(
     const std::shared_ptr<ColoredVertexArray<float>>& cva,
     const std::shared_ptr<AnimatedColoredVertexArrays>& animation,
+    CachingBehavior caching_behavior,
     TaskLocation task_location) const
 {
+    if (caching_behavior == CachingBehavior::DISABLED) {
+        return child_.create_vertex_data(cva, animation, CachingBehavior::DISABLED, task_location);
+    }
     auto key = ArrayDataKey{cva, animation};
     if (auto it = vertex_array_datas_.find(key); it != vertex_array_datas_.end()) {
         return it->second;
     }
-    auto res = vertex_array_datas_.try_emplace(std::move(key), child_.create_vertex_data(cva, animation, task_location));
+    auto res = vertex_array_datas_.try_emplace(std::move(key), child_.create_vertex_data(cva, animation, CachingBehavior::DISABLED, task_location));
     if (!res.second) {
         verbose_abort("Could not insert GPU vertex data");
     }
