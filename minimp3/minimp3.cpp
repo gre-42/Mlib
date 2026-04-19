@@ -1,7 +1,8 @@
+#include <Mlib/Misc/Pragma_Clang.hpp>
 #define MINIMP3_IMPLEMENTATION
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wsign-conversion"
-#pragma clang diagnostic ignored "-Wimplicit-int-float-conversion"
-#pragma clang diagnostic ignored "-Wshorten-64-to-32"
+PRAGMA_CLANG_DIAGNOSTIC_PUSH
+PRAGMA_CLANG_DIAGNOSTIC_IGNORED(-Wsign-conversion)
+PRAGMA_CLANG_DIAGNOSTIC_IGNORED(-Wimplicit-int-float-conversion)
+PRAGMA_CLANG_DIAGNOSTIC_IGNORED(-Wshorten-64-to-32)
 #include "minimp3_ex.h"
-#pragma clang diagnostic pop
+PRAGMA_CLANG_DIAGNOSTIC_POP
