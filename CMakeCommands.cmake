@@ -370,10 +370,6 @@ macro(enable_omp)
         set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
         set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
     endif()
-    # if (MSVC)
-    #     message(STATUS "Enable OpenMP (MSVC)")
-    #     set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP")
-    # endif()
 endmacro()
 
 # http://public.kitware.com/pipermail/cmake/2015-October/061889.html
