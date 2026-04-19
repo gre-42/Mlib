@@ -1007,12 +1007,12 @@ public:
             std::vector<TData> rowv;
             std::stringstream srow(line);
             TData value;
-            PRAGMA_GCC(diagnostic push)
-            PRAGMA_GCC(diagnostic ignored -Wmaybe-uninitialized)
+            PRAGMA_GCC_DIAGNOSTIC_PUSH
+            PRAGMA_GCC_DIAGNOSTIC_IGNORED(-Wmaybe-uninitialized)
             while(srow >> ReadNum{value}) {
                 rowv.push_back(value);
             }
-            PRAGMA_GCC(diagnostic pop)
+            PRAGMA_GCC_DIAGNOSTIC_POP
             if (srow.fail() && !srow.eof()) {
                 throw std::runtime_error("Could not read line of file \"" + filename.string() + '"');
             }

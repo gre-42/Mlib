@@ -55,10 +55,10 @@ public:
     FixedArray(Uninitialized) {}
     explicit FixedArray(const TData& rhs) {
         for (TData& v : flat_iterable()) {
-PRAGMA_GCC(diagnostic push)
-PRAGMA_GCC(diagnostic ignored -Warray-bounds)
+PRAGMA_GCC_DIAGNOSTIC_PUSH
+PRAGMA_GCC_DIAGNOSTIC_IGNORED(-Warray-bounds)
             v = rhs;
-PRAGMA_GCC(diagnostic pop)
+PRAGMA_GCC_DIAGNOSTIC_POP
         }
     }
     explicit FixedArray(const Array<TData>& a) {
@@ -86,10 +86,10 @@ PRAGMA_GCC(diagnostic pop)
         FixedArray<TData, tshape0, tshape...> result = uninitialized;
         assert(nelements == result.nelements());
         std::copy(data, data + nelements, result.flat_begin());
-PRAGMA_GCC(diagnostic push)
-PRAGMA_GCC(diagnostic ignored -Wmaybe-uninitialized)
+PRAGMA_GCC_DIAGNOSTIC_PUSH
+PRAGMA_GCC_DIAGNOSTIC_IGNORED(-Wmaybe-uninitialized)
         return result;
-PRAGMA_GCC(diagnostic pop)
+PRAGMA_GCC_DIAGNOSTIC_POP
     }
     template<std::convertible_to<initializer_type>... Values>
         requires (sizeof...(Values) == tshape0)
@@ -106,10 +106,10 @@ PRAGMA_GCC(diagnostic pop)
     }
     FixedArray& operator = (const TData& rhs) {
         for (TData& v : flat_iterable()) {
-PRAGMA_GCC(diagnostic push)
-PRAGMA_GCC(diagnostic ignored -Warray-bounds)
+PRAGMA_GCC_DIAGNOSTIC_PUSH
+PRAGMA_GCC_DIAGNOSTIC_IGNORED(-Warray-bounds)
             v = rhs;
-PRAGMA_GCC(diagnostic pop)
+PRAGMA_GCC_DIAGNOSTIC_POP
         }
         return *this;
     }

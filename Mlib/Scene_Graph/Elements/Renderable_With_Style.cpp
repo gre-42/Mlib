@@ -45,10 +45,10 @@ const ColorStyle* RenderableWithStyle::style(
             return &*style_;
         }
         style_.reset();
-PRAGMA_GCC(diagnostic push)
-PRAGMA_GCC(diagnostic ignored -Wmaybe-uninitialized)
+PRAGMA_GCC_DIAGNOSTIC_PUSH
+PRAGMA_GCC_DIAGNOSTIC_IGNORED(-Wmaybe-uninitialized)
         style_.emplace();
-PRAGMA_GCC(diagnostic pop)
+PRAGMA_GCC_DIAGNOSTIC_POP
         Hasher hasher1{ SEED };
         for (const auto& style : color_styles) {
             if (style->matches(name)) {

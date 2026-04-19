@@ -87,10 +87,10 @@ HudTracker::HudTracker(
     , far_plane_{ NAN }
 {
     if (exclusive_nodes.has_value()) {
-PRAGMA_GCC(diagnostic push)
-PRAGMA_GCC(diagnostic ignored -Wmaybe-uninitialized)
+PRAGMA_GCC_DIAGNOSTIC_PUSH
+PRAGMA_GCC_DIAGNOSTIC_IGNORED(-Wmaybe-uninitialized)
         exclusive_nodes_.emplace();
-PRAGMA_GCC(diagnostic pop)
+PRAGMA_GCC_DIAGNOSTIC_POP
         for (const auto& element : *exclusive_nodes) {
             if (!exclusive_nodes_->emplace(element, CURRENT_SOURCE_LOCATION).second) {
                 throw std::runtime_error("Duplicate exclusive nodes");

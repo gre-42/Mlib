@@ -123,10 +123,10 @@ void Mlib::merge_textures(
                                     assert_true(all(v.uv >= UV_ATLAS_MIN));
                                     assert_true(all(v.uv <= UV_ATLAS_MAX));
                                     v.uv = tile.position + v.uv * tile.size;
-PRAGMA_GCC(diagnostic push)
-PRAGMA_GCC(diagnostic ignored -Wstringop-overflow)
+PRAGMA_GCC_DIAGNOSTIC_PUSH
+PRAGMA_GCC_DIAGNOSTIC_IGNORED(-Wstringop-overflow)
                                     v.color = Colors::from_rgb(cva->meta.material.shading.ambient + cva->meta.material.shading.diffuse);
-PRAGMA_GCC(diagnostic pop)
+PRAGMA_GCC_DIAGNOSTIC_POP
                                 }
                             }
                             if (atlas.tiles.size() != 1) {

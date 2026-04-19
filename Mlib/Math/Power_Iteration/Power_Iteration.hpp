@@ -54,13 +54,13 @@ void power_iteration(
             }
         }
 
-PRAGMA_GCC(diagnostic push)
-PRAGMA_GCC(diagnostic ignored -Wmaybe-uninitialized)
+PRAGMA_GCC_DIAGNOSTIC_PUSH
+PRAGMA_GCC_DIAGNOSTIC_IGNORED(-Wmaybe-uninitialized)
         // Required for close-to-identical eigenvalues.
         if ((n > 0) && (std::abs(s - s_old) < 1e-7)) {
             return;
         }
-PRAGMA_GCC(diagnostic pop)
+PRAGMA_GCC_DIAGNOSTIC_POP
     }
     throw PowerIterationDidNotConvergeError("power iteration did not converge");
 }

@@ -5,9 +5,9 @@ namespace Mlib {
 
 struct NanInitialized {};
 
-PRAGMA_GCC(diagnostic push)
-PRAGMA_GCC(diagnostic ignored -Wunused-variable)
+PRAGMA_GCC_DIAGNOSTIC_PUSH
+PRAGMA_GCC_DIAGNOSTIC_IGNORED(-Wunused-variable)
 static NanInitialized nan_initialized;
-PRAGMA_GCC(diagnostic pop)
+PRAGMA_GCC_DIAGNOSTIC_POP
 
 }

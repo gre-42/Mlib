@@ -64,10 +64,10 @@ FixedArray<TData, tsize...>& operator *= (
 {
     for (TData& v : a.flat_iterable())
     {
-PRAGMA_GCC(diagnostic push)
-PRAGMA_GCC(diagnostic ignored -Warray-bounds)
+PRAGMA_GCC_DIAGNOSTIC_PUSH
+PRAGMA_GCC_DIAGNOSTIC_IGNORED(-Warray-bounds)
         v *= b;
-PRAGMA_GCC(diagnostic pop)
+PRAGMA_GCC_DIAGNOSTIC_POP
     }
     return a;
 }
@@ -78,10 +78,10 @@ FixedArray<TData, tsize...>& operator /= (
     const TData& b)
 {
     for (TData& v : a.flat_iterable()) {
-PRAGMA_GCC(diagnostic push)
-PRAGMA_GCC(diagnostic ignored -Warray-bounds)
+PRAGMA_GCC_DIAGNOSTIC_PUSH
+PRAGMA_GCC_DIAGNOSTIC_IGNORED(-Warray-bounds)
         v /= b;
-PRAGMA_GCC(diagnostic pop)
+PRAGMA_GCC_DIAGNOSTIC_POP
     }
     return a;
 }
@@ -92,10 +92,10 @@ FixedArray<TData, tsize...>& operator /= (
     I b)
 {
     for (TData& v : a.flat_iterable()) {
-PRAGMA_GCC(diagnostic push)
-PRAGMA_GCC(diagnostic ignored -Warray-bounds)
+PRAGMA_GCC_DIAGNOSTIC_PUSH
+PRAGMA_GCC_DIAGNOSTIC_IGNORED(-Warray-bounds)
         v /= b;
-PRAGMA_GCC(diagnostic pop)
+PRAGMA_GCC_DIAGNOSTIC_POP
     }
     return a;
 }

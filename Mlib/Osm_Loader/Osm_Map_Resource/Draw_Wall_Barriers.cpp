@@ -44,10 +44,10 @@ void Mlib::draw_wall_barriers(
     for (const auto& bu : buildings) {
         ++bid;
         for (const auto& bl : bu.levels) {
-PRAGMA_GCC(diagnostic push)
-PRAGMA_GCC(diagnostic ignored -Warray-bounds)
+PRAGMA_GCC_DIAGNOSTIC_PUSH
+PRAGMA_GCC_DIAGNOSTIC_IGNORED(-Warray-bounds)
             auto smid = std::to_string(mid++);
-PRAGMA_GCC(diagnostic pop)
+PRAGMA_GCC_DIAGNOSTIC_POP
             auto get_style = [&]() -> const BarrierStyle& {
                 if (bu.style.empty()) {
                     if (barrier_styles.empty()) {
