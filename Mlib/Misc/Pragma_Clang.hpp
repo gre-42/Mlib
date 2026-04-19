@@ -1,6 +1,7 @@
 #pragma once
 
 #ifdef __clang__
+    // From: https://stackoverflow.com/questions/7608229/preprocessor-token-pasting-in-gcc-s-pragma-operator
     #define DO_CLANG_PRAGMA(x)                      _Pragma(#x)
     #define PRAGMA_CLANG_DIAGNOSTIC_IGNORED(x)      DO_CLANG_PRAGMA(clang diagnostic ignored #x)
     #define PRAGMA_CLANG_DIAGNOSTIC_PUSH            DO_CLANG_PRAGMA(clang diagnostic push)
