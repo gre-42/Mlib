@@ -17,8 +17,7 @@
 
 using namespace Mlib;
 
-PRAGMA_GCC(push_options)
-PRAGMA_GCC(optimize ("O3"))
+PRAGMA_GCC_O3_BEGIN
 
 LazyTransformedMesh::LazyTransformedMesh(
     const TransformationMatrix<SceneDir, ScenePos, 3>& transformation_matrix,
@@ -141,7 +140,7 @@ AxisAlignedBoundingBox<CompressedScenePos, 3> LazyTransformedMesh::aabb() const 
         transformed_bounding_sphere_.radius);
 }
 
-PRAGMA_GCC(pop_options)
+PRAGMA_GCC_O3_END
 
 void LazyTransformedMesh::print_info() const {
     lerr() << "LazyTransformedMesh";

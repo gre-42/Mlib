@@ -71,8 +71,7 @@ inline FixedArray<uint8_t, 4> multiply(const FixedArray<uint8_t, 4>& a, const Fi
 
 }
 
-PRAGMA_GCC(push_options)
-PRAGMA_GCC(optimize ("O3"))
+PRAGMA_GCC_O3_BEGIN
 
 enum class ColoredVertexFeatures {
     NONE = 0,
@@ -206,7 +205,7 @@ struct ColoredVertex {
     }
 };
 
-PRAGMA_GCC(pop_options)
+PRAGMA_GCC_O3_END
 
 template <class TPos>
 inline std::ostream& operator << (std::ostream& ostr, const ColoredVertex<TPos>& v) {

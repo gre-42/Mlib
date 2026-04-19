@@ -3,8 +3,7 @@
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Misc/Pragma_Gcc.hpp>
 
-PRAGMA_GCC(push_options)
-PRAGMA_GCC(optimize ("O3"))
+PRAGMA_GCC_O3_BEGIN
 
 namespace Mlib {
 
@@ -445,4 +444,4 @@ inline FixedArray<long double, 3, 4> assemble_homogeneous_NxN1<long double, 3>(
 
 }
 
-PRAGMA_GCC(pop_options)
+PRAGMA_GCC_O3_END

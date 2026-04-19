@@ -12,8 +12,7 @@
 #include <Mlib/Stats/Min_Max.hpp>
 #include <stdexcept>
 
-PRAGMA_GCC(push_options)
-PRAGMA_GCC(optimize ("O3"))
+PRAGMA_GCC_O3_BEGIN
 
 namespace Mlib {
 
@@ -125,4 +124,4 @@ using UBoundingSphere = DefaultUnitialized<BoundingSphere<TPos, tndim>>;
 
 }
 
-PRAGMA_GCC(pop_options)
+PRAGMA_GCC_O3_END

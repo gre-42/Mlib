@@ -15,8 +15,7 @@
 #include <Mlib/Testing/Assert.hpp>
 #include <stdexcept>
 
-PRAGMA_GCC(push_options)
-PRAGMA_GCC(optimize ("O3"))
+PRAGMA_GCC_O3_BEGIN
 
 using namespace Mlib;
 
@@ -374,4 +373,4 @@ void Mlib::handle_reflection(
     }
 }
 
-PRAGMA_GCC(pop_options)
+PRAGMA_GCC_O3_END

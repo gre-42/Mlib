@@ -4,8 +4,7 @@
 #include <Mlib/Misc/Pragma_Gcc.hpp>
 #include <stdexcept>
 
-PRAGMA_GCC(push_options)
-PRAGMA_GCC(optimize ("O3"))
+PRAGMA_GCC_O3_BEGIN
 
 namespace Mlib {
 
@@ -112,4 +111,4 @@ void closest_point_to_line(
 
 }
 
-PRAGMA_GCC(pop_options)
+PRAGMA_GCC_O3_END

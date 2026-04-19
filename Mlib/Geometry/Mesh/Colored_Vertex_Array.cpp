@@ -97,8 +97,7 @@ template <class TPos>
 ColoredVertexArray<TPos>::~ColoredVertexArray()
 {}
 
-PRAGMA_GCC(push_options)
-PRAGMA_GCC(optimize ("O3"))
+PRAGMA_GCC_O3_BEGIN
 
 template <class TPos>
 size_t ColoredVertexArray<TPos>::nelements() const {
@@ -794,7 +793,7 @@ ScenePos ColoredVertexArray<TPos>::max_center_distance2(BillboardId billboard_id
     return meta.material.max_center_distance2(billboard_id, meta.morphology, meta.name.full_name());
 }
 
-PRAGMA_GCC(pop_options)
+PRAGMA_GCC_O3_END
 
 template class Mlib::ColoredVertexArray<float>;
 template class Mlib::ColoredVertexArray<CompressedScenePos>;

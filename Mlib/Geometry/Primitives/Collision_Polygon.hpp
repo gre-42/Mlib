@@ -8,8 +8,7 @@
 #include <Mlib/Scene_Config/Scene_Precision.hpp>
 #include <cstdint>
 
-PRAGMA_GCC(push_options)
-PRAGMA_GCC(optimize ("O3"))
+PRAGMA_GCC_O3_BEGIN
 
 namespace Mlib {
 
@@ -95,4 +94,4 @@ struct CollisionPolygonAabb {
 
 }
 
-PRAGMA_GCC(pop_options)
+PRAGMA_GCC_O3_END

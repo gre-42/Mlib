@@ -17,8 +17,7 @@
 #include <variant>
 #include <vector>
 
-PRAGMA_GCC(push_options)
-PRAGMA_GCC(optimize ("O3"))
+PRAGMA_GCC_O3_BEGIN
 
 namespace Mlib {
 
@@ -693,4 +692,4 @@ private:
 
 }
 
-PRAGMA_GCC(pop_options)
+PRAGMA_GCC_O3_END

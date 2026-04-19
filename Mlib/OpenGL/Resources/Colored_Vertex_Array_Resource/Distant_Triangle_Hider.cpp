@@ -16,8 +16,7 @@
 #include <Mlib/Threads/Background_Loop.hpp>
 #include <stdexcept>
 
-PRAGMA_GCC(push_options)
-PRAGMA_GCC(optimize ("O3"))
+PRAGMA_GCC_O3_BEGIN
 
 using namespace Mlib;
 
@@ -407,4 +406,4 @@ void DistantTriangleHider::print_stats(std::ostream& ostr) const {
     cva_->print_stats(ostr);
 }
 
-PRAGMA_GCC(pop_options)
+PRAGMA_GCC_O3_END

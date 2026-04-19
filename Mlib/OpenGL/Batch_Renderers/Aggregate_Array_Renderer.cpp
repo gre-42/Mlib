@@ -289,8 +289,7 @@ AggregateArrayRenderer::AggregateArrayRenderer(RenderingResources& rendering_res
 
 AggregateArrayRenderer::~AggregateArrayRenderer() = default;
 
-PRAGMA_GCC(push_options)
-PRAGMA_GCC(optimize ("O3"))
+PRAGMA_GCC_O3_BEGIN
 
 void AggregateArrayRenderer::update_aggregates(
     const FixedArray<ScenePos, 3>& offset,
@@ -390,7 +389,7 @@ void AggregateArrayRenderer::update_aggregates(
     }
 }
 
-PRAGMA_GCC(pop_options)
+PRAGMA_GCC_O3_END
 
 void AggregateArrayRenderer::render_aggregates(
     const FixedArray<ScenePos, 4, 4>& vp,

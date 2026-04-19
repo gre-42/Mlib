@@ -2,8 +2,7 @@
 #include <Mlib/Geometry/Primitives/Plane_Nd.hpp>
 #include <Mlib/Misc/Pragma_Gcc.hpp>
 
-PRAGMA_GCC(push_options)
-PRAGMA_GCC(optimize ("O3"))
+PRAGMA_GCC_O3_BEGIN
 
 namespace Mlib {
 
@@ -105,4 +104,4 @@ ConvexPolygon3D<TDir, TPos, tnvertices> operator - (
 
 }
 
-PRAGMA_GCC(pop_options)
+PRAGMA_GCC_O3_END

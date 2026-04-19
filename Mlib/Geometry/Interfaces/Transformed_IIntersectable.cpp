@@ -6,8 +6,7 @@
 #include <Mlib/Geometry/Primitives/Intersectors/Aabb_Sphere_Intersection.hpp>
 #include <Mlib/Misc/Pragma_Gcc.hpp>
 
-PRAGMA_GCC(push_options)
-PRAGMA_GCC(optimize ("O3"))
+PRAGMA_GCC_O3_BEGIN
 
 using namespace Mlib;
 
@@ -207,4 +206,4 @@ bool TransformedIntersectable::can_spawn_at_any(const TOther& o) const {
     return child_->can_spawn_at(o.transformed(trafo_.inverted()));
 }
 
-PRAGMA_GCC(pop_options)
+PRAGMA_GCC_O3_END

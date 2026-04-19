@@ -6,8 +6,7 @@
 #include <Mlib/Misc/Pragma_Gcc.hpp>
 #include <stdexcept>
 
-PRAGMA_GCC(push_options)
-PRAGMA_GCC(optimize ("O3"))
+PRAGMA_GCC_O3_BEGIN
 
 namespace Mlib {
 
@@ -120,4 +119,4 @@ FixedArray<TData, 2> distance_point_to_triangle_3d(
 
 }
 
-PRAGMA_GCC(pop_options)
+PRAGMA_GCC_O3_END
