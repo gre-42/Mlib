@@ -1008,7 +1008,7 @@ public:
             std::stringstream srow(line);
             TData value;
             PRAGMA_GCC(diagnostic push)
-            PRAGMA_GCC(diagnostic ignored "-Wmaybe-uninitialized")
+            PRAGMA_GCC(diagnostic ignored -Wmaybe-uninitialized)
             while(srow >> ReadNum{value}) {
                 rowv.push_back(value);
             }

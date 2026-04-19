@@ -147,8 +147,8 @@ void Mlib::handle_line_triangle_intersection(const IntersectionScene& c)
             .scene = c,
             .iinfo = std::move(iinfo)};
 PRAGMA_GCC(diagnostic push)
-PRAGMA_GCC(diagnostic ignored "-Warray-bounds")
-PRAGMA_GCC(diagnostic ignored "-Wstringop-overflow")
+PRAGMA_GCC(diagnostic ignored -Warray-bounds)
+PRAGMA_GCC(diagnostic ignored -Wstringop-overflow)
         assert_true(c.l1.has_value());
 PRAGMA_GCC(diagnostic pop)
         auto res = c.history.raycast_intersections.try_emplace(make_orderable(c.l1->line), std::move(cc));

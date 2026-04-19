@@ -46,7 +46,7 @@ const ColorStyle* RenderableWithStyle::style(
         }
         style_.reset();
 PRAGMA_GCC(diagnostic push)
-PRAGMA_GCC(diagnostic ignored "-Wmaybe-uninitialized")
+PRAGMA_GCC(diagnostic ignored -Wmaybe-uninitialized)
         style_.emplace();
 PRAGMA_GCC(diagnostic pop)
         Hasher hasher1{ SEED };

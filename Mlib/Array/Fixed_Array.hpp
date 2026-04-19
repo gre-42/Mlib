@@ -56,7 +56,7 @@ public:
     explicit FixedArray(const TData& rhs) {
         for (TData& v : flat_iterable()) {
 PRAGMA_GCC(diagnostic push)
-PRAGMA_GCC(diagnostic ignored "-Warray-bounds")
+PRAGMA_GCC(diagnostic ignored -Warray-bounds)
             v = rhs;
 PRAGMA_GCC(diagnostic pop)
         }
@@ -87,7 +87,7 @@ PRAGMA_GCC(diagnostic pop)
         assert(nelements == result.nelements());
         std::copy(data, data + nelements, result.flat_begin());
 PRAGMA_GCC(diagnostic push)
-PRAGMA_GCC(diagnostic ignored "-Wmaybe-uninitialized")
+PRAGMA_GCC(diagnostic ignored -Wmaybe-uninitialized)
         return result;
 PRAGMA_GCC(diagnostic pop)
     }
@@ -107,7 +107,7 @@ PRAGMA_GCC(diagnostic pop)
     FixedArray& operator = (const TData& rhs) {
         for (TData& v : flat_iterable()) {
 PRAGMA_GCC(diagnostic push)
-PRAGMA_GCC(diagnostic ignored "-Warray-bounds")
+PRAGMA_GCC(diagnostic ignored -Warray-bounds)
             v = rhs;
 PRAGMA_GCC(diagnostic pop)
         }

@@ -1,7 +1,7 @@
 #include "Encoding.hpp"
 #include <Mlib/Misc/Pragma_Gcc.hpp>
 PRAGMA_GCC(diagnostic push)
-PRAGMA_GCC(diagnostic ignored "-Wsign-conversion")
+PRAGMA_GCC(diagnostic ignored -Wsign-conversion)
 #include <boost/regex/pending/unicode_iterator.hpp>
 PRAGMA_GCC(diagnostic pop)
 

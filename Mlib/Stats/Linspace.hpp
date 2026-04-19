@@ -28,7 +28,7 @@ public:
             return (from_ + to_) / TData(2);
         }
 PRAGMA_GCC(diagnostic push)
-PRAGMA_GCC(diagnostic ignored "-Wmaybe-uninitialized")
+PRAGMA_GCC(diagnostic ignored -Wmaybe-uninitialized)
         return (from_ * TData(count_ - i - 1) + to_ * TData(i)) / TData(count_ - 1);
 PRAGMA_GCC(diagnostic pop)
     }

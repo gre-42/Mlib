@@ -55,7 +55,7 @@ void power_iteration(
         }
 
 PRAGMA_GCC(diagnostic push)
-PRAGMA_GCC(diagnostic ignored "-Wmaybe-uninitialized")
+PRAGMA_GCC(diagnostic ignored -Wmaybe-uninitialized)
         // Required for close-to-identical eigenvalues.
         if ((n > 0) && (std::abs(s - s_old) < 1e-7)) {
             return;

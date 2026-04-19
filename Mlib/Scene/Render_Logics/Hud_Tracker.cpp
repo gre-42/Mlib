@@ -88,7 +88,7 @@ HudTracker::HudTracker(
 {
     if (exclusive_nodes.has_value()) {
 PRAGMA_GCC(diagnostic push)
-PRAGMA_GCC(diagnostic ignored "-Wmaybe-uninitialized")
+PRAGMA_GCC(diagnostic ignored -Wmaybe-uninitialized)
         exclusive_nodes_.emplace();
 PRAGMA_GCC(diagnostic pop)
         for (const auto& element : *exclusive_nodes) {
