@@ -1,8 +1,9 @@
 #pragma once
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wsign-conversion"
+#include <Mlib/Misc/Pragma_Clang.hpp>
+PRAGMA_CLANG_DIAGNOSTIC_PUSH
+PRAGMA_CLANG_DIAGNOSTIC_IGNORED(-Wsign-conversion)
 #include <Recast.h>
-#pragma clang diagnostic pop
+PRAGMA_CLANG_DIAGNOSTIC_POP
 #include <chrono>
 
 namespace Mlib {

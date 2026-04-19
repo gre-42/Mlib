@@ -20,15 +20,16 @@
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Misc/Floating_Point_Exceptions.hpp>
 #include <Mlib/Navigation/InputGeom.hpp>
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wsign-conversion"
+#include <Mlib/Misc/Pragma_Clang.hpp>
+PRAGMA_CLANG_DIAGNOSTIC_PUSH
+PRAGMA_CLANG_DIAGNOSTIC_IGNORED(-Wsign-conversion)
 #include <DetourCommon.h>
 #include <DetourNavMesh.h>
 #include <DetourNavMeshBuilder.h>
 #include <DetourNavMeshQuery.h>
 #include <Recast.h>
 #include <RecastDump.h>
-#pragma clang diagnostic pop
+PRAGMA_CLANG_DIAGNOSTIC_POP
 #include <cmath>
 #include <cstring>
 

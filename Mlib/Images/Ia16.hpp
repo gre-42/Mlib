@@ -1,13 +1,14 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
+#include <Mlib/Misc/Pragma_Msc.hpp>
 #include <cmath>
 #include <stdexcept>
 #include <string>
 
 namespace Mlib {
 
-#pragma warning( push )
-#pragma warning( disable : 4103 )
+PRAGMA_MSC_WARNING_PUSH
+PRAGMA_MSC_WARNING_DISABLE(4103)
 #include <Mlib/Misc/Packed_Begin.hpp>
 // 16-bit, 2 * 8 bits
 struct Ia16 {
@@ -52,7 +53,7 @@ struct Ia16 {
     }
 } PACKED;
 #include <Mlib/Misc/Packed_End.hpp>
-#pragma warning ( pop )
+PRAGMA_MSC_WARNING_POP
 
 static_assert(sizeof(Ia16) == 2);
 

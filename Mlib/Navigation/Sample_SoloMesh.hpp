@@ -1,12 +1,13 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
+#include <Mlib/Misc/Pragma_Clang.hpp>
 #include <list>
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wsign-conversion"
+PRAGMA_CLANG_DIAGNOSTIC_PUSH
+PRAGMA_CLANG_DIAGNOSTIC_IGNORED(-Wsign-conversion)
 #include <DetourNavMesh.h>
 #include <DetourNavMeshQuery.h>
 #include <Recast.h>
-#pragma clang diagnostic pop
+PRAGMA_CLANG_DIAGNOSTIC_POP
 #include <list>
 #include <optional>
 
