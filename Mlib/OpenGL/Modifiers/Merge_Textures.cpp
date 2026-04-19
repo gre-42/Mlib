@@ -1,4 +1,3 @@
-
 #include "Merge_Textures.hpp"
 #include <Mlib/Geometry/Colored_Vertex.hpp>
 #include <Mlib/Geometry/Material.hpp>
@@ -12,6 +11,7 @@
 #include <Mlib/Geometry/Texture/Uv_Tile.hpp>
 #include <Mlib/Map/Unordered_Map.hpp>
 #include <Mlib/Math/Bool.hpp>
+#include <Mlib/Misc/Pragma_Gcc.hpp>
 #include <Mlib/OpenGL/Modifiers/Merged_Textures_Config.hpp>
 #include <Mlib/OpenGL/Resource_Managers/Rendering_Resources.hpp>
 #include <Mlib/OpenGL/Resources/Colored_Vertex_Array_Resource.hpp>
@@ -123,10 +123,10 @@ void Mlib::merge_textures(
                                     assert_true(all(v.uv >= UV_ATLAS_MIN));
                                     assert_true(all(v.uv <= UV_ATLAS_MAX));
                                     v.uv = tile.position + v.uv * tile.size;
-    #pragma GCC diagnostic push
-    #pragma GCC diagnostic ignored "-Wstringop-overflow"
+PRAGMA_GCC(diagnostic push)
+PRAGMA_GCC(diagnostic ignored "-Wstringop-overflow")
                                     v.color = Colors::from_rgb(cva->meta.material.shading.ambient + cva->meta.material.shading.diffuse);
-    #pragma GCC diagnostic pop
+PRAGMA_GCC(diagnostic pop)
                                 }
                             }
                             if (atlas.tiles.size() != 1) {

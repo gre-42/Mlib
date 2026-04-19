@@ -1,9 +1,10 @@
 #pragma once
+#include <Mlib/Misc/Pragma_Gcc.hpp>
 #ifdef __SANITIZE_ADDRESS__
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+PRAGMA_GCC(diagnostic push)
+PRAGMA_GCC(diagnostic ignored "-Wmaybe-uninitialized")
 #include <regex>
-#pragma GCC diagnostic pop
+PRAGMA_GCC(diagnostic pop)
 #else
 #include <regex>
 #endif

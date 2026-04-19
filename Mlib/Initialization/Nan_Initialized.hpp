@@ -1,12 +1,13 @@
 #pragma once
+#include <Mlib/Misc/Pragma_Gcc.hpp>
 
 namespace Mlib {
 
 struct NanInitialized {};
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wunused-variable"
+PRAGMA_GCC(diagnostic push)
+PRAGMA_GCC(diagnostic ignored "-Wunused-variable")
 static NanInitialized nan_initialized;
-#pragma GCC diagnostic pop
+PRAGMA_GCC(diagnostic pop)
 
 }

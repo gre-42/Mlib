@@ -1,17 +1,15 @@
-
 #include "Static_Transformed_Mesh.hpp"
 #include <Mlib/Geometry/Interfaces/IIntersectable.hpp>
 #include <Mlib/Geometry/Mesh/Typed_Mesh.hpp>
 #include <Mlib/Geometry/Primitives/Collision_Line.hpp>
 #include <Mlib/Geometry/Primitives/Collision_Polygon.hpp>
 #include <Mlib/Geometry/Primitives/Plane_Nd.hpp>
+#include <Mlib/Misc/Pragma_Gcc.hpp>
 
 using namespace Mlib;
 
-#ifdef __GNUC__
-    #pragma GCC push_options
-    #pragma GCC optimize ("O3")
-#endif
+PRAGMA_GCC(push_options)
+PRAGMA_GCC(optimize ("O3"))
 
 StaticTransformedMesh::StaticTransformedMesh(
     std::string name,
@@ -75,6 +73,4 @@ std::string StaticTransformedMesh::name() const {
     return name_;
 }
 
-#ifdef __GNUC__
-    #pragma GCC pop_options
-#endif
+PRAGMA_GCC(pop_options)

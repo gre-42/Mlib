@@ -3,11 +3,10 @@
 #include <Mlib/Geometry/Primitives/Collision_Polygon.hpp>
 #include <Mlib/Geometry/Primitives/Convex_Polygon.hpp>
 #include <Mlib/Geometry/Primitives/Intersectors/Ray_Segment_3D_For_Aabb.hpp>
+#include <Mlib/Misc/Pragma_Gcc.hpp>
 
-#ifdef __GNUC__
-#pragma GCC push_options
-#pragma GCC optimize ("O3")
-#endif
+PRAGMA_GCC(push_options)
+PRAGMA_GCC(optimize ("O3"))
 
 namespace Mlib {
 
@@ -84,6 +83,4 @@ bool intersect_aabb_aabb(
 
 }
 
-#ifdef __GNUC__
-#pragma GCC pop_options
-#endif
+PRAGMA_GCC(pop_options)

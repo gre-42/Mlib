@@ -27,6 +27,8 @@ def patch_file(filename):
                 rest_reached = True
             elif l.startswith('#pragma GCC'):
                 rest_reached = True
+            elif not l.startswith('#'):
+                rest_reached = True
             elif 'impl.hpp' in l:
                 rest_reached = True
             elif l == '#include <Mlib/Misc/Packed_Begin.hpp>':

@@ -1,9 +1,9 @@
-
 #include "Handle_Line_Triangle_Intersection.hpp"
 #include <Mlib/Geometry/Mesh/IIntersectable_Mesh.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>
 #include <Mlib/Geometry/Primitives/Intersectors/Intersection_Info.hpp>
 #include <Mlib/Geometry/Primitives/Intersectors/Polygon_Line_Intersector.hpp>
+#include <Mlib/Misc/Pragma_Gcc.hpp>
 #include <Mlib/Physics/Collision/Grind_Info.hpp>
 #include <Mlib/Physics/Collision/Record/Collision_History.hpp>
 #include <Mlib/Physics/Collision/Record/Handle_Reflection.hpp>
@@ -22,10 +22,8 @@
 
 using namespace Mlib;
 
-#ifdef __GNUC__
-    #pragma GCC push_options
-    #pragma GCC optimize ("O3")
-#endif
+PRAGMA_GCC(push_options)
+PRAGMA_GCC(optimize ("O3"))
 
 void Mlib::handle_line_triangle_intersection(const IntersectionScene& c)
 {
@@ -148,11 +146,11 @@ void Mlib::handle_line_triangle_intersection(const IntersectionScene& c)
         IntersectionSceneAndContact cc{
             .scene = c,
             .iinfo = std::move(iinfo)};
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Warray-bounds"
-#pragma GCC diagnostic ignored "-Wstringop-overflow"
+PRAGMA_GCC(diagnostic push)
+PRAGMA_GCC(diagnostic ignored "-Warray-bounds")
+PRAGMA_GCC(diagnostic ignored "-Wstringop-overflow")
         assert_true(c.l1.has_value());
-#pragma GCC diagnostic pop
+PRAGMA_GCC(diagnostic pop)
         auto res = c.history.raycast_intersections.try_emplace(make_orderable(c.l1->line), std::move(cc));
         if (!res.second) {
             if (!cc.iinfo.ray_t.has_value()) {
@@ -251,6 +249,4 @@ void Mlib::handle_line_triangle_intersection(
     }
 }
 
-#ifdef __GNUC__
-    #pragma GCC pop_options
-#endif
+PRAGMA_GCC(pop_options)

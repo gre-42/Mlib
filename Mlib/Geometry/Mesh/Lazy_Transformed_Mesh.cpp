@@ -1,4 +1,3 @@
-
 #include "Lazy_Transformed_Mesh.hpp"
 #include <Mlib/Geometry/Colored_Vertex.hpp>
 #include <Mlib/Geometry/Coordinates/Homogeneous.hpp>
@@ -14,13 +13,12 @@
 #include <Mlib/Geometry/Primitives/Quad_3D.hpp>
 #include <Mlib/Geometry/Primitives/Triangle_3D.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
+#include <Mlib/Misc/Pragma_Gcc.hpp>
 
 using namespace Mlib;
 
-#ifdef __GNUC__
-    #pragma GCC push_options
-    #pragma GCC optimize ("O3")
-#endif
+PRAGMA_GCC(push_options)
+PRAGMA_GCC(optimize ("O3"))
 
 LazyTransformedMesh::LazyTransformedMesh(
     const TransformationMatrix<SceneDir, ScenePos, 3>& transformation_matrix,
@@ -143,9 +141,7 @@ AxisAlignedBoundingBox<CompressedScenePos, 3> LazyTransformedMesh::aabb() const 
         transformed_bounding_sphere_.radius);
 }
 
-#ifdef __GNUC__
-    #pragma GCC pop_options
-#endif
+PRAGMA_GCC(pop_options)
 
 void LazyTransformedMesh::print_info() const {
     lerr() << "LazyTransformedMesh";

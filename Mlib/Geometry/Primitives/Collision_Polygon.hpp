@@ -4,13 +4,12 @@
 #include <Mlib/Geometry/Primitives/Convex_Polygon.hpp>
 #include <Mlib/Geometry/Primitives/Plane_Nd.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
+#include <Mlib/Misc/Pragma_Gcc.hpp>
 #include <Mlib/Scene_Config/Scene_Precision.hpp>
 #include <cstdint>
 
-#ifdef __GNUC__
-    #pragma GCC push_options
-    #pragma GCC optimize ("O3")
-#endif
+PRAGMA_GCC(push_options)
+PRAGMA_GCC(optimize ("O3"))
 
 namespace Mlib {
 
@@ -96,6 +95,4 @@ struct CollisionPolygonAabb {
 
 }
 
-#ifdef __GNUC__
-    #pragma GCC pop_options
-#endif
+PRAGMA_GCC(pop_options)

@@ -5,6 +5,7 @@
 #include <Mlib/Geometry/Physics_Material.hpp>
 #include <Mlib/Geometry/Welzl.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
+#include <Mlib/Misc/Pragma_Gcc.hpp>
 #include <Mlib/OpenGL/Batch_Renderers/Optional_Material_Hider.hpp>
 #include <Mlib/OpenGL/Batch_Renderers/Optional_Mesh_Hider.hpp>
 #include <Mlib/OpenGL/Batch_Renderers/Special_Renderable_Names.hpp>
@@ -288,10 +289,8 @@ AggregateArrayRenderer::AggregateArrayRenderer(RenderingResources& rendering_res
 
 AggregateArrayRenderer::~AggregateArrayRenderer() = default;
 
-#ifdef __GNUC__
-    #pragma GCC push_options
-    #pragma GCC optimize ("O3")
-#endif
+PRAGMA_GCC(push_options)
+PRAGMA_GCC(optimize ("O3"))
 
 void AggregateArrayRenderer::update_aggregates(
     const FixedArray<ScenePos, 3>& offset,
@@ -391,9 +390,7 @@ void AggregateArrayRenderer::update_aggregates(
     }
 }
 
-#ifdef __GNUC__
-    #pragma GCC pop_options
-#endif
+PRAGMA_GCC(pop_options)
 
 void AggregateArrayRenderer::render_aggregates(
     const FixedArray<ScenePos, 4, 4>& vp,

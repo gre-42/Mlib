@@ -1,11 +1,10 @@
 #pragma once
 #include <Mlib/Array/Array.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
+#include <Mlib/Misc/Pragma_Gcc.hpp>
 
-#ifdef __GNUC__
-    #pragma GCC push_options
-    #pragma GCC optimize ("O3")
-#endif
+PRAGMA_GCC(push_options)
+PRAGMA_GCC(optimize ("O3"))
 
 namespace Mlib {
 
@@ -446,6 +445,4 @@ inline FixedArray<long double, 3, 4> assemble_homogeneous_NxN1<long double, 3>(
 
 }
 
-#ifdef __GNUC__
-    #pragma GCC pop_options
-#endif
+PRAGMA_GCC(pop_options)

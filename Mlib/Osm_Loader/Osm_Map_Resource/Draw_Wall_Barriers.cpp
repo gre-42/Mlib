@@ -2,6 +2,7 @@
 #include <Mlib/Geometry/Material.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_List.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>
+#include <Mlib/Misc/Pragma_Gcc.hpp>
 #include <Mlib/OpenGL/Rendering_Context.hpp>
 #include <Mlib/OpenGL/Resource_Managers/Rendering_Resources.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Barrier_Style.hpp>
@@ -43,10 +44,10 @@ void Mlib::draw_wall_barriers(
     for (const auto& bu : buildings) {
         ++bid;
         for (const auto& bl : bu.levels) {
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Warray-bounds"
+PRAGMA_GCC(diagnostic push)
+PRAGMA_GCC(diagnostic ignored "-Warray-bounds")
             auto smid = std::to_string(mid++);
-#pragma GCC diagnostic pop
+PRAGMA_GCC(diagnostic pop)
             auto get_style = [&]() -> const BarrierStyle& {
                 if (bu.style.empty()) {
                     if (barrier_styles.empty()) {

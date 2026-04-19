@@ -1,8 +1,8 @@
-
 #include "Handle_Reflection.hpp"
 #include <Mlib/Geometry/Physics_Material.hpp>
 #include <Mlib/Geometry/Primitives/Intersectors/Intersection_Info.hpp>
 #include <Mlib/Math/Orderable_Fixed_Array.hpp>
+#include <Mlib/Misc/Pragma_Gcc.hpp>
 #include <Mlib/Physics/Actuators/Tire.hpp>
 #include <Mlib/Physics/Collision/Record/Collision_History.hpp>
 #include <Mlib/Physics/Collision/Record/Intersection_Scene.hpp>
@@ -15,10 +15,8 @@
 #include <Mlib/Testing/Assert.hpp>
 #include <stdexcept>
 
-#ifdef __GNUC__
-    #pragma GCC push_options
-    #pragma GCC optimize ("O3")
-#endif
+PRAGMA_GCC(push_options)
+PRAGMA_GCC(optimize ("O3"))
 
 using namespace Mlib;
 
@@ -376,6 +374,4 @@ void Mlib::handle_reflection(
     }
 }
 
-#ifdef __GNUC__
-    #pragma GCC pop_options
-#endif
+PRAGMA_GCC(pop_options)

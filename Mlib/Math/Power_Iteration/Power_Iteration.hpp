@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Math/Math.hpp>
+#include <Mlib/Misc/Pragma_Gcc.hpp>
 
 namespace Mlib {
 
@@ -53,13 +54,13 @@ void power_iteration(
             }
         }
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+PRAGMA_GCC(diagnostic push)
+PRAGMA_GCC(diagnostic ignored "-Wmaybe-uninitialized")
         // Required for close-to-identical eigenvalues.
         if ((n > 0) && (std::abs(s - s_old) < 1e-7)) {
             return;
         }
-#pragma GCC diagnostic pop
+PRAGMA_GCC(diagnostic pop)
     }
     throw PowerIterationDidNotConvergeError("power iteration did not converge");
 }

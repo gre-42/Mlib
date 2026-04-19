@@ -2,6 +2,7 @@
 #include <Mlib/Geometry/Cameras/Camera.hpp>
 #include <Mlib/Geometry/Coordinates/Homogeneous.hpp>
 #include <Mlib/Layout/Layout_Constraint_Parameters.hpp>
+#include <Mlib/Misc/Pragma_Gcc.hpp>
 #include <Mlib/OpenGL/CHK.hpp>
 #include <Mlib/OpenGL/Render_Logic.hpp>
 #include <Mlib/OpenGL/Render_Logics/Clear_Mode.hpp>
@@ -86,10 +87,10 @@ HudTracker::HudTracker(
     , far_plane_{ NAN }
 {
     if (exclusive_nodes.has_value()) {
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+PRAGMA_GCC(diagnostic push)
+PRAGMA_GCC(diagnostic ignored "-Wmaybe-uninitialized")
         exclusive_nodes_.emplace();
-#pragma GCC diagnostic pop
+PRAGMA_GCC(diagnostic pop)
         for (const auto& element : *exclusive_nodes) {
             if (!exclusive_nodes_->emplace(element, CURRENT_SOURCE_LOCATION).second) {
                 throw std::runtime_error("Duplicate exclusive nodes");

@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
+#include <Mlib/Misc/Pragma_Gcc.hpp>
 #include <concepts>
 
 namespace Mlib {
@@ -63,10 +64,10 @@ FixedArray<TData, tsize...>& operator *= (
 {
     for (TData& v : a.flat_iterable())
     {
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Warray-bounds"
+PRAGMA_GCC(diagnostic push)
+PRAGMA_GCC(diagnostic ignored "-Warray-bounds")
         v *= b;
-#pragma GCC diagnostic pop
+PRAGMA_GCC(diagnostic pop)
     }
     return a;
 }
@@ -77,10 +78,10 @@ FixedArray<TData, tsize...>& operator /= (
     const TData& b)
 {
     for (TData& v : a.flat_iterable()) {
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Warray-bounds"
+PRAGMA_GCC(diagnostic push)
+PRAGMA_GCC(diagnostic ignored "-Warray-bounds")
         v /= b;
-#pragma GCC diagnostic pop
+PRAGMA_GCC(diagnostic pop)
     }
     return a;
 }
@@ -91,10 +92,10 @@ FixedArray<TData, tsize...>& operator /= (
     I b)
 {
     for (TData& v : a.flat_iterable()) {
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Warray-bounds"
+PRAGMA_GCC(diagnostic push)
+PRAGMA_GCC(diagnostic ignored "-Warray-bounds")
         v /= b;
-#pragma GCC diagnostic pop
+PRAGMA_GCC(diagnostic pop)
     }
     return a;
 }

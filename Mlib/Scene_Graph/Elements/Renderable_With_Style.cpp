@@ -1,6 +1,6 @@
-
 #include "Renderable_With_Style.hpp"
 #include <Mlib/Hashing/Hash.hpp>
+#include <Mlib/Misc/Pragma_Gcc.hpp>
 #include <shared_mutex>
 
 using namespace Mlib;
@@ -45,10 +45,10 @@ const ColorStyle* RenderableWithStyle::style(
             return &*style_;
         }
         style_.reset();
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+PRAGMA_GCC(diagnostic push)
+PRAGMA_GCC(diagnostic ignored "-Wmaybe-uninitialized")
         style_.emplace();
-#pragma GCC diagnostic pop
+PRAGMA_GCC(diagnostic pop)
         Hasher hasher1{ SEED };
         for (const auto& style : color_styles) {
             if (style->matches(name)) {

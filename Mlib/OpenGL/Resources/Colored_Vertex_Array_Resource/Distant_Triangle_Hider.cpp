@@ -4,6 +4,7 @@
 #include <Mlib/Iterator/Enumerate.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Memory/Integral_Cast.hpp>
+#include <Mlib/Misc/Pragma_Gcc.hpp>
 #include <Mlib/OpenGL/CHK.hpp>
 #include <Mlib/OpenGL/Instance_Handles/Buffer_Background_Copy.hpp>
 #include <Mlib/OpenGL/Instance_Handles/Vertex_Array.hpp>
@@ -15,10 +16,8 @@
 #include <Mlib/Threads/Background_Loop.hpp>
 #include <stdexcept>
 
-#ifdef __GNUC__
-    #pragma GCC push_options
-    #pragma GCC optimize ("O3")
-#endif
+PRAGMA_GCC(push_options)
+PRAGMA_GCC(optimize ("O3"))
 
 using namespace Mlib;
 
@@ -408,6 +407,4 @@ void DistantTriangleHider::print_stats(std::ostream& ostr) const {
     cva_->print_stats(ostr);
 }
 
-#ifdef __GNUC__
-    #pragma GCC pop_options
-#endif
+PRAGMA_GCC(pop_options)

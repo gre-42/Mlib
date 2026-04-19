@@ -3,16 +3,15 @@
 #include <Mlib/Initialization/Uninitialized.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Simd.hpp>
+#include <Mlib/Misc/Pragma_Gcc.hpp>
 #include <Mlib/Stats/Clamped.hpp>
 #include <Mlib/Stats/Min_Max.hpp>
 #include <array>
 #include <iosfwd>
 #include <string>
 
-#ifdef __GNUC__
-    #pragma GCC push_options
-    #pragma GCC optimize ("O3")
-#endif
+PRAGMA_GCC(push_options)
+PRAGMA_GCC(optimize ("O3"))
 
 namespace Mlib {
 
@@ -466,6 +465,4 @@ std::ostream& operator << (std::ostream& ostr, const AxisAlignedBoundingBox<TDat
 
 }
 
-#ifdef __GNUC__
-    #pragma GCC pop_options
-#endif
+PRAGMA_GCC(pop_options)

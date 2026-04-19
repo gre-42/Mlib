@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Math/Math.hpp>
+#include <Mlib/Misc/Pragma_Gcc.hpp>
 
 namespace Mlib {
 
@@ -26,10 +27,10 @@ public:
         if (count_ == 1) {
             return (from_ + to_) / TData(2);
         }
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+PRAGMA_GCC(diagnostic push)
+PRAGMA_GCC(diagnostic ignored "-Wmaybe-uninitialized")
         return (from_ * TData(count_ - i - 1) + to_ * TData(i)) / TData(count_ - 1);
-#pragma GCC diagnostic pop
+PRAGMA_GCC(diagnostic pop)
     }
     size_t length() const {
         return count_;

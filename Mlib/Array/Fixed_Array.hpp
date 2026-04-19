@@ -10,6 +10,7 @@
 #include <Mlib/Io/Write_Number.hpp>
 #include <Mlib/Iterator/Pointer_Iterable.hpp>
 #include <Mlib/Math/Conju.hpp>
+#include <Mlib/Misc/Pragma_Gcc.hpp>
 #include <array>
 #include <cassert>
 #include <concepts>
@@ -54,10 +55,10 @@ public:
     FixedArray(Uninitialized) {}
     explicit FixedArray(const TData& rhs) {
         for (TData& v : flat_iterable()) {
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Warray-bounds"
+PRAGMA_GCC(diagnostic push)
+PRAGMA_GCC(diagnostic ignored "-Warray-bounds")
             v = rhs;
-#pragma GCC diagnostic pop
+PRAGMA_GCC(diagnostic pop)
         }
     }
     explicit FixedArray(const Array<TData>& a) {
@@ -85,10 +86,10 @@ public:
         FixedArray<TData, tshape0, tshape...> result = uninitialized;
         assert(nelements == result.nelements());
         std::copy(data, data + nelements, result.flat_begin());
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+PRAGMA_GCC(diagnostic push)
+PRAGMA_GCC(diagnostic ignored "-Wmaybe-uninitialized")
         return result;
-#pragma GCC diagnostic pop
+PRAGMA_GCC(diagnostic pop)
     }
     template<std::convertible_to<initializer_type>... Values>
         requires (sizeof...(Values) == tshape0)
@@ -105,10 +106,10 @@ public:
     }
     FixedArray& operator = (const TData& rhs) {
         for (TData& v : flat_iterable()) {
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Warray-bounds"
+PRAGMA_GCC(diagnostic push)
+PRAGMA_GCC(diagnostic ignored "-Warray-bounds")
             v = rhs;
-#pragma GCC diagnostic pop
+PRAGMA_GCC(diagnostic pop)
         }
         return *this;
     }

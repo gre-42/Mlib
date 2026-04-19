@@ -1,12 +1,11 @@
 #pragma once
 #include <Mlib/Initialization/Uninitialized.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
+#include <Mlib/Misc/Pragma_Gcc.hpp>
 #include <iosfwd>
 
-#ifdef __GNUC__
-    #pragma GCC push_options
-    #pragma GCC optimize ("O3")
-#endif
+PRAGMA_GCC(push_options)
+PRAGMA_GCC(optimize ("O3"))
 
 namespace Mlib {
 
@@ -46,6 +45,4 @@ std::ostream& operator << (std::ostream& ostr, const IntersectablePoint<TData, t
 
 }
 
-#ifdef __GNUC__
-    #pragma GCC pop_options
-#endif
+PRAGMA_GCC(pop_options)

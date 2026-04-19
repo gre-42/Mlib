@@ -1,10 +1,9 @@
 #pragma once
 #include <Mlib/Geometry/Primitives/Plane_Nd.hpp>
+#include <Mlib/Misc/Pragma_Gcc.hpp>
 
-#ifdef __GNUC__
-    #pragma GCC push_options
-    #pragma GCC optimize ("O3")
-#endif
+PRAGMA_GCC(push_options)
+PRAGMA_GCC(optimize ("O3"))
 
 namespace Mlib {
 
@@ -106,6 +105,4 @@ ConvexPolygon3D<TDir, TPos, tnvertices> operator - (
 
 }
 
-#ifdef __GNUC__
-    #pragma GCC pop_options
-#endif
+PRAGMA_GCC(pop_options)

@@ -1,9 +1,9 @@
-
 #include "Encoding.hpp"
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wsign-conversion"
+#include <Mlib/Misc/Pragma_Gcc.hpp>
+PRAGMA_GCC(diagnostic push)
+PRAGMA_GCC(diagnostic ignored "-Wsign-conversion")
 #include <boost/regex/pending/unicode_iterator.hpp>
-#pragma GCC diagnostic pop
+PRAGMA_GCC(diagnostic pop)
 
 using namespace Mlib;
 

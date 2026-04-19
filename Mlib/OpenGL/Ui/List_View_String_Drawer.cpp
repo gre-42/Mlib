@@ -1,4 +1,3 @@
-
 #include "List_View_String_Drawer.hpp"
 #include <Mlib/Layout/ILayout_Pixels.hpp>
 #include <Mlib/Layout/IWidget.hpp>
@@ -28,7 +27,7 @@ ListViewStringDrawer::ListViewStringDrawer(
   ly_{ly}
 {
 #if defined(__GNUC__) && !defined(__llvm__) && !defined(__INTEL_COMPILER) && !defined(_MSC_VER)
-    #pragma GCC diagnostic push
+#pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
 #endif
     switch (orientation_) {

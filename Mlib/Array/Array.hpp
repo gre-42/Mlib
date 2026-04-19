@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Misc/Pragma_Gcc.hpp>
 #include <Mlib/Array/Array_Forward.hpp>
 #include <Mlib/Array/Array_Shape.hpp>
 #include <Mlib/Array/Array_Resizer.hpp>
@@ -1006,12 +1007,12 @@ public:
             std::vector<TData> rowv;
             std::stringstream srow(line);
             TData value;
-            #pragma GCC diagnostic push
-            #pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+            PRAGMA_GCC(diagnostic push)
+            PRAGMA_GCC(diagnostic ignored "-Wmaybe-uninitialized")
             while(srow >> ReadNum{value}) {
                 rowv.push_back(value);
             }
-            #pragma GCC diagnostic pop
+            PRAGMA_GCC(diagnostic pop)
             if (srow.fail() && !srow.eof()) {
                 throw std::runtime_error("Could not read line of file \"" + filename.string() + '"');
             }

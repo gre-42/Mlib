@@ -1,13 +1,12 @@
 #pragma once
 #include <Mlib/Geometry/Coordinates/Homogeneous.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
+#include <Mlib/Misc/Pragma_Gcc.hpp>
 #include <cmath>
 #include <iosfwd>
 
-#ifdef __GNUC__
-    #pragma GCC push_options
-    #pragma GCC optimize ("O3")
-#endif
+PRAGMA_GCC(push_options)
+PRAGMA_GCC(optimize ("O3"))
 
 namespace Mlib {
 
@@ -163,6 +162,4 @@ std::ostream& operator << (std::ostream& ostr, const TransformationMatrix<TDir, 
 
 }
 
-#ifdef __GNUC__
-    #pragma GCC pop_options
-#endif
+PRAGMA_GCC(pop_options)

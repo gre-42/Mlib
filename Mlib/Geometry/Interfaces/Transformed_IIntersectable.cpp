@@ -1,15 +1,13 @@
-
 #include "Transformed_IIntersectable.hpp"
 #include <Mlib/Geometry/Primitives/Bounding_Sphere.hpp>
 #include <Mlib/Geometry/Primitives/Collision_Line.hpp>
 #include <Mlib/Geometry/Primitives/Collision_Polygon.hpp>
 #include <Mlib/Geometry/Primitives/Collision_Ridge.hpp>
 #include <Mlib/Geometry/Primitives/Intersectors/Aabb_Sphere_Intersection.hpp>
+#include <Mlib/Misc/Pragma_Gcc.hpp>
 
-#ifdef __GNUC__
-    #pragma GCC push_options
-    #pragma GCC optimize ("O3")
-#endif
+PRAGMA_GCC(push_options)
+PRAGMA_GCC(optimize ("O3"))
 
 using namespace Mlib;
 
@@ -209,6 +207,4 @@ bool TransformedIntersectable::can_spawn_at_any(const TOther& o) const {
     return child_->can_spawn_at(o.transformed(trafo_.inverted()));
 }
 
-#ifdef __GNUC__
-    #pragma GCC pop_options
-#endif
+PRAGMA_GCC(pop_options)

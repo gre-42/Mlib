@@ -1,4 +1,3 @@
-
 #include "Colored_Vertex_Array.hpp"
 #include <Mlib/Geometry/Colored_Vertex.hpp>
 #include <Mlib/Geometry/Delaunay.hpp>
@@ -13,6 +12,7 @@
 #include <Mlib/Geometry/Primitives/Triangle_3D.hpp>
 #include <Mlib/Geometry/Welzl.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
+#include <Mlib/Misc/Pragma_Gcc.hpp>
 #include <Mlib/Scene_Config/Scene_Precision.hpp>
 #include <Mlib/Testing/Assert.hpp>
 #include <map>
@@ -97,10 +97,8 @@ template <class TPos>
 ColoredVertexArray<TPos>::~ColoredVertexArray()
 {}
 
-#ifdef __GNUC__
-    #pragma GCC push_options
-    #pragma GCC optimize ("O3")
-#endif
+PRAGMA_GCC(push_options)
+PRAGMA_GCC(optimize ("O3"))
 
 template <class TPos>
 size_t ColoredVertexArray<TPos>::nelements() const {
@@ -796,9 +794,7 @@ ScenePos ColoredVertexArray<TPos>::max_center_distance2(BillboardId billboard_id
     return meta.material.max_center_distance2(billboard_id, meta.morphology, meta.name.full_name());
 }
 
-#ifdef __GNUC__
-    #pragma GCC pop_options
-#endif
+PRAGMA_GCC(pop_options)
 
 template class Mlib::ColoredVertexArray<float>;
 template class Mlib::ColoredVertexArray<CompressedScenePos>;

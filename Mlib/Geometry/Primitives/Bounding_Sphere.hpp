@@ -8,13 +8,12 @@
 #include <Mlib/Math/Max.hpp>
 #include <Mlib/Math/Sqrt.hpp>
 #include <Mlib/Memory/Integral_To_Float.hpp>
+#include <Mlib/Misc/Pragma_Gcc.hpp>
 #include <Mlib/Stats/Min_Max.hpp>
 #include <stdexcept>
 
-#ifdef __GNUC__
-    #pragma GCC push_options
-    #pragma GCC optimize ("O3")
-#endif
+PRAGMA_GCC(push_options)
+PRAGMA_GCC(optimize ("O3"))
 
 namespace Mlib {
 
@@ -126,6 +125,4 @@ using UBoundingSphere = DefaultUnitialized<BoundingSphere<TPos, tndim>>;
 
 }
 
-#ifdef __GNUC__
-    #pragma GCC pop_options
-#endif
+PRAGMA_GCC(pop_options)

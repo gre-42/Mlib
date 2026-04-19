@@ -3,12 +3,11 @@
 #include <Mlib/Geometry/Primitives/Distance/Distance_Point_Line.hpp>
 #include <Mlib/Geometry/Triangle_Normal.hpp>
 #include <Mlib/Math/Lerp.hpp>
+#include <Mlib/Misc/Pragma_Gcc.hpp>
 #include <stdexcept>
 
-#ifdef __GNUC__
-    #pragma GCC push_options
-    #pragma GCC optimize ("O3")
-#endif
+PRAGMA_GCC(push_options)
+PRAGMA_GCC(optimize ("O3"))
 
 namespace Mlib {
 
@@ -121,6 +120,4 @@ FixedArray<TData, 2> distance_point_to_triangle_3d(
 
 }
 
-#ifdef __GNUC__
-    #pragma GCC pop_options
-#endif
+PRAGMA_GCC(pop_options)

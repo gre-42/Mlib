@@ -5,6 +5,7 @@
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Transformation/Quaternion.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
+#include <Mlib/Misc/Pragma_Gcc.hpp>
 #include <Mlib/Stats/Clamped.hpp>
 #include <cstdint>
 #include <iosfwd>
@@ -70,10 +71,8 @@ inline FixedArray<uint8_t, 4> multiply(const FixedArray<uint8_t, 4>& a, const Fi
 
 }
 
-#ifdef __GNUC__
-    #pragma GCC push_options
-    #pragma GCC optimize ("O3")
-#endif
+PRAGMA_GCC(push_options)
+PRAGMA_GCC(optimize ("O3"))
 
 enum class ColoredVertexFeatures {
     NONE = 0,
@@ -207,9 +206,7 @@ struct ColoredVertex {
     }
 };
 
-#ifdef __GNUC__
-    #pragma GCC pop_options
-#endif
+PRAGMA_GCC(pop_options)
 
 template <class TPos>
 inline std::ostream& operator << (std::ostream& ostr, const ColoredVertex<TPos>& v) {
