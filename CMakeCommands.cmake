@@ -372,6 +372,13 @@ macro(enable_omp)
     endif()
 endmacro()
 
+macro(enable_parallel_build)
+    if (MSVC)
+        message(STATUS "Enable OpenMP (MSVC)")
+        add_compile_options(/MP)
+    endif()
+endmacro()
+
 # http://public.kitware.com/pipermail/cmake/2015-October/061889.html
 macro(add_compiler_color)
     if (${CMAKE_GENERATOR} STREQUAL "Ninja")
