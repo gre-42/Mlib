@@ -765,7 +765,7 @@ OsmMapResource::OsmMapResource(
             cc);
     }
 
-    if (config.with_roofs) {
+    if (config.with_roofs && !buildings.empty()) {
         fg.update("Draw roofs");
         if (config.roof_texture.empty()) {
             throw std::runtime_error("with_roofs requires roof_texture");

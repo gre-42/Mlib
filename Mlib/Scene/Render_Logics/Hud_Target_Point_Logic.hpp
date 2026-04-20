@@ -60,7 +60,6 @@ public:
     virtual void print(std::ostream& ostr, size_t depth) const override;
 
 private:
-    ObjectPool& object_pool_;
     CollisionQuery& collision_query_;
     DanglingBaseClassRef<SceneNode> gun_node_;
     DanglingBaseClassPtr<YawPitchLookAtNodes> ypln_;
@@ -69,8 +68,6 @@ private:
     DestructionFunctionsRemovalTokens on_player_delete_vehicle_internals_;
     DestructionFunctionsRemovalTokens on_destroy_gun_node_;
     DestructionFunctionsRemovalTokens on_destroy_ypln_;
-
-    RenderLogics& render_logics_;
 };
 
 }

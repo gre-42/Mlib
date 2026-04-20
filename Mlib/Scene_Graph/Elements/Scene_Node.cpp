@@ -156,7 +156,7 @@ ShutdownPhase SceneNode::shutdown_phase() const {
 }
 
 void SceneNode::set_parent(DanglingBaseClassRef<SceneNode> parent) {
-    std::scoped_lock lock{ mutex_ };
+    std::scoped_lock lock{ parent_mutex_ };
     if (has_parent()) {
         throw std::runtime_error("Node already has a parent");
     }
@@ -164,12 +164,12 @@ void SceneNode::set_parent(DanglingBaseClassRef<SceneNode> parent) {
 }
 
 bool SceneNode::has_parent() const {
-    std::shared_lock lock{ mutex_ };
+    std::shared_lock lock{ parent_mutex_ };
     return (parent_ != nullptr);
 }
 
 DanglingBaseClassRef<SceneNode> SceneNode::parent() {
-    std::shared_lock lock{ mutex_ };
+    std::shared_lock lock{ parent_mutex_ };
     if (!has_parent()) {
         throw std::runtime_error("Node has no parent");
     }

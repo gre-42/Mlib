@@ -416,6 +416,7 @@ private:
     SceneNodeState state_;
     mutable SafeAtomicRecursiveSharedMutex mutex_;
     mutable SafeAtomicRecursiveSharedMutex pose_mutex_;
+    mutable SafeAtomicRecursiveSharedMutex parent_mutex_;
     ShutdownPhase shutdown_phase_;
     std::string debug_message_;
 };

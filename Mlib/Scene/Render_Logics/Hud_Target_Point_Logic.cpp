@@ -30,8 +30,7 @@ HudTargetPointLogic::HudTargetPointLogic(
     const FixedArray<float, 2>& center,
     const FixedArray<float, 2>& size,
     HudErrorBehavior hud_error_behavior)
-    : object_pool_{ object_pool }
-    , collision_query_{ collision_query }
+    : collision_query_{ collision_query }
     , gun_node_{ gun_node }
     , ypln_{ ypln }
     , scene_logic_{ scene_logic }
@@ -44,10 +43,9 @@ HudTargetPointLogic::HudTargetPointLogic(
     , on_player_delete_vehicle_internals_{ player->delete_vehicle_internals, CURRENT_SOURCE_LOCATION }
     , on_destroy_gun_node_{ gun_node->on_destroy.deflt, CURRENT_SOURCE_LOCATION }
     , on_destroy_ypln_{ (ypln_ != nullptr) ? &ypln_->on_destroy.deflt : nullptr, CURRENT_SOURCE_LOCATION }
-    , render_logics_{ render_logics }
 {
-    render_logics_.append({ *this, CURRENT_SOURCE_LOCATION }, 0 /* z_order */, CURRENT_SOURCE_LOCATION);
-    on_player_delete_vehicle_internals_.add([this]() { object_pool_.remove(this); }, CURRENT_SOURCE_LOCATION);
+    render_logics.append({ *this, CURRENT_SOURCE_LOCATION }, 0 /* z_order */, CURRENT_SOURCE_LOCATION);
+    on_player_delete_vehicle_internals_.add([this, &object_pool]() { object_pool.remove(this); }, CURRENT_SOURCE_LOCATION);
     on_destroy_gun_node_.add([this, &object_pool]() { object_pool.remove(this); }, CURRENT_SOURCE_LOCATION);
     if (ypln_ != nullptr) {
         on_destroy_ypln_.add([this, &object_pool]() { object_pool.remove(this); }, CURRENT_SOURCE_LOCATION);
