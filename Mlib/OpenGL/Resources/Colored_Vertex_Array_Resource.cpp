@@ -150,22 +150,28 @@ ColoredVertexArrayResource::ColoredVertexArrayResource(
 ColoredVertexArrayResource::~ColoredVertexArrayResource() = default;
 
 void ColoredVertexArrayResource::preload(const RenderableResourceFilter& filter) const {
+    auto preload_meta = [&](const MeshMeta& meta) {
+        for (auto& t : meta.material.textures_color) {
+            rendering_resources_.preload(t.texture_descriptor);
+        }
+        for (auto& t : meta.material.textures_alpha) {
+            rendering_resources_.preload(t.texture_descriptor);
+        }
+    };
     if (triangles_res_ != nullptr) {
-        auto preload_textures = [this, &filter](const auto& cvas) {
+        auto preload_cvas = [&](const auto& cvas) {
             for (const auto& [i, cva] : enumerate(cvas)) {
                 if (!filter.matches(i, *cva)) {
                     continue;
                 }
-                for (auto& t : cva->meta.material.textures_color) {
-                    rendering_resources_.preload(t.texture_descriptor);
-                }
-                for (auto& t : cva->meta.material.textures_alpha) {
-                    rendering_resources_.preload(t.texture_descriptor);
-                }
+                preload_meta(cva->meta);
             }
         };
-        preload_textures(triangles_res_->scvas);
-        preload_textures(triangles_res_->dcvas);
+        preload_cvas(triangles_res_->scvas);
+        preload_cvas(triangles_res_->dcvas);
+    }
+    for (const auto& a : gpu_vertex_arrays_) {
+        preload_meta(a->vertices()->mesh_meta());
     }
     if (ContextQuery::is_initialized()) {
         if (triangles_res_ != nullptr) {
