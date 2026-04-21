@@ -1,4 +1,3 @@
-#include "Set_Surface_Contact_Info.hpp"
 #include <Mlib/Audio/Audio_Resource_Context.hpp>
 #include <Mlib/Audio/Audio_Resources.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>
@@ -8,6 +7,7 @@
 #include <Mlib/Physics/Smoke_Generation/Surface_Contact_Info.hpp>
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
+#include <Mlib/Scene/Load_Scene_Funcs.hpp>
 
 namespace KnownRuleArgs {
 BEGIN_ARGUMENT_LIST;
@@ -104,25 +104,33 @@ DECLARE_ARGUMENT(friction_coefficient);
 DECLARE_ARGUMENT(emission);
 }
 
-const std::string SetSurfaceContactInfo::key = "set_surface_contact_info";
+namespace {
 
-LoadSceneJsonUserFunction SetSurfaceContactInfo::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
-{
-    args.arguments.validate(KnownArgs::options);
-    auto emission = args.arguments.at<std::vector<SurfaceSmokeInfo>>(KnownArgs::emission);
-    for (auto& s : emission) {
-        if (s.audio_resource_name.has_value()) {
-            s.audio = std::make_unique<LazyOneShotAudio>(
-                *AudioResourceContextStack::primary_resource_context().audio_resources,
-                *s.audio_resource_name);
-        }
+struct RegisterJsonUserFunction {
+    RegisterJsonUserFunction() {
+        LoadSceneFuncs::register_json_user_function(
+            "set_surface_contact_info",
+            [](const LoadSceneJsonUserFunctionArgs& args)
+            {
+                args.arguments.validate(KnownArgs::options);
+                auto emission = args.arguments.at<std::vector<SurfaceSmokeInfo>>(KnownArgs::emission);
+                for (auto& s : emission) {
+                    if (s.audio_resource_name.has_value()) {
+                        s.audio = std::make_unique<LazyOneShotAudio>(
+                            *AudioResourceContextStack::primary_resource_context().audio_resources,
+                            *s.audio_resource_name);
+                    }
+                }
+                args.surface_contact_db.store_contact_info(
+                    SurfaceContactInfo{
+                        .stiction_factor = args.arguments.at<float>(KnownArgs::stiction_factor),
+                        .stiction_coefficient = args.arguments.at<float>(KnownArgs::stiction_coefficient),
+                        .friction_coefficient = args.arguments.at<float>(KnownArgs::friction_coefficient),
+                        .emission = std::move(emission) },
+                    physics_material_from_string(args.arguments.at<std::string>(KnownArgs::material0)),
+                    physics_material_from_string(args.arguments.at<std::string>(KnownArgs::material1)));
+            });
     }
-    args.surface_contact_db.store_contact_info(
-        SurfaceContactInfo{
-            .stiction_factor = args.arguments.at<float>(KnownArgs::stiction_factor),
-            .stiction_coefficient = args.arguments.at<float>(KnownArgs::stiction_coefficient),
-            .friction_coefficient = args.arguments.at<float>(KnownArgs::friction_coefficient),
-            .emission = std::move(emission) },
-        physics_material_from_string(args.arguments.at<std::string>(KnownArgs::material0)),
-        physics_material_from_string(args.arguments.at<std::string>(KnownArgs::material1)));
-};
+} obj;
+
+}

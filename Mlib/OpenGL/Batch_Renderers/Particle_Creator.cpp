@@ -1,4 +1,3 @@
-
 #include "Particle_Creator.hpp"
 #include <Mlib/OpenGL/Batch_Renderers/Particles_Instance.hpp>
 

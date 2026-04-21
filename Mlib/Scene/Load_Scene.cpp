@@ -73,7 +73,6 @@
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Players/Set_Way_Points.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Players/Start_Race.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Players/Team_Set_Waypoint.hpp>
-#include <Mlib/Scene/Load_Scene_Functions/Instances/Preload.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Render/Clear_Skybox.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Render/Root_Renderable_Instances.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Render/Set_Background_Color.hpp>
@@ -151,7 +150,6 @@
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Set_Animated_Dynamic_Light_Properties.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Set_Bounds.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Set_Constant_Dynamic_Light_Properties.hpp>
-#include <Mlib/Scene/Load_Scene_Functions/Resources/Set_Surface_Contact_Info.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Shade_Auto.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Smoothen_Edges.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/World/Register_Gravity.hpp>
@@ -345,7 +343,6 @@ LoadScene::LoadScene(
             register_json_user_function(PlayerSetPlaybackWaypoints::key, PlayerSetPlaybackWaypoints::json_user_function);
             register_json_user_function(PlayerSetVehicleControlParameters::key, PlayerSetVehicleControlParameters::json_user_function);
             register_json_user_function(PlayerSetWaypoint::key, PlayerSetWaypoint::json_user_function);
-            register_json_user_function(Preload::key, Preload::json_user_function);
             register_json_user_function(RecordTrackGpx::key, RecordTrackGpx::json_user_function);
             register_json_user_function(RecordTrack::key, RecordTrack::json_user_function);
             register_json_user_function(RegisterGravity::key, RegisterGravity::json_user_function);
@@ -422,7 +419,6 @@ LoadScene::LoadScene(
             register_json_user_function(SetAnimatedDynamicLightProperties::key, SetAnimatedDynamicLightProperties::json_user_function);
             register_json_user_function(SetBounds::key, SetBounds::json_user_function);
             register_json_user_function(SetConstantDynamicLightProperties::key, SetConstantDynamicLightProperties::json_user_function);
-            register_json_user_function(SetSurfaceContactInfo::key, SetSurfaceContactInfo::json_user_function);
             register_json_user_function(SmoothenEdges::key, SmoothenEdges::json_user_function);
             register_json_user_function(ShadeAuto::key, ShadeAuto::json_user_function);
         }

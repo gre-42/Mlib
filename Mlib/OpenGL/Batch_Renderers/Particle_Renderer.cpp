@@ -1,4 +1,3 @@
-
 #include "Particle_Renderer.hpp"
 #include <Mlib/Geometry/Material/Blending_Pass_Type.hpp>
 #include <Mlib/Geometry/Material/Particle_Type.hpp>

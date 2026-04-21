@@ -12,6 +12,7 @@
 #include <Mlib/Physics/Smoke_Generation/Surface_Contact_Db.hpp>
 #include <Mlib/Physics/Smoke_Generation/Surface_Contact_Info.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
+#include <Mlib/Scene/Load_Scene_Funcs.hpp>
 #include <Mlib/Scene/Scene_Particles.hpp>
 #include <Mlib/Scene_Graph/Resources/Renderable_Resource_Filter.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
@@ -26,20 +27,14 @@ DECLARE_ARGUMENT(file);
 DECLARE_ARGUMENT(tire_contacts);
 }
 
-const std::string Preload::key = "preload";
-
-LoadSceneJsonUserFunction Preload::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
-{
-    args.arguments.validate(KnownArgs::options);
-    Preload(args.physics_scene()).execute(args);
-};
-
 Preload::Preload(PhysicsScene& physics_scene) 
-: LoadPhysicsSceneInstanceFunction{ physics_scene }
+    : LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
 void Preload::execute(const LoadSceneJsonUserFunctionArgs &args) {
     FunctionGuard fg{ "Preloading" };
+
+    args.arguments.validate(KnownArgs::options);
 
     if (args.arguments.contains(KnownArgs::resources)) {
         for (const auto &r : args.arguments.at<std::vector<VariableAndHash<std::string>>>(KnownArgs::resources))
@@ -104,4 +99,19 @@ void Preload::execute(const LoadSceneJsonUserFunctionArgs &args) {
             preload_cvas(res->dcvas);
         }
     }
+}
+
+namespace {
+
+struct RegisterJsonUserFunction {
+    RegisterJsonUserFunction() {
+        LoadSceneFuncs::register_json_user_function(
+            "preload",
+            [](const LoadSceneJsonUserFunctionArgs& args)
+            {
+                Preload(args.physics_scene()).execute(args);
+            });
+    }
+} obj;
+
 }
