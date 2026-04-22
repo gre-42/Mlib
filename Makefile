@@ -8,93 +8,57 @@ MAKE_TARGET ?= build
 
 all: recastnavigation cmake build
 
-ENV =
-PLATFORM_CHAR !=                                                    \
-    echo "Determine platform char by OS type \"$(ostype)\"". 1>&2;  \
-    if [[ "$(ostype)" = MSYS* ]] ||                                 \
-       [[ "$(ostype)" = CYGWIN* ]] ||                               \
-       [[ "$(ostype)" = MINGW* ]];                                  \
-    then                                                            \
-        echo "Detected platform \"MSYS2\"." 1>&2;                   \
-        echo M;                                                     \
-    else                                                            \
-        echo "Detected platform \"Linux\"." 1>&2;                   \
-        echo U;                                                     \
-    fi
-BUILD_DIR = $(PLATFORM_CHAR)$(CMAKE_BUILD_TYPE)
+ENV :=
+ifneq ($(filter MSYS% CYGWIN% MINGW%,$(ostype)),)
+    PLATFORM_CHAR := M
+else
+    PLATFORM_CHAR := U
+endif
+BUILD_DIR := $(PLATFORM_CHAR)$(CMAKE_BUILD_TYPE)
+ENV       := 
 # ASAN
-ENV !=                                            \
-    if [ "$(ASAN)" = 1 ]; then                    \
-        echo "$(ENV)                              \
-            CFLAGS=-fsanitize=address             \
-            CXXFLAGS=-fsanitize=address           \
-            LDFLAGS=-fsanitize=address" |         \
-            sed "s/ +/ /g";                       \
-    else                                          \
-        echo "$(ENV)";                            \
-    fi
-BUILD_DIR !=                                      \
-    if [ "$(ASAN)" = 1 ]; then                    \
-        echo "A$(BUILD_DIR)";                     \
-    else                                          \
-        echo "$(BUILD_DIR)";                      \
-    fi
+ifeq ($(ASAN),1)
+    ENV       += CFLAGS=-fsanitize=address
+    ENV       += CXXFLAGS=-fsanitize=address
+    ENV       += LDFLAGS=-fsanitize=address
+    BUILD_DIR := A$(BUILD_DIR)
+endif
 # TSAN
-ENV !=                                            \
-    if [ "$(TSAN)" = 1 ]; then                    \
-        echo "$(ENV)                              \
-            CFLAGS=-fsanitize=thread              \
-            CXXFLAGS=-fsanitize=thread            \
-            LDFLAGS=-fsanitize=thread" |          \
-            sed "s/ +/ /g";                       \
-    else                                          \
-        echo "$(ENV)";                            \
-    fi
-BUILD_DIR !=                                      \
-    if [ "$(TSAN)" = 1 ]; then                    \
-        echo "T$(BUILD_DIR)";                     \
-    else                                          \
-        echo "$(BUILD_DIR)";                      \
-    fi
+ifeq ($(TSAN),1)
+    ENV       += CFLAGS=-fsanitize=thread
+    ENV       += CXXFLAGS=-fsanitize=thread
+    ENV       += LDFLAGS=-fsanitize=thread
+    BUILD_DIR := T$(BUILD_DIR)
+endif
 # UBSAN
-ENV !=                                            \
-    if [ "$(UBSAN)" = 1 ]; then                   \
-        echo "$(ENV)                              \
-            CFLAGS=-fsanitize=undefined           \
-            CXXFLAGS=-fsanitize=undefined         \
-            LDFLAGS=-fsanitize=undefined" |       \
-            sed "s/ +/ /g";                       \
-    else                                          \
-        echo "$(ENV)";                            \
-    fi
-BUILD_DIR !=                                      \
-    if [ "$(UBSAN)" = 1 ]; then                   \
-        echo "B$(BUILD_DIR)";                     \
-    else                                          \
-        echo "$(BUILD_DIR)";                      \
-    fi                                            \
+ifeq ($(UBSAN),1)
+    ENV       += CFLAGS=-fsanitize=undefined
+    ENV       += CXXFLAGS=-fsanitize=undefined
+    ENV       += LDFLAGS=-fsanitize=undefined
+    BUILD_DIR := B$(BUILD_DIR)
+endif
 # CLANG
-ENV !=                                            \
-    if [ "$(CLANG)" = 1 ]; then                   \
-        echo "$(ENV) CC=clang-20 CXX=clang++-20"; \
-    fi
-BUILD_DIR !=                                      \
-    if [ "$(CLANG)" = 1 ]; then                   \
-        echo "L$(BUILD_DIR)";                     \
-    else                                          \
-        echo "$(BUILD_DIR)";                      \
-    fi
+ifeq ($(CLANG),1)
+    ENV       += CC=clang-20 CXX=clang++-20
+    BUILD_DIR := L$(BUILD_DIR)
+endif
 # LIBCPP
-ENV !=                                            \
-    if [ "$(LIBCPP)" = 1 ]; then                  \
-        echo "$(ENV) CXXFLAGS=-stdlib=libc++";    \
-    fi
-BUILD_DIR !=                                      \
-    if [ "$(LIBCPP)" = 1 ]; then                  \
-        echo "C$(BUILD_DIR)";                     \
-    else                                          \
-        echo "$(BUILD_DIR)";                      \
-    fi
+ifeq ($(LIBCPP),1)
+    ENV       += CXXFLAGS=-stdlib=libc++
+    BUILD_DIR := C$(BUILD_DIR)
+endif
+# EMSDK
+PODMAN_FLAGS := $(addprefix -e ,$(ENV))
+ifeq ($(EMSDK),1)
+    CMAKE_CMD := podman run --rm -v "$(PWD)/Mlib:/src:Z" $(PODMAN_FLAGS) mgame/emsdk emcmake
+    BUILD_CMD := podman run --rm -v "$(PWD)/Mlib:/src:Z" mgame/emsdk
+else
+    CMAKE_CMD :=
+    BUILD_CMD :=
+endif
+ifeq ($(EMSDK),1)
+    BUILD_DIR := E$(BUILD_DIR)
+endif
 
 echo_platform_char:
 	@echo "$(PLATFORM_CHAR)"
@@ -102,11 +66,14 @@ echo_platform_char:
 echo_build_dir:
 	@echo "$(BUILD_DIR)"
 
+emsdk_image:
+	podman build -f Dockerfile.emsdk -t mgame/emsdk
+
 cmake:
-	$(ENV) cmake -G Ninja -DCMAKE_BUILD_TYPE="$(CMAKE_BUILD_TYPE)" -B "$(BUILD_DIR)"
+	$(CMAKE_CMD) cmake -G Ninja -DCMAKE_BUILD_TYPE="$(CMAKE_BUILD_TYPE)" -B "$(BUILD_DIR)"
 
 build:
-	cmake --build "$(BUILD_DIR)" --verbose
+	$(BUILD_CMD) cmake --build "$(BUILD_DIR)" --verbose
 
 clang-tidy:
 	find Mlib -iname "*.cpp" -exec clang-tidy '{}' -checks=-clang-diagnostic-gnu-designator -- -I. ';'

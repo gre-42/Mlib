@@ -364,8 +364,20 @@ macro(set_stack_size)
 endmacro()
 
 macro(enable_omp)
-    find_package(OpenMP REQUIRED)
-    if (OPENMP_FOUND)
+    if(EMSCRIPTEN)
+        # Force OpenMP flags without running find_package
+        set(OpenMP_C_FLAGS "-fopenmp -pthread")
+        set(OpenMP_CXX_FLAGS "-fopenmp -pthread")
+        set(OpenMP_C_LIB_NAMES "omp")
+        set(OpenMP_CXX_LIB_NAMES "omp")
+        set(OpenMP_FOUND TRUE)
+        add_compile_options(-fopenmp -pthread)
+        add_link_options(-fopenmp -pthread)
+        add_link_options("-sPTHREAD_POOL_SIZE=4")
+    else()
+        find_package(OpenMP REQUIRED)
+    endif()
+    if (OpenMP_FOUND)
         message(STATUS "Enable OpenMP (OpenMP_C_FLAGS: '${OpenMP_C_FLAGS}', OpenMP_CXX_FLAGS: '${OpenMP_CXX_FLAGS}')")
         set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
         set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
@@ -440,7 +452,16 @@ macro(target_link_against_opengl target)
         endif()
     endif()
 
-    if (ANDROID)
+    if (EMSCRIPTEN)
+        # No GLFW/SDL flags here. 
+        # Just tell Emscripten to support WebGL 2 and EGL
+        target_link_options(${target} PRIVATE 
+            "-sMAX_WEBGL_VERSION=2"
+            "-sFULL_ES3=1"
+        )
+        # Link against the EGL/GLES "virtual" libraries
+        target_link_libraries(${target} GLESv3 EGL)
+    elseif (ANDROID)
         target_link_libraries(${target} GLESv3 EGL)
     endif()
 endmacro()
