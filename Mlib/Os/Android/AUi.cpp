@@ -1,11 +1,13 @@
 #include "AUi.hpp"
 #include "AndroidApp.hpp"
+#include <Mlib/Os/Android/JNIHelper.h>
+#include <Mlib/Os/Android/NDKHelper.h>
 #include <Mlib/Os/Os.hpp>
 #include <Mlib/Os/Set_Thread_Name_Native.hpp>
-#include <Mlib/Os/ndk_helper/JNIHelper.h>
-#include <Mlib/Os/ndk_helper/NDKHelper.h>
 #include <fstream>
 #include <sstream>
+
+using namespace Mlib;
 
 inline android_app& App() {
     return AndroidApp::App();

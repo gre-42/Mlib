@@ -15,8 +15,8 @@ void RenderConfig::apply(ExternalRenderPassType external_render_pass_type) const
             throw std::runtime_error("lightmap_nsamples_msaa must be >= 1");
         }
         if (lightmap_nsamples_msaa != 1) {
-#ifdef __ANDROID__
-            throw std::runtime_error("MSAA not supported on Android");
+#if defined(__ANDROID__) || defined(__EMSCRIPTEN__)
+            throw std::runtime_error("MSAA not supported on Android and Emscripten");
 #else
             CHK(glEnable(GL_MULTISAMPLE));
 #endif
@@ -26,8 +26,8 @@ void RenderConfig::apply(ExternalRenderPassType external_render_pass_type) const
             CHK(glEnable(GL_CULL_FACE));
         }
         if (wire_frame == BoolRenderOption::ON) {
-#ifdef __ANDROID__
-            throw std::runtime_error("Wireframe rasterization not supported on Android");
+#if defined(__ANDROID__) || defined(__EMSCRIPTEN__)
+            throw std::runtime_error("Wireframe rasterization not supported on Android and Emscripten");
 #else
             CHK(glPolygonMode( GL_FRONT_AND_BACK, GL_LINE ));
 #endif
@@ -36,8 +36,8 @@ void RenderConfig::apply(ExternalRenderPassType external_render_pass_type) const
             CHK(glEnable(GL_DEPTH_TEST));
         }
         if (min_sample_shading != 0) {
-#ifdef __ANDROID__
-            throw std::runtime_error("Min sample shading not supported on Android");
+#if defined(__ANDROID__) || defined(__EMSCRIPTEN__)
+            throw std::runtime_error("Min sample shading not supported on Android and Emscripten");
 #else
             CHK(glEnable(GL_SAMPLE_SHADING));
             CHK(glMinSampleShading(min_sample_shading));
@@ -47,8 +47,8 @@ void RenderConfig::apply(ExternalRenderPassType external_render_pass_type) const
             throw std::runtime_error("nsamples_msaa must be >= 1");
         }
         if (nsamples_msaa != 1) {
-#ifdef __ANDROID__
-            throw std::runtime_error("MSAA not supported on Android");
+#if defined(__ANDROID__) || defined(__EMSCRIPTEN__)
+            throw std::runtime_error("MSAA not supported on Android and Emscripten");
 #else
             CHK(glEnable(GL_MULTISAMPLE));
 #endif
@@ -138,7 +138,7 @@ void RenderConfig::apply_material(
 void RenderConfig::unapply() const {
     CHK(glDisable(GL_CULL_FACE));
     CHK(glDisable(GL_DEPTH_TEST));
-#ifndef __ANDROID__
+#if !defined(__ANDROID__) && !defined(__EMSCRIPTEN__)
     CHK(glPolygonMode(GL_FRONT_AND_BACK, GL_FILL));
     CHK(glDisable(GL_SAMPLE_SHADING));
     CHK(glMinSampleShading(0.f));

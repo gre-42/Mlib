@@ -1,0 +1,9 @@
+**/dist/
+**/build/
+**/demo/
+**/obj/
+.claude/
+
+CLAUDE.md
+
+docs/

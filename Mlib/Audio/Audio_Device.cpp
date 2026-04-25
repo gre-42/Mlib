@@ -1,6 +1,8 @@
 
 #include "Audio_Device.hpp"
+#ifndef USE_PCM_FILTERS
 #include <Mlib/Audio/OpenALSoft_efx.h>
+#endif
 #include <Mlib/Memory/Integral_Cast.hpp>
 #include <Mlib/Os/Os.hpp>
 #include <stdexcept>
@@ -43,6 +45,7 @@ std::string AudioDevice::get_name() const {
     return name;
 }
 
+#ifndef USE_PCM_FILTERS
 unsigned int AudioDevice::get_max_auxiliary_sends() const {
     ALCint max_auxiliary_sends = 0;
     alcGetIntegerv(device_, ALC_MAX_AUXILIARY_SENDS, 1, &max_auxiliary_sends);
@@ -51,3 +54,4 @@ unsigned int AudioDevice::get_max_auxiliary_sends() const {
     }
     return integral_cast<unsigned int>(max_auxiliary_sends);
 }
+#endif

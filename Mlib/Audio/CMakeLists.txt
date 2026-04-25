@@ -4,16 +4,22 @@ set(excluded_files "")
 
 my_add_library(MlibAudio "1" "" "${excluded_files}")
 
-target_include_directories(MlibAudio PUBLIC ${ALUT_INCLUDE_DIRS})
-
 target_link_libraries(MlibAudio
-    MlibMisc
-    MlibThreads
-    MlibMemory
-    MlibTime
-    MlibSceneGraph
-    MlibMiniMp3
-    ${ALUT_LIBRARIES})
+    PUBLIC
+        MlibMisc
+        MlibThreads
+        MlibMemory
+        MlibTime
+        MlibSceneGraph
+        MlibMiniMp3)
+
+target_compile_definitions(MlibAudio PUBLIC USE_PCM_FILTERS)
+
+if(EMSCRIPTEN)
+    target_link_libraries(MlibAudio PRIVATE "-lopenal")
+else()
+    target_link_libraries(MlibAudio PUBLIC OpenAL::OpenAL)
+endif()
 
 if (LAME_FOUND)
     target_link_libraries(MlibAudio ${LAME_LIBRARIES})

@@ -1,5 +1,5 @@
 #include "AWindow.hpp"
-#include <Mlib/Os/ndk_helper/GLContext.h>
+#include <Mlib/Os/Android/GLContext.h>
 #include <dlfcn.h>
 
 typedef int32_t (*PF_SET_FRAME_RATE)(ANativeWindow* window, float frameRate, int8_t compatibility);

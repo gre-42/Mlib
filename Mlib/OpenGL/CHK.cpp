@@ -62,7 +62,7 @@ void Mlib::log_opengl_call(const char* position) {
 }
 
 
-#ifndef __ANDROID__
+#if !defined(__ANDROID__) && !defined(__EMSCRIPTEN__)
 
 static bool CHECK_GLFW_ERRORS = true;
 static bool PRINT_GLFW_CALLS = false;

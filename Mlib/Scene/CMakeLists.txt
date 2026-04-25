@@ -17,7 +17,7 @@ target_link_libraries(MlibScene
         MlibSceneGraph
         MlibMacroExecutor
         MlibRemote)
-if (OPENAL_FOUND AND ALUT_FOUND)
+if (OPENAL_FOUND)
     target_link_libraries(MlibScene
         PUBLIC
             MlibAudio)

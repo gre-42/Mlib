@@ -1,3 +1,4 @@
+#ifndef USE_PCM_FILTERS
 #pragma once
 #include <Mlib/Audio/OpenAL_al.h>
 #include <memory>
@@ -25,3 +26,4 @@ private:
 };
 
 }
+#endif

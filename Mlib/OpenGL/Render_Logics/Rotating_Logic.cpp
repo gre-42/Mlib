@@ -1,4 +1,4 @@
-#ifndef __ANDROID__
+#if !defined(__ANDROID__) && !defined(__EMSCRIPTEN__)
 
 #include "Rotating_Logic.hpp"
 #include <Mlib/Geometry/Cameras/Camera.hpp>

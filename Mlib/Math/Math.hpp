@@ -27,32 +27,13 @@ public:
     {}
 };
 
-inline bool scalar_isnan(float s) {
-    return std::isnan(s);
-}
-
-inline bool scalar_isnan(double s) {
-    return std::isnan(s);
-}
-
-inline bool scalar_isnan(int32_t s) {
-    return false;
-}
-
-inline bool scalar_isnan(uint32_t s) {
-    return false;
-}
-
-inline bool scalar_isnan(int64_t s) {
-    return false;
-}
-
-inline bool scalar_isnan(uint64_t s) {
-    return false;
-}
-
-inline bool scalar_isnan(bool s) {
-    return false;
+template <Scalar T>
+inline bool scalar_isnan(const T& s) {
+    if constexpr (std::is_floating_point_v<T>) {
+        return std::isnan(s);
+    } else {
+        return false;
+    }
 }
 
 template <class TData> void identity_array(Array<TData>& a);

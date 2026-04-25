@@ -223,7 +223,7 @@ macro(my_add_advanced_library libName type isRecursive additionalFiles excludedF
 endmacro()
 
 macro(my_add_library libName isRecursive additionalFiles excludedFiles)
-    if (ANDROID)
+    if (ANDROID OR EMSCRIPTEN)
         my_add_static_library(${libName} ${isRecursive} "${additionalFiles}" "${excludedFiles}")
     else()
         my_add_shared_library(${libName} ${isRecursive} "${additionalFiles}" "${excludedFiles}")
@@ -318,7 +318,7 @@ macro(warn_all)
         add_compile_options( -Wall -Wmismatched-tags -Werror )
         add_compile_options( -Wconversion -Wno-implicit-int-conversion )
         add_compile_options( -Wno-missing-braces )
-        add_compile_options( -Wno-unknown-warning-option -Wno-ignored-optimization-argument -ffp-exception-behavior=maytrap )
+        add_compile_options( -Wno-unknown-warning-option -Wno-ignored-optimization-argument )
         if (ANDROID)
             add_compile_options(-Wno-unsupported-floating-point-opt)
         endif()
@@ -371,9 +371,8 @@ macro(enable_omp)
         set(OpenMP_C_LIB_NAMES "omp")
         set(OpenMP_CXX_LIB_NAMES "omp")
         set(OpenMP_FOUND TRUE)
-        add_compile_options(-fopenmp -pthread)
-        add_link_options(-fopenmp -pthread)
         add_link_options("-sPTHREAD_POOL_SIZE=4")
+        # Please call "target_link_openmp" after linking all dependencies.
     else()
         find_package(OpenMP REQUIRED)
     endif()
@@ -381,6 +380,12 @@ macro(enable_omp)
         message(STATUS "Enable OpenMP (OpenMP_C_FLAGS: '${OpenMP_C_FLAGS}', OpenMP_CXX_FLAGS: '${OpenMP_CXX_FLAGS}')")
         set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
         set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+    endif()
+endmacro()
+
+macro(target_link_openmp libName)
+    if (EMSCRIPTEN)
+        target_link_libraries(${libName} PUBLIC MlibSimpleOmp)
     endif()
 endmacro()
 
@@ -407,7 +412,7 @@ macro(set_ehsc)
 endmacro()
 
 macro(avoid_floating_point_exceptions)
-    if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+    if ((CMAKE_CXX_COMPILER_ID STREQUAL "Clang") AND NOT EMSCRIPTEN)
         set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -ffp-exception-behavior=maytrap")
     endif()
 endmacro()
@@ -429,39 +434,39 @@ macro(enable_cross_compiling)
 endmacro()
 
 macro(target_link_against_opengl target)
-    # Replaced with MSYS2 package
-    # if (MINGW)
-    #     target_link_libraries(${target} ${glfw3_LIBRARY} -lopengl32 -lglu32 -lgdi32)
-    # else()
-    #     target_link_libraries(${target} glfw)
-    # endif()
-
-    if (glfw3_FOUND)
-        target_include_directories(${target} PUBLIC ${glfw3_INCLUDE_DIR})
-    endif()
-    if (MSVC)
-        target_compile_definitions(${target} PUBLIC GLAD_API_CALL_EXPORT)
-        target_compile_definitions(${target} PRIVATE GLAD_API_CALL_EXPORT_BUILD)
-    endif()
-
-    if (glfw3_FOUND)
-        if (CMAKE_GENERATOR MATCHES "Visual Studio")
-            target_link_libraries(${target} ${glfw3_LIBRARY})
-        else()
-            target_link_libraries(${target} glfw)
-        endif()
-    endif()
-
     if (EMSCRIPTEN)
-        # No GLFW/SDL flags here. 
-        # Just tell Emscripten to support WebGL 2 and EGL
-        target_link_options(${target} PRIVATE 
-            "-sMAX_WEBGL_VERSION=2"
-            "-sFULL_ES3=1"
-        )
-        # Link against the EGL/GLES "virtual" libraries
-        target_link_libraries(${target} GLESv3 EGL)
+        set(EMSCRIPTEN_FLAGS -pthread)
+
+        target_compile_options(${target} PRIVATE ${EMSCRIPTEN_FLAGS})
+        target_link_options(${target}
+            PUBLIC
+                ${EMSCRIPTEN_FLAGS}
+                -sDISABLE_DEPRECATED_FIND_EVENT_TARGET_BEHAVIOR=1
+                -sFULL_ES2=1
+                -sFULL_ES3=1
+                -sMIN_WEBGL_VERSION=2
+                -sMAX_WEBGL_VERSION=2
+                -sPROXY_TO_PTHREAD=1
+                -sOFFSCREENCANVAS_SUPPORT=1
+                -lGL
+                -lEGL)
     elseif (ANDROID)
+        # Android NDK specific linking
         target_link_libraries(${target} GLESv3 EGL)
+    else()
+        # Desktop (Windows/Linux/macOS) logic
+        if (glfw3_FOUND)
+            target_include_directories(${target} PUBLIC ${glfw3_INCLUDE_DIR})
+            if (CMAKE_GENERATOR MATCHES "Visual Studio")
+                target_link_libraries(${target} ${glfw3_LIBRARY})
+            else()
+                target_link_libraries(${target} glfw)
+            endif()
+        endif()
+
+        if (MSVC)
+            target_compile_definitions(${target} PUBLIC GLAD_API_CALL_EXPORT)
+            target_compile_definitions(${target} PRIVATE GLAD_API_CALL_EXPORT_BUILD)
+        endif()
     endif()
 endmacro()

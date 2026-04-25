@@ -1,5 +1,7 @@
 #include "AContext.hpp"
-#include <Mlib/Os/ndk_helper/GLContext.h>
+#include <Mlib/Os/Android/GLContext.h>
+
+using namespace Mlib;
 
 AContext::AContext()
     : main_thread_id_{std::this_thread::get_id()}

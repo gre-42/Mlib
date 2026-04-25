@@ -6,6 +6,6 @@ my_add_library(MlibCompression "1" "" "${excluded_files}")
 
 target_link_libraries(MlibCompression MlibIo MlibOs)
 
-if (WITH_ZLIB)
+if (WITH_ZLIB AND NOT EMSCRIPTEN)
     target_link_libraries(MlibCompression ZLIB::ZLIB)
 endif()

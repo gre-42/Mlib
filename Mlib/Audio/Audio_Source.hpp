@@ -36,7 +36,9 @@ public:
     void set_pitch(float f);
     void set_position(const AudioSourceState<float>& position);
     void set_distance_clamping(const Interval<float>& interval);
+#ifndef USE_PCM_FILTERS
     void set_lowpass(const AudioLowpass& lowpass);
+#endif
     void play();
     void pause();
     void unpause();

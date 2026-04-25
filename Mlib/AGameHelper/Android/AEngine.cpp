@@ -2,18 +2,20 @@
 #include <Mlib/Layout/Layout_Constraint_Parameters.hpp>
 #include <Mlib/OpenGL/IRenderer.hpp>
 #include <Mlib/OpenGL/Ui/Button_States.hpp>
+#include <Mlib/Os/Android/AndroidApp.hpp>
+#include <Mlib/Os/Android/JNIHelper.h>
 #include <Mlib/Os/Os.hpp>
-#include <Mlib/Os/ndk_helper/AndroidApp.hpp>
-#include <Mlib/Os/ndk_helper/JNIHelper.h>
+
+using namespace Mlib;
 
 //-------------------------------------------------------------------------
 // Ctor
 //-------------------------------------------------------------------------
 AEngine::AEngine(
-    Mlib::IRenderer& renderer,
-    Mlib::ButtonStates& buttons_states)
+    IRenderer& renderer,
+    ButtonStates& button_states)
     : renderer_{ renderer }
-    , buttons_states_{ buttons_states }
+    , button_states_{ button_states }
     , initialized_resources_{ false }
     , has_focus_{ false }
     , xdpi_{ 0 }
@@ -50,7 +52,7 @@ void AEngine::UnloadResources() {
  */
 int AEngine::InitDisplay(android_app* app) {
     if (app->window == nullptr) {
-        Mlib::verbose_abort("AEngine::InitDisplay: window is null");
+        verbose_abort("AEngine::InitDisplay: window is null");
     }
     if (!initialized_resources_) {
         gl_context_->Init(app_->window);
@@ -61,7 +63,7 @@ int AEngine::InitDisplay(android_app* app) {
         // Re-initialize ANativeWindow.
         // On some devices, ANativeWindow is re-created when the app is resumed
         // if (gl_context_->GetANativeWindow() == nullptr) {
-        //     Mlib::verbose_abort("AEngine::InitDisplay: old window is null");
+        //     verbose_abort("AEngine::InitDisplay: old window is null");
         // }
         UnloadResources();
         gl_context_->Invalidate();
@@ -82,7 +84,7 @@ int AEngine::InitDisplay(android_app* app) {
     return 0;
 }
 
-void AEngine::DrawFrame(Mlib::RenderEvent event) {
+void AEngine::DrawFrame(RenderEvent event) {
     renderer_.render(
         event,
         LayoutParametersX(),
@@ -113,26 +115,26 @@ int32_t AEngine::HandleInput(android_app* app, AInputEvent* event) {
     auto* eng = (AEngine*)app->userData;
     switch (AInputEvent_getType(event)) {
         case AINPUT_EVENT_TYPE_KEY: {
-            eng->buttons_states_.notify_key_event(AKeyEvent_getKeyCode(event), AKeyEvent_getAction(event));
+            eng->button_states_.notify_key_event(AKeyEvent_getKeyCode(event), AKeyEvent_getAction(event));
             break;
         }
         case AINPUT_EVENT_TYPE_MOTION: {
-            std::scoped_lock lock{eng->buttons_states_.tap_buttons_mutex_};
+            std::scoped_lock lock{eng->button_states_.tap_buttons_mutex_};
             for (size_t i = 0; i < AMotionEvent_getPointerCount(event); ++i) {
                 int32_t action_and_pointer_idX = AMotionEvent_getAction(event);
                 int32_t pointer_idX = (action_and_pointer_idX & AMOTION_EVENT_ACTION_POINTER_INDEX_MASK) >> AMOTION_EVENT_ACTION_POINTER_INDEX_SHIFT;
                 int32_t pointer_id = AMotionEvent_getPointerId(event, i);
                 int32_t action = action_and_pointer_idX & AMOTION_EVENT_ACTION_MASK;
-                // Mlib::lraw() << "Combined " << action_and_pointer_idX << " " << action << " " << pointer_idX << " " << pointer_id;
+                // lraw() << "Combined " << action_and_pointer_idX << " " << action << " " << pointer_idX << " " << pointer_id;
                 switch (action) {
                     case AMOTION_EVENT_ACTION_UP:
                     case AMOTION_EVENT_ACTION_POINTER_UP: {
-                        // Mlib::lraw() << "Pointer ID " << pointer_id << " up, combined " << action_and_pointer_idX << " " << action << " " << pointer_idX << " " << pointer_id;
+                        // lraw() << "Pointer ID " << pointer_id << " up, combined " << action_and_pointer_idX << " " << action << " " << pointer_idX << " " << pointer_id;
                         if ((action == AMOTION_EVENT_ACTION_POINTER_UP) && (pointer_id != pointer_idX)) {
-                            // Mlib::lraw() << "skip";
+                            // lraw() << "skip";
                             break;
                         }
-                        for (auto& [_, tap_buttons] : eng->buttons_states_.tap_buttons_) {
+                        for (auto& [_, tap_buttons] : eng->button_states_.tap_buttons_) {
                             if (auto bit = tap_buttons.button_pointer_ids.find(pointer_id);
                                 (bit != tap_buttons.button_pointer_ids.end()) &&
                                 (bit->second != nullptr))
@@ -185,21 +187,21 @@ int32_t AEngine::HandleInput(android_app* app, AInputEvent* event) {
                     case AMOTION_EVENT_ACTION_POINTER_DOWN: {
                         // if ((action == AMOTION_EVENT_ACTION_DOWN) ||
                         //     (action == AMOTION_EVENT_ACTION_POINTER_DOWN)) {
-                        //     Mlib::lraw() << "Pointer ID " << pointer_id << " down, combined " << action_and_pointer_idX << " " << action << " " << pointer_idX << " " << pointer_id;
+                        //     lraw() << "Pointer ID " << pointer_id << " down, combined " << action_and_pointer_idX << " " << action << " " << pointer_idX << " " << pointer_id;
                         // }
                         if ((action == AMOTION_EVENT_ACTION_POINTER_DOWN) && (pointer_id != pointer_idX)) {
-                            // Mlib::lraw() << "skip";
+                            // lraw() << "skip";
                             break;
                         }
                         float x = AMotionEvent_getX(event, i);
                         float y = AMotionEvent_getY(event, i);
-                        for (auto& [_, tap_buttons] : eng->buttons_states_.tap_buttons_) {
+                        for (auto& [_, tap_buttons] : eng->button_states_.tap_buttons_) {
                             for (auto &tb: tap_buttons.button_states) {
                                 auto ew = tb.widget->evaluate(
                                     eng->LayoutParametersX(),
                                     eng->LayoutParametersY(),
-                                    Mlib::YOrientation::SWAPPED,
-                                    Mlib::RegionRoundMode::ENABLED);
+                                    YOrientation::SWAPPED,
+                                    RegionRoundMode::ENABLED);
                                 if ((ew->width() > 0.f) && (ew->height() > 0.f) &&
                                     (x >= ew->left()) && (x <= ew->right()) &&
                                     (y >= ew->bottom()) && (y <= ew->top()))
@@ -312,11 +314,11 @@ void AEngine::HandleCmd(struct android_app* app, int32_t cmd) {
             // LOGI("APP_CMD_INIT_WINDOW");
             // The window is being shown, get it ready.
             if (app->window == nullptr) {
-                Mlib::verbose_abort("APP_CMD_INIT_WINDOW: window is null");
+                verbose_abort("APP_CMD_INIT_WINDOW: window is null");
             }
             eng->InitDisplay(app);
             eng->has_focus_ = true;
-            eng->DrawFrame(Mlib::RenderEvent::INIT_WINDOW);
+            eng->DrawFrame(RenderEvent::INIT_WINDOW);
             break;
         case APP_CMD_TERM_WINDOW:
             // LOGI("APP_CMD_TERM_WINDOW");
@@ -334,13 +336,13 @@ void AEngine::HandleCmd(struct android_app* app, int32_t cmd) {
             // Start animation
             if (eng->ContextIsSuspended()) {
                 if (app->window == nullptr) {
-                    Mlib::verbose_abort("APP_CMD_GAINED_FOCUS: window is null");
+                    verbose_abort("APP_CMD_GAINED_FOCUS: window is null");
                 }
                 eng->InitDisplay(app);
             }
             eng->has_focus_ = true;
             eng->LoadResources();
-            eng->DrawFrame(Mlib::RenderEvent::GAINED_FOCUS);
+            eng->DrawFrame(RenderEvent::GAINED_FOCUS);
             break;
         case APP_CMD_LOST_FOCUS:
             // LOGI("APP_CMD_LOST_FOCUS");
@@ -437,20 +439,20 @@ void AEngine::UpdateDpi() {
     }
 }
 
-Mlib::LayoutConstraintParameters AEngine::LayoutParametersX() const {
-    return Mlib::LayoutConstraintParameters{
+LayoutConstraintParameters AEngine::LayoutParametersX() const {
+    return LayoutConstraintParameters{
         .dpi = xdpi_,
         .min_pixel = 0.f,
         .end_pixel = (float)gl_context_->GetScreenWidth()};
 }
 
-Mlib::LayoutConstraintParameters AEngine::LayoutParametersY() const {
-    return Mlib::LayoutConstraintParameters{
+LayoutConstraintParameters AEngine::LayoutParametersY() const {
+    return LayoutConstraintParameters{
         .dpi = ydpi_,
         .min_pixel = 0.f,
         .end_pixel = (float)gl_context_->GetScreenHeight()};
 }
 
-void AEngine::AddOnSaveState(std::function<void()> func) {
+void AEngine::add_on_save_state(std::function<void()> func) {
     on_save_state_.emplace_back(std::move(func));
 }

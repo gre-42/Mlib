@@ -1,6 +1,6 @@
 #pragma once
 #include <Mlib/Regex/Regex_Select.hpp>
-#include <boost/regex/icu.hpp>
+#include <Mlib/Strings/U32_Regex.hpp>
 #include <compare>
 #include <filesystem>
 #include <list>
@@ -17,7 +17,9 @@ namespace Mlib {
 
 std::strong_ordering operator <=> (const std::string& a, const std::string& b);
 std::list<std::string> string_to_list(const std::string& str, const Mlib::re::cregex& re, size_t expected_length = SIZE_MAX);
+#ifndef WITHOUT_ICU
 std::list<std::u8string> string_to_list(const std::u8string& str, const boost::u32regex& re, size_t expected_length = SIZE_MAX);
+#endif
 std::list<std::string> string_to_list(const std::string& str, size_t expected_length = SIZE_MAX);
 std::vector<std::string> string_to_vector(const std::string& str);
 std::set<std::string> string_to_set(const std::string& str);

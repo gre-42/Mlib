@@ -4,9 +4,8 @@
 /*RelWithDebInfo
 /*VS*
 /Testing
-/RecastBuild
+/*RecastBuild
 *.pyc
-/freealut
 /OpenAL
 /engine-sim
 /Android

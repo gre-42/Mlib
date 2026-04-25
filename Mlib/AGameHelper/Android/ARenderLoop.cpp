@@ -3,12 +3,14 @@
 #include <Mlib/OpenGL/IRenderer.hpp>
 #include <Mlib/Os/Os.hpp>
 
+using namespace Mlib;
+
 ARenderLoop::ARenderLoop(
     android_app& app,
     AEngine& aengine,
     const char* monstartup_lib)
-: app_{app},
-  aengine_{aengine}
+    : app_{app}
+    , aengine_{aengine}
 {
     aengine.SetState(&app);
 

@@ -56,7 +56,7 @@ void test_resolve() {
 }
 
 int main(int argc, char** argv) {
-#ifndef __ANDROID__
+#if !defined(__ANDROID__) && !defined(__EMSCRIPTEN__)
     set_app_reldir("macro_executor_test");
 #endif
     try {

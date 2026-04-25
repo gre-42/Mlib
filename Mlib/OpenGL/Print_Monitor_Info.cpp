@@ -1,5 +1,5 @@
 
-#ifndef __ANDROID__
+#if !defined(__ANDROID__) && !defined(__EMSCRIPTEN__)
 #include "Print_Monitor_Info.hpp"
 #include <Mlib/Os/Os.hpp>
 #include <Mlib/Iterator/Enumerate.hpp>

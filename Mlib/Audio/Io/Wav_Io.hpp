@@ -17,8 +17,8 @@ struct WavHeader {
     uint16_t audio_format = 1;                          // Audio format 1=PCM,6=mulaw,7=alaw, 257=IBM
                                                         // Mu-Law, 258=IBM A-Law, 259=ADPCM
     uint16_t num_of_chan = 1;                           // Number of channels 1=Mono 2=Sterio
-    uint32_t samples_per_sec = 44100;                   // Sampling Frequency in Hz
-    uint32_t bytes_per_sec = 44100 * 2;                 // bytes per second
+    uint32_t samples_per_sec = 44'100;                  // Sampling Frequency in Hz
+    uint32_t bytes_per_sec = 44'100 * 2;                // bytes per second
     uint16_t block_align = 2;                           // 2=16-bit mono, 4=16-bit stereo
     uint16_t bits_per_sample = 16;                      // Number of bits per sample
     /* "data" sub-chunk */

@@ -1,8 +1,15 @@
-
 #include "Get_Thread_Name.hpp"
 #include <stdexcept>
 
-#ifdef __linux__
+#ifdef __EMSCRIPTEN__
+
+#include <Mlib/Os/Set_Thread_Name_Native.hpp>
+
+std::string Mlib::get_thread_name() {
+    return get_thread_name_native();
+}
+
+#elifdef  __linux__
 
 #include <linux/prctl.h>    // PR_* constants
 #include <sys/prctl.h>

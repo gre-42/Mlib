@@ -1,7 +1,18 @@
-#include <Mlib/AGameHelper/AContext.hpp>
-#include <Mlib/AGameHelper/AEngine.hpp>
-#include <Mlib/AGameHelper/ARenderLoop.hpp>
-#include <Mlib/AGameHelper/AWindow.hpp>
+#ifdef __ANDROID__
+#include <Mlib/AGameHelper/Android/AContext.hpp>
+#include <Mlib/AGameHelper/Android/AEngine.hpp>
+#include <Mlib/AGameHelper/Android/ARenderLoop.hpp>
+#include <Mlib/AGameHelper/Android/AWindow.hpp>
+#include <Mlib/Os/Android/AUi.hpp>
+#include <Mlib/Os/Android/AndroidApp.hpp>
+#include <Mlib/Os/Android/NDKHelper.h>
+#endif
+#ifdef __EMSCRIPTEN__
+#include <Mlib/AGameHelper/Emscripten/AContext.hpp>
+#include <Mlib/AGameHelper/Emscripten/AEngine.hpp>
+#include <Mlib/AGameHelper/Emscripten/ARenderLoop.hpp>
+#include <Mlib/Os/Emscripten/AUi.hpp>
+#endif
 #include <Mlib/Array/Verbose_Vector.hpp>
 #include <Mlib/Audio/Audio_Context.hpp>
 #include <Mlib/Audio/Audio_Device.hpp>
@@ -53,9 +64,6 @@
 #include <Mlib/Os/Env.hpp>
 #include <Mlib/Os/Pathes.hpp>
 #include <Mlib/Os/Pathes.hpp>
-#include <Mlib/Os/ndk_helper/AUi.hpp>
-#include <Mlib/Os/ndk_helper/AndroidApp.hpp>
-#include <Mlib/Os/ndk_helper/NDKHelper.h>
 #include <Mlib/Physics/Bullets/Bullet_Property_Db.hpp>
 #include <Mlib/Physics/Dynamic_Lights/Dynamic_Light_Db.hpp>
 #include <Mlib/Physics/Smoke_Generation/Surface_Contact_Db.hpp>
@@ -280,9 +288,16 @@ JThread loader_thread(
     }};
 }
 
-void android_main(android_app* app) {
+#ifdef __EMSCRIPTEN__
+int main()
+#else
+void android_main(android_app* app)
+#endif
+{
     // set_log_level(LogLevel::ERROR);
+#ifndef __EMSCRIPTEN__
     AndroidAppGuard android_app_guard{*app};
+#endif
     // This throws exceptions internally, which is not supported
     // on Android.
     // register_pretty_terminate();
@@ -709,12 +724,16 @@ void android_main(android_app* app) {
         AContext context;
         ContextQueryGuard context_query_guard{ context };
         ClearWrapperGuard clear_wrapper_guard;
+#ifdef __EMSCRIPTEN__
+        ARenderLoop render_loop{ a_engine };
+#else
         ARenderLoop render_loop{ *app, a_engine };
+#endif
         // AUi::RequestReadExternalStoragePermission();
 
         // FifoLog fifo_log{10 * 1000};
 
-        a_engine.AddOnSaveState([&](){
+        a_engine.add_on_save_state([&](){
             ui_focuses.try_save();
         });
         LocalSceneLevel local_scene_level;
@@ -753,7 +772,8 @@ void android_main(android_app* app) {
                 .physics_engine_config = physics_engine_config};
 
             OpenGLObjectFactory gpu_object_factory;
-            SceneNodeResources scene_node_resources{gpu_object_factory};
+            CachingGpuObjectFactory caching_gpu_object_factory{gpu_object_factory};
+            SceneNodeResources scene_node_resources{caching_gpu_object_factory};
             ParticleResources particle_resources;
             TrailResources trail_resources;
             SurfaceContactDb surface_contact_db;
@@ -793,13 +813,11 @@ void android_main(android_app* app) {
                 RenderableScenes renderable_scenes;
                 PhysicsScenes physics_scenes;
 
-                scene_renderer.set_scene(load_scene.get(), &physics_scenes, &renderable_scenes);
-                DestructionGuard dg0{[&scene_renderer](){ scene_renderer.set_scene(nullptr, nullptr, nullptr); }};
-
-                DestructionGuard dg1{[](){discard_render_allocators();}};
+                DestructionGuard dg0{[](){discard_render_allocators();}};
                 std::function<void()> exit = [](){
                     lerr() << "Program exit not supported on Android";
                 };
+
                 remote_sites.set_user_status(UserTypes::ALL_REMOTE, UserStatus::INITIAL);
                 remote_sites.set_user_status(UserTypes::ALL_LOCAL, UserStatus::LEVEL_LOADING);
                 load_scene.reset(new LoadScene(
@@ -832,6 +850,10 @@ void android_main(android_app* app) {
                     renderable_scenes,
                     window_logic,
                     exit));
+
+                scene_renderer.set_scene(load_scene.get(), &physics_scenes, &renderable_scenes);
+                DestructionGuard dg1{[&scene_renderer](){ scene_renderer.set_scene(nullptr, nullptr, nullptr); }};
+
                 JThread loader_future_guard{loader_thread(
                     args,
                     remote_sites,
@@ -859,7 +881,7 @@ void android_main(android_app* app) {
         //     TimeGuard::write_svg(std::this_thread::get_id(), "/tmp/events.svg");
         // }
     } catch (const CommandLineArgumentError& e) {
-        LOGE("Command-line error: %s", e.what());
+        lerr() << "Command-line error: " << e.what();
         AUi::ShowMessage("Error", e.what());
         std::this_thread::sleep_for(std::chrono::seconds(5));
         std::abort();

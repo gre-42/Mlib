@@ -2,6 +2,7 @@
 #include "Viewport_Guard.hpp"
 #include <Mlib/Layout/IWidget.hpp>
 #include <Mlib/Memory/Float_To_Integral.hpp>
+#include <Mlib/Memory/Integral_To_Float.hpp>
 #include <Mlib/OpenGL/CHK.hpp>
 #include <cmath>
 #include <stdexcept>
@@ -60,7 +61,7 @@ ViewportGuard::~ViewportGuard() {
     }
 }
 
-#ifdef __ANDROID__
+#if defined(__ANDROID__) || defined(__EMSCRIPTEN__)
 struct IntViewport {
     IntViewport(float begin, float size) {
         ibegin = float_to_integral<int>(begin);
@@ -81,15 +82,19 @@ ViewportGuard::ViewportGuard(
     current_guard_ = this;
     IntViewport vx{x, width};
     IntViewport vy{y, height};
-    viewport_.x = vx.ibegin;
-    viewport_.y = vy.ibegin;
-    viewport_.width = vx.isize;
-    viewport_.height = vy.isize;
+    viewport_.x = integral_to_float<float>(vx.ibegin);
+    viewport_.y = integral_to_float<float>(vy.ibegin);
+    viewport_.width = integral_to_float<float>(vx.isize);
+    viewport_.height = integral_to_float<float>(vy.isize);
     apply();
 }
 
 void ViewportGuard::apply() const {
-    CHK(glViewport(viewport_.x, viewport_.y, viewport_.width, viewport_.height));
+    CHK(glViewport(
+        float_to_integral<int>(viewport_.x),
+        float_to_integral<int>(viewport_.y),
+        float_to_integral<int>(viewport_.width),
+        float_to_integral<int>(viewport_.height)));
 }
 
 float ViewportGuard::fwidth() const {
@@ -101,11 +106,11 @@ float ViewportGuard::fheight() const {
 }
 
 int ViewportGuard::iwidth() const {
-    return viewport_.width;
+    return float_to_integral<int>(viewport_.width);
 }
 
 int ViewportGuard::iheight() const {
-    return viewport_.height;
+    return float_to_integral<int>(viewport_.height);
 }
 
 #else

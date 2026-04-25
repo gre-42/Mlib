@@ -24,7 +24,9 @@ struct AudioFileInformation {
 struct AudioMetaInformation {
     float gain;
     std::optional<Interval<float>> distance_clamping;
+#ifndef USE_PCM_FILTERS
     std::shared_ptr<AudioLowpass> lowpass;
+#endif
 };
 
 struct AudioFileSequenceInformation {
@@ -82,12 +84,16 @@ public:
     void add_equalizer(
         const VariableAndHash<std::string>& name,
         const AudioEqualizerInformation& equalizer) const;
+#ifndef USE_PCM_FILTERS
     std::shared_ptr<AudioEqualizer> get_equalizer(const VariableAndHash<std::string>& name) const;
-
+#endif
     void add_lowpass(
         const VariableAndHash<std::string>& name,
         const AudioLowpassInformation& lowpass) const;
+#ifndef USE_PCM_FILTERS
     std::shared_ptr<AudioLowpass> get_lowpass(const VariableAndHash<std::string>& name) const;
+#endif
+
 private:
     mutable StringWithHashUnorderedMap<AudioFileInformation> buffer_filenames_;
     mutable StringWithHashUnorderedMap<AudioMetaInformation> buffer_meta_;
@@ -96,9 +102,13 @@ private:
     mutable StringWithHashUnorderedMap<std::shared_ptr<AudioBufferSequenceWithHysteresis>>
         buffer_sequences_;
     mutable StringWithHashUnorderedMap<AudioEqualizerInformation> equalizer_parameters_;
+#ifndef USE_PCM_FILTERS
     mutable StringWithHashUnorderedMap<std::shared_ptr<AudioEqualizer>> equalizers_;
+#endif
     mutable StringWithHashUnorderedMap<AudioLowpassInformation> lowpass_parameters_;
+#ifndef USE_PCM_FILTERS
     mutable StringWithHashUnorderedMap<std::shared_ptr<AudioLowpass>> lowpasses_;
+#endif
     mutable SafeAtomicRecursiveSharedMutex mutex_;
 };
 

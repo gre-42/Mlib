@@ -1,5 +1,5 @@
 #pragma once
-#ifndef __ANDROID__
+#if !defined(__ANDROID__) && !defined(__EMSCRIPTEN__)
 
 namespace Mlib {
 

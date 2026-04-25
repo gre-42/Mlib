@@ -1,6 +1,6 @@
 include(../CMakeCommands.cmake)
 
-if (ANDROID)
+if (ANDROID OR EMSCRIPTEN)
     add_subdirectory(AGameHelper)
 endif()
 add_subdirectory(Array)

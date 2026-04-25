@@ -28,7 +28,7 @@
 #include <future>
 #include <stdexcept>
 
-#ifndef __ANDROID__
+#if !defined(__ANDROID__) && !defined(__EMSCRIPTEN__)
 
 using namespace Mlib;
 

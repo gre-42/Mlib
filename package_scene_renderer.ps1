@@ -20,7 +20,6 @@ Write-Host "CMAKE_BUILD_TYPE: $CMAKE_BUILD_TYPE"
 Write-Host "OpenSSL path: $openssl_path"
 
 $files = "openal-soft\build\Release\OpenAL32.dll",
-         "freealut\build\src\Release\alut.dll",
          "VSRecastBuild\Detour\$CMAKE_BUILD_TYPE\Detour.dll",
          "VSRecastBuild\DebugUtils\$CMAKE_BUILD_TYPE\DebugUtils.dll",
          "VSRecastBuild\Recast\$CMAKE_BUILD_TYPE\Recast.dll",

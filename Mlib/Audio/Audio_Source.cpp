@@ -6,7 +6,9 @@
 #include <Mlib/Audio/Audio_Lowpass.hpp>
 #include <Mlib/Audio/Audio_Scene.hpp>
 #include <Mlib/Audio/CHK.hpp>
+#ifndef USE_PCM_FILTERS
 #include <Mlib/Audio/OpenALSoft_efx.h>
+#endif
 #include <Mlib/Geometry/Primitives/Interval.hpp>
 #include <Mlib/Physics/Units.hpp>
 
@@ -83,9 +85,11 @@ void AudioSource::set_distance_clamping(const Interval<float>& interval) {
     AL_CHK(alSourcef(source_, AL_MAX_DISTANCE, interval.max));
 }
 
+#ifndef USE_PCM_FILTERS
 void AudioSource::set_lowpass(const AudioLowpass& lowpass) {
     AL_CHK(alSourcei(source_, AL_DIRECT_FILTER, integral_cast<ALint>(lowpass.handle_)));
 }
+#endif
 
 void AudioSource::play() {
     AL_CHK(alSourcePlay(source_));

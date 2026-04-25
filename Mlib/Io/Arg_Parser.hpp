@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Strings/Encoding.hpp>
 #include <Mlib/Strings/Str.hpp>
 #include <algorithm>
 #include <filesystem>
@@ -20,9 +21,9 @@ public:
 class ParsedArgs {
     std::string help;
     std::set<std::string> named_;
-    std::map<std::string, std::u8string> named_values_;
-    std::map<std::string, std::list<std::u8string>> named_lists_;
-    std::vector<std::u8string> unnamed_values_;
+    std::map<std::string, Mlib::u8string> named_values_;
+    std::map<std::string, std::list<Mlib::u8string>> named_lists_;
+    std::vector<Mlib::u8string> unnamed_values_;
     friend class ArgParser;
 public:
     bool has_named(const std::string& name) const {
@@ -34,7 +35,7 @@ public:
     bool has_named_list(const std::string& name) const {
         return named_lists_.find(name) != named_lists_.end();
     }
-    std::u8string named_value(const std::string& name) const {
+    Mlib::u8string named_value(const std::string& name) const {
         if (!has_named_value(name)) {
             throw CommandLineArgumentError(help + "\n\nOption \"" + name + "\" is missing");
         }
@@ -46,13 +47,15 @@ public:
         }
         return U8::str(named_values_.at(name));
     }
+#ifndef WITHOUT_ICU
     std::u8string named_value(const std::string& name, const std::u8string& deflt) const {
         if (!has_named_value(name)) {
             return deflt;
         }
         return named_values_.at(name);
     }
-    std::u8string named_value(const std::string& name, const std::string& deflt) const {
+#endif
+    Mlib::u8string named_value(const std::string& name, const std::string& deflt) const {
         if (!has_named_value(name)) {
             return U8::u8str(deflt);
         }
@@ -64,13 +67,13 @@ public:
         }
         return U8::str(named_values_.at(name));
     }
-    const std::u8string* try_named_value(const std::string& name) const {
+    const Mlib::u8string* try_named_value(const std::string& name) const {
         if (!has_named_value(name)) {
             return nullptr;
         }
         return &named_values_.at(name);
     }
-    const std::list<std::u8string>& named_list(const std::string& name) const {
+    const std::list<Mlib::u8string>& named_list(const std::string& name) const {
         if (!has_named_list(name)) {
             throw CommandLineArgumentError(help + "\n\nOption \"" + name + "\" is missing");
         }
@@ -86,18 +89,18 @@ public:
             throw CommandLineArgumentError("Number of unnamed arguments not correct.\n" + help);
         }
     }
-    const std::u8string& unnamed_value(size_t index) const {
+    const Mlib::u8string& unnamed_value(size_t index) const {
         if (index >= unnamed_values_.size()) {
             throw CommandLineArgumentError("Number of unnamed arguments not correct.\n" + help);
         }
         return unnamed_values_[index];
     }
-    std::vector<std::u8string> unnamed_values(size_t begin = 0) const {
+    std::vector<Mlib::u8string> unnamed_values(size_t begin = 0) const {
         if (begin > unnamed_values_.size()) {
             throw CommandLineArgumentError("Number of unnamed arguments not correct.\n" + help);
         }
         const auto* data = unnamed_values_.data();
-        return std::vector<std::u8string>(data + begin, data + unnamed_values_.size());
+        return std::vector<Mlib::u8string>(data + begin, data + unnamed_values_.size());
     }
 };
 
@@ -138,15 +141,15 @@ public:
                     if (i + 1 == argc) {
                         throw CommandLineArgumentError(help);
                     }
-                    if (!result.named_values_.try_emplace(name, (char8_t*)argv[i+1]).second) {
+                    if (!result.named_values_.try_emplace(name, (u8char*)argv[i+1]).second) {
                         throw CommandLineArgumentError("Multiple values for " + name);
                     }
                     ++i;
                 } else if (!eoopts && options_with_list.contains(name)) {
                     ++i;
-                    std::list<std::u8string> values;
+                    std::list<Mlib::u8string> values;
                     for (; i < argc; ++i) {
-                        std::u8string argi{(char8_t*)argv[i]};
+                        Mlib::u8string argi{(u8char*)argv[i]};
                         if (!argi.empty() && (argi[0] == '-')) {
                             --i;
                             break;
@@ -160,7 +163,7 @@ public:
                     if (!eoopts && name.size() > 0 && name[0] == '-') {
                         throw CommandLineArgumentError(help);
                     }
-                    result.unnamed_values_.emplace_back((char8_t*)argv[i]);
+                    result.unnamed_values_.emplace_back((u8char*)argv[i]);
                 }
             }
         }

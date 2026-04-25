@@ -251,7 +251,7 @@ uint8_t* Gl3Raster::lock(uint32_t level, uint32_t lock_mode)
                     std::memcpy(pixels_.data(), levels_[level].data.data(), alloc_sz);
                 } else {
                     // GLES is losing here
-#ifdef __ANDROID__
+#if defined(__ANDROID__) || defined(__EMSCRIPTEN__)
                     throw std::runtime_error("glGetCompressedTexImage not supported on Android. Alternative: https://stackoverflow.com/a/53993894/2292832");
 #else
                     BindTextureGuard btg{ GL_TEXTURE_2D, native_texture_id_->handle<GLuint>() };
@@ -266,7 +266,7 @@ uint8_t* Gl3Raster::lock(uint32_t level, uint32_t lock_mode)
                 CHK(glReadPixels(0, 0, integral_cast<GLsizei>(level_meta_data.width), integral_cast<GLsizei>(level_meta_data.height), native_format_, native_type_, pixels_.data()));
                 //e = glGetError(); printf("GL err4 %x (%x)\n", e, native_format);
             } else {
-#ifdef __ANDROID__
+#if defined(__ANDROID__) || defined(__EMSCRIPTEN__)
                 throw std::runtime_error("glGetTexImage not supported on Android. Alternative: https://stackoverflow.com/a/53993894/2292832");
 #else
                 BindTextureGuard btg{ GL_TEXTURE_2D, native_texture_id_->handle<GLuint>() };
@@ -289,7 +289,11 @@ uint8_t* Gl3Raster::lock(uint32_t level, uint32_t lock_mode)
         }
         auto alloc_sz = height_ * stride_;
         pixels_.resize(alloc_sz);
+#if defined(__ANDROID__) || defined(__EMSCRIPTEN__)
+        throw std::runtime_error("glReadBuffer not supported on Android and Emscription");
+#else
         CHK(glReadBuffer(GL_BACK));
+#endif
         CHK(glReadPixels(0, 0, integral_cast<GLint>(width_), integral_cast<GLint>(height_), GL_RGB, GL_UNSIGNED_BYTE, pixels_.data()));
 
         private_flags_ = lock_mode;

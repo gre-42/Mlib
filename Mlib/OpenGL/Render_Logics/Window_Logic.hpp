@@ -1,5 +1,5 @@
 #pragma once
-#ifndef __ANDROID__
+#if !defined(__ANDROID__) && !defined(__EMSCRIPTEN__)
 
 #include <Mlib/OpenGL/Fullscreen_Callback.hpp>
 #include <Mlib/OpenGL/Ui/Button_Press.hpp>

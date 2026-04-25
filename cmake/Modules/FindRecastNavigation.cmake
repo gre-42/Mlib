@@ -65,8 +65,8 @@ NOTE: The variables above should not usually be used in CMakeLists.txt files!
 ### Find libraries ##############################################################
 
 if(NOT RECAST_LIBRARY)
-    find_library(RECAST_LIBRARY_RELEASE NAMES Recast HINTS ${RecastNavitation_ROOT} PATH_SUFFIXES Recast/Release Recast/RelWithDebInfo lib Recast)
-    find_library(RECAST_LIBRARY_DEBUG NAMES Recast-d HINTS ${RecastNavitation_ROOT} PATH_SUFFIXES Recast/Debug lib Recast)
+    find_library(RECAST_LIBRARY_RELEASE NAMES Recast HINTS ${RecastNavigation_ROOT} PATH_SUFFIXES Recast/Release Recast/RelWithDebInfo lib Recast)
+    find_library(RECAST_LIBRARY_DEBUG NAMES Recast-d HINTS ${RecastNavigation_ROOT} PATH_SUFFIXES Recast/Debug lib Recast)
     include(SelectLibraryConfigurations)
     select_library_configurations(RECAST)
     mark_as_advanced(RECAST_LIBRARY_RELEASE RECAST_LIBRARY_DEBUG)
@@ -75,8 +75,8 @@ else()
 endif()
 
 if(NOT DETOUR_LIBRARY)
-    find_library(DETOUR_LIBRARY_RELEASE NAMES Detour HINTS ${RecastNavitation_ROOT} PATH_SUFFIXES Detour/Release Detour/RelWithDebInfo lib Detour)
-    find_library(DETOUR_LIBRARY_DEBUG NAMES Detour-d HINTS ${RecastNavitation_ROOT} PATH_SUFFIXES Detour/Debug lib Detour)
+    find_library(DETOUR_LIBRARY_RELEASE NAMES Detour HINTS ${RecastNavigation_ROOT} PATH_SUFFIXES Detour/Release Detour/RelWithDebInfo lib Detour)
+    find_library(DETOUR_LIBRARY_DEBUG NAMES Detour-d HINTS ${RecastNavigation_ROOT} PATH_SUFFIXES Detour/Debug lib Detour)
     include(SelectLibraryConfigurations)
     select_library_configurations(DETOUR)
     mark_as_advanced(DETOUR_LIBRARY_RELEASE DETOUR_LIBRARY_DEBUG)
@@ -85,8 +85,8 @@ else()
 endif()
 
 if(NOT DEBUGUTILS_LIBRARY)
-    find_library(DEBUGUTILS_LIBRARY_RELEASE NAMES DebugUtils HINTS ${RecastNavitation_ROOT} PATH_SUFFIXES DebugUtils/Release DebugUtils/RelWithDebInfo lib DebugUtils)
-    find_library(DEBUGUTILS_LIBRARY_DEBUG NAMES DebugUtils-d HINTS ${RecastNavitation_ROOT} PATH_SUFFIXES DebugUtils/Debug lib DebugUtils)
+    find_library(DEBUGUTILS_LIBRARY_RELEASE NAMES DebugUtils HINTS ${RecastNavigation_ROOT} PATH_SUFFIXES DebugUtils/Release DebugUtils/RelWithDebInfo lib DebugUtils)
+    find_library(DEBUGUTILS_LIBRARY_DEBUG NAMES DebugUtils-d HINTS ${RecastNavigation_ROOT} PATH_SUFFIXES DebugUtils/Debug lib DebugUtils)
     include(SelectLibraryConfigurations)
     select_library_configurations(DEBUGUTILS)
     mark_as_advanced(DEBUGUTILS_LIBRARY_RELEASE DEBUGUTILS_LIBRARY_DEBUG)
@@ -95,7 +95,7 @@ else()
 endif()
 
 ### Find include directory ####################################################
-find_path(RECAST_INCLUDE_DIR NAMES Recast.h HINTS ${RecastNavitation_ROOT} PATH_SUFFIXES include RECAST include/recastnavigation)
+find_path(RECAST_INCLUDE_DIR NAMES Recast.h HINTS ${RecastNavigation_ROOT} PATH_SUFFIXES include RECAST include/recastnavigation)
 mark_as_advanced(RECAST_INCLUDE_DIR)
 
 if(RECAST_INCLUDE_DIR AND EXISTS "${RECAST_INCLUDE_DIR}/Recast.h")

@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Strings/Encoding.hpp>
 #include <filesystem>
 #include <string>
 
@@ -12,7 +13,9 @@ class Utf8Path {
 public:
     Utf8Path();
     static Utf8Path from_path(std::filesystem::path p);
+#ifndef WITHOUT_ICU
     Utf8Path(std::u8string s);
+#endif
     Utf8Path(std::string s);
     Utf8Path(std::string_view s);
     Utf8Path(const char* s);
@@ -39,7 +42,7 @@ public:
     operator const std::filesystem::path& () const;
     operator std::string () const;
     std::string string() const;
-    std::u8string u8string() const;
+    Mlib::u8string u8string() const;
     const char* c_str() const;
     // Queries
     bool empty() const;
@@ -49,7 +52,7 @@ public:
 private:
     Utf8Path(std::filesystem::path p, ConstructPathType);
     std::filesystem::path path_;
-    mutable std::u8string u8path_;
+    mutable Mlib::u8string u8path_;
 };
 
 std::ostream& operator << (std::ostream& ostr, const Utf8Path& p);

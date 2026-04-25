@@ -1,4 +1,5 @@
 #include "Os.hpp"
+#include <Mlib/Os/Io/Binary.hpp>
 #include <Mlib/Os/Weakly_Canonical_Preserve_Symlinks.hpp>
 #include <filesystem>
 #include <fstream>
@@ -8,8 +9,8 @@
 #include <string>
 
 #ifdef __ANDROID__
-#include <Mlib/Os/ndk_helper/AUi.hpp>
-#include <Mlib/Os/ndk_helper/NDKHelper.h>
+#include <Mlib/Os/Android/AUi.hpp>
+#include <Mlib/Os/Android/NDKHelper.h>
 #else
 #include <Mlib/Os/Set_Thread_Name_Native.hpp>
 #include <iostream>
@@ -315,22 +316,16 @@ std::unique_ptr<std::istream> Mlib::create_ifstream(
     return std::make_unique<std::ifstream>(filename, mode);
 }
 
-std::vector<uint8_t> Mlib::read_file_bytes(const Utf8Path& filename) {
+std::vector<std::byte> Mlib::read_file_bytes(const Utf8Path& filename) {
     std::ifstream f{filename, std::ios::binary};
     if (f.fail()) {
         throw std::runtime_error("Could not open file for read: \"" + filename.string() + '"');
     }
-    f.seekg(0, std::ifstream::end);
-    std::streamoff file_size = f.tellg();
-    f.seekg(0, std::ifstream::beg);
-    std::vector<uint8_t> res;
-    res.reserve((size_t)file_size);
-    res.assign(std::istreambuf_iterator<char>(f),
-               std::istreambuf_iterator<char>());
-    if (f.fail() && !f.eof()) {
-        throw std::runtime_error("Could not read from file: \"" + filename.string() + '"');
+    try {
+        return read_all_vector(f, "file", IoVerbosity::SILENT);
+    } catch (const std::runtime_error& e) {
+        throw std::runtime_error("Could not read from file: \"" + filename.string() + "\": " + e.what());
     }
-    return res;
 }
 
 std::unique_ptr<std::ostream> Mlib::create_ofstream(

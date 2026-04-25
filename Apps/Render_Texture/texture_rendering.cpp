@@ -28,8 +28,8 @@
 #include <Mlib/Regex/Regex_Select.hpp>
 #include <Mlib/Scene_Graph/Render/Caching_Gpu_Object_Factory.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
+#include <Mlib/Strings/U32_Regex.hpp>
 #include <Mlib/Threads/Realtime_Threads.hpp>
-#include <boost/regex/icu.hpp>
 
 using namespace Mlib;
 
@@ -102,12 +102,12 @@ int main(int argc, char** argv)
         std::optional<FillWithTextureLogic> ftl;
         auto unnamed = args.unnamed_values();
         if (unnamed.empty()) {
-            static const auto re = boost::make_u32regex(args.named_value("--filter"));
+            static const auto re = Mlib::make_u32regex(args.named_value("--filter"));
             std::list<ColormapWithModifiers> names;
             if (auto filename = args.try_named_value("--kn5"); filename != nullptr) {
                 auto kn5 = load_kn5(*filename);
                 for (auto& [name, data] : kn5.textures) {
-                    if (!boost::u32regex_search(*name, re)) {
+                    if (!Mlib::u32regex_search(*name, re)) {
                         continue;
                     }
                     linfo() << "Matched: " << *name;
@@ -134,7 +134,7 @@ int main(int argc, char** argv)
                         .flip_gl_y_axis = true}),
                     IoVerbosity::SILENT);
                 for (auto& tx : txd.textures) {
-                    if (!boost::u32regex_search(*tx->name, re)) {
+                    if (!Mlib::u32regex_search(*tx->name, re)) {
                         linfo() << "Skipping: " << *tx->name;
                         continue;
                     }

@@ -1,5 +1,5 @@
 
-#ifndef __ANDROID__
+#if !defined(__ANDROID__) && !defined(__EMSCRIPTEN__)
 
 #include "Window.hpp"
 #include <Mlib/Array/Fixed_Array.hpp>

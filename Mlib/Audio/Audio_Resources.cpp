@@ -1,4 +1,3 @@
-
 #include "Audio_Resources.hpp"
 #include <Mlib/Audio/Audio_Buffer.hpp>
 #include <Mlib/Audio/Audio_Buffer_Sequence_With_Hysteresis.hpp>
@@ -18,9 +17,13 @@ AudioResources::AudioResources()
     , buffer_sequence_filenames_{"Buffer sequence filename"}
     , buffer_sequences_{"Buffer sequence"}
     , equalizer_parameters_{"Equalizer parameters"}
+#ifndef USE_PCM_FILTERS
     , equalizers_{"Equalizers"}
+#endif
     , lowpass_parameters_{"Lowpass parameters"}
+#ifndef USE_PCM_FILTERS
     , lowpasses_{"Lowpass"}
+#endif
 {}
 
 AudioResources::~AudioResources() = default;
@@ -53,11 +56,15 @@ const AudioMetaInformation& AudioResources::get_buffer_meta(const VariableAndHas
         return *it;
     }
     const auto& file = buffer_filenames_.get(name);
+#ifndef USE_PCM_FILTERS
     std::shared_ptr<AudioLowpass> lowpass;
     if (file.lowpass.has_value()) {
         lowpass = get_lowpass(*file.lowpass);
     }
     return buffer_meta_.add(name, file.gain, file.distance_clamping, lowpass);
+#else
+    return buffer_meta_.add(name, file.gain, file.distance_clamping);
+#endif
 }
 
 std::shared_ptr<AudioBuffer> AudioResources::get_buffer(const VariableAndHash<std::string>& name) const {
@@ -71,8 +78,17 @@ std::shared_ptr<AudioBuffer> AudioResources::get_buffer(const VariableAndHash<st
     if (auto it = buffers_.try_get(name); it != nullptr) {
         return *it;
     }
-    auto& fit = buffer_filenames_.get(name);
+#ifndef USE_PCM_FILTERS
     return buffers_.add(name, AudioBuffer::from_file(fit.filename));
+#else
+    auto& fit = buffer_filenames_.get(name);
+    if (fit.lowpass.has_value()) {
+        const auto& lparams = lowpass_parameters_.get(*fit.lowpass);
+        return buffers_.add(name, AudioBuffer::from_file(fit.filename, lparams));
+    } else {
+        return buffers_.add(name, AudioBuffer::from_file(fit.filename));
+    }
+#endif
 }
 
 void AudioResources::preload_buffer(const VariableAndHash<std::string>& name) const {
@@ -132,6 +148,7 @@ void AudioResources::add_equalizer(
     equalizer_parameters_.add(name, equalizer);
 }
 
+#ifndef USE_PCM_FILTERS
 std::shared_ptr<AudioEqualizer>
     AudioResources::get_equalizer(const VariableAndHash<std::string>& name) const
 {
@@ -148,6 +165,7 @@ std::shared_ptr<AudioEqualizer>
     auto equalizer = AudioEqualizer::create(equalizer_parameters_.get(name));
     return equalizers_.add(name, equalizer);
 }
+#endif
 
 void AudioResources::add_lowpass(
     const VariableAndHash<std::string>& name,
@@ -157,6 +175,7 @@ void AudioResources::add_lowpass(
     lowpass_parameters_.add(name, lowpass);
 }
 
+#ifndef USE_PCM_FILTERS
 std::shared_ptr<AudioLowpass>
     AudioResources::get_lowpass(const VariableAndHash<std::string>& name) const
 {
@@ -173,3 +192,4 @@ std::shared_ptr<AudioLowpass>
     auto lowpass = AudioLowpass::create(lowpass_parameters_.get(name));
     return lowpasses_.add(name, lowpass);
 }
+#endif

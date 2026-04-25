@@ -41,7 +41,7 @@ static bool make_digital(float v, float sign_and_threshold) {
     return (std::abs(v) >= std::abs(sign_and_threshold));
 }
 
-#ifndef __ANDROID__
+#if !defined(__ANDROID__) && !defined(__EMSCRIPTEN__)
 ButtonStates::ButtonStates()
     : tap_buttons_(16)
     , gamepad_state_{ {} }
@@ -53,7 +53,7 @@ ButtonStates::ButtonStates() = default;
 
 ButtonStates::~ButtonStates() = default;
 
-#ifndef __ANDROID__
+#if !defined(__ANDROID__) && !defined(__EMSCRIPTEN__)
 float ButtonStates::get_gamepad_axis(
     uint32_t gamepad_id,
     uint32_t axis,
@@ -253,7 +253,7 @@ void ButtonStates::print(std::ostream& ostr, const ButtonStatesPrintArgs& args) 
             ostr << name << " ";
         }
     }
-#ifndef __ANDROID__
+#if !defined(__ANDROID__) && !defined(__EMSCRIPTEN__)
     ostr << "\n\n";
     std::shared_lock lock{ gamepad_state_mutex_ };
     static_assert(GLFW_JOYSTICK_1 == 0);

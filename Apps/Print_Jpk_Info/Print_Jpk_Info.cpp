@@ -1,10 +1,10 @@
 #include <Mlib/Geometry/Mesh/Load/Jpk_Reader.hpp>
 #include <Mlib/Io/Arg_Parser.hpp>
-#include <Mlib/Io/Binary.hpp>
+#include <Mlib/Os/Io/Binary.hpp>
 #include <Mlib/Os/Os.hpp>
 #include <Mlib/Regex/Regex_Select.hpp>
+#include <Mlib/Strings/U32_Regex.hpp>
 #include <Mlib/Strings/Utf8_Path.hpp>
-#include <boost/regex/icu.hpp>
 
 using namespace Mlib;
 
@@ -21,9 +21,9 @@ int main(int argc, char **argv) {
             linfo() << "Processing file " << file;
             auto reader = JpkReader::load_from_file(file, IoVerbosity::METADATA);
             if (args.has_named_value("--export")) {
-                auto re = boost::make_u32regex(args.named_value("--export"));
+                auto re = Mlib::make_u32regex(args.named_value("--export"));
                 for (const auto& name : reader->names()) {
-                    if (!boost::u32regex_search(*name, re)) {
+                    if (!Mlib::u32regex_search(*name, re)) {
                         continue;
                     }
                     auto element_filename = Utf8Path{ "jpk_element" } / *name;

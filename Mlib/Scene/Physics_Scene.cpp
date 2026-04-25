@@ -4,11 +4,11 @@
 #include <Mlib/Audio/Audio_Resources.hpp>
 #include <Mlib/Audio/One_Shot_Audio.hpp>
 #include <Mlib/Geometry/Material/Particle_Type.hpp>
-#include <Mlib/Io/Binary.hpp>
 #include <Mlib/Macro_Executor/Asset_References.hpp>
 #include <Mlib/Macro_Executor/Notifying_Json_Macro_Arguments.hpp>
 #include <Mlib/OpenGL/Batch_Renderers/Trail_Renderer.hpp>
 #include <Mlib/Os/Env.hpp>
+#include <Mlib/Os/Io/Binary.hpp>
 #include <Mlib/Physics/Dynamic_Lights/Dynamic_Lights.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Iteration.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Loop.hpp>
@@ -129,7 +129,9 @@ PhysicsScene::PhysicsScene(
             const auto& audio_meta = ar->get_buffer_meta(audio_resource_name);
             one_shot_audio_.play(
                 *audio_buffer,
+#ifndef USE_PCM_FILTERS
                 audio_meta.lowpass.get(),
+#endif
                 state,
                 AudioPeriodicity::APERIODIC,
                 audio_meta.distance_clamping,
@@ -144,7 +146,15 @@ PhysicsScene::PhysicsScene(
         {
             auto audio_buffer = ar->get_buffer(audio_resource_name);
             const auto& audio_meta = ar->get_buffer_meta(audio_resource_name);
-            auto asp = one_shot_audio_.play(*audio_buffer, audio_meta.lowpass.get(), state0, AudioPeriodicity::PERIODIC, audio_meta.distance_clamping, audio_meta.gain);
+            auto asp = one_shot_audio_.play(
+                *audio_buffer,
+#ifndef USE_PCM_FILTERS
+                audio_meta.lowpass.get(),
+#endif
+                state0,
+                AudioPeriodicity::PERIODIC,
+                audio_meta.distance_clamping,
+                audio_meta.gain);
             return [asp](const AudioSourceState<ScenePos>* state1){
                 if (state1 == nullptr) {
                     asp->source.stop();

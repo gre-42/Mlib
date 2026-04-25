@@ -1,4 +1,4 @@
-
+#ifndef USE_PCM_FILTERS
 #include "Audio_Lowpass.hpp"
 #include <Mlib/Audio/Audio_Resources.hpp>
 #include <Mlib/Audio/CHK.hpp>
@@ -22,3 +22,4 @@ std::shared_ptr<AudioLowpass> AudioLowpass::create(const AudioLowpassInformation
     AL_CHK(alFilterf(res->handle_, AL_LOWPASS_GAINHF, parameters.gain_hf));
     return res;
 }
+#endif

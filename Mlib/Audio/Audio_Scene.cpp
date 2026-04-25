@@ -6,6 +6,7 @@
 #include <Mlib/Audio/Audio_Source.hpp>
 #include <Mlib/Audio/CHK.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
+#include <Mlib/Threads/Fast_Mutex.hpp>
 #include <mutex>
 #include <string>
 

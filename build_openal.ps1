@@ -13,12 +13,12 @@ choco install -y openal
 # Expand-Archive OpenAL11CoreSDK.zip -DestinationPath .\
 # .\OpenAL11CoreSDK.exe
 
-Write-Host "Install freealut"
-git clone https://github.com/vancegroup/freealut
-mkdir freealut/build
-cd freealut/build
-$env:OPENALDIR="C:\Program Files (x86)\OpenAL 1.1 SDK"
-cmake ..
-cmake --build . --config Release
+# Write-Host "Install freealut"
+# git clone https://github.com/vancegroup/freealut
+# mkdir freealut/build
+# cd freealut/build
+# $env:OPENALDIR="C:\Program Files (x86)\OpenAL 1.1 SDK"
+# cmake ..
+# cmake --build . --config Release
 
 Pop-Location

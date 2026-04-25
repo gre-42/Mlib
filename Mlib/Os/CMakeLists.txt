@@ -7,9 +7,9 @@ endif()
 
 include(../../CMakeCommands.cmake)
 
-set(excluded_files "")
 
 if (ANDROID)
+    set(excluded_files "/Emscripten/[^/]+$")
     my_add_library(MlibOs "1" "" "${excluded_files}")
     target_link_libraries(MlibOs
         PUBLIC
@@ -20,15 +20,12 @@ if (ANDROID)
             android
             atomic
         )
-    set_target_properties(MlibOs
-        PROPERTIES
-            CXX_STANDARD 20
-            CXX_STANDARD_REQUIRED YES
-            CXX_EXTENSIONS NO
-            INTERFACE_INCLUDE_DIRECTORIES $<TARGET_PROPERTY:MlibOs,INCLUDE_DIRECTORIES>
-        )
+elseif (EMSCRIPTEN)
+    set(excluded_files "/Android/[^/]+$")
+    my_add_library(MlibOs "1" "" "${excluded_files}")
 else()
+    set(excluded_files "")
     my_add_library(MlibOs "0" "" "${excluded_files}")
 endif()
 
-target_link_libraries(MlibOs PUBLIC MlibStrings Boost::regex)
+target_link_libraries(MlibOs PUBLIC MlibStrings)

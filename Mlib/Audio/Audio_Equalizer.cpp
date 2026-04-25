@@ -1,4 +1,4 @@
-
+#ifndef USE_PCM_FILTERS
 #include "Audio_Equalizer.hpp"
 #include <Mlib/Audio/Audio_Resources.hpp>
 #include <Mlib/Audio/CHK.hpp>
@@ -30,3 +30,4 @@ std::shared_ptr<AudioEqualizer> AudioEqualizer::create(const AudioEqualizerInfor
     AL_CHK(alEffectf(res->handle_, AL_EQUALIZER_HIGH_CUTOFF, parameters.high_cutoff));
     return res;
 }
+#endif

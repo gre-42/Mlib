@@ -32,7 +32,7 @@ std::vector<std::byte> Mlib::convert_to_mp3(
 
 #include "Mp3_Io.hpp"
 #include <Mlib/Audio/Io/Wav_Io.hpp>
-#include <Mlib/Io/Binary.hpp>
+#include <Mlib/Os/Io/Binary.hpp>
 #include <Mlib/Memory/Destruction_Guard.hpp>
 #include <Mlib/Os/Os.hpp>
 #include <lame/lame.h>

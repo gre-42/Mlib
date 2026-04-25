@@ -1,5 +1,13 @@
 #pragma once
-#ifdef __ANDROID__
+#ifdef __EMSCRIPTEN__
+#include <emscripten/html5.h>
+
+namespace Mlib {
+    static const int KEY_PRESS = EMSCRIPTEN_EVENT_KEYDOWN;
+    static const int KEY_RELEASE = EMSCRIPTEN_EVENT_KEYUP;
+}
+
+#elifdef __ANDROID__
 #include <android/input.h>
 
 namespace Mlib {

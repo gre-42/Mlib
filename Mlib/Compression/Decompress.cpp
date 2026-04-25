@@ -1,6 +1,6 @@
 #include "Decompress.hpp"
-#include <Mlib/Io/Binary.hpp>
 #include <Mlib/Memory/Integral_Cast.hpp>
+#include <Mlib/Os/Io/Binary.hpp>
 #include <Mlib/Os/Os.hpp>
 #include <functional>
 #include <iostream>

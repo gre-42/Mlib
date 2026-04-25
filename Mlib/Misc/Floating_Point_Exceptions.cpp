@@ -60,14 +60,14 @@ TemporarilyIgnoreFloatingPointExeptions::~TemporarilyIgnoreFloatingPointExeption
 }
 #endif
 
-#ifdef __linux__
+#if defined(__linux__) || defined(__EMSCRIPTEN__)
 
 #include <Mlib/Misc/Floating_Point_Exceptions.hpp>
 #include <cfenv>
 
 using namespace Mlib;
 
-#ifdef __ANDROID__
+#if defined(__ANDROID__) || defined(__EMSCRIPTEN__)
 
 void Mlib::enable_floating_point_exceptions()
 {}

@@ -1,5 +1,118 @@
 #pragma once
-#ifdef __ANDROID__
+#if defined(__EMSCRIPTEN__)
+#include <Mlib/Map/Map.hpp>
+#include <emscripten/key_codes.h>
+
+namespace Mlib {
+
+static const Map<std::string, int> keys_map{
+    /* Printable keys */
+    {"SPACE", DOM_VK_SPACE},
+    {"APOSTROPHE", DOM_PK_QUOTE},  /* ' */
+    {"COMMA", DOM_VK_COMMA},  /* , */
+    {"MINUS", DOM_PK_MINUS},  /* - */
+    {"PERIOD", DOM_VK_PERIOD},  /* . */
+    {"SLASH", DOM_VK_SLASH},  /* / */
+    {"0", DOM_VK_0},
+    {"1", DOM_VK_1},
+    {"2", DOM_VK_2},
+    {"3", DOM_VK_3},
+    {"4", DOM_VK_4},
+    {"5", DOM_VK_5},
+    {"6", DOM_VK_6},
+    {"7", DOM_VK_7},
+    {"8", DOM_VK_8},
+    {"9", DOM_VK_9},
+    {"SEMICOLON", DOM_VK_SEMICOLON},  /* ; */
+    {"EQUAL", DOM_VK_EQUALS},  /* = */
+    {"A", DOM_VK_A},
+    {"B", DOM_VK_B},
+    {"C", DOM_VK_C},
+    {"D", DOM_VK_D},
+    {"E", DOM_VK_E},
+    {"F", DOM_VK_F},
+    {"G", DOM_VK_G},
+    {"H", DOM_VK_H},
+    {"I", DOM_VK_I},
+    {"J", DOM_VK_J},
+    {"K", DOM_VK_K},
+    {"L", DOM_VK_L},
+    {"M", DOM_VK_M},
+    {"N", DOM_VK_N},
+    {"O", DOM_VK_O},
+    {"P", DOM_VK_P},
+    {"Q", DOM_VK_Q},
+    {"R", DOM_VK_R},
+    {"S", DOM_VK_S},
+    {"T", DOM_VK_T},
+    {"U", DOM_VK_U},
+    {"V", DOM_VK_V},
+    {"W", DOM_VK_W},
+    {"X", DOM_VK_X},
+    {"Y", DOM_VK_Y},
+    {"Z", DOM_VK_Z},
+    {"LEFT_BRACKET", DOM_PK_BRACKET_LEFT},  /* [ */
+    {"BACKSLASH", DOM_PK_BACKSLASH},  /* \ */
+    {"RIGHT_BRACKET", DOM_PK_BRACKET_RIGHT},  /* ] */
+
+    /* Function keys */
+    {"ESCAPE", DOM_VK_ESCAPE},
+    {"ENTER", DOM_VK_ENTER},
+    {"TAB", DOM_VK_TAB},
+    {"BACKSPACE", DOM_PK_BACKSPACE},
+    {"INSERT", DOM_VK_INSERT},
+    {"DELETE", DOM_PK_DELETE},
+    {"RIGHT", DOM_PK_ARROW_RIGHT},
+    {"LEFT", DOM_PK_ARROW_LEFT},
+    {"DOWN", DOM_PK_ARROW_DOWN},
+    {"UP", DOM_PK_ARROW_UP},
+    {"PAGE_UP", DOM_VK_PAGE_UP},
+    {"PAGE_DOWN", DOM_VK_PAGE_DOWN},
+    {"HOME", DOM_VK_HOME},
+    {"END", DOM_PK_END},
+    {"CAPS_LOCK", DOM_VK_CAPS_LOCK},
+    {"SCROLL_LOCK", DOM_VK_SCROLL_LOCK},
+    {"NUM_LOCK", DOM_VK_NUM_LOCK},
+    {"PRINT_SCREEN", DOM_PK_PRINT_SCREEN},
+    {"PAUSE", DOM_PK_PAUSE},
+    {"F1", DOM_VK_F1},
+    {"F2", DOM_VK_F2},
+    {"F3", DOM_VK_F3},
+    {"F4", DOM_VK_F4},
+    {"F5", DOM_VK_F5},
+    {"F6", DOM_VK_F6},
+    {"F7", DOM_VK_F7},
+    {"F8", DOM_VK_F8},
+    {"F9", DOM_VK_F9},
+    {"F10", DOM_VK_F10},
+    {"F11", DOM_VK_F11},
+    {"F12", DOM_VK_F12},
+    {"KP_0", DOM_VK_NUMPAD0},
+    {"KP_1", DOM_VK_NUMPAD1},
+    {"KP_2", DOM_VK_NUMPAD2},
+    {"KP_3", DOM_VK_NUMPAD3},
+    {"KP_4", DOM_VK_NUMPAD4},
+    {"KP_5", DOM_VK_NUMPAD5},
+    {"KP_6", DOM_VK_NUMPAD6},
+    {"KP_7", DOM_VK_NUMPAD7},
+    {"KP_8", DOM_VK_NUMPAD8},
+    {"KP_9", DOM_VK_NUMPAD9},
+    {"KP_DIVIDE", DOM_PK_NUMPAD_DIVIDE},
+    {"KP_MULTIPLY", DOM_PK_NUMPAD_MULTIPLY},
+    {"KP_SUBTRACT", DOM_PK_NUMPAD_SUBTRACT},
+    {"KP_ADD", DOM_PK_NUMPAD_ADD},
+    {"KP_ENTER", DOM_PK_NUMPAD_ENTER},
+    {"LEFT_SHIFT", DOM_PK_SHIFT_LEFT},
+    {"LEFT_CONTROL", DOM_PK_CONTROL_LEFT},
+    {"LEFT_ALT", DOM_PK_ALT_LEFT},
+    {"RIGHT_SHIFT", DOM_PK_SHIFT_RIGHT},
+    {"RIGHT_CONTROL", DOM_PK_CONTROL_RIGHT},
+    {"RIGHT_ALT", DOM_PK_ALT_RIGHT},
+    {"MENU", DOM_PK_CONTEXT_MENU}
+};
+
+}
+#elif defined(__ANDROID__)
 #include <Mlib/Map/Map.hpp>
 #include <android/keycodes.h>
 

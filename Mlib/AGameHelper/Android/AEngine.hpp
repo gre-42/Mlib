@@ -1,14 +1,14 @@
 #pragma once
-#include <Mlib/Os/ndk_helper/NDKHelper.h>
+#include <Mlib/Os/Android/NDKHelper.h>
 #include <functional>
 #include <list>
 
 namespace Mlib {
-    class IRenderer;
-    enum class RenderEvent;
-    class ButtonStates;
-    struct LayoutConstraintParameters;
-}
+
+class IRenderer;
+enum class RenderEvent;
+class ButtonStates;
+struct LayoutConstraintParameters;
 
 // From: https://github.com/android/ndk-samples/blob/main/teapots/classic-teapot/src/main/cpp/TeapotNativeActivity.cpp
 
@@ -18,7 +18,7 @@ namespace Mlib {
 struct android_app;
 class AEngine {
     Mlib::IRenderer& renderer_;
-    Mlib::ButtonStates& buttons_states_;
+    Mlib::ButtonStates& button_states_;
 
     ndk_helper::GLContext* gl_context_;
 
@@ -50,7 +50,7 @@ public:
 
     explicit AEngine(
         Mlib::IRenderer& renderer,
-        Mlib::ButtonStates& buttons_states);
+        Mlib::ButtonStates& button_states);
     ~AEngine();
     void SetState(android_app* app);
     int InitDisplay(android_app* app);
@@ -70,5 +70,7 @@ public:
     Mlib::LayoutConstraintParameters LayoutParametersX() const;
     Mlib::LayoutConstraintParameters LayoutParametersY() const;
 
-    void AddOnSaveState(std::function<void()> func);
+    void add_on_save_state(std::function<void()> func);
 };
+
+}

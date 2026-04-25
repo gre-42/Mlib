@@ -1,7 +1,8 @@
 #pragma once
+#include <Mlib/Audio/OpenAL_al.h>
+#include <Mlib/Audio/OpenAL_alc.h>
 #include <Mlib/Os/Os.hpp>
 #include <Mlib/Threads/Fast_Mutex.hpp>
-#include <AL/alut.h>
 #include <iostream>
 #include <mutex>
 #include <stdexcept>
@@ -10,6 +11,7 @@
 namespace Mlib {
 
 extern FastMutex al_error_mutex;
+const char* get_al_error_string(ALenum error);
 
 }
 
@@ -21,7 +23,7 @@ extern FastMutex al_error_mutex;
             ALCenum error = alGetError();                                                          \
             if (error != AL_NO_ERROR) {                                                            \
                 throw std::runtime_error("Error executing " #f ": " +                                        \
-                               std::string(alutGetErrorString(error)));                            \
+                               std::string(get_al_error_string(error)));                            \
             }                                                                                      \
         }                                                                                          \
     }
@@ -33,7 +35,7 @@ extern FastMutex al_error_mutex;
         {                                                                                          \
             ALCenum error = alGetError();                                                          \
             if (error != AL_NO_ERROR) {                                                            \
-                lwarn() << "Error executing " #f ": " << alutGetErrorString(error);                \
+                lwarn() << "Error executing " #f ": " << get_al_error_string(error);                \
             }                                                                                      \
         }                                                                                          \
     }
@@ -46,7 +48,7 @@ extern FastMutex al_error_mutex;
             ALCenum error = alGetError();                                                          \
             if (error != AL_NO_ERROR) {                                                            \
                 verbose_abort("Error executing " #f ": " +                                         \
-                              std::string(alutGetErrorString(error)));                             \
+                              std::string(get_al_error_string(error)));                             \
             }                                                                                      \
         }                                                                                          \
     }

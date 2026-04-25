@@ -82,8 +82,8 @@ void FrameBufferStorage::allocate(const FrameBufferConfig& config)
         CHK(glBindTexture(GL_TEXTURE_2D, texture_color_->handle<GLuint>()));
         CHK(glTexImage2D(GL_TEXTURE_2D, 0, config.color_internal_format, config.width, config.height, 0, config.color_format, config.color_type, nullptr));
     } else {
-#ifdef __ANDROID__
-        throw std::runtime_error("MSAA not supported on android");
+#if defined(__ANDROID__) || defined(__EMSCRIPTEN__)
+        throw std::runtime_error("MSAA not supported on Android and Emscripten");
 #else
         CHK(glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, texture_color_->handle<GLuint>()));
         CHK(glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, config.nsamples_msaa, (GLenum)config.color_internal_format, config.width, config.height, GL_TRUE));
@@ -101,8 +101,8 @@ void FrameBufferStorage::allocate(const FrameBufferConfig& config)
     if (config.nsamples_msaa == 1) {
         CHK(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture_color_->handle<GLuint>(), 0));
     } else {
-#ifdef __ANDROID__
-        throw std::runtime_error("MSAA not supported on android");
+#if defined(__ANDROID__) || defined(__EMSCRIPTEN__)
+        throw std::runtime_error("MSAA not supported on Android and Emscripten");
 #else
         CHK(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D_MULTISAMPLE, texture_color_->handle<GLuint>(), 0));
 #endif
@@ -125,8 +125,8 @@ void FrameBufferStorage::allocate(const FrameBufferConfig& config)
             CHK(glBindTexture(GL_TEXTURE_2D, texture_depth_->handle<GLuint>()));
             CHK(glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, config.width, config.height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr));
         } else {
-#ifdef __ANDROID__
-            throw std::runtime_error("MSAA not supported on android");
+#if defined(__ANDROID__) || defined(__EMSCRIPTEN__)
+            throw std::runtime_error("MSAA not supported on Android and Emscripten");
 #else
             CHK(glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, texture_depth_->handle<GLuint>()));
             CHK(glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, config.nsamples_msaa, GL_DEPTH_COMPONENT24, config.width, config.height, GL_TRUE));
@@ -137,8 +137,8 @@ void FrameBufferStorage::allocate(const FrameBufferConfig& config)
         if (config.nsamples_msaa == 1) {
             CHK(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, texture_depth_->handle<GLuint>(), 0));
         } else {
-#ifdef __ANDROID__
-            throw std::runtime_error("MSAA not supported on android");
+#if defined(__ANDROID__) || defined(__EMSCRIPTEN__)
+            throw std::runtime_error("MSAA not supported on Android and Emscripten");
 #else
             CHK(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D_MULTISAMPLE, texture_depth_->handle<GLuint>(), 0));
 #endif
@@ -152,7 +152,11 @@ void FrameBufferStorage::allocate(const FrameBufferConfig& config)
         if (config.nsamples_msaa == 1) {
             CHK(glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, config.width, config.height)); // use a single renderbuffer object for both a depth AND stencil buffer.
         } else {
+#if defined(__ANDROID__) || defined(__EMSCRIPTEN__)
+            throw std::runtime_error("MSAA not supported on Android and Emscripten");
+#else
             CHK(glRenderbufferStorageMultisample(GL_RENDERBUFFER, config.nsamples_msaa, GL_DEPTH24_STENCIL8, config.width, config.height));
+#endif
         }
         CHK(glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, depth_buffer_)); // now actually attach it
     } else if (config.depth_kind == FrameBufferChannelKind::NONE) {
@@ -304,7 +308,11 @@ void FrameBuffer::unbind(SourceLocation loc) {
         ms_fb_.unbind();
         CHK(glBindFramebuffer(GL_READ_FRAMEBUFFER, ms_fb_.frame_buffer_));
         fb_.bind_draw(loc);
+#if defined(__ANDROID__) || defined(__EMSCRIPTEN__)
+        throw std::runtime_error("MSAA not supported on Android and Emscripten");
+#else
         CHK(glBlitFramebuffer(0, 0, config_.width, config_.height, 0, 0, config_.width, config_.height, GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT, GL_NEAREST));
+#endif
         fb_.unbind();
     }
     if (config_.with_mipmaps) {

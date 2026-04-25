@@ -52,7 +52,7 @@ int main(int argc, char** argv) {
             return 0;
         }
         args.assert_num_unnamed(0);
-        auto to_opt = [](const std::u8string* s) -> FPath {
+        auto to_opt = [](const Mlib::u8string* s) -> FPath {
             if (s == nullptr) {
                 return {};
             }

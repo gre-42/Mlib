@@ -1,5 +1,5 @@
 #include "Communicator_Proxies.hpp"
-#include <Mlib/Io/Binary.hpp>
+#include <Mlib/Os/Io/Binary.hpp>
 #include <Mlib/Os/Os.hpp>
 #include <Mlib/Remote/IReceive_Socket.hpp>
 #include <Mlib/Remote/ISend_Socket.hpp>

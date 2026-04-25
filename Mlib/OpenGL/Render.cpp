@@ -1,4 +1,3 @@
-
 #include "Render.hpp"
 #include <Mlib/Geometry/Instance/Rendering_Dynamics.hpp>
 #include <Mlib/Memory/Destruction_Guard.hpp>
@@ -24,7 +23,7 @@
 #include <Mlib/Testing/Assert.hpp>
 #include <stdexcept>
 
-#ifndef __ANDROID__
+#if !defined(__ANDROID__) && !defined(__EMSCRIPTEN__)
 
 using namespace Mlib;
 

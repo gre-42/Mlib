@@ -90,7 +90,15 @@ void CreateDamageable::execute(const JsonView& args)
                 ]
                 (const AudioSourceState<ScenePos>& state, const StaticWorld& static_world)
                 {
-                    o.play(*shot_audio_buffer, shot_audio_meta.lowpass.get(), state, AudioPeriodicity::APERIODIC, shot_audio_meta.distance_clamping, shot_audio_meta.gain);
+                    o.play(
+                        *shot_audio_buffer,
+#ifndef USE_PCM_FILTERS
+                        shot_audio_meta.lowpass.get(),
+#endif
+                        state,
+                        AudioPeriodicity::APERIODIC,
+                        shot_audio_meta.distance_clamping,
+                        shot_audio_meta.gain);
                 };
             }
             std::function<void(const AudioSourceState<ScenePos>&, const StaticWorld&)> generate_explosion =

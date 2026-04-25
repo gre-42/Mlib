@@ -1874,9 +1874,9 @@ const LoadedFont& RenderingResources::get_font_texture(const FontNameAndHeight& 
     {
         std::vector<unsigned char> temp_bitmap(font.texture_width * font.texture_height);
         {
-            std::vector<uint8_t> ttf_buffer = read_file_bytes(font_descriptor.ttf_filename);
+            std::vector<std::byte> ttf_buffer = read_file_bytes(font_descriptor.ttf_filename);
             font.bottom_y = stbtt_BakeFontBitmap_get_y0(
-                ttf_buffer.data(),
+                (uint8_t*)ttf_buffer.data(),
                 0,  // font location (use offset=0 for plain .ttf)
                 font_descriptor.height_pixels,
                 temp_bitmap.data(),

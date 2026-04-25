@@ -1,13 +1,10 @@
 #include "Utf8_Path.hpp"
+#include <Mlib/Strings/Encoding.hpp>
 #include <Mlib/Strings/Str.hpp>
 #include <ostream>
 #include <stdexcept>
 
 using namespace Mlib;
-
-inline bool is_ascii(char c) {
-    return (unsigned char)c < 128;
-}
 
 Utf8Path::Utf8Path() = default;
 
@@ -15,9 +12,11 @@ Utf8Path Utf8Path::from_path(std::filesystem::path p) {
     return {std::move(p), construct_path};
 }
 
+#ifndef WITHOUT_ICU
 Utf8Path::Utf8Path(std::u8string s)
     : path_{std::move(s)}
 {}
+#endif
 
 Utf8Path::Utf8Path(std::string s)
     : path_{std::move(s)}
@@ -111,7 +110,7 @@ Utf8Path Utf8Path::extension() const {
 }
 
 bool Utf8Path::ends_with(const Utf8Path& suffix) const {
-    return path_.u8string().ends_with(suffix.path_.u8string());
+    return u8string().ends_with(suffix.u8string());
 }
 
 // Format observers
@@ -124,15 +123,19 @@ Utf8Path::operator std::string () const {
 }
 
 std::string Utf8Path::string() const {
-    return U8::str(path_.u8string());
+    return U8::str(u8string());
 }
 
-std::u8string Utf8Path::u8string() const {
+Mlib::u8string Utf8Path::u8string() const {
+#ifdef WITHOUT_ICU
+    return path_.string();
+#else
     return path_.u8string();
+#endif
 }
 
 const char* Utf8Path::c_str() const {
-    u8path_ = path_.u8string();
+    u8path_ = u8string();
     return U8::str(u8path_.c_str());
 }
 

@@ -1,5 +1,5 @@
 #pragma once
-#include <Mlib/Io/Binary.hpp>
+#include <Mlib/Os/Io/Binary.hpp>
 #include <cstdint>
 
 namespace Mlib {

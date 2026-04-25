@@ -5,11 +5,11 @@
 #include <Mlib/Geometry/Mesh/Load/Pssg_Elements.hpp>
 #include <Mlib/Images/Dds_Info.hpp>
 #include <Mlib/Io/Arg_Parser.hpp>
-#include <Mlib/Io/Binary.hpp>
+#include <Mlib/Os/Io/Binary.hpp>
 #include <Mlib/Os/Os.hpp>
 #include <Mlib/Regex/Regex_Select.hpp>
+#include <Mlib/Strings/U32_Regex.hpp>
 #include <Mlib/Strings/Utf8_Path.hpp>
-#include <boost/regex/icu.hpp>
 
 using namespace Mlib;
 
@@ -33,7 +33,7 @@ int main(int argc, char **argv) {
                     IoVerbosity::METADATA);
             }
             if (args.has_named_value("--export")) {
-                auto re = boost::make_u32regex(args.named_value("--export"));
+                auto re = Mlib::make_u32regex(args.named_value("--export"));
                 model.root.for_each_node([&](const PssgNode& node) {
                     if (model.schema.nodes.get(node.type_id).name != "TEXTURE") {
                         return true;
@@ -42,7 +42,7 @@ int main(int argc, char **argv) {
                     if (node_id.length() > 1'000) {
                         throw std::runtime_error("Node ID too long");
                     }
-                    if (!boost::u32regex_search(node_id, re)) {
+                    if (!Mlib::u32regex_search(node_id, re)) {
                         return true;
                     }
                     auto width = node.get_attribute("width", model.schema).uint32();

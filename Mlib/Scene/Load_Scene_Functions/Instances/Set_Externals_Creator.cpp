@@ -1,4 +1,5 @@
 #include "Set_Externals_Creator.hpp"
+#include <Mlib/Json/Base.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Macro_Executor/Macro_Keys.hpp>
 #include <Mlib/Macro_Executor/Macro_Line_Executor.hpp>
@@ -14,7 +15,6 @@
 #include <Mlib/Players/Scene_Vehicle/Vehicle_Spawner.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Load_Scene_Funcs.hpp>
-#include <nlohmann/json.hpp>
 #include <stdexcept>
 
 using namespace Mlib;

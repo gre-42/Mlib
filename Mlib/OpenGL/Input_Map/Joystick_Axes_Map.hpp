@@ -1,7 +1,37 @@
 #pragma once
 #include <optional>
 
-#ifdef __ANDROID__
+#if defined(__EMSCRIPTEN__)
+#include <Mlib/Map/Verbose_Map.hpp>
+#include <cstdint>
+
+namespace Mlib {
+
+static const VerboseMap<uint32_t, std::optional<uint32_t>> joystick_axes_map{
+    "Joystick axis",
+    [](uint32_t key){ return std::to_string(key); },
+    {
+        {1, 0},
+        {2, 1},
+        {3, 2},
+        {4, 3},
+        {5, 4},
+        {6, 5},
+        {7, 6},
+        {8, 7},
+        {9, 8},
+        {10, 9},
+        {11, 10},
+        {12, 11},
+        {13, 12},
+        {14, 13},
+        {15, 14},
+        {16, 15}
+},
+};
+
+}
+#elif defined(__ANDROID__)
 #include <Mlib/Map/Verbose_Map.hpp>
 #include <android/input.h>
 #include <cstdint>

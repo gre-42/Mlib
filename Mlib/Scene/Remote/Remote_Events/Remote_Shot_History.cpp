@@ -1,6 +1,6 @@
 #include "Remote_Shot_History.hpp"
-#include <Mlib/Io/Binary_Reader.hpp>
-#include <Mlib/Io/Binary_Writer.hpp>
+#include <Mlib/Os/Io/Binary_Reader.hpp>
+#include <Mlib/Os/Io/Binary_Writer.hpp>
 #include <Mlib/Remote/Incremental_Objects/Transmission_History.hpp>
 
 using namespace Mlib;

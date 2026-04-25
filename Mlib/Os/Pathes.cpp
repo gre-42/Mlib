@@ -7,19 +7,19 @@
 using namespace Mlib;
 
 std::vector<Utf8Path>
-    Mlib::split_semicolon_separated_pathes(const std::u8string& s)
+    Mlib::split_semicolon_separated_pathes(const Mlib::u8string& s)
 {
-    static const auto re = boost::make_u32regex(";");
+    static const auto re = Mlib::make_u32regex(";");
     return string_to_vector(s, re, [](const auto& s){ return Utf8Path{s}; });
 }
 
 std::vector<std::pair<Utf8Path, Utf8Path>>
-    Mlib::split_semicolon_separated_pairs_of_pathes(const std::u8string& s)
+    Mlib::split_semicolon_separated_pairs_of_pathes(const Mlib::u8string& s)
 {
-    static const auto re = boost::make_u32regex(";");
+    static const auto re = Mlib::make_u32regex(";");
     return string_to_vector(s, re, [](const auto& s)
     {
-        static const auto re = boost::make_u32regex("=");
+        static const auto re = Mlib::make_u32regex("=");
         auto v = string_to_vector(s, re, [](const auto& s){ return Utf8Path{s}; });
         if (v.size() != 2) {
             throw std::runtime_error("Could not parse as key=value: " + U8::str(s));

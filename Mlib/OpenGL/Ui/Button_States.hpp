@@ -1,6 +1,6 @@
 #pragma once
 
-#ifndef __ANDROID__
+#if !defined(__ANDROID__) && !defined(__EMSCRIPTEN__)
 #include <glad/gl.h>
 #define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h>
@@ -91,7 +91,7 @@ public:
     float get_tap_joystick_axis(
         uint32_t gamepad_id,
         int axis) const;
-#ifdef __ANDROID__
+#if defined(__ANDROID__) || defined(__EMSCRIPTEN__)
     void notify_gamepad_button(uint32_t gamepad_id, int axis, bool pressed);
     void notify_gamepad_axis(uint32_t gamepad_id, uint32_t axis, float value);
 #else
@@ -103,7 +103,7 @@ public:
         std::unordered_map<uint32_t, TapButtonsStates> tap_buttons_;
     mutable SafeAtomicRecursiveSharedMutex  tap_buttons_mutex_;
 private:
-#ifdef __ANDROID__
+#if defined(__ANDROID__) || defined(__EMSCRIPTEN__)
     std::unordered_map<uint32_t, std::unordered_map<int, bool>> gamepad_buttons_;
     std::unordered_map<uint32_t, std::unordered_map<uint32_t, RawAndFiltered>> gamepad_axes_;
     mutable SafeAtomicRecursiveSharedMutex gamepad_button_mutex_;

@@ -87,8 +87,8 @@ void BufferGenericCopy::init_type_erased(
         memory_map_ = nullptr;
         state_ = BackgroundCopyState::AWAITED;
     } else {
-#ifdef __ANDROID__
-        verbose_abort("Internal error: buffer-data not supported on Android");
+#if defined(__ANDROID__) || defined(__EMSCRIPTEN__)
+        verbose_abort("Internal error: buffer-data not supported on Android and Emscripten");
 #else
         CHK(glBufferStorage(GL_ARRAY_BUFFER, size, nullptr,
             GL_MAP_PERSISTENT_BIT | GL_MAP_WRITE_BIT | ((capacity_ != -1) ? GL_DYNAMIC_STORAGE_BIT : 0)));
@@ -156,7 +156,7 @@ void BufferGenericCopy::substitute_type_erased(
         CHK(glBufferSubData(GL_ARRAY_BUFFER, 0, size, begin));
         state_ = BackgroundCopyState::AWAITED;
     } else {
-#ifdef __ANDROID__
+#if defined(__ANDROID__) || defined(__EMSCRIPTEN__)
         verbose_abort("Internal error: buffer-data not supported on Android");
 #else
         if (memory_map_ != nullptr) {
@@ -203,9 +203,13 @@ void BufferGenericCopy::wait() const {
     future_.get();
     state_ = BackgroundCopyState::AWAITED;
     if (memory_map_ != nullptr) {
+#if defined(__ANDROID__) || defined(__EMSCRIPTEN__)
+        verbose_abort("Internal error: buffer-data not supported on Android");
+#else
         CHK(glBindBuffer(GL_ARRAY_BUFFER, buffer_));
         CHK(glUnmapBuffer(GL_ARRAY_BUFFER));
         memory_map_ = nullptr;
+#endif
     }
 }
 

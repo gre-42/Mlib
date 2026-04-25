@@ -12,7 +12,6 @@ target_include_directories(MlibOpenGL PUBLIC ${Mlib_INCLUDE_DIR} ${glfw3_INCLUDE
 
 target_link_libraries(MlibOpenGL
     MlibGeometry
-    MlibGlad
     MlibImages
     MlibLayout
     MlibMemory
@@ -24,3 +23,10 @@ target_link_libraries(MlibOpenGL
     MlibSceneGraph
     MlibStb
     MlibTime)
+
+if (NOT EMSCRIPTEN)
+    target_link_libraries(MlibOpenGL
+        MlibGlad)
+else()
+    target_link_against_opengl(MlibOpenGL)
+endif()

@@ -45,6 +45,18 @@ static void pin_current_thread_to_cpu_range(uint32_t min, uint32_t max) {
 }
 #endif
 
+#ifdef __EMSCRIPTEN__
+
+void Mlib::reserve_realtime_threads(uint32_t nreserved_realtime_threads) {}
+void Mlib::unreserve_realtime_threads() {}
+
+void Mlib::register_realtime_thread() {}
+void Mlib::unregister_realtime_thread() {}
+
+void Mlib::pin_background_thread() {}
+
+#endif
+
 #ifdef __linux__
 #include <pthread.h>
 static std::mutex mutex_;
@@ -158,6 +170,7 @@ void Mlib::unregister_realtime_thread() {
 
 #endif
 
+#ifndef __EMSCRIPTEN__
 void Mlib::reserve_realtime_threads(uint32_t nreserved_realtime_threads) {
     std::scoped_lock lock{ mutex_ };
     if (nreserved_realtime_threads_ != UINT32_MAX) {
@@ -190,3 +203,5 @@ void Mlib::pin_background_thread() {
     }
     pin_current_thread_to_cpu_range(nreserved_realtime_threads_, std::thread::hardware_concurrency());
 }
+
+#endif

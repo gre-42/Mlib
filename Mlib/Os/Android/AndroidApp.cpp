@@ -1,6 +1,6 @@
 #include "AndroidApp.hpp"
+#include <Mlib/Os/Android/NDKHelper.h>
 #include <Mlib/Os/Os.hpp>
-#include <Mlib/Os/ndk_helper/NDKHelper.h>
 #include <string>
 
 #define HELPER_CLASS_NAME \

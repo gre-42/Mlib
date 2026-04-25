@@ -15,7 +15,7 @@ unsigned int getenv_default_uint(const char* n, unsigned int deflt);
 size_t getenv_default_size_t(const char* n, size_t deflt);
 bool getenv_default_bool(const char* n, bool deflt);
 
-#ifndef __ANDROID__
+#if !defined(__ANDROID__) && !defined(__EMSCRIPTEN__)
 void set_app_reldir(const Utf8Path& app_reldir);
 #endif
 

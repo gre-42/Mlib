@@ -1,7 +1,7 @@
 #include "Incremental_Communicator_Proxy.hpp"
-#include <Mlib/Io/Binary.hpp>
-#include <Mlib/Io/Binary_Reader.hpp>
-#include <Mlib/Io/Binary_Writer.hpp>
+#include <Mlib/Os/Io/Binary.hpp>
+#include <Mlib/Os/Io/Binary_Reader.hpp>
+#include <Mlib/Os/Io/Binary_Writer.hpp>
 #include <Mlib/Remote/ISend_Socket.hpp>
 #include <Mlib/Remote/Incremental_Objects/IIncremental_Object.hpp>
 #include <Mlib/Remote/Incremental_Objects/IIncremental_Object_Factory.hpp>

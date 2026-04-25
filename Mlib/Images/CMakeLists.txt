@@ -10,4 +10,4 @@ endif()
 
 target_include_directories(MlibImages PUBLIC ${Mlib_INCLUDE_DIR})
 
-target_link_libraries(MlibImages MlibOs MlibMath MlibStbCpp MlibStats)
+target_link_libraries(MlibImages MlibOs MlibMath MlibStbCpp MlibStats MlibMisc)

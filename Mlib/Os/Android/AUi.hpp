@@ -1,11 +1,13 @@
 #pragma once
-#include <Mlib/Os/ndk_helper/JNIHelper.h>
+#include <Mlib/Os/Android/JNIHelper.h>
 #include <Mlib/Strings/Utf8_Path.hpp>
 #include <iostream>
 #include <memory>
 #include <string>
 
 struct android_app;
+
+namespace Mlib {
 
 // From: https://developer.android.com/reference/android/content/pm/ActivityInfo#SCREEN_ORIENTATION_UNSPECIFIED
 enum class ScreenOrientation {
@@ -30,3 +32,5 @@ public:
     static void RequestReadExternalStoragePermission();
     static void SetThreadName(const std::string& name);
 };
+
+}

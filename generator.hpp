@@ -221,7 +221,7 @@ class __manual_lifetime<_T&&> {
 
 struct use_allocator_arg {};
 
-#if !__has_include(<ranges>)
+#if !__has_include(<ranges>) || defined(__EMSCRIPTEN__)
 namespace ranges {
 
 template <typename _Rng, typename _Allocator = use_allocator_arg>

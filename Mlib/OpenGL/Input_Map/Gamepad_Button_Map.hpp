@@ -1,5 +1,34 @@
 #pragma once
-#ifdef __ANDROID__
+#if defined(__EMSCRIPTEN__)
+#include <Mlib/Map/Map.hpp>
+
+namespace Mlib {
+
+static const Map<std::string, std::optional<int>> gamepad_buttons_map{
+    {"A", 0},
+    {"B", 1},
+    {"X", 2},
+    {"Y", 3},
+    {"LEFT_BUMPER", 4},
+    {"RIGHT_BUMPER", 5},
+    {"BACK", 8},
+    {"START", 9},
+    {"GUIDE", std::nullopt},
+    {"LEFT_THUMB", 10},
+    {"RIGHT_THUMB", 11},
+    {"DPAD_UP", 12},
+    {"DPAD_RIGHT", 15},
+    {"DPAD_DOWN", 13},
+    {"DPAD_LEFT", 14},
+
+    {"CROSS", 0},
+    {"CIRCLE", 1},
+    {"SQUARE", 2},
+    {"TRIANGLE", 3}
+};
+
+}
+#elif defined(__ANDROID__)
 #include <Mlib/Map/Map.hpp>
 #include <android/keycodes.h>
 

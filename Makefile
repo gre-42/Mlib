@@ -15,7 +15,7 @@ else
     PLATFORM_CHAR := U
 endif
 BUILD_DIR := $(PLATFORM_CHAR)$(CMAKE_BUILD_TYPE)
-ENV       := 
+RECAST_PREFIX := $(PLATFORM_CHAR)
 # ASAN
 ifeq ($(ASAN),1)
     ENV       += CFLAGS=-fsanitize=address
@@ -48,16 +48,23 @@ ifeq ($(LIBCPP),1)
     BUILD_DIR := C$(BUILD_DIR)
 endif
 # EMSDK
-PODMAN_FLAGS := $(addprefix -e ,$(ENV))
 ifeq ($(EMSDK),1)
-    CMAKE_CMD := podman run --rm -v "$(PWD)/Mlib:/src:Z" $(PODMAN_FLAGS) mgame/emsdk emcmake
-    BUILD_CMD := podman run --rm -v "$(PWD)/Mlib:/src:Z" mgame/emsdk
-else
-    CMAKE_CMD :=
-    BUILD_CMD :=
+    ENV       += CFLAGS="-sMEMORY64=1 -pthread"
+    ENV       += CXXFLAGS="-sMEMORY64=1 -pthread -fexceptions"
+    ENV       += LDFLAGS="-sMEMORY64=1 -pthread -sWASM_BIGINT -sINITIAL_MEMORY=4294967296 -sALLOW_MEMORY_GROWTH=0 -sASSERTIONS -fexceptions"
+    BUILD_DIR     := E$(BUILD_DIR)
+    RECAST_PREFIX := E
 endif
-ifeq ($(EMSDK),1)
-    BUILD_DIR := E$(BUILD_DIR)
+ifeq ($(PODMAN),1)
+    PODMAN_FLAGS := $(addprefix -e ,$(ENV))
+    WDIR      := $(shell realpath -s --relative-to="$(PWD)" "$(CURDIR)")
+    CMAKE_CMD := podman run --rm -it -v "$(PWD):/src:Z" -w "/src/$(WDIR)" $(PODMAN_FLAGS) mgame/emsdk emcmake
+    BUILD_CMD := podman run --rm -it -v "$(PWD):/src:Z" -w "/src/$(WDIR)" mgame/emsdk
+    INTER_CMD := podman run --rm -it -v "$(PWD):/src:Z" -w "/src/$(WDIR)" mgame/emsdk
+else
+    CMAKE_CMD := $(ENV) emcmake
+    BUILD_CMD :=
+    INTER_CMD := $(ENV)
 endif
 
 echo_platform_char:
@@ -70,10 +77,13 @@ emsdk_image:
 	podman build -f Dockerfile.emsdk -t mgame/emsdk
 
 cmake:
-	$(CMAKE_CMD) cmake -G Ninja -DCMAKE_BUILD_TYPE="$(CMAKE_BUILD_TYPE)" -B "$(BUILD_DIR)"
+	$(CMAKE_CMD) cmake -G Ninja -DCMAKE_BUILD_TYPE="$(CMAKE_BUILD_TYPE)" -B "$(BUILD_DIR)" -D RECAST_PREFIX=$(RECAST_PREFIX)
 
 build:
 	$(BUILD_CMD) cmake --build "$(BUILD_DIR)" --verbose
+
+login:
+	$(INTER_CMD) bash
 
 clang-tidy:
 	find Mlib -iname "*.cpp" -exec clang-tidy '{}' -checks=-clang-diagnostic-gnu-designator -- -I. ';'
@@ -82,12 +92,14 @@ cppcheck:
 	cppcheck . -i Mlib/Geometry/Primitives/Triangle_Triangle_Intersection.cpp
 
 recastnavigation:
-	mkdir -p RecastBuild
-	cd RecastBuild                                  \
-		&& cmake -G Ninja ../recastnavigation       \
-			-DRECASTNAVIGATION_DEMO=OFF             \
-			-DRECASTNAVIGATION_TESTS=OFF            \
-			-DRECASTNAVIGATION_EXAMPLES=OFF         \
-			-DBUILD_SHARED_LIBS=ON                  \
-			-DCMAKE_BUILD_TYPE=$(CMAKE_BUILD_TYPE)  \
-		&& cmake --build . --verbose
+	mkdir -p $(RECAST_PREFIX)RecastBuild
+	$(CMAKE_CMD) cmake                              \
+		-B $(RECAST_PREFIX)RecastBuild              \
+		-S recastnavigation                         \
+		-G Ninja                                    \
+		-DRECASTNAVIGATION_DEMO=OFF                 \
+		-DRECASTNAVIGATION_TESTS=OFF                \
+		-DRECASTNAVIGATION_EXAMPLES=OFF             \
+		-DBUILD_SHARED_LIBS=ON                      \
+		-DCMAKE_BUILD_TYPE=$(CMAKE_BUILD_TYPE)
+	$(BUILD_CMD) cmake --build $(RECAST_PREFIX)RecastBuild --verbose

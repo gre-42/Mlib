@@ -10,14 +10,14 @@
 using namespace Mlib;
 using namespace std::literals;
 
-static const auto LOCAL_PATH_PREFIX = u8"file://"sv;
-static const auto VARIABLE_PREFIX = u8"#"sv;
+static const auto LOCAL_PATH_PREFIX = U8::u8str("file://"sv);
+static const auto VARIABLE_PREFIX = U8::u8str("#"sv);
 
 FPath::FPath()
     : type_{PathType::EMPTY}
 {}
 
-FPath::FPath(const std::u8string_view& uri) {
+FPath::FPath(const Mlib::u8string_view& uri) {
     if (uri.starts_with(LOCAL_PATH_PREFIX)) {
         type_ = PathType::LOCAL_PATH;
         path_or_variable_ = VariableAndHash{(std::string)U8::str(uri.substr(LOCAL_PATH_PREFIX.length()))};

@@ -5,8 +5,8 @@
 namespace Proctree
 {
     struct PropertiesAndSeed {
-        std::u8string trunk_diffuse;
-        std::u8string twig_diffuse;
+        Mlib::u8string trunk_diffuse;
+        Mlib::u8string twig_diffuse;
         Properties properties;
         unsigned int seed;
     };

@@ -17,4 +17,5 @@ target_include_directories(
     ${DETOUR_INCLUDE_DIRS}
     ${MlibCereal_INCLUDE_DIR})
 
-target_link_libraries(MlibOsmLoader MlibPoly2Tri MlibOpenGL MlibNavigation MlibGeography MlibGeometry MlibMacroExecutor)
+target_link_libraries(MlibOsmLoader PUBLIC MlibPoly2Tri MlibOpenGL MlibNavigation MlibGeography MlibGeometry MlibMacroExecutor)
+target_link_openmp(MlibOsmLoader)

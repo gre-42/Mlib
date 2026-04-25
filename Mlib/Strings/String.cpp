@@ -34,12 +34,13 @@ std::list<std::string> Mlib::string_to_list(const std::string& str, const Mlib::
     return res;
 }
 
-std::list<std::u8string> Mlib::string_to_list(const std::u8string& str, const boost::u32regex& re, size_t expected_length) {
+#ifndef WITHOUT_ICU
+std::list<std::u8string> Mlib::string_to_list(const std::u8string& str, const Mlib::u32regex& re, size_t expected_length) {
     std::list<std::u8string> res;
     if (str.empty()) {
         return res;
     }
-    for (auto it = boost::make_u32regex_token_iterator(str, re, -1);
+    for (auto it = Mlib::make_u32regex_token_iterator(str, re, -1);
         it != decltype(it){};
         ++it)
     {
@@ -50,6 +51,7 @@ std::list<std::u8string> Mlib::string_to_list(const std::u8string& str, const bo
     }
     return res;
 }
+#endif
 
 std::list<std::string> Mlib::string_to_list(const std::string& str, size_t expected_length) {
     static const DECLARE_REGEX(re, "\\s+");

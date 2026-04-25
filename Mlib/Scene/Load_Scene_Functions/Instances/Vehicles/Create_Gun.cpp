@@ -152,7 +152,15 @@ void CreateGun::operator()(const JsonView& args)
         ]
         (const AudioSourceState<ScenePos>& state)
         {
-            o.play(*audio_buffer, audio_meta.lowpass.get(), state, AudioPeriodicity::APERIODIC, audio_meta.distance_clamping, audio_meta.gain);
+            o.play(
+                *audio_buffer,
+#ifndef USE_PCM_FILTERS
+                audio_meta.lowpass.get(),
+#endif
+                state,
+                AudioPeriodicity::APERIODIC,
+                audio_meta.distance_clamping,
+                audio_meta.gain);
         };
     }
     std::function<void(const StaticWorld&)> generate_muzzle_flash;

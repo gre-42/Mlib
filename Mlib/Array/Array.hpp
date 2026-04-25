@@ -13,11 +13,11 @@
 #include <Mlib/Initialization/Initializer_List_As_Sized_Iterable.hpp>
 #include <Mlib/Io/Read_Number.hpp>
 #include <Mlib/Io/Write_Number.hpp>
-#include <Mlib/Io/Binary.hpp>
 #include <Mlib/Io/Read_Number.hpp>
 #include <Mlib/Io/Write_Number.hpp>
 #include <Mlib/Initialization/Uninitialized.hpp>
 #include <Mlib/Iterator/Sized_Iterable.hpp>
+#include <Mlib/Os/Io/Binary.hpp>
 #include <Mlib/Os/Os.hpp>
 #include <Mlib/Strings/Utf8_Path.hpp>
 #include <Mlib/Strings/String_View_To_Number.hpp>

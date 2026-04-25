@@ -17,7 +17,9 @@ public:
 
     unsigned int get_frequency() const;
     std::string get_name() const;
+#ifndef USE_PCM_FILTERS
     unsigned int get_max_auxiliary_sends() const;
+#endif
 
 private:
     ALCdevice *device_;

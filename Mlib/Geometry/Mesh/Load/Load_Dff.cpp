@@ -6,9 +6,9 @@
 #include <Mlib/Geometry/Mesh/Load/Raster_Config.hpp>
 #include <Mlib/Geometry/Mesh/Load/Read_Texture_Native_D3d.hpp>
 #include <Mlib/Geometry/Mesh/Load/Read_Texture_Native_Ps2.hpp>
-#include <Mlib/Io/Binary.hpp>
 #include <Mlib/Io/Cleanup.hpp>
 #include <Mlib/Memory/Integral_Cast.hpp>
+#include <Mlib/Os/Io/Binary.hpp>
 #include <Mlib/Os/Os.hpp>
 #include <optional>
 

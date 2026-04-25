@@ -8,7 +8,7 @@
 #include <vector>
 
 #ifdef __ANDROID__
-#include <Mlib/Os/ndk_helper/JNIHelper.h>
+#include <Mlib/Os/Android/JNIHelper.h>
 #endif
 
 namespace Mlib {
@@ -92,7 +92,7 @@ std::unique_ptr<std::ostream> create_ofstream(
     std::ios_base::openmode mode = std::ios_base::out,
     FileStorageType storage_type = FileStorageType::EXTERNAL);
 
-std::vector<uint8_t> read_file_bytes(const Utf8Path& filename);
+std::vector<std::byte> read_file_bytes(const Utf8Path& filename);
 
 bool path_exists(const Utf8Path& filename);
 

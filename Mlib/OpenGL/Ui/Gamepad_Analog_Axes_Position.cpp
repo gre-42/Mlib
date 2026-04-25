@@ -1,4 +1,3 @@
-
 #include "Gamepad_Analog_Axes_Position.hpp"
 #include <Mlib/Math/Math.hpp>
 #include <Mlib/OpenGL/Input_Map/Joystick_Axes_Map.hpp>

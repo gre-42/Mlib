@@ -16,7 +16,9 @@ namespace Mlib {
 template <class... Args>
 class EventReceiverDeletionToken;
 class AudioBuffer;
+#ifndef USE_PCM_FILTERS
 class AudioLowpass;
+#endif
 template <class T>
 struct Interval;
 enum class AudioPeriodicity;
@@ -45,7 +47,9 @@ public:
     virtual void advance_time(float dt, const StaticWorld& world) override;
     std::shared_ptr<AudioSourceAndPosition> play(
         const AudioBuffer& audio_buffer,
+#ifndef USE_PCM_FILTERS
         const AudioLowpass* lowpass,
+#endif
         const AudioSourceState<ScenePos>& position,
         AudioPeriodicity periodicity,
         const std::optional<Interval<float>>& distance_clamping,
