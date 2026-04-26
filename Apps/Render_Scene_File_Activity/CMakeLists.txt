@@ -17,3 +17,7 @@ if (ANDROID)
     # Refer to: https://github.com/android-ndk/ndk/issues/381.
     target_link_options(RenderSceneFileActivity PRIVATE "-u" "ANativeActivity_onCreate")
 endif()
+
+if (EMSCRIPTEN)
+    target_link_options(RenderSceneFileActivity PRIVATE -sFORCE_FILESYSTEM=1)
+endif()

@@ -1,6 +1,6 @@
 #pragma once
 
-#ifdef __ANDROID__
+#if defined (__ANDROID__) || (defined __EMSCRIPTEN__)
 #define SHADER_VER "#version 300 es\n"
 #define FRAGMENT_PRECISION "precision mediump float;\nprecision mediump int;\n"
 #else

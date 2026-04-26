@@ -8,7 +8,9 @@ MAKE_TARGET ?= build
 
 all: recastnavigation cmake build
 
-ENV :=
+ENV           :=
+CMAKE_CMD     :=
+CONTAINER     := unknown_container
 ifneq ($(filter MSYS% CYGWIN% MINGW%,$(ostype)),)
     PLATFORM_CHAR := M
 else
@@ -51,18 +53,20 @@ endif
 ifeq ($(EMSDK),1)
     ENV       += CFLAGS="-sMEMORY64=1 -pthread"
     ENV       += CXXFLAGS="-sMEMORY64=1 -pthread -fexceptions"
-    ENV       += LDFLAGS="-sMEMORY64=1 -pthread -sWASM_BIGINT -sINITIAL_MEMORY=4294967296 -sALLOW_MEMORY_GROWTH=0 -sASSERTIONS -fexceptions"
+    ENV       += LDFLAGS="-sMEMORY64=1 -pthread -sWASM_BIGINT -sINITIAL_MEMORY=4294967296 -sALLOW_MEMORY_GROWTH=0 -sASSERTIONS -sASYNCIFY -fexceptions"
     BUILD_DIR     := E$(BUILD_DIR)
     RECAST_PREFIX := E
+    CMAKE_CMD     := emcmake
+    CONTAINER     := mgame/emsdk
 endif
 ifeq ($(PODMAN),1)
     PODMAN_FLAGS := $(addprefix -e ,$(ENV))
     WDIR      := $(shell realpath -s --relative-to="$(PWD)" "$(CURDIR)")
-    CMAKE_CMD := podman run --rm -it -v "$(PWD):/src:Z" -w "/src/$(WDIR)" $(PODMAN_FLAGS) mgame/emsdk emcmake
-    BUILD_CMD := podman run --rm -it -v "$(PWD):/src:Z" -w "/src/$(WDIR)" mgame/emsdk
-    INTER_CMD := podman run --rm -it -v "$(PWD):/src:Z" -w "/src/$(WDIR)" mgame/emsdk
+    CMAKE_CMD := podman run --rm -it -v "$(PWD):/src:Z" -w "/src/$(WDIR)" $(PODMAN_FLAGS) $(CONTAINER) $(CMAKE_CMD)
+    BUILD_CMD := podman run --rm -it -v "$(PWD):/src:Z" -w "/src/$(WDIR)" $(CONTAINER)
+    INTER_CMD := podman run --rm -it -v "$(PWD):/src:Z" -w "/src/$(WDIR)" $(CONTAINER)
 else
-    CMAKE_CMD := $(ENV) emcmake
+    CMAKE_CMD := $(ENV) $(CMAKE_CMD)
     BUILD_CMD :=
     INTER_CMD := $(ENV)
 endif
@@ -84,6 +88,9 @@ build:
 
 login:
 	$(INTER_CMD) bash
+
+empackage:
+	$(INTER_CMD) /emsdk/upstream/emscripten/tools/file_packager /src/assets.data --preload /src/data@/ --js-output=/src/assets.js
 
 clang-tidy:
 	find Mlib -iname "*.cpp" -exec clang-tidy '{}' -checks=-clang-diagnostic-gnu-designator -- -I. ';'
