@@ -6,6 +6,7 @@ my_add_library(MlibStrings "1" "" "${excluded_files}")
 
 target_link_libraries(MlibStrings PUBLIC MlibRegex)
 
+# Emscripten uses "-s USE_BOOST_HEADERS=1" in the main CMakeLists.txt
 if (NOT EMSCRIPTEN)
     target_link_libraries(MlibStrings PUBLIC Boost::boost)
 endif()

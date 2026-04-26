@@ -351,6 +351,8 @@ void android_main(android_app* app)
         "    [--render_max_residual_time <dt>]\n"
         "    [--no_control_physics_fps ]\n"
         "    [--control_render_fps]\n"
+        "    [--print_render_fps_interval <n>]\n"
+        "    [--fullscreen_refresh_rate <Hz>]\n"
         "    [--print_physics_residual_time]\n"
         "    [--print_render_residual_time]\n"
         "    [--draw_distance_add <value>]\n"
@@ -405,9 +407,19 @@ void android_main(android_app* app)
         "    [--audio_alpha <value>]\n"
         "    [--audio_distance_model <value>]\n"
         "    [--user_count <n>]\n"
+        "    [--remote_site_id <id>]\n"
+        "    [--remote_role {server,client}]\n"
+        "    [--remote_ip <ip>]\n"
+        "    [--remote_port <port>]\n"
+        "    [--tty_hider]\n"
+        "    [--show_only <name>]\n"
+        "    [--show_only_file <filename>]\n"
+        "    [--show_hitbox]\n"
+        "    [--show_massbox]\n"
         "    [--check_gl_errors]\n"
         "    [--print_gl_calls]\n"
         "    [--print_rendered_materials]\n"
+        "    [--rgba_debug_image <name>]\n"
         "    [--verbose]",
         {"--wire_frame",
          "--cull_faces",
@@ -438,6 +450,9 @@ void android_main(android_app* app)
          "--no_control_physics_fps",
          "--control_render_fps",
          "--fxaa",
+         "--tty_hider",
+         "--show_hitbox",
+         "--show_massbox",
          "--check_gl_errors",
          "--print_gl_calls",
          "--print_rendered_materials",
@@ -447,6 +462,7 @@ void android_main(android_app* app)
          "--animated_mesh"
          "--audio"
          "--swap_interval",
+         "--fullscreen_refresh_rate",
          "--nsamples_msaa",
          "--lightmap_nsamples_msaa",
          "--min_sample_shading",
@@ -690,6 +706,15 @@ void android_main(android_app* app)
                     j["remote_params"] = *remote_params;
                 } else {
                     j["remote_params"] = nlohmann::json();
+                }
+                {
+                    auto show_hitbox = args.has_named("--show_hitbox");
+                    auto show_massbox = args.has_named("--show_massbox");
+                    j["show_hitbox"] = show_hitbox;
+                    j["show_massbox"] = show_massbox;
+                    j["hitbox_massbox_triangulation"] = (show_hitbox || show_massbox)
+                        ? "delaunay"
+                        : "disabled";
                 }
             external_json_macro_arguments.merge_and_notify(JsonMacroArguments{std::move(j)});
         }

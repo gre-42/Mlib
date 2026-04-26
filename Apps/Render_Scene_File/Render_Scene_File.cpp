@@ -299,6 +299,7 @@ int main(int argc, char** argv) {
         "    [--input_polling_interval <dt>]\n"
         "    [--render_max_residual_time <dt>]\n"
         "    [--no_control_physics_fps ]\n"
+        "    [--control_render_fps]\n"
         "    [--print_render_fps_interval <n>]\n"
         "    [--fullscreen_refresh_rate <Hz>]\n"
         "    [--print_physics_residual_time]\n"
@@ -401,6 +402,7 @@ int main(int argc, char** argv) {
          "--print_search_time",
          "--print_compression_ratio",
          "--no_control_physics_fps",
+         "--control_render_fps",
          "--fxaa",
          "--tty_hider",
          "--show_hitbox",
