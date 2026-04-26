@@ -17,7 +17,7 @@ DECLARE_ARGUMENT(player);
 DECLARE_ARGUMENT(node);
 }
 
-AppendExternalsDeleter::AppendExternalsDeleter(PhysicsScene& physics_scene) 
+AppendExternalsDeleter::AppendExternalsDeleter(PhysicsScene& physics_scene)
 : LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 

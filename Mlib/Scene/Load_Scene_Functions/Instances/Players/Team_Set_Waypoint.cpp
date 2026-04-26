@@ -4,6 +4,7 @@
 #include <Mlib/Misc/Argument_List.hpp>
 #include <Mlib/Players/Containers/Players.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
+#include <Mlib/Scene/Load_Scene_Funcs.hpp>
 #include <Mlib/Scene_Graph/Way_Point_Location.hpp>
 #include <Mlib/Strings/String_View_To_Number.hpp>
 
@@ -15,24 +16,31 @@ DECLARE_ARGUMENT(team);
 DECLARE_ARGUMENT(position);
 }
 
-const std::string TeamSetWaypoint::key = "team_set_waypoint";
-
-LoadSceneJsonUserFunction TeamSetWaypoint::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
-{
-    args.arguments.validate(KnownArgs::options);
-    TeamSetWaypoint(args.physics_scene()).execute(args);
-};
-
-TeamSetWaypoint::TeamSetWaypoint(PhysicsScene& physics_scene) 
-: LoadPhysicsSceneInstanceFunction{ physics_scene }
+TeamSetWaypoint::TeamSetWaypoint(PhysicsScene& physics_scene)
+    : LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
-void TeamSetWaypoint::execute(const LoadSceneJsonUserFunctionArgs& args)
-{
+void TeamSetWaypoint::execute(const LoadSceneJsonUserFunctionArgs& args) {
+    args.arguments.validate(KnownArgs::options);
     players.set_team_waypoint(
         args.arguments.at<std::string>(KnownArgs::team),
         {
             args.arguments.at<EFixedArray<CompressedScenePos, 3>>(KnownArgs::position),
             WayPointLocation::UNKNOWN
         });
+}
+
+namespace {
+
+struct RegisterJsonUserFunction {
+    RegisterJsonUserFunction() {
+        LoadSceneFuncs::register_json_user_function(
+            "team_set_waypoint",
+            [](const LoadSceneJsonUserFunctionArgs& args)
+            {
+                TeamSetWaypoint{args.physics_scene()}.execute(args);
+            });
+    }
+} obj;
+
 }

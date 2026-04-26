@@ -4,6 +4,7 @@
 #include <Mlib/Misc/Argument_List.hpp>
 #include <Mlib/Physics/Collision/Detect/Normal_On_Bevel_Box.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
+#include <Mlib/Scene/Load_Scene_Funcs.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <stdexcept>
 
@@ -17,20 +18,12 @@ DECLARE_ARGUMENT(max);
 DECLARE_ARGUMENT(radius);
 }
 
-const std::string SetBevelBoxSurfaceNormal::key = "set_bevel_box_surface_normal";
-
-LoadSceneJsonUserFunction SetBevelBoxSurfaceNormal::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
-{
-    args.arguments.validate(KnownArgs::options);
-    SetBevelBoxSurfaceNormal(args.physics_scene()).execute(args);
-};
-
-SetBevelBoxSurfaceNormal::SetBevelBoxSurfaceNormal(PhysicsScene& physics_scene) 
-: LoadPhysicsSceneInstanceFunction{ physics_scene }
+SetBevelBoxSurfaceNormal::SetBevelBoxSurfaceNormal(PhysicsScene& physics_scene)
+    : LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
-void SetBevelBoxSurfaceNormal::execute(const LoadSceneJsonUserFunctionArgs& args)
-{
+void SetBevelBoxSurfaceNormal::execute(const LoadSceneJsonUserFunctionArgs& args) {
+    args.arguments.validate(KnownArgs::options);
     DanglingBaseClassRef<SceneNode> node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::node), CURRENT_SOURCE_LOCATION);
     auto rb = get_rigid_body_vehicle(node.get(), CURRENT_SOURCE_LOCATION);
     rb->set_surface_normal(std::make_unique<NormalOnBevelBox>(
@@ -39,4 +32,19 @@ void SetBevelBoxSurfaceNormal::execute(const LoadSceneJsonUserFunctionArgs& args
             args.arguments.at<EFixedArray<float, 3>>(KnownArgs::min) * meters,
             args.arguments.at<EFixedArray<float, 3>>(KnownArgs::max) * meters),
         args.arguments.at<float>(KnownArgs::radius) * meters));
+}
+
+namespace {
+
+struct RegisterJsonUserFunction {
+    RegisterJsonUserFunction() {
+        LoadSceneFuncs::register_json_user_function(
+            "set_bevel_box_surface_normal",
+            [](const LoadSceneJsonUserFunctionArgs& args)
+            {
+                SetBevelBoxSurfaceNormal{args.physics_scene()}.execute(args);
+            });
+    }
+} obj;
+
 }

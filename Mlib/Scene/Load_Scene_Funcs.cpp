@@ -1,11 +1,21 @@
 #include "Load_Scene_Funcs.hpp"
+#include <Mlib/Os/Os.hpp>
 #include <stdexcept>
 
 using namespace Mlib;
 
-std::map<std::string, LoadSceneJsonUserFunction>& Mlib::LoadSceneFuncs::json_user_functions() {
+static std::map<std::string, LoadSceneJsonUserFunction>& json_user_functions() {
     static std::map<std::string, LoadSceneJsonUserFunction> result;
     return result;
+}
+
+LoadSceneJsonUserFunction* Mlib::LoadSceneFuncs::try_get_json_user_function(const std::string& key) {
+    auto& m = json_user_functions();
+    auto it = m.find(key);
+    if (it == m.end()) {
+        return nullptr;
+    }
+    return &it->second;
 }
 
 void Mlib::LoadSceneFuncs::register_json_user_function(std::string key, LoadSceneJsonUserFunction function) {

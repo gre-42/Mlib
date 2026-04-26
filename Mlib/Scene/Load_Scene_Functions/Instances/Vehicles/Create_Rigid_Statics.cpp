@@ -38,7 +38,7 @@ DECLARE_ARGUMENT(excluded_names);
 DECLARE_ARGUMENT(flags);
 }
 
-CreateRigidStatics::CreateRigidStatics(PhysicsScene& physics_scene) 
+CreateRigidStatics::CreateRigidStatics(PhysicsScene& physics_scene)
     : LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 

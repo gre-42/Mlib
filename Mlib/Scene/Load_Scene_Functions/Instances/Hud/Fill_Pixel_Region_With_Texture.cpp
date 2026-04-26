@@ -12,6 +12,7 @@
 #include <Mlib/OpenGL/Render_Logics/Fill_With_Texture_Logic.hpp>
 #include <Mlib/Regex/Regex_Select.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
+#include <Mlib/Scene/Load_Scene_Funcs.hpp>
 #include <Mlib/Scene/Physics_Scene.hpp>
 #include <Mlib/Scene/Renderable_Scene.hpp>
 #include <Mlib/Scene/Renderable_Scenes.hpp>
@@ -32,20 +33,12 @@ DECLARE_ARGUMENT(focus_mask);
 DECLARE_ARGUMENT(submenus);
 }
 
-const std::string FillPixelRegionWithTexture::key = "fill_pixel_region_with_texture";
-
-LoadSceneJsonUserFunction FillPixelRegionWithTexture::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
-{
-    args.arguments.validate(KnownArgs::options);
-    FillPixelRegionWithTexture(args.physics_scene()).execute(args);
-};
-
-FillPixelRegionWithTexture::FillPixelRegionWithTexture(PhysicsScene& physics_scene) 
-: LoadPhysicsSceneInstanceFunction{ physics_scene }
+FillPixelRegionWithTexture::FillPixelRegionWithTexture(PhysicsScene& physics_scene)
+    : LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
-void FillPixelRegionWithTexture::execute(const LoadSceneJsonUserFunctionArgs& args)
-{
+void FillPixelRegionWithTexture::execute(const LoadSceneJsonUserFunctionArgs& args) {
+    args.arguments.validate(KnownArgs::options);
     std::string source_scene = args.arguments.at<std::string>(KnownArgs::source_scene);
     auto& rs = args.renderable_scenes[source_scene];
     auto& scene_window_logic = object_pool.create<FillPixelRegionWithTextureLogic>(
@@ -71,4 +64,19 @@ void FillPixelRegionWithTexture::execute(const LoadSceneJsonUserFunctionArgs& ar
             .focus_mask = focus_from_string(args.arguments.at<std::string>(KnownArgs::focus_mask)),
             .submenu_ids = string_to_set(args.arguments.at<std::string>(KnownArgs::submenus, {}))});
     render_logics.append({ scene_window_logic, CURRENT_SOURCE_LOCATION }, 0 /* z_order */, CURRENT_SOURCE_LOCATION);
+}
+
+namespace {
+
+struct RegisterJsonUserFunction {
+    RegisterJsonUserFunction() {
+        LoadSceneFuncs::register_json_user_function(
+            "fill_pixel_region_with_texture",
+            [](const LoadSceneJsonUserFunctionArgs& args)
+            {
+                FillPixelRegionWithTexture{args.physics_scene()}.execute(args);
+            });
+    }
+} obj;
+
 }

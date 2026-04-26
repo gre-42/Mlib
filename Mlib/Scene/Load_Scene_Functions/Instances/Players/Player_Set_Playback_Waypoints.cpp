@@ -4,6 +4,7 @@
 #include <Mlib/Players/Advance_Times/Player.hpp>
 #include <Mlib/Players/Containers/Players.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
+#include <Mlib/Scene/Load_Scene_Funcs.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
 #include <stdexcept>
@@ -17,20 +18,12 @@ DECLARE_ARGUMENT(filename);
 DECLARE_ARGUMENT(speedup);
 }
 
-const std::string PlayerSetPlaybackWaypoints::key = "set_playback_way_points";
-
-LoadSceneJsonUserFunction PlayerSetPlaybackWaypoints::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
-{
-    args.arguments.validate(KnownArgs::options);
-    PlayerSetPlaybackWaypoints(args.physics_scene()).execute(args);
-};
-
-PlayerSetPlaybackWaypoints::PlayerSetPlaybackWaypoints(PhysicsScene& physics_scene) 
-: LoadPhysicsSceneInstanceFunction{ physics_scene }
+PlayerSetPlaybackWaypoints::PlayerSetPlaybackWaypoints(PhysicsScene& physics_scene)
+    : LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
-void PlayerSetPlaybackWaypoints::execute(const LoadSceneJsonUserFunctionArgs& args)
-{
+void PlayerSetPlaybackWaypoints::execute(const LoadSceneJsonUserFunctionArgs& args) {
+    args.arguments.validate(KnownArgs::options);
     auto player = players.get_player(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::player), CURRENT_SOURCE_LOCATION);
     auto* inverse_geographic_mapping = scene_node_resources.get_geographic_mapping(VariableAndHash<std::string>{"world.inverse"});
     if (inverse_geographic_mapping == nullptr) {
@@ -39,4 +32,19 @@ void PlayerSetPlaybackWaypoints::execute(const LoadSceneJsonUserFunctionArgs& ar
     player->playback_waypoints().set_waypoints(
         *inverse_geographic_mapping, args.arguments.path(KnownArgs::filename),
         args.arguments.at<float>(KnownArgs::speedup));
+}
+
+namespace {
+
+struct RegisterJsonUserFunction {
+    RegisterJsonUserFunction() {
+        LoadSceneFuncs::register_json_user_function(
+            "set_playback_way_points",
+            [](const LoadSceneJsonUserFunctionArgs& args)
+            {
+                PlayerSetPlaybackWaypoints{args.physics_scene()}.execute(args);
+            });
+    }
+} obj;
+
 }

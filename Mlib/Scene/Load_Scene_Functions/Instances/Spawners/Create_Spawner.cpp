@@ -5,6 +5,7 @@
 #include <Mlib/Players/Containers/Vehicle_Spawners.hpp>
 #include <Mlib/Players/Scene_Vehicle/Vehicle_Spawner.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
+#include <Mlib/Scene/Load_Scene_Funcs.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <stdexcept>
 
@@ -19,20 +20,12 @@ DECLARE_ARGUMENT(group);
 DECLARE_ARGUMENT(trigger);
 }
 
-const std::string CreateSpawner::key = "spawner_create";
-
-LoadSceneJsonUserFunction CreateSpawner::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
-{
-    args.arguments.validate(KnownArgs::options);
-    CreateSpawner(args.physics_scene()).execute(args);
-};
-
-CreateSpawner::CreateSpawner(PhysicsScene& physics_scene) 
+CreateSpawner::CreateSpawner(PhysicsScene& physics_scene)
     : LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
-void CreateSpawner::execute(const LoadSceneJsonUserFunctionArgs& args)
-{
+void CreateSpawner::execute(const LoadSceneJsonUserFunctionArgs& args) {
+    args.arguments.validate(KnownArgs::options);
     auto name = args.arguments.at<VariableAndHash<std::string>>(KnownArgs::name);
     auto suffix = args.arguments.try_at<std::string>(KnownArgs::suffix);
     vehicle_spawners.set(
@@ -43,4 +36,19 @@ void CreateSpawner::execute(const LoadSceneJsonUserFunctionArgs& args)
             args.arguments.at<std::string>(KnownArgs::team),
             args.arguments.at<std::string>(KnownArgs::group),
             spawn_trigger_from_string(args.arguments.at<std::string>(KnownArgs::trigger))));
+}
+
+namespace {
+
+struct RegisterJsonUserFunction {
+    RegisterJsonUserFunction() {
+        LoadSceneFuncs::register_json_user_function(
+            "spawner_create",
+            [](const LoadSceneJsonUserFunctionArgs& args)
+            {
+                CreateSpawner{args.physics_scene()}.execute(args);
+            });
+    }
+} obj;
+
 }

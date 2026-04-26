@@ -7,6 +7,7 @@
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Physics/Vehicle_Controllers/Car_Controllers/Rigid_Body_Vehicle_Controller.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
+#include <Mlib/Scene/Load_Scene_Funcs.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <stdexcept>
@@ -19,20 +20,12 @@ DECLARE_ARGUMENT(car);
 DECLARE_ARGUMENT(trailer);
 }
 
-const std::string ConnectTrailer::key = "connect_trailer";
-
-LoadSceneJsonUserFunction ConnectTrailer::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
-{
-    args.arguments.validate(KnownArgs::options);
-    ConnectTrailer(args.physics_scene()).execute(args);
-};
-
-ConnectTrailer::ConnectTrailer(PhysicsScene& physics_scene) 
-: LoadPhysicsSceneInstanceFunction{ physics_scene }
+ConnectTrailer::ConnectTrailer(PhysicsScene& physics_scene)
+    : LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
-void ConnectTrailer::execute(const LoadSceneJsonUserFunctionArgs& args)
-{
+void ConnectTrailer::execute(const LoadSceneJsonUserFunctionArgs& args) {
+    args.arguments.validate(KnownArgs::options);
     DanglingBaseClassRef<SceneNode> car_node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::car), CURRENT_SOURCE_LOCATION);
     auto car_rb = get_rigid_body_vehicle(car_node.get(), CURRENT_SOURCE_LOCATION);
     DanglingBaseClassRef<SceneNode> trailer_node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::trailer), CURRENT_SOURCE_LOCATION);
@@ -44,4 +37,19 @@ void ConnectTrailer::execute(const LoadSceneJsonUserFunctionArgs& args)
         car_rb->trailer_hitches_.get_position_male().casted<ScenePos>(),
         trailer_rb->trailer_hitches_.get_position_female().casted<ScenePos>()));
     car_rb->vehicle_controller(CURRENT_SOURCE_LOCATION)->set_trailer(trailer_rb->vehicle_controller(CURRENT_SOURCE_LOCATION));
+}
+
+namespace {
+
+struct RegisterJsonUserFunction {
+    RegisterJsonUserFunction() {
+        LoadSceneFuncs::register_json_user_function(
+            "connect_trailer",
+            [](const LoadSceneJsonUserFunctionArgs& args)
+            {
+                ConnectTrailer{args.physics_scene()}.execute(args);
+            });
+    }
+} obj;
+
 }

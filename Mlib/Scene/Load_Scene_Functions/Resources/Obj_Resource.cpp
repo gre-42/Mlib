@@ -1,4 +1,3 @@
-#include "Obj_Resource.hpp"
 #include <Mlib/Compression/Compressed_File.hpp>
 #include <Mlib/Geometry/Interfaces/IRace_Logic.hpp>
 #include <Mlib/Geometry/Material/Billboard_Atlas_Instance.hpp>
@@ -20,6 +19,7 @@
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Scene/Json/Load_Mesh_Config_Json.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
+#include <Mlib/Scene/Load_Scene_Funcs.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
 #include <stdexcept>
 
@@ -33,30 +33,14 @@ DECLARE_ARGUMENT(double_precision);
 DECLARE_ARGUMENT(config);
 }
 
-const std::string ObjResource::key = "obj_resource";
-
-LoadSceneJsonUserFunction ObjResource::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
-{
-    args.arguments.validate(KnownArgs::options);
-    execute(args);
-};
-
-void ObjResource::execute(const LoadSceneJsonUserFunctionArgs& args)
-{
-    if (!args.arguments.at<bool>(KnownArgs::double_precision, false)) {
-        execute<float>(args);
-    } else {
-        execute<CompressedScenePos>(args);
-    }
-}
 
 class RaceLogic: public IRaceLogic {
 public:
     explicit RaceLogic(
         AssetReferences& asset_references,
         std::string asset_id)
-    : asset_references_{asset_references},
-      asset_id_{std::move(asset_id)}
+        : asset_references_{asset_references}
+        , asset_id_{std::move(asset_id)}
     {}
     ~RaceLogic() {
         if (!asset_references_["levels"].at(asset_id_).rp.database.contains("checkpoints")) {
@@ -111,7 +95,7 @@ private:
 };
 
 template <class TPos>
-void ObjResource::execute(const LoadSceneJsonUserFunctionArgs& args)
+static void execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     auto name = args.arguments.at<VariableAndHash<std::string>>(KnownArgs::name);
     LoadMeshConfig<TPos> load_mesh_config = load_mesh_config_from_json<TPos>(
@@ -174,4 +158,30 @@ void ObjResource::execute(const LoadSceneJsonUserFunctionArgs& args)
     } else {
         throw std::runtime_error("Unknown file type: \"" + filename.string() + '"');
     }
+}
+
+static void execute(const LoadSceneJsonUserFunctionArgs& args)
+{
+    args.arguments.validate(KnownArgs::options);
+    if (!args.arguments.at<bool>(KnownArgs::double_precision, false)) {
+        execute<float>(args);
+    } else {
+        execute<CompressedScenePos>(args);
+    }
+}
+
+namespace {
+
+struct RegisterJsonUserFunction {
+    RegisterJsonUserFunction() {
+        LoadSceneFuncs::register_json_user_function(
+            "obj_resource",
+            [](const LoadSceneJsonUserFunctionArgs& args)
+            {
+                execute(args);
+            }
+        );
+    }
+} obj;
+
 }

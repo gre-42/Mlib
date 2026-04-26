@@ -27,11 +27,11 @@ DECLARE_ARGUMENT(file);
 DECLARE_ARGUMENT(tire_contacts);
 }
 
-Preload::Preload(PhysicsScene& physics_scene) 
+Preload::Preload(PhysicsScene& physics_scene)
     : LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
-void Preload::execute(const LoadSceneJsonUserFunctionArgs &args) {
+void Preload::execute(const LoadSceneJsonUserFunctionArgs& args) {
     FunctionGuard fg{ "Preloading" };
 
     args.arguments.validate(KnownArgs::options);

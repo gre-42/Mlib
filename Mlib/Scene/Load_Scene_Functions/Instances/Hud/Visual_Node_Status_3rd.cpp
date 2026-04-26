@@ -7,6 +7,7 @@
 #include <Mlib/Misc/FPath.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Engine.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
+#include <Mlib/Scene/Load_Scene_Funcs.hpp>
 #include <Mlib/Scene/Render_Logics/Visual_Movable_3rd_Logger.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
@@ -27,20 +28,12 @@ DECLARE_ARGUMENT(font_height);
 DECLARE_ARGUMENT(line_distance);
 }
 
-const std::string VisualNodeStatus3rd::key = "visual_node_status_3rd";
-
-LoadSceneJsonUserFunction VisualNodeStatus3rd::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
-{
-    args.arguments.validate(KnownArgs::options);
-    VisualNodeStatus3rd(args.renderable_scene()).execute(args);
-};
-
 VisualNodeStatus3rd::VisualNodeStatus3rd(RenderableScene& renderable_scene) 
     : LoadRenderableSceneInstanceFunction{ renderable_scene }
 {}
 
-void VisualNodeStatus3rd::execute(const LoadSceneJsonUserFunctionArgs& args)
-{
+void VisualNodeStatus3rd::execute(const LoadSceneJsonUserFunctionArgs& args) {
+    args.arguments.validate(KnownArgs::options);
     DanglingBaseClassRef<SceneNode> node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::node), CURRENT_SOURCE_LOCATION);
     auto lo = get_status_writer(node.get(), CURRENT_SOURCE_LOCATION);
     StatusComponents log_components = status_components_from_string(args.arguments.at<std::string>(KnownArgs::format));
@@ -59,4 +52,19 @@ void VisualNodeStatus3rd::execute(const LoadSceneJsonUserFunctionArgs& args)
         args.arguments.at<EFixedArray<float, 3>>(KnownArgs::font_color),
         args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::font_height)),
         args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::line_distance)));
+}
+
+namespace {
+
+struct RegisterJsonUserFunction {
+    RegisterJsonUserFunction() {
+        LoadSceneFuncs::register_json_user_function(
+            "visual_node_status_3rd",
+            [](const LoadSceneJsonUserFunctionArgs& args)
+            {
+                VisualNodeStatus3rd{args.renderable_scene()}.execute(args);
+            });
+    }
+} obj;
+
 }

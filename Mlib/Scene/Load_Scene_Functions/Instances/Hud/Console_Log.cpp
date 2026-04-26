@@ -6,6 +6,7 @@
 #include <Mlib/Physics/Advance_Times/Movable_Logger.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Engine.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
+#include <Mlib/Scene/Load_Scene_Funcs.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Interfaces/Scene_Node/IAbsolute_Movable.hpp>
@@ -20,20 +21,12 @@ DECLARE_ARGUMENT(node);
 DECLARE_ARGUMENT(format);
 }
 
-const std::string ConsoleLog::key = "console_log";
-
-LoadSceneJsonUserFunction ConsoleLog::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
-{
-    args.arguments.validate(KnownArgs::options);
-    ConsoleLog(args.physics_scene()).execute(args);
-};
-
-ConsoleLog::ConsoleLog(PhysicsScene& physics_scene) 
+ConsoleLog::ConsoleLog(PhysicsScene& physics_scene)
     : LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
-void ConsoleLog::execute(const LoadSceneJsonUserFunctionArgs& args)
-{
+void ConsoleLog::execute(const LoadSceneJsonUserFunctionArgs& args) {
+    args.arguments.validate(KnownArgs::options);
     DanglingBaseClassRef<SceneNode> node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::node), CURRENT_SOURCE_LOCATION);
     auto lo = get_status_writer(node.get(), CURRENT_SOURCE_LOCATION);
     StatusComponents log_components = status_components_from_string(args.arguments.at<std::string>(KnownArgs::format));
@@ -43,4 +36,19 @@ void ConsoleLog::execute(const LoadSceneJsonUserFunctionArgs& args)
         lo,
         log_components);
     physics_engine.advance_times_.add_advance_time({ logger, CURRENT_SOURCE_LOCATION }, CURRENT_SOURCE_LOCATION);
+}
+
+namespace {
+
+struct RegisterJsonUserFunction {
+    RegisterJsonUserFunction() {
+        LoadSceneFuncs::register_json_user_function(
+            "console_log",
+            [](const LoadSceneJsonUserFunctionArgs& args)
+            {
+                ConsoleLog{args.physics_scene()}.execute(args);
+            });
+    }
+} obj;
+
 }

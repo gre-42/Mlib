@@ -10,6 +10,8 @@
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Linker.hpp>
+#include <Mlib/Scene/Load_Scene_Funcs.hpp>
+#include <Mlib/Scene/Load_Scene_Funcs.hpp>
 #include <Mlib/Scene/Scene_Config.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
@@ -35,20 +37,12 @@ DECLARE_ARGUMENT(pitch_error_std);
 DECLARE_ARGUMENT(error_alpha);
 }
 
-const std::string CreateYawPitchLookatNodes::key = "yaw_pitch_look_at_nodes";
-
-LoadSceneJsonUserFunction CreateYawPitchLookatNodes::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
-{
-    args.arguments.validate(KnownArgs::options);
-    CreateYawPitchLookatNodes(args.physics_scene()).execute(args);
-};
-
-CreateYawPitchLookatNodes::CreateYawPitchLookatNodes(PhysicsScene& physics_scene) 
-: LoadPhysicsSceneInstanceFunction{ physics_scene }
+CreateYawPitchLookatNodes::CreateYawPitchLookatNodes(PhysicsScene& physics_scene)
+    : LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
-void CreateYawPitchLookatNodes::execute(const LoadSceneJsonUserFunctionArgs& args)
-{
+void CreateYawPitchLookatNodes::execute(const LoadSceneJsonUserFunctionArgs& args) {
+    args.arguments.validate(KnownArgs::options);
     Linker linker{ physics_engine.advance_times_ };
     DanglingBaseClassRef<SceneNode> yaw_node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::yaw_node), CURRENT_SOURCE_LOCATION);
     DanglingBaseClassRef<SceneNode> pitch_node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::pitch_node), CURRENT_SOURCE_LOCATION);
@@ -95,4 +89,19 @@ void CreateYawPitchLookatNodes::execute(const LoadSceneJsonUserFunctionArgs& arg
         CURRENT_SOURCE_LOCATION);
     global_object_pool.add(std::move(follower), CURRENT_SOURCE_LOCATION);
     global_object_pool.add(std::move(follower_pitch), CURRENT_SOURCE_LOCATION);
+}
+
+namespace {
+
+struct RegisterJsonUserFunction {
+    RegisterJsonUserFunction() {
+        LoadSceneFuncs::register_json_user_function(
+            "yaw_pitch_look_at_nodes",
+            [](const LoadSceneJsonUserFunctionArgs& args)
+            {
+                CreateYawPitchLookatNodes{args.physics_scene()}.execute(args);
+            });
+    }
+} obj;
+
 }

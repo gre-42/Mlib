@@ -1,4 +1,3 @@
-#include "Create_Grid_Resource.hpp"
 #include <Mlib/Geometry/Material.hpp>
 #include <Mlib/Geometry/Material_Configuration/Material_Skidmarks.hpp>
 #include <Mlib/Geometry/Material_Configuration/Meta_Materials.hpp>
@@ -14,6 +13,7 @@
 #include <Mlib/OpenGL/Resources/Grid_Resource.hpp>
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
+#include <Mlib/Scene/Load_Scene_Funcs.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
 #include <vector>
 
@@ -55,70 +55,78 @@ DECLARE_ARGUMENT(has_animated_textures);
 DECLARE_ARGUMENT(physics_material);
 }
 
-const std::string CreateGridResource::key = "grid_resource";
+namespace {
 
-LoadSceneJsonUserFunction CreateGridResource::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
-{
-    args.arguments.validate(KnownArgs::options);
+struct RegisterJsonUserFunction {
+    RegisterJsonUserFunction() {
+        LoadSceneFuncs::register_json_user_function(
+            "grid_resource",
+            [](const LoadSceneJsonUserFunctionArgs& args)
+            {
+                args.arguments.validate(KnownArgs::options);
 
-    auto& primary_rendering_resources = RenderingContextStack::primary_rendering_resources();
+                auto& primary_rendering_resources = RenderingContextStack::primary_rendering_resources();
 
-    auto emissive = args.arguments.at<EFixedArray<float, 3>>(KnownArgs::emissivity, FixedArray<float, 3>(0.f));
-    auto ambient = args.arguments.at<EFixedArray<float, 3>>(KnownArgs::ambient);
-    auto diffuse = args.arguments.at<EFixedArray<float, 3>>(KnownArgs::diffuse);
-    auto specular = args.arguments.at<EFixedArray<float, 3>>(KnownArgs::specular);
+                auto emissive = args.arguments.at<EFixedArray<float, 3>>(KnownArgs::emissivity, FixedArray<float, 3>(0.f));
+                auto ambient = args.arguments.at<EFixedArray<float, 3>>(KnownArgs::ambient);
+                auto diffuse = args.arguments.at<EFixedArray<float, 3>>(KnownArgs::diffuse);
+                auto specular = args.arguments.at<EFixedArray<float, 3>>(KnownArgs::specular);
 
-    auto emissive_factor = args.arguments.at<EFixedArray<float, 3>>(KnownArgs::emissive_factor, FixedArray<float, 3>(1.f));
-    auto ambient_factor = args.arguments.at<EFixedArray<float, 3>>(KnownArgs::ambient_factor, FixedArray<float, 3>(1.f));
-    auto diffuse_factor = args.arguments.at<EFixedArray<float, 3>>(KnownArgs::diffuse_factor, FixedArray<float, 3>(1.f));
-    auto specular_factor = args.arguments.at<EFixedArray<float, 3>>(KnownArgs::specular_factor, FixedArray<float, 3>(1.f));
+                auto emissive_factor = args.arguments.at<EFixedArray<float, 3>>(KnownArgs::emissive_factor, FixedArray<float, 3>(1.f));
+                auto ambient_factor = args.arguments.at<EFixedArray<float, 3>>(KnownArgs::ambient_factor, FixedArray<float, 3>(1.f));
+                auto diffuse_factor = args.arguments.at<EFixedArray<float, 3>>(KnownArgs::diffuse_factor, FixedArray<float, 3>(1.f));
+                auto specular_factor = args.arguments.at<EFixedArray<float, 3>>(KnownArgs::specular_factor, FixedArray<float, 3>(1.f));
     
-    auto physics_material = physics_material_from_string(args.arguments.at<std::string>(KnownArgs::physics_material, ""));
+                auto physics_material = physics_material_from_string(args.arguments.at<std::string>(KnownArgs::physics_material, ""));
 
-    auto get_texture = [&](const FPath& name){
-        return primary_rendering_resources.get_blend_map_texture(name);
-    };
-    RenderingContextStack::primary_scene_node_resources().add_resource(
-        args.arguments.at<VariableAndHash<std::string>>(KnownArgs::name),
-        std::make_shared<GridResource>(
-            args.arguments.at<EFixedArray<size_t, 2>>(KnownArgs::size),
-            transformation_matrix_from_json<float, double, 3>(args.arguments.at(KnownArgs::location)),
-            args.arguments.at<double>(KnownArgs::tile_length),
-            args.arguments.at<double>(KnownArgs::scale),
-            args.arguments.at<double>(KnownArgs::uv_scale),
-            args.arguments.at<double>(KnownArgs::period),
-            Material{
-                .blend_mode = blend_mode_from_string(args.arguments.at<std::string>(KnownArgs::blend_mode)),
-                .depth_func = args.arguments.contains(KnownArgs::depth_func)
-                    ? depth_func_from_string(args.arguments.at<std::string>(KnownArgs::depth_func))
-                    : DepthFunc::LESS,
-                .textures_color = args.arguments.pathes_or_variables(KnownArgs::textures_color, get_texture),
-                .textures_alpha = args.arguments.try_pathes_or_variables(KnownArgs::textures_alpha, get_texture),
-                .occluded_pass = external_render_pass_type_from_string(args.arguments.at<std::string>(KnownArgs::occluded_pass)),
-                .occluder_pass = external_render_pass_type_from_string(args.arguments.at<std::string>(KnownArgs::occluder_pass)),
-                .skidmarks = material_skidmarks(physics_material),
-                .alpha_distances = args.arguments.at<EOrderableFixedArray<float, 4>>(KnownArgs::alpha_distances),
-                // .wrap_mode_s = WrapMode::REPEAT,
-                // .wrap_mode_t = WrapMode::REPEAT,
-                .aggregate_mode = aggregate_mode_from_string(args.arguments.at<std::string>(KnownArgs::aggregate_mode)),
-                .transformation_mode = transformation_mode_from_string(args.arguments.at<std::string>(KnownArgs::transformation_mode)),
-                .has_animated_textures = args.arguments.at<bool>(KnownArgs::has_animated_textures, false),
-                .cull_faces = args.arguments.at<bool>(KnownArgs::cull_faces),
-                .shading{
-                    .emissive = make_orderable(emissive * emissive_factor),
-                    .ambient = make_orderable(ambient * ambient_factor),
-                    .diffuse = make_orderable(diffuse * diffuse_factor),
-                    .specular = make_orderable(specular * specular_factor),
-                    .fresnel = args.arguments.at<FresnelAndAmbient>(KnownArgs::fresnel, FresnelAndAmbient{}),
-                    .fog_distances = args.arguments.at<EOrderableFixedArray<float, 2>>(KnownArgs::fog_distances, default_step_distances),
-                    .fog_ambient = args.arguments.at<EOrderableFixedArray<float, 3>>(KnownArgs::fog_ambient, OrderableFixedArray<float, 3>(1.f)),
-                }}.compute_color_mode(),
-            Morphology{
-                .physics_material = meta_material(physics_material) | physics_material,
-                .center_distances2 = SquaredStepDistances::from_distances(
-                    args.arguments.at<EFixedArray<float, 2>>(
-                        KnownArgs::center_distances,
-                        FixedArray<float, 2>{0.f, INFINITY }) * meters),
-                .triangle_cluster_width = args.arguments.at<float>(KnownArgs::triangle_cluster_width, 0)
-            }));
-};
+                auto get_texture = [&](const FPath& name){
+                    return primary_rendering_resources.get_blend_map_texture(name);
+                };
+                RenderingContextStack::primary_scene_node_resources().add_resource(
+                    args.arguments.at<VariableAndHash<std::string>>(KnownArgs::name),
+                    std::make_shared<GridResource>(
+                        args.arguments.at<EFixedArray<size_t, 2>>(KnownArgs::size),
+                        transformation_matrix_from_json<float, double, 3>(args.arguments.at(KnownArgs::location)),
+                        args.arguments.at<double>(KnownArgs::tile_length),
+                        args.arguments.at<double>(KnownArgs::scale),
+                        args.arguments.at<double>(KnownArgs::uv_scale),
+                        args.arguments.at<double>(KnownArgs::period),
+                        Material{
+                            .blend_mode = blend_mode_from_string(args.arguments.at<std::string>(KnownArgs::blend_mode)),
+                            .depth_func = args.arguments.contains(KnownArgs::depth_func)
+                                ? depth_func_from_string(args.arguments.at<std::string>(KnownArgs::depth_func))
+                                : DepthFunc::LESS,
+                            .textures_color = args.arguments.pathes_or_variables(KnownArgs::textures_color, get_texture),
+                            .textures_alpha = args.arguments.try_pathes_or_variables(KnownArgs::textures_alpha, get_texture),
+                            .occluded_pass = external_render_pass_type_from_string(args.arguments.at<std::string>(KnownArgs::occluded_pass)),
+                            .occluder_pass = external_render_pass_type_from_string(args.arguments.at<std::string>(KnownArgs::occluder_pass)),
+                            .skidmarks = material_skidmarks(physics_material),
+                            .alpha_distances = args.arguments.at<EOrderableFixedArray<float, 4>>(KnownArgs::alpha_distances),
+                            // .wrap_mode_s = WrapMode::REPEAT,
+                            // .wrap_mode_t = WrapMode::REPEAT,
+                            .aggregate_mode = aggregate_mode_from_string(args.arguments.at<std::string>(KnownArgs::aggregate_mode)),
+                            .transformation_mode = transformation_mode_from_string(args.arguments.at<std::string>(KnownArgs::transformation_mode)),
+                            .has_animated_textures = args.arguments.at<bool>(KnownArgs::has_animated_textures, false),
+                            .cull_faces = args.arguments.at<bool>(KnownArgs::cull_faces),
+                            .shading{
+                                .emissive = make_orderable(emissive * emissive_factor),
+                                .ambient = make_orderable(ambient * ambient_factor),
+                                .diffuse = make_orderable(diffuse * diffuse_factor),
+                                .specular = make_orderable(specular * specular_factor),
+                                .fresnel = args.arguments.at<FresnelAndAmbient>(KnownArgs::fresnel, FresnelAndAmbient{}),
+                                .fog_distances = args.arguments.at<EOrderableFixedArray<float, 2>>(KnownArgs::fog_distances, default_step_distances),
+                                .fog_ambient = args.arguments.at<EOrderableFixedArray<float, 3>>(KnownArgs::fog_ambient, OrderableFixedArray<float, 3>(1.f)),
+                            }}.compute_color_mode(),
+                        Morphology{
+                            .physics_material = meta_material(physics_material) | physics_material,
+                            .center_distances2 = SquaredStepDistances::from_distances(
+                                args.arguments.at<EFixedArray<float, 2>>(
+                                    KnownArgs::center_distances,
+                                    FixedArray<float, 2>{0.f, INFINITY }) * meters),
+                            .triangle_cluster_width = args.arguments.at<float>(KnownArgs::triangle_cluster_width, 0)
+                        }));
+            });
+    }
+} obj;
+
+}

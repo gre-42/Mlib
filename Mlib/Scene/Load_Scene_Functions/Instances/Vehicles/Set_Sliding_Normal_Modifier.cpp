@@ -6,6 +6,7 @@
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
+#include <Mlib/Scene/Load_Scene_Funcs.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <stdexcept>
 
@@ -18,24 +19,31 @@ DECLARE_ARGUMENT(fac);
 DECLARE_ARGUMENT(max_overlap);
 }
 
-const std::string SetSlidingNormalModifier::key = "set_sliding_normal_modifier";
-
-LoadSceneJsonUserFunction SetSlidingNormalModifier::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
-{
-    args.arguments.validate(KnownArgs::options);
-    SetSlidingNormalModifier(args.physics_scene()).execute(args);
-};
-
-SetSlidingNormalModifier::SetSlidingNormalModifier(PhysicsScene& physics_scene) 
+SetSlidingNormalModifier::SetSlidingNormalModifier(PhysicsScene& physics_scene)
     : LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
-void SetSlidingNormalModifier::execute(const LoadSceneJsonUserFunctionArgs& args)
-{
+void SetSlidingNormalModifier::execute(const LoadSceneJsonUserFunctionArgs& args) {
+    args.arguments.validate(KnownArgs::options);
     DanglingBaseClassRef<SceneNode> node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::node), CURRENT_SOURCE_LOCATION);
     auto rb = get_rigid_body_vehicle(node.get(), CURRENT_SOURCE_LOCATION);
     rb->set_collision_normal_modifier(std::make_unique<SlidingNormalModifier>(
         rb,
         args.arguments.at<float>(KnownArgs::fac),
         args.arguments.at<float>(KnownArgs::max_overlap) * meters));
+}
+
+namespace {
+
+struct RegisterJsonUserFunction {
+    RegisterJsonUserFunction() {
+        LoadSceneFuncs::register_json_user_function(
+            "set_sliding_normal_modifier",
+            [](const LoadSceneJsonUserFunctionArgs& args)
+            {
+                SetSlidingNormalModifier{args.physics_scene()}.execute(args);
+            });
+    }
+} obj;
+
 }

@@ -5,6 +5,7 @@
 #include <Mlib/Physics/Misc/Weapon_Cycle.hpp>
 #include <Mlib/Physics/Misc/When_To_Equip.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
+#include <Mlib/Scene/Load_Scene_Funcs.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <stdexcept>
@@ -19,20 +20,12 @@ DECLARE_ARGUMENT(weapon);
 DECLARE_ARGUMENT(equip_instantly);
 }
 
-const std::string SetDesiredWeapon::key = "set_desired_weapon";
-
-LoadSceneJsonUserFunction SetDesiredWeapon::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
-{
-    args.arguments.validate(KnownArgs::options);
-    SetDesiredWeapon(args.physics_scene()).execute(args);
-};
-
-SetDesiredWeapon::SetDesiredWeapon(PhysicsScene& physics_scene) 
+SetDesiredWeapon::SetDesiredWeapon(PhysicsScene& physics_scene)
     : LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
-void SetDesiredWeapon::execute(const LoadSceneJsonUserFunctionArgs& args)
-{
+void SetDesiredWeapon::execute(const LoadSceneJsonUserFunctionArgs& args) {
+    args.arguments.validate(KnownArgs::options);
     DanglingBaseClassRef<SceneNode> cycle_node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::cycle_node), CURRENT_SOURCE_LOCATION);
     auto player_name = args.arguments.try_at_non_null<VariableAndHash<std::string>>(KnownArgs::player);
     std::string weapon_name = args.arguments.at<std::string>(KnownArgs::weapon);
@@ -42,4 +35,19 @@ void SetDesiredWeapon::execute(const LoadSceneJsonUserFunctionArgs& args)
     } else {
         wc->set_desired_weapon(player_name, weapon_name, WhenToEquip::EQUIP_LATER);
     }
+}
+
+namespace {
+
+struct RegisterJsonUserFunction {
+    RegisterJsonUserFunction() {
+        LoadSceneFuncs::register_json_user_function(
+            "set_desired_weapon",
+            [](const LoadSceneJsonUserFunctionArgs& args)
+            {
+                SetDesiredWeapon{args.physics_scene()}.execute(args);
+            });
+    }
+} obj;
+
 }

@@ -4,6 +4,8 @@
 #include <Mlib/Players/Advance_Times/Player.hpp>
 #include <Mlib/Players/Containers/Players.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
+#include <Mlib/Scene/Load_Scene_Funcs.hpp>
+#include <Mlib/Scene/Load_Scene_Funcs.hpp>
 #include <Mlib/Scene_Graph/Way_Point_Location.hpp>
 
 using namespace Mlib;
@@ -14,24 +16,31 @@ DECLARE_ARGUMENT(player);
 DECLARE_ARGUMENT(position);
 }
 
-const std::string PlayerSetWaypoint::key = "player_set_waypoint";
-
-LoadSceneJsonUserFunction PlayerSetWaypoint::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
-{
-    args.arguments.validate(KnownArgs::options);
-    PlayerSetWaypoint(args.physics_scene()).execute(args);
-};
-
-PlayerSetWaypoint::PlayerSetWaypoint(PhysicsScene& physics_scene) 
-: LoadPhysicsSceneInstanceFunction{ physics_scene }
+PlayerSetWaypoint::PlayerSetWaypoint(PhysicsScene& physics_scene)
+    : LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
-void PlayerSetWaypoint::execute(const LoadSceneJsonUserFunctionArgs& args)
-{
+void PlayerSetWaypoint::execute(const LoadSceneJsonUserFunctionArgs& args) {
+    args.arguments.validate(KnownArgs::options);
     players.get_player(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::player), CURRENT_SOURCE_LOCATION)->
         single_waypoint().set_waypoint(
             {
                 args.arguments.at<EFixedArray<CompressedScenePos, 3>>(KnownArgs::position),
                 WayPointLocation::UNKNOWN
             });
+}
+
+namespace {
+
+struct RegisterJsonUserFunction {
+    RegisterJsonUserFunction() {
+        LoadSceneFuncs::register_json_user_function(
+            "player_set_waypoint",
+            [](const LoadSceneJsonUserFunctionArgs& args)
+            {
+                PlayerSetWaypoint{args.physics_scene()}.execute(args);
+            });
+    }
+} obj;
+
 }

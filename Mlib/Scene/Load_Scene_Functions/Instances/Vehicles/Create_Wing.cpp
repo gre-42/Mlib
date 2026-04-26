@@ -7,6 +7,7 @@
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
+#include <Mlib/Scene/Load_Scene_Funcs.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Interfaces/ITrail_Extender.hpp>
@@ -45,20 +46,12 @@ DECLARE_ARGUMENT(position);
 DECLARE_ARGUMENT(minimum_velocity);
 }
 
-const std::string CreateWing::key = "wing";
-
-LoadSceneJsonUserFunction CreateWing::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
-{
-    args.arguments.validate(KnownArgs::options);
-    CreateWing(args.physics_scene()).execute(args);
-};
-
-CreateWing::CreateWing(PhysicsScene& physics_scene) 
-: LoadPhysicsSceneInstanceFunction{ physics_scene }
+CreateWing::CreateWing(PhysicsScene& physics_scene)
+    : LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
-void CreateWing::execute(const LoadSceneJsonUserFunctionArgs& args)
-{
+void CreateWing::execute(const LoadSceneJsonUserFunctionArgs& args) {
+    args.arguments.validate(KnownArgs::options);
     DanglingBaseClassRef<SceneNode> vehicle_node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::vehicle), CURRENT_SOURCE_LOCATION);
     auto vehicle_rb = get_rigid_body_vehicle(vehicle_node.get(), CURRENT_SOURCE_LOCATION);
     auto position = args.arguments.at<EFixedArray<ScenePos, 3>>(KnownArgs::position) * (ScenePos)meters;
@@ -100,4 +93,19 @@ void CreateWing::execute(const LoadSceneJsonUserFunctionArgs& args)
             0.f,
             0.f,
             std::move(trail_source)));
+}
+
+namespace {
+
+struct RegisterJsonUserFunction {
+    RegisterJsonUserFunction() {
+        LoadSceneFuncs::register_json_user_function(
+            "wing",
+            [](const LoadSceneJsonUserFunctionArgs& args)
+            {
+                CreateWing{args.physics_scene()}.execute(args);
+            });
+    }
+} obj;
+
 }

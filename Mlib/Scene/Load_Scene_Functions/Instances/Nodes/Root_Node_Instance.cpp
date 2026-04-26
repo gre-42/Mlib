@@ -28,7 +28,7 @@ DECLARE_ARGUMENT(interpolation);
 DECLARE_ARGUMENT(full_user_name);
 }
 
-RootNodeInstance::RootNodeInstance(PhysicsScene& physics_scene) 
+RootNodeInstance::RootNodeInstance(PhysicsScene& physics_scene)
     : LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 

@@ -1,4 +1,3 @@
-#include "Load_Osm_Resource.hpp"
 #include <Mlib/Geometry/Material/Blend_Mode.hpp>
 #include <Mlib/Geometry/Mesh/Contour_Detection_Strategy.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>
@@ -17,6 +16,7 @@
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Waysides_Vertex.hpp>
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
+#include <Mlib/Scene/Load_Scene_Funcs.hpp>
 #include <Mlib/Scene_Graph/Resources/Parsed_Resource_Name.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
 #include <Mlib/Strings/String.hpp>
@@ -331,8 +331,6 @@ DECLARE_ARGUMENT(max_dist);
 DECLARE_ARGUMENT(resource_names);
 }
 
-const std::string LoadOsmResource::key = "osm_resource";
-
 static auto from_meters = [](std::floating_point auto v) {
     return v * meters;
     };
@@ -341,8 +339,7 @@ static auto fixed_from_meters = [](std::floating_point auto v) {
     return CompressedScenePos::from_float_safe(from_meters(v));
     };
 
-LoadSceneJsonUserFunction LoadOsmResource::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
-{
+static void load_osm_resource(const LoadSceneJsonUserFunctionArgs& args) {
     args.arguments.validate(KnownArgs::options);
 
     auto& scene_node_resources = RenderingContextStack::primary_scene_node_resources();
@@ -1286,4 +1283,19 @@ LoadSceneJsonUserFunction LoadOsmResource::json_user_function = [](const LoadSce
         }
     }
     scene_node_resources.add_resource(resource_name, osm_map_resource);
-};
+}
+
+namespace {
+
+struct RegisterJsonUserFunction {
+    RegisterJsonUserFunction() {
+        LoadSceneFuncs::register_json_user_function(
+            "osm_resource",
+            [](const LoadSceneJsonUserFunctionArgs& args)
+            {
+                load_osm_resource(args);
+            });
+    }
+} obj;
+
+}

@@ -4,6 +4,7 @@
 #include <Mlib/Players/Advance_Times/Player.hpp>
 #include <Mlib/Players/Containers/Players.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
+#include <Mlib/Scene/Load_Scene_Funcs.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 
@@ -15,20 +16,27 @@ DECLARE_ARGUMENT(player);
 DECLARE_ARGUMENT(gun_node);
 }
 
-const std::string PlayerSetAimingGun::key = "player_set_aiming_gun";
-
-LoadSceneJsonUserFunction PlayerSetAimingGun::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
-{
-    args.arguments.validate(KnownArgs::options);
-    PlayerSetAimingGun(args.physics_scene()).execute(args);
-};
-
-PlayerSetAimingGun::PlayerSetAimingGun(PhysicsScene& physics_scene) 
-: LoadPhysicsSceneInstanceFunction{ physics_scene }
+PlayerSetAimingGun::PlayerSetAimingGun(PhysicsScene& physics_scene)
+    : LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
-void PlayerSetAimingGun::execute(const LoadSceneJsonUserFunctionArgs& args)
-{
+void PlayerSetAimingGun::execute(const LoadSceneJsonUserFunctionArgs& args) {
+    args.arguments.validate(KnownArgs::options);
     DanglingBaseClassRef<SceneNode> gun_node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::gun_node), CURRENT_SOURCE_LOCATION);
     players.get_player(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::player), CURRENT_SOURCE_LOCATION)->set_gun_node(gun_node);
+}
+
+namespace {
+
+struct RegisterJsonUserFunction {
+    RegisterJsonUserFunction() {
+        LoadSceneFuncs::register_json_user_function(
+            "player_set_aiming_gun",
+            [](const LoadSceneJsonUserFunctionArgs& args)
+            {
+                PlayerSetAimingGun{args.physics_scene()}.execute(args);
+            });
+    }
+} obj;
+
 }

@@ -10,7 +10,10 @@ else()
     message(FATAL_ERROR "Unknown target")
 endif()
 
-target_link_libraries(RenderSceneFileActivity PRIVATE -Wl,--whole-archive MlibScene -Wl,--no-whole-archive AGameHelper)
+target_link_libraries(RenderSceneFileActivity PRIVATE 
+    "$<LINK_LIBRARY:WHOLE_ARCHIVE,MlibScene>"
+    AGameHelper
+)
 
 if (ANDROID)
     # Export ANativeActivity_onCreate(),

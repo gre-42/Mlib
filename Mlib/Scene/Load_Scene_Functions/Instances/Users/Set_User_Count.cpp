@@ -13,7 +13,7 @@ BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(user_count);
 }
 
-void SetUserCount::execute(const LoadSceneJsonUserFunctionArgs &args) {
+void SetUserCount::execute(const LoadSceneJsonUserFunctionArgs& args) {
     args.arguments.validate(KnownArgs::options);
     args.remote_sites.set_local_user_count(args.arguments.at<uint32_t>(KnownArgs::user_count));
 }

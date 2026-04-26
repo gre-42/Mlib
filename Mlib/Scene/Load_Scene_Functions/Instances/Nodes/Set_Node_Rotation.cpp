@@ -4,6 +4,7 @@
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Regex/Regex_Select.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
+#include <Mlib/Scene/Load_Scene_Funcs.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Time.hpp>
@@ -17,22 +18,29 @@ DECLARE_ARGUMENT(name);
 DECLARE_ARGUMENT(rotation);
 }
 
-const std::string SetNodeRotation::key = "set_node_rotation";
-
-LoadSceneJsonUserFunction SetNodeRotation::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
-{
-    args.arguments.validate(KnownArgs::options);
-    SetNodeRotation(args.physics_scene()).execute(args);
-};
-
-SetNodeRotation::SetNodeRotation(PhysicsScene& physics_scene) 
-: LoadPhysicsSceneInstanceFunction{ physics_scene }
+SetNodeRotation::SetNodeRotation(PhysicsScene& physics_scene)
+    : LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
-void SetNodeRotation::execute(const LoadSceneJsonUserFunctionArgs& args)
-{
+void SetNodeRotation::execute(const LoadSceneJsonUserFunctionArgs& args) {
+    args.arguments.validate(KnownArgs::options);
     DanglingBaseClassRef<SceneNode> node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::name), CURRENT_SOURCE_LOCATION);
     node->set_rotation(
         args.arguments.at<EFixedArray<float, 3>>(KnownArgs::rotation) * degrees,
         SceneTime::standard(dynamic_world.get_time()));
+}
+
+namespace {
+
+struct RegisterJsonUserFunction {
+    RegisterJsonUserFunction() {
+        LoadSceneFuncs::register_json_user_function(
+            "set_node_rotation",
+            [](const LoadSceneJsonUserFunctionArgs& args)
+            {
+                SetNodeRotation{args.physics_scene()}.execute(args);
+            });
+    }
+} obj;
+
 }

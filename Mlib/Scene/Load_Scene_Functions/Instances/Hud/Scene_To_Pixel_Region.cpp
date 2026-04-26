@@ -8,6 +8,7 @@
 #include <Mlib/OpenGL/Render_To_Texture/Render_To_Pixel_Region_Logic.hpp>
 #include <Mlib/OpenGL/Rendering_Context.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
+#include <Mlib/Scene/Load_Scene_Funcs.hpp>
 #include <Mlib/Scene/Renderable_Scene.hpp>
 #include <Mlib/Scene/Renderable_Scenes.hpp>
 #include <Mlib/Strings/String.hpp>
@@ -27,20 +28,13 @@ DECLARE_ARGUMENT(focus_mask);
 DECLARE_ARGUMENT(submenus);
 }
 
-const std::string SceneToPixelRegion::key = "scene_to_pixel_region";
-
-LoadSceneJsonUserFunction SceneToPixelRegion::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
-{
-    args.arguments.validate(KnownArgs::options);
-    SceneToPixelRegion(args.renderable_scene()).execute(args);
-};
-
 SceneToPixelRegion::SceneToPixelRegion(RenderableScene& renderable_scene) 
     : LoadRenderableSceneInstanceFunction{ renderable_scene }
 {}
 
 void SceneToPixelRegion::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
+    args.arguments.validate(KnownArgs::options);
     std::string target_scene = args.arguments.at<std::string>(KnownArgs::target_scene);
     auto& rs = args.renderable_scenes[target_scene];
     auto render_scene_to_pixel_region_logic = rs.object_pool_.create_unique<RenderToPixelRegionLogic>(
@@ -71,4 +65,19 @@ void SceneToPixelRegion::execute(const LoadSceneJsonUserFunctionArgs& args)
         throw std::runtime_error("Unknown target_list. Choose between \"scene\" and \"render\"");
     }
     render_scene_to_pixel_region_logic.release();
+}
+
+namespace {
+
+struct RegisterJsonUserFunction {
+    RegisterJsonUserFunction() {
+        LoadSceneFuncs::register_json_user_function(
+            "scene_to_pixel_region",
+            [](const LoadSceneJsonUserFunctionArgs& args)
+            {
+                SceneToPixelRegion(args.renderable_scene()).execute(args);
+            });
+    }
+} obj;
+
 }

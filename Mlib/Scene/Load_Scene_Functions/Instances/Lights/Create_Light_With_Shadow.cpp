@@ -7,6 +7,7 @@
 #include <Mlib/OpenGL/Render_Logics/Render_Logics.hpp>
 #include <Mlib/Regex/Regex_Select.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
+#include <Mlib/Scene/Load_Scene_Funcs.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Light.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
@@ -30,20 +31,12 @@ DECLARE_ARGUMENT(lightmap_height);
 DECLARE_ARGUMENT(smooth_niterations);
 }
 
-const std::string CreateLightWithShadow::key = "light_with_shadow";
-
-LoadSceneJsonUserFunction CreateLightWithShadow::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
-{
-    args.arguments.validate(KnownArgs::options);
-    CreateLightWithShadow(args.renderable_scene()).execute(args);
-};
-
 CreateLightWithShadow::CreateLightWithShadow(RenderableScene& renderable_scene) 
     : LoadRenderableSceneInstanceFunction{ renderable_scene }
 {}
 
-void CreateLightWithShadow::execute(const LoadSceneJsonUserFunctionArgs& args)
-{
+void CreateLightWithShadow::execute(const LoadSceneJsonUserFunctionArgs& args) {
+    args.arguments.validate(KnownArgs::options);
     auto node_name = args.arguments.at<VariableAndHash<std::string>>(KnownArgs::node);
     auto node = scene.get_node(node_name, CURRENT_SOURCE_LOCATION);
     auto render_pass = external_render_pass_type_from_string(args.arguments.at<std::string>(KnownArgs::render_pass));
@@ -81,4 +74,19 @@ void CreateLightWithShadow::execute(const LoadSceneJsonUserFunctionArgs& args)
         CURRENT_SOURCE_LOCATION);
     node->add_light(light);
     o.release();
+}
+
+namespace {
+
+struct RegisterJsonUserFunction {
+    RegisterJsonUserFunction() {
+        LoadSceneFuncs::register_json_user_function(
+            "light_with_shadow",
+            [](const LoadSceneJsonUserFunctionArgs& args)
+            {
+                CreateLightWithShadow{args.renderable_scene()}.execute(args);
+            });
+    }
+} obj;
+
 }

@@ -12,6 +12,7 @@
 #include <Mlib/OpenGL/Rendering_Context.hpp>
 #include <Mlib/OpenGL/Resource_Managers/Rendering_Resources.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
+#include <Mlib/Scene/Load_Scene_Funcs.hpp>
 
 using namespace Mlib;
 
@@ -28,20 +29,12 @@ DECLARE_ARGUMENT(top);
 DECLARE_ARGUMENT(delay_load_policy);
 }
 
-const std::string Controls::key = "controls";
-
-LoadSceneJsonUserFunction Controls::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
-{
-    args.arguments.validate(KnownArgs::options);
-    Controls(args.renderable_scene()).execute(args);
-};
-
 Controls::Controls(RenderableScene& renderable_scene) 
-: LoadRenderableSceneInstanceFunction{ renderable_scene }
+    : LoadRenderableSceneInstanceFunction{ renderable_scene }
 {}
 
-void Controls::execute(const LoadSceneJsonUserFunctionArgs& args)
-{
+void Controls::execute(const LoadSceneJsonUserFunctionArgs& args) {
+    args.arguments.validate(KnownArgs::options);
     auto& primary_rendering_resources = RenderingContextStack::primary_rendering_resources();
     auto id = args.arguments.at<std::string>(KnownArgs::id);
     auto focus_filter = FocusFilter{
@@ -73,4 +66,19 @@ void Controls::execute(const LoadSceneJsonUserFunctionArgs& args)
         { controls_logic, CURRENT_SOURCE_LOCATION },
         1 /* z_order */,
         CURRENT_SOURCE_LOCATION);
+}
+
+namespace {
+
+struct RegisterJsonUserFunction {
+    RegisterJsonUserFunction() {
+        LoadSceneFuncs::register_json_user_function(
+            "controls",
+            [](const LoadSceneJsonUserFunctionArgs& args)
+            {
+                Controls{args.renderable_scene()}.execute(args);
+            });
+    }
+} obj;
+
 }

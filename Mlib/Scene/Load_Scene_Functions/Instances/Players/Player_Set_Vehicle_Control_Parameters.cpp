@@ -5,6 +5,7 @@
 #include <Mlib/Players/Advance_Times/Player.hpp>
 #include <Mlib/Players/Containers/Players.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
+#include <Mlib/Scene/Load_Scene_Funcs.hpp>
 
 using namespace Mlib;
 
@@ -23,23 +24,15 @@ DECLARE_ARGUMENT(pid);
 DECLARE_ARGUMENT(alpha);
 }
 
-const std::string PlayerSetVehicleControlParameters::key = "player_set_vehicle_control_parameters";
+PlayerSetVehicleControlParameters::PlayerSetVehicleControlParameters(PhysicsScene& physics_scene)
+    : LoadPhysicsSceneInstanceFunction{ physics_scene }
+{}
 
-LoadSceneJsonUserFunction PlayerSetVehicleControlParameters::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
-{
+void PlayerSetVehicleControlParameters::execute(const LoadSceneJsonUserFunctionArgs& args) {
     args.arguments.validate(KnownArgs::options);
     if (args.arguments.contains(KnownArgs::tire_angle_pid)) {
         args.arguments.child(KnownArgs::tire_angle_pid).validate(TAP::options);
     }
-    PlayerSetVehicleControlParameters(args.physics_scene()).execute(args);
-};
-
-PlayerSetVehicleControlParameters::PlayerSetVehicleControlParameters(PhysicsScene& physics_scene) 
-: LoadPhysicsSceneInstanceFunction{ physics_scene }
-{}
-
-void PlayerSetVehicleControlParameters::execute(const LoadSceneJsonUserFunctionArgs& args)
-{
     auto player = players.get_player(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::player), CURRENT_SOURCE_LOCATION);
     player->vehicle_movement.set_control_parameters(
         args.arguments.at<float>(KnownArgs::surface_power_forward) * W,
@@ -58,4 +51,19 @@ void PlayerSetVehicleControlParameters::execute(const LoadSceneJsonUserFunctionA
                 pid(2),
                 c.at<float>(TAP::alpha)});
     }
+}
+
+namespace {
+
+struct RegisterJsonUserFunction {
+    RegisterJsonUserFunction() {
+        LoadSceneFuncs::register_json_user_function(
+            "player_set_vehicle_control_parameters",
+            [](const LoadSceneJsonUserFunctionArgs& args)
+            {
+                PlayerSetVehicleControlParameters{args.physics_scene()}.execute(args);
+            });
+    }
+} obj;
+
 }

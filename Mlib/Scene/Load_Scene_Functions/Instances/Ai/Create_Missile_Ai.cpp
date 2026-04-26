@@ -6,10 +6,15 @@
 #include <Mlib/Physics/Vehicle_Controllers/Missile_Controllers/Missile_Controller.hpp>
 #include <Mlib/Players/Vehicle_Ai/Flying_Missile_Ai.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
+#include <Mlib/Scene/Load_Scene_Funcs.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <stdexcept>
 
 using namespace Mlib;
+
+static inline float parse_kph(float v) {
+    return v * kph;
+}
 
 namespace KnownArgs {
 BEGIN_ARGUMENT_LIST;
@@ -27,24 +32,12 @@ DECLARE_ARGUMENT(velocity);
 DECLARE_ARGUMENT(dy);
 }
 
-const std::string CreateMissileAi::key = "create_missile_ai";
-
-static inline float parse_kph(float v) {
-    return v * kph;
-}
-
-LoadSceneJsonUserFunction CreateMissileAi::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
-{
-    args.arguments.validate(KnownArgs::options);
-    CreateMissileAi(args.physics_scene()).execute(args);
-};
-
-CreateMissileAi::CreateMissileAi(PhysicsScene& physics_scene) 
+CreateMissileAi::CreateMissileAi(PhysicsScene& physics_scene)
     : LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
-void CreateMissileAi::execute(const LoadSceneJsonUserFunctionArgs& args)
-{
+void CreateMissileAi::execute(const LoadSceneJsonUserFunctionArgs& args) {
+    args.arguments.validate(KnownArgs::options);
     auto jdy = args.arguments.child(KnownArgs::dy);
     jdy.validate(DyArgs::options);
     Interp<float, float> dy{
@@ -67,4 +60,19 @@ void CreateMissileAi::execute(const LoadSceneJsonUserFunctionArgs& args)
                 args.arguments.at<float>(KnownArgs::maximum_velocity) * kph),
             CURRENT_SOURCE_LOCATION
         });
+}
+
+namespace {
+
+struct RegisterJsonUserFunction {
+    RegisterJsonUserFunction() {
+        LoadSceneFuncs::register_json_user_function(
+            "create_missile_ai",
+            [](const LoadSceneJsonUserFunctionArgs& args)
+            {
+                CreateMissileAi{args.physics_scene()}.execute(args);
+            });
+    }
+} obj;
+
 }

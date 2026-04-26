@@ -21,11 +21,11 @@ BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(min_vertex_distance);
 }
 
-InstantiateStatics::InstantiateStatics(PhysicsScene& physics_scene) 
+InstantiateStatics::InstantiateStatics(PhysicsScene& physics_scene)
     : LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
-void InstantiateStatics::execute(const LoadSceneJsonUserFunctionArgs &args) {
+void InstantiateStatics::execute(const LoadSceneJsonUserFunctionArgs& args) {
     args.arguments.validate(KnownArgs::options);
     std::list<std::pair<TransformationMatrix<float, ScenePos, 3>, std::shared_ptr<ColoredVertexArray<float>>>> float_queue;
     std::list<std::pair<TransformationMatrix<float, ScenePos, 3>, std::shared_ptr<ColoredVertexArray<CompressedScenePos>>>> double_queue;

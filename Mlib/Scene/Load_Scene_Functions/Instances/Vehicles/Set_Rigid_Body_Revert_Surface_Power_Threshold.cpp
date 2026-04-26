@@ -5,6 +5,7 @@
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
+#include <Mlib/Scene/Load_Scene_Funcs.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <stdexcept>
@@ -17,21 +18,28 @@ DECLARE_ARGUMENT(node);
 DECLARE_ARGUMENT(value);
 }
 
-const std::string SetRigidBodyRevertSurfacePowerThreshold::key = "set_rigid_body_revert_surface_power_threshold";
-
-LoadSceneJsonUserFunction SetRigidBodyRevertSurfacePowerThreshold::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
-{
-    args.arguments.validate(KnownArgs::options);
-    SetRigidBodyRevertSurfacePowerThreshold(args.physics_scene()).execute(args);
-};
-
-SetRigidBodyRevertSurfacePowerThreshold::SetRigidBodyRevertSurfacePowerThreshold(PhysicsScene& physics_scene) 
-: LoadPhysicsSceneInstanceFunction{ physics_scene }
+SetRigidBodyRevertSurfacePowerThreshold::SetRigidBodyRevertSurfacePowerThreshold(PhysicsScene& physics_scene)
+    : LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
-void SetRigidBodyRevertSurfacePowerThreshold::execute(const LoadSceneJsonUserFunctionArgs& args)
-{
+void SetRigidBodyRevertSurfacePowerThreshold::execute(const LoadSceneJsonUserFunctionArgs& args) {
+    args.arguments.validate(KnownArgs::options);
     DanglingBaseClassRef<SceneNode> node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::node), CURRENT_SOURCE_LOCATION);
     auto rb = get_rigid_body_vehicle(node.get(), CURRENT_SOURCE_LOCATION);
     rb->revert_surface_power_state_.revert_surface_power_threshold_ = args.arguments.at<float>(KnownArgs::value) * meters / seconds;
+}
+
+namespace {
+
+struct RegisterJsonUserFunction {
+    RegisterJsonUserFunction() {
+        LoadSceneFuncs::register_json_user_function(
+            "set_rigid_body_revert_surface_power_threshold",
+            [](const LoadSceneJsonUserFunctionArgs& args)
+            {
+                SetRigidBodyRevertSurfacePowerThreshold{args.physics_scene()}.execute(args);
+            });
+    }
+} obj;
+
 }

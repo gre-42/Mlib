@@ -43,7 +43,7 @@ DECLARE_ARGUMENT(flags);
 DECLARE_ARGUMENT(waypoint_dy);
 }
 
-CreateRigidCuboid::CreateRigidCuboid(PhysicsScene& physics_scene) 
+CreateRigidCuboid::CreateRigidCuboid(PhysicsScene& physics_scene)
     : LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 

@@ -8,6 +8,7 @@
 #include <Mlib/Physics/Physics_Engine/Physics_Engine.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
+#include <Mlib/Scene/Load_Scene_Funcs.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
@@ -21,20 +22,12 @@ DECLARE_ARGUMENT(node);
 DECLARE_ARGUMENT(filename);
 }
 
-const std::string RecordTrack::key = "record_track";
-
-LoadSceneJsonUserFunction RecordTrack::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
-{
-    args.arguments.validate(KnownArgs::options);
-    RecordTrack(args.physics_scene()).execute(args);
-};
-
-RecordTrack::RecordTrack(PhysicsScene& physics_scene) 
-: LoadPhysicsSceneInstanceFunction{ physics_scene }
+RecordTrack::RecordTrack(PhysicsScene& physics_scene)
+    : LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
-void RecordTrack::execute(const LoadSceneJsonUserFunctionArgs& args)
-{
+void RecordTrack::execute(const LoadSceneJsonUserFunctionArgs& args) {
+    args.arguments.validate(KnownArgs::options);
     DanglingBaseClassRef<SceneNode> recorder_node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::node), CURRENT_SOURCE_LOCATION);
     auto rb = get_rigid_body_vehicle(recorder_node.get(), CURRENT_SOURCE_LOCATION);
     auto& at = global_object_pool.create<RigidBodyRecorder>(
@@ -45,4 +38,19 @@ void RecordTrack::execute(const LoadSceneJsonUserFunctionArgs& args)
         rb,
         &countdown_start);
     physics_engine.advance_times_.add_advance_time({ at, CURRENT_SOURCE_LOCATION }, CURRENT_SOURCE_LOCATION);
+}
+
+namespace {
+
+struct RegisterJsonUserFunction {
+    RegisterJsonUserFunction() {
+        LoadSceneFuncs::register_json_user_function(
+            "record_track",
+            [](const LoadSceneJsonUserFunctionArgs& args)
+            {
+                RecordTrack{args.physics_scene()}.execute(args);
+            });
+    }
+} obj;
+
 }

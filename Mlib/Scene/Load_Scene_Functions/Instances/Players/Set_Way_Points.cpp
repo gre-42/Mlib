@@ -5,6 +5,7 @@
 #include <Mlib/Misc/Argument_List.hpp>
 #include <Mlib/Players/Advance_Times/Game_Logic.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
+#include <Mlib/Scene/Load_Scene_Funcs.hpp>
 #include <Mlib/Scene_Graph/Instantiation/Root_Instantiation_Options.hpp>
 #include <Mlib/Scene_Graph/Resources/Batch_Resource_Instantiator.hpp>
 #include <Mlib/Scene_Graph/Resources/Parsed_Resource_Name.hpp>
@@ -20,20 +21,12 @@ DECLARE_ARGUMENT(resource);
 DECLARE_ARGUMENT(renderable);
 }
 
-const std::string SetWayPoints::key = "set_way_points";
-
-LoadSceneJsonUserFunction SetWayPoints::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
-{
-    args.arguments.validate(KnownArgs::options);
-    SetWayPoints(args.physics_scene()).execute(args);
-};
-
-SetWayPoints::SetWayPoints(PhysicsScene& physics_scene) 
-: LoadPhysicsSceneInstanceFunction{ physics_scene }
+SetWayPoints::SetWayPoints(PhysicsScene& physics_scene)
+    : LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
-void SetWayPoints::execute(const LoadSceneJsonUserFunctionArgs& args)
-{
+void SetWayPoints::execute(const LoadSceneJsonUserFunctionArgs& args) {
+    args.arguments.validate(KnownArgs::options);
     if (game_logic == nullptr) {
         throw std::runtime_error("Scene has no game logic");
     }
@@ -62,4 +55,19 @@ void SetWayPoints::execute(const LoadSceneJsonUserFunctionArgs& args)
                 .renderable_resource_filter = RenderableResourceFilter{}
             });
     }
+}
+
+namespace {
+
+struct RegisterJsonUserFunction {
+    RegisterJsonUserFunction() {
+        LoadSceneFuncs::register_json_user_function(
+            "set_way_points",
+            [](const LoadSceneJsonUserFunctionArgs& args)
+            {
+                SetWayPoints{args.physics_scene()}.execute(args);
+            });
+    }
+} obj;
+
 }

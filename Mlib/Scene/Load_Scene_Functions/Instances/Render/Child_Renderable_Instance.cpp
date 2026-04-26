@@ -21,7 +21,7 @@ DECLARE_ARGUMENT(included_names);
 DECLARE_ARGUMENT(excluded_names);
 }
 
-ChildRenderableInstance::ChildRenderableInstance(PhysicsScene& physics_scene) 
+ChildRenderableInstance::ChildRenderableInstance(PhysicsScene& physics_scene)
     : LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 

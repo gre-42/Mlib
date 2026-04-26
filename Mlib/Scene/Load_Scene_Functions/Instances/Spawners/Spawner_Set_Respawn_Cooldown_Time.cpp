@@ -5,6 +5,7 @@
 #include <Mlib/Players/Containers/Vehicle_Spawners.hpp>
 #include <Mlib/Players/Scene_Vehicle/Vehicle_Spawner.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
+#include <Mlib/Scene/Load_Scene_Funcs.hpp>
 
 using namespace Mlib;
 
@@ -14,21 +15,28 @@ DECLARE_ARGUMENT(spawner);
 DECLARE_ARGUMENT(time);
 }
 
-const std::string SpawnerSetRespawnCooldownTime::key = "set_respawn_cooldown_time";
-
-LoadSceneJsonUserFunction SpawnerSetRespawnCooldownTime::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
-{
-    args.arguments.validate(KnownArgs::options);
-    SpawnerSetRespawnCooldownTime(args.physics_scene()).execute(args);
-};
-
-SpawnerSetRespawnCooldownTime::SpawnerSetRespawnCooldownTime(PhysicsScene& physics_scene) 
-: LoadPhysicsSceneInstanceFunction{ physics_scene }
+SpawnerSetRespawnCooldownTime::SpawnerSetRespawnCooldownTime(PhysicsScene& physics_scene)
+    : LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
-void SpawnerSetRespawnCooldownTime::execute(const LoadSceneJsonUserFunctionArgs& args)
-{
+void SpawnerSetRespawnCooldownTime::execute(const LoadSceneJsonUserFunctionArgs& args) {
+    args.arguments.validate(KnownArgs::options);
     vehicle_spawners
         .get(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::spawner))
         .set_respawn_cooldown_time(args.arguments.at<float>(KnownArgs::time) * seconds);
+}
+
+namespace {
+
+struct RegisterJsonUserFunction {
+    RegisterJsonUserFunction() {
+        LoadSceneFuncs::register_json_user_function(
+            "set_respawn_cooldown_time",
+            [](const LoadSceneJsonUserFunctionArgs& args)
+            {
+                SpawnerSetRespawnCooldownTime{args.physics_scene()}.execute(args);
+            });
+    }
+} obj;
+
 }

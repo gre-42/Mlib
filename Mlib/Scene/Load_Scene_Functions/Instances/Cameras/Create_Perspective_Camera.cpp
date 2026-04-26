@@ -4,6 +4,7 @@
 #include <Mlib/Misc/Argument_List.hpp>
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
+#include <Mlib/Scene/Load_Scene_Funcs.hpp>
 #include <Mlib/Scene/Scene_Config.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
@@ -20,19 +21,11 @@ DECLARE_ARGUMENT(far_plane);
 DECLARE_ARGUMENT(requires_postprocessing);
 }
 
-const std::string CreatePerspectiveCamera::key = "perspective_camera";
-
-LoadSceneJsonUserFunction CreatePerspectiveCamera::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
-{
-    CreatePerspectiveCamera(args.physics_scene()).execute(args);
-};
-
-CreatePerspectiveCamera::CreatePerspectiveCamera(PhysicsScene& physics_scene) 
+CreatePerspectiveCamera::CreatePerspectiveCamera(PhysicsScene& physics_scene)
     : LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
-void CreatePerspectiveCamera::execute(const LoadSceneJsonUserFunctionArgs& args)
-{
+void CreatePerspectiveCamera::execute(const LoadSceneJsonUserFunctionArgs& args) {
     args.arguments.validate(KnownArgs::options);
 
     DanglingBaseClassRef<SceneNode> node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::node), CURRENT_SOURCE_LOCATION);
@@ -44,4 +37,19 @@ void CreatePerspectiveCamera::execute(const LoadSceneJsonUserFunctionArgs& args)
     pc->set_far_plane(args.arguments.at<float>(KnownArgs::far_plane));
     pc->set_requires_postprocessing(args.arguments.at<bool>(KnownArgs::requires_postprocessing));
     node->set_camera(std::move(pc));
+}
+
+namespace {
+
+struct RegisterJsonUserFunction {
+    RegisterJsonUserFunction() {
+        LoadSceneFuncs::register_json_user_function(
+            "perspective_camera",
+            [](const LoadSceneJsonUserFunctionArgs& args)
+            {
+                CreatePerspectiveCamera{args.physics_scene()}.execute(args);
+            });
+    }
+} obj;
+
 }

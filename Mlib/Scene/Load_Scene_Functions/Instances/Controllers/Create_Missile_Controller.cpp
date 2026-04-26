@@ -7,6 +7,7 @@
 #include <Mlib/Physics/Vehicle_Controllers/Missile_Controllers/Missile_Controller.hpp>
 #include <Mlib/Regex/Regex_Select.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
+#include <Mlib/Scene/Load_Scene_Funcs.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <stdexcept>
@@ -50,20 +51,12 @@ void from_json(const nlohmann::json& j, MissileWingController& c) {
 }
 }
 
-const std::string CreateMissileController::key = "create_missile_controller";
-
-LoadSceneJsonUserFunction CreateMissileController::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
-{
-    args.arguments.validate(KnownArgs::options);
-    CreateMissileController(args.physics_scene()).execute(args);
-};
-
-CreateMissileController::CreateMissileController(PhysicsScene& physics_scene) 
+CreateMissileController::CreateMissileController(PhysicsScene& physics_scene)
     : LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
-void CreateMissileController::execute(const LoadSceneJsonUserFunctionArgs& args)
-{
+void CreateMissileController::execute(const LoadSceneJsonUserFunctionArgs& args) {
+    args.arguments.validate(KnownArgs::options);
     auto jpid = args.arguments.child(KnownArgs::pid);
     jpid.validate(PidArgs::options);
     auto pid = jpid.at<EFixedArray<float, 3>>(PidArgs::pid);
@@ -84,4 +77,19 @@ void CreateMissileController::execute(const LoadSceneJsonUserFunctionArgs& args)
         pid_controller,
         args.arguments.at<std::vector<MissileWingController>>(KnownArgs::wing_controllers),
         VariableAndHash{ args.arguments.at<std::string>(KnownArgs::engine) });
+}
+
+namespace {
+
+struct RegisterJsonUserFunction {
+    RegisterJsonUserFunction() {
+        LoadSceneFuncs::register_json_user_function(
+            "create_missile_controller",
+            [](const LoadSceneJsonUserFunctionArgs& args)
+            {
+                CreateMissileController{args.physics_scene()}.execute(args);
+            });
+    }
+} obj;
+
 }

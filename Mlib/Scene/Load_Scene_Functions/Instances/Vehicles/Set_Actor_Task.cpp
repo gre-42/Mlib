@@ -19,7 +19,7 @@ DECLARE_ARGUMENT(vehicle);
 DECLARE_ARGUMENT(task);
 }
 
-SetActorTask::SetActorTask(PhysicsScene& physics_scene) 
+SetActorTask::SetActorTask(PhysicsScene& physics_scene)
     : LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 

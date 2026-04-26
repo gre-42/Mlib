@@ -10,6 +10,7 @@
 #include <Mlib/Players/Advance_Times/Player.hpp>
 #include <Mlib/Players/Containers/Players.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
+#include <Mlib/Scene/Load_Scene_Funcs.hpp>
 #include <Mlib/Scene/Render_Logics/Minimap_Logic.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <stdexcept>
@@ -32,20 +33,12 @@ DECLARE_ARGUMENT(pointer_size);
 DECLARE_ARGUMENT(pointer_offset);
 }
 
-const std::string Minimap::key = "minimap";
-
-LoadSceneJsonUserFunction Minimap::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
-{
-    args.arguments.validate(KnownArgs::options);
-    Minimap(args.renderable_scene()).execute(args);
-};
-
 Minimap::Minimap(RenderableScene& renderable_scene) 
     : LoadRenderableSceneInstanceFunction{ renderable_scene }
 {}
 
-void Minimap::execute(const LoadSceneJsonUserFunctionArgs& args)
-{
+void Minimap::execute(const LoadSceneJsonUserFunctionArgs& args) {
+    args.arguments.validate(KnownArgs::options);
     auto player = players.get_player(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::player), CURRENT_SOURCE_LOCATION);
     DanglingBaseClassRef<SceneNode> node = player->scene_node();
     auto widget = std::make_unique<Widget>(
@@ -68,4 +61,19 @@ void Minimap::execute(const LoadSceneJsonUserFunctionArgs& args)
         args.arguments.at<float>(KnownArgs::pointer_scale),
         args.arguments.at<EFixedArray<float, 2>>(KnownArgs::pointer_size),
         args.arguments.at<EFixedArray<double, 2>>(KnownArgs::pointer_offset));
+}
+
+namespace {
+
+struct RegisterJsonUserFunction {
+    RegisterJsonUserFunction() {
+        LoadSceneFuncs::register_json_user_function(
+            "minimap",
+            [](const LoadSceneJsonUserFunctionArgs& args)
+            {
+                Minimap{args.renderable_scene()}.execute(args);
+            });
+    }
+} obj;
+
 }

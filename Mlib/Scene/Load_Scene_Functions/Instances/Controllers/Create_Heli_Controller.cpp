@@ -7,12 +7,17 @@
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Physics/Vehicle_Controllers/Car_Controllers/Heli_Controller.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
+#include <Mlib/Scene/Load_Scene_Funcs.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Strings/String.hpp>
 #include <stdexcept>
 
 using namespace Mlib;
+
+static float from_degrees(float v) {
+    return v * degrees;
+}
 
 namespace KnownArgs {
 BEGIN_ARGUMENT_LIST;
@@ -30,24 +35,12 @@ DECLARE_ARGUMENT(ascend_a);
 DECLARE_ARGUMENT(vehicle_domain);
 }
 
-const std::string CreateHeliController::key = "create_heli_controller";
-
-static float from_degrees(float v) {
-    return v * degrees;
-}
-
-LoadSceneJsonUserFunction CreateHeliController::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
-{
-    args.arguments.validate(KnownArgs::options);
-    CreateHeliController(args.physics_scene()).execute(args);
-};
-
-CreateHeliController::CreateHeliController(PhysicsScene& physics_scene) 
-: LoadPhysicsSceneInstanceFunction{ physics_scene }
+CreateHeliController::CreateHeliController(PhysicsScene& physics_scene)
+    : LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
-void CreateHeliController::execute(const LoadSceneJsonUserFunctionArgs& args)
-{
+void CreateHeliController::execute(const LoadSceneJsonUserFunctionArgs& args) {
+    args.arguments.validate(KnownArgs::options);
     DanglingBaseClassRef<SceneNode> node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::node), CURRENT_SOURCE_LOCATION);
     auto rb = get_rigid_body_vehicle(node.get(), CURRENT_SOURCE_LOCATION);
     if (rb->vehicle_controller_ != nullptr) {
@@ -78,4 +71,19 @@ void CreateHeliController::execute(const LoadSceneJsonUserFunctionArgs& args)
             args.arguments.at<float>(KnownArgs::ascend_d) * W,
             args.arguments.at<float>(KnownArgs::ascend_a)},
         vehicle_domain_from_string(args.arguments.at<std::string>(KnownArgs::vehicle_domain)));
+}
+
+namespace {
+
+struct RegisterJsonUserFunction {
+    RegisterJsonUserFunction() {
+        LoadSceneFuncs::register_json_user_function(
+            "create_heli_controller",
+            [](const LoadSceneJsonUserFunctionArgs& args)
+            {
+                CreateHeliController{args.physics_scene()}.execute(args);
+            });
+    }
+} obj;
+
 }

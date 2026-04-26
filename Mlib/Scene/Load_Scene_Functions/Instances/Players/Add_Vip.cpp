@@ -13,7 +13,7 @@ BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(player);
 }
 
-AddVip::AddVip(PhysicsScene& physics_scene) 
+AddVip::AddVip(PhysicsScene& physics_scene)
     : LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 

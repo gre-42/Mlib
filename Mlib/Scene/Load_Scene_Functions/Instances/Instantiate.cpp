@@ -30,11 +30,11 @@ DECLARE_ARGUMENT(instantiated_resources);
 DECLARE_ARGUMENT(instantiated_root_nodes);
 }
 
-Instantiate::Instantiate(PhysicsScene& physics_scene) 
+Instantiate::Instantiate(PhysicsScene& physics_scene)
     : LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
-void Instantiate::execute(const LoadSceneJsonUserFunctionArgs &args) {
+void Instantiate::execute(const LoadSceneJsonUserFunctionArgs& args) {
     args.arguments.validate(KnownArgs::options);
     auto empty_set = std::set<VariableAndHash<std::string>>();
     auto matching_set = std::set<std::string>{""};

@@ -7,7 +7,7 @@ namespace Mlib {
 
 namespace LoadSceneFuncs {
 
-std::map<std::string, LoadSceneJsonUserFunction>& json_user_functions();
+LoadSceneJsonUserFunction* try_get_json_user_function(const std::string& key);
 void register_json_user_function(std::string key, LoadSceneJsonUserFunction function);
 
 };

@@ -14,6 +14,8 @@
 
 using namespace Mlib;
 
+namespace {
+
 namespace KnownArgs {
 BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(name);
@@ -38,8 +40,6 @@ DECLARE_ARGUMENT(full_user_name);
 DECLARE_ARGUMENT(local_user_id);
 }
 
-using namespace Mlib;
-
 enum class SceneLayout {
     CHILD,
     FULL_SCREEN,
@@ -58,8 +58,6 @@ SceneLayout scene_layout_from_string(const std::string& s) {
     }
     return it->second;
 }
-
-namespace {
 
 struct RegisterJsonUserFunction {
     RegisterJsonUserFunction() {

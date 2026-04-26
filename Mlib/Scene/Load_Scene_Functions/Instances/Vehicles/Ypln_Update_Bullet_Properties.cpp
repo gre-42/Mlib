@@ -26,7 +26,7 @@ DECLARE_ARGUMENT(bullet_type);
 DECLARE_ARGUMENT(dpitch_head);
 }
 
-YplnUpdateBulletProperties::YplnUpdateBulletProperties(PhysicsScene& physics_scene) 
+YplnUpdateBulletProperties::YplnUpdateBulletProperties(PhysicsScene& physics_scene)
 : LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 

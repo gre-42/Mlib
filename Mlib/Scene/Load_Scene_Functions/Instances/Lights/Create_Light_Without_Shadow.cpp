@@ -6,6 +6,7 @@
 #include <Mlib/OpenGL/Render_Logics/Render_Logics.hpp>
 #include <Mlib/Regex/Regex_Select.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
+#include <Mlib/Scene/Load_Scene_Funcs.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Light.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
@@ -22,20 +23,12 @@ DECLARE_ARGUMENT(fresnel_ambient);
 DECLARE_ARGUMENT(fog_ambient);
 }
 
-const std::string CreateLightWithoutShadow::key = "light_without_shadow";
-
-LoadSceneJsonUserFunction CreateLightWithoutShadow::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
-{
-    args.arguments.validate(KnownArgs::options);
-    CreateLightWithoutShadow(args.physics_scene()).execute(args);
-};
-
-CreateLightWithoutShadow::CreateLightWithoutShadow(PhysicsScene& physics_scene) 
-: LoadPhysicsSceneInstanceFunction{ physics_scene }
+CreateLightWithoutShadow::CreateLightWithoutShadow(PhysicsScene& physics_scene)
+    : LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
-void CreateLightWithoutShadow::execute(const LoadSceneJsonUserFunctionArgs& args)
-{
+void CreateLightWithoutShadow::execute(const LoadSceneJsonUserFunctionArgs& args) {
+    args.arguments.validate(KnownArgs::options);
     auto node_name = args.arguments.at<VariableAndHash<std::string>>(KnownArgs::node);
     DanglingBaseClassRef<SceneNode> node = scene.get_node(node_name, CURRENT_SOURCE_LOCATION);
     node->add_light(std::make_unique<Light>(Light{
@@ -45,4 +38,19 @@ void CreateLightWithoutShadow::execute(const LoadSceneJsonUserFunctionArgs& args
         .fresnel_ambient = args.arguments.at<EFixedArray<float, 3>>(KnownArgs::fresnel_ambient),
         .fog_ambient = args.arguments.at<EFixedArray<float, 3>>(KnownArgs::fog_ambient),
         .shadow_render_pass = ExternalRenderPassType::NONE}));
+}
+
+namespace {
+
+struct RegisterJsonUserFunction {
+    RegisterJsonUserFunction() {
+        LoadSceneFuncs::register_json_user_function(
+            "light_without_shadow",
+            [](const LoadSceneJsonUserFunctionArgs& args)
+            {
+                CreateLightWithoutShadow{args.physics_scene()}.execute(args);
+            });
+    }
+} obj;
+
 }

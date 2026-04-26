@@ -14,7 +14,7 @@ DECLARE_ARGUMENT(player);
 DECLARE_ARGUMENT(seat);
 }
 
-CreateInternals::CreateInternals(PhysicsScene& physics_scene) 
+CreateInternals::CreateInternals(PhysicsScene& physics_scene)
     : LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 

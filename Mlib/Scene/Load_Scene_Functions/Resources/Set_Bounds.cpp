@@ -1,4 +1,3 @@
-#include "Set_Bounds.hpp"
 #include <Mlib/Geometry/Mesh/Set_Bounds.hpp>
 #include <Mlib/Geometry/Primitives/Axis_Aligned_Bounding_Box.hpp>
 #include <Mlib/Geometry/Primitives/Bounding_Sphere.hpp>
@@ -6,6 +5,8 @@
 #include <Mlib/Misc/Argument_List.hpp>
 #include <Mlib/OpenGL/Rendering_Context.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
+#include <Mlib/Scene/Load_Scene_Funcs.hpp>
+#include <Mlib/Scene/Load_Scene_Funcs.hpp>
 #include <Mlib/Scene_Graph/Interfaces/IScene_Node_Resource.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
 
@@ -57,6 +58,8 @@ static void from_json(const nlohmann::json& j, LoadableBoundingSphere3f& sphere)
         jv.at<CompressedScenePos>(KnownSphereArgs::radius) };
 }
 
+namespace {
+
 namespace KnownArgs {
 BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(resource);
@@ -64,15 +67,7 @@ DECLARE_ARGUMENT(aabb);
 DECLARE_ARGUMENT(sphere);
 }
 
-const std::string SetBounds::key = "set_bounds";
-
-LoadSceneJsonUserFunction SetBounds::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
-{
-    args.arguments.validate(KnownArgs::options);
-    execute(args);
-};
-
-void SetBounds::execute(const LoadSceneJsonUserFunctionArgs& args)
+static void execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     RenderingContextStack::primary_scene_node_resources().add_modifier(
         args.arguments.at<VariableAndHash<std::string>>(KnownArgs::resource),
@@ -83,4 +78,18 @@ void SetBounds::execute(const LoadSceneJsonUserFunctionArgs& args)
                 set_bounds(*l, aabb, sphere);
             }
         });
+}
+
+struct RegisterJsonUserFunction {
+    RegisterJsonUserFunction() {
+        LoadSceneFuncs::register_json_user_function(
+            "set_bounds",
+            [](const LoadSceneJsonUserFunctionArgs& args)
+            {
+                args.arguments.validate(KnownArgs::options);
+                execute(args);
+            });
+    }
+} obj;
+
 }

@@ -13,7 +13,7 @@ namespace KnownArgs {
 BEGIN_ARGUMENT_LIST;
 }
 
-void ComputeRandomUserRanks::execute(const LoadSceneJsonUserFunctionArgs &args) {
+void ComputeRandomUserRanks::execute(const LoadSceneJsonUserFunctionArgs& args) {
     args.arguments.validate(KnownArgs::options);
     if (args.local_json_macro_arguments == nullptr) {
         throw std::runtime_error("compute_random_user_ranks must be called from within a block");

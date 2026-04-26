@@ -6,6 +6,7 @@
 #include <Mlib/Players/Containers/Vehicle_Spawners.hpp>
 #include <Mlib/Players/Scene_Vehicle/Vehicle_Spawner.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
+#include <Mlib/Scene/Load_Scene_Funcs.hpp>
 #include <stdexcept>
 
 using namespace Mlib;
@@ -16,22 +17,29 @@ DECLARE_ARGUMENT(name);
 DECLARE_ARGUMENT(seat);
 }
 
-const std::string SpawnerSetPlayer::key = "spawner_set_player";
-
-LoadSceneJsonUserFunction SpawnerSetPlayer::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
-{
-    args.arguments.validate(KnownArgs::options);
-    SpawnerSetPlayer(args.physics_scene()).execute(args);
-};
-
-SpawnerSetPlayer::SpawnerSetPlayer(PhysicsScene& physics_scene) 
-: LoadPhysicsSceneInstanceFunction{ physics_scene }
+SpawnerSetPlayer::SpawnerSetPlayer(PhysicsScene& physics_scene)
+    : LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
-void SpawnerSetPlayer::execute(const LoadSceneJsonUserFunctionArgs& args)
-{
+void SpawnerSetPlayer::execute(const LoadSceneJsonUserFunctionArgs& args) {
+    args.arguments.validate(KnownArgs::options);
     auto name = args.arguments.at<VariableAndHash<std::string>>(KnownArgs::name);
     vehicle_spawners.get(name).set_player(
         players.get_player(name, CURRENT_SOURCE_LOCATION),
         args.arguments.at<std::string>(KnownArgs::seat));
+}
+
+namespace {
+
+struct RegisterJsonUserFunction {
+    RegisterJsonUserFunction() {
+        LoadSceneFuncs::register_json_user_function(
+            "spawner_set_player",
+            [](const LoadSceneJsonUserFunctionArgs& args)
+            {
+                SpawnerSetPlayer{args.physics_scene()}.execute(args);
+            });
+    }
+} obj;
+
 }

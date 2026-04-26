@@ -3,6 +3,8 @@
 #include <Mlib/Misc/Argument_List.hpp>
 #include <Mlib/Regex/Regex_Select.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
+#include <Mlib/Scene/Load_Scene_Funcs.hpp>
+#include <Mlib/Scene/Load_Scene_Funcs.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 
@@ -14,21 +16,28 @@ DECLARE_ARGUMENT(node);
 DECLARE_ARGUMENT(name);
 }
 
-const std::string ClearRenderableInstance::key = "clear_renderable_instance";
-
-LoadSceneJsonUserFunction ClearRenderableInstance::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
-{
-    args.arguments.validate(KnownArgs::options);
-    ClearRenderableInstance(args.physics_scene()).execute(args);
-};
-
-ClearRenderableInstance::ClearRenderableInstance(PhysicsScene& physics_scene) 
-: LoadPhysicsSceneInstanceFunction{ physics_scene }
+ClearRenderableInstance::ClearRenderableInstance(PhysicsScene& physics_scene)
+    : LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
-void ClearRenderableInstance::execute(const LoadSceneJsonUserFunctionArgs& args)
-{
+void ClearRenderableInstance::execute(const LoadSceneJsonUserFunctionArgs& args) {
+    args.arguments.validate(KnownArgs::options);
     scene
     .get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::node), CURRENT_SOURCE_LOCATION)
     ->clear_renderable_instance(VariableAndHash{ args.arguments.at<std::string>(KnownArgs::name) });
+}
+
+namespace {
+
+struct RegisterJsonUserFunction {
+    RegisterJsonUserFunction() {
+        LoadSceneFuncs::register_json_user_function(
+            "clear_renderable_instance",
+            [](const LoadSceneJsonUserFunctionArgs& args)
+            {
+                ClearRenderableInstance{args.physics_scene()}.execute(args);
+            });
+    }
+} obj;
+
 }

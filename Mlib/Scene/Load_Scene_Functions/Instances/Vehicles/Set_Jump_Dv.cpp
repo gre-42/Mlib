@@ -19,7 +19,7 @@ DECLARE_ARGUMENT(node);
 DECLARE_ARGUMENT(value);
 }
 
-SetJumpDv::SetJumpDv(PhysicsScene& physics_scene) 
+SetJumpDv::SetJumpDv(PhysicsScene& physics_scene)
 : LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 

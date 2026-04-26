@@ -13,6 +13,7 @@
 #include <Mlib/OpenGL/Render_Logics/Render_Logics.hpp>
 #include <Mlib/OpenGL/Rendering_Context.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
+#include <Mlib/Scene/Load_Scene_Funcs.hpp>
 #include <Mlib/Strings/String.hpp>
 #include <Mlib/Strings/String_View_To_Number.hpp>
 
@@ -32,20 +33,12 @@ DECLARE_ARGUMENT(focus_mask);
 DECLARE_ARGUMENT(submenus);
 }
 
-const std::string UiExhibit::key = "ui_exhibit";
-
-LoadSceneJsonUserFunction UiExhibit::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
-{
-    args.arguments.validate(KnownArgs::options);
-    UiExhibit(args.renderable_scene()).execute(args);
-};
-
 UiExhibit::UiExhibit(RenderableScene& renderable_scene) 
-: LoadRenderableSceneInstanceFunction{ renderable_scene }
+    : LoadRenderableSceneInstanceFunction{ renderable_scene }
 {}
 
-void UiExhibit::execute(const LoadSceneJsonUserFunctionArgs& args)
-{
+void UiExhibit::execute(const LoadSceneJsonUserFunctionArgs& args) {
+    args.arguments.validate(KnownArgs::options);
     auto& bg = object_pool.create<FillPixelRegionWithTextureLogic>(
         CURRENT_SOURCE_LOCATION,
         &object_pool,
@@ -61,4 +54,19 @@ void UiExhibit::execute(const LoadSceneJsonUserFunctionArgs& args)
             .focus_mask = focus_from_string(args.arguments.at<std::string>(KnownArgs::focus_mask)),
             .submenu_ids = args.arguments.at_non_null<std::set<std::string>>(KnownArgs::submenus, {})});
     render_logics.append({ bg, CURRENT_SOURCE_LOCATION }, args.arguments.at<int>(KnownArgs::z_order), CURRENT_SOURCE_LOCATION);
+}
+
+namespace {
+
+struct RegisterJsonUserFunction {
+    RegisterJsonUserFunction() {
+        LoadSceneFuncs::register_json_user_function(
+            "ui_exhibit",
+            [](const LoadSceneJsonUserFunctionArgs& args)
+            {
+                UiExhibit{args.renderable_scene()}.execute(args);
+            });
+    }
+} obj;
+
 }

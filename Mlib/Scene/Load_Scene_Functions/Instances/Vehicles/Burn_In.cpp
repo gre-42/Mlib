@@ -3,6 +3,7 @@
 #include <Mlib/Misc/Argument_List.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Engine.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
+#include <Mlib/Scene/Load_Scene_Funcs.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Time.hpp>
 #include <Mlib/Scene_Graph/Instances/Dynamic_World.hpp>
@@ -16,20 +17,12 @@ BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(seconds);
 }
 
-const std::string BurnIn::key = "burn_in";
-
-LoadSceneJsonUserFunction BurnIn::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
-{
-    args.arguments.validate(KnownArgs::options);
-    BurnIn(args.physics_scene()).execute(args);
-};
-
-BurnIn::BurnIn(PhysicsScene& physics_scene) 
-: LoadPhysicsSceneInstanceFunction{ physics_scene }
+BurnIn::BurnIn(PhysicsScene& physics_scene)
+    : LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
-void BurnIn::execute(const LoadSceneJsonUserFunctionArgs& args)
-{
+void BurnIn::execute(const LoadSceneJsonUserFunctionArgs& args) {
+    args.arguments.validate(KnownArgs::options);
     FunctionGuard fg{ "Physics burn-in" };
 
     StaticWorld world{
@@ -41,4 +34,19 @@ void BurnIn::execute(const LoadSceneJsonUserFunctionArgs& args)
     };
     physics_engine.burn_in(world, args.arguments.at<float>(KnownArgs::seconds) * seconds);
     scene.move(0.f, SceneTime::initial()); // dt
+}
+
+namespace {
+
+struct RegisterJsonUserFunction {
+    RegisterJsonUserFunction() {
+        LoadSceneFuncs::register_json_user_function(
+            "burn_in",
+            [](const LoadSceneJsonUserFunctionArgs& args)
+            {
+                BurnIn{args.physics_scene()}.execute(args);
+            });
+    }
+} obj;
+
 }

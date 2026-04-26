@@ -4,6 +4,7 @@
 #include <Mlib/Physics/Containers/Race_History.hpp>
 #include <Mlib/Players/Containers/Players.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
+#include <Mlib/Scene/Load_Scene_Funcs.hpp>
 #include <Mlib/Strings/String_View_To_Number.hpp>
 #include <stdexcept>
 
@@ -15,19 +16,11 @@ DECLARE_ARGUMENT(begin_rank);
 DECLARE_ARGUMENT(end_rank);
 }
 
-const std::string DefineWinnerConditionals::key = "define_winner_conditionals";
-
-LoadSceneJsonUserFunction DefineWinnerConditionals::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
-{
-    DefineWinnerConditionals(args.physics_scene()).execute(args);
-};
-
-DefineWinnerConditionals::DefineWinnerConditionals(PhysicsScene& physics_scene) 
-: LoadPhysicsSceneInstanceFunction{ physics_scene }
+DefineWinnerConditionals::DefineWinnerConditionals(PhysicsScene& physics_scene)
+    : LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
-void DefineWinnerConditionals::execute(const LoadSceneJsonUserFunctionArgs& args)
-{
+void DefineWinnerConditionals::execute(const LoadSceneJsonUserFunctionArgs& args) {
     if (args.local_json_macro_arguments == nullptr) {
         throw std::runtime_error("Cannot define winner conditionals without local substitutions");
     }
@@ -67,4 +60,19 @@ void DefineWinnerConditionals::execute(const LoadSceneJsonUserFunctionArgs& args
                 }}));
         }
     }
+}
+
+namespace {
+
+struct RegisterJsonUserFunction {
+    RegisterJsonUserFunction() {
+        LoadSceneFuncs::register_json_user_function(
+            "define_winner_conditionals",
+            [](const LoadSceneJsonUserFunctionArgs& args)
+            {
+                DefineWinnerConditionals{args.physics_scene()}.execute(args);
+            });
+    }
+} obj;
+
 }

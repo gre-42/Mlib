@@ -24,7 +24,7 @@ DECLARE_ARGUMENT(scale);
 DECLARE_ARGUMENT(interpolation);
 }
 
-CreateChildNode::CreateChildNode(PhysicsScene& physics_scene) 
+CreateChildNode::CreateChildNode(PhysicsScene& physics_scene)
     : LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 

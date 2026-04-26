@@ -13,7 +13,7 @@ BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(node);
 }
 
-ClearNode::ClearNode(PhysicsScene& physics_scene) 
+ClearNode::ClearNode(PhysicsScene& physics_scene)
     : LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 

@@ -6,9 +6,6 @@ namespace Mlib {
 
 class CreateWeaponCycle: public LoadPhysicsSceneInstanceFunction {
 public:
-    static LoadSceneJsonUserFunction json_user_function;
-    static const std::string key;
-private:
     explicit CreateWeaponCycle(PhysicsScene& physics_scene);
     void execute(const LoadSceneJsonUserFunctionArgs& args);
 };

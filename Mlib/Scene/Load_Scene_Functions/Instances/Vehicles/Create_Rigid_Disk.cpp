@@ -43,7 +43,7 @@ DECLARE_ARGUMENT(flags);
 DECLARE_ARGUMENT(waypoint_dy);
 }
 
-CreateRigidDisk::CreateRigidDisk(PhysicsScene& physics_scene) 
+CreateRigidDisk::CreateRigidDisk(PhysicsScene& physics_scene)
     : LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 

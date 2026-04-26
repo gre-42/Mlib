@@ -1,14 +1,16 @@
-#include "Add_Foliage_Resource.hpp"
 #include <Mlib/Geometry/Mesh/Up_Axis.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Misc/Argument_List.hpp>
 #include <Mlib/OpenGL/Modifiers/Add_Foliage_Resource.hpp>
 #include <Mlib/OpenGL/Rendering_Context.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
+#include <Mlib/Scene/Load_Scene_Funcs.hpp>
 #include <Mlib/Scene_Graph/Resources/Parsed_Resource_Name.hpp>
 #include <stdexcept>
 
 using namespace Mlib;
+
+namespace {
 
 namespace KnownArgs {
 BEGIN_ARGUMENT_LIST;
@@ -23,27 +25,33 @@ DECLARE_ARGUMENT(scale);
 DECLARE_ARGUMENT(up_axis);
 }
 
-const std::string AddFoliageResource::key = "add_foliage";
+struct RegisterJsonUserFunction {
+    RegisterJsonUserFunction() {
+        LoadSceneFuncs::register_json_user_function(
+            "add_foliage",
+            [](const LoadSceneJsonUserFunctionArgs& args)
+            {
+                args.arguments.validate(KnownArgs::options);
 
-LoadSceneJsonUserFunction AddFoliageResource::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
-{
-    args.arguments.validate(KnownArgs::options);
+                auto& scene_node_resources = RenderingContextStack::primary_scene_node_resources();
 
-    auto& scene_node_resources = RenderingContextStack::primary_scene_node_resources();
-
-    auto parse_resource_name_func = [&scene_node_resources](const std::string& jma){
-        return parse_resource_name(scene_node_resources, jma);
-    };
+                auto parse_resource_name_func = [&scene_node_resources](const std::string& jma){
+                    return parse_resource_name(scene_node_resources, jma);
+                };
     
-    add_foliage_resource(
-        args.arguments.at<VariableAndHash<std::string>>(KnownArgs::mesh_resource_name),
-        args.arguments.at<VariableAndHash<std::string>>(KnownArgs::foliage_resource_name),
-        scene_node_resources,
-        args.arguments.at_vector<std::string>(KnownArgs::near_grass_resource_names, parse_resource_name_func),
-        args.arguments.at_vector<std::string>(KnownArgs::dirty_near_grass_resource_names, parse_resource_name_func),
-        args.arguments.at<ScenePos>(KnownArgs::near_grass_distance),
-        args.arguments.path_or_variable(KnownArgs::near_grass_foliagemap).local_path(),
-        1.f / args.arguments.at<float>(KnownArgs::near_grass_foliagemap_period),
-        args.arguments.at<float>(KnownArgs::scale, 1.f),
-        up_axis_from_string(args.arguments.at<std::string>(KnownArgs::up_axis, "y")));
-};
+                add_foliage_resource(
+                    args.arguments.at<VariableAndHash<std::string>>(KnownArgs::mesh_resource_name),
+                    args.arguments.at<VariableAndHash<std::string>>(KnownArgs::foliage_resource_name),
+                    scene_node_resources,
+                    args.arguments.at_vector<std::string>(KnownArgs::near_grass_resource_names, parse_resource_name_func),
+                    args.arguments.at_vector<std::string>(KnownArgs::dirty_near_grass_resource_names, parse_resource_name_func),
+                    args.arguments.at<ScenePos>(KnownArgs::near_grass_distance),
+                    args.arguments.path_or_variable(KnownArgs::near_grass_foliagemap).local_path(),
+                    1.f / args.arguments.at<float>(KnownArgs::near_grass_foliagemap_period),
+                    args.arguments.at<float>(KnownArgs::scale, 1.f),
+                    up_axis_from_string(args.arguments.at<std::string>(KnownArgs::up_axis, "y")));
+            });
+    }
+} obj;
+
+}

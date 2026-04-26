@@ -8,6 +8,7 @@
 #include <Mlib/Players/Containers/Players.hpp>
 #include <Mlib/Players/Vehicle_Ai/Drive_Or_Walk_Ai.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
+#include <Mlib/Scene/Load_Scene_Funcs.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <stdexcept>
 
@@ -31,20 +32,12 @@ DECLARE_ARGUMENT(collision_avoidance_step_aside_angle);
 DECLARE_ARGUMENT(collision_avoidance_step_aside_distance);
 }
 
-const std::string CreateDriveOrWalkAi::key = "create_drive_or_walk_ai";
-
-LoadSceneJsonUserFunction CreateDriveOrWalkAi::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
-{
-    args.arguments.validate(KnownArgs::options);
-    CreateDriveOrWalkAi(args.physics_scene()).execute(args);
-};
-
-CreateDriveOrWalkAi::CreateDriveOrWalkAi(PhysicsScene& physics_scene) 
-: LoadPhysicsSceneInstanceFunction{ physics_scene }
+CreateDriveOrWalkAi::CreateDriveOrWalkAi(PhysicsScene& physics_scene)
+    : LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
-void CreateDriveOrWalkAi::execute(const LoadSceneJsonUserFunctionArgs& args)
-{
+void CreateDriveOrWalkAi::execute(const LoadSceneJsonUserFunctionArgs& args) {
+    args.arguments.validate(KnownArgs::options);
     auto player = players.get_player(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::player), CURRENT_SOURCE_LOCATION);
     auto ai = std::make_unique<DriveOrWalkAi>(
         player,
@@ -63,4 +56,19 @@ void CreateDriveOrWalkAi::execute(const LoadSceneJsonUserFunctionArgs& args)
         args.arguments.at<float>(KnownArgs::collision_avoidance_step_aside_distance) * meters);
     player->rigid_body()->add_autopilot({ *ai, CURRENT_SOURCE_LOCATION });
     global_object_pool.add(std::move(ai), CURRENT_SOURCE_LOCATION);
+}
+
+namespace {
+
+struct RegisterJsonUserFunction {
+    RegisterJsonUserFunction() {
+        LoadSceneFuncs::register_json_user_function(
+            "create_drive_or_walk_ai",
+            [](const LoadSceneJsonUserFunctionArgs& args)
+            {
+                CreateDriveOrWalkAi{args.physics_scene()}.execute(args);
+            });
+    }
+} obj;
+
 }

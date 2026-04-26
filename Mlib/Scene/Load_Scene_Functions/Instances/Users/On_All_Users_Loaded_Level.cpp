@@ -13,7 +13,7 @@ BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(content);
 }
 
-OnAllUsersLoadedLevel::OnAllUsersLoadedLevel(PhysicsScene& physics_scene) 
+OnAllUsersLoadedLevel::OnAllUsersLoadedLevel(PhysicsScene& physics_scene)
     : LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 

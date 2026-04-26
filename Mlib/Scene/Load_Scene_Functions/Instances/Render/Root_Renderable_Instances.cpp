@@ -8,6 +8,7 @@
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Players/Game_Logic/Supply_Depots.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
+#include <Mlib/Scene/Load_Scene_Funcs.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Instantiation/Root_Instantiation_Options.hpp>
 #include <Mlib/Scene_Graph/Interfaces/IScene_Node_Resource.hpp>
@@ -26,20 +27,12 @@ DECLARE_ARGUMENT(excluded_names);
 DECLARE_ARGUMENT(instantiated_root_nodes);
 }
 
-const std::string RootRenderableInstances::key = "root_renderable_instances";
-
-LoadSceneJsonUserFunction RootRenderableInstances::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
-{
-    args.arguments.validate(KnownArgs::options);
-    RootRenderableInstances(args.physics_scene()).execute(args);
-};
-
-RootRenderableInstances::RootRenderableInstances(PhysicsScene& physics_scene) 
+RootRenderableInstances::RootRenderableInstances(PhysicsScene& physics_scene)
     : LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
-void RootRenderableInstances::execute(const LoadSceneJsonUserFunctionArgs& args)
-{
+void RootRenderableInstances::execute(const LoadSceneJsonUserFunctionArgs& args) {
+    args.arguments.validate(KnownArgs::options);
     auto absolute_model_matrix = transformation_matrix_from_json<float, ScenePos, 3>(
         args.arguments.at(KnownArgs::transformation));
 
@@ -67,4 +60,19 @@ void RootRenderableInstances::execute(const LoadSceneJsonUserFunctionArgs& args)
         }
         args.local_json_macro_arguments->set(*irno, instantiated_root_nodes);
     }
+}
+
+namespace {
+
+struct RegisterJsonUserFunction {
+    RegisterJsonUserFunction() {
+        LoadSceneFuncs::register_json_user_function(
+            "root_renderable_instances",
+            [](const LoadSceneJsonUserFunctionArgs& args)
+            {
+                RootRenderableInstances{args.physics_scene()}.execute(args);
+            });
+    }
+} obj;
+
 }

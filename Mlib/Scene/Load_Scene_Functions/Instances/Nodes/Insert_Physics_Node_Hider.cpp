@@ -21,7 +21,7 @@ DECLARE_ARGUMENT(node_to_hide);
 DECLARE_ARGUMENT(camera_node);
 }
 
-InsertPhysicsNodeHider::InsertPhysicsNodeHider(PhysicsScene& physics_scene) 
+InsertPhysicsNodeHider::InsertPhysicsNodeHider(PhysicsScene& physics_scene)
     : LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 

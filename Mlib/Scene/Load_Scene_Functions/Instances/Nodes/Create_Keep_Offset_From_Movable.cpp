@@ -6,6 +6,7 @@
 #include <Mlib/Regex/Regex_Select.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Linker.hpp>
+#include <Mlib/Scene/Load_Scene_Funcs.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 
 using namespace Mlib;
@@ -17,20 +18,12 @@ DECLARE_ARGUMENT(followed);
 DECLARE_ARGUMENT(offset);
 }
 
-const std::string CreateKeepOffsetFromMovable::key = "keep_offset_from_movable";
-
-LoadSceneJsonUserFunction CreateKeepOffsetFromMovable::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
-{
-    args.arguments.validate(KnownArgs::options);
-    CreateKeepOffsetFromMovable(args.physics_scene()).execute(args);
-};
-
-CreateKeepOffsetFromMovable::CreateKeepOffsetFromMovable(PhysicsScene& physics_scene) 
-: LoadPhysicsSceneInstanceFunction{ physics_scene }
+CreateKeepOffsetFromMovable::CreateKeepOffsetFromMovable(PhysicsScene& physics_scene)
+    : LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
-void CreateKeepOffsetFromMovable::execute(const LoadSceneJsonUserFunctionArgs& args)
-{
+void CreateKeepOffsetFromMovable::execute(const LoadSceneJsonUserFunctionArgs& args) {
+    args.arguments.validate(KnownArgs::options);
     Linker linker{ physics_engine.advance_times_ };
     auto follower = args.arguments.at<VariableAndHash<std::string>>(KnownArgs::follower);
     auto followed = args.arguments.at<VariableAndHash<std::string>>(KnownArgs::followed);
@@ -53,4 +46,19 @@ void CreateKeepOffsetFromMovable::execute(const LoadSceneJsonUserFunctionArgs& a
         followed,
         std::move(keep_offset),
         CURRENT_SOURCE_LOCATION);
+}
+
+namespace {
+
+struct RegisterJsonUserFunction {
+    RegisterJsonUserFunction() {
+        LoadSceneFuncs::register_json_user_function(
+            "keep_offset_from_movable",
+            [](const LoadSceneJsonUserFunctionArgs& args)
+            {
+                CreateKeepOffsetFromMovable{args.physics_scene()}.execute(args);
+            });
+    }
+} obj;
+
 }

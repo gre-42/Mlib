@@ -15,6 +15,7 @@
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Scene/Audio/Engine_Audio.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
+#include <Mlib/Scene/Load_Scene_Funcs.hpp>
 #include <Mlib/Scene/Scene_Particles.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
@@ -52,19 +53,8 @@ DECLARE_ARGUMENT(location);
 DECLARE_ARGUMENT(p_reference);
 }
 
-const std::string CreateEngine::key = "create_engine";
-
-LoadSceneJsonUserFunction CreateEngine::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
-{
-    args.arguments.validate(KnownArgs::options);
-    if (args.arguments.contains(KnownArgs::audio)) {
-        args.arguments.child(KnownArgs::audio).validate(Audio::options);
-    }
-    CreateEngine(args.physics_scene()).execute(args);
-};
-
-CreateEngine::CreateEngine(PhysicsScene& physics_scene) 
-: LoadPhysicsSceneInstanceFunction{ physics_scene }
+CreateEngine::CreateEngine(PhysicsScene& physics_scene)
+    : LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
 static inline float stow(float v) {
@@ -75,9 +65,11 @@ static inline float stop(float v) {
     return v * hp;
 }
 
-void CreateEngine::execute(const LoadSceneJsonUserFunctionArgs& args)
-{
+void CreateEngine::execute(const LoadSceneJsonUserFunctionArgs& args) {
     args.arguments.validate(KnownArgs::options);
+    if (args.arguments.contains(KnownArgs::audio)) {
+        args.arguments.child(KnownArgs::audio).validate(Audio::options);
+    }
     DanglingBaseClassRef<SceneNode> node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::rigid_body), CURRENT_SOURCE_LOCATION);
     auto rb = get_rigid_body_vehicle(node.get(), CURRENT_SOURCE_LOCATION);
     std::optional<EnginePower> engine_power;
@@ -145,4 +137,19 @@ void CreateEngine::execute(const LoadSceneJsonUserFunctionArgs& args)
         args.arguments.at<VariableAndHash<std::string>>(KnownArgs::name),
         engine_power,
         engine_listeners);
+}
+
+namespace {
+
+struct RegisterJsonUserFunction {
+    RegisterJsonUserFunction() {
+        LoadSceneFuncs::register_json_user_function(
+            "create_engine",
+            [](const LoadSceneJsonUserFunctionArgs& args)
+            {
+                CreateEngine{args.physics_scene()}.execute(args);
+            });
+    }
+} obj;
+
 }

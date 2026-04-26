@@ -12,6 +12,7 @@
 #include <Mlib/Physics/Physics_Engine/Physics_Engine.hpp>
 #include <Mlib/Players/Containers/Players.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
+#include <Mlib/Scene/Load_Scene_Funcs.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Absolute_Movable_Setter.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
@@ -29,20 +30,12 @@ DECLARE_ARGUMENT(speed);
 DECLARE_ARGUMENT(rank);
 }
 
-const std::string PlaybackWinnerTrack::key = "playback_winner_track";
-
-LoadSceneJsonUserFunction PlaybackWinnerTrack::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
-{
-    args.arguments.validate(KnownArgs::options);
-    PlaybackWinnerTrack(args.physics_scene()).execute(args);
-};
-
-PlaybackWinnerTrack::PlaybackWinnerTrack(PhysicsScene& physics_scene) 
-: LoadPhysicsSceneInstanceFunction{ physics_scene }
+PlaybackWinnerTrack::PlaybackWinnerTrack(PhysicsScene& physics_scene)
+    : LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
-void PlaybackWinnerTrack::execute(const LoadSceneJsonUserFunctionArgs& args)
-{
+void PlaybackWinnerTrack::execute(const LoadSceneJsonUserFunctionArgs& args) {
+    args.arguments.validate(KnownArgs::options);
     auto rank = args.arguments.at<size_t>(KnownArgs::rank);
     auto wt = players.get_winner_track_filename(rank);
     if (!wt.has_value()) {
@@ -70,4 +63,19 @@ void PlaybackWinnerTrack::execute(const LoadSceneJsonUserFunctionArgs& args)
         auto playback_object = playback->get_playback_object(i);
         node->set_absolute_movable(playback_object);
     }
+}
+
+namespace {
+
+struct RegisterJsonUserFunction {
+    RegisterJsonUserFunction() {
+        LoadSceneFuncs::register_json_user_function(
+            "playback_winner_track",
+            [](const LoadSceneJsonUserFunctionArgs& args)
+            {
+                PlaybackWinnerTrack{args.physics_scene()}.execute(args);
+            });
+    }
+} obj;
+
 }

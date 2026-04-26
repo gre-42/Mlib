@@ -6,6 +6,7 @@
 #include <Mlib/Physics/Vehicle_Controllers/Plane_Controllers/Plane_Controller.hpp>
 #include <Mlib/Regex/Regex_Select.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
+#include <Mlib/Scene/Load_Scene_Funcs.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Strings/String.hpp>
@@ -26,20 +27,12 @@ DECLARE_ARGUMENT(left_flap_wing_ids);
 DECLARE_ARGUMENT(right_flap_wing_ids);
 }
 
-const std::string CreatePlaneController::key = "create_plane_controller";
-
-LoadSceneJsonUserFunction CreatePlaneController::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
-{
-    args.arguments.validate(KnownArgs::options);
-    CreatePlaneController(args.physics_scene()).execute(args);
-};
-
-CreatePlaneController::CreatePlaneController(PhysicsScene& physics_scene) 
-: LoadPhysicsSceneInstanceFunction{ physics_scene }
+CreatePlaneController::CreatePlaneController(PhysicsScene& physics_scene)
+    : LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
-void CreatePlaneController::execute(const LoadSceneJsonUserFunctionArgs& args)
-{
+void CreatePlaneController::execute(const LoadSceneJsonUserFunctionArgs& args) {
+    args.arguments.validate(KnownArgs::options);
     DanglingBaseClassRef<SceneNode> node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::node), CURRENT_SOURCE_LOCATION);
     auto rb = get_rigid_body_vehicle(node.get(), CURRENT_SOURCE_LOCATION);
     if (rb->plane_controller_ != nullptr) {
@@ -64,4 +57,19 @@ void CreatePlaneController::execute(const LoadSceneJsonUserFunctionArgs& args)
         right_rudder_wing_ids,
         left_flap_wing_ids,
         right_flap_wing_ids);
+}
+
+namespace {
+
+struct RegisterJsonUserFunction {
+    RegisterJsonUserFunction() {
+        LoadSceneFuncs::register_json_user_function(
+            "create_plane_controller",
+            [](const LoadSceneJsonUserFunctionArgs& args)
+            {
+                CreatePlaneController{args.physics_scene()}.execute(args);
+            });
+    }
+} obj;
+
 }

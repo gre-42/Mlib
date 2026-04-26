@@ -5,6 +5,7 @@
 #include <Mlib/Physics/Actuators/Rigid_Body_Delta_Engine.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
+#include <Mlib/Scene/Load_Scene_Funcs.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <stdexcept>
@@ -17,20 +18,12 @@ DECLARE_ARGUMENT(rigid_body);
 DECLARE_ARGUMENT(name);
 }
 
-const std::string CreateDeltaEngine::key = "create_delta_engine";
-
-LoadSceneJsonUserFunction CreateDeltaEngine::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
-{
-    args.arguments.validate(KnownArgs::options);
-    CreateDeltaEngine(args.physics_scene()).execute(args);
-};
-
-CreateDeltaEngine::CreateDeltaEngine(PhysicsScene& physics_scene) 
-: LoadPhysicsSceneInstanceFunction{ physics_scene }
+CreateDeltaEngine::CreateDeltaEngine(PhysicsScene& physics_scene)
+    : LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
-void CreateDeltaEngine::execute(const LoadSceneJsonUserFunctionArgs& args)
-{
+void CreateDeltaEngine::execute(const LoadSceneJsonUserFunctionArgs& args) {
+    args.arguments.validate(KnownArgs::options);
     args.arguments.validate(KnownArgs::options);
     DanglingBaseClassRef<SceneNode> node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::rigid_body), CURRENT_SOURCE_LOCATION);
     auto rb = get_rigid_body_vehicle(node.get(), CURRENT_SOURCE_LOCATION);
@@ -39,4 +32,19 @@ void CreateDeltaEngine::execute(const LoadSceneJsonUserFunctionArgs& args)
     if (!ep.second) {
         throw std::runtime_error("Delta engine with name \"" + args.arguments.at<std::string>(KnownArgs::name) + "\" already exists");
     }
+}
+
+namespace {
+
+struct RegisterJsonUserFunction {
+    RegisterJsonUserFunction() {
+        LoadSceneFuncs::register_json_user_function(
+            "create_delta_engine",
+            [](const LoadSceneJsonUserFunctionArgs& args)
+            {
+                CreateDeltaEngine{args.physics_scene()}.execute(args);
+            });
+    }
+} obj;
+
 }

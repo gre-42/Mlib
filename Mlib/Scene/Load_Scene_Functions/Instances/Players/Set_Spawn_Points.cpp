@@ -5,6 +5,7 @@
 #include <Mlib/Misc/Argument_List.hpp>
 #include <Mlib/Players/Advance_Times/Game_Logic.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
+#include <Mlib/Scene/Load_Scene_Funcs.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
 #include <Mlib/Scene_Graph/Spawn_Point.hpp>
 
@@ -16,20 +17,12 @@ DECLARE_ARGUMENT(location);
 DECLARE_ARGUMENT(resource);
 }
 
-const std::string SetSpawnPoints::key = "set_spawn_points";
-
-LoadSceneJsonUserFunction SetSpawnPoints::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
-{
-    args.arguments.validate(KnownArgs::options);
-    SetSpawnPoints(args.physics_scene()).execute(args);
-};
-
-SetSpawnPoints::SetSpawnPoints(PhysicsScene& physics_scene) 
-: LoadPhysicsSceneInstanceFunction{ physics_scene }
+SetSpawnPoints::SetSpawnPoints(PhysicsScene& physics_scene)
+    : LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
-void SetSpawnPoints::execute(const LoadSceneJsonUserFunctionArgs& args)
-{
+void SetSpawnPoints::execute(const LoadSceneJsonUserFunctionArgs& args) {
+    args.arguments.validate(KnownArgs::options);
     if (game_logic == nullptr) {
         throw std::runtime_error("Scene has no game logic");
     }
@@ -38,4 +31,19 @@ void SetSpawnPoints::execute(const LoadSceneJsonUserFunctionArgs& args)
     auto spawn_points = scene_node_resources.get_spawn_points(
         args.arguments.at<VariableAndHash<std::string>>(KnownArgs::resource));
     game_logic->spawner.set_spawn_points(location, std::move(spawn_points));
+}
+
+namespace {
+
+struct RegisterJsonUserFunction {
+    RegisterJsonUserFunction() {
+        LoadSceneFuncs::register_json_user_function(
+            "set_spawn_points",
+            [](const LoadSceneJsonUserFunctionArgs& args)
+            {
+                SetSpawnPoints{args.physics_scene()}.execute(args);
+            });
+    }
+} obj;
+
 }

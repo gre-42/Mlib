@@ -4,6 +4,7 @@
 #include <Mlib/Physics/Containers/Race_Identifier.hpp>
 #include <Mlib/Players/Containers/Players.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
+#include <Mlib/Scene/Load_Scene_Funcs.hpp>
 #include <Mlib/Strings/String_View_To_Number.hpp>
 #include <filesystem>
 
@@ -19,20 +20,12 @@ DECLARE_ARGUMENT(laps);
 DECLARE_ARGUMENT(milliseconds);
 }
 
-const std::string SetRaceIdentifierAndReloadHistory::key = "set_race_identifier_and_reload_history";
-
-LoadSceneJsonUserFunction SetRaceIdentifierAndReloadHistory::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
-{
-    args.arguments.validate(KnownArgs::options);
-    SetRaceIdentifierAndReloadHistory(args.physics_scene()).execute(args);
-};
-
-SetRaceIdentifierAndReloadHistory::SetRaceIdentifierAndReloadHistory(PhysicsScene& physics_scene) 
-: LoadPhysicsSceneInstanceFunction{ physics_scene }
+SetRaceIdentifierAndReloadHistory::SetRaceIdentifierAndReloadHistory(PhysicsScene& physics_scene)
+    : LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
-void SetRaceIdentifierAndReloadHistory::execute(const LoadSceneJsonUserFunctionArgs& args)
-{
+void SetRaceIdentifierAndReloadHistory::execute(const LoadSceneJsonUserFunctionArgs& args) {
+    args.arguments.validate(KnownArgs::options);
     players.set_race_identifier_and_reload_history(RaceIdentifier{
         .level = args.arguments.at<std::string>(KnownArgs::level_id),
         .time_of_day = args.arguments.at<std::string>(KnownArgs::time_of_day),
@@ -40,4 +33,19 @@ void SetRaceIdentifierAndReloadHistory::execute(const LoadSceneJsonUserFunctionA
         .session = args.arguments.at<std::string>(KnownArgs::session),
         .laps = args.arguments.at<size_t>(KnownArgs::laps),
         .milliseconds = args.arguments.at<uint64_t>(KnownArgs::milliseconds)});
+}
+
+namespace {
+
+struct RegisterJsonUserFunction {
+    RegisterJsonUserFunction() {
+        LoadSceneFuncs::register_json_user_function(
+            "set_race_identifier_and_reload_history",
+            [](const LoadSceneJsonUserFunctionArgs& args)
+            {
+                SetRaceIdentifierAndReloadHistory{args.physics_scene()}.execute(args);
+            });
+    }
+} obj;
+
 }

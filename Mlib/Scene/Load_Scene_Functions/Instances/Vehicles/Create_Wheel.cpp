@@ -11,6 +11,8 @@
 #include <Mlib/Regex/Regex_Select.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Linker.hpp>
+#include <Mlib/Scene/Load_Scene_Funcs.hpp>
+#include <Mlib/Scene/Load_Scene_Funcs.hpp>
 #include <Mlib/Scene/Scene_Config.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
@@ -38,27 +40,12 @@ DECLARE_ARGUMENT(musC);
 DECLARE_ARGUMENT(tire_id);
 }
 
-namespace WheelArgs {
-BEGIN_ARGUMENT_LIST;
-DECLARE_ARGUMENT(node);
-DECLARE_ARGUMENT(vehicle_mount_0);
-DECLARE_ARGUMENT(vehicle_mount_1);
-}
-
-const std::string CreateWheel::key = "wheel";
-
-LoadSceneJsonUserFunction CreateWheel::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
-{
-    args.arguments.validate(KnownArgs::options);
-    CreateWheel(args.physics_scene()).execute(args);
-};
-
-CreateWheel::CreateWheel(PhysicsScene& physics_scene) 
-: LoadPhysicsSceneInstanceFunction{ physics_scene }
+CreateWheel::CreateWheel(PhysicsScene& physics_scene)
+    : LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
-void CreateWheel::execute(const LoadSceneJsonUserFunctionArgs& args)
-{
+void CreateWheel::execute(const LoadSceneJsonUserFunctionArgs& args) {
+    args.arguments.validate(KnownArgs::options);
     auto vehicle = args.arguments.at<VariableAndHash<std::string>>(KnownArgs::vehicle);
     auto wheel_node_name = args.arguments.try_at_non_null<VariableAndHash<std::string>>(KnownArgs::wheel);
     float radius = args.arguments.at<float>(KnownArgs::radius) * meters;
@@ -114,4 +101,19 @@ void CreateWheel::execute(const LoadSceneJsonUserFunctionArgs& args)
             args.arguments.at<EFixedArray<float, 3>>(KnownArgs::vehicle_mount_1),
             radius);
     }
+}
+
+namespace {
+
+struct RegisterJsonUserFunction {
+    RegisterJsonUserFunction() {
+        LoadSceneFuncs::register_json_user_function(
+            "wheel",
+            [](const LoadSceneJsonUserFunctionArgs& args)
+            {
+                CreateWheel{args.physics_scene()}.execute(args);
+            });
+    }
+} obj;
+
 }

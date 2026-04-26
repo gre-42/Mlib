@@ -13,7 +13,7 @@ BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(player);
 }
 
-CreateGunExternals::CreateGunExternals(PhysicsScene& physics_scene) 
+CreateGunExternals::CreateGunExternals(PhysicsScene& physics_scene)
     : LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 

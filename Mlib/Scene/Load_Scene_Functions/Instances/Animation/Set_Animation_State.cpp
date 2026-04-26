@@ -31,7 +31,7 @@ DECLARE_ARGUMENT(aperiodic_reference_time_duration);
 DECLARE_ARGUMENT(delete_node_when_aperiodic_animation_finished);
 }
 
-SetAnimationState::SetAnimationState(PhysicsScene& physics_scene) 
+SetAnimationState::SetAnimationState(PhysicsScene& physics_scene)
     : LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 

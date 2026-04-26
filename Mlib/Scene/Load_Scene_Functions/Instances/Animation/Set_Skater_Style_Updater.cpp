@@ -19,7 +19,7 @@ DECLARE_ARGUMENT(skateboard_node);
 DECLARE_ARGUMENT(resource);
 }
 
-SetSkaterStyleUpdater::SetSkaterStyleUpdater(PhysicsScene& physics_scene) 
+SetSkaterStyleUpdater::SetSkaterStyleUpdater(PhysicsScene& physics_scene)
     : LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 

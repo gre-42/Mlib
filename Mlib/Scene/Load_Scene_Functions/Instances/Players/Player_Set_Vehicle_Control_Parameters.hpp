@@ -8,9 +8,6 @@ class JsonMacroArguments;
 
 class PlayerSetVehicleControlParameters: public LoadPhysicsSceneInstanceFunction {
 public:
-    static LoadSceneJsonUserFunction json_user_function;
-    static const std::string key;
-private:
     explicit PlayerSetVehicleControlParameters(PhysicsScene& physics_scene);
     void execute(const LoadSceneJsonUserFunctionArgs& args);
 };

@@ -10,6 +10,7 @@
 #include <Mlib/Physics/Misc/Track_Element_File.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Engine.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
+#include <Mlib/Scene/Load_Scene_Funcs.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Absolute_Movable_Setter.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
@@ -25,20 +26,12 @@ DECLARE_ARGUMENT(speed);
 DECLARE_ARGUMENT(filename);
 }
 
-const std::string PlaybackTrack::key = "playback_track";
-
-LoadSceneJsonUserFunction PlaybackTrack::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
-{
-    args.arguments.validate(KnownArgs::options);
-    PlaybackTrack(args.physics_scene()).execute(args);
-};
-
-PlaybackTrack::PlaybackTrack(PhysicsScene& physics_scene) 
+PlaybackTrack::PlaybackTrack(PhysicsScene& physics_scene)
     : LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
-void PlaybackTrack::execute(const LoadSceneJsonUserFunctionArgs& args)
-{
+void PlaybackTrack::execute(const LoadSceneJsonUserFunctionArgs& args) {
+    args.arguments.validate(KnownArgs::options);
     auto asset_id = args.arguments.at<std::string>(KnownArgs::asset_id);
     const auto& vars = args
         .asset_references["vehicles"]
@@ -61,4 +54,19 @@ void PlaybackTrack::execute(const LoadSceneJsonUserFunctionArgs& args)
         auto playback_object = playback->get_playback_object(i);
         node->set_absolute_movable(playback_object);
     }
+}
+
+namespace {
+
+struct RegisterJsonUserFunction {
+    RegisterJsonUserFunction() {
+        LoadSceneFuncs::register_json_user_function(
+            "playback_track",
+            [](const LoadSceneJsonUserFunctionArgs& args)
+            {
+                PlaybackTrack{args.physics_scene()}.execute(args);
+            });
+    }
+} obj;
+
 }

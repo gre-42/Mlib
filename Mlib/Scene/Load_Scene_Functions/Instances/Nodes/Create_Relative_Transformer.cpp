@@ -6,6 +6,8 @@
 #include <Mlib/Physics/Physics_Engine/Physics_Engine.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Linker.hpp>
+#include <Mlib/Scene/Load_Scene_Funcs.hpp>
+#include <Mlib/Scene/Load_Scene_Funcs.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Strings/String_View_To_Number.hpp>
 
@@ -18,20 +20,12 @@ DECLARE_ARGUMENT(v);
 DECLARE_ARGUMENT(w);
 }
 
-const std::string CreateRelativeTransformer::key = "relative_transformer";
-
-LoadSceneJsonUserFunction CreateRelativeTransformer::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
-{
-    args.arguments.validate(KnownArgs::options);
-    CreateRelativeTransformer(args.physics_scene()).execute(args);
-};
-
-CreateRelativeTransformer::CreateRelativeTransformer(PhysicsScene& physics_scene) 
-: LoadPhysicsSceneInstanceFunction{ physics_scene }
+CreateRelativeTransformer::CreateRelativeTransformer(PhysicsScene& physics_scene)
+    : LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
-void CreateRelativeTransformer::execute(const LoadSceneJsonUserFunctionArgs& args)
-{
+void CreateRelativeTransformer::execute(const LoadSceneJsonUserFunctionArgs& args) {
+    args.arguments.validate(KnownArgs::options);
     Linker linker{ physics_engine.advance_times_ };
     auto v = args.arguments.at<EFixedArray<float, 3>>(KnownArgs::v, fixed_zeros<float, 3>()) * meters / seconds;
     auto w = args.arguments.at<EFixedArray<float, 3>>(KnownArgs::w, fixed_zeros<float, 3>()) * rpm;
@@ -41,4 +35,19 @@ void CreateRelativeTransformer::execute(const LoadSceneJsonUserFunctionArgs& arg
         { *rt, CURRENT_SOURCE_LOCATION },
         CURRENT_SOURCE_LOCATION);
     global_object_pool.add(std::move(rt), CURRENT_SOURCE_LOCATION);
+}
+
+namespace {
+
+struct RegisterJsonUserFunction {
+    RegisterJsonUserFunction() {
+        LoadSceneFuncs::register_json_user_function(
+            "relative_transformer",
+            [](const LoadSceneJsonUserFunctionArgs& args)
+            {
+                CreateRelativeTransformer{args.physics_scene()}.execute(args);
+            });
+    }
+} obj;
+
 }

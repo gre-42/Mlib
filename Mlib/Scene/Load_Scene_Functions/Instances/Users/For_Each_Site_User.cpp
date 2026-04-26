@@ -50,7 +50,7 @@ ForEachSiteUser::ForEachSiteUser(UserTypes user_types)
 
 ForEachSiteUser::~ForEachSiteUser() = default;
 
-void ForEachSiteUser::execute(const LoadSceneJsonUserFunctionArgs &args) {
+void ForEachSiteUser::execute(const LoadSceneJsonUserFunctionArgs& args) {
     args.arguments.validate(KnownArgs::options);
     auto content = args.arguments.at(KnownArgs::content);
     args.remote_sites.for_each_site_user(
@@ -68,7 +68,7 @@ OnUserLoadedLevel::OnUserLoadedLevel(PhysicsScene& physics_scene)
 
 OnUserLoadedLevel::~OnUserLoadedLevel() = default;
 
-void OnUserLoadedLevel::execute(const LoadSceneJsonUserFunctionArgs &args) {
+void OnUserLoadedLevel::execute(const LoadSceneJsonUserFunctionArgs& args) {
     args.arguments.validate(KnownArgs::options);
     if (on_user_loaded_level_token.has_value()) {
         throw std::runtime_error("on_user_loaded_level_token already set");

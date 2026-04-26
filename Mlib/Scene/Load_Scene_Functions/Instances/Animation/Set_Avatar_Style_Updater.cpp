@@ -20,7 +20,7 @@ DECLARE_ARGUMENT(resource_wo_gun);
 DECLARE_ARGUMENT(resource_w_gun);
 }
 
-SetAvatarStyleUpdater::SetAvatarStyleUpdater(PhysicsScene& physics_scene) 
+SetAvatarStyleUpdater::SetAvatarStyleUpdater(PhysicsScene& physics_scene)
 : LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 

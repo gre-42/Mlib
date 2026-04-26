@@ -5,6 +5,8 @@
 #include <Mlib/Players/Advance_Times/Player.hpp>
 #include <Mlib/Players/Containers/Players.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
+#include <Mlib/Scene/Load_Scene_Funcs.hpp>
+#include <Mlib/Scene/Load_Scene_Funcs.hpp>
 
 using namespace Mlib;
 
@@ -15,23 +17,30 @@ DECLARE_ARGUMENT(source);
 DECLARE_ARGUMENT(value);
 }
 
-const std::string PlayerSetCanSelectBestWeapon::key = "set_can_select_weapon";
-
-LoadSceneJsonUserFunction PlayerSetCanSelectBestWeapon::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
-{
-    args.arguments.validate(KnownArgs::options);
-    PlayerSetCanSelectBestWeapon(args.physics_scene()).execute(args);
-};
-
-PlayerSetCanSelectBestWeapon::PlayerSetCanSelectBestWeapon(PhysicsScene& physics_scene) 
-: LoadPhysicsSceneInstanceFunction{ physics_scene }
+PlayerSetCanSelectBestWeapon::PlayerSetCanSelectBestWeapon(PhysicsScene& physics_scene)
+    : LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
-void PlayerSetCanSelectBestWeapon::execute(const LoadSceneJsonUserFunctionArgs& args)
-{
+void PlayerSetCanSelectBestWeapon::execute(const LoadSceneJsonUserFunctionArgs& args) {
+    args.arguments.validate(KnownArgs::options);
     auto player = players.get_player(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::player), CURRENT_SOURCE_LOCATION);
     player->set_can_select_weapon(
         control_source_from_string(args.arguments.at<std::string>(KnownArgs::source)),
         args.arguments.at<bool>(KnownArgs::value));
+
+}
+
+namespace {
+
+struct RegisterJsonUserFunction {
+    RegisterJsonUserFunction() {
+        LoadSceneFuncs::register_json_user_function(
+            "set_can_select_weapon",
+            [](const LoadSceneJsonUserFunctionArgs& args)
+            {
+                PlayerSetCanSelectBestWeapon{args.physics_scene()}.execute(args);
+            });
+    }
+} obj;
 
 }

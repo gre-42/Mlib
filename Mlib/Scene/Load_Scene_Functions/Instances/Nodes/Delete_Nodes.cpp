@@ -2,6 +2,7 @@
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Misc/Argument_List.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
+#include <Mlib/Scene/Load_Scene_Funcs.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 
 using namespace Mlib;
@@ -11,19 +12,26 @@ BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(regex);
 }
 
-const std::string DeleteNodes::key = "delete_nodes";
-
-LoadSceneJsonUserFunction DeleteNodes::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
-{
-    args.arguments.validate(KnownArgs::options);
-    DeleteNodes(args.physics_scene()).execute(args);
-};
-
-DeleteNodes::DeleteNodes(PhysicsScene& physics_scene) 
-: LoadPhysicsSceneInstanceFunction{ physics_scene }
+DeleteNodes::DeleteNodes(PhysicsScene& physics_scene)
+    : LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
-void DeleteNodes::execute(const LoadSceneJsonUserFunctionArgs& args)
-{
+void DeleteNodes::execute(const LoadSceneJsonUserFunctionArgs& args) {
+    args.arguments.validate(KnownArgs::options);
     scene.delete_nodes(Mlib::compile_regex(args.arguments.at<std::string>(KnownArgs::regex)));
+}
+
+namespace {
+
+struct RegisterJsonUserFunction {
+    RegisterJsonUserFunction() {
+        LoadSceneFuncs::register_json_user_function(
+            "delete_nodes",
+            [](const LoadSceneJsonUserFunctionArgs& args)
+            {
+                DeleteNodes{args.physics_scene()}.execute(args);
+            });
+    }
+} obj;
+
 }

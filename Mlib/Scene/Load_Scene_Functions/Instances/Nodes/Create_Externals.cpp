@@ -15,7 +15,7 @@ DECLARE_ARGUMENT(player);
 DECLARE_ARGUMENT(mode);
 }
 
-CreateExternals::CreateExternals(PhysicsScene& physics_scene) 
+CreateExternals::CreateExternals(PhysicsScene& physics_scene)
     : LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 

@@ -1,4 +1,3 @@
-#include "Set_Animated_Dynamic_Light_Properties.hpp"
 #include <Mlib/Initialization/Default_Uninitialized_Vector.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Misc/Argument_List.hpp>
@@ -7,6 +6,7 @@
 #include <Mlib/Physics/Dynamic_Lights/Dynamic_Light_Db.hpp>
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
+#include <Mlib/Scene/Load_Scene_Funcs.hpp>
 
 namespace KnownConfigArgs {
 BEGIN_ARGUMENT_LIST;
@@ -35,18 +35,26 @@ void from_json(const nlohmann::json& j, AnimatedDynamicLightConfiguration& item)
 
 using namespace Mlib;
 
+namespace {
+
 namespace KnownArgs {
 BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(name);
 DECLARE_ARGUMENT(properties);
 }
 
-const std::string SetAnimatedDynamicLightProperties::key = "set_animated_dynamic_light_properties";
+struct RegisterJsonUserFunction {
+    RegisterJsonUserFunction() {
+        LoadSceneFuncs::register_json_user_function(
+            "set_animated_dynamic_light_properties",
+            [](const LoadSceneJsonUserFunctionArgs& args)
+            {
+                args.arguments.validate(KnownArgs::options);
+                args.dynamic_light_db.add(
+                    args.arguments.at<std::string>(KnownArgs::name),
+                    args.arguments.at<AnimatedDynamicLightConfiguration>(KnownArgs::properties));
+            });
+    }
+} obj;
 
-LoadSceneJsonUserFunction SetAnimatedDynamicLightProperties::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
-{
-    args.arguments.validate(KnownArgs::options);
-    args.dynamic_light_db.add(
-        args.arguments.at<std::string>(KnownArgs::name),
-        args.arguments.at<AnimatedDynamicLightConfiguration>(KnownArgs::properties));
-};
+}

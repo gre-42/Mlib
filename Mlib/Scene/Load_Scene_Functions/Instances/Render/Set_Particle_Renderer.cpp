@@ -17,7 +17,7 @@ DECLARE_ARGUMENT(node);
 DECLARE_ARGUMENT(renderable);
 }
 
-SetParticleRenderer::SetParticleRenderer(PhysicsScene& physics_scene) 
+SetParticleRenderer::SetParticleRenderer(PhysicsScene& physics_scene)
     : LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 

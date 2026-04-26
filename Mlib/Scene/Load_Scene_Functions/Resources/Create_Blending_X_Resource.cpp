@@ -1,4 +1,3 @@
-#include "Create_Blending_X_Resource.hpp"
 #include <Mlib/Geometry/Material.hpp>
 #include <Mlib/Geometry/Material/Billboard_Atlas_Instance_Json.hpp>
 #include <Mlib/Geometry/Morphology.hpp>
@@ -11,10 +10,13 @@
 #include <Mlib/OpenGL/Resources/Blending_X_Resource.hpp>
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
+#include <Mlib/Scene/Load_Scene_Funcs.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
 #include <Mlib/Strings/String_View_To_Number.hpp>
 
 using namespace Mlib;
+
+namespace {
 
 namespace KnownArgs {
 BEGIN_ARGUMENT_LIST;
@@ -43,62 +45,68 @@ DECLARE_ARGUMENT(fog_distances);
 DECLARE_ARGUMENT(fog_ambient);
 }
 
-const std::string CreateBlendingXResource::key = "blending_x_resource";
+struct RegisterJsonUserFunction {
+    RegisterJsonUserFunction() {
+        LoadSceneFuncs::register_json_user_function(
+            "blending_x_resource",
+            [](const LoadSceneJsonUserFunctionArgs& args)
+            {
+                args.arguments.validate(KnownArgs::options);
 
-LoadSceneJsonUserFunction CreateBlendingXResource::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
-{
-    args.arguments.validate(KnownArgs::options);
+                auto billboard_atlas_instances = args.arguments.at<std::vector<BillboardAtlasInstance>>(KnownArgs::billboards, {});
+                auto min = args.arguments.at<EFixedArray<float, 2>>(KnownArgs::min) * meters;
+                auto max = args.arguments.at<EFixedArray<float, 2>>(KnownArgs::max) * meters;
+                auto square = FixedArray<float, 2, 2>::init(
+                    min(0), min(1),
+                    max(0), max(1));
+                auto& primary_rendering_resources = RenderingContextStack::primary_rendering_resources();
+                Material material{
+                    .blend_mode = blend_mode_from_string(args.arguments.at<std::string>(KnownArgs::blend_mode)),
+                    .continuous_blending_z_order = args.arguments.at<int>(KnownArgs::z_order, 0),
+                    .depth_func = args.arguments.contains(KnownArgs::depth_func)
+                        ? depth_func_from_string(args.arguments.at<std::string>(KnownArgs::depth_func))
+                        : DepthFunc::LESS,
+                    .depth_test = args.arguments.at<bool>(KnownArgs::depth_test, true),
+                    .textures_color = { primary_rendering_resources.get_blend_map_texture(args.arguments.path_or_variable(KnownArgs::texture_filename)) },
+                    .occluded_pass = external_render_pass_type_from_string(args.arguments.at<std::string>(KnownArgs::occluded_pass)),
+                    .occluder_pass = external_render_pass_type_from_string(args.arguments.at<std::string>(KnownArgs::occluder_pass)),
+                    .alpha_distances = args.arguments.at<EOrderableFixedArray<float, 4>>(KnownArgs::alpha_distances),
+                    // .wrap_mode_s = WrapMode::CLAMP_TO_EDGE,
+                    // .wrap_mode_t = WrapMode::CLAMP_TO_EDGE,
+                    .aggregate_mode = aggregate_mode_from_string(args.arguments.at<std::string>(KnownArgs::aggregate_mode)),
+                    .transformation_mode = transformation_mode_from_string(args.arguments.at<std::string>(KnownArgs::transformation_mode)),
+                    .billboard_atlas_instances = billboard_atlas_instances,
+                    .number_of_frames = args.arguments.at<unsigned int>(KnownArgs::number_of_frames, 1),
+                    .has_animated_textures = args.arguments.at<bool>(KnownArgs::has_animated_textures, false),
+                    .cull_faces = false,
+                    .shading{
+                        .emissive = args.arguments.at<EOrderableFixedArray<float, 3>>(KnownArgs::emissive, OrderableFixedArray<float, 3>(0.f)),
+                        .ambient = args.arguments.at<EOrderableFixedArray<float, 3>>(KnownArgs::ambient),
+                        .diffuse = args.arguments.at<EOrderableFixedArray<float, 3>>(KnownArgs::diffuse, UOrderableFixedArray<float, 3>(0.f)),
+                        .specular = args.arguments.at<EOrderableFixedArray<float, 3>>(KnownArgs::specular, UOrderableFixedArray<float, 3>(0.f)),
+                        .fog_distances = args.arguments.at<EOrderableFixedArray<float, 2>>(KnownArgs::fog_distances, default_step_distances),
+                        .fog_ambient= args.arguments.at<EOrderableFixedArray<float, 3>>(KnownArgs::fog_ambient, UOrderableFixedArray<float, 3>(0.f))}};
+                material.compute_color_mode();
+                Morphology morphology{
+                    .physics_material = PhysicsMaterial::NONE,
+                    .center_distances2 = SquaredStepDistances::from_distances(
+                        args.arguments.at<EFixedArray<float, 2>>(
+                            KnownArgs::center_distances,
+                            FixedArray<float, 2>{0.f, INFINITY }) * meters),
+                };
+                RenderingContextStack::primary_scene_node_resources().add_resource_loader(
+                    args.arguments.at<VariableAndHash<std::string>>(KnownArgs::name),
+                    [square, material, morphology](){
+                        return std::make_shared<BlendingXResource>(
+                            square,
+                            FixedArray<Material, 2>{
+                                material,
+                                material },
+                            FixedArray<Morphology, 2>{
+                                morphology,
+                                morphology});});
+            });
+    }
+} obj;
 
-    auto billboard_atlas_instances = args.arguments.at<std::vector<BillboardAtlasInstance>>(KnownArgs::billboards, {});
-    auto min = args.arguments.at<EFixedArray<float, 2>>(KnownArgs::min) * meters;
-    auto max = args.arguments.at<EFixedArray<float, 2>>(KnownArgs::max) * meters;
-    auto square = FixedArray<float, 2, 2>::init(
-        min(0), min(1),
-        max(0), max(1));
-    auto& primary_rendering_resources = RenderingContextStack::primary_rendering_resources();
-    Material material{
-        .blend_mode = blend_mode_from_string(args.arguments.at<std::string>(KnownArgs::blend_mode)),
-        .continuous_blending_z_order = args.arguments.at<int>(KnownArgs::z_order, 0),
-        .depth_func = args.arguments.contains(KnownArgs::depth_func)
-            ? depth_func_from_string(args.arguments.at<std::string>(KnownArgs::depth_func))
-            : DepthFunc::LESS,
-        .depth_test = args.arguments.at<bool>(KnownArgs::depth_test, true),
-        .textures_color = { primary_rendering_resources.get_blend_map_texture(args.arguments.path_or_variable(KnownArgs::texture_filename)) },
-        .occluded_pass = external_render_pass_type_from_string(args.arguments.at<std::string>(KnownArgs::occluded_pass)),
-        .occluder_pass = external_render_pass_type_from_string(args.arguments.at<std::string>(KnownArgs::occluder_pass)),
-        .alpha_distances = args.arguments.at<EOrderableFixedArray<float, 4>>(KnownArgs::alpha_distances),
-        // .wrap_mode_s = WrapMode::CLAMP_TO_EDGE,
-        // .wrap_mode_t = WrapMode::CLAMP_TO_EDGE,
-        .aggregate_mode = aggregate_mode_from_string(args.arguments.at<std::string>(KnownArgs::aggregate_mode)),
-        .transformation_mode = transformation_mode_from_string(args.arguments.at<std::string>(KnownArgs::transformation_mode)),
-        .billboard_atlas_instances = billboard_atlas_instances,
-        .number_of_frames = args.arguments.at<unsigned int>(KnownArgs::number_of_frames, 1),
-        .has_animated_textures = args.arguments.at<bool>(KnownArgs::has_animated_textures, false),
-        .cull_faces = false,
-        .shading{
-            .emissive = args.arguments.at<EOrderableFixedArray<float, 3>>(KnownArgs::emissive, OrderableFixedArray<float, 3>(0.f)),
-            .ambient = args.arguments.at<EOrderableFixedArray<float, 3>>(KnownArgs::ambient),
-            .diffuse = args.arguments.at<EOrderableFixedArray<float, 3>>(KnownArgs::diffuse, UOrderableFixedArray<float, 3>(0.f)),
-            .specular = args.arguments.at<EOrderableFixedArray<float, 3>>(KnownArgs::specular, UOrderableFixedArray<float, 3>(0.f)),
-            .fog_distances = args.arguments.at<EOrderableFixedArray<float, 2>>(KnownArgs::fog_distances, default_step_distances),
-            .fog_ambient= args.arguments.at<EOrderableFixedArray<float, 3>>(KnownArgs::fog_ambient, UOrderableFixedArray<float, 3>(0.f))}};
-    material.compute_color_mode();
-    Morphology morphology{
-        .physics_material = PhysicsMaterial::NONE,
-        .center_distances2 = SquaredStepDistances::from_distances(
-            args.arguments.at<EFixedArray<float, 2>>(
-                KnownArgs::center_distances,
-                FixedArray<float, 2>{0.f, INFINITY }) * meters),
-    };
-    RenderingContextStack::primary_scene_node_resources().add_resource_loader(
-        args.arguments.at<VariableAndHash<std::string>>(KnownArgs::name),
-        [square, material, morphology](){
-            return std::make_shared<BlendingXResource>(
-                square,
-                FixedArray<Material, 2>{
-                    material,
-                    material },
-                FixedArray<Morphology, 2>{
-                    morphology,
-                    morphology});});
-};
+}

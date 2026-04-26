@@ -78,7 +78,7 @@ DECLARE_ARGUMENT(focus_mask);
 DECLARE_ARGUMENT(submenus);
 }
 
-CreateCheckPoints::CreateCheckPoints(PhysicsScene& physics_scene) 
+CreateCheckPoints::CreateCheckPoints(PhysicsScene& physics_scene)
     : LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 

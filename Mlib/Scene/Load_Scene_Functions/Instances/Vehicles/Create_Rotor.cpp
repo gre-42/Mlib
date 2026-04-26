@@ -8,6 +8,7 @@
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Regex/Regex_Select.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
+#include <Mlib/Scene/Load_Scene_Funcs.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Strings/String.hpp>
@@ -49,10 +50,11 @@ DECLARE_ARGUMENT(pid);
 DECLARE_ARGUMENT(alpha);
 }
 
-const std::string CreateRotor::key = "rotor";
+CreateRotor::CreateRotor(PhysicsScene& physics_scene)
+    : LoadPhysicsSceneInstanceFunction{ physics_scene }
+{}
 
-LoadSceneJsonUserFunction CreateRotor::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
-{
+void CreateRotor::execute(const LoadSceneJsonUserFunctionArgs& args) {
     args.arguments.validate(KnownArgs::options);
     if (args.arguments.contains(KnownArgs::blades)) {
         args.arguments.child(KnownArgs::blades).validate(BladesArgs::options);
@@ -60,15 +62,6 @@ LoadSceneJsonUserFunction CreateRotor::json_user_function = [](const LoadSceneJs
     if (args.arguments.contains(KnownArgs::align_to_gravity_pid)) {
         args.arguments.child(KnownArgs::align_to_gravity_pid).validate(PidArgs::options);
     }
-    CreateRotor(args.physics_scene()).execute(args);
-};
-
-CreateRotor::CreateRotor(PhysicsScene& physics_scene) 
-: LoadPhysicsSceneInstanceFunction{ physics_scene }
-{}
-
-void CreateRotor::execute(const LoadSceneJsonUserFunctionArgs& args)
-{
     DanglingBaseClassRef<SceneNode> vehicle_node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::vehicle), CURRENT_SOURCE_LOCATION);
     auto vehicle_rb = get_rigid_body_vehicle(vehicle_node.get(), CURRENT_SOURCE_LOCATION);
     FixedArray<float, 3> vehicle_mount_0(NAN);
@@ -136,4 +129,19 @@ void CreateRotor::execute(const LoadSceneJsonUserFunctionArgs& args)
             blades_mount_0,
             blades_mount_1,
             blades_rb));
+}
+
+namespace {
+
+struct RegisterJsonUserFunction {
+    RegisterJsonUserFunction() {
+        LoadSceneFuncs::register_json_user_function(
+            "rotor",
+            [](const LoadSceneJsonUserFunctionArgs& args)
+            {
+                CreateRotor{args.physics_scene()}.execute(args);
+            });
+    }
+} obj;
+
 }

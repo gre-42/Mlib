@@ -11,6 +11,7 @@
 #include <Mlib/Players/Scene_Vehicle/Scene_Vehicle.hpp>
 #include <Mlib/Players/Scene_Vehicle/Vehicle_Spawner.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
+#include <Mlib/Scene/Load_Scene_Funcs.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <stdexcept>
@@ -24,20 +25,12 @@ DECLARE_ARGUMENT(asset_id);
 DECLARE_ARGUMENT(suffix);
 }
 
-const std::string SpawnerSetNodes::key = "spawner_set_nodes";
-
-LoadSceneJsonUserFunction SpawnerSetNodes::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
-{
-    args.arguments.validate(KnownArgs::options);
-    SpawnerSetNodes(args.physics_scene()).execute(args);
-};
-
-SpawnerSetNodes::SpawnerSetNodes(PhysicsScene& physics_scene) 
+SpawnerSetNodes::SpawnerSetNodes(PhysicsScene& physics_scene)
     : LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
-void SpawnerSetNodes::execute(const LoadSceneJsonUserFunctionArgs& args)
-{
+void SpawnerSetNodes::execute(const LoadSceneJsonUserFunctionArgs& args) {
+    args.arguments.validate(KnownArgs::options);
     auto asset_id = args.arguments.at<std::string>(KnownArgs::asset_id);
     const auto& vars = args
         .asset_references["vehicles"]
@@ -59,4 +52,19 @@ void SpawnerSetNodes::execute(const LoadSceneJsonUserFunctionArgs& args)
     vehicle_spawners
         .get(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::spawner))
         .set_scene_vehicles(std::move(vehicles));
+}
+
+namespace {
+
+struct RegisterJsonUserFunction {
+    RegisterJsonUserFunction() {
+        LoadSceneFuncs::register_json_user_function(
+            "spawner_set_nodes",
+            [](const LoadSceneJsonUserFunctionArgs& args)
+            {
+                SpawnerSetNodes{args.physics_scene()}.execute(args);
+            });
+    }
+} obj;
+
 }

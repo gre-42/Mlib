@@ -19,7 +19,7 @@ DECLARE_ARGUMENT(node);
 DECLARE_ARGUMENT(value);
 }
 
-SetAvailableSeats::SetAvailableSeats(PhysicsScene& physics_scene) 
+SetAvailableSeats::SetAvailableSeats(PhysicsScene& physics_scene)
     : LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 

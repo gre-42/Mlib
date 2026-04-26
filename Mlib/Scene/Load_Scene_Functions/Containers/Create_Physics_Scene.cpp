@@ -16,6 +16,8 @@
 
 using namespace Mlib;
 
+namespace {
+
 namespace KnownArgs {
 BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(name);
@@ -26,10 +28,6 @@ DECLARE_ARGUMENT(gid);
 DECLARE_ARGUMENT(primary_user_id);
 DECLARE_ARGUMENT(remote_params);
 }
-
-using namespace Mlib;
-
-namespace {
 
 struct RegisterJsonUserFunction {
     RegisterJsonUserFunction() {

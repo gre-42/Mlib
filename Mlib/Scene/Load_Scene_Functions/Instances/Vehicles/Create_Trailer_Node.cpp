@@ -10,6 +10,7 @@
 #include <Mlib/Misc/Argument_List.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
+#include <Mlib/Scene/Load_Scene_Funcs.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Make_Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Elements/Rendering_Strategies.hpp>
@@ -26,20 +27,12 @@ DECLARE_ARGUMENT(trailer_asset_id);
 DECLARE_ARGUMENT(trailer_node);
 }
 
-const std::string CreateTrailerNode::key = "create_trailer_node";
-
-LoadSceneJsonUserFunction CreateTrailerNode::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
-{
-    args.arguments.validate(KnownArgs::options);
-    CreateTrailerNode(args.physics_scene()).execute(args);
-};
-
-CreateTrailerNode::CreateTrailerNode(PhysicsScene& physics_scene) 
+CreateTrailerNode::CreateTrailerNode(PhysicsScene& physics_scene)
     : LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
-void CreateTrailerNode::execute(const LoadSceneJsonUserFunctionArgs& args)
-{
+void CreateTrailerNode::execute(const LoadSceneJsonUserFunctionArgs& args) {
+    args.arguments.validate(KnownArgs::options);
     auto rb = get_rigid_body_vehicle(
         scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::car_instance), CURRENT_SOURCE_LOCATION).get(),
         CURRENT_SOURCE_LOCATION);
@@ -62,4 +55,19 @@ void CreateTrailerNode::execute(const LoadSceneJsonUserFunctionArgs& args)
         std::move(node),
         RenderingDynamics::MOVING,
         RenderingStrategies::OBJECT);
+}
+
+namespace {
+
+    struct RegisterJsonUserFunction {
+    RegisterJsonUserFunction() {
+        LoadSceneFuncs::register_json_user_function(
+            "create_trailer_node",
+            [](const LoadSceneJsonUserFunctionArgs& args)
+            {
+                CreateTrailerNode{args.physics_scene()}.execute(args);
+            });
+    }
+} obj;
+
 }

@@ -4,6 +4,7 @@
 #include <Mlib/OpenGL/Renderables/Triangle_Sampler/Resource_Name_Cycle.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Engine.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
+#include <Mlib/Scene/Load_Scene_Funcs.hpp>
 #include <Mlib/Scene_Graph/Instantiation/Read_Grs.hpp>
 #include <Mlib/Scene_Graph/Instantiation/Root_Instantiation_Options.hpp>
 #include <Mlib/Scene_Graph/Resources/Batch_Resource_Instantiator.hpp>
@@ -21,19 +22,12 @@ DECLARE_ARGUMENT(resources);
 DECLARE_ARGUMENT(height_tolerance);
 }
 
-const std::string InstantiateGrass::key = "instantiate_grass";
-
-LoadSceneJsonUserFunction InstantiateGrass::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
-{
-    args.arguments.validate(KnownArgs::options);
-    InstantiateGrass(args.physics_scene()).execute(args);
-};
-
-InstantiateGrass::InstantiateGrass(PhysicsScene& physics_scene) 
+InstantiateGrass::InstantiateGrass(PhysicsScene& physics_scene)
     : LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
-void InstantiateGrass::execute(const LoadSceneJsonUserFunctionArgs &args) {
+void InstantiateGrass::execute(const LoadSceneJsonUserFunctionArgs& args) {
+    args.arguments.validate(KnownArgs::options);
     auto height_tolerance = args.arguments.at<ScenePos>(KnownArgs::height_tolerance) * meters;
     BatchResourceInstantiator bri;
     auto parse_resource_name_func = [this](const std::string& jma){
@@ -94,4 +88,19 @@ void InstantiateGrass::execute(const LoadSceneJsonUserFunctionArgs &args) {
             .scene = scene,
             .renderable_resource_filter = RenderableResourceFilter{}
     });
+}
+
+namespace {
+
+struct RegisterJsonUserFunction {
+    RegisterJsonUserFunction() {
+        LoadSceneFuncs::register_json_user_function(
+            "instantiate_grass",
+            [](const LoadSceneJsonUserFunctionArgs& args)
+            {
+                InstantiateGrass{args.physics_scene()}.execute(args);
+            });
+    }
+} obj;
+
 }

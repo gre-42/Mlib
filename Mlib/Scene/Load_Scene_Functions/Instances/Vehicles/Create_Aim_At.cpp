@@ -6,6 +6,7 @@
 #include <Mlib/Physics/Physics_Engine/Physics_Engine.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Linker.hpp>
+#include <Mlib/Scene/Load_Scene_Funcs.hpp>
 #include <Mlib/Scene/Scene_Config.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
@@ -30,20 +31,12 @@ DECLARE_ARGUMENT(velocity_error_std);
 DECLARE_ARGUMENT(error_alpha);
 }
 
-const std::string CreateAimAt::key = "aim_at";
-
-LoadSceneJsonUserFunction CreateAimAt::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
-{
-    args.arguments.validate(KnownArgs::options);
-    CreateAimAt(args.physics_scene()).execute(args);
-};
-
-CreateAimAt::CreateAimAt(PhysicsScene& physics_scene) 
-: LoadPhysicsSceneInstanceFunction{ physics_scene }
+CreateAimAt::CreateAimAt(PhysicsScene& physics_scene)
+    : LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
-void CreateAimAt::execute(const LoadSceneJsonUserFunctionArgs& args)
-{
+void CreateAimAt::execute(const LoadSceneJsonUserFunctionArgs& args) {
+    args.arguments.validate(KnownArgs::options);
     Linker linker{ physics_engine.advance_times_ };
     DanglingBaseClassRef<SceneNode> gun_node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::gun_node), CURRENT_SOURCE_LOCATION);
     DanglingBaseClassRef<SceneNode> follower_node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::parent_follower_rigid_body_node), CURRENT_SOURCE_LOCATION);
@@ -81,4 +74,19 @@ void CreateAimAt::execute(const LoadSceneJsonUserFunctionArgs& args)
         std::cos(args.arguments.at<float>(KnownArgs::locked_on_angle) * degrees),
         velocity_estimation_error);
     aim_at.set_followed(followed_node);
+}
+
+namespace {
+
+struct RegisterJsonUserFunction {
+    RegisterJsonUserFunction() {
+        LoadSceneFuncs::register_json_user_function(
+            "aim_at",
+            [](const LoadSceneJsonUserFunctionArgs& args)
+            {
+                CreateAimAt{args.physics_scene()}.execute(args);
+            });
+    }
+} obj;
+
 }

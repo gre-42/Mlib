@@ -37,7 +37,7 @@ DECLARE_ARGUMENT(explosions);
 DECLARE_ARGUMENT(delete_node_when_health_leq_zero);
 }
 
-CreateDamageable::CreateDamageable(PhysicsScene& physics_scene) 
+CreateDamageable::CreateDamageable(PhysicsScene& physics_scene)
     : LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 

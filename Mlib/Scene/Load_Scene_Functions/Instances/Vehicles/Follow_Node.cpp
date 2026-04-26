@@ -5,6 +5,7 @@
 #include <Mlib/Physics/Physics_Engine/Physics_Engine.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Linker.hpp>
+#include <Mlib/Scene/Load_Scene_Funcs.hpp>
 #include <Mlib/Scene/Scene_Config.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 
@@ -22,20 +23,12 @@ DECLARE_ARGUMENT(y_adaptivity);
 DECLARE_ARGUMENT(y_snappiness);
 }
 
-const std::string FollowNode::key = "follow_node";
-
-LoadSceneJsonUserFunction FollowNode::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
-{
-    args.arguments.validate(KnownArgs::options);
-    FollowNode(args.physics_scene()).execute(args);
-};
-
-FollowNode::FollowNode(PhysicsScene& physics_scene) 
-: LoadPhysicsSceneInstanceFunction{ physics_scene }
+FollowNode::FollowNode(PhysicsScene& physics_scene)
+    : LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
-void FollowNode::execute(const LoadSceneJsonUserFunctionArgs& args)
-{
+void FollowNode::execute(const LoadSceneJsonUserFunctionArgs& args) {
+    args.arguments.validate(KnownArgs::options);
     Linker linker{ physics_engine.advance_times_ };
     auto follower = args.arguments.at(KnownArgs::follower);
     auto followed = args.arguments.at(KnownArgs::followed);
@@ -63,4 +56,19 @@ void FollowNode::execute(const LoadSceneJsonUserFunctionArgs& args)
         followed,
         std::move(follow_movable),
         CURRENT_SOURCE_LOCATION);
+}
+
+namespace {
+
+struct RegisterJsonUserFunction {
+    RegisterJsonUserFunction() {
+        LoadSceneFuncs::register_json_user_function(
+            "follow_node",
+            [](const LoadSceneJsonUserFunctionArgs& args)
+            {
+                FollowNode{args.physics_scene()}.execute(args);
+            });
+    }
+} obj;
+
 }

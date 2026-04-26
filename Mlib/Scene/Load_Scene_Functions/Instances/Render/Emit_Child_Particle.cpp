@@ -20,7 +20,7 @@ DECLARE_ARGUMENT(time_point);
 DECLARE_ARGUMENT(location);
 }
 
-EmitChildParticle::EmitChildParticle(PhysicsScene& physics_scene) 
+EmitChildParticle::EmitChildParticle(PhysicsScene& physics_scene)
     : LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 

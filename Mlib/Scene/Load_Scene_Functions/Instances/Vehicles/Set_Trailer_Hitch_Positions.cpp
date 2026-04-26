@@ -20,7 +20,7 @@ DECLARE_ARGUMENT(rigid_body);
 DECLARE_ARGUMENT(asset_id);
 }
 
-SetTrailerHitchPositions::SetTrailerHitchPositions(PhysicsScene& physics_scene) 
+SetTrailerHitchPositions::SetTrailerHitchPositions(PhysicsScene& physics_scene)
 : LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 

@@ -12,7 +12,7 @@ BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(json);
 }
 
-LoadPlayers::LoadPlayers(PhysicsScene& physics_scene) 
+LoadPlayers::LoadPlayers(PhysicsScene& physics_scene)
     : LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 

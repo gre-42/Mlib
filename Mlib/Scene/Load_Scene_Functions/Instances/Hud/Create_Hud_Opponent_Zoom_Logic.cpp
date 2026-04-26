@@ -11,6 +11,7 @@
 #include <Mlib/Players/Advance_Times/Player.hpp>
 #include <Mlib/Players/Containers/Players.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
+#include <Mlib/Scene/Load_Scene_Funcs.hpp>
 #include <Mlib/Scene/Render_Logics/Hud_Opponent_Zoom_Logic.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
@@ -31,20 +32,12 @@ DECLARE_ARGUMENT(zoom);
 DECLARE_ARGUMENT(background_color);
 }
 
-const std::string CreateHudOpponentZoom::key = "hud_opponent_zoom";
-
-LoadSceneJsonUserFunction CreateHudOpponentZoom::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
-{
-    args.arguments.validate(KnownArgs::options);
-    CreateHudOpponentZoom(args.renderable_scene()).execute(args);
-};
-
 CreateHudOpponentZoom::CreateHudOpponentZoom(RenderableScene& renderable_scene) 
     : LoadRenderableSceneInstanceFunction{ renderable_scene }
 {}
 
-void CreateHudOpponentZoom::execute(const LoadSceneJsonUserFunctionArgs& args)
-{
+void CreateHudOpponentZoom::execute(const LoadSceneJsonUserFunctionArgs& args) {
+    args.arguments.validate(KnownArgs::options);
     std::optional<std::vector<DanglingBaseClassPtr<const SceneNode>>> exclusive_nodes;
     if (args.arguments.contains_non_null(KnownArgs::exclusive_nodes)) {
         exclusive_nodes = args.arguments.at_vector<VariableAndHash<std::string>>(
@@ -71,4 +64,19 @@ void CreateHudOpponentZoom::execute(const LoadSceneJsonUserFunctionArgs& args)
             args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::top))),
         args.arguments.at<float>(KnownArgs::fov) * degrees,
         args.arguments.at<float>(KnownArgs::zoom));
+}
+
+namespace {
+
+struct RegisterJsonUserFunction {
+    RegisterJsonUserFunction() {
+        LoadSceneFuncs::register_json_user_function(
+            "hud_opponent_zoom",
+            [](const LoadSceneJsonUserFunctionArgs& args)
+            {
+                CreateHudOpponentZoom{args.renderable_scene()}.execute(args);
+            });
+    }
+} obj;
+
 }

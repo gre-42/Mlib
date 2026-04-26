@@ -9,6 +9,7 @@
 #include <Mlib/Players/Scene_Vehicle/Vehicle_Spawner.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Load_Scene_Funcs.hpp>
+#include <Mlib/Scene/Load_Scene_Funcs.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Time.hpp>
 #include <Mlib/Scene_Graph/Instances/Dynamic_World.hpp>
 #include <stdexcept>
@@ -22,7 +23,7 @@ DECLARE_ARGUMENT(destination);
 DECLARE_ARGUMENT(seat);
 }
 
-EnterOrExitVehicle::EnterOrExitVehicle(PhysicsScene& physics_scene) 
+EnterOrExitVehicle::EnterOrExitVehicle(PhysicsScene& physics_scene)
     : LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 

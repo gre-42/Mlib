@@ -18,7 +18,7 @@ DECLARE_ARGUMENT(vehicle);
 DECLARE_ARGUMENT(dy);
 }
 
-SetWaypointOfs::SetWaypointOfs(PhysicsScene& physics_scene) 
+SetWaypointOfs::SetWaypointOfs(PhysicsScene& physics_scene)
 : LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 

@@ -5,6 +5,7 @@
 #include <Mlib/Players/Advance_Times/Player.hpp>
 #include <Mlib/Players/Containers/Players.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
+#include <Mlib/Scene/Load_Scene_Funcs.hpp>
 #include <Mlib/Scene_Graph/Joined_Way_Point_Sandbox.hpp>
 
 using namespace Mlib;
@@ -19,20 +20,12 @@ DECLARE_ARGUMENT(player_way_points_filter);
 DECLARE_ARGUMENT(vehicle_way_points_filter);
 }
 
-const std::string PlayerSetBehavior::key = "set_behavior";
-
-LoadSceneJsonUserFunction PlayerSetBehavior::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
-{
-    args.arguments.validate(KnownArgs::options);
-    PlayerSetBehavior(args.physics_scene()).execute(args);
-};
-
-PlayerSetBehavior::PlayerSetBehavior(PhysicsScene& physics_scene) 
-: LoadPhysicsSceneInstanceFunction{ physics_scene }
+PlayerSetBehavior::PlayerSetBehavior(PhysicsScene& physics_scene)
+    : LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
-void PlayerSetBehavior::execute(const LoadSceneJsonUserFunctionArgs& args)
-{
+void PlayerSetBehavior::execute(const LoadSceneJsonUserFunctionArgs& args) {
+    args.arguments.validate(KnownArgs::options);
     auto player = players.get_player(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::player), CURRENT_SOURCE_LOCATION);
     player->set_behavior(
         args.arguments.at<float>(KnownArgs::stuck_velocity) * kph,
@@ -41,4 +34,19 @@ void PlayerSetBehavior::execute(const LoadSceneJsonUserFunctionArgs& args)
         joined_way_point_sandbox_from_string(args.arguments.at<std::string>(KnownArgs::player_way_points_filter)));
     player->set_way_point_location_filter(
         joined_way_point_sandbox_from_string(args.arguments.at<std::string>(KnownArgs::vehicle_way_points_filter)));
+}
+
+namespace {
+
+struct RegisterJsonUserFunction {
+    RegisterJsonUserFunction() {
+        LoadSceneFuncs::register_json_user_function(
+            "set_behavior",
+            [](const LoadSceneJsonUserFunctionArgs& args)
+            {
+                PlayerSetBehavior{args.physics_scene()}.execute(args);
+            });
+    }
+} obj;
+
 }

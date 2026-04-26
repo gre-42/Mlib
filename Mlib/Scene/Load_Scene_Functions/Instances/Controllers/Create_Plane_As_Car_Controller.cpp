@@ -6,12 +6,17 @@
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Physics/Vehicle_Controllers/Car_Controllers/Plane_As_Car_Controller.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
+#include <Mlib/Scene/Load_Scene_Funcs.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Strings/String.hpp>
 #include <stdexcept>
 
 using namespace Mlib;
+
+static float from_degrees(float v) {
+    return v * degrees;
+}
 
 namespace KnownArgs {
 BEGIN_ARGUMENT_LIST;
@@ -20,24 +25,12 @@ DECLARE_ARGUMENT(tire_ids);
 DECLARE_ARGUMENT(tire_angles);
 }
 
-const std::string CreatePlaneAsCarController::key = "create_plane_as_car_controller";
-
-static float from_degrees(float v) {
-    return v * degrees;
-}
-
-LoadSceneJsonUserFunction CreatePlaneAsCarController::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
-{
-    args.arguments.validate(KnownArgs::options);
-    CreatePlaneAsCarController(args.physics_scene()).execute(args);
-};
-
-CreatePlaneAsCarController::CreatePlaneAsCarController(PhysicsScene& physics_scene) 
-: LoadPhysicsSceneInstanceFunction{ physics_scene }
+CreatePlaneAsCarController::CreatePlaneAsCarController(PhysicsScene& physics_scene)
+    : LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
-void CreatePlaneAsCarController::execute(const LoadSceneJsonUserFunctionArgs& args)
-{
+void CreatePlaneAsCarController::execute(const LoadSceneJsonUserFunctionArgs& args) {
+    args.arguments.validate(KnownArgs::options);
     DanglingBaseClassRef<SceneNode> node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::node), CURRENT_SOURCE_LOCATION);
     auto rb = get_rigid_body_vehicle(node.get(), CURRENT_SOURCE_LOCATION);
     if (rb->vehicle_controller_ != nullptr) {
@@ -55,4 +48,19 @@ void CreatePlaneAsCarController::execute(const LoadSceneJsonUserFunctionArgs& ar
         }
     }
     rb->vehicle_controller_ = std::make_unique<PlaneAsCarController>(rb, tire_angles_map);
+}
+
+namespace {
+
+struct RegisterJsonUserFunction {
+    RegisterJsonUserFunction() {
+        LoadSceneFuncs::register_json_user_function(
+            "create_plane_as_car_controller",
+            [](const LoadSceneJsonUserFunctionArgs& args)
+            {
+                CreatePlaneAsCarController{args.physics_scene()}.execute(args);
+            });
+    }
+} obj;
+
 }

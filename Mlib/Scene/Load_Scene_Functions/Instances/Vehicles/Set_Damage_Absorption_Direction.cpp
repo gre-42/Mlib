@@ -18,7 +18,7 @@ DECLARE_ARGUMENT(node);
 DECLARE_ARGUMENT(direction);
 }
 
-SetDamageAbsorptionDirection::SetDamageAbsorptionDirection(PhysicsScene& physics_scene) 
+SetDamageAbsorptionDirection::SetDamageAbsorptionDirection(PhysicsScene& physics_scene)
     : LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 

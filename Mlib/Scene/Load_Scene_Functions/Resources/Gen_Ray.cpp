@@ -1,9 +1,9 @@
-#include "Gen_Ray.hpp"
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Misc/Argument_List.hpp>
 #include <Mlib/OpenGL/Rendering_Context.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
+#include <Mlib/Scene/Load_Scene_Funcs.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
 
 using namespace Mlib;
@@ -15,18 +15,21 @@ DECLARE_ARGUMENT(from);
 DECLARE_ARGUMENT(to);
 }
 
-const std::string GenRay::key = "gen_ray";
+namespace {
 
-LoadSceneJsonUserFunction GenRay::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
-{
-    args.arguments.validate(KnownArgs::options);
-    execute(args);
-};
+struct RegisterJsonUserFunction {
+    RegisterJsonUserFunction() {
+        LoadSceneFuncs::register_json_user_function(
+            "gen_ray",
+            [](const LoadSceneJsonUserFunctionArgs& args)
+            {
+                args.arguments.validate(KnownArgs::options);
+                RenderingContextStack::primary_scene_node_resources().generate_ray(
+                    args.arguments.at<VariableAndHash<std::string>>(KnownArgs::name),
+                    args.arguments.at<EFixedArray<float, 3>>(KnownArgs::from),
+                    args.arguments.at<EFixedArray<float, 3>>(KnownArgs::to));
+        });
+}
+} obj;
 
-void GenRay::execute(const LoadSceneJsonUserFunctionArgs& args)
-{
-    RenderingContextStack::primary_scene_node_resources().generate_ray(
-        args.arguments.at<VariableAndHash<std::string>>(KnownArgs::name),
-        args.arguments.at<EFixedArray<float, 3>>(KnownArgs::from),
-        args.arguments.at<EFixedArray<float, 3>>(KnownArgs::to));
 }

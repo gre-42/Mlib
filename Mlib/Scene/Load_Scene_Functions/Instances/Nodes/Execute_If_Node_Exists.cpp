@@ -15,7 +15,7 @@ DECLARE_ARGUMENT(node);
 DECLARE_ARGUMENT(command);
 }
 
-ExecuteIfNodeExists::ExecuteIfNodeExists(PhysicsScene& physics_scene) 
+ExecuteIfNodeExists::ExecuteIfNodeExists(PhysicsScene& physics_scene)
 : LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 

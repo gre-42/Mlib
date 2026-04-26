@@ -7,12 +7,21 @@
 #include <Mlib/Physics/Vehicle_Controllers/Car_Controllers/Car_Controller.hpp>
 #include <Mlib/Regex/Regex_Select.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
+#include <Mlib/Scene/Load_Scene_Funcs.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Strings/String.hpp>
 #include <stdexcept>
 
 using namespace Mlib;
+
+inline float stov(float v) {
+    return v * kph;
+}
+
+inline float stoa(float v) {
+    return v * degrees;
+}
 
 namespace KnownArgs {
 BEGIN_ARGUMENT_LIST;
@@ -25,28 +34,12 @@ DECLARE_ARGUMENT(tire_angle_velocities);
 DECLARE_ARGUMENT(tire_angles);
 }
 
-const std::string CreateCarController::key = "create_car_controller";
-
-LoadSceneJsonUserFunction CreateCarController::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
-{
-    args.arguments.validate(KnownArgs::options);
-    CreateCarController(args.physics_scene()).execute(args);
-};
-
-CreateCarController::CreateCarController(PhysicsScene& physics_scene) 
-: LoadPhysicsSceneInstanceFunction{ physics_scene }
+CreateCarController::CreateCarController(PhysicsScene& physics_scene)
+    : LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
-inline float stov(float v) {
-    return v * kph;
-}
-
-inline float stoa(float v) {
-    return v * degrees;
-}
-
-void CreateCarController::execute(const LoadSceneJsonUserFunctionArgs& args)
-{
+void CreateCarController::execute(const LoadSceneJsonUserFunctionArgs& args) {
+    args.arguments.validate(KnownArgs::options);
     DanglingBaseClassRef<SceneNode> node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::node), CURRENT_SOURCE_LOCATION);
     auto rb = get_rigid_body_vehicle(node.get(), CURRENT_SOURCE_LOCATION);
     if (rb->vehicle_controller_ != nullptr) {
@@ -68,4 +61,19 @@ void CreateCarController::execute(const LoadSceneJsonUserFunctionArgs& args)
                 args.arguments.at_vector<float>(KnownArgs::tire_angles, stoa),
                 OutOfRangeBehavior::CLAMP},
         physics_engine);
+}
+
+namespace {
+
+struct RegisterJsonUserFunction {
+    RegisterJsonUserFunction() {
+        LoadSceneFuncs::register_json_user_function(
+            "create_car_controller",
+            [](const LoadSceneJsonUserFunctionArgs& args)
+            {
+                CreateCarController{args.physics_scene()}.execute(args);
+            });
+    }
+} obj;
+
 }

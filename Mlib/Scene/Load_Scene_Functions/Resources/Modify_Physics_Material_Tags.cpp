@@ -1,10 +1,10 @@
-#include "Modify_Physics_Material_Tags.hpp"
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array_Filter.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Misc/Argument_List.hpp>
 #include <Mlib/OpenGL/Rendering_Context.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
+#include <Mlib/Scene/Load_Scene_Funcs.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
 #include <stdexcept>
 
@@ -22,15 +22,7 @@ DECLARE_ARGUMENT(included_names);
 DECLARE_ARGUMENT(excluded_names);
 }
 
-const std::string ModifyPhysicsMaterialTags::key = "modify_physics_material_tags";
-
-LoadSceneJsonUserFunction ModifyPhysicsMaterialTags::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
-{
-    args.arguments.validate(KnownArgs::options);
-    execute(args);
-};
-
-void ModifyPhysicsMaterialTags::execute(const LoadSceneJsonUserFunctionArgs& args)
+static void execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     auto filter = ColoredVertexArrayFilter{
         .included_tags = args.arguments.contains(KnownArgs::included_tags)
@@ -60,4 +52,20 @@ void ModifyPhysicsMaterialTags::execute(const LoadSceneJsonUserFunctionArgs& arg
                 .modify_physics_material_tags(resource_name, filter, add, remove);
         }
     }
+}
+
+namespace {
+
+struct RegisterJsonUserFunction {
+    RegisterJsonUserFunction() {
+        LoadSceneFuncs::register_json_user_function(
+            "modify_physics_material_tags",
+            [](const LoadSceneJsonUserFunctionArgs& args)
+            {
+                args.arguments.validate(KnownArgs::options);
+                execute(args);
+            });
+    }
+} obj;
+
 }

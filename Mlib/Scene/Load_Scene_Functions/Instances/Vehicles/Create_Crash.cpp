@@ -18,7 +18,7 @@ DECLARE_ARGUMENT(node);
 DECLARE_ARGUMENT(damage);
 }
 
-CreateCrash::CreateCrash(PhysicsScene& physics_scene) 
+CreateCrash::CreateCrash(PhysicsScene& physics_scene)
     : LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 

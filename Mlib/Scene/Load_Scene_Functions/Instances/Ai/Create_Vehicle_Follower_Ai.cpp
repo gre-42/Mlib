@@ -6,6 +6,7 @@
 #include <Mlib/Physics/Physics_Engine/Physics_Engine.hpp>
 #include <Mlib/Players/Advance_Times/Follower_Ai.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
+#include <Mlib/Scene/Load_Scene_Funcs.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <stdexcept>
 
@@ -17,20 +18,12 @@ DECLARE_ARGUMENT(missile);
 DECLARE_ARGUMENT(target);
 }
 
-const std::string CreateVehicleFollowerAi::key = "create_vehicle_follower_ai";
-
-LoadSceneJsonUserFunction CreateVehicleFollowerAi::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
-{
-    args.arguments.validate(KnownArgs::options);
-    CreateVehicleFollowerAi(args.physics_scene()).execute(args);
-};
-
-CreateVehicleFollowerAi::CreateVehicleFollowerAi(PhysicsScene& physics_scene) 
-: LoadPhysicsSceneInstanceFunction{ physics_scene }
+CreateVehicleFollowerAi::CreateVehicleFollowerAi(PhysicsScene& physics_scene)
+    : LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
-void CreateVehicleFollowerAi::execute(const LoadSceneJsonUserFunctionArgs& args)
-{
+void CreateVehicleFollowerAi::execute(const LoadSceneJsonUserFunctionArgs& args) {
+    args.arguments.validate(KnownArgs::options);
     auto missile_node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::missile), CURRENT_SOURCE_LOCATION);
     auto target_node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::target), CURRENT_SOURCE_LOCATION);
     auto missile_vehicle = get_rigid_body_vehicle(missile_node.get(), CURRENT_SOURCE_LOCATION);
@@ -40,4 +33,19 @@ void CreateVehicleFollowerAi::execute(const LoadSceneJsonUserFunctionArgs& args)
         physics_engine.advance_times_,
         missile_vehicle,
         target_vehicle);
+}
+
+namespace {
+
+struct RegisterJsonUserFunction {
+    RegisterJsonUserFunction() {
+        LoadSceneFuncs::register_json_user_function(
+            "create_vehicle_follower_ai",
+            [](const LoadSceneJsonUserFunctionArgs& args)
+            {
+                CreateVehicleFollowerAi{args.physics_scene()}.execute(args);
+            });
+    }
+} obj;
+
 }

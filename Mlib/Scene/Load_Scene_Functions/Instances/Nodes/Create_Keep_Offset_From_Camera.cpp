@@ -6,6 +6,8 @@
 #include <Mlib/Scene/Advance_Times/Keep_Offset_From_Camera.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Linker.hpp>
+#include <Mlib/Scene/Load_Scene_Funcs.hpp>
+#include <Mlib/Scene/Load_Scene_Funcs.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 
 using namespace Mlib;
@@ -18,20 +20,12 @@ DECLARE_ARGUMENT(texture_width);
 DECLARE_ARGUMENT(texture_height);
 }
 
-const std::string CreateKeepOffsetFromCamera::key = "keep_offset_from_camera";
-
-LoadSceneJsonUserFunction CreateKeepOffsetFromCamera::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
-{
-    args.arguments.validate(KnownArgs::options);
-    CreateKeepOffsetFromCamera(args.renderable_scene()).execute(args);
-};
-
 CreateKeepOffsetFromCamera::CreateKeepOffsetFromCamera(RenderableScene& renderable_scene) 
     : LoadRenderableSceneInstanceFunction{ renderable_scene }
 {}
 
-void CreateKeepOffsetFromCamera::execute(const LoadSceneJsonUserFunctionArgs& args)
-{
+void CreateKeepOffsetFromCamera::execute(const LoadSceneJsonUserFunctionArgs& args) {
+    args.arguments.validate(KnownArgs::options);
     Linker linker{ physics_engine.advance_times_ };
     auto follower = args.arguments.at<VariableAndHash<std::string>>(KnownArgs::follower);
     DanglingBaseClassRef<SceneNode> follower_node = scene.get_node(follower, CURRENT_SOURCE_LOCATION);
@@ -55,4 +49,19 @@ void CreateKeepOffsetFromCamera::execute(const LoadSceneJsonUserFunctionArgs& ar
         follower,
         std::move(keep_offset),
         CURRENT_SOURCE_LOCATION);
+}
+
+namespace {
+
+struct RegisterJsonUserFunction {
+    RegisterJsonUserFunction() {
+        LoadSceneFuncs::register_json_user_function(
+            "keep_offset_from_camera",
+            [](const LoadSceneJsonUserFunctionArgs& args)
+            {
+                CreateKeepOffsetFromCamera{args.renderable_scene()}.execute(args);
+            });
+    }
+} obj;
+
 }

@@ -13,11 +13,11 @@ BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(setup_new_round);
 }
 
-InstantiateGameLogic::InstantiateGameLogic(PhysicsScene& physics_scene) 
+InstantiateGameLogic::InstantiateGameLogic(PhysicsScene& physics_scene)
     : LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
-void InstantiateGameLogic::execute(const LoadSceneJsonUserFunctionArgs &args) {
+void InstantiateGameLogic::execute(const LoadSceneJsonUserFunctionArgs& args) {
     physics_scene.instantiate_game_logic(
         [l = args.arguments.at(KnownArgs::setup_new_round),
          mle = args.macro_line_executor]()

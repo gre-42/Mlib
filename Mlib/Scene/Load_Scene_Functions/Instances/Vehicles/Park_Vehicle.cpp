@@ -15,7 +15,7 @@ BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(rigid_body);
 }
 
-ParkVehicle::ParkVehicle(PhysicsScene& physics_scene) 
+ParkVehicle::ParkVehicle(PhysicsScene& physics_scene)
     : LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 

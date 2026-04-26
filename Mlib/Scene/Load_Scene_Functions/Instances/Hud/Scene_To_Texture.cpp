@@ -9,6 +9,7 @@
 #include <Mlib/OpenGL/Render_To_Texture/Render_To_Texture_Logic.hpp>
 #include <Mlib/Regex/Regex_Select.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
+#include <Mlib/Scene/Load_Scene_Funcs.hpp>
 #include <Mlib/Scene/Renderable_Scene.hpp>
 #include <Mlib/Scene/Renderable_Scenes.hpp>
 #include <Mlib/Strings/String.hpp>
@@ -25,20 +26,12 @@ DECLARE_ARGUMENT(focus_mask);
 DECLARE_ARGUMENT(submenus);
 }
 
-const std::string SceneToTexture::key = "scene_to_texture";
-
-LoadSceneJsonUserFunction SceneToTexture::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
-{
-    args.arguments.validate(KnownArgs::options);
-    SceneToTexture(args.physics_scene()).execute(args);
-};
-
-SceneToTexture::SceneToTexture(PhysicsScene& physics_scene) 
-: LoadPhysicsSceneInstanceFunction{ physics_scene }
+SceneToTexture::SceneToTexture(PhysicsScene& physics_scene)
+    : LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
-void SceneToTexture::execute(const LoadSceneJsonUserFunctionArgs& args)
-{
+void SceneToTexture::execute(const LoadSceneJsonUserFunctionArgs& args) {
+    args.arguments.validate(KnownArgs::options);
     auto& rs = args.renderable_scenes["primary_scene"];
     auto& scene_window_logic = object_pool.create<RenderToTextureLogic>(
         CURRENT_SOURCE_LOCATION,
@@ -56,4 +49,19 @@ void SceneToTexture::execute(const LoadSceneJsonUserFunctionArgs& args)
         { scene_window_logic, CURRENT_SOURCE_LOCATION },
         0 /* z_order */,
         CURRENT_SOURCE_LOCATION);
+}
+
+namespace {
+
+struct RegisterJsonUserFunction {
+    RegisterJsonUserFunction() {
+        LoadSceneFuncs::register_json_user_function(
+            "scene_to_texture",
+            [](const LoadSceneJsonUserFunctionArgs& args)
+            {
+                SceneToTexture{args.physics_scene()}.execute(args);
+            });
+    }
+} obj;
+
 }
