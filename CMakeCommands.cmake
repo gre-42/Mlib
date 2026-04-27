@@ -368,13 +368,13 @@ endmacro()
 
 macro(enable_omp)
     if(EMSCRIPTEN)
-        # Force OpenMP flags without running find_package
         set(OpenMP_C_FLAGS "-fopenmp -pthread")
         set(OpenMP_CXX_FLAGS "-fopenmp -pthread")
         set(OpenMP_C_LIB_NAMES "omp")
         set(OpenMP_CXX_LIB_NAMES "omp")
         set(OpenMP_FOUND TRUE)
-        add_link_options("-sPTHREAD_POOL_SIZE=4")
+        # This setting is mandatory for "simpleomp"
+        add_link_options("-sPTHREAD_POOL_SIZE=navigator.hardwareConcurrency")
         # Please call "target_link_openmp" after linking all dependencies.
     else()
         find_package(OpenMP REQUIRED)
