@@ -18,4 +18,6 @@ target_include_directories(
     ${MlibCereal_INCLUDE_DIR})
 
 target_link_libraries(MlibOsmLoader PUBLIC MlibPoly2Tri MlibOpenGL MlibNavigation MlibGeography MlibGeometry MlibMacroExecutor)
-target_link_openmp(MlibOsmLoader)
+if (NOT EMSCRIPTEN)
+    target_link_openmp(MlibOsmLoader)
+endif()

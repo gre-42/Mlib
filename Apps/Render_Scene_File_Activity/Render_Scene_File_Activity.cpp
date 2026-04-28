@@ -295,7 +295,12 @@ void android_main(android_app* app)
 #endif
 {
     // set_log_level(LogLevel::ERROR);
-#ifndef __EMSCRIPTEN__
+#ifdef __EMSCRIPTEN__
+    DestructionGuard eeg{[](){
+        // Wait for static thread pools
+        emscripten_exit_with_live_runtime();
+    }};
+#else
     AndroidAppGuard android_app_guard{*app};
 #endif
     // This throws exceptions internally, which is not supported
@@ -680,8 +685,15 @@ void android_main(android_app* app)
                 {"if_devel", args.has_named("--devel_mode")},
                 {"if_show_debug_wheels", args.has_named("--show_debug_wheels")},
                 {"if_show_global_log", args.has_named("--show_global_log")},
+#ifdef __ANDROID__
                 {"if_android", true},
-                {"if_web", false},
+                {"if_compressed", false},
+#elifdef __EMSCRIPTEN__
+                {"if_android", false},
+                {"if_compressed", false},
+#else
+#error Detected neither __ANDROID__ nor __EMSCRIPTEN__
+#endif
                 {"flavor", AUi::GetFlavor()},
                 {"mesh", args.named_value("--mesh", "obj")},
                 {"animated_mesh", args.named_value("--animated_mesh", "mhx2")},

@@ -15,6 +15,6 @@ if (WITH_ICU)
     target_link_libraries(MlibStrings PUBLIC ICU::i18n ICU::uc)
 endif()
 
-if (EMSCRIPTEN)
+if (NOT EMSCRIPTEN)
     target_link_openmp(MlibStrings)
 endif()

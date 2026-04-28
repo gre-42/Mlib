@@ -364,6 +364,14 @@ macro(set_stack_size)
             add_link_options(-Wl,--stack,8388608)
         endif()
     endif()
+    if (EMSCRIPTEN)
+        # Please set these flags using LDFLAGS
+        # add_link_options(
+        #     "-sSTACK_SIZE=8MB"
+        #     "-sPTHREAD_POOL_SIZE=32"
+        #     "-sINITIAL_MEMORY=1GB"
+        # )
+    endif()
 endmacro()
 
 macro(enable_omp)
@@ -373,7 +381,12 @@ macro(enable_omp)
         set(OpenMP_C_LIB_NAMES "omp")
         set(OpenMP_CXX_LIB_NAMES "omp")
         set(OpenMP_FOUND TRUE)
-        # This setting is mandatory for "simpleomp"
+        # This setting is mandatory for "simpleomp".
+        # However, simpleomp is now not used any more,
+        # and more threads are required in practive anyway.
+        # See the "set_stack_size" macro or search for "set_stack_size"
+        # for the current settings.
+        message(FATAL_ERROR "OpenMP not supported with Emscripten")
         add_link_options("-sPTHREAD_POOL_SIZE=navigator.hardwareConcurrency")
         # Please call "target_link_openmp" after linking all dependencies.
     else()
@@ -447,10 +460,10 @@ macro(target_link_against_opengl target)
                 -sDISABLE_DEPRECATED_FIND_EVENT_TARGET_BEHAVIOR=1
                 -sFULL_ES2=1
                 -sFULL_ES3=1
+                -sUSE_WEBGL2=1
                 -sMIN_WEBGL_VERSION=2
                 -sMAX_WEBGL_VERSION=2
                 -sPROXY_TO_PTHREAD=1
-                -sOFFSCREENCANVAS_SUPPORT=1
                 -lGL
                 -lEGL)
     elseif (ANDROID)

@@ -53,9 +53,18 @@ endif
 ifeq ($(EMSDK),1)
     ENV       += CFLAGS="-sMEMORY64=1 -pthread"
     ENV       += CXXFLAGS="-sMEMORY64=1 -pthread -fexceptions"
-    ENV       += LDFLAGS="-sMEMORY64=1 -pthread -sWASM_BIGINT -sINITIAL_MEMORY=4294967296 -sALLOW_MEMORY_GROWTH=0 -sASSERTIONS -sASYNCIFY -fexceptions"
+    ENV       += LDFLAGS="-sMEMORY64=1 -pthread -sWASM_BIGINT -sINITIAL_MEMORY=4294967296 -sALLOW_MEMORY_GROWTH=0 -sSTACK_SIZE=8MB -sPTHREAD_POOL_SIZE=32 -sPTHREAD_POOL_SIZE=2 -sASSERTIONS=1 -sEXIT_RUNTIME=0 -fexceptions"
     BUILD_DIR     := E$(BUILD_DIR)
     RECAST_PREFIX := E
+    CMAKE_CMD     := emcmake
+    CONTAINER     := mgame/emsdk
+endif
+ifeq ($(EMSDK32),1)
+    ENV       += CFLAGS="-sMEMORY64=0 -pthread"
+    ENV       += CXXFLAGS="-sMEMORY64=0 -pthread -fexceptions"
+    ENV       += LDFLAGS="-sMEMORY64=0 -pthread -sWASM_BIGINT -sINITIAL_MEMORY=2147483648 -sALLOW_MEMORY_GROWTH=0 -sSTACK_SIZE=8MB -sPTHREAD_POOL_SIZE=32 -sPTHREAD_POOL_SIZE=2 -sASSERTIONS=1 -sEXIT_RUNTIME=0 -fexceptions"
+    BUILD_DIR     := E32$(BUILD_DIR)
+    RECAST_PREFIX := E32
     CMAKE_CMD     := emcmake
     CONTAINER     := mgame/emsdk
 endif
@@ -82,6 +91,11 @@ emsdk_image:
 
 cmake:
 	$(CMAKE_CMD) cmake -G Ninja -DCMAKE_BUILD_TYPE="$(CMAKE_BUILD_TYPE)" -B "$(BUILD_DIR)" -D RECAST_PREFIX=$(RECAST_PREFIX)
+
+cmake_fresh:
+	# This is the same as "cmake $(BUILD_DIR) --fresh"
+	rm -rf "$(BUILD_DIR)/CMakeCache.txt" "$(BUILD_DIR)/CMakeFiles"
+	rm -rf "$(RECAST_PREFIX)RecastBuild/CMakeCache.txt" "$(RECAST_PREFIX)RecastBuild/CMakeFiles"
 
 build:
 	$(BUILD_CMD) cmake --build "$(BUILD_DIR)" --verbose
