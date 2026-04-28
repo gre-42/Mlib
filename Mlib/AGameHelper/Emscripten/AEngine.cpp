@@ -1,4 +1,5 @@
 #include "AEngine.hpp"
+#include <Mlib/AGameHelper/Emscripten/Execute_Func_On_Main_Thread.hpp>
 #include <Mlib/Layout/Layout_Constraint_Parameters.hpp>
 #include <Mlib/Memory/Integral_Cast.hpp>
 #include <Mlib/OpenGL/IRenderer.hpp>
@@ -14,13 +15,17 @@ AEngine::AEngine(
     : renderer_{renderer}
     , button_states_{button_states}
 {
-    emscripten_set_keydown_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, nullptr, EM_FALSE, key_callback);
-    emscripten_set_keyup_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, nullptr, EM_FALSE, key_callback);
+    execute_func_on_main_thread([this](){
+        emscripten_set_keydown_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, this, EM_FALSE, key_callback);
+        emscripten_set_keyup_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, this, EM_FALSE, key_callback);
+    });
 }
 
 AEngine::~AEngine() {
-    emscripten_set_keydown_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, nullptr, EM_FALSE, nullptr);
-    emscripten_set_keyup_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, nullptr, EM_FALSE, nullptr);
+    execute_func_on_main_thread([](){
+        emscripten_set_keydown_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, nullptr, EM_FALSE, nullptr);
+        emscripten_set_keyup_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, nullptr, EM_FALSE, nullptr);
+    });
 }
 
 void AEngine::draw_frame(Mlib::RenderEvent event) {

@@ -1,7 +1,10 @@
 #include "ARenderLoop.hpp"
 #include <Mlib/AGameHelper/Emscripten/AEngine.hpp>
+#include <Mlib/AGameHelper/Emscripten/Execute_Func_On_Main_Thread.hpp>
 #include <Mlib/OpenGL/IRenderer.hpp>
 #include <Mlib/Os/Os.hpp>
+#include <Mlib/Threads/Termination_Manager.hpp>
+#include <Mlib/Threads/Thread_Local.hpp>
 #include <GLES3/gl3.h>
 #include <emscripten/html5.h>
 #include <emscripten/proxying.h>
@@ -10,6 +13,11 @@
 #include <thread>
 
 using namespace Mlib;
+
+static bool& main_loop_valid() {
+    THREAD_LOCAL(bool) result = false;
+    return result;
+}
 
 ARenderLoop::ARenderLoop(AEngine& aengine)
     : aengine_{aengine}
@@ -29,41 +37,60 @@ struct ARenderLoopAndExitLoop {
 };
 
 void run_main_loop_iteration(void* arg) {
-    auto& re = *static_cast<ARenderLoopAndExitLoop*>(arg);
-    if (re.exit_loop()) {
-        emscripten_cancel_main_loop();
-        {
-            std::lock_guard<std::mutex> lock(re.mutex);
-            re.finished = true;
-        }
-        re.cv.notify_one();
+    if (!main_loop_valid()) {
         return;
     }
-    re.loop.aengine_.draw_frame(Mlib::RenderEvent::LOOP);
+    auto& re = *static_cast<ARenderLoopAndExitLoop*>(arg);
+    try {
+        if (re.exit_loop()) {
+            main_loop_valid() = false;
+            emscripten_cancel_main_loop();
+            {
+                std::lock_guard<std::mutex> lock(re.mutex);
+                re.finished = true;
+            }
+            re.cv.notify_one();
+            return;
+        }
+    } catch (const std::exception& e) {
+        verbose_abort("Unhandled exception in render loop: " + std::string{e.what()});
+    } catch (...) {
+        verbose_abort("Unknown unhandled exception in render loop");
+    }
+    try {
+        re.loop.aengine_.draw_frame(Mlib::RenderEvent::LOOP);
+    } catch (...) {
+        add_unhandled_exception(std::current_exception());
+    }
 }
 
-void start_loop_proxy(void* arg) {
-    auto& re = *static_cast<ARenderLoopAndExitLoop*>(arg);
-    if (re.loop.ctx_ == 0) {
-        // Init GLES context using HTML5 API
-        EmscriptenWebGLContextAttributes attrs;
-        emscripten_webgl_init_context_attributes(&attrs);
-        attrs.proxyContextToMainThread = EMSCRIPTEN_WEBGL_CONTEXT_PROXY_DISALLOW;
-        attrs.majorVersion = 2;
+void start_loop_proxy(ARenderLoopAndExitLoop& re) {
+    try {
+        if (re.loop.ctx_ == 0) {
+            // Init GLES context using HTML5 API
+            EmscriptenWebGLContextAttributes attrs;
+            emscripten_webgl_init_context_attributes(&attrs);
+            attrs.proxyContextToMainThread = EMSCRIPTEN_WEBGL_CONTEXT_PROXY_DISALLOW;
+            attrs.majorVersion = 2;
 
-        // "#canvas" is the default ID used by Emscripten's shell
-        re.loop.ctx_ = emscripten_webgl_create_context("#canvas", &attrs);
-        if (re.loop.ctx_ <= 0) {
-            throw std::runtime_error("WebGL context was not created. Is the selector '#canvas' in the DOM?");
+            // "#canvas" is the default ID used by Emscripten's shell
+            re.loop.ctx_ = emscripten_webgl_create_context("#canvas", &attrs);
+            if (re.loop.ctx_ <= 0) {
+                throw std::runtime_error("WebGL context was not created. Is the selector '#canvas' in the DOM?");
+            }
         }
-    }
-    {
-        auto res = emscripten_webgl_make_context_current(re.loop.ctx_);
-        if (res != EMSCRIPTEN_RESULT_SUCCESS) {
-            throw std::runtime_error("Could not make context current (1)");
+        {
+            auto res = emscripten_webgl_make_context_current(re.loop.ctx_);
+            if (res != EMSCRIPTEN_RESULT_SUCCESS) {
+                throw std::runtime_error("Could not make context current (1)");
+            }
         }
+    } catch (...) {
+        add_unhandled_exception(std::current_exception());
+        return;
     }
-    emscripten_set_main_loop_arg(run_main_loop_iteration, arg, 0, false);
+    emscripten_set_main_loop_arg(run_main_loop_iteration, &re, 0, false);
+    main_loop_valid() = true;
 }
 
 void ARenderLoop::render_loop(const std::function<bool()>& exit_loop) {
@@ -73,14 +100,7 @@ void ARenderLoop::render_loop(const std::function<bool()>& exit_loop) {
     //     std::this_thread::sleep_for(std::chrono::milliseconds(1));
     // }
     ARenderLoopAndExitLoop re{*this, exit_loop};
-    em_proxying_queue* queue = emscripten_proxy_get_system_queue();
-    pthread_t main_thread = emscripten_main_runtime_thread_id();
-    emscripten_proxy_sync(
-        queue,
-        main_thread,
-        start_loop_proxy,
-        &re
-    );
+    execute_func_on_main_thread([&re](){ start_loop_proxy(re); });
     // std::unique_lock<std::mutex> lk(re.mutex);
     // re.cv.wait(lk, [&re]{ return re.finished; });
     while (true) {

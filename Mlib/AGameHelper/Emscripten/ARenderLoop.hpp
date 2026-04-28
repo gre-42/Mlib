@@ -2,8 +2,9 @@
 #include <emscripten/html5.h>
 #include <functional>
 
+struct ARenderLoopAndExitLoop;
 void run_main_loop_iteration(void* arg);
-void start_loop_proxy(void* arg);
+void start_loop_proxy(ARenderLoopAndExitLoop& arg);
 
 namespace Mlib {
 
@@ -11,7 +12,7 @@ class AEngine;
 
 class ARenderLoop {
     friend void ::run_main_loop_iteration(void* arg);
-    friend void ::start_loop_proxy(void* arg);
+    friend void ::start_loop_proxy(ARenderLoopAndExitLoop& re);
 public:
     explicit ARenderLoop(AEngine& aengine);
     ~ARenderLoop();
