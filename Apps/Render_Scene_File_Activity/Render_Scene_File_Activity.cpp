@@ -8,6 +8,7 @@
 #include <Mlib/Os/Android/NDKHelper.h>
 #endif
 #ifdef __EMSCRIPTEN__
+#include <Mlib/AGameHelper/Emscripten/AAnimation_Frame_Worker.hpp>
 #include <Mlib/AGameHelper/Emscripten/AContext.hpp>
 #include <Mlib/AGameHelper/Emscripten/AEngine.hpp>
 #include <Mlib/AGameHelper/Emscripten/ARenderLoop.hpp>
@@ -93,6 +94,7 @@
 #include <Mlib/Time/Fps/Realtime_Dependent_Fps.hpp>
 #include <Mlib/Time/Time_And_Pause.hpp>
 #include <filesystem>
+#include <thread>
 
 using namespace Mlib;
 
@@ -288,8 +290,27 @@ JThread loader_thread(
     }};
 }
 
+int main_background();
+
 #ifdef __EMSCRIPTEN__
-int main()
+int main() {
+    linfo() << "Proxy thread started";
+    set_animation_frame_thread();
+    linfo() << "Start background thread";
+    std::thread bg_thread([]() {
+        linfo() << "Call background function";
+        auto exit_code = main_background();
+        linfo() << "Exit application with return code " << exit_code;
+        std::exit(exit_code);
+    });
+    linfo() << "Detach background thread";
+    bg_thread.detach();
+    linfo() << "Call \"emscripten_exit_with_live_runtime\"";
+    exit_with_live_runtime();
+    linfo() << "Return from proxy thread";
+    return 0;
+}
+int main_background()
 #else
 void android_main(android_app* app)
 #endif
@@ -942,4 +963,7 @@ void android_main(android_app* app)
         std::this_thread::sleep_for(std::chrono::seconds(5));
         std::abort();
     }
+#ifdef __EMSCRIPTEN__
+    return 0;
+#endif
 }

@@ -13,7 +13,7 @@ elseif (EMSCRIPTEN)
             Emscripten/AContext.cpp
             Emscripten/ARenderLoop.cpp
             Emscripten/AEngine.cpp
-            Emscripten/Execute_Func_On_Main_Thread.cpp
+            Emscripten/AAnimation_Frame_Worker.cpp
     )
 else()
     message(FATAL_ERROR "Unknown platform type")

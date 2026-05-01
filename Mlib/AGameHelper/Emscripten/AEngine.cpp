@@ -1,5 +1,5 @@
 #include "AEngine.hpp"
-#include <Mlib/AGameHelper/Emscripten/Execute_Func_On_Main_Thread.hpp>
+#include <Mlib/AGameHelper/Emscripten/AAnimation_Frame_Worker.hpp>
 #include <Mlib/Layout/Layout_Constraint_Parameters.hpp>
 #include <Mlib/Memory/Integral_Cast.hpp>
 #include <Mlib/OpenGL/IRenderer.hpp>
@@ -15,14 +15,14 @@ AEngine::AEngine(
     : renderer_{renderer}
     , button_states_{button_states}
 {
-    execute_func_on_main_thread([this](){
+    execute_in_animation_frame_thread([this](){
         emscripten_set_keydown_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, this, EM_FALSE, key_callback);
         emscripten_set_keyup_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, this, EM_FALSE, key_callback);
     });
 }
 
 AEngine::~AEngine() {
-    execute_func_on_main_thread([](){
+    execute_in_animation_frame_thread([](){
         emscripten_set_keydown_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, nullptr, EM_FALSE, nullptr);
         emscripten_set_keyup_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, nullptr, EM_FALSE, nullptr);
     });

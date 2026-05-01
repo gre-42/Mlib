@@ -6,13 +6,6 @@
 #include <cstring>
 #include <stdexcept>
 
-#ifdef __EMSCRIPTEN__
-#include <emscripten/threading.h>
-#define PROCESS_MESSAGES emscripten_current_thread_process_queued_calls();
-#else
-#define PROCESS_MESSAGES
-#endif
-
 namespace Mlib {
 
 class AtomicMutex {
@@ -35,19 +28,15 @@ public:
             throw std::runtime_error("Could not parse SPINLOCK variable");
         }();
         if (spinlock) {
-            while (!try_lock()) {
-                PROCESS_MESSAGES
-            }
+            while (!try_lock());
         } else {
             // Spinlock for 25ms on a 4GHz processor
             for (uint32_t i = 0; i < 100'000'000; ++i) {
-                PROCESS_MESSAGES
                 if (try_lock()) {
                     return;
                 }
             }
             while (!try_lock()) {
-                PROCESS_MESSAGES
                 Mlib::sleep_for(std::chrono::milliseconds(100));
             }
         }

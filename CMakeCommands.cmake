@@ -464,6 +464,7 @@ macro(target_link_against_opengl target)
                 -sMIN_WEBGL_VERSION=2
                 -sMAX_WEBGL_VERSION=2
                 -sPROXY_TO_PTHREAD=1
+                -sOFFSCREENCANVAS_SUPPORT=1
                 -lGL
                 -lEGL)
     elseif (ANDROID)
