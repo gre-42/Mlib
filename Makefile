@@ -50,7 +50,12 @@ ifeq ($(LIBCPP),1)
     BUILD_DIR := C$(BUILD_DIR)
 endif
 # EMSDK, EMSDK32
-ES_LDFLAGS_COMMON := -pthread -sWASM_BIGINT -sSTACK_SIZE=8MB -sPTHREAD_POOL_SIZE=32 -sASSERTIONS=2 -fexceptions
+ES_LDFLAGS_COMMON := -pthread -sWASM_BIGINT -sSTACK_SIZE=8MB -sPTHREAD_POOL_SIZE=32 -fexceptions
+ifeq ($(CMAKE_BUILD_TYPE),Debug)
+    ES_LDFLAGS_COMMON := ${ES_LDFLAGS_COMMON} -sASSERTIONS=2
+else
+    ES_LDFLAGS_COMMON := ${ES_LDFLAGS_COMMON} -sASSERTIONS=0
+endif
 ifeq ($(EMSDK),1)
     ENV       += CFLAGS="-sMEMORY64=1 -pthread"
     ENV       += CXXFLAGS="-sMEMORY64=1 -pthread -fexceptions"

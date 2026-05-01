@@ -317,12 +317,7 @@ void android_main(android_app* app)
 #endif
 {
     // set_log_level(LogLevel::ERROR);
-#ifdef __EMSCRIPTEN__
-    DestructionGuard eeg{[](){
-        // Wait for static thread pools
-        emscripten_exit_with_live_runtime();
-    }};
-#else
+#ifdef __ANDROID__
     AndroidAppGuard android_app_guard{*app};
 #endif
     // This throws exceptions internally, which is not supported
