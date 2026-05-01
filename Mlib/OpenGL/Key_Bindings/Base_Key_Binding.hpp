@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Hashing/Variable_And_Hash.hpp>
 #include <cstdint>
 #include <iosfwd>
 #include <map>
@@ -30,7 +31,7 @@ struct GamepadButton {
 };
 
 struct BaseKeyBinding {
-    std::string key;
+    VariableAndHash<std::string> key;
     std::string mouse_button;
     std::map<std::string, GamepadButton> gamepad_button;
     std::map<std::string, AnalogDigitalAxes> joystick_axes;

@@ -3,6 +3,7 @@
 #include <Mlib/Layout/Layout_Constraint_Parameters.hpp>
 #include <Mlib/Memory/Integral_Cast.hpp>
 #include <Mlib/OpenGL/IRenderer.hpp>
+#include <Mlib/OpenGL/Input_Map/Key_Map_I18n.hpp>
 #include <Mlib/OpenGL/Ui/Button_States.hpp>
 #include <emscripten/html5.h>
 #include <stdexcept>
@@ -58,7 +59,8 @@ LayoutConstraintParameters AEngine::layout_parameters_y() const {
 
 bool AEngine::key_callback(int event_type, const EmscriptenKeyboardEvent* e, void* user_data) {
     auto* engine = static_cast<AEngine*>(user_data);
-    engine->button_states_.notify_key_event(integral_cast<int>(e->keyCode), event_type);
+    auto code = keys_map_i18n.get(VariableAndHash<std::string>{e->code});
+    engine->button_states_.notify_key_event(code, event_type);
     return true;
 }
 

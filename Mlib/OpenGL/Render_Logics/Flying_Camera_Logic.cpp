@@ -23,6 +23,8 @@
 #include <Mlib/Time/Fps/Set_Fps.hpp>
 #include <stdexcept>
 
+using S = Mlib::VariableAndHash<std::string>;
+
 namespace Mlib {
 class FlyingCameraLogicKeys {
 public:
@@ -33,10 +35,10 @@ public:
         , c{ button_states, key_configurations, 0, "c", "" }
     {
         auto lock = key_configurations.lock_exclusive_for(std::chrono::seconds(2), "Key configurations");
-        lock->insert(0, "v", { {{{.key = "V"}}} });
-        lock->insert(0, "w", { {{{.key = "W"}}} });
-        lock->insert(0, "d", { {{{.key = "D"}}} });
-        lock->insert(0, "c", { {{{.key = "C"}}} });
+        lock->insert(0, "v", { {{{.key = S("V")}}} });
+        lock->insert(0, "w", { {{{.key = S("W")}}} });
+        lock->insert(0, "d", { {{{.key = S("D")}}} });
+        lock->insert(0, "c", { {{{.key = S("C")}}} });
     }
     ButtonPress v;
     ButtonPress w;
@@ -53,56 +55,56 @@ static void flying_key_callback(
     FlyingCameraUserClass& user_object,
     FlyingCameraLogicKeys& keys)
 {
-    if (user_object.button_states.key_down({.key = "LEFT_CONTROL"})) {
-        if (user_object.button_states.key_down({.key = "UP"})) {
+    if (user_object.button_states.key_down({.key = S("LEFT_CONTROL")})) {
+        if (user_object.button_states.key_down({.key = S("UP")})) {
             user_object.obj_angles(2) += 0.01f;
         }
-        if (user_object.button_states.key_down({.key = "DOWN"})) {
+        if (user_object.button_states.key_down({.key = S("DOWN")})) {
             user_object.obj_angles(2) -= 0.01f;
         }
-        if (user_object.button_states.key_down({.key = "LEFT"})) {
+        if (user_object.button_states.key_down({.key = S("LEFT")})) {
             user_object.obj_angles(1) += 0.01f;
         }
-        if (user_object.button_states.key_down({.key = "RIGHT"})) {
+        if (user_object.button_states.key_down({.key = S("RIGHT")})) {
             user_object.obj_angles(1) -= 0.01f;
         }
-        if (user_object.button_states.key_down({.key = "PAGE_UP"})) {
+        if (user_object.button_states.key_down({.key = S("PAGE_UP")})) {
             user_object.obj_angles(0) += 0.01f;
         }
-        if (user_object.button_states.key_down({.key = "PAGE_DOWN"})) {
+        if (user_object.button_states.key_down({.key = S("PAGE_DOWN")})) {
             user_object.obj_angles(0) -= 0.01f;
         }
-        if (user_object.button_states.key_down({.key = "KP_ADD"})) {
+        if (user_object.button_states.key_down({.key = S("KP_ADD")})) {
             user_object.obj_position(1) += 0.04f;
         }
-        if (user_object.button_states.key_down({.key = "KP_SUBTRACT"})) {
+        if (user_object.button_states.key_down({.key = S("KP_SUBTRACT")})) {
             user_object.obj_position(1) -= 0.04f;
         }
     } else {
-        if (user_object.button_states.key_down({.key = "UP"})) {
+        if (user_object.button_states.key_down({.key = S("UP")})) {
             user_object.position -= (0.2f * tait_bryan_angles_2_matrix(user_object.angles).column(2)).casted<ScenePos>();
             // user_object.position(2) -= 0.04f;
         }
-        if (user_object.button_states.key_down({.key = "DOWN"})) {
+        if (user_object.button_states.key_down({.key = S("DOWN")})) {
             user_object.position += (0.2f * tait_bryan_angles_2_matrix(user_object.angles).column(2)).casted<ScenePos>();
             // user_object.position(2) += 0.04f;
         }
-        if (user_object.button_states.key_down({.key = "LEFT"})) {
+        if (user_object.button_states.key_down({.key = S("LEFT")})) {
             user_object.angles(1) += 0.01f;
         }
-        if (user_object.button_states.key_down({.key = "RIGHT"})) {
+        if (user_object.button_states.key_down({.key = S("RIGHT")})) {
             user_object.angles(1) -= 0.01f;
         }
-        if (user_object.button_states.key_down({.key = "PAGE_UP"})) {
+        if (user_object.button_states.key_down({.key = S("PAGE_UP")})) {
             user_object.angles(0) += 0.01f;
         }
-        if (user_object.button_states.key_down({.key = "PAGE_DOWN"})) {
+        if (user_object.button_states.key_down({.key = S("PAGE_DOWN")})) {
             user_object.angles(0) -= 0.01f;
         }
-        if (user_object.button_states.key_down({.key = "KP_ADD"})) {
+        if (user_object.button_states.key_down({.key = S("KP_ADD")})) {
             user_object.position(1) += 0.2f;
         }
-        if (user_object.button_states.key_down({.key = "KP_SUBTRACT"})) {
+        if (user_object.button_states.key_down({.key = S("KP_SUBTRACT")})) {
             user_object.position(1) -= 0.2f;
         }
     }
@@ -121,12 +123,12 @@ static void nofly_key_callback(
     if (keys.v.keys_pressed()) {
         user_object.cameras.cycle_camera(CameraCycleType::FAR);
     }
-    // if (button_press.key_pressed({.key = "P"})) {
+    // if (button_press.key_pressed({.key = S("P")})) {
     //     if (user_object.physics_set_fps != nullptr) {
     //         user_object.physics_set_fps->toggle_pause_resume();
     //     }
     // }
-    if (user_object.button_states.key_down({.key = "LEFT_CONTROL"})) {
+    if (user_object.button_states.key_down({.key = S("LEFT_CONTROL")})) {
         if (keys.w.keys_pressed()) {
             user_object.wire_frame = zapped(user_object.wire_frame);
         }

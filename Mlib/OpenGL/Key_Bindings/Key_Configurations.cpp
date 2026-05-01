@@ -146,6 +146,9 @@ void KeyConfigurations::load(
                 ? ev.at<std::string>(key)
                 : "";
         };
+        auto strh = [&str](std::string_view key){
+            return VariableAndHash<std::string>{str(key)};
+        };
         auto sizet = [&ev](std::string_view key){
             return ev.contains(key)
                 ? ev.at<size_t>(key)
@@ -174,13 +177,13 @@ void KeyConfigurations::load(
         KeyConfiguration key_config{
             .base_combo = BaseKeyCombination{{{
                 BaseKeyBinding{
-                    .key = str(KeyConfigurationArgs::key),
+                    .key = strh(KeyConfigurationArgs::key),
                     .mouse_button = str(KeyConfigurationArgs::mouse_button),
                     .gamepad_button = gbutton(KeyConfigurationArgs::gamepad_button),
                     .joystick_axes = digital_axes(KeyConfigurationArgs::analog_digital_axes),
                     .tap_button = gbutton(KeyConfigurationArgs::tap_button)}}},
                 BaseKeyBinding{
-                    .key = str(KeyConfigurationArgs::not_key),
+                    .key = strh(KeyConfigurationArgs::not_key),
                     .mouse_button = str(KeyConfigurationArgs::not_mouse_button),
                     .gamepad_button = gbutton(KeyConfigurationArgs::not_gamepad_button),
                     .joystick_axes = digital_axes(KeyConfigurationArgs::not_analog_digital_axes),
@@ -202,7 +205,7 @@ void KeyConfigurations::load(
             e.contains(KeyConfigurationArgs::tap_button2))
         {
             key_config.base_combo.key_bindings.push_back(BaseKeyBinding{
-                .key = str(KeyConfigurationArgs::key2),
+                .key = strh(KeyConfigurationArgs::key2),
                 .gamepad_button = gbutton(KeyConfigurationArgs::gamepad_button2),
                 .joystick_axes = digital_axes(KeyConfigurationArgs::analog_digital_axes2),
                 .tap_button = gbutton(KeyConfigurationArgs::tap_button2)});

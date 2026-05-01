@@ -250,7 +250,7 @@ void ButtonStates::print(const ButtonStatesPrintArgs& args) const {
 void ButtonStates::print(std::ostream& ostr, const ButtonStatesPrintArgs& args) const {
     for (const auto& [name, code] : keys_map) {
         if (get_key_down(code)) {
-            ostr << name << " ";
+            ostr << *name << " ";
         }
     }
 #if !defined(__ANDROID__) && !defined(__EMSCRIPTEN__)
@@ -334,6 +334,6 @@ bool ButtonStates::key_down(const BaseKeyBinding& k, const std::string& role) co
         }
     }
     return
-        (!k.key.empty() && get_key_down(keys_map.get(k.key))) ||
+        (!k.key->empty() && get_key_down(keys_map.get(k.key))) ||
         (!k.mouse_button.empty() && get_mouse_button_down(mouse_buttons_map.get(k.mouse_button)));
 }

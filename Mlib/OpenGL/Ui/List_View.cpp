@@ -15,6 +15,7 @@ namespace Mlib {
 
 static const auto& g = make_gamepad_button;
 static const auto& a = make_analog_digital_axes;
+using S = VariableAndHash<std::string>;
 
 ListView::ListView(
     std::string debug_hint,
@@ -59,14 +60,14 @@ ListView::ListView(
     };
     auto lock = key_configurations_.lock_exclusive_for(std::chrono::seconds(2), "Key configurations");
     if (local_user_id == 0) {
-        lock->insert(0, "left", { { {{.key = "LEFT", .joystick_axes = a(left, left), .tap_button = g(0, "LEFT")}} } });
-        lock->insert(0, "right", { { {{.key = "RIGHT", .joystick_axes = a(right, right), .tap_button = g(0, "RIGHT")}} } });
-        lock->insert(0, "up", { {.key_bindings = {{.key = "UP", .joystick_axes = a(up, up), .tap_button = g(0, "UP")}}, .not_key_binding = BaseKeyBinding{.key = "LEFT_CONTROL"}} });
-        lock->insert(0, "down", { {.key_bindings = {{.key = "DOWN", .joystick_axes = a(down, down), .tap_button = g(0, "DOWN")}}, .not_key_binding = BaseKeyBinding{.key = "LEFT_CONTROL"}} });
-        lock->insert(0, "page_up", { {.key_bindings = {{.key = "PAGE_UP"}}, .not_key_binding = BaseKeyBinding{.key = "LEFT_CONTROL"}} });
-        lock->insert(0, "page_down", { {.key_bindings = {{.key = "PAGE_DOWN"}}, .not_key_binding = BaseKeyBinding{.key = "LEFT_CONTROL"}} });
-        lock->insert(0, "home", { { {{.key = "HOME"}} } });
-        lock->insert(0, "end", { { {{.key = "END"}} } });
+        lock->insert(0, "left", { { {{.key = S("LEFT"), .joystick_axes = a(left, left), .tap_button = g(0, "LEFT")}} } });
+        lock->insert(0, "right", { { {{.key = S("RIGHT"), .joystick_axes = a(right, right), .tap_button = g(0, "RIGHT")}} } });
+        lock->insert(0, "up", { {.key_bindings = {{.key = S("UP"), .joystick_axes = a(up, up), .tap_button = g(0, "UP")}}, .not_key_binding = BaseKeyBinding{.key = S("LEFT_CONTROL")}} });
+        lock->insert(0, "down", { {.key_bindings = {{.key = S("DOWN"), .joystick_axes = a(down, down), .tap_button = g(0, "DOWN")}}, .not_key_binding = BaseKeyBinding{.key = S("LEFT_CONTROL")}} });
+        lock->insert(0, "page_up", { {.key_bindings = {{.key = S("PAGE_UP")}}, .not_key_binding = BaseKeyBinding{.key = S("LEFT_CONTROL")}} });
+        lock->insert(0, "page_down", { {.key_bindings = {{.key = S("PAGE_DOWN")}}, .not_key_binding = BaseKeyBinding{.key = S("LEFT_CONTROL")}} });
+        lock->insert(0, "home", { { {{.key = S("HOME")}} } });
+        lock->insert(0, "end", { { {{.key = S("END")}} } });
     } else {
         lock->insert(0, "left", { { {{.joystick_axes = a(left, left), .tap_button = g(local_user_id, "LEFT")}} } });
         lock->insert(0, "right", { { {{.joystick_axes = a(right, right), .tap_button = g(local_user_id, "RIGHT")}} } });

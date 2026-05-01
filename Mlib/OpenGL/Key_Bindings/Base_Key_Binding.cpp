@@ -62,8 +62,8 @@ const GamepadButton* BaseKeyBinding::get_tap_button(const std::string& role) con
 
 std::string BaseKeyBinding::to_string(InputType filter) const {
     std::list<std::string> result;
-    if (!key.empty() && any(filter & InputType::KEYBOARD)) {
-        result.emplace_back("(key: " + key + ')');
+    if (!key->empty() && any(filter & InputType::KEYBOARD)) {
+        result.emplace_back("(key: " + *key + ')');
     }
     if (!mouse_button.empty() && any(filter & InputType::MOUSE)) {
         result.emplace_back("(mouse: " + mouse_button + ')');
@@ -88,8 +88,8 @@ std::string BaseKeyBinding::to_string(InputType filter) const {
 
 std::ostream& Mlib::operator << (std::ostream& ostr, const BaseKeyBinding& base_key_binding) {
     ostr << "Base key binding\n";
-    if (!base_key_binding.key.empty()) {
-        ostr << "key: " << base_key_binding.key << '\n';
+    if (!base_key_binding.key->empty()) {
+        ostr << "key: " << *base_key_binding.key << '\n';
     }
     if (!base_key_binding.mouse_button.empty()) {
         ostr << "mouse button: " << base_key_binding.mouse_button << '\n';

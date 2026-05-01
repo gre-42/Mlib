@@ -7,6 +7,7 @@
 
 using namespace Mlib;
 
+using S = VariableAndHash<std::string>;
 
 FileRenderableHider::FileRenderableHider(
     const ButtonStates& button_states,
@@ -16,8 +17,8 @@ FileRenderableHider::FileRenderableHider(
     , save_{ button_states, key_configurations_, 0, "save", "" }
 {
     auto lock = key_configurations_.lock_exclusive_for(std::chrono::seconds(2), "Key configurations");
-    lock->insert(0, "load", KeyConfiguration{ {.key_bindings = {{.key = "LEFT_CONTROL"}, {.key = "L"}}} });
-    lock->insert(0, "save", KeyConfiguration{ {.key_bindings = {{.key = "LEFT_CONTROL"}, {.key = "S"}}} });
+    lock->insert(0, "load", KeyConfiguration{ {.key_bindings = {{.key = S("LEFT_CONTROL")}, {.key = S("L")}}} });
+    lock->insert(0, "save", KeyConfiguration{ {.key_bindings = {{.key = S("LEFT_CONTROL")}, {.key = S("S")}}} });
 }
 
 void FileRenderableHider::process_input() {

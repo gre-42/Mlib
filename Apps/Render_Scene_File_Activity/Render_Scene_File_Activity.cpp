@@ -99,6 +99,7 @@
 using namespace Mlib;
 
 static const auto& g = make_gamepad_button;
+using S = VariableAndHash<std::string>;
 
 class SceneRenderer: public IRenderer {
 public:
@@ -639,7 +640,7 @@ void android_main(android_app* app)
                 .lock_exclusive_for(std::chrono::seconds(2), "Key configurations");
             BaseKeyCombination confirm_key_combination_0{{{
                 BaseKeyBinding{
-                    .key = "ENTER",
+                    .key = S("ENTER"),
                     .gamepad_button = g(0, "A"),
                     .tap_button = g(0, "START")}}}};
             locked_key_configs->insert(0, "confirm", { std::move(confirm_key_combination_0) });

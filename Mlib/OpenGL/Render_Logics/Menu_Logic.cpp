@@ -16,6 +16,7 @@
 namespace Mlib {
 
 static const auto& g = make_gamepad_button;
+using S = VariableAndHash<std::string>;
 
 class MenuLogicKeys {
 public:
@@ -27,7 +28,7 @@ public:
         key_configurations
             .lock_exclusive_for(std::chrono::seconds(2), "Key configurations")
             ->insert(0, "escape", {{{BaseKeyBinding{
-                .key = "ESCAPE",
+                .key = S("ESCAPE"),
                 .gamepad_button = g(0, "START"),
                 .tap_button = g(0, "ESCAPE")}}}});
         key_configurations
