@@ -8,7 +8,7 @@ using namespace Mlib;
 
 static std::unique_ptr<ClearLogic> clear_logic;
 
-#ifdef __ANDROID__
+#if defined(__ANDROID__) || defined(__EMSCRIPTEN__)
 void Mlib::clear_color(const FixedArray<float, 4>& color, ClearBackend backend) {
     if (clear_logic == nullptr) {
         throw std::runtime_error("Clear logic not set");
