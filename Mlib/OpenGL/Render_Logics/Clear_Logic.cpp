@@ -101,7 +101,9 @@ void ClearLogic::clear_depth() {
 
     rp_depth_only_.use();
     va_.bind();
+    CHK(glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE));   // Disable color writes
     CHK(glDrawArrays(GL_TRIANGLES, 0, 6));
+    CHK(glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE));       // Re-enable
     CHK(glBindVertexArray(0));
 
     CHK(glDepthFunc(GL_LESS));

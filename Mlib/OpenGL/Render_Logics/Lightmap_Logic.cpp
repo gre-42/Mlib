@@ -98,8 +98,8 @@ void LightmapLogic::render_without_setup(
             .depth_kind = with_depth_texture_
                 ? FrameBufferChannelKind::TEXTURE
                 : FrameBufferChannelKind::ATTACHMENT,
-            .wrap_s = GL_CLAMP_TO_BORDER,
-            .wrap_t = GL_CLAMP_TO_BORDER,
+            .wrap_s = GL_CLAMP_TO_SOMETHING,
+            .wrap_t = GL_CLAMP_TO_SOMETHING,
             .border_color = make_orderable(fixed_full<float, 4>(border_color)),
             .nsamples_msaa = render_config.lightmap_nsamples_msaa});
         if (!with_depth_texture_) {
@@ -108,8 +108,8 @@ void LightmapLogic::render_without_setup(
                 .height = lightmap_height_,
                 .color_magnifying_interpolation_mode = InterpolationMode::LINEAR,
                 .depth_kind = FrameBufferChannelKind::NONE,
-                .wrap_s = GL_CLAMP_TO_BORDER,
-                .wrap_t = GL_CLAMP_TO_BORDER,
+                .wrap_s = GL_CLAMP_TO_SOMETHING,
+                .wrap_t = GL_CLAMP_TO_SOMETHING,
                 .border_color = make_orderable(fixed_full<float, 4>(border_color))});
         }
         std::optional<RenderSetup> setup;

@@ -151,8 +151,8 @@ void AcousticPressureSubdomainLogic::render_moving_node(
             .color_type = GL_UNSIGNED_BYTE,
             .color_magnifying_interpolation_mode = InterpolationMode::LINEAR,
             .depth_kind = FrameBufferChannelKind::NONE,
-            .wrap_s = (periodicity_ == Periodicity::APERIODIC) ? GL_CLAMP_TO_BORDER : GL_REPEAT,
-            .wrap_t = (periodicity_ == Periodicity::APERIODIC) ? GL_CLAMP_TO_BORDER : GL_REPEAT,
+            .wrap_s = (periodicity_ == Periodicity::APERIODIC) ? GL_CLAMP_TO_SOMETHING : GL_REPEAT,
+            .wrap_t = (periodicity_ == Periodicity::APERIODIC) ? GL_CLAMP_TO_SOMETHING : GL_REPEAT,
             .border_color = {0.5f, 0.5f, 0.5f, 1.f},
             .nsamples_msaa = 1
         };

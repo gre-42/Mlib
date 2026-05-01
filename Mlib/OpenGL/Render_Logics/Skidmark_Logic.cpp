@@ -90,8 +90,8 @@ void SkidmarkLogic::render_moving_node(
         .height = texture_height_,
         .color_magnifying_interpolation_mode = InterpolationMode::LINEAR,
         .depth_kind = FrameBufferChannelKind::NONE,
-        .wrap_s = GL_CLAMP_TO_BORDER,
-        .wrap_t = GL_CLAMP_TO_BORDER,
+        .wrap_s = GL_CLAMP_TO_SOMETHING,
+        .wrap_t = GL_CLAMP_TO_SOMETHING,
         .border_color = border_color,
         .nsamples_msaa = 1});
     {

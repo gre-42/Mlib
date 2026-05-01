@@ -1,4 +1,3 @@
-
 #include "Render_To_Pixel_Region_Logic.hpp"
 #include <Mlib/Geometry/Cameras/Camera.hpp>
 #include <Mlib/Layout/IWidget.hpp>
