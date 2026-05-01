@@ -13,6 +13,7 @@
 #include <Mlib/OpenGL/Rendering_Context.hpp>
 #include <Mlib/OpenGL/Resource_Managers/Rendering_Resources.hpp>
 #include <Mlib/OpenGL/Shader_Version_3_0.hpp>
+#include <Mlib/Misc/Floating_Point_Exceptions.hpp>
 #include <Mlib/OpenGL/Text/Align_Text.hpp>
 #include <Mlib/OpenGL/Text/Loaded_Font.hpp>
 #include <Mlib/OpenGL/Text/Text_And_Position.hpp>
@@ -134,15 +135,18 @@ void TextResource::set_contents(
             }
             if (auto cit = loaded_charset_->find(c); cit != loaded_charset_->end()) {
                 stbtt_aligned_quad q;
-                stbtt_GetBakedQuad(
-                    loaded_font_->cdata.data(),
-                    integral_cast<int>(loaded_font_->texture_width),
-                    integral_cast<int>(loaded_font_->texture_height),
-                    integral_cast<int>(cit->second),
-                    &x,
-                    &y,
-                    &q,
-                    1);//1=opengl & d3d10+,0=d3d9
+                {
+                    TemporarilyIgnoreFloatingPointExeptions ignore_except;
+                    stbtt_GetBakedQuad(
+                        loaded_font_->cdata.data(),
+                        integral_cast<int>(loaded_font_->texture_width),
+                        integral_cast<int>(loaded_font_->texture_height),
+                        integral_cast<int>(cit->second),
+                        &x,
+                        &y,
+                        &q,
+                        1);//1=opengl & d3d10+,0=d3d9
+                }
                 // update VBO for each character
                 vdata_.push_back(Letter{
                     FixedArray<VData, 3>{

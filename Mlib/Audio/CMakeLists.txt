@@ -22,5 +22,5 @@ else()
 endif()
 
 if (LAME_FOUND)
-    target_link_libraries(MlibAudio ${LAME_LIBRARIES})
+    target_link_libraries(MlibAudio PUBLIC ${LAME_LIBRARIES})
 endif()

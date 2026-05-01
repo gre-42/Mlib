@@ -78,6 +78,8 @@
 
 using namespace Mlib;
 
+using S = VariableAndHash<std::string>;
+
 void test_physics_engine(unsigned int seed) {
     std::atomic_size_t num_renderings = getenv_default_size_t("NUM_RENDERINGS", SIZE_MAX);
     RenderResults render_results;
@@ -249,7 +251,7 @@ void test_physics_engine(unsigned int seed) {
     LockableKeyConfigurations key_configurations;
     key_configurations
         .lock_exclusive_for(std::chrono::seconds(2), "Key configurations")
-        ->insert(0, "take_screenshot", { {{{.key = "LEFT_CONTROL"}, {.key = "P"}}} });
+        ->insert(0, "take_screenshot", { {{{.key = S("LEFT_CONTROL")}, {.key = S("P")}}} });
     UiFocus ui_focus{""};
     FlyingCameraUserClass user_object{
         .button_states = button_states,

@@ -27,6 +27,8 @@
 
 using namespace Mlib;
 
+using S = VariableAndHash<std::string>;
+
 static void error_callback(int error, const char* description)
 {
     lerr() << "GLFW: " << description;
@@ -153,7 +155,7 @@ void Render::render_scene(
     LockableKeyConfigurations key_configurations;
     key_configurations
         .lock_exclusive_for(std::chrono::seconds(2), "Key configurations")
-        ->insert(0, "take_screenshot", { {{{.key = "LEFT_CONTROL"}, {.key = "P"}}} });
+        ->insert(0, "take_screenshot", { {{{.key = S("LEFT_CONTROL")}, {.key = S("P")}}} });
     RotatingLogic rotating_logic{
         button_states,
         window_->glfw_window(),

@@ -15,6 +15,8 @@
 #include <stdexcept>
 #include <Mlib/Misc/Log.hpp>
 
+using S = Mlib::VariableAndHash<std::string>;
+
 namespace Mlib {
 class WindowLogicKeys {
 public:
@@ -23,8 +25,8 @@ public:
         , F11{ button_states, key_configurations, 0, "F11", "" }
     {
         auto lock = key_configurations.lock_exclusive_for(std::chrono::seconds(2), "Key configurations");
-        lock->insert(0, "esc", { {{{.key = "ESCAPE"}}} });
-        lock->insert(0, "F11", { {{{.key = "F11"}}} });
+        lock->insert(0, "esc", { {{{.key = S("ESCAPE")}}} });
+        lock->insert(0, "F11", { {{{.key = S("F11")}}} });
     }
     ButtonPress esc;
     ButtonPress F11;

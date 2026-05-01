@@ -102,6 +102,8 @@
 
 using namespace Mlib;
 
+using S = VariableAndHash<std::string>;
+
 /** Add the refernce bone hierarchy to the parent node.
  *
  * The refernce bones have the coordinates of the T-pose, typically.
@@ -1154,7 +1156,7 @@ int main(int argc, char** argv) {
         LockableKeyConfigurations key_configurations;
         key_configurations
             .lock_exclusive_for(std::chrono::seconds(2), "Key configurations")
-            ->insert(0, "take_screenshot", { {{{.key = "LEFT_CONTROL"}, {.key = "P"}}} });
+            ->insert(0, "take_screenshot", { {{{.key = S("LEFT_CONTROL")}, {.key = S("P")}}} });
         StandardCameraLogic standard_camera_logic{
             scene,
             selected_cameras};
