@@ -72,6 +72,7 @@ AEngine::AEngine(
                     throw std::runtime_error("Could not make context current (1)");
                 }
             }
+            renderer_.load_resources();
         } catch (...) {
             add_unhandled_exception(std::current_exception());
             return;
@@ -82,7 +83,11 @@ AEngine::AEngine(
     }
 }
 
-AEngine::~AEngine() = default;
+AEngine::~AEngine() {
+    execute_in_animation_frame_thread([this](){
+        renderer_.unload_resources();
+    });
+}
 
 void AEngine::draw_frame(Mlib::RenderEvent event) {
     update_canvas_size();
