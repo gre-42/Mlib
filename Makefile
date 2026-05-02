@@ -53,7 +53,7 @@ ifeq ($(LIBCPP),1)
     BUILD_DIR := C$(BUILD_DIR)
 endif
 # EMSDK, EMSDK32
-ES_LDFLAGS_COMMON := -pthread -sWASM_BIGINT -sSTACK_SIZE=1MB -sPTHREAD_POOL_SIZE=8 -fexceptions
+ES_LDFLAGS_COMMON := -pthread -sWASM_BIGINT -sSTACK_SIZE=1MB -sPTHREAD_POOL_SIZE=8 -sMALLOC=mimalloc -fexceptions
 ifneq (,$(filter $(CMAKE_BUILD_TYPE),Debug RelWithDebInfo))
     ES_LDFLAGS_COMMON := ${ES_LDFLAGS_COMMON} -sASSERTIONS=2
 else
