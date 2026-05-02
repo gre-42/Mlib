@@ -1,8 +1,11 @@
 include(../../CMakeCommands.cmake)
 
-set(excluded_files "")
-
-my_add_library(MlibMacroExecutor "1" "" "${excluded_files}")
+my_add_library(
+    NAME MlibMacroExecutor
+    RECURSIVE
+    ADDITIONAL_FILES ""
+    EXCLUDED_FILES ""
+)
 
 target_include_directories(MlibMacroExecutor PUBLIC ${Mlib_INCLUDE_DIR})
 

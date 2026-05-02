@@ -1,7 +1,10 @@
 include(../CMakeCommands.cmake)
 
-set(mlib_excluded_files "")
-
-my_add_library(MlibCork "1" "" "${mlib_excluded_files}")
+my_add_library(
+    NAME MlibCork
+    RECURSIVE
+    ADDITIONAL_FILES ""
+    EXCLUDED_FILES ""
+)
 include_directories(mesh rawmesh math util isct accel ${CMAKE_SOURCE_DIR})
 target_link_libraries(MlibCork MlibTriangle -lgmp)

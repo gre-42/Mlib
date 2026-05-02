@@ -1,6 +1,6 @@
 include(../../CMakeCommands.cmake)
 
-my_add_executable(quantize_image "1")
+my_add_executable(NAME quantize_image RECURSIVE)
 
 target_include_directories(quantize_image PRIVATE ${Mlib_INCLUDE_DIR})
 

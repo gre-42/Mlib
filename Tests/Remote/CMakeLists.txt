@@ -1,6 +1,6 @@
 include(../../CMakeCommands.cmake)
 
-my_add_executable(remote_test "1")
+my_add_executable(NAME remote_test RECURSIVE)
 
 include_directories(Mlib ${Mlib_INCLUDE_DIR})
 

@@ -1,6 +1,6 @@
 include(../../CMakeCommands.cmake)
 
-my_add_executable(explicit_mipmaps "1")
+my_add_executable(NAME explicit_mipmaps RECURSIVE)
 
 include_directories(${Mlib_INCLUDE_DIR} ${glfw3_INCLUDE_DIR})
 

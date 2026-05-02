@@ -1,9 +1,10 @@
 include(../../CMakeCommands.cmake)
 
-set(excluded_files "")
-
-my_add_library(MlibGeography "1" "" "${excluded_files}")
-
-include_directories(${Mlib_INCLUDE_DIR})
+my_add_library(
+    NAME MlibGeography
+    RECURSIVE
+    ADDITIONAL_FILES ""
+    EXCLUDED_FILES ""
+)
 
 target_link_libraries(MlibGeography MlibStbCpp MlibImages)

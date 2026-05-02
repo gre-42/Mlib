@@ -1,15 +1,16 @@
 include(../../CMakeCommands.cmake)
 
-set(excluded_files "")
-
-my_add_library(MlibRemote "1" "" "${excluded_files}")
+my_add_library(
+    NAME MlibRemote
+    RECURSIVE
+    ADDITIONAL_FILES ""
+    EXCLUDED_FILES ""
+)
 # https://issuetracker.google.com/issues/214811726
 if (NOT ANDROID)
     target_precompile_headers(MlibRemote PRIVATE ../Misc/Precompiled_Header.hpp)
     target_include_directories(MlibRemote PRIVATE ${MlibEve_INCLUDE_DIR})
 endif()
-
-include_directories(${Mlib_INCLUDE_DIR})
 
 target_link_libraries(MlibRemote MlibMisc MlibOs MlibIo MlibMemory MlibJson)
 

@@ -1,11 +1,15 @@
 include(../../CMakeCommands.cmake)
 
-set(excluded_files "")
-
-my_add_library(MlibAudio "1" "" "${excluded_files}")
+my_add_library(
+    NAME MlibAudio
+    RECURSIVE
+    ADDITIONAL_FILES ""
+    EXCLUDED_FILES ""
+)
 
 target_link_libraries(MlibAudio
     PUBLIC
+        MlibMap
         MlibMisc
         MlibThreads
         MlibMemory

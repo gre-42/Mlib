@@ -1,7 +1,5 @@
 include(../../CMakeCommands.cmake)
 
-my_add_executable(download_heightmap "1")
-
-include_directories(${Mlib_INCLUDE_DIR})
+my_add_executable(NAME download_heightmap RECURSIVE)
 
 target_link_libraries(download_heightmap MlibMisc MlibImages MlibStb MlibCppHttplib)

@@ -1,6 +1,6 @@
 include(../../CMakeCommands.cmake)
 
-my_add_executable(signal_test "1")
+my_add_executable(NAME signal_test RECURSIVE)
 
 include_directories(Mlib ${Mlib_INCLUDE_DIR})
 

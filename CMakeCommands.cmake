@@ -36,23 +36,33 @@ endmacro()
 # Find files #
 ##############
 
-macro(my_find_include_and_src_files includeFiles sourceFiles isRecursive rootDirs)
-    # seems to be non-recursive
-    # aux_source_directory("." tempSources)
+macro(my_find_include_and_src_files)
+    # Define the keywords
+    set(options RECURSIVE)
+    set(oneValueArgs INCLUDE_FILES SOURCE_FILES)
+    set(multiValueArgs ROOT_DIRS)
 
-    if (${isRecursive})
+    # Parse the arguments
+    cmake_parse_arguments(arg "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+
+    # Determine glob type
+    if(arg_RECURSIVE)
         set(globType GLOB_RECURSE)
     else()
         set(globType GLOB)
     endif()
+
     set(globExpressions_h "")
     set(globExpressions_c "")
-    foreach(rootDir ${rootDirs})
+
+    foreach(rootDir ${arg_ROOT_DIRS})
         list(APPEND globExpressions_h "${rootDir}/*.h" "${rootDir}/*.hpp" "${rootDir}/*.hxx")
         list(APPEND globExpressions_c "${rootDir}/*.c" "${rootDir}/*.cpp" "${rootDir}/*.cxx")
     endforeach()
-    file(${globType} ${includeFiles} ${globExpressions_h})
-    file(${globType} ${sourceFiles}  ${globExpressions_c})
+
+    # Use the variables provided in the arguments
+    file(${globType} ${arg_INCLUDE_FILES} ${globExpressions_h})
+    file(${globType} ${arg_SOURCE_FILES}  ${globExpressions_c})
 endmacro()
 
 macro(my_remove_excluded_files dstFileList srcFileList excludedFiles)
@@ -207,36 +217,64 @@ endmacro()
 ######################
 
 # type can be STATIC, SHARED or MODULE
-macro(my_add_advanced_library libName type isRecursive additionalFiles excludedFiles)
-    set(incFiles)
-    set(srcFiles)
+function(my_add_advanced_library)
+    set(options RECURSIVE)
+    set(oneValueArgs NAME TYPE)
+    set(multiValueArgs ADDITIONAL_FILES EXCLUDED_FILES)
 
-    my_find_include_and_src_files(incFiles srcFiles ${isRecursive} ${CMAKE_CURRENT_SOURCE_DIR})
+    cmake_parse_arguments(PARSE_ARGV 0 arg "${options}" "${oneValueArgs}" "${multiValueArgs}")
 
-    my_remove_excluded_files(incFiles "${incFiles}" "${excludedFiles}")
-    my_remove_excluded_files(srcFiles "${srcFiles}" "${excludedFiles}")
-
-    my_add_source_groups_v2("Header Files" ${CMAKE_CURRENT_SOURCE_DIR} "${incFiles}")
-    my_add_source_groups_v2("Source Files" ${CMAKE_CURRENT_SOURCE_DIR} "${srcFiles}")
-
-    add_library( ${libName} ${type} ${incFiles} ${srcFiles} ${additionalFiles})
-endmacro()
-
-macro(my_add_library libName isRecursive additionalFiles excludedFiles)
-    if (ANDROID OR EMSCRIPTEN)
-        my_add_static_library(${libName} ${isRecursive} "${additionalFiles}" "${excludedFiles}")
-    else()
-        my_add_shared_library(${libName} ${isRecursive} "${additionalFiles}" "${excludedFiles}")
+    # 1. Check for mandatory "NAME"
+    if(NOT arg_NAME)
+        message(FATAL_ERROR "my_add_advanced_library: 'NAME' argument is mandatory.")
     endif()
-endmacro()
 
-macro(my_add_static_library libName isRecursive additionalFiles excludedFiles)
-    my_add_advanced_library(${libName} STATIC ${isRecursive} "${additionalFiles}" "${excludedFiles}")
-endmacro()
+    # 2. Check for mandatory "TYPE"
+    if(NOT arg_TYPE)
+        message(FATAL_ERROR "my_add_advanced_library (${arg_NAME}): 'TYPE' (STATIC/SHARED/MODULE) is mandatory.")
+    endif()
 
-macro(my_add_shared_library libName isRecursive additionalFiles excludedFiles)
-    my_add_advanced_library(${libName} SHARED ${isRecursive} "${additionalFiles}" "${excludedFiles}")
-endmacro()
+    # 3. Check for unknown arguments (typos)
+    if(arg_UNPARSED_ARGUMENTS)
+        message(FATAL_ERROR "my_add_advanced_library (${arg_NAME}): Unknown arguments: ${arg_UNPARSED_ARGUMENTS}")
+    endif()
+
+    set(localInc "")
+    set(localSrc "")
+
+    set(finderArgs INCLUDE_FILES localInc SOURCE_FILES localSrc ROOT_DIRS ${CMAKE_CURRENT_SOURCE_DIR})
+    if(arg_RECURSIVE)
+        list(APPEND finderArgs RECURSIVE)
+    endif()
+    my_find_include_and_src_files(${finderArgs})
+
+    my_remove_excluded_files(localInc "${localInc}" "${arg_EXCLUDED_FILES}")
+    my_remove_excluded_files(localSrc "${localSrc}" "${arg_EXCLUDED_FILES}")
+
+    my_add_source_groups_v2("Header Files" ${CMAKE_CURRENT_SOURCE_DIR} "${localInc}")
+    my_add_source_groups_v2("Source Files" ${CMAKE_CURRENT_SOURCE_DIR} "${localSrc}")
+
+    add_library(${arg_NAME} ${arg_TYPE} ${localInc} ${localSrc} ${arg_ADDITIONAL_FILES})
+endfunction()
+
+# Generic helper that picks SHARED vs STATIC based on platform
+function(my_add_library)
+    if (ANDROID OR EMSCRIPTEN)
+        my_add_static_library(${ARGV})
+    else()
+        my_add_shared_library(${ARGV})
+    endif()
+endfunction()
+
+# Specific helper for STATIC
+function(my_add_static_library)
+    my_add_advanced_library(TYPE STATIC ${ARGV})
+endfunction()
+
+# Specific helper for SHARED
+function(my_add_shared_library)
+    my_add_advanced_library(TYPE SHARED ${ARGV})
+endfunction()
 
 # build static and shared libraries in the same build
 macro(my_add_object_library libName isRecursive additionalFiles excludedFiles)
@@ -252,22 +290,45 @@ macro(my_add_object_library libName isRecursive additionalFiles excludedFiles)
     endif()
 endmacro()
 
-macro(my_add_executable libName isRecursive)
-    set(incFiles)
-    set(srcFiles)
+function(my_add_executable)
+    set(options RECURSIVE)
+    set(oneValueArgs NAME)
+    set(multiValueArgs ADDITIONAL_FILES EXCLUDED_FILES) # Added for consistency
 
-    my_find_include_and_src_files(incFiles srcFiles ${isRecursive} ${CMAKE_CURRENT_SOURCE_DIR})
+    cmake_parse_arguments(PARSE_ARGV 0 arg "${options}" "${oneValueArgs}" "${multiValueArgs}")
 
-    my_add_source_groups_v2("Header Files" ${CMAKE_CURRENT_SOURCE_DIR} "${incFiles}")
-    my_add_source_groups_v2("Source Files" ${CMAKE_CURRENT_SOURCE_DIR} "${srcFiles}")
-
-    if ("${srcFiles}" STREQUAL "")
-        message(FATAL_ERROR "Could not find a single source file for ${libName} in directory ${CMAKE_CURRENT_SOURCE_DIR}")
+    if(NOT arg_NAME)
+        message(FATAL_ERROR "my_add_executable: 'NAME' argument is mandatory.")
     endif()
-    message("Adding executable ${libName}, Includes: ${incFiles} Sources: ${srcFiles}")
 
-    add_executable( ${libName} ${incFiles} ${srcFiles})
-endmacro()
+    set(localInc "")
+    set(localSrc "")
+
+    # Call the finder
+    set(finderArgs INCLUDE_FILES localInc SOURCE_FILES localSrc ROOT_DIRS ${CMAKE_CURRENT_SOURCE_DIR})
+    if(arg_RECURSIVE)
+        list(APPEND finderArgs RECURSIVE)
+    endif()
+    my_find_include_and_src_files(${finderArgs})
+
+    # Filter out excluded files
+    if(arg_EXCLUDED_FILES)
+        my_remove_excluded_files(localInc "${localInc}" "${arg_EXCLUDED_FILES}")
+        my_remove_excluded_files(localSrc "${localSrc}" "${arg_EXCLUDED_FILES}")
+    endif()
+
+    # Organize into IDE folders
+    my_add_source_groups_v2("Header Files" ${CMAKE_CURRENT_SOURCE_DIR} "${localInc}")
+    my_add_source_groups_v2("Source Files" ${CMAKE_CURRENT_SOURCE_DIR} "${localSrc}")
+
+    if ("${localSrc}" STREQUAL "")
+        message(FATAL_ERROR "Could not find a single source file for ${arg_NAME} in ${CMAKE_CURRENT_SOURCE_DIR}")
+    endif()
+
+    message(STATUS "Adding executable: ${arg_NAME}")
+
+    add_executable(${arg_NAME} ${localInc} ${localSrc} ${arg_ADDITIONAL_FILES})
+endfunction()
 
 macro(my_set_pyd targetName)
     if (WIN32)
@@ -374,6 +435,19 @@ macro(set_stack_size)
     endif()
 endmacro()
 
+macro(enable_strict_linkage)
+    # Enforce strict dependency checking globally for Clang/GCC/AppleClang
+    if((CMAKE_CXX_COMPILER_ID MATCHES "Clang|GNU|AppleClang") AND NOT EMSCRIPTEN)
+        # For Linux/Unix linkers (ld, lld)
+        add_link_options("-Wl,--no-undefined")
+
+        # For macOS linkers
+        if(APPLE)
+            add_link_options("-Wl,-undefined,error")
+        endif()
+    endif()
+endmacro()
+
 macro(enable_omp)
     if(EMSCRIPTEN)
         set(OpenMP_C_FLAGS "-fopenmp -pthread")
@@ -402,6 +476,12 @@ endmacro()
 macro(target_link_openmp libName)
     if (EMSCRIPTEN)
         target_link_libraries(${libName} PUBLIC MlibSimpleOmp)
+    endif()
+endmacro()
+
+macro(target_link_math libName)
+    if(NOT WIN32)
+        target_link_libraries(${libName} m)
     endif()
 endmacro()
 

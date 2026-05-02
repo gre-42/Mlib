@@ -1,6 +1,6 @@
 include(../../CMakeCommands.cmake)
 
-my_add_executable(tile_image "1")
+my_add_executable(NAME tile_image RECURSIVE)
 
 target_include_directories(tile_image PRIVATE ${Mlib_INCLUDE_DIR})
 

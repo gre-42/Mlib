@@ -1,8 +1,11 @@
 include(../../CMakeCommands.cmake)
 
-set(excluded_files "")
-
-my_add_library(MlibScene "1" "" "${excluded_files}")
+my_add_library(
+    NAME MlibScene
+    RECURSIVE
+    ADDITIONAL_FILES ""
+    EXCLUDED_FILES ""
+)
 # https://issuetracker.google.com/issues/214811726
 if (NOT ANDROID)
     target_precompile_headers(MlibScene PRIVATE ../Misc/Precompiled_Header.hpp)

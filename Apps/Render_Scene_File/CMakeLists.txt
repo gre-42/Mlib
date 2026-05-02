@@ -1,6 +1,6 @@
 include(../../CMakeCommands.cmake)
 
-my_add_executable(render_scene_file "1")
+my_add_executable(NAME render_scene_file RECURSIVE)
 
 target_include_directories(render_scene_file PRIVATE ${Mlib_INCLUDE_DIR} ${glfw3_INCLUDE_DIR})
 

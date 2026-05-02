@@ -1,8 +1,11 @@
 include(../../CMakeCommands.cmake)
 
-set(excluded_files "")
-
-my_add_library(MlibMemory "1" "" "${excluded_files}")
+my_add_library(
+    NAME MlibMemory
+    RECURSIVE
+    ADDITIONAL_FILES ""
+    EXCLUDED_FILES ""
+)
 
 target_include_directories(MlibMemory PUBLIC ${Mlib_INCLUDE_DIR})
 

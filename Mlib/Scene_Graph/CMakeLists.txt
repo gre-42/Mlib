@@ -1,9 +1,16 @@
 include(../../CMakeCommands.cmake)
 
-set(excluded_files "")
-
-my_add_library(MlibSceneGraph "1" "" "${excluded_files}")
+my_add_library(
+    NAME MlibSceneGraph
+    RECURSIVE
+    ADDITIONAL_FILES ""
+    EXCLUDED_FILES ""
+)
 
 target_include_directories(MlibSceneGraph PUBLIC ${Mlib_INCLUDE_DIR})
 
-target_link_libraries(MlibSceneGraph MlibGeometry MlibRegex)
+target_link_libraries(MlibSceneGraph
+    PUBLIC
+        MlibMap
+        MlibGeometry
+        MlibRegex)

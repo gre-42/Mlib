@@ -1,10 +1,11 @@
 include(../CMakeCommands.cmake)
 
-set(mlib_excluded_files "")
-
-my_add_library(MlibNvDds "1" "" "${mlib_excluded_files}")
-
-include_directories(${Mlib_INCLUDE_DIR})
+my_add_library(
+    NAME MlibNvDds
+    RECURSIVE
+    ADDITIONAL_FILES ""
+    EXCLUDED_FILES ""
+)
 
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
     target_compile_options(MlibNvDds PRIVATE -Wno-sign-conversion -Wno-unused-const-variable)

@@ -1,8 +1,6 @@
 include(../../CMakeCommands.cmake)
 
-my_add_executable(rigid_body_physics_test "1")
-
-include_directories(${Mlib_INCLUDE_DIR})
+my_add_executable(NAME rigid_body_physics_test RECURSIVE)
 
 target_link_libraries(rigid_body_physics_test MlibPhysics)
 

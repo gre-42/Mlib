@@ -8,8 +8,8 @@
 #ifndef CPPHTTPLIB_HTTPLIB_H
 #define CPPHTTPLIB_HTTPLIB_H
 
-#define CPPHTTPLIB_VERSION "0.42.0"
-#define CPPHTTPLIB_VERSION_NUM "0x002a00"
+#define CPPHTTPLIB_VERSION "0.43.2"
+#define CPPHTTPLIB_VERSION_NUM "0x002b02"
 
 #ifdef _WIN32
 #if defined(_WIN32_WINNT) && _WIN32_WINNT < 0x0A00
@@ -2948,7 +2948,7 @@ inline std::wstring u8string_to_wstring(const char *s) {
   if (!wlen) { return std::wstring(); }
 
   std::wstring ws;
-  ws.resize((size_t)wlen);
+  ws.resize(wlen);
   wlen = ::MultiByteToWideChar(
       CP_UTF8, 0, s, len,
       const_cast<LPWSTR>(reinterpret_cast<LPCWSTR>(ws.data())), wlen);

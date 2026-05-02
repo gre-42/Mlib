@@ -1,6 +1,6 @@
 include(../../CMakeCommands.cmake)
 
-my_add_executable(glfw_vulkan_tearing_demo "1")
+my_add_executable(NAME glfw_vulkan_tearing_demo RECURSIVE)
 
 include_directories(${Mlib_INCLUDE_DIR} ${glfw3_INCLUDE_DIR})
 

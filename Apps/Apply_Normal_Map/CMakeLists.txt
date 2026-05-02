@@ -1,6 +1,6 @@
 include(../../CMakeCommands.cmake)
 
-my_add_executable(apply_normal_map "1")
+my_add_executable(NAME apply_normal_map RECURSIVE)
 
 include_directories(${Mlib_INCLUDE_DIR} ${glfw3_INCLUDE_DIR})
 

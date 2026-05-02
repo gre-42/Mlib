@@ -1,8 +1,11 @@
 include(../../CMakeCommands.cmake)
 
-set(excluded_files "")
-
-my_add_library(MlibThreads "1" "" "${excluded_files}")
+my_add_library(
+    NAME MlibThreads
+    RECURSIVE
+    ADDITIONAL_FILES ""
+    EXCLUDED_FILES ""
+)
 
 target_include_directories(MlibThreads PUBLIC ${Mlib_INCLUDE_DIR})
 

@@ -1,7 +1,5 @@
 include(../../CMakeCommands.cmake)
 
-my_add_executable(repackage_kn5 "1")
-
-include_directories(${Mlib_INCLUDE_DIR})
+my_add_executable(NAME repackage_kn5 RECURSIVE)
 
 target_link_libraries(repackage_kn5 MlibOpenGL)

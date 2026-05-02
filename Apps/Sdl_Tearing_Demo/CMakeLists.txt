@@ -1,6 +1,6 @@
 include(../../CMakeCommands.cmake)
 
-my_add_executable(sdl_tearing_demo "1")
+my_add_executable(NAME sdl_tearing_demo RECURSIVE)
 
 include_directories(${Mlib_INCLUDE_DIR} ${SDL2_INCLUDE_DIRS})
 

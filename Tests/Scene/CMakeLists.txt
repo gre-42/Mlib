@@ -1,6 +1,6 @@
 include(../../CMakeCommands.cmake)
 
-my_add_executable(scene_test "1")
+my_add_executable(NAME scene_test RECURSIVE)
 
 include_directories(${Mlib_INCLUDE_DIR} ${glfw3_INCLUDE_DIR})
 

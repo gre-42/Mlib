@@ -1,6 +1,6 @@
 include(../../CMakeCommands.cmake)
 
-my_add_executable(geography_test "1")
+my_add_executable(NAME geography_test RECURSIVE)
 
 target_include_directories(geography_test PRIVATE Mlib ${Mlib_INCLUDE_DIR})
 

@@ -1,6 +1,6 @@
 include(../../CMakeCommands.cmake)
 
-my_add_executable(render_height_map "1")
+my_add_executable(NAME render_height_map RECURSIVE)
 
 include_directories(${Mlib_INCLUDE_DIR} ${glfw3_INCLUDE_DIR})
 

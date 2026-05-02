@@ -9,8 +9,12 @@ include(../../CMakeCommands.cmake)
 
 
 if (ANDROID)
-    set(excluded_files "/Emscripten/[^/]+$")
-    my_add_library(MlibOs "1" "" "${excluded_files}")
+    my_add_library(
+        NAME MlibOs
+        RECURSIVE
+        ADDITIONAL_FILES ""
+        EXCLUDED_FILES "/Emscripten/[^/]+$"
+    )
     target_link_libraries(MlibOs
         PUBLIC
             native_app_glue
@@ -21,11 +25,19 @@ if (ANDROID)
             atomic
         )
 elseif (EMSCRIPTEN)
-    set(excluded_files "/Android/[^/]+$")
-    my_add_library(MlibOs "1" "" "${excluded_files}")
+    my_add_library(
+        NAME MlibOs
+        RECURSIVE
+        ADDITIONAL_FILES ""
+        EXCLUDED_FILES "/Android/[^/]+$"
+)
 else()
-    set(excluded_files "/(Android|Emscripten)/[^/]+$")
-    my_add_library(MlibOs "1" "" "${excluded_files}")
+    my_add_library(
+        NAME MlibOs
+        RECURSIVE
+        ADDITIONAL_FILES ""
+        EXCLUDED_FILES "/(Android|Emscripten)/[^/]+$"
+)
 endif()
 
 target_link_libraries(MlibOs PUBLIC MlibStrings)

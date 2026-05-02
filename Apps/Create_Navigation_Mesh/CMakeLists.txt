@@ -1,6 +1,6 @@
 include(../../CMakeCommands.cmake)
 
-my_add_executable(create_navigation_mesh "1")
+my_add_executable(NAME create_navigation_mesh RECURSIVE)
 
 include_directories(${Mlib_INCLUDE_DIR} ${RECAST_INCLUDE_DIRS} ${DETOUR_INCLUDE_DIRS})
 

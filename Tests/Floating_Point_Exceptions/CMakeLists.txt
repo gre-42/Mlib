@@ -1,6 +1,6 @@
 include(../../CMakeCommands.cmake)
 
-my_add_executable(floating_point_exceptions_test "1")
+my_add_executable(NAME floating_point_exceptions_test RECURSIVE)
 
 include_directories(Mlib ${Mlib_INCLUDE_DIR})
 

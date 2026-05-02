@@ -1,6 +1,6 @@
 include(../../CMakeCommands.cmake)
 
-my_add_executable(box_filter_test "1")
+my_add_executable(NAME box_filter_test RECURSIVE)
 
 include_directories(Mlib ${Mlib_INCLUDE_DIR})
 

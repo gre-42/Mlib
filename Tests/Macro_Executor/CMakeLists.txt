@@ -1,8 +1,6 @@
 include(../../CMakeCommands.cmake)
 
-my_add_executable(macro_executor_test "1")
-
-include_directories(${Mlib_INCLUDE_DIR})
+my_add_executable(NAME macro_executor_test RECURSIVE)
 
 target_link_libraries(macro_executor_test MlibMacroExecutor)
 

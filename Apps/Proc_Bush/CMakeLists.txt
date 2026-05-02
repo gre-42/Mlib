@@ -1,7 +1,5 @@
 include(../../CMakeCommands.cmake)
 
-my_add_executable(proc_bush "1")
-
-include_directories(${Mlib_INCLUDE_DIR})
+my_add_executable(NAME proc_bush RECURSIVE)
 
 target_link_libraries(proc_bush MlibMisc)

@@ -1,7 +1,5 @@
 include(../../CMakeCommands.cmake)
 
-my_add_executable(laplace_filter "1")
-
-include_directories(${Mlib_INCLUDE_DIR})
+my_add_executable(NAME laplace_filter RECURSIVE)
 
 target_link_libraries(laplace_filter MlibImages MlibGeography)

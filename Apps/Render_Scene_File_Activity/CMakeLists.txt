@@ -1,11 +1,13 @@
 include(../../CMakeCommands.cmake)
 
-set(excluded_files "")
-
 if (ANDROID)
-    my_add_shared_library(RenderSceneFileActivity "1" "" "${excluded_files}")
+    my_add_shared_library(
+        NAME RenderSceneFileActivity
+        RECURSIVE
+        ADDITIONAL_FILES ""
+        EXCLUDED_FILES "")
 elseif (EMSCRIPTEN)
-    my_add_executable(RenderSceneFileActivity "1")
+    my_add_executable(NAME RenderSceneFileActivity RECURSIVE)
 else()
     message(FATAL_ERROR "Unknown target")
 endif()

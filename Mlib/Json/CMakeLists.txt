@@ -1,8 +1,11 @@
 include(../../CMakeCommands.cmake)
 
-set(excluded_files "")
-
-my_add_library(MlibJson "1" "" "${excluded_files}")
+my_add_library(
+    NAME MlibJson
+    RECURSIVE
+    ADDITIONAL_FILES ""
+    EXCLUDED_FILES ""
+)
 
 target_include_directories(MlibJson PUBLIC ${Mlib_INCLUDE_DIR})
 

@@ -1,8 +1,11 @@
 include(../../CMakeCommands.cmake)
 
-set(excluded_files "")
-
-my_add_library(MlibRegex "1" "" "${excluded_files}")
+my_add_library(
+    NAME MlibRegex
+    RECURSIVE
+    ADDITIONAL_FILES ""
+    EXCLUDED_FILES ""
+)
 
 target_include_directories(MlibRegex PUBLIC ${Mlib_INCLUDE_DIR})
 

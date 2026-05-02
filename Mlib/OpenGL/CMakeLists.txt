@@ -1,8 +1,11 @@
 include(../../CMakeCommands.cmake)
 
-set(excluded_files "")
-
-my_add_library(MlibOpenGL "1" "" "${excluded_files}")
+my_add_library(
+    NAME MlibOpenGL
+    RECURSIVE
+    ADDITIONAL_FILES ""
+    EXCLUDED_FILES ""
+)
 # https://issuetracker.google.com/issues/214811726
 if (NOT ANDROID)
     target_precompile_headers(MlibOpenGL PRIVATE ../Misc/Precompiled_Header.hpp)
@@ -11,22 +14,25 @@ endif()
 target_include_directories(MlibOpenGL PUBLIC ${Mlib_INCLUDE_DIR} ${glfw3_INCLUDE_DIR})
 
 target_link_libraries(MlibOpenGL
-    MlibGeometry
-    MlibImages
-    MlibLayout
-    MlibMemory
-    MlibMisc
-    MlibMacroExecutor
-    MlibNvDds
-    MlibProctree
-    MlibStats
-    MlibSceneGraph
-    MlibStb
-    MlibTime)
+    PUBLIC
+        MlibMap
+        MlibGeometry
+        MlibImages
+        MlibLayout
+        MlibMemory
+        MlibMisc
+        MlibMacroExecutor
+        MlibNvDds
+        MlibProctree
+        MlibStats
+        MlibSceneGraph
+        MlibStb
+        MlibTime)
 
 if (NOT EMSCRIPTEN)
     target_link_libraries(MlibOpenGL
-        MlibGlad)
+        PUBLIC
+            MlibGlad)
 else()
     target_link_against_opengl(MlibOpenGL)
 endif()

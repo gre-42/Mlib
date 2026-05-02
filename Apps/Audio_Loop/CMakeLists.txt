@@ -1,7 +1,5 @@
 include(../../CMakeCommands.cmake)
 
-my_add_executable(audio_loop "1")
-
-include_directories(${Mlib_INCLUDE_DIR})
+my_add_executable(NAME audio_loop RECURSIVE)
 
 target_link_libraries(audio_loop MlibAudio MlibStrings)

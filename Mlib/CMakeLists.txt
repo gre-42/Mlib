@@ -1,5 +1,8 @@
 include(../CMakeCommands.cmake)
 
+add_library(MlibHeader INTERFACE)
+target_include_directories(MlibHeader INTERFACE ${Mlib_INCLUDE_DIR})
+
 if (ANDROID OR EMSCRIPTEN)
     add_subdirectory(AGameHelper)
 endif()
@@ -13,6 +16,7 @@ add_subdirectory(Images)
 add_subdirectory(Io)
 add_subdirectory(Json)
 add_subdirectory(Layout)
+add_subdirectory(Map)
 add_subdirectory(Math)
 add_subdirectory(Macro_Executor)
 add_subdirectory(Memory)

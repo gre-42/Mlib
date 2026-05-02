@@ -1,7 +1,10 @@
 include(../CMakeCommands.cmake)
 
-set(excluded_files "")
-
-my_add_library(MlibStbCpp "1" "" "${excluded_files}")
+my_add_library(
+    NAME MlibStbCpp
+    RECURSIVE
+    ADDITIONAL_FILES ""
+    EXCLUDED_FILES ""
+)
 target_include_directories(MlibStbCpp PUBLIC ${Mlib_INCLUDE_DIR})
 target_link_libraries(MlibStbCpp MlibStb MlibMisc MlibArray)

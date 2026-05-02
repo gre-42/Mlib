@@ -1,9 +1,13 @@
 include(../CMakeCommands.cmake)
 
-set(mlib_excluded_files "")
-
-my_add_library(MlibStb "1" "" "${mlib_excluded_files}")
+my_add_library(
+    NAME MlibStb
+    RECURSIVE
+    ADDITIONAL_FILES ""
+    EXCLUDED_FILES ""
+)
 
 no_warn_conversion(MlibStb)
 
-include_directories(${Mlib_INCLUDE_DIR})
+target_link_libraries(MlibStb MlibHeader)
+target_link_math(MlibStb)

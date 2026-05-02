@@ -1,7 +1,5 @@
 include(../../CMakeCommands.cmake)
 
-my_add_executable(print_dff_info "1")
-
-include_directories(${Mlib_INCLUDE_DIR})
+my_add_executable(NAME print_dff_info RECURSIVE)
 
 target_link_libraries(print_dff_info MlibGeometry)

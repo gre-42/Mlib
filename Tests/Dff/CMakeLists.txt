@@ -1,8 +1,6 @@
 include(../../CMakeCommands.cmake)
 
-my_add_executable(dff_test "1")
-
-include_directories(${Mlib_INCLUDE_DIR})
+my_add_executable(NAME dff_test RECURSIVE)
 
 target_link_libraries(dff_test MlibGeometry MlibOpenGL)
 
