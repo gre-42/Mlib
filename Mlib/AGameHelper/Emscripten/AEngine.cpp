@@ -12,11 +12,23 @@
 
 using namespace Mlib;
 
-EM_BOOL on_window_resize(int eventType, const EmscriptenUiEvent *e, void *userData) {
-    int new_width = e->windowInnerWidth;
-    int new_height = e->windowInnerHeight;
-    emscripten_set_canvas_element_size("#canvas", new_width, new_height);
-    return EM_TRUE; 
+// static EM_BOOL on_window_resize(int eventType, const EmscriptenUiEvent *e, void *userData) {
+//     int new_width = e->windowInnerWidth;
+//     int new_height = e->windowInnerHeight;
+//     emscripten_set_canvas_element_size("#canvas", new_width, new_height);
+//     return EM_TRUE;
+// }
+
+void update_canvas_size() {
+    double css_width, css_height;
+    emscripten_get_element_css_size("#canvas", &css_width, &css_height);
+
+    int canvas_width, canvas_height;
+    emscripten_get_canvas_element_size("#canvas", &canvas_width, &canvas_height);
+
+    if (canvas_width != (int)css_width || canvas_height != (int)css_height) {
+        emscripten_set_canvas_element_size("#canvas", (int)css_width, (int)css_height);
+    }
 }
 
 AEngine::AEngine(
@@ -39,10 +51,10 @@ AEngine::AEngine(
                 throw std::runtime_error("Could not set emscripten keyup callback");
             }
             dgs_.add([](){emscripten_set_keyup_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, nullptr, EM_FALSE, nullptr);});
-            if (emscripten_set_resize_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, nullptr, EM_TRUE, on_window_resize) != EMSCRIPTEN_RESULT_SUCCESS) {
-                throw std::runtime_error("Could not register resize callback");
-            }
-            dgs_.add([](){emscripten_set_resize_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, nullptr, EM_FALSE, nullptr);});
+            // if (emscripten_set_resize_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, nullptr, EM_TRUE, on_window_resize) != EMSCRIPTEN_RESULT_SUCCESS) {
+            //     throw std::runtime_error("Could not register resize callback");
+            // }
+            // dgs_.add([](){emscripten_set_resize_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, nullptr, EM_FALSE, nullptr);});
             // Init GLES context using HTML5 API
             EmscriptenWebGLContextAttributes attrs;
             emscripten_webgl_init_context_attributes(&attrs);
@@ -73,6 +85,7 @@ AEngine::AEngine(
 AEngine::~AEngine() = default;
 
 void AEngine::draw_frame(Mlib::RenderEvent event) {
+    update_canvas_size();
     auto lx = layout_parameters_x();
     auto ly = layout_parameters_y();
     renderer_.render(event, lx, ly);
