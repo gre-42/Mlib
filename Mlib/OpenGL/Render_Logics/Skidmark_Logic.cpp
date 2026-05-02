@@ -90,16 +90,20 @@ void SkidmarkLogic::render_moving_node(
         .height = texture_height_,
         .color_magnifying_interpolation_mode = InterpolationMode::LINEAR,
         .depth_kind = FrameBufferChannelKind::NONE,
-        .wrap_s = GL_CLAMP_TO_SOMETHING,
-        .wrap_t = GL_CLAMP_TO_SOMETHING,
-        .border_color = border_color,
+        .wrap_s = GL_CLAMP_TO_EDGE,
+        .wrap_t = GL_CLAMP_TO_EDGE,
+        // .border_color = border_color,
         .nsamples_msaa = 1});
     {
         if (fbs_(old_fbs_id_) != nullptr) {
             if (old_render_texture_logic_ == nullptr) {
                 old_render_texture_logic_ = std::make_shared<FillWithTextureLogic>(
                     fbs_(old_fbs_id_)->texture_color(),
-                    CullFaceMode::NO_CULL);
+                    CullFaceMode::NO_CULL,
+                    ContinuousBlendMode::ALPHA,
+                    standard_quad_vertices,
+                    std::nullopt, // layer
+                    border_color);
             } else {
                 old_render_texture_logic_->set_image_resource_name(
                     fbs_(old_fbs_id_)->texture_color());

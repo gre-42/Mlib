@@ -34,7 +34,10 @@ SHADER_VER FRAGMENT_PRECISION
 "    color = texture(texture1, TexCoords).rgba;\n"
 "}";
 
-std::string fragment_shader_text_layer(size_t layer) {
+std::string fragment_shader_text_layer(
+    size_t layer,
+    std::optional<FixedArray<float, 4>>& uniform_border_color)
+{
     std::stringstream sstr;
     sstr << SHADER_VER << FRAGMENT_PRECISION;
     sstr << "in vec2 TexCoords;\n";
@@ -42,9 +45,47 @@ std::string fragment_shader_text_layer(size_t layer) {
     sstr << "\n";
     sstr << "uniform sampler2DArray texture1;\n";
     sstr << "\n";
+    if (uniform_border_color.has_value()) {
+        sstr << "bool is_inside_texture(in vec2 uv) {\n";
+        sstr << "    return all(greaterThanEqual(uv, vec2(0.0))) && all(lessThanEqual(uv, vec2(1.0)));\n";
+        sstr << "}\n";
+    }
     sstr << "void main()\n";
     sstr << "{\n";
     sstr << "    color = texture(texture1, vec3(TexCoords, " << layer << ")).rgba;\n";
+    if (uniform_border_color.has_value()) {
+        const auto& c = *uniform_border_color;
+        sstr << "    if (!is_inside_texture(TexCoords)) {\n";
+        sstr << "        color = vec4(" << c(0) << ", " << c(1) << ", " << c(2) << ", " << c(3) << ");\n";
+        sstr << "    }";
+    }
+    sstr << "}";
+    return sstr.str();
+}
+
+std::string fragment_shader_text_border(std::optional<FixedArray<float, 4>>& uniform_border_color)
+{
+    std::stringstream sstr;
+    sstr << SHADER_VER << FRAGMENT_PRECISION;
+    sstr << "in vec2 TexCoords;\n";
+    sstr << "out vec4 color;\n";
+    sstr << "\n";
+    sstr << "uniform sampler2D texture1;\n";
+    sstr << "\n";
+    if (uniform_border_color.has_value()) {
+        sstr << "bool is_inside_texture(in vec2 uv) {\n";
+        sstr << "    return all(greaterThanEqual(uv, vec2(0.0))) && all(lessThanEqual(uv, vec2(1.0)));\n";
+        sstr << "}\n";
+    }
+    sstr << "void main()\n";
+    sstr << "{\n";
+    sstr << "    color = texture(texture1, TexCoords).rgba;\n";
+    if (uniform_border_color.has_value()) {
+        const auto& c = *uniform_border_color;
+        sstr << "    if (!is_inside_texture(TexCoords)) {\n";
+        sstr << "        color = vec4(" << c(0) << ", " << c(1) << ", " << c(2) << ", " << c(3) << ");\n";
+        sstr << "    }";
+    }
     sstr << "}";
     return sstr.str();
 }
@@ -54,12 +95,14 @@ FillWithTextureLogic::FillWithTextureLogic(
     CullFaceMode cull_face_mode,
     ContinuousBlendMode blend_mode,
     const float* quad_vertices,
-    std::optional<size_t> layer)
+    std::optional<size_t> layer,
+    const std::optional<FixedArray<float, 4>>& uniform_border_color)
     : GenericPostProcessingLogic{ quad_vertices }
     , texture_{ std::move(texture) }
     , cull_face_mode_{ cull_face_mode }
     , blend_mode_{ blend_mode }
     , layer_{ layer }
+    , uniform_border_color_{ uniform_border_color }
 {}
 
 FillWithTextureLogic::~FillWithTextureLogic() = default;
@@ -70,10 +113,12 @@ void FillWithTextureLogic::set_image_resource_name(std::shared_ptr<ITextureHandl
 
 void FillWithTextureLogic::ensure_allocated() {
     if (!rp_.allocated()) {
-        if (layer_.has_value()) {
-            rp_.allocate(simple_vertex_shader_text_, fragment_shader_text_layer(*layer_).c_str());
-        } else {
+        if (!layer_.has_value() && !uniform_border_color_.has_value()) {
             rp_.allocate(simple_vertex_shader_text_, fragment_shader_text);
+        } else if (layer_.has_value()) {
+            rp_.allocate(simple_vertex_shader_text_, fragment_shader_text_layer(*layer_, uniform_border_color_).c_str());
+        } else {
+            rp_.allocate(simple_vertex_shader_text_, fragment_shader_text_border(uniform_border_color_).c_str());
         }
         rp_.texture_location = rp_.get_uniform_location("texture1");
     }

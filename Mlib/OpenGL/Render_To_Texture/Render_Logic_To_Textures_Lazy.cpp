@@ -193,9 +193,9 @@ void Mlib::render_logic_to_textures_lazy(
         .color_format = GL_RGBA,
         .color_magnifying_interpolation_mode = InterpolationMode::LINEAR,
         .depth_kind = depth_kind,
-        .wrap_s = GL_CLAMP_TO_SOMETHING,
-        .wrap_t = GL_CLAMP_TO_SOMETHING,
-        .border_color = {0.f, 0.f, 0.f, 0.f},
+        .wrap_s = GL_CLAMP_TO_EDGE,
+        .wrap_t = GL_CLAMP_TO_EDGE,
+        // .border_color = {0.f, 0.f, 0.f, 0.f},
         .with_mipmaps = true,
         .nsamples_msaa = nsamples_msaa};
     auto config_alpha = FrameBufferConfig{
@@ -205,9 +205,9 @@ void Mlib::render_logic_to_textures_lazy(
         .color_format = GL_RED,
         .color_magnifying_interpolation_mode = InterpolationMode::LINEAR,
         .depth_kind = depth_kind,
-        .wrap_s = GL_CLAMP_TO_SOMETHING,
-        .wrap_t = GL_CLAMP_TO_SOMETHING,
-        .border_color = {0.f, 0.f, 0.f, 0.f},
+        .wrap_s = GL_CLAMP_TO_EDGE,
+        .wrap_t = GL_CLAMP_TO_EDGE,
+        // .border_color = {0.f, 0.f, 0.f, 0.f},
         .with_mipmaps = true,
         .nsamples_msaa = 1};
     {

@@ -968,6 +968,11 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
             }
         }
     }
+    if (has_lightmap_color || !skidmarks.empty()) {
+        sstr << "bool is_inside_texture(in vec2 uv) {" << std::endl;
+        sstr << "    return all(greaterThanEqual(uv, vec2(0.0))) && all(lessThanEqual(uv, vec2(1.0)));" << std::endl;
+        sstr << "}" << std::endl;
+    }
     if (!textures_color.empty()) {
         auto mip2_color = (textures_color[0]->texture_descriptor.color.mipmap_mode == MipmapMode::WITH_MIPMAPS_2D);
         auto mip2_normal = (textures_color[0]->texture_descriptor.normal.mipmap_mode == MipmapMode::WITH_MIPMAPS_2D);
@@ -1537,7 +1542,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     }
     sstr << "    vec3 frag_brightness_emissive_ambient_diffuse = vec3(0.0, 0.0, 0.0);" << std::endl;
     sstr << "    vec3 frag_brightness_specular = vec3(0.0, 0.0, 0.0);" << std::endl;
-    auto compute_light_color = [&sstr, &lights](size_t i){
+    auto compute_light_color = [&sstr, &lights, &render_pass](size_t i){
         if (i > lights.size()) {
             throw std::runtime_error("Light index too large");
         }
@@ -1547,10 +1552,24 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         }
         if (VisibilityCheck{*light.vp}.orthographic()) {
             sstr << "            vec3 light_color = texture(texture_light_color" << i << ", proj_coords01_light" << i << ").rgb;" << std::endl;
+            sstr << "            if (!is_inside_texture(proj_coords01_light" << i << ")) {" << std::endl;
+            if (any(render_pass & ExternalRenderPassType::LIGHTMAP_BLOBS_MASK)) {
+                sstr << "                light_color = vec3(0.0, 0.0, 0.0);" << std::endl;
+            } else {
+                sstr << "                light_color = vec3(1.0, 1.0, 1.0);" << std::endl;
+            }
+            sstr << "            }" << std::endl;
         } else {
             sstr << "            vec2 proj_coords11 = FragPosLightSpace" << i << ".xy / FragPosLightSpace" << i << ".w;" << std::endl;
             sstr << "            vec2 proj_coords01 = proj_coords11 * 0.5 + 0.5;" << std::endl;
             sstr << "            vec3 light_color = texture(texture_light_color" << i << ", proj_coords01).rgb;" << std::endl;
+            sstr << "            if (!is_inside_texture(proj_coords01" << i << ")) {" << std::endl;
+            if (any(render_pass & ExternalRenderPassType::LIGHTMAP_BLOBS_MASK)) {
+                sstr << "                light_color = vec3(0.0, 0.0, 0.0);" << std::endl;
+            } else {
+                sstr << "                light_color = vec3(1.0, 1.0, 1.0);" << std::endl;
+            }
+            sstr << "            }" << std::endl;
         }
     };
     if (has_lightmap_color && !black_shadow_indices.empty()) {
@@ -1582,6 +1601,9 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
                     throw std::runtime_error("Smoke does not require a skidmark");
                 case ParticleType::SKIDMARK:
                     sstr << "    skidmark_fac = min(skidmark_fac, texture(texture_skidmarks[" << i << "], proj_coords01_skidmarks[" << i << "]).rgb);" << std::endl;
+                    sstr << "    if (!is_inside_texture(proj_coords01_skidmarks[" << i << "])) {" << std::endl;
+                    sstr << "        skidmark_fac = vec3(1.0, 1.0, 1.0);" << std::endl;
+                    sstr << "    }" << std::endl;
                     return;
                 case ParticleType::WATER_WAVE:
                     sstr << "    water_wave_fac += texture(texture_skidmarks[" << i << "], proj_coords01_skidmarks[" << i << "]).rgb;" << std::endl;

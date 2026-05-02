@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Geometry/Material/Colormap_With_Modifiers.hpp>
 #include <Mlib/Geometry/Material/Cull_Face_Mode.hpp>
 #include <Mlib/OpenGL/Instance_Handles/Render_Program.hpp>
@@ -35,7 +36,8 @@ public:
         CullFaceMode cull_face_mode = CullFaceMode::CULL,
         ContinuousBlendMode blend_mode = ContinuousBlendMode::ALPHA,
         const float* quad_vertices = standard_quad_vertices,
-        std::optional<size_t> layer = std::nullopt);
+        std::optional<size_t> layer = std::nullopt,
+        const std::optional<FixedArray<float, 4>>& uniform_border_color = std::nullopt);
     ~FillWithTextureLogic();
     void set_image_resource_name(std::shared_ptr<ITextureHandle> texture);
     bool texture_is_loaded_and_try_preload() const;
@@ -52,6 +54,7 @@ private:
     CullFaceMode cull_face_mode_;
     ContinuousBlendMode blend_mode_;
     std::optional<size_t> layer_;
+    std::optional<FixedArray<float, 4>> uniform_border_color_;
 };
 
 }

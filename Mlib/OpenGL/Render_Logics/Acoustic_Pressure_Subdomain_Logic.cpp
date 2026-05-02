@@ -143,6 +143,9 @@ void AcousticPressureSubdomainLogic::render_moving_node(
             .wrap_t = (periodicity_ == Periodicity::APERIODIC) ? GL_CLAMP_TO_EDGE : GL_REPEAT,
             .nsamples_msaa = 1
         };
+        // WebGL does not support border color.
+        // => The border color is now computed in the fragment shader,
+        //    based on the "is_inside_texture" function.
         auto skidmark_cfg = FrameBufferConfig{
             .width = texture_width_,
             .height = texture_height_,
@@ -151,9 +154,9 @@ void AcousticPressureSubdomainLogic::render_moving_node(
             .color_type = GL_UNSIGNED_BYTE,
             .color_magnifying_interpolation_mode = InterpolationMode::LINEAR,
             .depth_kind = FrameBufferChannelKind::NONE,
-            .wrap_s = (periodicity_ == Periodicity::APERIODIC) ? GL_CLAMP_TO_SOMETHING : GL_REPEAT,
-            .wrap_t = (periodicity_ == Periodicity::APERIODIC) ? GL_CLAMP_TO_SOMETHING : GL_REPEAT,
-            .border_color = {0.5f, 0.5f, 0.5f, 1.f},
+            .wrap_s = (periodicity_ == Periodicity::APERIODIC) ? GL_CLAMP_TO_EDGE : GL_REPEAT,
+            .wrap_t = (periodicity_ == Periodicity::APERIODIC) ? GL_CLAMP_TO_EDGE : GL_REPEAT,
+            // .border_color = {0.5f, 0.5f, 0.5f, 1.f},
             .nsamples_msaa = 1
         };
         auto wind_cfg = FrameBufferConfig{
