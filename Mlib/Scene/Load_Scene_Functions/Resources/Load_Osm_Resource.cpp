@@ -19,7 +19,6 @@
 #include <Mlib/Scene/Load_Scene_Funcs.hpp>
 #include <Mlib/Scene_Graph/Resources/Parsed_Resource_Name.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
-#include <Mlib/Strings/String.hpp>
 #include <Mlib/Strings/Trim.hpp>
 #include <Mlib/Threads/Thread_Top.hpp>
 #include <concepts>

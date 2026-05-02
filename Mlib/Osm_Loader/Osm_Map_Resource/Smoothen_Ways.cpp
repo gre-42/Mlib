@@ -5,7 +5,7 @@
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Nodes_And_Ways.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Osm_Map_Resource_Helpers.hpp>
 #include <Mlib/Stats/Linspace.hpp>
-#include <Mlib/Strings/String.hpp>
+#include <Mlib/Strings/Join.hpp>
 #include <stdexcept>
 
 using namespace Mlib;

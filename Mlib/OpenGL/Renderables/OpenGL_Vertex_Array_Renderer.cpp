@@ -37,7 +37,7 @@
 #include <Mlib/Scene_Graph/Render/IGpu_Vertex_Array.hpp>
 #include <Mlib/Scene_Graph/Render/IGpu_Vertex_Data.hpp>
 #include <Mlib/Scene_Graph/Render_Pass.hpp>
-#include <Mlib/Strings/String.hpp>
+#include <Mlib/Strings/Join.hpp>
 #include <Mlib/Testing/Assert.hpp>
 
 using namespace Mlib;

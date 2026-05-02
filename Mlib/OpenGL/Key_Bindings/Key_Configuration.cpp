@@ -1,7 +1,7 @@
 
 #include "Key_Configuration.hpp"
 #include <Mlib/OpenGL/Key_Bindings/Input_Type.hpp>
-#include <Mlib/Strings/String.hpp>
+#include <Mlib/Strings/Join.hpp>
 
 using namespace Mlib;
 

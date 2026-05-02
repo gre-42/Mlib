@@ -7,7 +7,6 @@
 #include <Mlib/Regex/Match_Counter.hpp>
 #include <Mlib/Regex/Misc.hpp>
 #include <Mlib/Regex/Template_Regex.hpp>
-#include <Mlib/Strings/String.hpp>
 #include <Mlib/Strings/String_View_To_Number.hpp>
 
 namespace DbQueryGroups {

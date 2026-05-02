@@ -11,12 +11,12 @@
 #include <Mlib/OpenGL/Render_Logics/Fill_Pixel_Region_With_Texture_Logic.hpp>
 #include <Mlib/OpenGL/Render_Logics/Fill_With_Texture_Logic.hpp>
 #include <Mlib/Regex/Regex_Select.hpp>
+#include <Mlib/Regex/Split.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Load_Scene_Funcs.hpp>
 #include <Mlib/Scene/Physics_Scene.hpp>
 #include <Mlib/Scene/Renderable_Scene.hpp>
 #include <Mlib/Scene/Renderable_Scenes.hpp>
-#include <Mlib/Strings/String.hpp>
 
 using namespace Mlib;
 

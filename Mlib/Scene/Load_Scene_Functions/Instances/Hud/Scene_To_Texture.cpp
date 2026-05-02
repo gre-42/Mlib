@@ -12,7 +12,6 @@
 #include <Mlib/Scene/Load_Scene_Funcs.hpp>
 #include <Mlib/Scene/Renderable_Scene.hpp>
 #include <Mlib/Scene/Renderable_Scenes.hpp>
-#include <Mlib/Strings/String.hpp>
 #include <Mlib/Strings/String_View_To_Number.hpp>
 
 using namespace Mlib;

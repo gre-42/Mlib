@@ -109,6 +109,7 @@
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Waysides_Surface.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Waysides_Vertex.hpp>
 #include <Mlib/Physics/Units.hpp>
+#include <Mlib/Regex/Split.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Descriptors/Object_Resource_Descriptor.hpp>
 #include <Mlib/Scene_Graph/Descriptors/Resource_Instance_Descriptor.hpp>
@@ -122,7 +123,6 @@
 #include <Mlib/Scene_Graph/Spawn_Point.hpp>
 #include <Mlib/Scene_Graph/Way_Point_Location.hpp>
 #include <Mlib/Scene_Graph/Way_Point_Sandbox.hpp>
-#include <Mlib/Strings/String.hpp>
 #include <Mlib/Strings/String_View_To_Number.hpp>
 #include <Mlib/Strings/String_View_To_Scene_Pos.hpp>
 #include <Mlib/Threads/Thread_Top.hpp>

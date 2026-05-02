@@ -1,21 +1,9 @@
-
+#include "Split.hpp"
 #include <Mlib/Regex/Regex_Select.hpp>
-#include <Mlib/Strings/String.hpp>
 #include <list>
 #include <stdexcept>
 
 using namespace Mlib;
-
-std::strong_ordering Mlib::operator <=> (const std::string& a, const std::string& b) {
-    int i = a.compare(b);
-    if (i < 0) {
-        return std::strong_ordering::less;
-    }
-    if (i == 0) {
-        return std::strong_ordering::equal;
-    }
-    return std::strong_ordering::greater;
-}
 
 std::list<std::string> Mlib::string_to_list(const std::string& str, const Mlib::re::cregex& re, size_t expected_length) {
     std::list<std::string> res;

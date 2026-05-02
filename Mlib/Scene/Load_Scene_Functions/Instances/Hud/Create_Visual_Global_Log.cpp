@@ -10,10 +10,10 @@
 #include <Mlib/Misc/FPath.hpp>
 #include <Mlib/OpenGL/Data_Display/Visual_Global_Log.hpp>
 #include <Mlib/OpenGL/Render_Logics/Render_Logics.hpp>
+#include <Mlib/Regex/Split.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Load_Scene_Funcs.hpp>
 #include <Mlib/Scene_Graph/Log_Entry_Severity.hpp>
-#include <Mlib/Strings/String.hpp>
 #include <Mlib/Strings/String_View_To_Number.hpp>
 
 using namespace Mlib;

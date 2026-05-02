@@ -1,5 +1,5 @@
 #include "Vertical_Subdivision.hpp"
-#include <Mlib/Strings/String.hpp>
+#include <Mlib/Regex/Split.hpp>
 #include <map>
 #include <stdexcept>
 

@@ -12,9 +12,8 @@
 #include <Mlib/Misc/Argument_List.hpp>
 #include <Mlib/Misc/FPath_Json.hpp>
 #include <Mlib/Misc/Floating_Point_Exceptions.hpp>
-#include <Mlib/Os/Pathes.hpp>
+#include <Mlib/Regex/Pathes.hpp>
 #include <Mlib/Regex/Regex_Select.hpp>
-#include <Mlib/Strings/String.hpp>
 #include <Mlib/Strings/Utf8_Path.hpp>
 #include <optional>
 #include <regex>

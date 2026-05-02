@@ -15,8 +15,8 @@
 #include <Mlib/Os/Os.hpp>
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Regex/Regex_Select.hpp>
+#include <Mlib/Regex/Split.hpp>
 #include <Mlib/Scene_Config/Scene_Precision.hpp>
-#include <Mlib/Strings/String.hpp>
 #include <Mlib/Strings/String_View_To_Number.hpp>
 #include <Mlib/Testing/Assert.hpp>
 #include <filesystem>

@@ -7,10 +7,10 @@
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Subdivided_Way.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Subdivided_Way_Vertex.hpp>
 #include <Mlib/Regex/Regex_Select.hpp>
+#include <Mlib/Regex/Split.hpp>
 #include <Mlib/Scene_Graph/Resources/Batch_Resource_Instantiator.hpp>
 #include <Mlib/Scene_Graph/Resources/Parsed_Resource_Name.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
-#include <Mlib/Strings/String.hpp>
 #include <Mlib/Strings/String_View_To_Number.hpp>
 #include <stdexcept>
 

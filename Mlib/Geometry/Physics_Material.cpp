@@ -1,7 +1,7 @@
 
 #include "Physics_Material.hpp"
 #include <Mlib/Json/Base.hpp>
-#include <Mlib/Strings/String.hpp>
+#include <Mlib/Regex/Split.hpp>
 #include <stdexcept>
 
 using namespace Mlib;

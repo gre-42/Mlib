@@ -29,7 +29,6 @@
 #include <Mlib/Scene_Graph/Way_Point_Location.hpp>
 #include <Mlib/Scene_Graph/Way_Point_Sandbox.hpp>
 #include <Mlib/Stats/Mean.hpp>
-#include <Mlib/Strings/String.hpp>
 #include <Mlib/Strings/String_View_To_Number.hpp>
 #include <Mlib/Testing/Assert.hpp>
 

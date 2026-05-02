@@ -19,8 +19,6 @@
 #include <Mlib/Scene/Scene_Particles.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
-#include <Mlib/Strings/String.hpp>
-#include <stdexcept>
 
 using namespace Mlib;
 

@@ -21,6 +21,7 @@
 #include <Mlib/Players/Containers/Players.hpp>
 #include <Mlib/Players/Containers/Remote_Sites.hpp>
 #include <Mlib/Regex/Regex_Select.hpp>
+#include <Mlib/Regex/Split.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Load_Scene_Funcs.hpp>
 #include <Mlib/Scene/Render_Logics/Check_Points_Pacenotes.hpp>
@@ -28,7 +29,6 @@
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
-#include <Mlib/Strings/String.hpp>
 
 using namespace Mlib;
 

@@ -1,7 +1,8 @@
 #include "Pathes.hpp"
 #include <Mlib/Regex/Regex_Select.hpp>
+#include <Mlib/Regex/Split.hpp>
 #include <Mlib/Strings/Str.hpp>
-#include <Mlib/Strings/String.hpp>
+#include <Mlib/Strings/U32_Regex.hpp>
 #include <stdexcept>
 
 using namespace Mlib;

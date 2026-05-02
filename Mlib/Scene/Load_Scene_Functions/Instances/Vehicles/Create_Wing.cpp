@@ -13,8 +13,6 @@
 #include <Mlib/Scene_Graph/Interfaces/ITrail_Extender.hpp>
 #include <Mlib/Scene_Graph/Interfaces/ITrail_Renderer.hpp>
 #include <Mlib/Scene_Graph/Interfaces/ITrail_Storage.hpp>
-#include <Mlib/Strings/String.hpp>
-#include <stdexcept>
 
 using namespace Mlib;
 
