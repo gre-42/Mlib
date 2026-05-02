@@ -7,9 +7,14 @@
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Stats/Min_Max.hpp>
 #include <Mlib/Strings/String_View_To_Number.hpp>
-#include <cpp-httplib/httplib.h>
 #include <stb/stb_image_write.h>
 #include <stb_cpp/stb_image_load.hpp>
+#include <Mlib/Misc/Pragma_Clang.hpp>
+
+PRAGMA_CLANG_DIAGNOSTIC_PUSH
+PRAGMA_CLANG_DIAGNOSTIC_IGNORED(-Wsign-conversion)
+#include <cpp-httplib/httplib.h>
+PRAGMA_CLANG_DIAGNOSTIC_POP
 
 using namespace Mlib;
 
