@@ -338,6 +338,9 @@ void DistantTriangleHider::delete_triangles_far_away_legacy(
         }
         if (background_loop_->done()) {
             if (!triangles_to_delete_.empty() || !triangles_to_insert_.empty()) {
+#if defined(__ANDROID__) || defined(__EMSCRIPTEN__)
+                throw std::runtime_error("Triangle replacement not supported on Android and Emscription");
+#else
                 // TimeGuard tg{ "deleting triangles", "deleting triangles" };
                 vertices_.bind();
                 // CHK(auto* ptr = (Triangle*)glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY));
@@ -351,9 +354,6 @@ void DistantTriangleHider::delete_triangles_far_away_legacy(
                     insert_triangle(i, ptr);
                 }
                 triangles_to_insert_.clear();
-#if defined(__ANDROID__) || defined(__EMSCRIPTEN__)
-                throw std::runtime_error("Triangle replacement not supported on Android and Emscription");
-#else
                 CHK(glUnmapBuffer(GL_ARRAY_BUFFER));
 #endif
             }

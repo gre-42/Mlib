@@ -404,15 +404,17 @@ macro(ddebug)
         set(CMAKE_CXX_FLAGS_DEBUG "-DDEBUG -g -O0")
         # MSYS has a large function-call overhead, I guess. => O3
         if ("${CMAKE_SYSTEM_NAME}" STREQUAL "Windows")
-            message(STATUS "Set -DNDEBUG and -O3")
             set(CMAKE_CXX_FLAGS_RELEASE "-DNDEBUG -O3")
         else()
-            message(STATUS "Set -DNDEBUG and -O2")
             set(CMAKE_CXX_FLAGS_RELEASE "-DNDEBUG -O2")
         endif()
     elseif (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
-        message(STATUS "Set -DNDEBUG and -O2")
-        set(CMAKE_CXX_FLAGS_RELEASE "-DNDEBUG -O2")
+        if (EMSCRIPTEN)
+            set(CMAKE_CXX_FLAGS_RELEASE "-DNDEBUG -O3 -msimd128 -msse2")
+            set(CMAKE_LD_FLAGS_RELEASE "--closure 1")
+        else()
+            set(CMAKE_CXX_FLAGS_RELEASE "-DNDEBUG -O2")
+        endif()
     else()
         message(FATAL_ERROR "Unknown compiler in ddebug")
     endif()
@@ -538,8 +540,6 @@ macro(target_link_against_opengl target)
             PUBLIC
                 ${EMSCRIPTEN_FLAGS}
                 -sDISABLE_DEPRECATED_FIND_EVENT_TARGET_BEHAVIOR=1
-                -sFULL_ES2=1
-                -sFULL_ES3=1
                 -sUSE_WEBGL2=1
                 -sMIN_WEBGL_VERSION=2
                 -sMAX_WEBGL_VERSION=2
