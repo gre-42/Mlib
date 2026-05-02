@@ -481,7 +481,7 @@ endmacro()
 
 macro(target_link_math libName)
     if(NOT WIN32)
-        target_link_libraries(${libName} m)
+        target_link_libraries(${libName} PUBLIC m)
     endif()
 endmacro()
 
@@ -549,15 +549,15 @@ macro(target_link_against_opengl target)
                 -lEGL)
     elseif (ANDROID)
         # Android NDK specific linking
-        target_link_libraries(${target} GLESv3 EGL)
+        target_link_libraries(${target} PUBLIC GLESv3 EGL)
     else()
         # Desktop (Windows/Linux/macOS) logic
         if (glfw3_FOUND)
             target_include_directories(${target} PUBLIC ${glfw3_INCLUDE_DIR})
             if (CMAKE_GENERATOR MATCHES "Visual Studio")
-                target_link_libraries(${target} ${glfw3_LIBRARY})
+                target_link_libraries(${target} PUBLIC ${glfw3_LIBRARY})
             else()
-                target_link_libraries(${target} glfw)
+                target_link_libraries(${target} PUBLIC glfw)
             endif()
         endif()
 

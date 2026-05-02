@@ -7,4 +7,4 @@ my_add_library(
     EXCLUDED_FILES ""
 )
 
-target_link_libraries(MlibLayout MlibOs MlibThreads MlibJson)
+target_link_libraries(MlibLayout PUBLIC MlibOs MlibThreads MlibJson)

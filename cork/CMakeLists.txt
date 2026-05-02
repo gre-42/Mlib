@@ -7,4 +7,4 @@ my_add_library(
     EXCLUDED_FILES ""
 )
 include_directories(mesh rawmesh math util isct accel ${CMAKE_SOURCE_DIR})
-target_link_libraries(MlibCork MlibTriangle -lgmp)
+target_link_libraries(MlibCork PUBLIC MlibTriangle -lgmp)

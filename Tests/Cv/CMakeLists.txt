@@ -4,7 +4,7 @@ my_add_executable(NAME cv_test RECURSIVE)
 
 include_directories(Mlib ${Mlib_INCLUDE_DIR})
 
-target_link_libraries(cv_test MlibCv)
+target_link_libraries(cv_test PRIVATE MlibCv)
 
 add_test(NAME CvTest
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}

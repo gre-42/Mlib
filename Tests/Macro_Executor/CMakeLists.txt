@@ -2,7 +2,7 @@ include(../../CMakeCommands.cmake)
 
 my_add_executable(NAME macro_executor_test RECURSIVE)
 
-target_link_libraries(macro_executor_test MlibMacroExecutor)
+target_link_libraries(macro_executor_test PRIVATE MlibMacroExecutor)
 
 add_test(
     NAME MacroExecutorTest

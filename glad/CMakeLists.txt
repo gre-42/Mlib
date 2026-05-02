@@ -8,4 +8,6 @@ my_add_library(
 )
 
 target_link_against_opengl(MlibGlad)
-target_link_libraries(MlibGlad MlibHeader)
+target_link_libraries(MlibGlad
+    PUBLIC
+        MlibHeader)

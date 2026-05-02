@@ -9,5 +9,4 @@ my_add_library(
 
 target_link_libraries(MlibTime
     PUBLIC
-        MlibHeader
         MlibOs)

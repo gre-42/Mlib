@@ -9,7 +9,7 @@ my_add_library(
 
 target_include_directories(MlibRegex PUBLIC ${Mlib_INCLUDE_DIR})
 
-target_link_libraries(MlibRegex MlibOs)
+target_link_libraries(MlibRegex PUBLIC MlibOs)
 if (MSVC)
     target_link_libraries(MlibRegex Boost::boost)
 endif()

@@ -9,4 +9,4 @@ my_add_library(
 
 target_include_directories(MlibMath PUBLIC ${Mlib_INCLUDE_DIR})
 
-target_link_libraries(MlibMath MlibOs MlibArray MlibJson)
+target_link_libraries(MlibMath PUBLIC MlibOs MlibArray MlibJson)

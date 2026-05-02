@@ -7,4 +7,4 @@ my_add_library(
     EXCLUDED_FILES ""
 )
 
-target_link_libraries(MlibGeography MlibStbCpp MlibImages)
+target_link_libraries(MlibGeography PUBLIC MlibStbCpp MlibImages)

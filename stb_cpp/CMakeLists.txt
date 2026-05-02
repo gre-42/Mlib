@@ -7,4 +7,4 @@ my_add_library(
     EXCLUDED_FILES ""
 )
 target_include_directories(MlibStbCpp PUBLIC ${Mlib_INCLUDE_DIR})
-target_link_libraries(MlibStbCpp MlibStb MlibMisc MlibArray)
+target_link_libraries(MlibStbCpp PUBLIC MlibStb MlibMisc MlibArray)

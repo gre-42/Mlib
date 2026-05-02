@@ -4,6 +4,6 @@ my_add_executable(NAME math_test RECURSIVE)
 
 include_directories(Mlib ${Mlib_INCLUDE_DIR})
 
-target_link_libraries(math_test MlibMisc MlibMath MlibTime)
+target_link_libraries(math_test PRIVATE MlibMisc MlibMath MlibTime)
 
 add_test(NAME MathTest COMMAND $<TARGET_FILE:math_test>)

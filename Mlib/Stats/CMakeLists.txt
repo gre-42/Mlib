@@ -9,4 +9,4 @@ my_add_library(
 
 target_include_directories(MlibStats PUBLIC ${Mlib_INCLUDE_DIR})
 
-target_link_libraries(MlibStats MlibOs)
+target_link_libraries(MlibStats PUBLIC MlibOs)

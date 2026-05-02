@@ -13,4 +13,4 @@ endif()
 
 target_include_directories(MlibIo PUBLIC ${Mlib_INCLUDE_DIR})
 
-target_link_libraries(MlibIo MlibMisc MlibOs)
+target_link_libraries(MlibIo PUBLIC MlibMisc MlibOs)

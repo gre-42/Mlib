@@ -7,8 +7,8 @@ my_add_library(
     EXCLUDED_FILES ""
 )
 
-target_link_libraries(MlibCompression MlibIo MlibOs)
+target_link_libraries(MlibCompression PUBLIC MlibIo MlibOs)
 
 if (WITH_ZLIB AND NOT EMSCRIPTEN)
-    target_link_libraries(MlibCompression ZLIB::ZLIB)
+    target_link_libraries(MlibCompression PUBLIC ZLIB::ZLIB)
 endif()

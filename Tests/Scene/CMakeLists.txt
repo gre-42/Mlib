@@ -4,7 +4,7 @@ my_add_executable(NAME scene_test RECURSIVE)
 
 include_directories(${Mlib_INCLUDE_DIR} ${glfw3_INCLUDE_DIR})
 
-target_link_libraries(scene_test MlibScene)
+target_link_libraries(scene_test PRIVATE MlibScene)
 
 add_test(NAME SceneTest
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}

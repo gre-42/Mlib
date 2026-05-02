@@ -4,6 +4,6 @@ my_add_executable(NAME cfd_test RECURSIVE)
 
 include_directories(Mlib ${Mlib_INCLUDE_DIR})
 
-target_link_libraries(cfd_test MlibMisc MlibPhysics)
+target_link_libraries(cfd_test PRIVATE MlibMisc MlibPhysics)
 
 add_test(NAME CfdTest COMMAND $<TARGET_FILE:cfd_test>)

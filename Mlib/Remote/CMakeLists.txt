@@ -12,14 +12,20 @@ if (NOT ANDROID)
     target_include_directories(MlibRemote PRIVATE ${MlibEve_INCLUDE_DIR})
 endif()
 
-target_link_libraries(MlibRemote MlibMisc MlibOs MlibIo MlibMemory MlibJson)
+target_link_libraries(MlibRemote
+    PUBLIC
+        MlibMisc
+        MlibOs
+        MlibIo
+        MlibMemory
+        MlibJson)
 
 if (NOT EMSCRIPTEN)
-    target_link_libraries(MlibRemote Boost::boost)
+    target_link_libraries(MlibRemote PUBLIC Boost::boost)
 endif()
 
 if (MINGW)
-    target_link_libraries(MlibRemote -lws2_32)
+    target_link_libraries(MlibRemote PUBLIC -lws2_32)
 endif()
 
 if (ANDROID)

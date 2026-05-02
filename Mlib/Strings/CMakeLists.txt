@@ -7,7 +7,9 @@ my_add_library(
     EXCLUDED_FILES ""
 )
 
-target_include_directories(MlibStrings PUBLIC ${Mlib_INCLUDE_DIR})
+target_link_libraries(MlibStrings
+    PUBLIC
+        MlibHeader)
 
 # Emscripten uses "-s USE_BOOST_HEADERS=1" in the main CMakeLists.txt
 if (NOT EMSCRIPTEN)

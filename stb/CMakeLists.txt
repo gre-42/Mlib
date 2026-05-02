@@ -9,5 +9,7 @@ my_add_library(
 
 no_warn_conversion(MlibStb)
 
-target_link_libraries(MlibStb MlibHeader)
+target_link_libraries(MlibStb
+    PUBLIC
+        MlibHeader)
 target_link_math(MlibStb)

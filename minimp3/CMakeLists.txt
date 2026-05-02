@@ -7,4 +7,4 @@ my_add_library(
     EXCLUDED_FILES ""
 )
 
-target_link_libraries(MlibMiniMp3 MlibMisc)
+target_link_libraries(MlibMiniMp3 PUBLIC MlibMisc)

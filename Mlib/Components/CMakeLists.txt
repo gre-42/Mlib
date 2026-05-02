@@ -11,4 +11,4 @@ if (NOT ANDROID)
     target_precompile_headers(MlibComponents PRIVATE ../Misc/Precompiled_Header.hpp)
 endif()
 
-target_link_libraries(MlibComponents MlibPhysics MlibSceneGraph)
+target_link_libraries(MlibComponents PUBLIC MlibPhysics MlibSceneGraph)

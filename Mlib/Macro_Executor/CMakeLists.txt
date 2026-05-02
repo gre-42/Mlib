@@ -9,4 +9,4 @@ my_add_library(
 
 target_include_directories(MlibMacroExecutor PUBLIC ${Mlib_INCLUDE_DIR})
 
-target_link_libraries(MlibMacroExecutor MlibJson MlibRegex MlibThreads MlibMemory)
+target_link_libraries(MlibMacroExecutor PUBLIC MlibJson MlibRegex MlibThreads MlibMemory)

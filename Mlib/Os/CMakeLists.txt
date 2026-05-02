@@ -40,4 +40,6 @@ else()
 )
 endif()
 
-target_link_libraries(MlibOs PUBLIC MlibStrings)
+target_link_libraries(MlibOs
+    PUBLIC
+        MlibStrings)
