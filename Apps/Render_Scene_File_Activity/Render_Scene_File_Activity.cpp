@@ -291,16 +291,16 @@ JThread loader_thread(
     }};
 }
 
-int main_background();
+int main_background(int argc, char** argv);
 
 #ifdef __EMSCRIPTEN__
-int main() {
+int main(int argc, char** argv) {
     linfo() << "Proxy thread started";
     set_animation_frame_thread();
     linfo() << "Start background thread";
-    std::thread bg_thread([]() {
+    std::thread bg_thread([argc, argv]() {
         linfo() << "Call background function";
-        auto exit_code = main_background();
+        auto exit_code = main_background(argc, argv);
         linfo() << "Exit application with return code " << exit_code;
         std::exit(exit_code);
     });
@@ -311,7 +311,7 @@ int main() {
     linfo() << "Return from proxy thread";
     return 0;
 }
-int main_background()
+int main_background(int argc, char** argv)
 #else
 void android_main(android_app* app)
 #endif
@@ -550,9 +550,12 @@ void android_main(android_app* app)
          "--show_only_file",
          "--rgba_debug_image"});
     try {
+#ifdef __EMSCRIPTEN__
+        const auto args = parser.parsed(argc, argv);
+#else
         const char* argv[] = {"appname", "/;/data", "/levels/main/main.scn.json"};
         const auto args = parser.parsed(sizeof(argv) / sizeof(argv[0]), argv);
-
+#endif
         args.assert_num_unnamed(2);
         auto search_path = split_semicolon_separated_pathes(args.unnamed_value(0));
         auto initial_main_scene_filename = std::filesystem::absolute(args.unnamed_value(1)).string();
