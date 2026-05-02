@@ -11,5 +11,5 @@ target_include_directories(MlibRegex PUBLIC ${Mlib_INCLUDE_DIR})
 
 target_link_libraries(MlibRegex PUBLIC MlibOs)
 if (MSVC)
-    target_link_libraries(MlibRegex Boost::boost)
+    target_link_libraries(MlibRegex PUBLIC Boost::boost)
 endif()
