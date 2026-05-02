@@ -19,50 +19,15 @@ using namespace Mlib;
 //     return EM_TRUE;
 // }
 
-// void update_canvas_size() {
-//     double css_width, css_height;
-//     emscripten_get_element_css_size("#canvas", &css_width, &css_height);
-// 
-//     int canvas_width, canvas_height;
-//     emscripten_get_canvas_element_size("#canvas", &canvas_width, &canvas_height);
-// 
-//     if (canvas_width != (int)css_width || canvas_height != (int)css_height) {
-//         emscripten_set_canvas_element_size("#canvas", (int)css_width, (int)css_height);
-//     }
-// }
+void update_canvas_size() {
+    double css_width, css_height;
+    emscripten_get_element_css_size("#canvas", &css_width, &css_height);
 
-void start_canvas_observer(const char* selector) {
-    // Executes on the main thread even if called from a worker
-    MAIN_THREAD_EM_ASM({
-        const selector = UTF8ToString($0);
-        const target = document.querySelector(selector);
-        if (!target) return;
+    int canvas_width, canvas_height;
+    emscripten_get_canvas_element_size("#canvas", &canvas_width, &canvas_height);
 
-        // Use a global to store the observer for later cleanup
-        window._canvasObserver = new ResizeObserver(entries => {
-            for (let entry of entries) {
-                // Proxy the call back to C++
-                _on_canvas_resized(entry.contentRect.width, entry.contentRect.height);
-            }
-        });
-        window._canvasObserver.observe(target);
-    }, selector);
-}
-
-void stop_canvas_observer() {
-    MAIN_THREAD_EM_ASM({
-        if (window._canvasObserver) {
-            window._canvasObserver.disconnect();
-            delete window._canvasObserver;
-        }
-    });
-}
-
-extern "C" {
-    EMSCRIPTEN_KEEPALIVE
-    void on_canvas_resized(double width, double height) {
-        // emscripten_set_canvas_element_size is thread-safe or automatically proxied
-        emscripten_set_canvas_element_size("#canvas", (int)width, (int)height);
+    if (canvas_width != (int)css_width || canvas_height != (int)css_height) {
+        emscripten_set_canvas_element_size("#canvas", (int)css_width, (int)css_height);
     }
 }
 
@@ -90,8 +55,6 @@ AEngine::AEngine(
             //     throw std::runtime_error("Could not register resize callback");
             // }
             // dgs_add([](){emscripten_set_resize_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, nullptr, EM_FALSE, nullptr);});
-            start_canvas_observer("#canvas");
-            dgs_add([](){ stop_canvas_observer(); });
             // Init GLES context using HTML5 API
             EmscriptenWebGLContextAttributes attrs;
             emscripten_webgl_init_context_attributes(&attrs);
@@ -122,7 +85,7 @@ AEngine::AEngine(
 AEngine::~AEngine() = default;
 
 void AEngine::draw_frame(Mlib::RenderEvent event) {
-    // update_canvas_size();
+    update_canvas_size();
     auto lx = layout_parameters_x();
     auto ly = layout_parameters_y();
     renderer_.render(event, lx, ly);
