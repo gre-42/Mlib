@@ -12,9 +12,7 @@ class AtomicMutex {
     AtomicMutex(const AtomicMutex&) = delete;
     AtomicMutex& operator = (const AtomicMutex&) = delete;
 public:
-    inline AtomicMutex()
-        : ctr_{0}
-    {}
+    inline AtomicMutex() = default;
     inline ~AtomicMutex() = default;
     inline void lock() {
         static const uint32_t spinlock = [](){
@@ -45,19 +43,13 @@ public:
         return must_lock();
     }
     inline bool must_lock() {
-        ++ctr_;
-        if (ctr_ == 1) {
-            return true;
-        } else {
-            --ctr_;
-            return false;
-        }
+        return !flag_.test_and_set(std::memory_order_acquire);
     }
     inline void unlock() {
-        --ctr_;
+        flag_.clear(std::memory_order_release);
     }
 private:
-    std::atomic<uint32_t> ctr_;
+    std::atomic_flag flag_ = ATOMIC_FLAG_INIT;
 };
 
 }
