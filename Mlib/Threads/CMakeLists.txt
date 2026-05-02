@@ -7,6 +7,8 @@ my_add_library(
     EXCLUDED_FILES ""
 )
 
-target_include_directories(MlibThreads PUBLIC ${Mlib_INCLUDE_DIR})
-
-target_link_libraries(MlibThreads MlibOs MlibTime)
+target_link_libraries(MlibThreads
+    PUBLIC
+        MlibHeader
+        MlibOs
+        MlibTime)
