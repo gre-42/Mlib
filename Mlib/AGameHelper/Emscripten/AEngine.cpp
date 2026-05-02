@@ -73,6 +73,7 @@ AEngine::AEngine(
                 }
             }
             renderer_.load_resources();
+            dgs_add([this](){ renderer_.unload_resources(); });
         } catch (...) {
             add_unhandled_exception(std::current_exception());
             return;
@@ -83,11 +84,7 @@ AEngine::AEngine(
     }
 }
 
-AEngine::~AEngine() {
-    execute_in_animation_frame_thread([this](){
-        renderer_.unload_resources();
-    });
-}
+AEngine::~AEngine() = default;
 
 void AEngine::draw_frame(Mlib::RenderEvent event) {
     update_canvas_size();
