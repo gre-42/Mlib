@@ -35,7 +35,7 @@ enum class PrintGlfwCalls {
     ENABLED = 1
 };
 
-void check_glfw_errors(CheckErrors check);
+void check_glfw_errors(CheckGlErrors check);
 void print_glfw_calls(PrintGlfwCalls print);
 
 void assert_no_glfw_error(const char* position, FailureBehavior failure_behavior);
