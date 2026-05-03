@@ -83,10 +83,12 @@ ifeq ($(PODMAN),1)
     CMAKE_CMD := podman run --rm -it -v "$(PWD):/src:Z" -w "/src/$(WDIR)" $(PODMAN_FLAGS) $(CONTAINER) $(CMAKE_CMD)
     BUILD_CMD := podman run --rm -it -v "$(PWD):/src:Z" -w "/src/$(WDIR)" $(CONTAINER)
     INTER_CMD := podman run --rm -it -v "$(PWD):/src:Z" -w "/src/$(WDIR)" $(CONTAINER)
+    DAEMON_CMD := podman run -d -v "$(PWD):/src:Z" -w "/src/$(WDIR)" $(CONTAINER)
 else
     CMAKE_CMD := $(ENV) $(CMAKE_CMD)
     BUILD_CMD :=
     INTER_CMD := $(ENV)
+    DAEMON_CMD := DAEMON_CMD
 endif
 
 echo_platform_char:
@@ -111,6 +113,9 @@ build:
 
 login:
 	$(INTER_CMD) bash
+
+daemon:
+	$(DAEMON_CMD) sleep infinity
 
 empackage:
 	$(INTER_CMD) /emsdk/upstream/emscripten/tools/file_packager /src/assets.data --preload /src/data@/ --js-output=/src/assets.js
