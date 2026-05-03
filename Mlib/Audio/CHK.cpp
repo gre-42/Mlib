@@ -2,7 +2,12 @@
 
 using namespace Mlib;
 
+bool Mlib::CHECK_AL_ERRORS = false;
 Mlib::FastMutex Mlib::al_error_mutex;
+
+void Mlib::check_al_errors(CheckAlErrors check) {
+    CHECK_AL_ERRORS = (check == CheckAlErrors::ENABLED);
+}
 
 const char* Mlib::get_al_error_string(ALenum error) {
     switch (error) {

@@ -20,23 +20,23 @@ BUILD_DIR := $(PLATFORM_CHAR)$(CMAKE_BUILD_TYPE)
 RECAST_PREFIX := $(PLATFORM_CHAR)
 # ASAN
 ifeq ($(ASAN),1)
-    ENV       += CFLAGS=-fsanitize=address
-    ENV       += CXXFLAGS=-fsanitize=address
-    ENV       += LDFLAGS=-fsanitize=address
+    CFLAGS    += -fsanitize=address
+    CXXFLAGS  += -fsanitize=address
+    LDFLAGS   += -fsanitize=address
     BUILD_DIR := A$(BUILD_DIR)
 endif
 # TSAN
 ifeq ($(TSAN),1)
-    ENV       += CFLAGS=-fsanitize=thread
-    ENV       += CXXFLAGS=-fsanitize=thread
-    ENV       += LDFLAGS=-fsanitize=thread
+    CFLAGS    += -fsanitize=thread
+    CXXFLAGS  += -fsanitize=thread
+    LDFLAGS   += -fsanitize=thread
     BUILD_DIR := T$(BUILD_DIR)
 endif
 # UBSAN
 ifeq ($(UBSAN),1)
-    ENV       += CFLAGS=-fsanitize=undefined
-    ENV       += CXXFLAGS=-fsanitize=undefined
-    ENV       += LDFLAGS=-fsanitize=undefined
+    CFLAGS    += -fsanitize=undefined
+    CXXFLAGS  += -fsanitize=undefined
+    LDFLAGS   += -fsanitize=undefined
     BUILD_DIR := B$(BUILD_DIR)
 endif
 # CLANG
@@ -49,7 +49,7 @@ ifeq ($(CLANG),1)
 endif
 # LIBCPP
 ifeq ($(LIBCPP),1)
-    ENV       += CXXFLAGS=-stdlib=libc++
+    CXXFLAGS  += -stdlib=libc++
     BUILD_DIR := C$(BUILD_DIR)
 endif
 # EMSDK, EMSDK32
@@ -60,23 +60,33 @@ else
     ES_LDFLAGS_COMMON := ${ES_LDFLAGS_COMMON} -sASSERTIONS=0
 endif
 ifeq ($(EMSDK),1)
-    ENV       += CFLAGS="-sMEMORY64=1 -pthread"
-    ENV       += CXXFLAGS="-sMEMORY64=1 -pthread -fexceptions"
-    ENV       += LDFLAGS="${ES_LDFLAGS_COMMON} -sMEMORY64=1 -sINITIAL_MEMORY=4294967296 -sALLOW_MEMORY_GROWTH=0"
+    CFLAGS    += -sMEMORY64=1 -pthread
+    CXXFLAGS  += -sMEMORY64=1 -pthread -fexceptions
+    LDFLAGS   += ${ES_LDFLAGS_COMMON} -sMEMORY64=1 -sINITIAL_MEMORY=4294967296 -sALLOW_MEMORY_GROWTH=0
     BUILD_DIR     := E$(BUILD_DIR)
     RECAST_PREFIX := E
     CMAKE_CMD     := emcmake
     CONTAINER     := mgame/emsdk
 endif
 ifeq ($(EMSDK32),1)
-    ENV       += CFLAGS="-sMEMORY64=0 -pthread"
-    ENV       += CXXFLAGS="-sMEMORY64=0 -pthread -fexceptions"
-    ENV       += LDFLAGS="${ES_LDFLAGS_COMMON} -sMEMORY64=0 -sINITIAL_MEMORY=2146435072 -sALLOW_MEMORY_GROWTH=0"
+    CFLAGS    += -sMEMORY64=0 -pthread
+    CXXFLAGS  += -sMEMORY64=0 -pthread -fexceptions
+    LDFLAGS   += ${ES_LDFLAGS_COMMON} -sMEMORY64=0 -sINITIAL_MEMORY=2146435072 -sALLOW_MEMORY_GROWTH=0
     BUILD_DIR     := E32$(BUILD_DIR)
     RECAST_PREFIX := E32
     CMAKE_CMD     := emcmake
     CONTAINER     := mgame/emsdk
 endif
+ifeq ($(PROF),1)
+    CFLAGS    += --profiling
+    CXXFLAGS  += --profiling
+    LDFLAGS   += --profiling
+    BUILD_DIR     := P$(BUILD_DIR)
+    RECAST_PREFIX := P$(RECAST_PREFIX)
+endif
+ENV += CFLAGS="$(CFLAGS)"
+ENV += CXXFLAGS="$(CXXFLAGS)"
+ENV += LDFLAGS="$(LDFLAGS)"
 ifeq ($(PODMAN),1)
     PODMAN_FLAGS := $(addprefix -e ,$(ENV))
     WDIR      := $(shell realpath -s --relative-to="$(PWD)" "$(CURDIR)")

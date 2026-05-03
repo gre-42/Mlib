@@ -12,8 +12,8 @@ static bool CHECK_GL_ERRORS = false;
 static bool PRINT_GL_CALLS = false;
 static bool PRINT_RENDERED_MATERIALS = false;
 
-void Mlib::check_gl_errors(CheckErrors check) {
-    CHECK_GL_ERRORS = (check == CheckErrors::ENABLED);
+void Mlib::check_gl_errors(CheckGlErrors check) {
+    CHECK_GL_ERRORS = (check == CheckGlErrors::ENABLED);
 }
 
 void Mlib::print_gl_calls(PrintGlCalls print) {
@@ -67,8 +67,8 @@ void Mlib::log_opengl_call(const char* position) {
 static bool CHECK_GLFW_ERRORS = true;
 static bool PRINT_GLFW_CALLS = false;
 
-void Mlib::check_glfw_errors(CheckErrors check) {
-    CHECK_GLFW_ERRORS = (check == CheckErrors::ENABLED);
+void Mlib::check_glfw_errors(CheckGlErrors check) {
+    CHECK_GLFW_ERRORS = (check == CheckGlErrors::ENABLED);
 }
 
 void Mlib::print_glfw_calls(PrintGlfwCalls print) {

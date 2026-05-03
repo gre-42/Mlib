@@ -20,6 +20,7 @@
 #include <Mlib/Audio/Audio_Distance_Model.hpp>
 #include <Mlib/Audio/Audio_Listener.hpp>
 #include <Mlib/Audio/Audio_Scene.hpp>
+#include <Mlib/Audio/CHK.hpp>
 #include <Mlib/Audio/List_Audio_Devices.hpp>
 #include <Mlib/Io/Arg_Parser.hpp>
 #include <Mlib/Layout/Layout_Constraint_Parameters.hpp>
@@ -438,6 +439,7 @@ void android_main(android_app* app)
         "    [--show_only_file <filename>]\n"
         "    [--show_hitbox]\n"
         "    [--show_massbox]\n"
+        "    [--check_al_errors]\n"
         "    [--check_gl_errors]\n"
         "    [--print_gl_calls]\n"
         "    [--print_rendered_materials]\n"
@@ -475,6 +477,7 @@ void android_main(android_app* app)
          "--tty_hider",
          "--show_hitbox",
          "--show_massbox",
+         "--check_al_errors",
          "--check_gl_errors",
          "--print_gl_calls",
          "--print_rendered_materials",
@@ -561,8 +564,11 @@ void android_main(android_app* app)
         auto initial_main_scene_filename = std::filesystem::absolute(args.unnamed_value(1)).string();
         auto main_scene_filename = initial_main_scene_filename;
 
+        if (args.has_named("--check_al_errors")) {
+            check_al_errors(CheckAlErrors::ENABLED);
+        }
         if (args.has_named("--check_gl_errors")) {
-            check_gl_errors(CheckErrors::ENABLED);
+            check_gl_errors(CheckGlErrors::ENABLED);
         }
         if (args.has_named("--print_gl_calls")) {
             print_gl_calls(PrintGlCalls::ENABLED);

@@ -9,7 +9,7 @@ enum class FailureBehavior {
     ABORT
 };
 
-enum class CheckErrors {
+enum class CheckGlErrors {
     DISABLED = 0,
     ENABLED = 1
 };
@@ -55,7 +55,7 @@ void log_glfw_call(const char* position);
 
 namespace Mlib {
 
-void check_gl_errors(CheckErrors check);
+void check_gl_errors(CheckGlErrors check);
 void print_gl_calls(PrintGlCalls print);
 void print_rendered_materials(PrintRenderedMaterials print);
 bool print_rendered_materials();
