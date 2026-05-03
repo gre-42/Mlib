@@ -540,13 +540,10 @@ macro(target_link_against_opengl target)
             PUBLIC
                 ${EMSCRIPTEN_FLAGS}
                 -sDISABLE_DEPRECATED_FIND_EVENT_TARGET_BEHAVIOR=1
-                -sUSE_WEBGL2=1
                 -sMIN_WEBGL_VERSION=2
                 -sMAX_WEBGL_VERSION=2
                 -sPROXY_TO_PTHREAD=1
-                -sOFFSCREENCANVAS_SUPPORT=1
-                -lGL
-                -lEGL)
+                -sOFFSCREENCANVAS_SUPPORT=1)
     elseif (ANDROID)
         # Android NDK specific linking
         target_link_libraries(${target} PUBLIC GLESv3 EGL)
