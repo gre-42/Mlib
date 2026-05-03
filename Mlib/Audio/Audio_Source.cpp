@@ -48,6 +48,9 @@ void AudioSource::set_loop(bool value) {
 }
 
 void AudioSource::set_gain(float value) {
+    if (std::isnan(value)) {
+        throw std::runtime_error("Attempt to set NaN audio gain");
+    }
     if (value < 0.f) {
         throw std::runtime_error("Attempt to set negative audio gain");
     }
@@ -63,6 +66,15 @@ void AudioSource::set_gain(float value) {
 }
 
 void AudioSource::set_pitch(float value) {
+    if (std::isnan(value)) {
+        throw std::runtime_error("Attempt to set NaN audio pitch");
+    }
+    if (value < 0.1f) {
+        throw std::runtime_error("Attempt to set audio pitch less than 0.1");
+    }
+    if (value > 5.f) {
+        throw std::runtime_error("Attempt to set audio pitch greater 5");
+    }
     AL_CHK(alSourcef(source_, AL_PITCH, value));
 }
 

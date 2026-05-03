@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Audio/Audio_Source.hpp>
+#include <Mlib/Geometry/Primitives/Interval.hpp>
 #include <Mlib/Math/Fixed_Point_Number.hpp>
 #include <Mlib/Memory/Event_Emitter.hpp>
 #include <Mlib/Scene_Config/Scene_Precision.hpp>
@@ -37,7 +38,8 @@ public:
         PositionRequirement position_requirement,
         std::function<bool()> paused,
         EventEmitter<>& paused_changed,
-        float dgain = 0.02f);
+        float dgain = 0.02f,
+        const Interval<float>& pitch_range = {0.1f, 5.f});
     ~CrossFade();
     void start_background_thread(float dt = 0.01f);
     void advance_time(float dt);
@@ -59,6 +61,7 @@ private:
     PositionRequirement position_requirement_;
     Gain total_gain_;
     float dgain_;
+    Interval<float> pitch_range_;
     std::list<AudioSourceAndGain> sources_;
     mutable FastMutex mutex_;
     std::function<bool()> paused_;

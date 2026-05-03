@@ -18,10 +18,12 @@ CrossFade::CrossFade(
     PositionRequirement position_requirement,
     std::function<bool()> paused,
     EventEmitter<>& paused_changed,
-    float dgain)
+    float dgain,
+    const Interval<float>& pitch_range)
     : position_requirement_{ position_requirement }
     , total_gain_{ 0.f }
     , dgain_{ dgain }
+    , pitch_range_{ pitch_range }
     , paused_{ std::move(paused) }
     , erdt_{ paused_changed, [this](){ advance_time(0.f); } }
 {}
@@ -165,9 +167,16 @@ void CrossFade::update_gain_unsafe(float dgain) {
 }
 
 void CrossFade::update_pitch_unsafe(float pitch) {
+    if (!std::isfinite(pitch)) {
+        throw std::runtime_error("Cross-fade received non-finite pitch");
+    }
     for (auto& s : sources_) {
         if (!std::isnan(s.buffer_frequency)) {
-            s.source->set_pitch(pitch / s.buffer_frequency);
+            s.source->set_pitch(
+                std::clamp(
+                    pitch / s.buffer_frequency,
+                    pitch_range_.min,
+                    pitch_range_.max));
         }
     }
 }
