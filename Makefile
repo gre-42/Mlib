@@ -17,7 +17,7 @@ else
     PLATFORM_CHAR := U
 endif
 BUILD_DIR := $(PLATFORM_CHAR)$(CMAKE_BUILD_TYPE)
-RECAST_PREFIX := $(PLATFORM_CHAR)
+DEPEND_PREFIX := $(PLATFORM_CHAR)
 # ASAN
 ifeq ($(ASAN),1)
     CFLAGS    += -fsanitize=address
@@ -64,7 +64,7 @@ ifeq ($(EMSDK),1)
     CXXFLAGS  += -sMEMORY64=1 -pthread -fexceptions
     LDFLAGS   += ${ES_LDFLAGS_COMMON} -sMEMORY64=1 -sINITIAL_MEMORY=4294967296 -sALLOW_MEMORY_GROWTH=0
     BUILD_DIR     := E$(BUILD_DIR)
-    RECAST_PREFIX := E
+    DEPEND_PREFIX := E
     CMAKE_CMD     := emcmake
     CONTAINER     := mgame/emsdk
 endif
@@ -73,7 +73,7 @@ ifeq ($(EMSDK32),1)
     CXXFLAGS  += -sMEMORY64=0 -pthread -fexceptions
     LDFLAGS   += ${ES_LDFLAGS_COMMON} -sMEMORY64=0 -sINITIAL_MEMORY=2146435072 -sALLOW_MEMORY_GROWTH=0
     BUILD_DIR     := E32$(BUILD_DIR)
-    RECAST_PREFIX := E32
+    DEPEND_PREFIX := E32
     CMAKE_CMD     := emcmake
     CONTAINER     := mgame/emsdk
 endif
@@ -82,7 +82,7 @@ ifeq ($(PROF),1)
     CXXFLAGS  += --profiling
     LDFLAGS   += --profiling
     BUILD_DIR     := P$(BUILD_DIR)
-    RECAST_PREFIX := P$(RECAST_PREFIX)
+    DEPEND_PREFIX := P$(DEPEND_PREFIX)
 endif
 ENV += CFLAGS="$(CFLAGS)"
 ENV += CXXFLAGS="$(CXXFLAGS)"
@@ -111,12 +111,12 @@ emsdk_image:
 	podman build -f Dockerfile.emsdk -t mgame/emsdk
 
 cmake:
-	$(CMAKE_CMD) cmake -G Ninja -DCMAKE_BUILD_TYPE="$(CMAKE_BUILD_TYPE)" -B "$(BUILD_DIR)" -D RECAST_PREFIX=$(RECAST_PREFIX)
+	$(CMAKE_CMD) cmake -G Ninja -DCMAKE_BUILD_TYPE="$(CMAKE_BUILD_TYPE)" -B "$(BUILD_DIR)" -D DEPEND_PREFIX=$(DEPEND_PREFIX)
 
 cmake_fresh:
 	# This is the same as "cmake $(BUILD_DIR) --fresh"
 	rm -rf "$(BUILD_DIR)/CMakeCache.txt" "$(BUILD_DIR)/CMakeFiles"
-	rm -rf "$(RECAST_PREFIX)RecastBuild/CMakeCache.txt" "$(RECAST_PREFIX)RecastBuild/CMakeFiles"
+	rm -rf "$(DEPEND_PREFIX)RecastBuild/CMakeCache.txt" "$(DEPEND_PREFIX)RecastBuild/CMakeFiles"
 
 build:
 	$(BUILD_CMD) cmake --build "$(BUILD_DIR)" --verbose
@@ -137,9 +137,9 @@ cppcheck:
 	cppcheck . -i Mlib/Geometry/Primitives/Triangle_Triangle_Intersection.cpp
 
 recastnavigation:
-	mkdir -p $(RECAST_PREFIX)RecastBuild
+	mkdir -p $(DEPEND_PREFIX)RecastBuild
 	$(CMAKE_CMD) cmake                              \
-		-B $(RECAST_PREFIX)RecastBuild              \
+		-B $(DEPEND_PREFIX)RecastBuild              \
 		-S recastnavigation                         \
 		-G Ninja                                    \
 		-DRECASTNAVIGATION_DEMO=OFF                 \
@@ -147,4 +147,4 @@ recastnavigation:
 		-DRECASTNAVIGATION_EXAMPLES=OFF             \
 		-DBUILD_SHARED_LIBS=ON                      \
 		-DCMAKE_BUILD_TYPE=$(CMAKE_BUILD_TYPE)
-	$(BUILD_CMD) cmake --build $(RECAST_PREFIX)RecastBuild --verbose
+	$(BUILD_CMD) cmake --build $(DEPEND_PREFIX)RecastBuild --verbose

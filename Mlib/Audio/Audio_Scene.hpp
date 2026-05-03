@@ -20,8 +20,8 @@ class SceneNode;
 enum class AudioDistanceModel;
 
 struct AudioSourceNode {
-	ExponentialSmoother<FixedArray<float, 3>, float> relative_position;
-	ExponentialSmoother<FixedArray<float, 3>, float> relative_velocity;
+    ExponentialSmoother<FixedArray<float, 3>, float> relative_position;
+    ExponentialSmoother<FixedArray<float, 3>, float> relative_velocity;
 };
 
 class AudioScene {
@@ -41,10 +41,11 @@ public:
         const AudioSourceState<ScenePos>& state);
     static void set_distance_model(AudioDistanceModel model);
     static void print(std::ostream& ostr);
+    static void flush_sources();
 private:
     static FastMutex mutex_;
     static float default_alpha_;
-    static VerboseUnorderedMap<const AudioSource*, AudioSourceNode> source_nodes_;
+    static VerboseUnorderedMap<AudioSource*, AudioSourceNode> source_nodes_;
     static DanglingBaseClassPtr<SceneNode> listener_node_;
     static std::optional<DestructionFunctionsRemovalTokens> on_destroy_;
 };

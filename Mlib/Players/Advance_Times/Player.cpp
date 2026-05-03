@@ -796,7 +796,7 @@ bool Player::has_scene_vehicle() const {
     // Only checked for deleter-threads, because non-deleter-threads
     // can prevent deletion by acquiring a lock.
     if (delete_node_mutex_.is_owner()) {
-        if (vehicle_->scene_node()->shutdown_phase() != ShutdownPhase::NONE) {
+        if (vehicle_->scene_node_shutdown_phase() != ShutdownPhase::NONE) {
             verbose_abort("Player::has_rigid_body: Scene node shutting down");
         }
     }

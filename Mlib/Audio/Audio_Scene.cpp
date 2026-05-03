@@ -5,16 +5,20 @@
 #include <Mlib/Audio/Audio_Listener.hpp>
 #include <Mlib/Audio/Audio_Source.hpp>
 #include <Mlib/Audio/CHK.hpp>
+#include <Mlib/Physics/Units.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Threads/Fast_Mutex.hpp>
 #include <mutex>
 #include <string>
+#ifdef __EMSCRIPTEN__
+#include <Mlib/AGameHelper/Emscripten/AAnimation_Frame_Worker.hpp>
+#endif
 
 using namespace Mlib;
 
 FastMutex AudioScene::mutex_;
 float AudioScene::default_alpha_ = 1.f;
-VerboseUnorderedMap<const AudioSource*, AudioSourceNode> AudioScene::source_nodes_{
+VerboseUnorderedMap<AudioSource*, AudioSourceNode> AudioScene::source_nodes_{
     "Audio source",
     [](const AudioSource* s) { return (std::stringstream() << s).str(); }
 };
@@ -115,4 +119,44 @@ void AudioScene::print(std::ostream& ostr) {
         }
         ostr << '\n';
     }
+}
+
+void AudioScene::flush_sources() {
+#ifdef __EMSCRIPTEN__
+    std::scoped_lock lock{ mutex_ };
+    execute_in_main_thread([](){
+        for (auto& [s, _] : source_nodes_) {
+            if (s->position_requirement_ == PositionRequirement::WAITING_FOR_POSITION) {
+                continue;
+            }
+            AL_CHK(alSourcefv(s->source_, AL_POSITION, (s->position_.position / meters).flat_begin()));
+            AL_CHK(alSourcefv(s->source_, AL_VELOCITY, (s->position_.velocity / (meters / seconds)).flat_begin()));
+            
+            AL_CHK(alSourcef(s->source_, AL_PITCH, s->pitch_));
+            AL_CHK(alSourcei(s->source_, AL_LOOPING, s->loop_ ? AL_TRUE : AL_FALSE));
+            AL_CHK(alSourcef(s->source_, AL_REFERENCE_DISTANCE, s->distance_clamping_.min));
+            AL_CHK(alSourcef(s->source_, AL_MAX_DISTANCE, s->distance_clamping_.max));
+
+            alGetSourcei(s->source_, AL_SOURCE_STATE, &s->last_source_state_);
+
+            if (s->pending_command_.has_value()) {
+                switch (*s->pending_command_) {
+                    case AL_PLAYING:
+                        AL_CHK(alSourcePlay(s->source_));
+                        break;
+                    case AL_STOPPED:
+                        AL_CHK(alSourceStop(s->source_));
+                        break;
+                    case AL_PAUSED:
+                        AL_CHK(alSourcePause(s->source_));
+                        break;
+                    default:
+                        throw std::runtime_error("Unknown AL source state: " + std::to_string(*s->pending_command_));
+                }
+                s->pending_command_.reset();
+            }
+            AL_CHK(alSourcef(s->source_, AL_GAIN, s->gain_));
+        }
+    });
+#endif
 }

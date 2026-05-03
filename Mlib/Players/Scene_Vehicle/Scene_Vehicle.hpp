@@ -17,6 +17,7 @@ class RigidBodyVehicle;
 class SkillMap;
 enum class ExternalsMode: uint32_t;
 enum class ControlSource;
+enum class ShutdownPhase;
 struct InternalsMode;
 
 class SceneVehicle final: public virtual DanglingBaseClass, public virtual DestructionNotifier {
@@ -48,6 +49,7 @@ public:
     const VariableAndHash<std::string>& scene_node_name() const;
     DanglingBaseClassRef<SceneNode> scene_node();
     DanglingBaseClassRef<const SceneNode> scene_node() const;
+    ShutdownPhase scene_node_shutdown_phase() const;
     DanglingBaseClassRef<RigidBodyVehicle> rb();
     DanglingBaseClassRef<const RigidBodyVehicle> rb() const;
 private:

@@ -80,6 +80,13 @@ DanglingBaseClassRef<const SceneNode> SceneVehicle::scene_node() const {
     return *scene_node_;
 }
 
+ShutdownPhase SceneVehicle::scene_node_shutdown_phase() const {
+    if (scene_node_ == nullptr) {
+        throw std::runtime_error("SceneVehicle::scene_node_shutdown_phase called on null scene node");
+    }
+    return scene_node_->shutdown_phase();
+}
+
 DanglingBaseClassRef<RigidBodyVehicle> SceneVehicle::rb() {
     return *rb_;
 }

@@ -16,5 +16,7 @@ void set_animation_frame_func_loop(
 // execution is exit_loop.
 void execute_in_animation_frame_thread(
     const std::function<void()>& func);
+void execute_in_main_thread(
+    const std::function<void()>& func);
 
 }

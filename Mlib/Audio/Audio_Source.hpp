@@ -2,6 +2,10 @@
 #include <Mlib/Audio/OpenAL_al.h>
 #include <cstddef>
 #include <cstdint>
+#ifdef __EMSCRIPTEN__
+#include <Mlib/Audio/Audio_Entity_State.hpp>
+#include <Mlib/Geometry/Primitives/Interval.hpp>
+#endif
 
 namespace Mlib {
 
@@ -13,6 +17,7 @@ template <class TPosition>
 struct AudioSourceState;
 template <class T>
 struct Interval;
+class AudioScene;
 
 enum class PositionRequirement {
     WAITING_FOR_POSITION,
@@ -25,6 +30,7 @@ class AudioSource {
     explicit AudioSource(
         PositionRequirement position_requirement,
         float alpha);
+    friend class AudioScene;
 public:
     AudioSource(
         const AudioBuffer& buffer,
@@ -53,6 +59,14 @@ private:
     PositionRequirement position_requirement_;
     bool muted_;
     float gain_;
+#ifdef __EMSCRIPTEN__
+    bool loop_;
+    float pitch_;
+    AudioSourceState<float> position_;
+    Interval<float> distance_clamping_;
+    ALint last_source_state_;
+    std::optional<ALint> pending_command_;
+#endif
 };
 
 }

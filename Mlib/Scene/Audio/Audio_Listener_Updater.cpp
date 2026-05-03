@@ -18,4 +18,5 @@ void AudioListenerUpdater::advance_time(float dt, const StaticWorld& world) {
     DanglingBaseClassRef<SceneNode> node = selected_cameras_.camera(CURRENT_SOURCE_LOCATION).node;
     auto corrected_time = std::chrono::steady_clock::now() - delay_;
     AudioScene::set_listener(node, corrected_time, velocity_dt_);
+    AudioScene::flush_sources();
 }

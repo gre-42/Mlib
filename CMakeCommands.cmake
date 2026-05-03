@@ -543,7 +543,9 @@ macro(target_link_against_opengl target)
                 -sMIN_WEBGL_VERSION=2
                 -sMAX_WEBGL_VERSION=2
                 -sPROXY_TO_PTHREAD=1
-                -sOFFSCREENCANVAS_SUPPORT=1)
+                -sOFFSCREENCANVAS_SUPPORT=1
+                -sAUDIO_WORKLET
+                -sWASM_WORKERS)
     elseif (ANDROID)
         # Android NDK specific linking
         target_link_libraries(${target} PUBLIC GLESv3 EGL)
