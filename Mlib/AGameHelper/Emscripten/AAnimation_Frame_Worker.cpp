@@ -98,6 +98,16 @@ void Mlib::execute_in_animation_frame_thread(
     if (pthread_self() == *::g::animation_thread_id) {
         throw std::runtime_error("execute_in_animation_frame_thread called from the animation thread");
     }
+    std::exception_ptr eptr = nullptr;
     emscripten::ProxyingQueue queue;
-    queue.proxySync(*::g::animation_thread_id, func);
+    queue.proxySync(*::g::animation_thread_id, [&]() {
+        try {
+            func();
+        } catch (...) {
+            eptr = std::current_exception();
+        }
+    });
+    if (eptr) {
+        std::rethrow_exception(eptr);
+    }
 }

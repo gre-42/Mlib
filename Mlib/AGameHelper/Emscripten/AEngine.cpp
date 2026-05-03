@@ -1,12 +1,12 @@
 #include "AEngine.hpp"
 #include <Mlib/AGameHelper/Emscripten/AAnimation_Frame_Worker.hpp>
+#include <Mlib/AGameHelper/Emscripten/AEmscripten_Result_To_String.hpp>
 #include <Mlib/Layout/Layout_Constraint_Parameters.hpp>
 #include <Mlib/Memory/Integral_Cast.hpp>
 #include <Mlib/OpenGL/IRenderer.hpp>
 #include <Mlib/OpenGL/Input_Map/Key_Map_I18n.hpp>
 #include <Mlib/OpenGL/Ui/Button_States.hpp>
 #include <Mlib/Os/Os.hpp>
-#include <Mlib/Threads/Termination_Manager.hpp>
 #include <emscripten/html5.h>
 #include <stdexcept>
 
@@ -42,46 +42,38 @@ AEngine::AEngine(
         dgs_.add([f=std::move(f)](){ execute_in_animation_frame_thread(f); });
     };
     execute_in_animation_frame_thread([this, &dgs_add](){
-        try {
-            if (emscripten_set_keydown_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, this, EM_FALSE, key_callback) != EMSCRIPTEN_RESULT_SUCCESS) {
-                throw std::runtime_error("Could not set emscripten keydown callback");
-            }
-            dgs_add([](){emscripten_set_keydown_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, nullptr, EM_FALSE, nullptr);});
-            if (emscripten_set_keyup_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, this, EM_FALSE, key_callback) != EMSCRIPTEN_RESULT_SUCCESS) {
-                throw std::runtime_error("Could not set emscripten keyup callback");
-            }
-            dgs_add([](){emscripten_set_keyup_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, nullptr, EM_FALSE, nullptr);});
-            // if (emscripten_set_resize_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, nullptr, EM_TRUE, on_window_resize) != EMSCRIPTEN_RESULT_SUCCESS) {
-            //     throw std::runtime_error("Could not register resize callback");
-            // }
-            // dgs_add([](){emscripten_set_resize_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, nullptr, EM_FALSE, nullptr);});
-            // Init GLES context using HTML5 API
-            EmscriptenWebGLContextAttributes attrs;
-            emscripten_webgl_init_context_attributes(&attrs);
-            attrs.proxyContextToMainThread = EMSCRIPTEN_WEBGL_CONTEXT_PROXY_DISALLOW;
-            attrs.majorVersion = 2;
-
-            // "#canvas" is the default ID used by Emscripten's shell
-            ctx_ = emscripten_webgl_create_context("#canvas", &attrs);
-            if (ctx_ <= 0) {
-                throw std::runtime_error("WebGL context was not created. Is the selector '#canvas' in the DOM?");
-            }
-            {
-                auto res = emscripten_webgl_make_context_current(ctx_);
-                if (res != EMSCRIPTEN_RESULT_SUCCESS) {
-                    throw std::runtime_error("Could not make context current (1)");
-                }
-            }
-            renderer_.load_resources();
-            dgs_add([this](){ renderer_.unload_resources(); });
-        } catch (...) {
-            add_unhandled_exception(std::current_exception());
-            return;
+        if (emscripten_set_keydown_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, this, EM_FALSE, key_callback) != EMSCRIPTEN_RESULT_SUCCESS) {
+            throw std::runtime_error("Could not set emscripten keydown callback");
         }
+        dgs_add([](){emscripten_set_keydown_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, nullptr, EM_FALSE, nullptr);});
+        if (emscripten_set_keyup_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, this, EM_FALSE, key_callback) != EMSCRIPTEN_RESULT_SUCCESS) {
+            throw std::runtime_error("Could not set emscripten keyup callback");
+        }
+        dgs_add([](){emscripten_set_keyup_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, nullptr, EM_FALSE, nullptr);});
+        // if (emscripten_set_resize_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, nullptr, EM_TRUE, on_window_resize) != EMSCRIPTEN_RESULT_SUCCESS) {
+        //     throw std::runtime_error("Could not register resize callback");
+        // }
+        // dgs_add([](){emscripten_set_resize_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, nullptr, EM_FALSE, nullptr);});
+        // Init GLES context using HTML5 API
+        EmscriptenWebGLContextAttributes attrs;
+        emscripten_webgl_init_context_attributes(&attrs);
+        attrs.proxyContextToMainThread = EMSCRIPTEN_WEBGL_CONTEXT_PROXY_DISALLOW;
+        attrs.majorVersion = 2;
+
+        // "#canvas" is the default ID used by Emscripten's shell
+        ctx_ = emscripten_webgl_create_context("#canvas", &attrs);
+        if (ctx_ <= 0) {
+            throw std::runtime_error("WebGL context was not created. Is the selector '#canvas' in the DOM?");
+        }
+        {
+            auto res = emscripten_webgl_make_context_current(ctx_);
+            if (res != EMSCRIPTEN_RESULT_SUCCESS) {
+                throw std::runtime_error("Could not make context current (1): " + std::string(emscripten_result_to_str(res)));
+            }
+        }
+        renderer_.load_resources();
+        dgs_add([this](){ renderer_.unload_resources(); });
     });
-    if (unhandled_exceptions_occured()) {
-        throw std::runtime_error("Could not initialize render engine");
-    }
 }
 
 AEngine::~AEngine() = default;

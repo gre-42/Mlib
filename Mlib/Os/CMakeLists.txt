@@ -7,7 +7,6 @@ endif()
 
 include(../../CMakeCommands.cmake)
 
-
 if (ANDROID)
     my_add_library(
         NAME MlibOs

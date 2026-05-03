@@ -1,19 +1,18 @@
+include(../../CMakeCommands.cmake)
+
 if (ANDROID)
-    add_library(AGameHelper
-        STATIC
-            Android/AContext.cpp
-            Android/AWindow.cpp
-            Android/ARenderLoop.cpp
-            Android/AEngine.cpp
-            Android/AssetUtil.cpp
+    my_add_library(
+        NAME AGameHelper
+        RECURSIVE
+        ADDITIONAL_FILES ""
+        EXCLUDED_FILES "/Emscripten/[^/]+$"
     )
 elseif (EMSCRIPTEN)
-    add_library(AGameHelper
-        STATIC
-            Emscripten/AContext.cpp
-            Emscripten/ARenderLoop.cpp
-            Emscripten/AEngine.cpp
-            Emscripten/AAnimation_Frame_Worker.cpp
+    my_add_library(
+        NAME AGameHelper
+        RECURSIVE
+        ADDITIONAL_FILES ""
+        EXCLUDED_FILES "/Android/[^/]+$"
     )
 else()
     message(FATAL_ERROR "Unknown platform type")
