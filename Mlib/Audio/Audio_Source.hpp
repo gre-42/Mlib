@@ -51,6 +51,7 @@ public:
     void mute();
     void unmute();
     bool stopped() const;
+    bool finished() const;
 private:
     uint32_t nchannels_;
     ALuint source_;
@@ -60,7 +61,7 @@ private:
 #ifdef __EMSCRIPTEN__
     std::optional<bool> loop_;
     std::optional<float> pitch_;
-    AudioSourceState<float> position_;
+    std::optional<AudioSourceState<float>> position_;
     std::optional<Interval<float>> distance_clamping_;
     ALint last_source_state_;
     std::optional<ALint> pending_command_;

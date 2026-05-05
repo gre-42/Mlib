@@ -23,7 +23,6 @@ AudioSource::AudioSource(
 #ifdef __EMSCRIPTEN__
     , loop_{ false }
     , pitch_{ 1.f }
-    , position_{ uninitialized, uninitialized }
     , distance_clamping_{ { 1.f, INFINITY } }
     , last_source_state_{ AL_STOPPED }
 #endif
@@ -95,15 +94,14 @@ void AudioSource::set_position(const AudioSourceState<float>& position) {
 #else
     AL_CHK(alSourcefv(source_, AL_POSITION, (position.position / meters).flat_begin()));
     AL_CHK(alSourcefv(source_, AL_VELOCITY, (position.velocity / (meters / seconds)).flat_begin()));
-#endif
+
     if (position_requirement_ == PositionRequirement::WAITING_FOR_POSITION) {
         if (!muted_) {
-#ifndef __EMSCRIPTEN__
             AL_CHK(alSourcef(source_, AL_GAIN, gain_));
-#endif
         }
         position_requirement_ = PositionRequirement::POSITION_NOT_REQUIRED;
     }
+#endif
 }
 
 void AudioSource::set_distance_clamping(const Interval<float>& interval) {
@@ -127,6 +125,9 @@ void AudioSource::set_lowpass(const AudioLowpass& lowpass) {
 
 void AudioSource::play() {
 #ifdef __EMSCRIPTEN__
+    if (pending_command_.has_value()) {
+        throw std::runtime_error("AudioSource::play, command already set");
+    }
     pending_command_ = AL_PLAYING;
 #else
     AL_CHK(alSourcePlay(source_));
@@ -135,6 +136,9 @@ void AudioSource::play() {
 
 void AudioSource::pause() {
 #ifdef __EMSCRIPTEN__
+    if (pending_command_.has_value()) {
+        throw std::runtime_error("AudioSource::pause, command already set");
+    }
     pending_command_ = AL_PAUSED;
 #else
     AL_CHK(alSourcePause(source_));
@@ -144,6 +148,9 @@ void AudioSource::pause() {
 void AudioSource::unpause() {
 #ifdef __EMSCRIPTEN__
     if (last_source_state_ == AL_PAUSED) {
+        if (pending_command_.has_value()) {
+            throw std::runtime_error("AudioSource::unpause, command already set");
+        }
         pending_command_ = AL_PLAYING;
     }
 #else
@@ -157,6 +164,9 @@ void AudioSource::unpause() {
 
 void AudioSource::stop() {
 #ifdef __EMSCRIPTEN__
+    if (pending_command_.has_value()) {
+        throw std::runtime_error("AudioSource::stop, command already set");
+    }
     pending_command_ = AL_STOPPED;
 #else
     AL_CHK(alSourceStop(source_));
@@ -201,4 +211,8 @@ bool AudioSource::stopped() const {
     AL_CHK(alGetSourcei(source_, AL_SOURCE_STATE, &source_state));
     return (source_state == AL_STOPPED);
 #endif
+}
+
+bool AudioSource::finished() const {
+    return (position_requirement_ != PositionRequirement::WAITING_FOR_POSITION) && stopped();
 }

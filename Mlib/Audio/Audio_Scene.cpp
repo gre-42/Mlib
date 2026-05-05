@@ -151,18 +151,31 @@ void AudioScene::flush_sources() {
                         AL_CHK(alSourcePause(s->source_));
                         break;
                     default:
-                        throw std::runtime_error("Unknown AL source state: " + std::to_string(*s->pending_command_));
+                        throw std::runtime_error("Unknown AL command: " + std::to_string(*s->pending_command_));
                 }
                 s->pending_command_.reset();
             }
             AL_CHK(alGetSourcei(s->source_, AL_SOURCE_STATE, &s->last_source_state_));
-            if (s->position_requirement_ == PositionRequirement::WAITING_FOR_POSITION) {
-                continue;
+            switch (s->last_source_state_) {
+                case AL_PLAYING:
+                case AL_STOPPED:
+                case AL_PAUSED:
+                    break;
+                default:
+                    throw std::runtime_error("Unknown AL source state: " + std::to_string(s->last_source_state_));
             }
-            AL_CHK(alSourcefv(s->source_, AL_POSITION, (s->position_.position / meters).flat_begin()));
-            AL_CHK(alSourcefv(s->source_, AL_VELOCITY, (s->position_.velocity / (meters / seconds)).flat_begin()));
-            
-            AL_CHK(alSourcef(s->source_, AL_GAIN, s->gain_));
+            if (s->position_.has_value()) {
+                AL_CHK(alSourcefv(s->source_, AL_POSITION, (s->position_->position / meters).flat_begin()));
+                AL_CHK(alSourcefv(s->source_, AL_VELOCITY, (s->position_->velocity / (meters / seconds)).flat_begin()));
+                s->position_requirement_ = PositionRequirement::POSITION_NOT_REQUIRED;
+            }
+            if (s->position_requirement_ != PositionRequirement::WAITING_FOR_POSITION) {
+                if (!s->muted_) {
+                    AL_CHK(alSourcef(s->source_, AL_GAIN, s->gain_));
+                } else {
+                    AL_CHK(alSourcef(s->source_, AL_GAIN, 0.f));
+                }
+            }
         }
     });
 #endif

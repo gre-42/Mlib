@@ -42,7 +42,7 @@ void OneShotAudio::advance_time() {
     bool pause = paused_();
     std::scoped_lock lock{ mutex_ };
     sources_.remove_if([](auto& sp){
-        return sp->source.stopped();
+        return sp->source.finished();
     });
     if (pause) {
         for (auto &sp : sources_) {
