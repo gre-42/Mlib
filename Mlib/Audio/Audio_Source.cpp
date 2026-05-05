@@ -125,8 +125,8 @@ void AudioSource::set_lowpass(const AudioLowpass& lowpass) {
 
 void AudioSource::play() {
 #ifdef __EMSCRIPTEN__
-    if (pending_command_.has_value()) {
-        throw std::runtime_error("AudioSource::play, command already set");
+    if (pending_command_ == AL_STOPPED) {
+        throw std::runtime_error("AudioSource::play after previous stop");
     }
     pending_command_ = AL_PLAYING;
 #else
@@ -136,8 +136,8 @@ void AudioSource::play() {
 
 void AudioSource::pause() {
 #ifdef __EMSCRIPTEN__
-    if (pending_command_.has_value()) {
-        throw std::runtime_error("AudioSource::pause, command already set");
+    if (pending_command_ == AL_STOPPED) {
+        throw std::runtime_error("AudioSource::pause after previous stop");
     }
     pending_command_ = AL_PAUSED;
 #else
@@ -148,8 +148,8 @@ void AudioSource::pause() {
 void AudioSource::unpause() {
 #ifdef __EMSCRIPTEN__
     if (last_source_state_ == AL_PAUSED) {
-        if (pending_command_.has_value()) {
-            throw std::runtime_error("AudioSource::unpause, command already set");
+        if (pending_command_ == AL_STOPPED) {
+            throw std::runtime_error("AudioSource::unpause after previous stop");
         }
         pending_command_ = AL_PLAYING;
     }
@@ -164,9 +164,6 @@ void AudioSource::unpause() {
 
 void AudioSource::stop() {
 #ifdef __EMSCRIPTEN__
-    if (pending_command_.has_value()) {
-        throw std::runtime_error("AudioSource::stop, command already set");
-    }
     pending_command_ = AL_STOPPED;
 #else
     AL_CHK(alSourceStop(source_));
