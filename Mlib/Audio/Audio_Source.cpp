@@ -5,15 +5,16 @@
 #include <Mlib/Audio/Audio_Lowpass.hpp>
 #include <Mlib/Audio/Audio_Scene.hpp>
 #include <Mlib/Audio/CHK.hpp>
+#include <Mlib/Geometry/Primitives/Interval.hpp>
+#include <Mlib/Physics/Units.hpp>
 #ifndef USE_PCM_FILTERS
 #include <Mlib/Audio/OpenALSoft_efx.h>
 #endif
-#include <Mlib/Geometry/Primitives/Interval.hpp>
-#include <Mlib/Physics/Units.hpp>
 
 using namespace Mlib;
 
 AudioSource::AudioSource(
+    const AudioBuffer& buffer,
     PositionRequirement position_requirement,
     float alpha)
     : position_requirement_{ position_requirement }
@@ -23,31 +24,22 @@ AudioSource::AudioSource(
     , loop_{ false }
     , pitch_{ 1.f }
     , position_{ uninitialized, uninitialized }
-    , distance_clamping_{ 1.f, INFINITY }
+    , distance_clamping_{ { 1.f, INFINITY } }
     , last_source_state_{ AL_STOPPED }
 #endif
 {
     AL_CHK(alGenSources(1, &source_));
+    dgs_.add([this](){ AL_ABORT(alDeleteSources(1, &source_)); });
     if (position_requirement == PositionRequirement::WAITING_FOR_POSITION) {
         AL_CHK(alSourcef(source_, AL_GAIN, 0.f));
     }
-    AudioScene::add_source(*this, alpha);
-}
-
-AudioSource::AudioSource(
-    const AudioBuffer& buffer,
-    PositionRequirement position_requirement,
-    float alpha)
-    : AudioSource{ position_requirement, alpha }
-{
     AL_CHK(alSourcei(source_, AL_BUFFER, integral_cast<ALint>(buffer.handle_)));
     nchannels_ = buffer.nchannels();
+    AudioScene::add_source(*this, alpha);
+    dgs_.add([this](){ AudioScene::remove_source(*this); });
 }
 
-AudioSource::~AudioSource() {
-    AudioScene::remove_source(*this);
-    AL_ABORT(alDeleteSources(1, &source_));
-}
+AudioSource::~AudioSource() = default;
 
 void AudioSource::set_loop(bool value) {
 #ifdef __EMSCRIPTEN__

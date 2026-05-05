@@ -126,19 +126,19 @@ void AudioScene::flush_sources() {
     std::scoped_lock lock{ mutex_ };
     execute_in_main_thread([](){
         for (auto& [s, _] : source_nodes_) {
-            if (s->position_requirement_ == PositionRequirement::WAITING_FOR_POSITION) {
-                continue;
+            if (s->pitch_.has_value()) {
+                AL_CHK(alSourcef(s->source_, AL_PITCH, *s->pitch_));
+                s->pitch_.reset();
             }
-            AL_CHK(alSourcefv(s->source_, AL_POSITION, (s->position_.position / meters).flat_begin()));
-            AL_CHK(alSourcefv(s->source_, AL_VELOCITY, (s->position_.velocity / (meters / seconds)).flat_begin()));
-            
-            AL_CHK(alSourcef(s->source_, AL_PITCH, s->pitch_));
-            AL_CHK(alSourcei(s->source_, AL_LOOPING, s->loop_ ? AL_TRUE : AL_FALSE));
-            AL_CHK(alSourcef(s->source_, AL_REFERENCE_DISTANCE, s->distance_clamping_.min));
-            AL_CHK(alSourcef(s->source_, AL_MAX_DISTANCE, s->distance_clamping_.max));
-
-            alGetSourcei(s->source_, AL_SOURCE_STATE, &s->last_source_state_);
-
+            if (s->loop_.has_value()) {
+                AL_CHK(alSourcei(s->source_, AL_LOOPING, *s->loop_ ? AL_TRUE : AL_FALSE));
+                s->loop_.reset();
+            }
+            if (s->distance_clamping_.has_value()) {
+                AL_CHK(alSourcef(s->source_, AL_REFERENCE_DISTANCE, s->distance_clamping_->min));
+                AL_CHK(alSourcef(s->source_, AL_MAX_DISTANCE, s->distance_clamping_->max));
+                s->distance_clamping_.reset();
+            }
             if (s->pending_command_.has_value()) {
                 switch (*s->pending_command_) {
                     case AL_PLAYING:
@@ -155,6 +155,13 @@ void AudioScene::flush_sources() {
                 }
                 s->pending_command_.reset();
             }
+            AL_CHK(alGetSourcei(s->source_, AL_SOURCE_STATE, &s->last_source_state_));
+            if (s->position_requirement_ == PositionRequirement::WAITING_FOR_POSITION) {
+                continue;
+            }
+            AL_CHK(alSourcefv(s->source_, AL_POSITION, (s->position_.position / meters).flat_begin()));
+            AL_CHK(alSourcefv(s->source_, AL_VELOCITY, (s->position_.velocity / (meters / seconds)).flat_begin()));
+            
             AL_CHK(alSourcef(s->source_, AL_GAIN, s->gain_));
         }
     });

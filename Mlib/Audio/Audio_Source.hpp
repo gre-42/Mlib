@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Audio/OpenAL_al.h>
+#include <Mlib/Memory/Destruction_Guards.hpp>
 #include <cstddef>
 #include <cstdint>
 #ifdef __EMSCRIPTEN__
@@ -27,9 +28,6 @@ enum class PositionRequirement {
 class AudioSource {
     AudioSource(const AudioSource &) = delete;
     AudioSource &operator=(const AudioSource &) = delete;
-    explicit AudioSource(
-        PositionRequirement position_requirement,
-        float alpha);
     friend class AudioScene;
 public:
     AudioSource(
@@ -60,13 +58,14 @@ private:
     bool muted_;
     float gain_;
 #ifdef __EMSCRIPTEN__
-    bool loop_;
-    float pitch_;
+    std::optional<bool> loop_;
+    std::optional<float> pitch_;
     AudioSourceState<float> position_;
-    Interval<float> distance_clamping_;
+    std::optional<Interval<float>> distance_clamping_;
     ALint last_source_state_;
     std::optional<ALint> pending_command_;
 #endif
+    DestructionGuards dgs_;
 };
 
 }
