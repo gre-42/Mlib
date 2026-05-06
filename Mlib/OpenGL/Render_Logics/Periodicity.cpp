@@ -1,4 +1,3 @@
-
 #include "Periodicity.hpp"
 #include <map>
 #include <stdexcept>

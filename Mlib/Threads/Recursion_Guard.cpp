@@ -1,4 +1,3 @@
-
 #include "Recursion_Guard.hpp"
 #include <stdexcept>
 

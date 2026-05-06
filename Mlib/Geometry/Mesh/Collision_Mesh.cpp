@@ -1,4 +1,3 @@
-
 #include "Collision_Mesh.hpp"
 #include <Mlib/Geometry/Colored_Vertex.hpp>
 #include <Mlib/Geometry/Interfaces/IIntersectable.hpp>

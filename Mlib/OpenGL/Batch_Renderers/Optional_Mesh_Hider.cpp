@@ -1,4 +1,3 @@
-
 #include "Optional_Mesh_Hider.hpp"
 #include <Mlib/Os/Env.hpp>
 #include <Mlib/Os/Os.hpp>

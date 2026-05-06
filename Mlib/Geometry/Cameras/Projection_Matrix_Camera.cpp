@@ -1,4 +1,3 @@
-
 #include "Projection_Matrix_Camera.hpp"
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <stdexcept>

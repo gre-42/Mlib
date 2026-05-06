@@ -1,4 +1,3 @@
-
 #include "Periodic_Reference_Time.hpp"
 #include <Mlib/Memory/Integral_To_Float.hpp>
 #include <stdexcept>

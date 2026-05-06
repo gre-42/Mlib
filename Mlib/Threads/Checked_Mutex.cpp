@@ -1,4 +1,3 @@
-
 #include "Checked_Mutex.hpp"
 #include <stdexcept>
 

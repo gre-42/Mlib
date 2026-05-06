@@ -1,4 +1,3 @@
-
 #include "Delaunay_Error_Behavior.hpp"
 #include <map>
 #include <stdexcept>

@@ -1,4 +1,3 @@
-
 #include "Load_Material.hpp"
 #include <Mlib/Compression/Compressed_File.hpp>
 #include <Mlib/Geometry/Mesh/Obj_Material.hpp>

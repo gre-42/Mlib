@@ -1,4 +1,3 @@
-
 #include "Rendering_Resources.hpp"
 #include <Mlib/Geography/Heightmaps/Heightmap_To_Normalmap.hpp>
 #include <Mlib/Geometry/Material/Blend_Map_Texture.hpp>

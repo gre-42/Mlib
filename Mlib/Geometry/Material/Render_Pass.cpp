@@ -1,4 +1,3 @@
-
 #include "Render_Pass.hpp"
 #include <map>
 #include <ostream>

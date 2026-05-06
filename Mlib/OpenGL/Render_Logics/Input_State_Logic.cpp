@@ -1,4 +1,3 @@
-
 #include "Input_State_Logic.hpp"
 #include <Mlib/Geometry/Cameras/Camera.hpp>
 #include <Mlib/Hashing/Variable_And_Hash.hpp>

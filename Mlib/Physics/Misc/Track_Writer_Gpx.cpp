@@ -1,4 +1,3 @@
-
 #include "Track_Writer_Gpx.hpp"
 #include <Mlib/Physics/Misc/Track_Element.hpp>
 #include <stdexcept>

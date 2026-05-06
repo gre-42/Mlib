@@ -1,4 +1,3 @@
-
 #include "Collision_Edges.hpp"
 #include <Mlib/Geometry/Fixed_Cross.hpp>
 #include <Mlib/Math/Orderable_Fixed_Array.hpp>

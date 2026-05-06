@@ -1,4 +1,3 @@
-
 #include "Tty_Renderable_Hider.hpp"
 #include <Mlib/OpenGL/Batch_Renderers/Special_Renderable_Names.hpp>
 #include <Mlib/OpenGL/Key_Bindings/Key_Configuration.hpp>

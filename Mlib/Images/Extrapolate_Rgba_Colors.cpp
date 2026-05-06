@@ -1,4 +1,3 @@
-
 #include "Extrapolate_Rgba_Colors.hpp"
 #include <Mlib/Images/Filters/Gaussian_Filter.hpp>
 #include <Mlib/Images/Normalize.hpp>

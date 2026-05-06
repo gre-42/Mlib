@@ -1,4 +1,3 @@
-
 #include "Thread_Safe_String.hpp"
 #include <mutex>
 #include <stdexcept>

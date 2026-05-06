@@ -1,4 +1,3 @@
-
 #include "Vertex_Arrays_With_Dynamic_Instances.hpp"
 #include <Mlib/Scene_Graph/Render/IGpu_Instance_Buffers.hpp>
 #include <Mlib/Scene_Graph/Render/IGpu_Object_Factory.hpp>

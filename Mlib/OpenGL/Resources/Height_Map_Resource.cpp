@@ -1,4 +1,3 @@
-
 #include "Height_Map_Resource.hpp"
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Geometry/Coordinates/Homogeneous.hpp>

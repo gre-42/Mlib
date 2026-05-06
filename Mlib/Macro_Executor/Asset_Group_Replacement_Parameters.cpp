@@ -1,4 +1,3 @@
-
 #include "Asset_Group_Replacement_Parameters.hpp"
 #include <Mlib/Geometry/Interfaces/IAsset_Loader.hpp>
 #include <Mlib/Macro_Executor/Macro_Line_Executor.hpp>

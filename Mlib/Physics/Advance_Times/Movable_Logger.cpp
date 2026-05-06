@@ -1,4 +1,3 @@
-
 #include "Movable_Logger.hpp"
 #include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/Memory/Object_Pool.hpp>

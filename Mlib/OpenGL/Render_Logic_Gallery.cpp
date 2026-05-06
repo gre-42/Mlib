@@ -1,4 +1,3 @@
-
 #include "Render_Logic_Gallery.hpp"
 #include <Mlib/OpenGL/Render_Logic.hpp>
 #include <mutex>

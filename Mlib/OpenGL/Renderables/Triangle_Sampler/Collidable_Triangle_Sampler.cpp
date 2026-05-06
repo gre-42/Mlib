@@ -1,4 +1,3 @@
-
 #include "Collidable_Triangle_Sampler.hpp"
 #include <Mlib/Geometry/Mesh/Triangle_List.hpp>
 #include <Mlib/OpenGL/Renderables/Triangle_Sampler/Sample_Triangle_Interior_Instances.hpp>

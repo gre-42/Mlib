@@ -1,4 +1,3 @@
-
 #include "Animated_Colored_Vertex_Arrays.hpp"
 #include <Mlib/Geometry/Colored_Vertex.hpp>
 #include <Mlib/Geometry/Mesh/Barrier_Triangle_Hitbox.hpp>

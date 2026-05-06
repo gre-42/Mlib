@@ -1,4 +1,3 @@
-
 #include "Filter_Type.hpp"
 #include <map>
 #include <stdexcept>

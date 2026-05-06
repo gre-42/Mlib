@@ -1,4 +1,3 @@
-
 #include "Render_Allocator.hpp"
 #include <Mlib/Memory/Recursive_Deletion.hpp>
 #include <Mlib/Threads/Fast_Mutex.hpp>

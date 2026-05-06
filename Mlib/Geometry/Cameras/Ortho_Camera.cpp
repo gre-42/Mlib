@@ -1,4 +1,3 @@
-
 #include "Ortho_Camera.hpp"
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Geometry/linmath.hpp>

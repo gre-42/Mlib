@@ -1,4 +1,3 @@
-
 #include "Rendering_Dynamics.hpp"
 #include <map>
 #include <stdexcept>

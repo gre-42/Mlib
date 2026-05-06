@@ -1,4 +1,3 @@
-
 #include "Time_Guard.hpp"
 #include <Mlib/Images/Svg.hpp>
 #include <fstream>

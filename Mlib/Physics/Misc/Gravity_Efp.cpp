@@ -1,4 +1,3 @@
-
 #include "Gravity_Efp.hpp"
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Array/Fixed_Array.hpp>

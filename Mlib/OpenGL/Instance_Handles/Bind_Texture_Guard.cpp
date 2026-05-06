@@ -1,4 +1,3 @@
-
 #include "Bind_Texture_Guard.hpp"
 #include <Mlib/OpenGL/CHK.hpp>
 

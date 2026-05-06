@@ -1,4 +1,3 @@
-
 #include "Collision_Ridge.hpp"
 #include <Mlib/Geometry/Fixed_Cross.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>

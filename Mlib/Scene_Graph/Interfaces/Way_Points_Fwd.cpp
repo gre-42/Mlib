@@ -1,4 +1,3 @@
-
 #include "Way_Points_Fwd.hpp"
 #include <Mlib/Scene_Graph/Joined_Way_Point_Sandbox.hpp>
 

@@ -1,4 +1,3 @@
-
 #include "Render_Height_Map.hpp"
 #include <Mlib/Geometry/Cameras/Perspective_Camera.hpp>
 #include <Mlib/OpenGL/Render.hpp>

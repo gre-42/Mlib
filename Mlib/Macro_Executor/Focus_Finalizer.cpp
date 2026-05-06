@@ -1,4 +1,3 @@
-
 #include "Focus_Finalizer.hpp"
 #include <Mlib/Iterator/Enumerate.hpp>
 #include <Mlib/Macro_Executor/Focus.hpp>

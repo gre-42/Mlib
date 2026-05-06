@@ -1,4 +1,3 @@
-
 #include "Scene_Node.hpp"
 #include <Mlib/Geometry/Cameras/Camera.hpp>
 #include <Mlib/Geometry/Coordinates/Homogeneous.hpp>

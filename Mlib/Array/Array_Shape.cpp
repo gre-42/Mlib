@@ -1,4 +1,3 @@
-
 #include "Array_Shape.hpp"
 #include <sstream>
 

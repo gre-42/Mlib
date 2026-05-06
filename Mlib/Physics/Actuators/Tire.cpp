@@ -1,4 +1,3 @@
-
 #include "Tire.hpp"
 #include <Mlib/Geometry/Angle.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>

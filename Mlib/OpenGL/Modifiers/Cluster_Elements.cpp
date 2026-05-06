@@ -1,4 +1,3 @@
-
 #include "Cluster_Elements.hpp"
 #include <Mlib/Geometry/Colored_Vertex.hpp>
 #include <Mlib/Geometry/Instance/Instance_Information.hpp>

@@ -1,4 +1,3 @@
-
 #include "Interior_Texture_Set.hpp"
 #include <stdexcept>
 

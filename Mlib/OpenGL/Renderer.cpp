@@ -1,4 +1,3 @@
-
 #include "Renderer.hpp"
 #include <Mlib/Images/Revert_Axis.hpp>
 #include <Mlib/Images/Vectorial_Pixels.hpp>

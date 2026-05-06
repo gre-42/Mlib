@@ -1,4 +1,3 @@
-
 #include "Extendable_Sortable_Vertex_Array_Instances.hpp"
 #include <Mlib/Math/Sorted_Deferred.hpp>
 #include <Mlib/Math/Transformation/Offset_And_YAngle.hpp>

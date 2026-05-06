@@ -1,4 +1,3 @@
-
 #include "Save_Movie.hpp"
 #include <Mlib/Images/StbImage3.hpp>
 #include <Mlib/OpenGL/CHK.hpp>

@@ -1,4 +1,3 @@
-
 #include "List_View.hpp"
 #include <Mlib/Macro_Executor/Focus.hpp>
 #include <Mlib/OpenGL/Key_Bindings/Base_Key_Binding.hpp>

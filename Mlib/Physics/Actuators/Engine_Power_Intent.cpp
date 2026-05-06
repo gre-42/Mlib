@@ -1,4 +1,3 @@
-
 #include "Engine_Power_Intent.hpp"
 #include <Mlib/Json/Json_View.hpp>
 #include <Mlib/Math/Math.hpp>

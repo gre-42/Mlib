@@ -1,4 +1,3 @@
-
 #include "Texture_Target.hpp"
 #include <ostream>
 #include <stdexcept>

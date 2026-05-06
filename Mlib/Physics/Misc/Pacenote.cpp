@@ -1,4 +1,3 @@
-
 #include "Pacenote.hpp"
 #include <ostream>
 #include <stdexcept>

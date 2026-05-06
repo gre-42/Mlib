@@ -1,4 +1,3 @@
-
 #include "Control_Source.hpp"
 #include <stdexcept>
 

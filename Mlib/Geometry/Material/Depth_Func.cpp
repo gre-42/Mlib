@@ -1,4 +1,3 @@
-
 #include "Depth_Func.hpp"
 #include <stdexcept>
 

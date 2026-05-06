@@ -1,4 +1,3 @@
-
 #include "Color_Style.hpp"
 #include <Mlib/Hashing/Hash.hpp>
 

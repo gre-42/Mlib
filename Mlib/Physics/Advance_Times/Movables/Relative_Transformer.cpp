@@ -1,4 +1,3 @@
-
 #include "Relative_Transformer.hpp"
 #include <Mlib/Geometry/Coordinates/Homogeneous.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>

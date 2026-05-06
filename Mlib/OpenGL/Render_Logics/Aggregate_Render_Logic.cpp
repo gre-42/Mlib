@@ -1,4 +1,3 @@
-
 #include "Aggregate_Render_Logic.hpp"
 #include <Mlib/Geometry/Cameras/Camera.hpp>
 #include <Mlib/Misc/Log.hpp>

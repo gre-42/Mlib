@@ -1,4 +1,3 @@
-
 #include "Billboard_Atlas_Instance_Json.hpp"
 #include <Mlib/Geometry/Material/Billboard_Atlas_Instance.hpp>
 #include <Mlib/Geometry/Material/Render_Pass.hpp>

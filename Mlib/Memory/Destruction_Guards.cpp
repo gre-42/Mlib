@@ -1,4 +1,3 @@
-
 #include "Destruction_Guards.hpp"
 
 using namespace Mlib;

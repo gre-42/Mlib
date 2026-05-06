@@ -1,4 +1,3 @@
-
 #include "Trail_Resources.hpp"
 #include <Mlib/Hashing/Variable_And_Hash.hpp>
 #include <Mlib/Os/Os.hpp>

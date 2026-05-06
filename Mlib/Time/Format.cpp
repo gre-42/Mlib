@@ -1,4 +1,3 @@
-
 #include "Format.hpp"
 #include <cmath>
 #include <sstream>

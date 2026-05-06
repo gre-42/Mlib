@@ -1,4 +1,3 @@
-
 #include "Rigid_Body_Pulses.hpp"
 #include <Mlib/Geometry/Coordinates/Homogeneous.hpp>
 #include <Mlib/Geometry/Primitives/Vector_At_Position.hpp>

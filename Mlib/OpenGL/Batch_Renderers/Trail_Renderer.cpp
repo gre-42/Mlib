@@ -1,4 +1,3 @@
-
 #include "Trail_Renderer.hpp"
 #include <Mlib/OpenGL/Batch_Renderers/Trails_Instance.hpp>
 #include <Mlib/OpenGL/Resource_Managers/Trail_Resources.hpp>

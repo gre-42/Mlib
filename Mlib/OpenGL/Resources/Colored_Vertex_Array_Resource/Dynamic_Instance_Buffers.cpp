@@ -1,4 +1,3 @@
-
 #include "Dynamic_Instance_Buffers.hpp"
 #include <Mlib/Geometry/Material/Transformation_Mode.hpp>
 #include <Mlib/Math/Lerp.hpp>

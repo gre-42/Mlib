@@ -1,4 +1,3 @@
-
 #include "Track_Element_Vector.hpp"
 #include <Mlib/Physics/Misc/Track_Element_Extended.hpp>
 

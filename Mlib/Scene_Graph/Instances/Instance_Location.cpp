@@ -1,4 +1,3 @@
-
 #include "Instance_Location.hpp"
 #include <Mlib/Geometry/Material/Transformation_Mode.hpp>
 #include <Mlib/Math/Transformation/Transformation_Variant.hpp>

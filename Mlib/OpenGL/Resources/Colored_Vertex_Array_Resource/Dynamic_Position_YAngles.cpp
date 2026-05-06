@@ -1,4 +1,3 @@
-
 #include "Dynamic_Position_YAngles.hpp"
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/OpenGL/CHK.hpp>

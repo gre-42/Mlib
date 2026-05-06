@@ -1,4 +1,3 @@
-
 #include "Permanent_Bounded_Plane_Equality_Contact.hpp"
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
 #include <Mlib/Physics/Collision/Resolve/Constraints.hpp>

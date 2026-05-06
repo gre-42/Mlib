@@ -1,4 +1,3 @@
-
 #include "Gl_Context_Guard.hpp"
 #include <Mlib/OpenGL/Deallocate/Render_Garbage_Collector.hpp>
 #include <Mlib/OpenGL/IWindow.hpp>

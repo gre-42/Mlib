@@ -1,4 +1,3 @@
-
 #include "Collide_Grind_Infos.hpp"
 #include <Mlib/Math/Fixed_Scaled_Unit_Vector.hpp>
 #include <Mlib/Physics/Collision/Grind_Info.hpp>

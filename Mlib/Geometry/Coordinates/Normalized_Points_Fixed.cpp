@@ -1,4 +1,3 @@
-
 #include "Normalized_Points_Fixed.hpp"
 #include <Mlib/Geometry/Coordinates/Homogeneous.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>

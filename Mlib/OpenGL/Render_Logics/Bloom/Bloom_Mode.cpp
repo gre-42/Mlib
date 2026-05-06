@@ -1,4 +1,3 @@
-
 #include "Bloom_Mode.hpp"
 #include <map>
 #include <stdexcept>

@@ -1,4 +1,3 @@
-
 #include "Button_States.hpp"
 #include <Mlib/Iterator/Enumerate.hpp>
 #include <Mlib/Math/Math.hpp>

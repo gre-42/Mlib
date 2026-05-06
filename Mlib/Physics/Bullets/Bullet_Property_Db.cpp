@@ -1,4 +1,3 @@
-
 #include "Bullet_Property_Db.hpp"
 #include <stdexcept>
 

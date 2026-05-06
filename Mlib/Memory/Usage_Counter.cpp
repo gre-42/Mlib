@@ -1,4 +1,3 @@
-
 #include "Usage_Counter.hpp"
 #include <mutex>
 

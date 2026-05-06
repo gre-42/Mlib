@@ -1,4 +1,3 @@
-
 #include "Contour_Detection_Strategy.hpp"
 #include <map>
 #include <stdexcept>

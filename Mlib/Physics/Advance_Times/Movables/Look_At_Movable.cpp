@@ -1,4 +1,3 @@
-
 #include "Look_At_Movable.hpp"
 #include <Mlib/Geometry/Coordinates/Gl_Look_At.hpp>
 #include <Mlib/Geometry/Coordinates/Homogeneous.hpp>

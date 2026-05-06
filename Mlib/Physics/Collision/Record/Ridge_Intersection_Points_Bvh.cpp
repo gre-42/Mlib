@@ -1,4 +1,3 @@
-
 #include "Ridge_Intersection_Points_Bvh.hpp"
 #include <Mlib/Scene_Config/Physics_Engine_Config.hpp>
 

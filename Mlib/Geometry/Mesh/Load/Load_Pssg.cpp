@@ -1,10 +1,9 @@
-
 #include "Load_Pssg.hpp"
 #include <Mlib/Compression/Decompress.hpp>
 #include <Mlib/Geometry/Mesh/Load/Pssg_Elements.hpp>
-#include <Mlib/Os/Io/Binary.hpp>
 #include <Mlib/Io/Endian.hpp>
 #include <Mlib/Memory/Integral_Cast.hpp>
+#include <Mlib/Os/Io/Binary.hpp>
 #include <Mlib/Os/Os.hpp>
 #include <list>
 #include <set>

@@ -1,4 +1,3 @@
-
 #include "Dynamic_Light_Db.hpp"
 #include <Mlib/Physics/Dynamic_Lights/Animated_Dynamic_Light.hpp>
 #include <Mlib/Physics/Dynamic_Lights/Constant_Dynamic_Light.hpp>

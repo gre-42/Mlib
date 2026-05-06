@@ -1,4 +1,3 @@
-
 #include "Wing_Angle.hpp"
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>

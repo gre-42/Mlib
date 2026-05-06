@@ -1,4 +1,3 @@
-
 #include "Skidmark.hpp"
 #include <Mlib/Array/Fixed_Array_Hash.hpp>
 #include <Mlib/Scene_Graph/Culling/Visibility_Check.hpp>

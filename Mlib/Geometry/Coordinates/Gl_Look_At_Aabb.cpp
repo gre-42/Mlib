@@ -1,4 +1,3 @@
-
 #include "Gl_Look_At_Aabb.hpp"
 #include <Mlib/Geometry/Coordinates/Gl_Look_At.hpp>
 #include <Mlib/Geometry/Primitives/Axis_Aligned_Bounding_Box.hpp>

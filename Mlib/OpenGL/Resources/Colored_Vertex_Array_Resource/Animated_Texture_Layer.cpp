@@ -1,4 +1,3 @@
-
 #include "Animated_Texture_Layer.hpp"
 #include <Mlib/Geometry/Colored_Vertex.hpp>
 #include <Mlib/Geometry/Primitives/Extremal_Axis_Aligned_Bounding_Box.hpp>

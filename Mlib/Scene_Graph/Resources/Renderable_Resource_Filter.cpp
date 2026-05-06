@@ -1,4 +1,3 @@
-
 #include "Renderable_Resource_Filter.hpp"
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>

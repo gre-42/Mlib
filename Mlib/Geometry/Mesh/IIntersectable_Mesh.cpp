@@ -1,4 +1,3 @@
-
 #include "IIntersectable_Mesh.hpp"
 #include <Mlib/Geometry/Primitives/Bounding_Sphere.hpp>
 

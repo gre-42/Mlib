@@ -1,4 +1,3 @@
-
 #include "Source_Location.hpp"
 #include <ostream>
 

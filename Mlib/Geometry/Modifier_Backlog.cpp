@@ -1,4 +1,3 @@
-
 #include "Modifier_Backlog.hpp"
 #include <sstream>
 

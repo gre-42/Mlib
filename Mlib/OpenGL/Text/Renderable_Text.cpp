@@ -1,4 +1,3 @@
-
 #include "Renderable_Text.hpp"
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Layout/Concrete_Layout_Pixels.hpp>
@@ -6,6 +5,7 @@
 #include <Mlib/Layout/IWidget.hpp>
 #include <Mlib/Layout/Screen_Units.hpp>
 #include <Mlib/Memory/Integral_Cast.hpp>
+#include <Mlib/Misc/Floating_Point_Exceptions.hpp>
 #include <Mlib/OpenGL/CHK.hpp>
 #include <Mlib/OpenGL/Deallocate/Render_Deallocator.hpp>
 #include <Mlib/OpenGL/Instance_Handles/Render_Guards.hpp>
@@ -13,7 +13,6 @@
 #include <Mlib/OpenGL/Rendering_Context.hpp>
 #include <Mlib/OpenGL/Resource_Managers/Rendering_Resources.hpp>
 #include <Mlib/OpenGL/Shader_Version_3_0.hpp>
-#include <Mlib/Misc/Floating_Point_Exceptions.hpp>
 #include <Mlib/OpenGL/Text/Align_Text.hpp>
 #include <Mlib/OpenGL/Text/Loaded_Font.hpp>
 #include <Mlib/OpenGL/Text/Text_And_Position.hpp>

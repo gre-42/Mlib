@@ -1,4 +1,3 @@
-
 #include "Proctree_File_Resource.hpp"
 #include <Mlib/Geometry/Material.hpp>
 #include <Mlib/Geometry/Mesh/Animated_Colored_Vertex_Arrays.hpp>

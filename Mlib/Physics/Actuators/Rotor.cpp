@@ -1,4 +1,3 @@
-
 #include "Rotor.hpp"
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Math/Fixed_Scaled_Unit_Vector.hpp>

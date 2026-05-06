@@ -1,4 +1,3 @@
-
 #include "Coordinate_Conversion.hpp"
 #include <Mlib/Images/Coordinates.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>

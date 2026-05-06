@@ -1,4 +1,3 @@
-
 #include "Normal_Type.hpp"
 #include <stdexcept>
 

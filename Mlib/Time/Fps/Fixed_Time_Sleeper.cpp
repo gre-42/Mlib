@@ -1,4 +1,3 @@
-
 #include "Fixed_Time_Sleeper.hpp"
 #include <Mlib/Time/Sleep.hpp>
 #include <chrono>

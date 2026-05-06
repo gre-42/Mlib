@@ -1,4 +1,3 @@
-
 #include "Base_Gamepad_Analog_Axis_Binding.hpp"
 #include <Mlib/OpenGL/Key_Bindings/Input_Type.hpp>
 #include <Mlib/Strings/Join.hpp>

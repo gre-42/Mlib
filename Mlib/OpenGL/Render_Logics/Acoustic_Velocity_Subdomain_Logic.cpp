@@ -1,4 +1,3 @@
-
 #include "Acoustic_Velocity_Subdomain_Logic.hpp"
 #include <Mlib/Geometry/Angle.hpp>
 #include <Mlib/Geometry/Cameras/Camera.hpp>

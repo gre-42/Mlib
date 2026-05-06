@@ -1,4 +1,3 @@
-
 #include "Compound_Resource.hpp"
 #include <Mlib/Geometry/Graph/Point_And_Flags.hpp>
 #include <Mlib/Geometry/Graph/Points_And_Adjacency.hpp>

@@ -1,4 +1,3 @@
-
 #include "Barrier_Triangle_Hitbox.hpp"
 #include <Mlib/Geometry/Exceptions/Triangle_Exception.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>

@@ -1,4 +1,3 @@
-
 #include "Inventory.hpp"
 #include <stdexcept>
 

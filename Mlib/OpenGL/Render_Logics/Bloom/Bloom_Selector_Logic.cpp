@@ -1,4 +1,3 @@
-
 #include "Bloom_Selector_Logic.hpp"
 #include <Mlib/Misc/Log.hpp>
 #include <Mlib/OpenGL/Render_Logics/Bloom/Bloom_Mode.hpp>

@@ -1,4 +1,3 @@
-
 #include "Normal_On_Capsule.hpp"
 #include <Mlib/Math/Fixed_Cholesky.hpp>
 #include <Mlib/Math/Fixed_Inverse.hpp>

@@ -1,4 +1,3 @@
-
 #include "Gl3_Raster.hpp"
 #include <Mlib/Geometry/Material/Interpolation_Mode.hpp>
 #include <Mlib/Geometry/Material/Texture_Target.hpp>

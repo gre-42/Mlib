@@ -1,4 +1,3 @@
-
 #include "Replace_Terrain_Material.hpp"
 #include <Mlib/Geometry/Colored_Vertex.hpp>
 #include <Mlib/Geometry/Material/Merged_Texture_Filter.hpp>

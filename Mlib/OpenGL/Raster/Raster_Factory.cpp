@@ -1,4 +1,3 @@
-
 #include "Raster_Factory.hpp"
 #include <Mlib/Geometry/Mesh/Load/Load_Dff.hpp>
 #include <Mlib/Geometry/Mesh/Load/Raster_Config.hpp>

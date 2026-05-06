@@ -1,4 +1,3 @@
-
 #include "Score_Board_Configuration.hpp"
 #include <Mlib/Regex/Split.hpp>
 #include <map>

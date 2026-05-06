@@ -1,4 +1,3 @@
-
 #include "Object_Life_Time.hpp"
 
 using namespace Mlib;

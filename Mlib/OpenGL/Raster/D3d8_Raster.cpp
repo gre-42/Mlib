@@ -1,4 +1,3 @@
-
 #include "D3d8_Raster.hpp"
 #include <Mlib/Geometry/Mesh/Load/Load_Dff.hpp>
 #include <Mlib/Geometry/Mesh/Load/Mipmap_Level.hpp>

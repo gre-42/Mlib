@@ -1,4 +1,3 @@
-
 #include "Race_Identifier.hpp"
 #include <sstream>
 #include <stdexcept>

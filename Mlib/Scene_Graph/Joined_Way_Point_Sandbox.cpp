@@ -1,4 +1,3 @@
-
 #include "Joined_Way_Point_Sandbox.hpp"
 #include <Mlib/Regex/Split.hpp>
 #include <map>

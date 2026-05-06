@@ -1,4 +1,3 @@
-
 #include "Read_Pixels_Logic.hpp"
 #include <Mlib/Geometry/Cameras/Camera.hpp>
 #include <Mlib/Images/Revert_Axis.hpp>

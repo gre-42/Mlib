@@ -1,4 +1,3 @@
-
 #include "StbImage3.hpp"
 #include <Mlib/Images/Draw_Generic.hpp>
 #include <Mlib/Stats/Min_Max.hpp>

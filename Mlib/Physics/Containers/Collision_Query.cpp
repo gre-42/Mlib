@@ -1,4 +1,3 @@
-
 #include "Collision_Query.hpp"
 #include <Mlib/Geometry/Interfaces/IIntersectable.hpp>
 #include <Mlib/Geometry/Interfaces/Transformed_IIntersectable.hpp>

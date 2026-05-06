@@ -1,4 +1,3 @@
-
 #include "Weapon_Cycle.hpp"
 #include <Mlib/Physics/Bullets/Bullet_Properties.hpp>
 #include <Mlib/Physics/Misc/Inventory.hpp>

@@ -1,4 +1,3 @@
-
 #include "Texture_Binder.hpp"
 #include <Mlib/Geometry/Material/Interpolation_Mode.hpp>
 #include <Mlib/Geometry/Material/Mipmap_Mode.hpp>

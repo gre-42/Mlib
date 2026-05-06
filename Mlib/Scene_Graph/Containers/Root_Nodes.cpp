@@ -1,4 +1,3 @@
-
 #include "Root_Nodes.hpp"
 #include <Mlib/Geometry/Primitives/Intersectable_Point.hpp>
 #include <Mlib/Memory/Recursive_Deletion.hpp>

@@ -1,4 +1,3 @@
-
 #include "Scroll_Wheel_Movement.hpp"
 #include <Mlib/OpenGL/Key_Bindings/Key_Configuration.hpp>
 #include <Mlib/OpenGL/Key_Bindings/Lockable_Key_Configurations.hpp>

@@ -1,4 +1,3 @@
-
 #include "Frustum_Visibility_Check.hpp"
 #include <Mlib/Scene_Graph/Culling/Is_Visible.hpp>
 #include <Mlib/Scene_Graph/Culling/Visibility_Check.hpp>

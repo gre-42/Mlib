@@ -1,4 +1,3 @@
-
 #include "Audio_Distance_Model.hpp"
 #include <map>
 #include <stdexcept>

@@ -1,4 +1,3 @@
-
 #include "Set_Thread_Name_Native.hpp"
 #include <stdexcept>
 

@@ -1,4 +1,3 @@
-
 #include "Blend_Map_Texture.hpp"
 #include <Mlib/Math/Orderable_Fixed_Array_Hash.hpp>
 #include <stdexcept>

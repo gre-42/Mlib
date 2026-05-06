@@ -1,4 +1,3 @@
-
 #include "Rigid_Bodies.hpp"
 #include <Mlib/Geometry/Colored_Vertex.hpp>
 #include <Mlib/Geometry/Graph/Cluster_By_Flood_Fill.hpp>

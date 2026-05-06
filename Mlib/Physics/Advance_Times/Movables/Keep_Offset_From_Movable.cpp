@@ -1,4 +1,3 @@
-
 #include "Keep_Offset_From_Movable.hpp"
 #include <Mlib/Memory/Object_Pool.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>

@@ -1,4 +1,3 @@
-
 #include "Draw_Distance_Db.hpp"
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Geometry/Material/Blend_Distances.hpp>

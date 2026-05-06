@@ -1,4 +1,3 @@
-
 #include "StbImage4.hpp"
 #include <Mlib/Images/Draw_Generic.hpp>
 #include <Mlib/Images/StbImage3.hpp>

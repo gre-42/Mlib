@@ -1,4 +1,3 @@
-
 #include "Rigid_Body_Plane_Controller.hpp"
 #include <cmath>
 

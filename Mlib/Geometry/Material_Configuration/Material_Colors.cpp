@@ -1,4 +1,3 @@
-
 #include "Material_Colors.hpp"
 #include <Mlib/Geometry/Material_Configuration/Shading_Factors.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>

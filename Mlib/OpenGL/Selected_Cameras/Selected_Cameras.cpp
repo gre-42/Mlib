@@ -1,4 +1,3 @@
-
 #include "Selected_Cameras.hpp"
 #include <Mlib/OpenGL/Selected_Cameras/Camera_Cycle_Type.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>

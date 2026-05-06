@@ -1,4 +1,3 @@
-
 #include "Bone.hpp"
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <stdexcept>

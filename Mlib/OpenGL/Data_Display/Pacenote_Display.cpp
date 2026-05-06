@@ -1,4 +1,3 @@
-
 #include "Pacenote_Display.hpp"
 #include <Mlib/Layout/IWidget.hpp>
 #include <Mlib/OpenGL/Render_Logic_Gallery.hpp>

@@ -1,4 +1,3 @@
-
 #include "Textured_Quad_Style.hpp"
 
 using namespace Mlib;

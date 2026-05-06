@@ -1,4 +1,3 @@
-
 #include "Centered_Texture_Image_Logic.hpp"
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Fixed_Rotation_2D.hpp>

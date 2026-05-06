@@ -1,4 +1,3 @@
-
 #include "Clear_Mode.hpp"
 #include <stdexcept>
 

@@ -1,4 +1,3 @@
-
 #include "Smoothness_Target.hpp"
 #include <stdexcept>
 

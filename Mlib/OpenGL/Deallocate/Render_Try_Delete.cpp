@@ -1,4 +1,3 @@
-
 #include "Render_Try_Delete.hpp"
 #include <Mlib/OpenGL/CHK.hpp>
 #include <Mlib/OpenGL/Context_Query.hpp>

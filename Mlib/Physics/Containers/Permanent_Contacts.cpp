@@ -1,4 +1,3 @@
-
 #include "Permanent_Contacts.hpp"
 #include <Mlib/Os/Os.hpp>
 #include <Mlib/Physics/Collision/Record/IPermanent_Contact.hpp>

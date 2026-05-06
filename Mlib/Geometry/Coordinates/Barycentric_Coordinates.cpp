@@ -1,4 +1,3 @@
-
 #include "Barycentric_Coordinates.hpp"
 #include <Mlib/Geometry/Coordinates/Normalized_Points_Fixed.hpp>
 #include <Mlib/Geometry/Exceptions/Triangle_Exception.hpp>

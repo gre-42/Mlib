@@ -1,4 +1,3 @@
-
 #include "Gl_Look_At_Bounding_Sphere.hpp"
 #include <Mlib/Geometry/Cameras/Distance_For_Fov.hpp>
 #include <Mlib/Geometry/Coordinates/Gl_Look_At.hpp>

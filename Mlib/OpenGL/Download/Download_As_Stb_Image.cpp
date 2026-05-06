@@ -1,4 +1,3 @@
-
 #include "Download_As_Stb_Image.hpp"
 #include <Mlib/Images/Flip_Mode.hpp>
 #include <Mlib/Images/Revert_Axis.hpp>

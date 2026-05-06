@@ -1,4 +1,3 @@
-
 #include "Save_Obj.hpp"
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
 #include <Mlib/Geometry/Mesh/Obj_Material.hpp>

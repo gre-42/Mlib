@@ -1,4 +1,3 @@
-
 #include "Power_To_Force.hpp"
 #include <Mlib/Testing/Assert.hpp>
 

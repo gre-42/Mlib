@@ -1,4 +1,3 @@
-
 #include "Static_Face_Lighting.hpp"
 #include <Mlib/Geometry/Triangle_Normal.hpp>
 

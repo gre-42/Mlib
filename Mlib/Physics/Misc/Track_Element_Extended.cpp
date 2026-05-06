@@ -1,4 +1,3 @@
-
 #include "Track_Element_Extended.hpp"
 #include <Mlib/Math/Transformation/Tait_Bryan_Angles.hpp>
 

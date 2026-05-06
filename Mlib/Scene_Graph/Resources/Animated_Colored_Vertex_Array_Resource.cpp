@@ -1,4 +1,3 @@
-
 #include "Animated_Colored_Vertex_Array_Resource.hpp"
 
 using namespace Mlib;

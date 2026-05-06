@@ -1,4 +1,3 @@
-
 #include "Read_Texture_Native_Ps2.hpp"
 #include <Mlib/Geometry/Mesh/Load/IRaster_Factory.hpp>
 #include <Mlib/Geometry/Mesh/Load/IRaster_Ps2.hpp>

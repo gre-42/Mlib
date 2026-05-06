@@ -1,4 +1,3 @@
-
 #include "List_View_Widget_Drawer.hpp"
 #include <Mlib/Layout/IWidget.hpp>
 #include <Mlib/Layout/Widget.hpp>

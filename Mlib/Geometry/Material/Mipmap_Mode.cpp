@@ -1,4 +1,3 @@
-
 #include "Mipmap_Mode.hpp"
 #include <map>
 #include <stdexcept>

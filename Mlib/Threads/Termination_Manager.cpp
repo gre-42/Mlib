@@ -1,4 +1,3 @@
-
 #include "Termination_Manager.hpp"
 #include <Mlib/Os/Os.hpp>
 #include <list>

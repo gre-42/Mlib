@@ -1,4 +1,3 @@
-
 #include "Load_Bvh.hpp"
 #include <Mlib/Geometry/Coordinates/Homogeneous.hpp>
 #include <Mlib/Iterator/Enumerate.hpp>

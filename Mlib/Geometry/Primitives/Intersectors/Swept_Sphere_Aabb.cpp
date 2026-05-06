@@ -1,4 +1,3 @@
-
 #include "Swept_Sphere_Aabb.hpp"
 #include <Mlib/Geometry/Primitives/Collision_Line.hpp>
 #include <Mlib/Geometry/Primitives/Collision_Polygon.hpp>

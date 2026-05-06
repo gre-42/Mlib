@@ -1,4 +1,3 @@
-
 #include "Smoke_Particle_Generator.hpp"
 #include <Mlib/Geometry/Instance/Rendering_Dynamics.hpp>
 #include <Mlib/Json/Json_View.hpp>

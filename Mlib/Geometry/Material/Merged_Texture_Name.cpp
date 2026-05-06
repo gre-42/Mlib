@@ -1,4 +1,3 @@
-
 #include "Merged_Texture_Name.hpp"
 #include <Mlib/Geometry/Material.hpp>
 

@@ -1,4 +1,3 @@
-
 #include "Safe_Recursive_Shared_Mutex.hpp"
 #include <Mlib/Os/Os.hpp>
 #include <stdexcept>

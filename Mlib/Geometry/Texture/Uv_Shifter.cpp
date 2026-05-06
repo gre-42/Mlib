@@ -1,4 +1,3 @@
-
 #include "Uv_Shifter.hpp"
 #include <Mlib/Geometry/Material/Wrap_Mode.hpp>
 #include <Mlib/Geometry/Texture/Uv_Atlas_Tolerance.hpp>

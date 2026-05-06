@@ -1,4 +1,3 @@
-
 #include "Color_Mode.hpp"
 #include <map>
 #include <stdexcept>

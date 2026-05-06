@@ -1,4 +1,3 @@
-
 #include "Texture_Descriptor.hpp"
 
 using namespace Mlib;

@@ -1,4 +1,3 @@
-
 #include "Object_Pool.hpp"
 #include <Mlib/Memory/Recursive_Deletion.hpp>
 #include <Mlib/Os/Os.hpp>

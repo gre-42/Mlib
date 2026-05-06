@@ -1,4 +1,3 @@
-
 #include "Blending_Pass_Type.hpp"
 #include <map>
 #include <stdexcept>

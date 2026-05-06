@@ -1,4 +1,3 @@
-
 #include "Particle_Descriptor.hpp"
 #include <Mlib/Geometry/Material/Particle_Type.hpp>
 #include <Mlib/Json/Json_View.hpp>

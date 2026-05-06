@@ -1,4 +1,3 @@
-
 #include "Blend_Mode.hpp"
 #include <map>
 #include <stdexcept>

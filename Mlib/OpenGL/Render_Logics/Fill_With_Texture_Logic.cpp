@@ -1,4 +1,3 @@
-
 #include "Fill_With_Texture_Logic.hpp"
 #include <Mlib/Geometry/Material/Color_Mode.hpp>
 #include <Mlib/Geometry/Material/Texture_Descriptor.hpp>

@@ -1,4 +1,3 @@
-
 #include "Array_Instances_Renderer.hpp"
 #include <Mlib/Geometry/Mesh/Mesh_Meta.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>

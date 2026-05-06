@@ -1,4 +1,3 @@
-
 #include "Engine_Power.hpp"
 #include <ostream>
 #include <stdexcept>

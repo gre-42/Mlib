@@ -1,4 +1,3 @@
-
 #include "Camera_Cycle_Type.hpp"
 #include <map>
 #include <stdexcept>

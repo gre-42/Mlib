@@ -1,4 +1,3 @@
-
 #include "Fill_Pixel_Region_With_Texture_Logic.hpp"
 #include <Mlib/Geometry/Cameras/Camera.hpp>
 #include <Mlib/Layout/IWidget.hpp>

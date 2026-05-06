@@ -1,4 +1,3 @@
-
 #include "Batch_Resource_Instantiator.hpp"
 #include <Mlib/Geometry/Instance/Rendering_Dynamics.hpp>
 #include <Mlib/Geometry/Material/Aggregate_Mode.hpp>

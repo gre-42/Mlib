@@ -1,4 +1,3 @@
-
 #include "Npixels_For_Dpi.hpp"
 
 using namespace Mlib;

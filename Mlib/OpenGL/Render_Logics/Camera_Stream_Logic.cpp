@@ -1,4 +1,3 @@
-
 #include "Camera_Stream_Logic.hpp"
 #include <Mlib/Geometry/Cameras/Camera.hpp>
 #include <Mlib/Misc/Log.hpp>

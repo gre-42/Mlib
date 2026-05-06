@@ -1,4 +1,3 @@
-
 #include "Is_Visible.hpp"
 #include <Mlib/Geometry/Material.hpp>
 #include <Mlib/Geometry/Morphology.hpp>

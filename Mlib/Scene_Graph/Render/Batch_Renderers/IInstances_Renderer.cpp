@@ -1,4 +1,3 @@
-
 #include "IInstances_Renderer.hpp"
 
 using namespace Mlib;

@@ -1,4 +1,3 @@
-
 #include "Save_Mtllib.hpp"
 #include <Mlib/Geometry/Mesh/Obj_Material.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>

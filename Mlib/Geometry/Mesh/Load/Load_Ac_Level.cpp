@@ -1,4 +1,3 @@
-
 #include "Load_Ac_Level.hpp"
 #include <Mlib/Geometry/Interfaces/IDds_Resources.hpp>
 #include <Mlib/Geometry/Material/Texture_Descriptor.hpp>

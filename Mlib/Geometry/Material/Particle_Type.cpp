@@ -1,4 +1,3 @@
-
 #include "Particle_Type.hpp"
 #include <map>
 #include <stdexcept>

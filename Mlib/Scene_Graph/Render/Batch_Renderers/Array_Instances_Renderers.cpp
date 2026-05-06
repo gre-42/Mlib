@@ -1,4 +1,3 @@
-
 #include "Array_Instances_Renderers.hpp"
 #include <Mlib/Scene_Graph/Render/Batch_Renderers/Array_Instances_Renderer.hpp>
 

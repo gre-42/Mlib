@@ -1,4 +1,3 @@
-
 #include "Animation_Frame.hpp"
 #include <algorithm>
 #include <cmath>

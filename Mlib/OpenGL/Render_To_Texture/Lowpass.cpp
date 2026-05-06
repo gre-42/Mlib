@@ -1,4 +1,3 @@
-
 #include "Lowpass.hpp"
 #include <Mlib/Geometry/Texture/ITexture_Handle.hpp>
 #include <Mlib/Images/Filters/Gaussian_Kernel.hpp>

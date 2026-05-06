@@ -1,4 +1,3 @@
-
 #include "Array_Frame_Buffer.hpp"
 #include <Mlib/OpenGL/CHK.hpp>
 #include <Mlib/OpenGL/Deallocate/Render_Deallocator.hpp>

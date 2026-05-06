@@ -1,4 +1,3 @@
-
 #include "Imposter_Logic.hpp"
 #include <Mlib/Geometry/Cameras/Frustum_Camera.hpp>
 #include <Mlib/Geometry/Cameras/Frustum_Camera_Config.hpp>

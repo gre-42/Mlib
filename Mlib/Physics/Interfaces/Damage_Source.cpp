@@ -1,4 +1,3 @@
-
 #include "Damage_Source.hpp"
 #include <Mlib/Json/Base.hpp>
 #include <map>

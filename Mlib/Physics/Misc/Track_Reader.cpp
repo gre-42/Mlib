@@ -1,4 +1,3 @@
-
 #include "Track_Reader.hpp"
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>

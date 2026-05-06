@@ -1,4 +1,3 @@
-
 #include "Frame_Buffer_2D.hpp"
 #include <Mlib/OpenGL/CHK.hpp>
 #include <Mlib/OpenGL/Deallocate/Render_Deallocator.hpp>

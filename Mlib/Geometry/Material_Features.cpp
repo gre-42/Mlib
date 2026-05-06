@@ -1,4 +1,3 @@
-
 #include "Material_Features.hpp"
 #include <Mlib/Geometry/Material/Blend_Distances.hpp>
 #include <Mlib/Geometry/Material/Blend_Map_Texture.hpp>

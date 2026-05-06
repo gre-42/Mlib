@@ -1,4 +1,3 @@
-
 #include "Frame_Buffer.hpp"
 #include <Mlib/Geometry/Material/Color_Mode.hpp>
 #include <Mlib/Geometry/Material/Mipmap_Mode.hpp>

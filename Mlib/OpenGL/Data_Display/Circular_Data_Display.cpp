@@ -1,4 +1,3 @@
-
 #include "Circular_Data_Display.hpp"
 #include <Mlib/Layout/IWidget.hpp>
 #include <Mlib/OpenGL/Data_Display/Pointer_Image_Logic.hpp>

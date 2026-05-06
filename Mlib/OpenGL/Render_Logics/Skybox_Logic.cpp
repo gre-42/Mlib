@@ -1,4 +1,3 @@
-
 #include "Skybox_Logic.hpp"
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Geometry/Cameras/Camera.hpp>

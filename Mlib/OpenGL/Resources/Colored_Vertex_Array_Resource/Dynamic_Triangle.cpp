@@ -1,4 +1,3 @@
-
 #include "Dynamic_Triangle.hpp"
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Geometry/Colored_Vertex.hpp>

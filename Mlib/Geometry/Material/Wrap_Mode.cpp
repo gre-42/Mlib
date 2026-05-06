@@ -1,4 +1,3 @@
-
 #include "Wrap_Mode.hpp"
 #include <map>
 #include <stdexcept>

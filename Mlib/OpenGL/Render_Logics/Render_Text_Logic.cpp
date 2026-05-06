@@ -1,4 +1,3 @@
-
 #include "Render_Text_Logic.hpp"
 #include <Mlib/OpenGL/Text/Renderable_Text.hpp>
 

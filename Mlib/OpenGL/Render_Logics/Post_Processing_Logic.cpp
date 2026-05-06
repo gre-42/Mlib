@@ -1,4 +1,3 @@
-
 #include "Post_Processing_Logic.hpp"
 #include <Mlib/Geometry/Cameras/Camera.hpp>
 #include <Mlib/Geometry/Material/Texture_Descriptor.hpp>

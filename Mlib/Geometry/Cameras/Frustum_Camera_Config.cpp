@@ -1,4 +1,3 @@
-
 #include "Frustum_Camera_Config.hpp"
 #include <Mlib/Geometry/Primitives/Axis_Aligned_Bounding_Box.hpp>
 

@@ -1,4 +1,3 @@
-
 #include "Bvh_Resource.hpp"
 #include <Mlib/Geometry/Colored_Vertex.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>

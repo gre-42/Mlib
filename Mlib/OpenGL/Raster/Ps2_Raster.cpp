@@ -1,4 +1,3 @@
-
 #include "Ps2_Raster.hpp"
 #include <Mlib/Geometry/Mesh/Load/Load_Dff.hpp>
 #include <Mlib/OpenGL/Raster/Convert_Pixels.hpp>

@@ -1,4 +1,3 @@
-
 #include "Context_Query.hpp"
 #include <Mlib/OpenGL/IContext.hpp>
 #include <stdexcept>

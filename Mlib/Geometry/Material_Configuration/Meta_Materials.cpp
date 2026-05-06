@@ -1,4 +1,3 @@
-
 #include "Meta_Materials.hpp"
 #include <Mlib/Geometry/Material_Configuration/Base_Materials.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>

@@ -1,4 +1,3 @@
-
 #include "Shock_Absorber.hpp"
 #include <stdexcept>
 

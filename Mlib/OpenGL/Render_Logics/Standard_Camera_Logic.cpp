@@ -1,4 +1,3 @@
-
 #include "Standard_Camera_Logic.hpp"
 #include <Mlib/Geometry/Cameras/Camera.hpp>
 #include <Mlib/Layout/Layout_Constraint_Parameters.hpp>

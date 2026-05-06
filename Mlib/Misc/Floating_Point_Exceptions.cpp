@@ -1,4 +1,3 @@
-
 #include "Floating_Point_Exceptions.hpp"
 #include <Mlib/Os/Os.hpp>
 #include <stdexcept>

@@ -1,4 +1,3 @@
-
 #include "Terrain_Uv.hpp"
 #include <Mlib/Geometry/Material/Wrap_Mode.hpp>
 #include <Mlib/Geometry/Mesh/Up_Axis.hpp>

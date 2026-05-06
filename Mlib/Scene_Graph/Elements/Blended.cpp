@@ -1,4 +1,3 @@
-
 #include "Blended.hpp"
 #include <Mlib/Scene_Graph/Elements/Renderable.hpp>
 

@@ -1,4 +1,3 @@
-
 #include "Optional_Material_Hider.hpp"
 #include <Mlib/Geometry/Material.hpp>
 #include <Mlib/Os/Env.hpp>

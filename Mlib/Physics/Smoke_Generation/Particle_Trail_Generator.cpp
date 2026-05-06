@@ -1,4 +1,3 @@
-
 #include "Particle_Trail_Generator.hpp"
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Hashing/Variable_And_Hash.hpp>

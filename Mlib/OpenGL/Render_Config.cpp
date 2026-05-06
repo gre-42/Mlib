@@ -1,4 +1,3 @@
-
 #include "Render_Config.hpp"
 #include <Mlib/Geometry/Material.hpp>
 #include <Mlib/Geometry/Material/Render_Pass.hpp>

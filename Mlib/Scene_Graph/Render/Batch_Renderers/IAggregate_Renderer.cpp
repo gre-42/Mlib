@@ -1,4 +1,3 @@
-
 #include "IAggregate_Renderer.hpp"
 
 using namespace Mlib;

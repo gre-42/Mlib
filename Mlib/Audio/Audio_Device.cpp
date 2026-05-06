@@ -1,4 +1,3 @@
-
 #include "Audio_Device.hpp"
 #ifndef USE_PCM_FILTERS
 #include <Mlib/Audio/OpenALSoft_efx.h>

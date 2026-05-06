@@ -1,4 +1,3 @@
-
 #include "Draw_Bmp.hpp"
 #include <Mlib/Images/Normalize.hpp>
 #include <Mlib/Stats/Quantile.hpp>

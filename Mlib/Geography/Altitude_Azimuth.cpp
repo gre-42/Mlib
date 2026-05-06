@@ -1,4 +1,3 @@
-
 #include "Altitude_Azimuth.hpp"
 #include <Mlib/Math/Math.hpp>
 #include <Mlib/Physics/Units.hpp>

@@ -1,4 +1,3 @@
-
 #include "Set_Fps.hpp"
 #include <Mlib/Os/Os.hpp>
 #include <Mlib/Time/Fps/ISleeper.hpp>

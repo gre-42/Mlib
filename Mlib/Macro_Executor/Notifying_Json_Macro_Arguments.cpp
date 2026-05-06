@@ -1,4 +1,3 @@
-
 #include "Notifying_Json_Macro_Arguments.hpp"
 #include <Mlib/Memory/Destruction_Guard.hpp>
 #include <mutex>

@@ -1,4 +1,3 @@
-
 #include "Instances_Are_Visible.hpp"
 #include <Mlib/Geometry/Material.hpp>
 

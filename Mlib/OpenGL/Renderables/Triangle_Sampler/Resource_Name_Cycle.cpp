@@ -1,4 +1,3 @@
-
 #include "Resource_Name_Cycle.hpp"
 #include <Mlib/Scene_Graph/Resources/Parsed_Resource_Name.hpp>
 

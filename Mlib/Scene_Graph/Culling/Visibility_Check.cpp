@@ -1,4 +1,3 @@
-
 #include "Visibility_Check.hpp"
 #include <Mlib/Geometry/Coordinates/Homogeneous.hpp>
 #include <Mlib/Geometry/Material.hpp>

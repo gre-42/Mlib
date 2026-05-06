@@ -1,4 +1,3 @@
-
 #include "Track_Element.hpp"
 #include <Mlib/Geometry/Angle.hpp>
 #include <Mlib/Io/Read_Number.hpp>

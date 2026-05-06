@@ -1,4 +1,3 @@
-
 #include "Diff_Vertex_Shader.hpp"
 #include <Mlib/OpenGL/Shader_Version_3_0.hpp>
 #include <sstream>

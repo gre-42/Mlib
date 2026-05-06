@@ -1,4 +1,3 @@
-
 #include "Imposter_Parameters.hpp"
 
 using namespace Mlib;

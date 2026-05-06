@@ -1,4 +1,3 @@
-
 #include "Wing.hpp"
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Physics/Actuators/Trail_Source.hpp>

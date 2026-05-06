@@ -1,4 +1,3 @@
-
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/OpenGL/CHK.hpp>
 #include <Mlib/OpenGL/Instance_Handles/Render_Guards.hpp>

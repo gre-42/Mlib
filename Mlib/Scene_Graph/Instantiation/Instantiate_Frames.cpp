@@ -1,4 +1,3 @@
-
 #include "Instantiate_Frames.hpp"
 #include <Mlib/Geometry/Instance/Instance_Information.hpp>
 #include <Mlib/Geometry/Instance/Rendering_Dynamics.hpp>

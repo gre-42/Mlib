@@ -1,4 +1,3 @@
-
 #include "Weapon_Cycle.hpp"
 #include <Mlib/Physics/Misc/Weapon_Cycle.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>

@@ -1,4 +1,3 @@
-
 #include "Polygon_Line_Intersector.hpp"
 #include <Mlib/Geometry/Interfaces/IIntersectable.hpp>
 #include <Mlib/Geometry/Primitives/Collision_Line.hpp>

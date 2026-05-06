@@ -1,4 +1,3 @@
-
 #include "Heterogeneous_Resource.hpp"
 #include <Mlib/Geometry/Colored_Vertex.hpp>
 #include <Mlib/Geometry/Instance/Rendering_Dynamics.hpp>

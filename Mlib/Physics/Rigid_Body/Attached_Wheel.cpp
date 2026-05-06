@@ -1,4 +1,3 @@
-
 #include "Attached_Wheel.hpp"
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Pulses.hpp>

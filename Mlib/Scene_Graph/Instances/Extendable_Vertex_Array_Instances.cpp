@@ -1,4 +1,3 @@
-
 #include "Extendable_Vertex_Array_Instances.hpp"
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
 #include <Mlib/Math/Transformation/Transformation_Variant.hpp>

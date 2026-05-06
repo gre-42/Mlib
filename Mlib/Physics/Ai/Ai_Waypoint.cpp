@@ -1,4 +1,3 @@
-
 #include "Ai_Waypoint.hpp"
 #include <Mlib/Geometry/Graph/Point_And_Flags.hpp>
 #include <Mlib/Geometry/Primitives/Ray_Segment_3D.hpp>

@@ -1,4 +1,3 @@
-
 #include "Tank_Controller.hpp"
 #include <Mlib/Physics/Actuators/Engine_Power_Delta_Intent.hpp>
 #include <Mlib/Physics/Actuators/Engine_Power_Intent.hpp>

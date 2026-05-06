@@ -1,4 +1,3 @@
-
 #include "Vertex_Array.hpp"
 #include <Mlib/OpenGL/CHK.hpp>
 #include <Mlib/OpenGL/Context_Query.hpp>

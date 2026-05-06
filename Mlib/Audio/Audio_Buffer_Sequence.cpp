@@ -1,4 +1,3 @@
-
 #include "Audio_Buffer_Sequence.hpp"
 #include <algorithm>
 #include <stdexcept>

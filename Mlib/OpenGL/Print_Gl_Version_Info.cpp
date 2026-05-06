@@ -1,4 +1,3 @@
-
 #include "Print_Gl_Version_Info.hpp"
 #include <Mlib/OpenGL/CHK.hpp>
 #include <Mlib/Os/Os.hpp>

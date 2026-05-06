@@ -1,4 +1,3 @@
-
 #include "Renderable_Triangle_Sampler.hpp"
 #include <Mlib/Geometry/Mesh/Animated_Colored_Vertex_Arrays.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>

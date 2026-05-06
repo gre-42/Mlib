@@ -1,4 +1,3 @@
-
 #include "Collide_With_Terrain.hpp"
 #include <Mlib/Geometry/Mesh/IIntersectable_Mesh.hpp>
 #include <Mlib/Geometry/Mesh/Typed_Mesh.hpp>

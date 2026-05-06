@@ -1,4 +1,3 @@
-
 #include "Delay_Load_Policy.hpp"
 #include <stdexcept>
 

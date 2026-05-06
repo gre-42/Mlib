@@ -1,4 +1,3 @@
-
 #include "Contact_Smoke_Generator.hpp"
 #include <Mlib/Audio/Audio_Entity_State.hpp>
 #include <Mlib/Audio/Audio_Periodicity.hpp>

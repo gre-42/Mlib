@@ -1,4 +1,3 @@
-
 #include "Static_Position.hpp"
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Memory/Integral_Cast.hpp>

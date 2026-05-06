@@ -1,4 +1,3 @@
-
 #include "Beacons.hpp"
 #include <Mlib/Threads/Thread_Local.hpp>
 

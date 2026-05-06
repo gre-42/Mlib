@@ -1,4 +1,3 @@
-
 #include "Dds_Header.hpp"
 #include <stdexcept>
 

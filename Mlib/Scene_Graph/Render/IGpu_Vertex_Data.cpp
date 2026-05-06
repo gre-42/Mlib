@@ -1,4 +1,3 @@
-
 #include "IGpu_Vertex_Data.hpp"
 #include <Mlib/OpenGL/Instance_Handles/IArray_Buffer.hpp>
 

@@ -1,4 +1,3 @@
-
 #include "Interpolation_Mode.hpp"
 #include <map>
 #include <stdexcept>

@@ -1,4 +1,3 @@
-
 #include "Render_Guards.hpp"
 #include <Mlib/OpenGL/CHK.hpp>
 #include <Mlib/OpenGL/Instance_Handles/IFrame_Buffer.hpp>

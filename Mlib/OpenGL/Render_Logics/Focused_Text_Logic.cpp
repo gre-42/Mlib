@@ -1,4 +1,3 @@
-
 #include "Focused_Text_Logic.hpp"
 #include <Mlib/Geometry/Cameras/Camera.hpp>
 #include <Mlib/Layout/ILayout_Pixels.hpp>

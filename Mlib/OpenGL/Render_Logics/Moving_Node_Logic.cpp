@@ -1,4 +1,3 @@
-
 #include "Moving_Node_Logic.hpp"
 #include <Mlib/Geometry/Cameras/Ortho_Camera.hpp>
 #include <Mlib/Math/Transformation/Bijection.hpp>

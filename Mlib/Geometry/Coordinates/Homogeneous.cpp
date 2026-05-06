@@ -1,4 +1,3 @@
-
 #include "Homogeneous.hpp"
 #include <Mlib/Math/Fixed_Cholesky.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>

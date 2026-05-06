@@ -1,4 +1,3 @@
-
 #include "Log_Entry_Severity.hpp"
 #include <stdexcept>
 

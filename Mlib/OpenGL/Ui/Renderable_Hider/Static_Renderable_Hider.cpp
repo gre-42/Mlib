@@ -1,4 +1,3 @@
-
 #include "Static_Renderable_Hider.hpp"
 #include <Mlib/OpenGL/Batch_Renderers/Special_Renderable_Names.hpp>
 

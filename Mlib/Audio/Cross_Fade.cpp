@@ -1,4 +1,3 @@
-
 #include "Cross_Fade.hpp"
 #include <Mlib/Audio/Audio_Scene.hpp>
 #include <Mlib/Memory/Event_Emitter.hpp>

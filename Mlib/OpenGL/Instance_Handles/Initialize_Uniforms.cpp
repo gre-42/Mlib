@@ -1,4 +1,3 @@
-
 #include "Initialize_Uniforms.hpp"
 #include <Mlib/OpenGL/CHK.hpp>
 #include <Mlib/Regex/Regex_Select.hpp>

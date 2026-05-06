@@ -1,4 +1,3 @@
-
 #include "Resource_Update_Cycle.hpp"
 #include <stdexcept>
 

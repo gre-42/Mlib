@@ -1,4 +1,3 @@
-
 #include "Camera_Cycle.hpp"
 #include <Mlib/OpenGL/Selected_Cameras/Selected_Cameras.hpp>
 #include <mutex>

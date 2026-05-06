@@ -1,4 +1,3 @@
-
 #include "Copy_Rotation.hpp"
 #include <Mlib/Geometry/Coordinates/Homogeneous.hpp>
 #include <Mlib/Memory/Object_Pool.hpp>

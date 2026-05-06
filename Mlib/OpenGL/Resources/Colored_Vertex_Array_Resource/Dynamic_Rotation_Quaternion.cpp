@@ -1,4 +1,3 @@
-
 #include "Dynamic_Rotation_Quaternion.hpp"
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Math/Transformation/Quaternion.hpp>

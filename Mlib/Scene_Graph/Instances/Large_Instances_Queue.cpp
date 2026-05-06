@@ -1,4 +1,3 @@
-
 #include "Large_Instances_Queue.hpp"
 #include <Mlib/Geometry/Material/Render_Pass.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>

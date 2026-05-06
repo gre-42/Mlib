@@ -1,4 +1,3 @@
-
 #include "Collidable_Mode.hpp"
 #include <map>
 #include <stdexcept>

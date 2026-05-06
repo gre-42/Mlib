@@ -1,4 +1,3 @@
-
 #include "Button_Press.hpp"
 #include <Mlib/OpenGL/Key_Bindings/Base_Key_Binding.hpp>
 #include <Mlib/OpenGL/Key_Bindings/Base_Key_Combination.hpp>

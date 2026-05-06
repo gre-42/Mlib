@@ -1,4 +1,3 @@
-
 #include "Aggregate_Mode.hpp"
 #include <map>
 #include <stdexcept>

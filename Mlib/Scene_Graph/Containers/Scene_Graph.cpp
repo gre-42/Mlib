@@ -1,4 +1,3 @@
-
 #include "Scene_Graph.hpp"
 #include <Mlib/Geometry/Mesh/IIntersectable_Mesh.hpp>
 #include <Mlib/Scene_Config/Physics_Engine_Config.hpp>

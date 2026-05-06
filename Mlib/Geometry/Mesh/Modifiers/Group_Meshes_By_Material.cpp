@@ -1,4 +1,3 @@
-
 #include "Group_Meshes_By_Material.hpp"
 #include <Mlib/Geometry/Colored_Vertex.hpp>
 #include <Mlib/Geometry/Material.hpp>

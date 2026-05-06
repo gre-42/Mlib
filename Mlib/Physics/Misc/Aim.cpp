@@ -1,4 +1,3 @@
-
 #include "Aim.hpp"
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Math/Optimize/Newton_1D.hpp>

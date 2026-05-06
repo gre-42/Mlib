@@ -1,4 +1,3 @@
-
 #include "Mipmap_Level.hpp"
 #include <list>
 #include <stdexcept>

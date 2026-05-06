@@ -1,4 +1,3 @@
-
 #include "Plane_As_Car_Controller.hpp"
 #include <Mlib/Math/Sigmoid/Signed_Min.hpp>
 #include <Mlib/Physics/Actuators/Engine_Power_Intent.hpp>

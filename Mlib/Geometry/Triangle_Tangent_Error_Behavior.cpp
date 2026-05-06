@@ -1,4 +1,3 @@
-
 #include "Triangle_Tangent_Error_Behavior.hpp"
 #include <map>
 #include <stdexcept>

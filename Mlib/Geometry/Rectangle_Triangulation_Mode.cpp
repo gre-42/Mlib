@@ -1,4 +1,3 @@
-
 #include "Rectangle_Triangulation_Mode.hpp"
 #include <map>
 #include <stdexcept>

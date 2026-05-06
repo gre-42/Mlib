@@ -1,4 +1,3 @@
-
 #include "Aim_At.hpp"
 #include <Mlib/Components/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>

@@ -1,4 +1,3 @@
-
 #include "Surface_Contact_Db.hpp"
 #include <Mlib/Geometry/Physics_Material.hpp>
 #include <Mlib/Physics/Collision/Record/Intersection_Scene.hpp>

@@ -1,4 +1,3 @@
-
 #include "Read_Ipl.hpp"
 #include <Mlib/Geometry/Instance/Instance_Information.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>

@@ -1,4 +1,3 @@
-
 #include "Rendering_Strategies.hpp"
 #include <map>
 #include <stdexcept>

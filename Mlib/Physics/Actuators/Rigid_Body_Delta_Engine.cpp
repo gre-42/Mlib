@@ -1,4 +1,3 @@
-
 #include "Rigid_Body_Delta_Engine.hpp"
 #include <ostream>
 

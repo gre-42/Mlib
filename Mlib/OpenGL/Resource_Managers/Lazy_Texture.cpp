@@ -1,4 +1,3 @@
-
 #include "Lazy_Texture.hpp"
 #include <Mlib/OpenGL/Deallocate/Render_Deallocator.hpp>
 #include <Mlib/OpenGL/Resource_Managers/Rendering_Resources.hpp>

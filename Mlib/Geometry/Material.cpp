@@ -1,4 +1,3 @@
-
 #include "Material.hpp"
 #include <Mlib/Geometry/Morphology.hpp>
 #include <stdexcept>

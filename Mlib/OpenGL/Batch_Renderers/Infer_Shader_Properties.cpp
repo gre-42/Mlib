@@ -1,4 +1,3 @@
-
 #include "Infer_Shader_Properties.hpp"
 #include <Mlib/Geometry/Mesh/Mesh_Meta.hpp>
 

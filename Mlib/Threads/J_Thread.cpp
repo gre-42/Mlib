@@ -1,4 +1,3 @@
-
 #include "J_Thread.hpp"
 
 using namespace Mlib;

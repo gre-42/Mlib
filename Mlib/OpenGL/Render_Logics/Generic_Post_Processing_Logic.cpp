@@ -1,4 +1,3 @@
-
 #include "Generic_Post_Processing_Logic.hpp"
 #include <Mlib/OpenGL/CHK.hpp>
 #include <Mlib/OpenGL/Shader_Version_3_0.hpp>

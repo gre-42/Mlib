@@ -1,4 +1,3 @@
-
 #include "Clear_Wrapper.hpp"
 #include <Mlib/OpenGL/CHK.hpp>
 #include <Mlib/OpenGL/Instance_Handles/Render_Guards.hpp>

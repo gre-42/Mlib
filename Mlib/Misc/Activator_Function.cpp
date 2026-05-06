@@ -1,4 +1,3 @@
-
 #include "Activator_Function.hpp"
 
 using namespace Mlib;

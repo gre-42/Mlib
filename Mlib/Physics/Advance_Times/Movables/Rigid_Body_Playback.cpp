@@ -1,4 +1,3 @@
-
 #include "Rigid_Body_Playback.hpp"
 #include <Mlib/Geometry/Coordinates/Homogeneous.hpp>
 #include <Mlib/Macro_Executor/Focus.hpp>

@@ -1,4 +1,3 @@
-
 #include "Image_Info.hpp"
 #include <Mlib/Images/Dds_Info.hpp>
 #include <Mlib/Strings/Utf8_Path.hpp>

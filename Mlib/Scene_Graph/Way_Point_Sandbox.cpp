@@ -1,4 +1,3 @@
-
 #include "Way_Point_Sandbox.hpp"
 #include <map>
 #include <stdexcept>

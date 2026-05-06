@@ -1,4 +1,3 @@
-
 #include "Renderable.hpp"
 #include <Mlib/Geometry/Primitives/Axis_Aligned_Bounding_Box.hpp>
 #include <Mlib/Geometry/Primitives/Bounding_Sphere.hpp>

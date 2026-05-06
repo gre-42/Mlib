@@ -1,4 +1,3 @@
-
 #include "Gpu_Renderable_Colored_Vertex_Array.hpp"
 #include <Mlib/Geometry/Colored_Vertex.hpp>
 #include <Mlib/Geometry/Primitives/Extremal_Axis_Aligned_Bounding_Box.hpp>

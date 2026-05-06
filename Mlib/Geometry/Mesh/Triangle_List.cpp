@@ -1,4 +1,3 @@
-
 #include "Triangle_List.hpp"
 #include <Mlib/Geometry/Delaunay.hpp>
 #include <Mlib/Geometry/Mesh/Ambient_Occlusion_By_Curvature.hpp>

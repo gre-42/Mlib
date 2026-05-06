@@ -1,4 +1,3 @@
-
 #include "Folder_IStream_Dictionary.hpp"
 #include <Mlib/Hashing/Variable_And_Hash.hpp>
 #include <Mlib/Memory/Integral_Cast.hpp>

@@ -1,4 +1,3 @@
-
 #include "Thread_Initializer.hpp"
 #include <Mlib/Os/Os.hpp>
 #include <Mlib/Threads/Thread_Affinity.hpp>

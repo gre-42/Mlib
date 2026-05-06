@@ -1,4 +1,3 @@
-
 #include "Focus.hpp"
 #include <Mlib/Iterator/Enumerate.hpp>
 #include <Mlib/Json/Base.hpp>

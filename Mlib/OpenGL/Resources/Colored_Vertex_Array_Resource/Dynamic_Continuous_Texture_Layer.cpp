@@ -1,4 +1,3 @@
-
 #include "Dynamic_Continuous_Texture_Layer.hpp"
 #include <Mlib/Array/Fixed_Array.hpp>
 

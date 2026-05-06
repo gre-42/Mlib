@@ -1,4 +1,3 @@
-
 #include "Trail_Extender.hpp"
 #include <Mlib/Geometry/Colored_Vertex.hpp>
 #include <Mlib/Geometry/Coordinates/Gl_Look_At.hpp>

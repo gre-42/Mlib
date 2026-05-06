@@ -1,4 +1,3 @@
-
 #include "Color_Cycle.hpp"
 #include <Mlib/OpenGL/Renderables/Color_And_Probability.hpp>
 

@@ -1,4 +1,3 @@
-
 #include "Render_To_Texture_2D.hpp"
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/OpenGL/CHK.hpp>

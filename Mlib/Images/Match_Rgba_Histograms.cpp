@@ -1,4 +1,3 @@
-
 #include "Match_Rgba_Histograms.hpp"
 #include <Mlib/Math/Math.hpp>
 #include <Mlib/Stats/Histogram_Matching.hpp>

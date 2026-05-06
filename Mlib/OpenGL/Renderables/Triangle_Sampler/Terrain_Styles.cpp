@@ -1,4 +1,3 @@
-
 #include "Terrain_Styles.hpp"
 #include <Mlib/OpenGL/Renderables/Triangle_Sampler/Triangle_Sampler_Resource_Config.hpp>
 

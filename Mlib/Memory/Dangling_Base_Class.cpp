@@ -1,4 +1,3 @@
-
 #include "Dangling_Base_Class.hpp"
 #include <mutex>
 

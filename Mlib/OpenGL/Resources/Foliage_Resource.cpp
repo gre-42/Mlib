@@ -1,4 +1,3 @@
-
 #include "Foliage_Resource.hpp"
 #include <Mlib/Geometry/Colored_Vertex.hpp>
 #include <Mlib/Geometry/Graph/Points_And_Adjacency.hpp>

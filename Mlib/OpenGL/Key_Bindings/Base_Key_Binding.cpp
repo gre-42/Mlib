@@ -1,4 +1,3 @@
-
 #include "Base_Key_Binding.hpp"
 #include <Mlib/OpenGL/Key_Bindings/Input_Type.hpp>
 #include <Mlib/Strings/Join.hpp>

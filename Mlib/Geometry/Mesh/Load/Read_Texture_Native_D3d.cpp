@@ -1,4 +1,3 @@
-
 #include "Read_Texture_Native_D3d.hpp"
 #include <Mlib/Geometry/Mesh/Load/IRaster_D3d8.hpp>
 #include <Mlib/Geometry/Mesh/Load/IRaster_Factory.hpp>

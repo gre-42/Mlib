@@ -1,4 +1,3 @@
-
 #include "Base_Cursor_Axis_Binding.hpp"
 #include <cstdint>
 #include <iomanip>

@@ -1,4 +1,3 @@
-
 #include "Render_Logics.hpp"
 #include <Mlib/Geometry/Cameras/Camera.hpp>
 #include <Mlib/Memory/Destruction_Functions_Removeal_Tokens_Ref.hpp>

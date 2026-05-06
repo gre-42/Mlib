@@ -1,4 +1,3 @@
-
 #include "List_Audio_Devices.hpp"
 #include <Mlib/Audio/CHK.hpp>
 #include <Mlib/Audio/OpenAL_al.h>

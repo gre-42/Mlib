@@ -1,4 +1,3 @@
-
 #include "Static_Billboard_Ids.hpp"
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Geometry/Material/Transformation_Mode.hpp>

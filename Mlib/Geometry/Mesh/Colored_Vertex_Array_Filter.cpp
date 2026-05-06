@@ -1,4 +1,3 @@
-
 #include "Colored_Vertex_Array_Filter.hpp"
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
 #include <Mlib/Json/Json_View.hpp>

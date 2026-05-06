@@ -1,4 +1,3 @@
-
 #include "Collide_Triangle_And_Lines.hpp"
 #include <Mlib/Geometry/Interfaces/IIntersectable.hpp>
 #include <Mlib/Geometry/Mesh/IIntersectable_Mesh.hpp>

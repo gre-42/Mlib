@@ -1,4 +1,3 @@
-
 #include "Vehicle_Domain.hpp"
 #include <map>
 #include <stdexcept>

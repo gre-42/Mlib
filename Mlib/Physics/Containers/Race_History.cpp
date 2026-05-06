@@ -1,4 +1,3 @@
-
 #include "Race_History.hpp"
 #include <Mlib/Initialization/Default_Uninitialized_Vector.hpp>
 #include <Mlib/Iterator/Enumerate.hpp>

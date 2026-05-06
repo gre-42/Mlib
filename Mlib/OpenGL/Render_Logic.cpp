@@ -1,4 +1,3 @@
-
 #include "Render_Logic.hpp"
 #include <Mlib/Geometry/Cameras/Camera.hpp>
 #include <Mlib/Macro_Executor/Focus.hpp>

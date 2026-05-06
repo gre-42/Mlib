@@ -1,4 +1,3 @@
-
 #include "Texture_Warn_Flags.hpp"
 #include <Mlib/Regex/Regex_Select.hpp>
 #include <Mlib/Regex/Split.hpp>

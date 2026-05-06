@@ -1,4 +1,3 @@
-
 #include "Render_Texture_Atlas.hpp"
 #include <Mlib/Geometry/Material/Colormap_With_Modifiers.hpp>
 #include <Mlib/OpenGL/Render_Logics/Clear_Mode.hpp>

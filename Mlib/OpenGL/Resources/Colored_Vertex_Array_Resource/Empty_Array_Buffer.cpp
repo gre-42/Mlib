@@ -1,4 +1,3 @@
-
 #include "Empty_Array_Buffer.hpp"
 #include <stdexcept>
 

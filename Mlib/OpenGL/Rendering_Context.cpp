@@ -1,4 +1,3 @@
-
 #include "Rendering_Context.hpp"
 #include <Mlib/Misc/Singleton_Guard.impl.hpp>
 

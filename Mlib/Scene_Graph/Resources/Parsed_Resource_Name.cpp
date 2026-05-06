@@ -1,4 +1,3 @@
-
 #include "Parsed_Resource_Name.hpp"
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Geometry/Billboard_Id.hpp>

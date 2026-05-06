@@ -1,4 +1,3 @@
-
 #include "Fuzzy_Set_Of_Points.hpp"
 #include <Mlib/Geometry/Exceptions/Point_Exception.hpp>
 

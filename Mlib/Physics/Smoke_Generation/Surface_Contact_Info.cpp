@@ -1,4 +1,3 @@
-
 #include "Surface_Contact_Info.hpp"
 
 using namespace Mlib;

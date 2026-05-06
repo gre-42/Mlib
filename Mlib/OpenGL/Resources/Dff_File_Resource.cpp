@@ -1,4 +1,3 @@
-
 #include "Dff_File_Resource.hpp"
 #include <Mlib/Geometry/Mesh/Animated_Colored_Vertex_Arrays.hpp>
 #include <Mlib/Geometry/Mesh/Load/Load_Dff_Array.hpp>

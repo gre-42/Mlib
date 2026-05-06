@@ -1,4 +1,3 @@
-
 #include "Transformation_Matrix_Json.hpp"
 #include <Mlib/Json/Json_View.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>

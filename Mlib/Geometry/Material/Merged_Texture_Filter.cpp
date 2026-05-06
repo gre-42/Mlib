@@ -1,4 +1,3 @@
-
 #include "Merged_Texture_Filter.hpp"
 #include <Mlib/Geometry/Material/Colormap_With_Modifiers.hpp>
 #include <Mlib/Geometry/Material/Merged_Texture_Name.hpp>

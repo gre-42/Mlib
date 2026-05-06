@@ -1,4 +1,3 @@
-
 #include "Collide_Convex_Meshes.hpp"
 #include <Mlib/Geometry/Mesh/IIntersectable_Mesh.hpp>
 #include <Mlib/Geometry/Mesh/Typed_Mesh.hpp>

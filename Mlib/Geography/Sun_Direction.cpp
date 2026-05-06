@@ -1,4 +1,3 @@
-
 #include "Sun_Direction.hpp"
 #include <Mlib/Geography/Altitude_Azimuth.hpp>
 #include <Mlib/Geography/Idl_Mod.hpp>

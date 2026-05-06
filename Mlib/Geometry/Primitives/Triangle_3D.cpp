@@ -1,4 +1,3 @@
-
 #include "Triangle_3D.hpp"
 #include <Mlib/Geometry/Colored_Vertex.hpp>
 #include <Mlib/Geometry/Primitives/Axis_Aligned_Bounding_Box.hpp>

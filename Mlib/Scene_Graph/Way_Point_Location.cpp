@@ -1,4 +1,3 @@
-
 #include "Way_Point_Location.hpp"
 #include <Mlib/Regex/Split.hpp>
 #include <map>

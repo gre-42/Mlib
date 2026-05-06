@@ -1,4 +1,3 @@
-
 #include "Interior_Textures.hpp"
 #include <Mlib/Geometry/Material/Interior_Texture_Set.hpp>
 #include <Mlib/Misc/FPath.hpp>

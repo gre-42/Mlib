@@ -1,4 +1,3 @@
-
 #include "Trail_Storage.hpp"
 #include <Mlib/OpenGL/Resources/Colored_Vertex_Array_Resource/Trail_Extender.hpp>
 

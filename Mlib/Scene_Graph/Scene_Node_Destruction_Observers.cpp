@@ -1,4 +1,3 @@
-
 #include "Scene_Node_Destruction_Observers.hpp"
 #include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/Memory/Destruction_Observers.hpp>

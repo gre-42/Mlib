@@ -1,4 +1,3 @@
-
 #include "Dds_Info.hpp"
 #include <Mlib/Images/Dds_Header.hpp>
 #include <Mlib/Memory/Integral_Cast.hpp>

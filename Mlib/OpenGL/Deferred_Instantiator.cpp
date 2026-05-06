@@ -1,4 +1,3 @@
-
 #include "Deferred_Instantiator.hpp"
 #include <Mlib/Memory/Object_Pool.hpp>
 #include <Mlib/OpenGL/Render_Logics/Imposter_Logic.hpp>

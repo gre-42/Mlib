@@ -1,4 +1,3 @@
-
 #include "Frame_Time.hpp"
 #include <cmath>
 #include <stdexcept>

@@ -1,4 +1,3 @@
-
 #include "Incremental_Movement.hpp"
 #include <Mlib/Math/Math.hpp>
 #include <Mlib/Math/Sigmoid/Signed_Min.hpp>

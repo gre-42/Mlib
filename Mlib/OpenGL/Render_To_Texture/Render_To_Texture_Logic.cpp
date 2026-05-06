@@ -1,4 +1,3 @@
-
 #include "Render_To_Texture_Logic.hpp"
 #include <Mlib/Geometry/Cameras/Camera.hpp>
 #include <Mlib/Geometry/Material/Colormap_With_Modifiers.hpp>

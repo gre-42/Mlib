@@ -1,4 +1,3 @@
-
 #include "Up_Axis.hpp"
 #include <stdexcept>
 
