@@ -1,6 +1,7 @@
 #include "Audio_Listener.hpp"
 #include <Mlib/Audio/CHK.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
+#include <Mlib/Testing/Assert_Range.hpp>
 #include <mutex>
 
 using namespace Mlib;
@@ -16,7 +17,7 @@ void AudioListener::set_transformation(const AudioListenerState& listener_state)
         .pose = listener_state.pose.inverted(),
         .velocity = -listener_state.pose.irotate(listener_state.velocity)
     };
-    // AL_CHK(alListenerfv(AL_POSITION, trafo.t().flat_begin()));
+    // AL_CHK(alListenerfv(AL_POSITION, assert_finite(trafo.t(), "Audio position").flat_begin()));
     // float orientation[6] = {
     //     -trafo.R(0, 2),
     //     -trafo.R(1, 2),
@@ -25,7 +26,7 @@ void AudioListener::set_transformation(const AudioListenerState& listener_state)
     //     trafo.R(1, 1),
     //     trafo.R(2, 1)
     // };
-    // AL_CHK(alListenerfv(AL_ORIENTATION, orientation));
+    // AL_CHK(alListenerfv(AL_ORIENTATION, assert_finite(orientation, "Audio orientation")));
 }
 
 std::optional<AudioSourceState<float>> AudioListener::get_relative_position(const AudioSourceState<ScenePos>& state) {
@@ -42,7 +43,10 @@ std::optional<AudioSourceState<float>> AudioListener::get_relative_position(cons
 
 void AudioListener::set_gain(float f) {
     std::scoped_lock lock{mutex_};
-    AL_CHK(alListenerf(AL_GAIN, f));
+    assert_finite(f, "Audio listener gain (set_gain)");
+    if (!muted_) {
+        AL_CHK(alListenerf(AL_GAIN, f));
+    }
     gain_ = f;
 }
 
@@ -57,7 +61,7 @@ void AudioListener::mute() {
 void AudioListener::unmute() {
     std::scoped_lock lock{mutex_};
     if (muted_) {
-        AL_CHK(alListenerf(AL_GAIN, gain_));
+        AL_CHK(alListenerf(AL_GAIN, assert_finite(gain_, "Audio listener gain (unmute)")));
         muted_ = false;
     }
 }

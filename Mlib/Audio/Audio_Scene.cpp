@@ -6,9 +6,8 @@
 #include <Mlib/Audio/CHK.hpp>
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
+#include <Mlib/Testing/Assert_Range.hpp>
 #include <Mlib/Threads/Fast_Mutex.hpp>
-#include <Mlib/Type_Traits/Scalar.hpp>
-#include <cmath>
 #include <mutex>
 #include <string>
 #ifdef __EMSCRIPTEN__
@@ -122,40 +121,13 @@ void AudioScene::print(std::ostream& ostr) {
     }
 }
 
-template <std::floating_point T>
-auto assert_finite(const T& v, const char* prefix) {
-    if (!std::isfinite(v)) {
-        throw std::runtime_error((std::stringstream() << prefix << " not finite: " << v).str());
-    }
-    return v;
-}
-
-template <std::floating_point T, size_t... tshape>
-auto assert_finite(const FixedArray<T, tshape...>& v, const char* prefix) {
-    if (!all(isfinite(v))) {
-        throw std::runtime_error((std::stringstream() << prefix << " not finite: "  << v).str());
-    }
-    return v;
-}
-
-template <Scalar T>
-auto assert_range(const T& v, const T& min, const T& max, const char* prefix) {
-    if (isnan(v)) {
-        throw std::runtime_error((std::stringstream() << prefix << " is NAN").str());
-    }
-    if ((v < min) || (v > max)) {
-        throw std::runtime_error((std::stringstream() << prefix << " out of bounds: "  << v).str());
-    }
-    return v;
-}
-
 void AudioScene::flush_sources() {
 #ifdef __EMSCRIPTEN__
     std::scoped_lock lock{ mutex_ };
     execute_in_main_thread([](){
         for (auto& [s, _] : source_nodes_) {
             if (s->pitch_.has_value()) {
-                AL_CHK(alSourcef(s->source_, AL_PITCH, assert_finite(*s->pitch_, "Pitch")));
+                AL_CHK(alSourcef(s->source_, AL_PITCH, assert_range(*s->pitch_, 0.f, 10.f, "Pitch")));
                 s->pitch_.reset();
             }
             if (s->loop_.has_value()) {
@@ -202,7 +174,7 @@ void AudioScene::flush_sources() {
             }
             if (s->position_requirement_ != PositionRequirement::WAITING_FOR_POSITION) {
                 if (!s->muted_) {
-                    AL_CHK(alSourcef(s->source_, AL_GAIN, assert_finite(s->gain_, "Pitch")));
+                    AL_CHK(alSourcef(s->source_, AL_GAIN, assert_range(s->gain_, 0.f, 10.f, "Pitch")));
                 } else {
                     AL_CHK(alSourcef(s->source_, AL_GAIN, 0.f));
                 }

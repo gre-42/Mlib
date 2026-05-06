@@ -7,6 +7,7 @@
 #include <Mlib/Audio/CHK.hpp>
 #include <Mlib/Geometry/Primitives/Interval.hpp>
 #include <Mlib/Physics/Units.hpp>
+#include <Mlib/Testing/Assert_Range.hpp>
 #ifndef USE_PCM_FILTERS
 #include <Mlib/Audio/OpenALSoft_efx.h>
 #endif
@@ -61,7 +62,7 @@ void AudioSource::set_gain(float value) {
     if (position_requirement_ != PositionRequirement::WAITING_FOR_POSITION) {
         if (!muted_) {
 #ifndef __EMSCRIPTEN__
-            AL_CHK(alSourcef(source_, AL_GAIN, value));
+            AL_CHK(alSourcef(source_, AL_GAIN, assert_range(value, 0.f, 1.f, "Audio source gain (set_gain)")));
 #endif
         }
     }
@@ -92,12 +93,12 @@ void AudioSource::set_position(const AudioSourceState<float>& position) {
 #ifdef __EMSCRIPTEN__
     position_ = position;
 #else
-    AL_CHK(alSourcefv(source_, AL_POSITION, (position.position / meters).flat_begin()));
-    AL_CHK(alSourcefv(source_, AL_VELOCITY, (position.velocity / (meters / seconds)).flat_begin()));
+    AL_CHK(alSourcefv(source_, AL_POSITION, assert_finite(position.position / meters, "Audio position").flat_begin()));
+    AL_CHK(alSourcefv(source_, AL_VELOCITY, assert_finite(position.velocity / (meters / seconds), "Audio velocity").flat_begin()));
 
     if (position_requirement_ == PositionRequirement::WAITING_FOR_POSITION) {
         if (!muted_) {
-            AL_CHK(alSourcef(source_, AL_GAIN, gain_));
+            AL_CHK(alSourcef(source_, AL_GAIN, assert_range(gain_, 0.f, 1.f, "Audio gain (set_position)")));
         }
         position_requirement_ = PositionRequirement::POSITION_NOT_REQUIRED;
     }
@@ -108,8 +109,8 @@ void AudioSource::set_distance_clamping(const Interval<float>& interval) {
 #ifdef __EMSCRIPTEN__
     distance_clamping_ = interval;
 #else
-    AL_CHK(alSourcef(source_, AL_REFERENCE_DISTANCE, interval.min));
-    AL_CHK(alSourcef(source_, AL_MAX_DISTANCE, interval.max));
+    AL_CHK(alSourcef(source_, AL_REFERENCE_DISTANCE, assert_range(interval.min, 0.1f, 200.f, "Audio reference distance")));
+    AL_CHK(alSourcef(source_, AL_MAX_DISTANCE, assert_range(interval.max, 0.1f, INFINITY, "Audio max distance")));
 #endif
 }
 
@@ -193,7 +194,7 @@ void AudioSource::unmute() {
     if (muted_) {
 #ifndef __EMSCRIPTEN__
         if (position_requirement_ != PositionRequirement::WAITING_FOR_POSITION) {
-            AL_CHK(alSourcef(source_, AL_GAIN, gain_));
+            AL_CHK(alSourcef(source_, AL_GAIN, assert_range(gain_, 0.f, 1.f, "Audio gain (unmute)")));
         }
 #endif
         muted_ = false;

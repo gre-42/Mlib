@@ -3,6 +3,7 @@
 #include <Mlib/Audio/Audio_Resources.hpp>
 #include <Mlib/Audio/CHK.hpp>
 #include <Mlib/Audio/OpenALSoft_efx.h>
+#include <Mlib/Testing/Assert_Range.hpp>
 
 using namespace Mlib;
 
@@ -18,8 +19,8 @@ AudioLowpass::~AudioLowpass() {
 std::shared_ptr<AudioLowpass> AudioLowpass::create(const AudioLowpassInformation& parameters) {
     auto res = std::make_shared<AudioLowpass>();
     AL_CHK(alFilteri(res->handle_, AL_FILTER_TYPE, AL_FILTER_LOWPASS));
-    AL_CHK(alFilterf(res->handle_, AL_LOWPASS_GAIN, parameters.gain));
-    AL_CHK(alFilterf(res->handle_, AL_LOWPASS_GAINHF, parameters.gain_hf));
+    AL_CHK(alFilterf(res->handle_, AL_LOWPASS_GAIN, assert_finite(parameters.gain, "Lowpass gain")));
+    AL_CHK(alFilterf(res->handle_, AL_LOWPASS_GAINHF, assert_finite(parameters.gain_hf, "Lowpass gain HF")));
     return res;
 }
 #endif
