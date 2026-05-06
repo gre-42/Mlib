@@ -157,6 +157,9 @@ EM_BOOL AEngine::key_callback(int event_type, const EmscriptenKeyboardEvent* e, 
     auto* engine = static_cast<AEngine*>(user_data);
     try {
         auto code = keys_map_i18n.get(VariableAndHash<std::string>{e->code});
+        if ((code == DOM_VK_F11) || (code == DOM_VK_F12)) {
+            return EM_FALSE;
+        }
         engine->button_states_.notify_key_event(code, event_type);
     } catch (...) {
         add_unhandled_exception(std::current_exception());

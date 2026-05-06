@@ -1,4 +1,3 @@
-
 #include "Audio_Scene.hpp"
 #include <Mlib/Audio/Audio_Distance_Model.hpp>
 #include <Mlib/Audio/Audio_Entity_State.hpp>
@@ -8,6 +7,7 @@
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Threads/Fast_Mutex.hpp>
+#include <cmath>
 #include <mutex>
 #include <string>
 #ifdef __EMSCRIPTEN__
@@ -121,13 +121,28 @@ void AudioScene::print(std::ostream& ostr) {
     }
 }
 
+template <std::floating_point T>
+auto assert_finite(const T& v, const char* prefix) {
+    if (!std::isfinite(v)) {
+        throw std::runtime_error((std::stringstream() << prefix << " not finite: " << v).str());
+    }
+    return v;
+}
+
+template <std::floating_point T, size_t... tshape>
+auto assert_finite(const FixedArray<T, tshape...>& v, const char* prefix) {
+    if (!all(isfinite(v))) {
+        throw std::runtime_error((std::stringstream() << prefix << " not finite: "  << v).str());
+    }
+    return v;
+}
 void AudioScene::flush_sources() {
 #ifdef __EMSCRIPTEN__
     std::scoped_lock lock{ mutex_ };
     execute_in_main_thread([](){
         for (auto& [s, _] : source_nodes_) {
             if (s->pitch_.has_value()) {
-                AL_CHK(alSourcef(s->source_, AL_PITCH, *s->pitch_));
+                AL_CHK(alSourcef(s->source_, AL_PITCH, assert_finite(*s->pitch_, "Pitch")));
                 s->pitch_.reset();
             }
             if (s->loop_.has_value()) {
@@ -135,8 +150,8 @@ void AudioScene::flush_sources() {
                 s->loop_.reset();
             }
             if (s->distance_clamping_.has_value()) {
-                AL_CHK(alSourcef(s->source_, AL_REFERENCE_DISTANCE, s->distance_clamping_->min));
-                AL_CHK(alSourcef(s->source_, AL_MAX_DISTANCE, s->distance_clamping_->max));
+                AL_CHK(alSourcef(s->source_, AL_REFERENCE_DISTANCE, assert_finite(s->distance_clamping_->min, "Reference distance")));
+                AL_CHK(alSourcef(s->source_, AL_MAX_DISTANCE, assert_finite(s->distance_clamping_->max, "Maximum distance")));
                 s->distance_clamping_.reset();
             }
             if (s->pending_command_.has_value()) {
@@ -165,13 +180,13 @@ void AudioScene::flush_sources() {
                     throw std::runtime_error("Unknown AL source state: " + std::to_string(s->last_source_state_));
             }
             if (s->position_.has_value()) {
-                AL_CHK(alSourcefv(s->source_, AL_POSITION, (s->position_->position / meters).flat_begin()));
-                AL_CHK(alSourcefv(s->source_, AL_VELOCITY, (s->position_->velocity / (meters / seconds)).flat_begin()));
+                AL_CHK(alSourcefv(s->source_, AL_POSITION, assert_finite(s->position_->position / meters, "Position").flat_begin()));
+                AL_CHK(alSourcefv(s->source_, AL_VELOCITY, assert_finite(s->position_->velocity / (meters / seconds), "Velocity").flat_begin()));
                 s->position_requirement_ = PositionRequirement::POSITION_NOT_REQUIRED;
             }
             if (s->position_requirement_ != PositionRequirement::WAITING_FOR_POSITION) {
                 if (!s->muted_) {
-                    AL_CHK(alSourcef(s->source_, AL_GAIN, s->gain_));
+                    AL_CHK(alSourcef(s->source_, AL_GAIN, assert_finite(s->gain_, "Pitch")));
                 } else {
                     AL_CHK(alSourcef(s->source_, AL_GAIN, 0.f));
                 }
