@@ -160,9 +160,10 @@ void AudioScene::flush_sources() {
             }
             AL_CHK(alGetSourcei(s->source_, AL_SOURCE_STATE, &s->last_source_state_));
             switch (s->last_source_state_) {
+                case AL_INITIAL:
                 case AL_PLAYING:
-                case AL_STOPPED:
                 case AL_PAUSED:
+                case AL_STOPPED:
                     break;
                 default:
                     throw std::runtime_error("Unknown AL source state: " + std::to_string(s->last_source_state_));

@@ -25,7 +25,7 @@ AudioSource::AudioSource(
     , loop_{ false }
     , pitch_{ 1.f }
     , distance_clamping_{ { 1.f * meters / meters, INFINITY } }
-    , last_source_state_{ AL_STOPPED }
+    , last_source_state_{ AL_INITIAL }
 #endif
 {
     AL_CHK(alGenSources(1, &source_));
