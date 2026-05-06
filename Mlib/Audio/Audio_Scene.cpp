@@ -7,6 +7,7 @@
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Threads/Fast_Mutex.hpp>
+#include <Mlib/Type_Traits/Scalar.hpp>
 #include <cmath>
 #include <mutex>
 #include <string>
@@ -136,6 +137,18 @@ auto assert_finite(const FixedArray<T, tshape...>& v, const char* prefix) {
     }
     return v;
 }
+
+template <Scalar T>
+auto assert_range(const T& v, const T& min, const T& max, const char* prefix) {
+    if (isnan(v)) {
+        throw std::runtime_error((std::stringstream() << prefix << " is NAN").str());
+    }
+    if ((v < min) || (v > max)) {
+        throw std::runtime_error((std::stringstream() << prefix << " out of bounds: "  << v).str());
+    }
+    return v;
+}
+
 void AudioScene::flush_sources() {
 #ifdef __EMSCRIPTEN__
     std::scoped_lock lock{ mutex_ };
@@ -150,8 +163,11 @@ void AudioScene::flush_sources() {
                 s->loop_.reset();
             }
             if (s->distance_clamping_.has_value()) {
-                AL_CHK(alSourcef(s->source_, AL_REFERENCE_DISTANCE, assert_finite(s->distance_clamping_->min, "Reference distance")));
-                AL_CHK(alSourcef(s->source_, AL_MAX_DISTANCE, assert_finite(s->distance_clamping_->max, "Maximum distance")));
+                AL_CHK(alSourcef(s->source_, AL_REFERENCE_DISTANCE, assert_range(s->distance_clamping_->min,
+                    0.1f * meters / meters,
+                    200.f * meters / meters,
+                    "Reference distance")));
+                AL_CHK(alSourcef(s->source_, AL_MAX_DISTANCE, assert_range(s->distance_clamping_->max, 0.f, INFINITY, "Maximum distance")));
                 s->distance_clamping_.reset();
             }
             if (s->pending_command_.has_value()) {

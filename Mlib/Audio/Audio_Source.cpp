@@ -23,7 +23,7 @@ AudioSource::AudioSource(
 #ifdef __EMSCRIPTEN__
     , loop_{ false }
     , pitch_{ 1.f }
-    , distance_clamping_{ { 1.f, INFINITY } }
+    , distance_clamping_{ { 1.f * meters / meters, INFINITY } }
     , last_source_state_{ AL_STOPPED }
 #endif
 {
