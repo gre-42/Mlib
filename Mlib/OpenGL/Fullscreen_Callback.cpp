@@ -35,9 +35,9 @@ void Mlib::toggle_fullscreen(GLFWwindow& window, WindowPosition& window_position
             window_position.windowed_height,
             0));
     } else {
-        // Backup window position and size before going to fullscreen.
-        GLFW_CHK(glfwGetWindowPos(&window, &window_position.windowed_x, &window_position.windowed_y));
-        GLFW_CHK(glfwGetWindowSize(&window, &window_position.windowed_width, &window_position.windowed_height));
+        // Try to backup window position and size before going to fullscreen.
+        GLFW_WARN(glfwGetWindowPos(&window, &window_position.windowed_x, &window_position.windowed_y));
+        GLFW_WARN(glfwGetWindowSize(&window, &window_position.windowed_width, &window_position.windowed_height));
         
         // Go to fullscreen.
         GLFWmonitor* primary_monitor = GLFW_CHK_X(glfwGetPrimaryMonitor());
@@ -50,6 +50,7 @@ void Mlib::toggle_fullscreen(GLFWwindow& window, WindowPosition& window_position
         }
         int width = window_position.fullscreen_width == 0 ? mode->width : window_position.fullscreen_width;
         int height = window_position.fullscreen_height == 0 ? mode->height : window_position.fullscreen_height;
+        int refresh_rate = window_position.fullscreen_refresh_rate == 0 ? mode->refreshRate : window_position.fullscreen_refresh_rate;
         linfo() <<
             "Going to full screen (width: " << width <<
             ", height: " << height << ')';
@@ -60,7 +61,7 @@ void Mlib::toggle_fullscreen(GLFWwindow& window, WindowPosition& window_position
             0,
             width,
             height,
-            mode->refreshRate));
+            refresh_rate));
     }
 }
 

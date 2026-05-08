@@ -157,6 +157,9 @@ public:
 };
 
 void character_callback(GLFWwindow* window, uint32_t codepoint) {
+    if (unhandled_exceptions_occured()) {
+        return;
+    }
     auto* user_object = (RendererUserClass*)GLFW_CHK_X(glfwGetWindowUserPointer(window));
     try {
         (*user_object->char_callback)(codepoint);
@@ -166,6 +169,9 @@ void character_callback(GLFWwindow* window, uint32_t codepoint) {
 }
 
 static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) {
+    if (unhandled_exceptions_occured()) {
+        return;
+    }
     auto* user_object = (RendererUserClass*)GLFW_CHK_X(glfwGetWindowUserPointer(window));
     try {
         user_object->button_states->notify_key_event(key, action);
@@ -182,6 +188,9 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action, 
 
 static void cursor_callback(GLFWwindow* window, double xpos, double ypos)
 {
+    if (unhandled_exceptions_occured()) {
+        return;
+    }
     auto* user_object = (RendererUserClass*)GLFW_CHK_X(glfwGetWindowUserPointer(window));
     try {
         user_object->cursor_states->update_cursor(xpos, ypos);
@@ -197,6 +206,9 @@ static void cursor_callback(GLFWwindow* window, double xpos, double ypos)
 
 static void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 {
+    if (unhandled_exceptions_occured()) {
+        return;
+    }
     try {
         auto* user_object = (RendererUserClass*)GLFW_CHK_X(glfwGetWindowUserPointer(window));
         user_object->button_states->notify_mouse_button_event(button, action);
@@ -206,6 +218,9 @@ static void mouse_button_callback(GLFWwindow* window, int button, int action, in
 }
 
 static void scroll_wheel_callback(GLFWwindow* window, double xoffset, double yoffset) {
+    if (unhandled_exceptions_occured()) {
+        return;
+    }
     try {
         auto* user_object = (RendererUserClass*)GLFW_CHK_X(glfwGetWindowUserPointer(window));
         user_object->scroll_wheel_states->update_cursor(xoffset, yoffset);
@@ -269,13 +284,15 @@ void Mlib::handle_events(
             GLFW_CHK(glfwSetMouseButtonCallback(window_handle, mouse_button_callback));
             dgs.add([window_handle]() {GLFW_ABORT(glfwSetMouseButtonCallback(window_handle, nullptr));});
         }
-        if (cursor_states != nullptr) {
-            GLFW_CHK(glfwSetCursorPosCallback(window_handle, cursor_callback));
-            dgs.add([window_handle]() {GLFW_ABORT(glfwSetCursorPosCallback(window_handle, nullptr));});
-        }
-        if (scroll_wheel_states != nullptr) {
-            GLFW_CHK(glfwSetScrollCallback(window_handle, scroll_wheel_callback));
-            dgs.add([window_handle]() {GLFW_ABORT(glfwSetScrollCallback(window_handle, nullptr));});
+        if (!input_config.show_mouse_cursor) {
+            if (cursor_states != nullptr) {
+                GLFW_CHK(glfwSetCursorPosCallback(window_handle, cursor_callback));
+                dgs.add([window_handle]() {GLFW_ABORT(glfwSetCursorPosCallback(window_handle, nullptr));});
+            }
+            if (scroll_wheel_states != nullptr) {
+                GLFW_CHK(glfwSetScrollCallback(window_handle, scroll_wheel_callback));
+                dgs.add([window_handle]() {GLFW_ABORT(glfwSetScrollCallback(window_handle, nullptr));});
+            }
         }
         // PeriodicLagFinder lag_finder{ "Events: ", std::chrono::milliseconds{ 100 }};
         while (renderer.continue_rendering()) {

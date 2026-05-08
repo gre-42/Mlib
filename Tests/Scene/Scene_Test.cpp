@@ -96,8 +96,10 @@ void test_physics_engine(unsigned int seed) {
         .cull_faces = BoolRenderOption::UNCHANGED,
         .wire_frame = BoolRenderOption::UNCHANGED,
         .window_title = "Physics test",
-        .show_mouse_cursor = true};
-    InputConfig input_config;
+    };
+    InputConfig input_config{
+        .show_mouse_cursor = true,
+    };
     FixedTimeSleeper render_sleeper{ 1.f / 60.f };
     SetFps set_fps{
         &render_sleeper,

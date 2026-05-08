@@ -60,7 +60,6 @@ struct RenderConfig {
     bool double_buffer = false;
     unsigned int anisotropic_filtering_level = 8;
     bool normalmaps = true;
-    bool show_mouse_cursor = true;
     int swap_interval = 1;
     int fullscreen_refresh_rate = 0;
     float draw_distance_add = INFINITY;

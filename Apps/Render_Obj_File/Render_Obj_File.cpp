@@ -529,9 +529,10 @@ int main(int argc, char** argv) {
             .windowed_width = safe_stoi(args.named_svalue("--width", "640")),
             .windowed_height = safe_stoi(args.named_svalue("--height", "480")),
             .double_buffer = !args.has_named("--no_double_buffer"),
-            .normalmaps = !args.has_named("--no_normalmaps"),
-            .show_mouse_cursor = true};
-        InputConfig input_config;
+            .normalmaps = !args.has_named("--no_normalmaps")};
+        InputConfig input_config{
+            .show_mouse_cursor = true
+        };
         FixedTimeSleeper sleeper{ safe_stof(args.named_svalue("--sleep_dt", "0.01667")) };
         MeasureFps mf{
             0.005f,

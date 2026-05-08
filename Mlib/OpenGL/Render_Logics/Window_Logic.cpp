@@ -88,9 +88,9 @@ void WindowLogic::handle_events() {
         std::shared_lock lock{ mutex_ };
         if (desired_mode_.has_value()) {
             if (!is_fullscreen()) {
-                // Backup window position and size before going to fullscreen.
-                GLFW_CHK(glfwGetWindowPos(&window_, &user_object_.window_position.windowed_x, &user_object_.window_position.windowed_y));
-                GLFW_CHK(glfwGetWindowSize(&window_, &user_object_.window_position.windowed_width, &user_object_.window_position.windowed_height));
+                // Try to backup window position and size before going to fullscreen.
+                GLFW_WARN(glfwGetWindowPos(&window_, &user_object_.window_position.windowed_x, &user_object_.window_position.windowed_y));
+                GLFW_WARN(glfwGetWindowSize(&window_, &user_object_.window_position.windowed_width, &user_object_.window_position.windowed_height));
             }
             auto* monitor = get_primary_monitor();
             if (monitor == nullptr) {
@@ -115,6 +115,9 @@ void WindowLogic::handle_events() {
                     //     &window_,
                     //     desired_mode_->width,
                     //     desired_mode_->height));
+                    user_object_.window_position.fullscreen_width = desired_mode_->width;
+                    user_object_.window_position.fullscreen_height = desired_mode_->height;
+                    user_object_.window_position.fullscreen_refresh_rate = desired_mode_->refresh_rate;
                 }
             }
             desired_mode_.reset();

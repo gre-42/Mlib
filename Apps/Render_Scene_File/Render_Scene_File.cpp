@@ -557,12 +557,12 @@ int main(int argc, char** argv) {
             .double_buffer = !args.has_named("--no_double_buffer"),
             .anisotropic_filtering_level = safe_stou(args.named_svalue("--anisotropic_filtering_level", "8")),
             .normalmaps = !args.has_named("--no_normalmaps"),
-            .show_mouse_cursor = args.has_named("--show_mouse_cursor"),
             .swap_interval = safe_stoi(args.named_svalue("--swap_interval", "1")),
             .fullscreen_refresh_rate = safe_stoi(args.named_svalue("--fullscreen_refresh_rate", "0")),
             .draw_distance_add = safe_stof(args.named_svalue("--draw_distance_add", "inf"))};
         InputConfig input_config{
-            .polling_interval_seconds = safe_stof(args.named_svalue("--input_polling_interval", "0.00416667"))
+            .polling_interval_seconds = safe_stof(args.named_svalue("--input_polling_interval", "0.00416667")),
+            .show_mouse_cursor = args.has_named("--show_mouse_cursor"),
         };
         auto physics_dt = safe_stof(args.named_svalue("--physics_dt", "0.01667"));
         auto render_delay = std::chrono::duration_cast<std::chrono::steady_clock::duration>(

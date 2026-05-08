@@ -4,6 +4,7 @@
 #include <Mlib/Misc/Floating_Point_Exceptions.hpp>
 #include <Mlib/OpenGL/CHK.hpp>
 #include <Mlib/OpenGL/Gl_Context_Guard.hpp>
+#include <Mlib/OpenGL/Input_Config.hpp>
 #include <Mlib/OpenGL/Key_Bindings/Key_Configuration.hpp>
 #include <Mlib/OpenGL/Key_Bindings/Lockable_Key_Configurations.hpp>
 #include <Mlib/OpenGL/Print_Gl_Version_Info.hpp>
@@ -85,7 +86,7 @@ Render::Render(
             render_config.swap_interval,
             render_config.fullscreen_refresh_rate);
     }
-    if (!render_config.show_mouse_cursor) {
+    if (!input_config.show_mouse_cursor) {
         GLFW_CHK(glfwSetInputMode(&window_->glfw_window(), GLFW_CURSOR, GLFW_CURSOR_DISABLED));
     }
     {
