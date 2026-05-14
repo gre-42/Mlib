@@ -29,13 +29,17 @@ struct ContactEmissions {
 
 struct ContactSmokeAndAudio {
     std::map<std::pair<size_t, const SurfaceSmokeInfo*>, ContactEmissions> smoke;
+    #ifndef WITHOUT_AUDIO
     std::map<size_t, ContactEmissions> audio;
+    #endif
 };
 
 class ContactSmokeGenerator: public DestructionObserver<const RigidBodyVehicle&>, public virtual DanglingBaseClass {
 public:
     ContactSmokeGenerator(
+        #ifndef WITHOUT_AUDIO
         OneShotAudio& one_shot_audio,
+        #endif
         SmokeParticleGenerator& air_smoke_particle_generator,
         SmokeParticleGenerator& skidmark_smoke_particle_generator,
         SmokeParticleGenerator& sea_wave_smoke_particle_generator);
@@ -52,11 +56,13 @@ public:
         const PhysicsEngineConfig& cfg,
         const PhysicsPhase& phase);
 private:
-    OneShotAudio& one_shot_audio_;
     SmokeParticleGenerator& air_smoke_particle_generator_;
     SmokeParticleGenerator& skidmark_smoke_particle_generator_;
     SmokeParticleGenerator& sea_wave_smoke_particle_generator_;
     std::unordered_map<RigidBodyVehicle*, ContactSmokeAndAudio> tire_smoke_trail_generators_;
+    #ifndef WITHOUT_AUDIO
+    OneShotAudio& one_shot_audio_;
+    #endif
 };
 
 }

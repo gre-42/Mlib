@@ -1,10 +1,10 @@
 #include "Add_Grass_Inside_Triangles.hpp"
 #include <Mlib/Geometry/Mesh/Triangle_List.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_Sampler2.hpp>
-#include <Mlib/OpenGL/Renderables/Triangle_Sampler/Resource_Name_Cycle.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Osm_Map_Resource_Helpers.hpp>
 #include <Mlib/Scene_Graph/Resources/Batch_Resource_Instantiator.hpp>
 #include <Mlib/Scene_Graph/Resources/Parsed_Resource_Name.hpp>
+#include <Mlib/Scene_Graph/Resources/Sampler/Triangle_Sampler/Resource_Name_Cycle.hpp>
 
 using namespace Mlib;
 

@@ -5,7 +5,9 @@
 using namespace Mlib;
 
 EngineExhaust::EngineExhaust(
+    #ifndef WITHOUT_GRAPHICS
     RenderingResources& rendering_resources,
+    #endif
     SceneNodeResources& scene_node_resources,
     std::shared_ptr<IParticleRenderer> particle_renderer,
     Scene& scene,
@@ -14,7 +16,9 @@ EngineExhaust::EngineExhaust(
     const TransformationMatrix<SceneDir, ScenePos, 3>& relative_location,
     float p_reference)
     : smoke_generator_{
+        #ifndef WITHOUT_GRAPHICS
         rendering_resources,
+        #endif
         scene_node_resources,
         particle_renderer,
         scene,

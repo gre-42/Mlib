@@ -1,10 +1,12 @@
 #pragma once
-#include <Mlib/Audio/Cross_Fade.hpp>
 #include <Mlib/Physics/Actuators/IEngine_Event_Listener.hpp>
 #include <Mlib/Scene_Config/Scene_Precision.hpp>
 #include <functional>
 #include <memory>
 #include <string>
+#ifndef WITHOUT_AUDIO
+#include <Mlib/Audio/Cross_Fade.hpp>
+#endif
 
 namespace Mlib {
 
@@ -32,11 +34,13 @@ public:
         const RotatingFrame<SceneDir, ScenePos, 3>& frame) override;
     virtual void advance_time(float dt) override;
 private:
-    std::shared_ptr<AudioBufferSequenceWithHysteresis> driving_buffer_sequence_;
-    float driving_gain_;
-    CrossFade cross_fade_;
     float p_reference_;
     float p_idle_;
+    float driving_gain_;
+    #ifndef WITHOUT_AUDIO
+    std::shared_ptr<AudioBufferSequenceWithHysteresis> driving_buffer_sequence_;
+    CrossFade cross_fade_;
+    #endif
 };
 
 }

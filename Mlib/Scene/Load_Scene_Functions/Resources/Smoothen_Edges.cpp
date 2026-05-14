@@ -1,7 +1,7 @@
 #include <Mlib/Geometry/Mesh/Smoothness_Target.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Misc/Argument_List.hpp>
-#include <Mlib/OpenGL/Rendering_Context.hpp>
+#include <Mlib/Resource_Context/Rendering_Context.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Load_Scene_Funcs.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>

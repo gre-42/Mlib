@@ -40,7 +40,6 @@ struct LoadSceneJsonUserFunctionArgs {
     const std::string& name;
     const JsonMacroArguments& arguments;
     const std::function<PhysicsScene&()>& physics_scene;
-    const std::function<RenderableScene&()>& renderable_scene;
     const MacroLineExecutor& macro_line_executor;
     SceneLevelSelector& scene_level_selector;
     NotifyingJsonMacroArguments& external_json_macro_arguments;
@@ -49,6 +48,18 @@ struct LoadSceneJsonUserFunctionArgs {
     BulletPropertyDb& bullet_property_db;
     DynamicLightDb& dynamic_light_db;
     SceneConfig& scene_config;
+    Users& users;
+    RemoteSites& remote_sites;
+    const std::string& script_filename;
+    ThreadSafeString& next_scene_filename;
+    AssetReferences& asset_references;
+    Translators& translators;
+    PhysicsScenes& physics_scenes;
+    #ifndef WITHOUT_GRAPHICS
+    LayoutConstraints& layout_constraints;
+    std::atomic_size_t& num_renderings;
+    RealtimeDependentFps& render_set_fps;
+    const std::function<RenderableScene&()>& renderable_scene;
     ButtonStates& button_states;
     CursorStates& cursor_states;
     CursorStates& scroll_wheel_states;
@@ -56,19 +67,10 @@ struct LoadSceneJsonUserFunctionArgs {
     LockableKeyConfigurations& key_configurations;
     LockableKeyDescriptions& key_descriptions;
     UiFocuses& ui_focuses;
-    Users& users;
-    RemoteSites& remote_sites;
-    LayoutConstraints& layout_constraints;
-    std::atomic_size_t& num_renderings;
-    RealtimeDependentFps& render_set_fps;
-    const std::string& script_filename;
-    ThreadSafeString& next_scene_filename;
     RenderLogicGallery& gallery;
-    AssetReferences& asset_references;
-    Translators& translators;
-    PhysicsScenes& physics_scenes;
     RenderableScenes& renderable_scenes;
     WindowLogic& window_logic;
+    #endif
     const std::function<void()>& exit;
 };
 

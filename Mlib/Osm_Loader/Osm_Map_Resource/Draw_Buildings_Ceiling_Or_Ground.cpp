@@ -4,7 +4,6 @@
 #include <Mlib/Geometry/Material_Configuration/Base_Materials.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_List.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>
-#include <Mlib/OpenGL/Renderables/Triangle_Sampler/Terrain_Type.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Bounding_Info.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Building.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Compute_Area.hpp>
@@ -15,6 +14,7 @@
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Region_With_Margin.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Steiner_Point_Info.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Triangulate_Terrain_Or_Ceilings.hpp>
+#include <Mlib/Scene_Graph/Resources/Sampler/Triangle_Sampler/Terrain_Type.hpp>
 #include <iostream>
 #include <poly2tri/point_exception.hpp>
 #include <stdexcept>

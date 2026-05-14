@@ -9,19 +9,21 @@
 #include <Mlib/Math/Transformation/Tait_Bryan_Angles.hpp>
 #include <Mlib/Misc/Argument_List.hpp>
 #include <Mlib/Misc/FPath.hpp>
-#include <Mlib/OpenGL/Rendering_Context.hpp>
-#include <Mlib/OpenGL/Resource_Managers/Rendering_Resources.hpp>
 #include <Mlib/OpenGL/Resources/Kn5_File_Resource.hpp>
 #include <Mlib/OpenGL/Resources/Mhx2_File_Resource.hpp>
 #include <Mlib/OpenGL/Resources/Obj_File_Resource.hpp>
 #include <Mlib/OpenGL/Resources/Proctree_File_Resource.hpp>
 #include <Mlib/Physics/Misc/Track_Element.hpp>
 #include <Mlib/Physics/Units.hpp>
+#include <Mlib/Resource_Context/Rendering_Context.hpp>
 #include <Mlib/Scene/Json/Load_Mesh_Config_Json.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Load_Scene_Funcs.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
 #include <stdexcept>
+#ifndef WITHOUT_GRAPHICS
+#include <Mlib/OpenGL/Resource_Managers/Rendering_Resources.hpp>
+#endif
 
 using namespace Mlib;
 
@@ -102,7 +104,9 @@ static void execute(const LoadSceneJsonUserFunctionArgs& args)
         args.arguments.child(KnownArgs::config));
     auto filename = args.arguments.try_path_or_variable(KnownArgs::filename).local_path();
     auto& scene_node_resources = RenderingContextStack::primary_scene_node_resources();
-    auto& rendering_resources = RenderingContextStack::primary_rendering_resources();
+    #ifndef WITHOUT_GRAPHICS
+    auto* rendering_resources = &RenderingContextStack::primary_rendering_resources();
+    #endif
     CompressedFile compressed_file{filename};
     if (compressed_file.has_any_extension(".obj")) {
         scene_node_resources.add_resource_loader(
@@ -119,7 +123,9 @@ static void execute(const LoadSceneJsonUserFunctionArgs& args)
             [filename,
              load_mesh_config,
              &scene_node_resources,
-             &rendering_resources,
+             #ifndef WITHOUT_GRAPHICS
+             rendering_resources,
+             #endif
              &asset_references=args.asset_references,
              name]()
             {
@@ -128,7 +134,9 @@ static void execute(const LoadSceneJsonUserFunctionArgs& args)
                     filename,
                     load_mesh_config,
                     scene_node_resources,
-                    &rendering_resources,
+                    #ifndef WITHOUT_GRAPHICS
+                    rendering_resources,
+                    #endif
                     &race_logic);
             });
     } else if (compressed_file.has_any_extension(".mhx2")) {

@@ -21,7 +21,7 @@ target_link_libraries(MlibRemote
         MlibJson)
 
 if (NOT EMSCRIPTEN)
-    target_link_libraries(MlibRemote PUBLIC Boost::boost)
+    target_link_libraries(MlibRemote PUBLIC Boost::boost Boost::url)
 endif()
 
 if (MINGW)

@@ -1,8 +1,8 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Geometry/Primitives/Bvh_Fwd.hpp>
-#include <Mlib/OpenGL/Renderables/Triangle_Sampler/Terrain_Triangles.hpp>
 #include <Mlib/Scene_Graph/Elements/Renderable.hpp>
+#include <Mlib/Scene_Graph/Resources/Sampler/Triangle_Sampler/Terrain_Triangles.hpp>
 #include <list>
 #include <map>
 #include <optional>

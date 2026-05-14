@@ -13,11 +13,11 @@
 #include <Mlib/OpenGL/Render_Logics/Render_Logics.hpp>
 #include <Mlib/OpenGL/Render_Logics/Resource_Update_Cycle.hpp>
 #include <Mlib/OpenGL/Render_Setup.hpp>
-#include <Mlib/OpenGL/Rendering_Context.hpp>
 #include <Mlib/OpenGL/Resource_Managers/Rendering_Resources.hpp>
 #include <Mlib/OpenGL/Viewport_Guard.hpp>
 #include <Mlib/Physics/Containers/Advance_Times.hpp>
 #include <Mlib/Players/Advance_Times/Player.hpp>
+#include <Mlib/Resource_Context/Rendering_Context.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Testing/Assert.hpp>
 #include <sstream>

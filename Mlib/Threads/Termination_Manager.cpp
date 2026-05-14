@@ -1,5 +1,6 @@
 #include "Termination_Manager.hpp"
 #include <Mlib/Os/Os.hpp>
+#include <csignal>
 #include <list>
 #include <mutex>
 #include <shared_mutex>
@@ -49,4 +50,15 @@ void Mlib::print_unhandled_exceptions(std::ostream& ostr) {
             }
         }
     }
+}
+
+static void signal_handler(int signum) {
+    if (signum == SIGTERM) {
+        add_unhandled_exception(std::make_exception_ptr(
+            std::runtime_error("SIGTERM received, treating as unhandled exception")));
+    }
+}
+ 
+void Mlib::convert_sigterm_to_exception() {
+    std::signal(SIGTERM, signal_handler);
 }

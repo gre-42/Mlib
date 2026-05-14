@@ -45,8 +45,10 @@ void SetWayPoints::execute(const LoadSceneJsonUserFunctionArgs& args) {
         bri.instantiate_root_renderables(
             scene_node_resources,
             RootInstantiationOptions{
+                #ifndef WITHOUT_GRAPHICS
                 .rendering_resources = &rendering_resources,
                 .imposters = nullptr,
+                #endif
                 .supply_depots = nullptr,
                 .instance_name = VariableAndHash<std::string>{"waypoints"},
                 .absolute_model_matrix = location,

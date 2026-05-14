@@ -1,5 +1,5 @@
 #include "Color_Cycle.hpp"
-#include <Mlib/OpenGL/Renderables/Color_And_Probability.hpp>
+#include <Mlib/Scene_Graph/Resources/Sampler/Color_And_Probability.hpp>
 
 using namespace Mlib;
 

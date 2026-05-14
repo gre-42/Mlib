@@ -2,16 +2,19 @@
 #include <Mlib/Geometry/Colored_Vertex.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
-#include <Mlib/OpenGL/Renderables/Gpu_Renderable_Colored_Vertex_Array.hpp>
-#include <Mlib/OpenGL/Renderables/Renderable_Colored_Vertex_Array.hpp>
-#include <Mlib/OpenGL/Rendering_Context.hpp>
-#include <Mlib/OpenGL/Resources/Colored_Vertex_Array_Resource.hpp>
-#include <Mlib/OpenGL/Resources/Colored_Vertex_Array_Resource/Animated_Texture_Layer.hpp>
+#include <Mlib/Resource_Context/Rendering_Context.hpp>
 #include <Mlib/Scene_Graph/Render/Caching_Behavior.hpp>
 #include <Mlib/Scene_Graph/Render_Pass.hpp>
+#ifndef WITHOUT_GRAPHICS
+#include <Mlib/OpenGL/Renderables/Gpu_Renderable_Colored_Vertex_Array.hpp>
+#include <Mlib/OpenGL/Renderables/Renderable_Colored_Vertex_Array.hpp>
+#include <Mlib/OpenGL/Resources/Colored_Vertex_Array_Resource.hpp>
+#include <Mlib/OpenGL/Resources/Colored_Vertex_Array_Resource/Animated_Texture_Layer.hpp>
+#endif
 
 using namespace Mlib;
 
+#ifndef WITHOUT_GRAPHICS
 static MeshMeta gen_meta(
     const FPath& texture,
     const Shading& shading,
@@ -37,6 +40,7 @@ static MeshMeta gen_meta(
         },
         ModifierBacklog{});
 }
+#endif
 
 TrailsInstance::TrailsInstance(
     const FPath& texture,
@@ -45,12 +49,14 @@ TrailsInstance::TrailsInstance(
     const std::vector<float>& continuous_layer_y,
     size_t max_num_segments,
     const RenderableResourceFilter& filter)
+#ifndef WITHOUT_GRAPHICS
     : offset_((ScenePos)NAN)
     , dynamic_vertex_buffers_{ std::make_shared<AnimatedTextureLayerBuffers>(max_num_segments, gen_meta(texture, shading, continuous_layer_x, continuous_layer_y)) }
     , dynamic_vertex_array_{ std::make_shared<GpuRenderableColoredVertexArray>(dynamic_vertex_buffers_, nullptr) }
     , cvar_{ std::make_shared<ColoredVertexArrayResource>(dynamic_vertex_array_) }
     , rcva_{ std::make_unique<RenderableColoredVertexArray>(RenderingContextStack::primary_rendering_resources(), cvar_, CachingBehavior::DISABLED, filter) }
     , filter_{ filter }
+#endif
 {}
 
 TrailsInstance::~TrailsInstance() = default;
@@ -60,6 +66,7 @@ void TrailsInstance::add_triangle(
     const FixedArray<float, 3>& time,
     const TrailSequence& sequence)
 {
+    #ifndef WITHOUT_GRAPHICS
     if (dynamic_vertex_buffers_->tmp_length() < dynamic_vertex_buffers_->capacity()) {
         std::scoped_lock lock{ mutex_ };
         if (dynamic_vertex_buffers_->tmp_empty()) {
@@ -68,19 +75,30 @@ void TrailsInstance::add_triangle(
         auto pos = triangle.applied<ColoredVertex<float>>([this](const auto& v) { return v.translated(-offset_). template casted<float>(); });
         dynamic_vertex_buffers_->append(pos, time, sequence);
     }
+    #endif
 }
 
 void TrailsInstance::move(float dt, const StaticWorld& world) {
+    #ifndef WITHOUT_GRAPHICS
     std::scoped_lock lock{ mutex_ };
     dynamic_vertex_buffers_->move(dt, world);
+    #endif
 }
 
 std::chrono::steady_clock::time_point TrailsInstance::time() const {
+    #ifdef WITHOUT_GRAPHICS
+    throw std::runtime_error("TrailsInstance::time called without graphics support");
+    #else
     return dynamic_vertex_buffers_->time();
+    #endif
 }
 
 void TrailsInstance::preload() const {
+    #ifdef WITHOUT_GRAPHICS
+    throw std::runtime_error("TrailsInstance::preload called without graphics support");
+    #else
     cvar_->preload(filter_);
+    #endif
 }
 
 void TrailsInstance::render(
@@ -92,6 +110,9 @@ void TrailsInstance::render(
     const RenderConfig& render_config,
     const RenderedSceneDescriptor& frame_id) const
 {
+    #ifdef WITHOUT_GRAPHICS
+    throw std::runtime_error("TrailsInstance::render called without graphics support");
+    #else
     FixedArray<ScenePos, 3> offset = uninitialized;
     {
         // AperiodicLagFinder lag_finder{ "update " + std::to_string(instances->num_instances()) + " instances " + cva->name + ": ", std::chrono::milliseconds{5} };
@@ -118,4 +139,5 @@ void TrailsInstance::render(
         { frame_id, InternalRenderPass::PARTICLES },
         nullptr,        // animation_state,
         nullptr);       // color_style
+    #endif
 }

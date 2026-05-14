@@ -47,7 +47,9 @@ void ChildRenderableInstance::operator () (
     scene_node_resources.instantiate_child_renderable(
         resource,
         ChildInstantiationOptions{
+            #ifndef WITHOUT_GRAPHICS
             .rendering_resources = &rendering_resources,
+            #endif
             .instance_name = VariableAndHash{ instance_name },
             .scene_node = scene.get_node(node, CURRENT_SOURCE_LOCATION),
             .renderable_resource_filter = resource_filter });

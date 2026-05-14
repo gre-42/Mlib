@@ -9,8 +9,8 @@
 #include <Mlib/Memory/Object_Pool.hpp>
 #include <Mlib/Misc/Argument_List.hpp>
 #include <Mlib/OpenGL/Render_Logics/Render_Logics.hpp>
-#include <Mlib/OpenGL/Rendering_Context.hpp>
 #include <Mlib/Os/Os.hpp>
+#include <Mlib/Resource_Context/Rendering_Context.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Load_Scene_Funcs.hpp>
 #include <Mlib/Scene/Render_Logics/Scene_Selector_Logic.hpp>

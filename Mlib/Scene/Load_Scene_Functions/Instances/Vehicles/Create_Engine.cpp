@@ -5,7 +5,6 @@
 #include <Mlib/Math/Transformation/Transformation_Matrix_Json.hpp>
 #include <Mlib/Misc/Argument_List.hpp>
 #include <Mlib/OpenGL/Batch_Renderers/Particle_Renderer.hpp>
-#include <Mlib/OpenGL/Rendering_Context.hpp>
 #include <Mlib/Physics/Actuators/Engine_Event_Listeners.hpp>
 #include <Mlib/Physics/Actuators/Engine_Exhaust.hpp>
 #include <Mlib/Physics/Actuators/Engine_Power.hpp>
@@ -13,6 +12,7 @@
 #include <Mlib/Physics/Physics_Engine/Physics_Engine.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Physics/Units.hpp>
+#include <Mlib/Resource_Context/Rendering_Context.hpp>
 #include <Mlib/Scene/Audio/Engine_Audio.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Load_Scene_Funcs.hpp>
@@ -93,6 +93,7 @@ void CreateEngine::execute(const LoadSceneJsonUserFunctionArgs& args) {
         }
         engine_listeners->add(std::move(l));
     };
+    #ifndef WITHOUT_AUDIO
     if (args.arguments.contains(KnownArgs::audio)) {
         auto a = args.arguments.child(KnownArgs::audio);
         a.validate(Audio::options);
@@ -105,6 +106,7 @@ void CreateEngine::execute(const LoadSceneJsonUserFunctionArgs& args) {
                 a.at<float>(Audio::p_reference) * hp));
         }
     }
+    #endif
     if (auto engine_exhausts = args.arguments.try_at_non_null<std::vector<nlohmann::json>>(KnownArgs::exhaust); engine_exhausts.has_value()) {
         if (engine_exhausts->empty()) {
             throw std::runtime_error("Engine exhaust array is empty");
@@ -120,7 +122,9 @@ void CreateEngine::execute(const LoadSceneJsonUserFunctionArgs& args) {
             JsonView jv{ engine_exhaust };
             jv.validate(Exhaust::options);
             add_engine_listener(std::make_shared<EngineExhaust>(
+                #ifndef WITHOUT_GRAPHICS
                 RenderingContextStack::primary_rendering_resources(),
+                #endif
                 scene_node_resources,
                 particle_renderer,
                 scene,

@@ -15,27 +15,33 @@ using namespace Mlib;
 
 HudOpponentTrackerLogic::HudOpponentTrackerLogic(
     ObjectPool& object_pool,
+    #ifndef WITHOUT_GRAPHICS
     RenderLogic& scene_logic,
     RenderLogics& render_logics,
-    const DanglingBaseClassRef<Player>& player,
-    const std::optional<std::vector<DanglingBaseClassPtr<const SceneNode>>>& exclusive_nodes,
-    AdvanceTimes& advance_times,
     const std::shared_ptr<ITextureHandle>& texture,
     const FixedArray<float, 2>& center,
     const FixedArray<float, 2>& size,
+    #endif
+    const DanglingBaseClassRef<Player>& player,
+    const std::optional<std::vector<DanglingBaseClassPtr<const SceneNode>>>& exclusive_nodes,
+    AdvanceTimes& advance_times,
     HudErrorBehavior hud_error_behavior)
     : player_{ player }
+    #ifndef WITHOUT_GRAPHICS
     , scene_logic_{ scene_logic }
+    , render_logics_{ render_logics }
     , hud_tracker_{
         exclusive_nodes,
         hud_error_behavior,
         center,
         size,
         texture }
+    #endif
     , on_player_delete_vehicle_internals_{ player->delete_vehicle_internals, CURRENT_SOURCE_LOCATION }
-    , render_logics_{ render_logics }
 {
+    #ifndef WITHOUT_GRAPHICS
     render_logics_.append({ *this, CURRENT_SOURCE_LOCATION }, 0 /* z_order */, CURRENT_SOURCE_LOCATION);
+    #endif
     on_player_delete_vehicle_internals_.add([this, &object_pool]() { object_pool.remove(*this); }, CURRENT_SOURCE_LOCATION);
     advance_times.add_advance_time({ *this, CURRENT_SOURCE_LOCATION }, CURRENT_SOURCE_LOCATION);
 }
@@ -45,6 +51,7 @@ HudOpponentTrackerLogic::~HudOpponentTrackerLogic() {
 }
 
 void HudOpponentTrackerLogic::advance_time(float dt, const StaticWorld& world) {
+#ifndef WITHOUT_GRAPHICS
     auto target_rb = player_->target_rb();
     if (target_rb == nullptr) {
         hud_tracker_.invalidate();
@@ -55,8 +62,10 @@ void HudOpponentTrackerLogic::advance_time(float dt, const StaticWorld& world) {
         return;
     }
     ht.advance_time(target_rb->rbp_.abs_position());
+#endif
 }
 
+#ifndef WITHOUT_GRAPHICS
 std::optional<RenderSetup> HudOpponentTrackerLogic::try_render_setup(
     const LayoutConstraintParameters& lx,
     const LayoutConstraintParameters& ly,
@@ -81,3 +90,4 @@ void HudOpponentTrackerLogic::render_with_setup(
 void HudOpponentTrackerLogic::print(std::ostream& ostr, size_t depth) const {
     ostr << std::string(depth, ' ') << "HudOpponentTrackerLogic";
 }
+#endif

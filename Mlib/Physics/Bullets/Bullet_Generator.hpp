@@ -48,7 +48,9 @@ using GenerateSmartBullet = std::function<void(
 class BulletGenerator{
 public:
     BulletGenerator(
+        #ifndef WITHOUT_GRAPHICS
         RenderingResources* rendering_resources,
+        #endif
         Scene& scene,
         SceneNodeResources& scene_node_resources,
         SmokeParticleGenerator& smoke_generator,
@@ -79,8 +81,10 @@ public:
     AggregateMode get_aggregate_mode(const BulletProperties& bullet_properties) const;
     PhysicsMaterial get_physics_material(const BulletProperties& bullet_properties) const;
 private:
-    RenderingResources* rendering_resources_;
     Scene& scene_;
+    #ifndef WITHOUT_GRAPHICS
+    RenderingResources* rendering_resources_;
+    #endif
     SceneNodeResources& scene_node_resources_;
     SmokeParticleGenerator& smoke_generator_;
     DynamicLights& dynamic_lights_;

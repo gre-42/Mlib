@@ -21,7 +21,9 @@ struct RegisterJsonUserFunction {
             {
                 args.arguments.validate(KnownArgs::options);
                 args.next_scene_filename = args.arguments.at<std::string>(KnownArgs::filename);
+                #ifndef WITHOUT_GRAPHICS
                 args.num_renderings = 0;
+                #endif
             });
     }
 } obj;

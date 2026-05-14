@@ -16,14 +16,18 @@
 using namespace Mlib;
 
 ContactSmokeGenerator::ContactSmokeGenerator(
+    #ifndef WITHOUT_AUDIO
     OneShotAudio& one_shot_audio,
+    #endif
     SmokeParticleGenerator& air_smoke_particle_generator,
     SmokeParticleGenerator& skidmark_smoke_particle_generator,
     SmokeParticleGenerator& sea_wave_smoke_particle_generator)
-    : one_shot_audio_{ one_shot_audio }
-    , air_smoke_particle_generator_{ air_smoke_particle_generator }
+    : air_smoke_particle_generator_{ air_smoke_particle_generator }
     , skidmark_smoke_particle_generator_{ skidmark_smoke_particle_generator }
     , sea_wave_smoke_particle_generator_{ sea_wave_smoke_particle_generator }
+    #ifndef WITHOUT_AUDIO
+    , one_shot_audio_{ one_shot_audio }
+    #endif
 {}
 
 ContactSmokeGenerator::~ContactSmokeGenerator() {
@@ -91,12 +95,14 @@ void ContactSmokeGenerator::notify_contact(
         }();
         auto ce_generate = [&](ContactEmissions& ce){
             if (auto n = ce.maybe_generate(1.f / f); n != 0) {
+#ifndef WITHOUT_AUDIO
                 if (smoke_info.audio != nullptr) {
                     smoke_info.audio->play(
                         one_shot_audio_,
                         AudioPeriodicity::APERIODIC,
                         {intersection_point, c.o1.rbp_.velocity_at_position(intersection_point)});
                 }
+#endif
                 if (smoke_info.visual.has_value()) {
                     assert_true(ce.particle_trail_generator.has_value());
                     const auto& av = smoke_info.vehicle_velocity.smoke_particle_velocity;
@@ -166,8 +172,10 @@ void ContactSmokeGenerator::notify_contact(
                 continue;
             }
         case SurfaceSmokeAffinity::TIRE: {
+                #ifndef WITHOUT_AUDIO
                 size_t key = c.tire_id1;
                 generate(key, tstg.audio);
+                #endif
                 continue;
             }
         };
@@ -191,7 +199,9 @@ void ContactSmokeGenerator::advance_time(
     for (auto& [_1, g] : it->second.smoke) {
         g.maybe_generate.advance_time(dt);
     }
+    #ifndef WITHOUT_AUDIO
     for (auto& [_1, g] : it->second.audio) {
         g.maybe_generate.advance_time(dt);
     }
+    #endif
 }

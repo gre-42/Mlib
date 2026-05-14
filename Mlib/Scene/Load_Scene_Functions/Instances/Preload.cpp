@@ -8,9 +8,9 @@
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Misc/Argument_List.hpp>
 #include <Mlib/OpenGL/Batch_Renderers/Particle_Renderer.hpp>
-#include <Mlib/OpenGL/Rendering_Context.hpp>
 #include <Mlib/Physics/Smoke_Generation/Surface_Contact_Db.hpp>
 #include <Mlib/Physics/Smoke_Generation/Surface_Contact_Info.hpp>
+#include <Mlib/Resource_Context/Rendering_Context.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Load_Scene_Funcs.hpp>
 #include <Mlib/Scene/Scene_Particles.hpp>
@@ -85,9 +85,11 @@ void Preload::execute(const LoadSceneJsonUserFunctionArgs& args) {
                                             throw std::runtime_error("Unknown particle type: " + std::to_string((int)s.visual->particle.type));
                                     }
                                 }
+                                #ifndef WITHOUT_AUDIO
                                 if (s.audio != nullptr) {
                                     s.audio->preload();
                                 }
+                                #endif
                             }
                             // RenderingContextStack::primary_scene_node_resources().preload_single(
                             //     c->smoke_particle_resource_name, RenderableResourceFilter{});

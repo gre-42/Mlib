@@ -16,10 +16,12 @@ struct RenderingContext {
     SceneNodeResources& scene_node_resources;
     ParticleResources& particle_resources;
     TrailResources& trail_resources;
+    #ifndef WITHOUT_GRAPHICS
     RenderingResources& rendering_resources;
     IGpuObjectFactory& gpu_object_factory;
     IGpuVertexArrayRenderer& gpu_vertex_array_renderer;
     int z_order;
+    #endif
 };
 
 class RenderingContextGuard: public SingletonGuard<RenderingContext> {
@@ -36,10 +38,12 @@ public:
     static SceneNodeResources& primary_scene_node_resources();
     static ParticleResources& primary_particle_resources();
     static TrailResources& primary_trail_resources();
+    #ifndef WITHOUT_GRAPHICS
     static RenderingResources& primary_rendering_resources();
     static IGpuObjectFactory& primary_gpu_object_factory();
     static IGpuVertexArrayRenderer& primary_gpu_vertex_array_renderer();
     static int z_order();
+    #endif
 };
 
 }

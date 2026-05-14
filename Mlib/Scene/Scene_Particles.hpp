@@ -17,7 +17,9 @@ enum class ParticleType;
 struct SceneParticles {
     SceneParticles(
         SceneNodeResources& scene_node_resources,
+        #ifndef WITHOUT_GRAPHICS
         RenderingResources& rendering_resources,
+        #endif
         ParticleResources& particle_resources,
         Scene& scene,
         RigidBodies& rigid_bodies,

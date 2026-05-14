@@ -439,7 +439,9 @@ template <class TResourcePos, class TInstancePos>
 PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
     const PssgModel& model,
     const LoadMeshConfig<TResourcePos>& cfg,
+    #ifndef WITHOUT_GRAPHICS
     IDdsResources* dds_resources,
+    #endif
     const std::string& resource_prefix,
     IoVerbosity verbosity)
 {
@@ -1043,6 +1045,7 @@ PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
         }
         return true;
     });
+    #ifndef WITHOUT_GRAPHICS
     if (dds_resources != nullptr) {
         model.root.for_each_node([&](const PssgNode& node) {
             if (model.schema.nodes.get(node.type_id).name != "TEXTURE") {
@@ -1071,6 +1074,7 @@ PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
             return true;
         });
     }
+    #endif
     for (auto& [_, r] : result.resources) {
         if (!cfg.textures.empty()) {
             r->meta.material.textures_color = cfg.textures;
@@ -1088,27 +1092,35 @@ PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
 template PssgArrays<float, float> Mlib::load_pssg_arrays<float, float>(
     const PssgModel& model,
     const LoadMeshConfig<float>& cfg,
+    #ifndef WITHOUT_GRAPHICS
     IDdsResources* dds_resources,
+    #endif
     const std::string& resource_prefix,
     IoVerbosity verbosity);
 
 template PssgArrays<float, double> Mlib::load_pssg_arrays<float, double>(
     const PssgModel& model,
     const LoadMeshConfig<float>& cfg,
+    #ifndef WITHOUT_GRAPHICS
     IDdsResources* dds_resources,
+    #endif
     const std::string& resource_prefix,
     IoVerbosity verbosity);
 
 template PssgArrays<CompressedScenePos, float> Mlib::load_pssg_arrays<CompressedScenePos, float>(
     const PssgModel& model,
     const LoadMeshConfig<CompressedScenePos>& cfg,
+    #ifndef WITHOUT_GRAPHICS
     IDdsResources* dds_resources,
+    #endif
     const std::string& resource_prefix,
     IoVerbosity verbosity);
 
 template PssgArrays<CompressedScenePos, double> Mlib::load_pssg_arrays<CompressedScenePos, double>(
     const PssgModel& model,
     const LoadMeshConfig<CompressedScenePos>& cfg,
+    #ifndef WITHOUT_GRAPHICS
     IDdsResources* dds_resources,
+    #endif
     const std::string& resource_prefix,
     IoVerbosity verbosity);

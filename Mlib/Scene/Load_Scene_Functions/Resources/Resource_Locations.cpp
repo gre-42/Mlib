@@ -13,12 +13,9 @@
 #include <Mlib/Io/Folder_IStream_Dictionary.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Misc/Argument_List.hpp>
-#include <Mlib/OpenGL/Deallocate/Render_Allocator.hpp>
-#include <Mlib/OpenGL/Raster/Raster_Factory.hpp>
-#include <Mlib/OpenGL/Rendering_Context.hpp>
-#include <Mlib/OpenGL/Resource_Managers/Rendering_Resources.hpp>
 #include <Mlib/OpenGL/Resources/Dff_File_Resource.hpp>
 #include <Mlib/OpenGL/Resources/Pssg_File_Resource.hpp>
+#include <Mlib/Resource_Context/Rendering_Context.hpp>
 #include <Mlib/Scene/Json/Load_Mesh_Config_Json.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Load_Scene_Funcs.hpp>
@@ -26,6 +23,10 @@
 #include <Mlib/Strings/Filesystem_Path.hpp>
 #include <Mlib/Strings/Utf8_Path.hpp>
 #include <Mlib/Threads/Thread_Top.hpp>
+#ifndef WITHOUT_GRAPHICS
+#include <Mlib/OpenGL/Raster/Raster_Factory.hpp>
+#include <Mlib/OpenGL/Resource_Managers/Rendering_Resources.hpp>
+#endif
 
 using namespace Mlib;
 
@@ -61,6 +62,7 @@ static void add_rw_resource(
             return load_renderable_dff(*istr.stream, *name, *cfg, res, *dddb);
             });
     } else if (extension == ".txd") {
+        #ifndef WITHOUT_GRAPHICS
         auto& res = RenderingContextStack::primary_rendering_resources();
         res.set_textures_lazy([img, cfg, name, &res](){
             auto txd = Dff::read_txd(
@@ -95,6 +97,7 @@ static void add_rw_resource(
                 }
             }
             });
+        #endif
     } else {
         throw std::runtime_error("Unknown resource type: \"" + *name + "\". Extension: \"" + extension + '"');
     }
@@ -136,24 +139,30 @@ static void exec(
     auto cfg = std::make_shared<LoadMeshConfig<TPosition>>();
     *cfg = load_mesh_config_from_json<TPosition>(args.arguments.child(KnownArgs::config));
     auto filters = args.arguments.at<ColoredVertexArrayFilters>(KnownArgs::filters, ColoredVertexArrayFilters{});
+    #ifndef WITHOUT_GRAPHICS
     if (auto c = args.arguments.try_path_or_variable(KnownArgs::texture); !c.empty()) {
         auto& rr = RenderingContextStack::primary_rendering_resources();
         cfg->textures = { rr.get_blend_map_texture(c) };
     }
+    #endif
     for (const auto& s : args.arguments.try_pathes_or_variables(KnownArgs::rw_resource_files)) {
         FunctionGuard fg{ "Load RW \"" + short_path(s.local_path()) + '"' };
         add_rw_file_resource(s.local_path(), cfg, dddb, added_scene_node_resources);
     }
     for (const auto& s : args.arguments.try_pathes_or_variables(KnownArgs::pssg_files)) {
         FunctionGuard fg{ "Load PSSG \"" + short_path(s.local_path()) + '"' };
+        #ifndef WITHOUT_GRAPHICS
         auto& rr = RenderingContextStack::primary_rendering_resources();
+        #endif
         auto& sr = RenderingContextStack::primary_scene_node_resources();
         auto model = load_pssg(s.local_path(), IoVerbosity::SILENT);
         try {
             auto arrays = load_pssg_arrays<TPosition, ScenePos>(
                 model,
                 *cfg,
+                #ifndef WITHOUT_GRAPHICS
                 &rr,
+                #endif
                 s.local_path().filename().string() + '#',
                 IoVerbosity::SILENT);
             load_renderable_pssg(arrays, filters, sr, added_scene_node_resources, added_instantiables);

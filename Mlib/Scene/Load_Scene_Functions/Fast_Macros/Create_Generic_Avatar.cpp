@@ -28,6 +28,7 @@
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Physics/Vehicle_Controllers/Avatar_Controllers/Avatar_As_Avatar_Controller.hpp>
 #include <Mlib/Physics/Vehicle_Controllers/Car_Controllers/Avatar_As_Car_Controller.hpp>
+#include <Mlib/Resource_Context/Rendering_Context.hpp>
 #include <Mlib/Scene/Animation/Avatar_Animation_Updater.hpp>
 #include <Mlib/Scene/Audio/Engine_Audio.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
@@ -35,12 +36,12 @@
 #include <Mlib/Scene/Load_Scene_Funcs.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Nodes/Create_Child_Node.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Nodes/Insert_Physics_Node_Hider.hpp>
-#include <Mlib/Scene/Load_Scene_Functions/Instances/Render/Child_Renderable_Instance.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Add_Weapon_To_Cycle.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Create_Damageable.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Create_Gun.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Create_Rigid_Cuboid.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Create_Rigid_Disk.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Instantiate/Child_Renderable_Instance.hpp>
 #include <Mlib/Scene/Physics_Scene.hpp>
 #include <Mlib/Scene/Scene_Config.hpp>
 #include <Mlib/Scene/Scene_Particles.hpp>
@@ -422,6 +423,7 @@ void CreateGenericAvatar::execute(const JsonView& args)
         }
 
         std::shared_ptr<EngineEventListeners> engine_listeners;
+        #ifndef WITHOUT_AUDIO
         auto add_engine_listener = [&](std::shared_ptr<IEngineEventListener> l){
             if (engine_listeners == nullptr) {
                 engine_listeners = std::make_shared<EngineEventListeners>();
@@ -441,6 +443,7 @@ void CreateGenericAvatar::execute(const JsonView& args)
                     adb.at<float>(KnownAudio::p_reference) * hp));
             }
         }
+        #endif
 
         auto engine = VariableAndHash<std::string>("legs");
         if (vdb.contains_non_null(KnownDb::powers)) {

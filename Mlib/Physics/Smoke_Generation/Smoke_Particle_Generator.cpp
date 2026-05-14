@@ -35,16 +35,20 @@ void Mlib::from_json(const nlohmann::json& j, ParticleContainer& pc) {
 }
 
 SmokeParticleGenerator::SmokeParticleGenerator(
+    #ifndef WITHOUT_GRAPHICS
     RenderingResources& rendering_resources,
+    #endif
     SceneNodeResources& scene_node_resources,
     std::shared_ptr<IParticleRenderer> particle_renderer,
     Scene& scene,
     RigidBodies& rigid_bodies)
-    : rendering_resources_{ rendering_resources }
+    : scene_{ scene }
+    #ifndef WITHOUT_GRAPHICS
     , scene_node_resources_{ scene_node_resources }
-    , particle_renderer_{ std::move(particle_renderer) }
-    , scene_{ scene }
+    , rendering_resources_{ rendering_resources }
     , rigid_bodies_{ rigid_bodies }
+    #endif
+    , particle_renderer_{ std::move(particle_renderer) }
     , bullet_generator_{ nullptr }
 {}
 
@@ -120,6 +124,7 @@ void SmokeParticleGenerator::generate_physics_node(
     float animation_duration,
     const StaticWorld& static_world)
 {
+    #ifndef WITHOUT_GRAPHICS
     AnimationState animation_state{
         .reference_time = AperiodicReferenceTime{
             static_world.time,
@@ -130,7 +135,9 @@ void SmokeParticleGenerator::generate_physics_node(
     scene_node_resources_.instantiate_root_renderables(
         resource_name,
         RootInstantiationOptions{
+            #ifndef WITHOUT_GRAPHICS
             .rendering_resources = &rendering_resources_,
+            #endif
             .animation_state = &animation_state,
             .rigid_bodies = &rigid_bodies_,
             .bullet_generator = bullet_generator_,
@@ -138,6 +145,7 @@ void SmokeParticleGenerator::generate_physics_node(
             .absolute_model_matrix = absolute_model_matrix,
             .scene = scene_,
             .renderable_resource_filter = RenderableResourceFilter{}});
+    #endif
 }
 
 void SmokeParticleGenerator::generate_root_node(
@@ -164,14 +172,18 @@ void SmokeParticleGenerator::generate_root_node(
                     std::chrono::duration<float>(animation_duration / seconds))},
             .delete_node_when_aperiodic_animation_finished = true}),
         AnimationStateAlreadyExistsBehavior::THROW);
+    #ifndef WITHOUT_GRAPHICS
     scene_node_resources_.instantiate_child_renderable(
         resource_name,
         ChildInstantiationOptions{
+            #ifndef WITHOUT_GRAPHICS
             .rendering_resources = &rendering_resources_,
+            #endif
             .instance_name = resource_name,
             .scene_node = node.ref(CURRENT_SOURCE_LOCATION),
             .interpolation_mode = PoseInterpolationMode::DISABLED,
             .renderable_resource_filter = RenderableResourceFilter{}});
+    #endif
     scene_.auto_add_root_node(node_name, std::move(node), RenderingDynamics::MOVING);
 }
 
@@ -197,14 +209,18 @@ void SmokeParticleGenerator::generate_child_node(
                     .time = 0.f}},
             .delete_node_when_aperiodic_animation_finished = true}),
         AnimationStateAlreadyExistsBehavior::THROW);
+    #ifndef WITHOUT_GRAPHICS
     scene_node_resources_.instantiate_child_renderable(
         resource_name,
         ChildInstantiationOptions{
+            #ifndef WITHOUT_GRAPHICS
             .rendering_resources = &rendering_resources_,
+            #endif
             .instance_name = resource_name,
             .scene_node = child_node.ref(CURRENT_SOURCE_LOCATION),
             .interpolation_mode = PoseInterpolationMode::DISABLED,
             .renderable_resource_filter = RenderableResourceFilter{}});
+    #endif
     auto child_node_ref = child_node.ref(CURRENT_SOURCE_LOCATION);
     parent->add_child(child_node_name, std::move(child_node), ChildRegistrationState::IS_REGISTERED);
     scene_.register_node(child_node_name, child_node_ref);

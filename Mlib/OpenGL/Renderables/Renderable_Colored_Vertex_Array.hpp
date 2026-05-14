@@ -24,7 +24,9 @@ enum class CachingBehavior;
 class RenderableColoredVertexArray final: public Renderable {
 public:
     RenderableColoredVertexArray(
+        #ifndef WITHOUT_GRAPHICS
         RenderingResources& rendering_resources,
+        #endif
         const std::shared_ptr<const ColoredVertexArrayResource>& rcva,
         CachingBehavior caching_behavior,
         const RenderableResourceFilter& renderable_resource_filter);
@@ -84,9 +86,11 @@ public:
     virtual ExtremalBoundingSphere<CompressedScenePos, 3> bounding_sphere() const override;
     virtual ScenePos max_center_distance2(BillboardId billboard_id) const override;
     void print_stats(std::ostream& ostr) const;
+    #ifndef WITHOUT_GRAPHICS
     void initialize_gpu_arrays();
     bool copy_in_progress() const;
     void wait() const;
+    #endif
 private:
     UUVector<OffsetAndQuaternion<float, float>> calculate_absolute_bone_transformations(const AnimationState* animation_state) const;
     std::shared_ptr<IGpuVertexData> to_gpu_data(std::shared_ptr<IGpuVertexData> v, CachingBehavior caching_behavior) const;
@@ -95,20 +99,22 @@ private:
     std::shared_ptr<IGpuVertexArray> to_gpu_array(std::shared_ptr<ColoredVertexArray<float>> v, CachingBehavior caching_behavior) const;
 
     std::shared_ptr<const ColoredVertexArrayResource> rcva_;
+    std::list<std::shared_ptr<ColoredVertexArray<float>>> sphysics_;
+    std::list<std::shared_ptr<ColoredVertexArray<CompressedScenePos>>> dphysics_;
+    #ifndef WITHOUT_GRAPHICS
     std::list<std::shared_ptr<IGpuVertexArray>> aggregate_off_;
     std::list<std::shared_ptr<ColoredVertexArray<CompressedScenePos>>> aggregate_once_;
     std::list<std::shared_ptr<ColoredVertexArray<float>>> saggregate_sorted_continuously_;
     std::list<std::shared_ptr<ColoredVertexArray<CompressedScenePos>>> daggregate_sorted_continuously_;
     std::list<std::shared_ptr<IGpuVertexData>> instances_once_;
     std::list<std::shared_ptr<IGpuVertexData>> instances_sorted_continuously_;
-    std::list<std::shared_ptr<ColoredVertexArray<float>>> sphysics_;
-    std::list<std::shared_ptr<ColoredVertexArray<CompressedScenePos>>> dphysics_;
     std::unordered_set<ExternalRenderPassType> required_occluder_passes_;
     BlendingPassType required_blending_passes_;
     int continuous_blending_z_order_;
+    OpenGLVertexArrayRenderer gpu_vertex_array_renderer_;
     ExtremalAxisAlignedBoundingBox<CompressedScenePos, 3> aabb_;
     ExtremalBoundingSphere<CompressedScenePos, 3> bounding_sphere_;
-    OpenGLVertexArrayRenderer gpu_vertex_array_renderer_;
+    #endif
 };
 
 std::ostream& operator << (std::ostream& ostr, const RenderableColoredVertexArray& rcvi);

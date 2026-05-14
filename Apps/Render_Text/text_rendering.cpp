@@ -11,7 +11,6 @@
 #include <Mlib/OpenGL/Gl_Context_Guard.hpp>
 #include <Mlib/OpenGL/OpenGL_Object_Factory.hpp>
 #include <Mlib/OpenGL/Renderables/OpenGL_Vertex_Array_Renderer.hpp>
-#include <Mlib/OpenGL/Rendering_Context.hpp>
 #include <Mlib/OpenGL/Resource_Managers/Particle_Resources.hpp>
 #include <Mlib/OpenGL/Resource_Managers/Rendering_Resources.hpp>
 #include <Mlib/OpenGL/Resource_Managers/Trail_Resources.hpp>
@@ -21,6 +20,7 @@
 #include <Mlib/OpenGL/Text/Text_Interpolation_Mode.hpp>
 #include <Mlib/OpenGL/Window.hpp>
 #include <Mlib/Physics/Units.hpp>
+#include <Mlib/Resource_Context/Rendering_Context.hpp>
 #include <Mlib/Scene_Graph/Render/Caching_Gpu_Object_Factory.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
 #include <Mlib/Threads/Realtime_Threads.hpp>

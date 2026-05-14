@@ -6,9 +6,6 @@
 #include <Mlib/Iterator/Enumerate.hpp>
 #include <Mlib/Iterator/Reverse_Iterator.hpp>
 #include <Mlib/Memory/Float_To_Integral.hpp>
-#include <Mlib/OpenGL/Renderables/Color_Cycle.hpp>
-#include <Mlib/OpenGL/Rendering_Context.hpp>
-#include <Mlib/OpenGL/Resource_Managers/Rendering_Resources.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Building.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Draw_Building_Part_Type.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Get_Smooth_Building_Levels.hpp>
@@ -16,6 +13,11 @@
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Osm_Resource_Config.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Steiner_Point_Info.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Vertex_Height_Binding.hpp>
+#include <Mlib/Scene_Graph/Resources/Sampler/Color_Cycle.hpp>
+#ifndef WITHOUT_GRAPHICS
+#include <Mlib/Resource_Context/Rendering_Context.hpp>
+#include <Mlib/OpenGL/Resource_Managers/Rendering_Resources.hpp>
+#endif
 
 using namespace Mlib;
 
@@ -37,7 +39,9 @@ void Mlib::draw_building_walls(
     const UUInterp<float, FixedArray<float, 3>>& height_colors,
     ColorCycle& color_cycle)
 {
+    #ifndef WITHOUT_GRAPHICS
     auto& primary_rendering_resources = RenderingContextStack::primary_rendering_resources();
+    #endif
     size_t mid = 0;
     for (const auto& bu : buildings) {
         auto outline = smooth_building_level_outline(
@@ -81,10 +85,12 @@ void Mlib::draw_building_walls(
             } else {
                 bottom_ambient_occlusion = 0.f;
             }
+#ifndef WITHOUT_GRAPHICS
             tl->meta.material.textures_color.reserve(bl.facade_texture_descriptor.names.size());
             for (const auto& name : bl.facade_texture_descriptor.names) {
                 tl->meta.material.textures_color.push_back(primary_rendering_resources.get_blend_map_texture(name));
             }
+#endif
             tl->meta.material.interior_textures = bl.facade_texture_descriptor.interior_textures;
             tl->meta.material.compute_color_mode();
             auto get_uv_ratio = [&bl, &scale](const std::list<BuildingSegment>& sw){

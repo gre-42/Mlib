@@ -58,7 +58,6 @@
 #include <Mlib/OpenGL/Render_Logics/Window_Logic.hpp>
 #include <Mlib/OpenGL/Render_Results.hpp>
 #include <Mlib/OpenGL/Renderables/OpenGL_Vertex_Array_Renderer.hpp>
-#include <Mlib/OpenGL/Rendering_Context.hpp>
 #include <Mlib/OpenGL/Resource_Managers/Particle_Resources.hpp>
 #include <Mlib/OpenGL/Resource_Managers/Rendering_Resources.hpp>
 #include <Mlib/OpenGL/Resource_Managers/Trail_Resources.hpp>
@@ -72,6 +71,7 @@
 #include <Mlib/OpenGL/Ui/Button_States.hpp>
 #include <Mlib/OpenGL/Ui/Cursor_States.hpp>
 #include <Mlib/Physics/Units.hpp>
+#include <Mlib/Resource_Context/Rendering_Context.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Animation_State.hpp>
 #include <Mlib/Scene_Graph/Elements/Light.hpp>

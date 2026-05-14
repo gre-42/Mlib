@@ -17,7 +17,25 @@
 
 using namespace Mlib;
 
+#ifdef WITHOUT_GRAPHICS
 CheckPointsPacenotes::CheckPointsPacenotes(
+    const std::string& pacenotes_filename,
+    const DanglingBaseClassRef<const CheckPoints>& check_points,
+    size_t nlaps,
+    double pacenotes_meters_read_ahead,
+    double pacenotes_minimum_covered_meters,
+    size_t pacenotes_maximum_number)
+    : check_points_{ check_points.ptr() }
+    , pacenote_reader_{ pacenotes_filename, nlaps, pacenotes_meters_read_ahead, pacenotes_minimum_covered_meters }
+    , on_destroy_check_points_{ check_points->on_destroy.deflt, CURRENT_SOURCE_LOCATION }
+#else
+CheckPointsPacenotes::CheckPointsPacenotes(
+    const std::string& pacenotes_filename,
+    const DanglingBaseClassRef<const CheckPoints>& check_points,
+    size_t nlaps,
+    double pacenotes_meters_read_ahead,
+    double pacenotes_minimum_covered_meters,
+    size_t pacenotes_maximum_number,
     RenderLogicGallery& gallery,
     const std::vector<std::string>& pictures_left,
     const std::vector<std::string>& pictures_right,
@@ -29,12 +47,6 @@ CheckPointsPacenotes::CheckPointsPacenotes(
     std::string charset,
     std::string ttf_filename,
     const FixedArray<float, 3>& font_color,
-    const std::string& pacenotes_filename,
-    const DanglingBaseClassRef<const CheckPoints>& check_points,
-    size_t nlaps,
-    double pacenotes_meters_read_ahead,
-    double pacenotes_minimum_covered_meters,
-    size_t pacenotes_maximum_number,
     FocusFilter focus_filter)
     : ew_{ std::move(ew) }
     , charset_{ std::move(charset) }
@@ -48,6 +60,7 @@ CheckPointsPacenotes::CheckPointsPacenotes(
     , display_{ gallery, text_, pictures_left, pictures_right }
     , focus_filter_{ std::move(focus_filter) }
     , on_destroy_check_points_{ check_points->on_destroy.deflt, CURRENT_SOURCE_LOCATION }
+#endif
 {
     pacenotes_.reserve(pacenotes_maximum_number);
     on_destroy_check_points_.add([this](){ global_object_pool.remove(this); }, CURRENT_SOURCE_LOCATION);
@@ -63,7 +76,9 @@ void CheckPointsPacenotes::advance_time(float dt, const StaticWorld& world) {
         return;
     }
     if (check_points_->has_meters_to_start()) {
+        #ifndef WITHOUT_GRAPHICS
         std::scoped_lock lock{mutex_};
+        #endif
         pacenotes_.clear();
         pacenote_reader_.read(
             check_points_->meters_to_start(),
@@ -77,6 +92,7 @@ void CheckPointsPacenotes::advance_time(float dt, const StaticWorld& world) {
     // }
 }
 
+#ifndef WITHOUT_GRAPHICS
 std::optional<RenderSetup> CheckPointsPacenotes::try_render_setup(
     const LayoutConstraintParameters& lx,
     const LayoutConstraintParameters& ly,
@@ -126,3 +142,4 @@ void CheckPointsPacenotes::print(std::ostream& ostr, size_t depth) const {
 void CheckPointsPacenotes::preload() const {
     display_.preload();
 }
+#endif

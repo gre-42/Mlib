@@ -33,7 +33,9 @@ void from_json(const nlohmann::json& j, ParticleContainer& pc);
 class SmokeParticleGenerator {
 public:
     SmokeParticleGenerator(
+        #ifndef WITHOUT_GRAPHICS
         RenderingResources& rendering_resources,
+        #endif
         SceneNodeResources& scene_node_resources,
         std::shared_ptr<IParticleRenderer> particle_renderer,
         Scene& scene,
@@ -81,11 +83,13 @@ public:
     std::string generate_suffix();
     void set_bullet_generator(BulletGenerator& bullet_generator);
 private:
-    RenderingResources& rendering_resources_;
-    SceneNodeResources& scene_node_resources_;
-    std::shared_ptr<IParticleRenderer> particle_renderer_;
     Scene& scene_;
+    #ifndef WITHOUT_GRAPHICS
+    SceneNodeResources& scene_node_resources_;
+    RenderingResources& rendering_resources_;
     RigidBodies& rigid_bodies_;
+    #endif
+    std::shared_ptr<IParticleRenderer> particle_renderer_;
     BulletGenerator* bullet_generator_;
 };
 

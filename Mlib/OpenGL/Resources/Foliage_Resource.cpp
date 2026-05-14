@@ -3,16 +3,15 @@
 #include <Mlib/Geometry/Graph/Points_And_Adjacency.hpp>
 #include <Mlib/Geometry/Instance/Rendering_Dynamics.hpp>
 #include <Mlib/Geometry/Mesh/Animated_Colored_Vertex_Arrays.hpp>
-#include <Mlib/OpenGL/Renderables/Triangle_Sampler/Renderable_Triangle_Sampler.hpp>
-#include <Mlib/OpenGL/Renderables/Triangle_Sampler/Terrain_Styles.hpp>
-#include <Mlib/OpenGL/Renderables/Triangle_Sampler/Terrain_Triangles.hpp>
-#include <Mlib/OpenGL/Renderables/Triangle_Sampler/Triangle_Sampler_Resource_Config.hpp>
-#include <Mlib/OpenGL/Resource_Managers/Rendering_Resources.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Make_Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Instantiation/Child_Instantiation_Options.hpp>
 #include <Mlib/Scene_Graph/Instantiation/Root_Instantiation_Options.hpp>
+#include <Mlib/Scene_Graph/Resources/Sampler/Triangle_Sampler/Renderable_Triangle_Sampler.hpp>
+#include <Mlib/Scene_Graph/Resources/Sampler/Triangle_Sampler/Terrain_Styles.hpp>
+#include <Mlib/Scene_Graph/Resources/Sampler/Triangle_Sampler/Terrain_Triangles.hpp>
+#include <Mlib/Scene_Graph/Resources/Sampler/Triangle_Sampler/Triangle_Sampler_Resource_Config.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
 #include <Mlib/Scene_Graph/Spawn_Point.hpp>
 
@@ -72,7 +71,9 @@ void FoliageResource::instantiate_root_renderables(const RootInstantiationOption
         std::nullopt,
         PoseInterpolationMode::DISABLED);
     instantiate_child_renderable(ChildInstantiationOptions{
+        #ifndef WITHOUT_GRAPHICS
         .rendering_resources = options.rendering_resources,
+        #endif
         .instance_name = options.instance_name,
         .scene_node = node.ref(CURRENT_SOURCE_LOCATION),
         .renderable_resource_filter = options.renderable_resource_filter});

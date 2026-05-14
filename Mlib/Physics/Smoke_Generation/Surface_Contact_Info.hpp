@@ -31,7 +31,9 @@ SurfaceSmokeAffinity surface_smoke_affinity_from_string(const std::string& s);
 
 struct SurfaceSmokeInfo {
     std::optional<SurfaceSmokeVisual> visual;
+    #ifndef WITHOUT_AUDIO
     std::unique_ptr<LazyOneShotAudio> audio;
+    #endif
     std::optional<VariableAndHash<std::string>> audio_resource_name;
     SurfaceSmokeAffinity affinity;
     SurfaceSmokeRule vehicle_velocity;

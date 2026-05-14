@@ -9,10 +9,6 @@
 #include <Mlib/Initialization/Default_Uninitialized_Vector.hpp>
 #include <Mlib/Map/Map.hpp>
 #include <Mlib/Math/Interp.hpp>
-#include <Mlib/OpenGL/Renderables/Color_And_Probability.hpp>
-#include <Mlib/OpenGL/Renderables/Triangle_Sampler/Terrain_Style.hpp>
-#include <Mlib/OpenGL/Renderables/Triangle_Sampler/Terrain_Type.hpp>
-#include <Mlib/OpenGL/Renderables/Triangle_Sampler/Triangle_Sampler_Resource_Config.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Barrier_Style.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Building.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Facade_Texture.hpp>
@@ -22,6 +18,10 @@
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Scene_Graph/Driving_Direction.hpp>
 #include <Mlib/Scene_Graph/Resources/Parsed_Resource_Name.hpp>
+#include <Mlib/Scene_Graph/Resources/Sampler/Color_And_Probability.hpp>
+#include <Mlib/Scene_Graph/Resources/Sampler/Triangle_Sampler/Terrain_Style.hpp>
+#include <Mlib/Scene_Graph/Resources/Sampler/Triangle_Sampler/Terrain_Type.hpp>
+#include <Mlib/Scene_Graph/Resources/Sampler/Triangle_Sampler/Triangle_Sampler_Resource_Config.hpp>
 #include <Mlib/Strings/Utf8_Path.hpp>
 #include <chrono>
 #include <cmath>

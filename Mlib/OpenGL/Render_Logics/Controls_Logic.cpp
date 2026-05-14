@@ -6,7 +6,7 @@
 #include <Mlib/Misc/Log.hpp>
 #include <Mlib/OpenGL/Render_Logics/Fill_With_Texture_Logic.hpp>
 #include <Mlib/OpenGL/Render_Setup.hpp>
-#include <Mlib/OpenGL/Rendering_Context.hpp>
+#include <Mlib/Resource_Context/Rendering_Context.hpp>
 
 using namespace Mlib;
 

@@ -42,8 +42,10 @@ void RootRenderableInstances::execute(const LoadSceneJsonUserFunctionArgs& args)
     scene_node_resources.instantiate_root_renderables(
         args.arguments.at<VariableAndHash<std::string>>(KnownArgs::resource),
         RootInstantiationOptions{
+            #ifndef WITHOUT_GRAPHICS
             .rendering_resources = &rendering_resources,
             .imposters = &deferred_instantiator,
+            #endif
             .supply_depots = &supply_depots,
             .instantiated_nodes = irno.has_value() ? &instantiated_root_nodes : nullptr,
             .instance_name = VariableAndHash{ args.arguments.at<std::string>(KnownArgs::name) },

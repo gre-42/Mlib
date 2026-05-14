@@ -114,6 +114,7 @@ struct RegisterJsonUserFunction {
             {
                 args.arguments.validate(KnownArgs::options);
                 auto emission = args.arguments.at<std::vector<SurfaceSmokeInfo>>(KnownArgs::emission);
+                #ifndef WITHOUT_AUDIO
                 for (auto& s : emission) {
                     if (s.audio_resource_name.has_value()) {
                         s.audio = std::make_unique<LazyOneShotAudio>(
@@ -121,6 +122,7 @@ struct RegisterJsonUserFunction {
                             *s.audio_resource_name);
                     }
                 }
+                #endif
                 args.surface_contact_db.store_contact_info(
                     SurfaceContactInfo{
                         .stiction_factor = args.arguments.at<float>(KnownArgs::stiction_factor),

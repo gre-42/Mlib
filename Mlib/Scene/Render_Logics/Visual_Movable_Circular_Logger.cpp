@@ -8,10 +8,10 @@
 #include <Mlib/Misc/Log.hpp>
 #include <Mlib/OpenGL/Render_Config.hpp>
 #include <Mlib/OpenGL/Render_Setup.hpp>
-#include <Mlib/OpenGL/Rendering_Context.hpp>
 #include <Mlib/OpenGL/Resource_Managers/Rendering_Resources.hpp>
 #include <Mlib/OpenGL/Text/Charsets.hpp>
 #include <Mlib/OpenGL/Text/Text_Interpolation_Mode.hpp>
+#include <Mlib/Resource_Context/Rendering_Context.hpp>
 #include <Mlib/Scene_Graph/Rendered_Scene_Descriptor.hpp>
 #include <Mlib/Scene_Graph/Status_Writer.hpp>
 

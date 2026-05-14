@@ -54,7 +54,11 @@ enum class SmoothnessTarget;
 
 class SceneNodeResources {
 public:
-    explicit SceneNodeResources(IGpuObjectFactory& gpu_object_factory);
+    explicit SceneNodeResources(
+        #ifndef WITHOUT_GRAPHICS
+        IGpuObjectFactory& gpu_object_factory
+        #endif
+    );
     ~SceneNodeResources();
 
     // Preload
@@ -203,11 +207,13 @@ private:
     mutable SafeAtomicRecursiveSharedMutex mutex_;
     mutable SafeAtomicRecursiveSharedMutex companion_mutex_;
 
+    #ifndef WITHOUT_GRAPHICS
     IGpuObjectFactory& gpu_object_factory_;
     mutable StringWithHashUnorderedMap<GpuVertexDatas> gpu_vertex_data_groups_;
     mutable SafeAtomicSharedMutex gpu_vertex_data_groups_mutex_;
     mutable VerboseUnorderedMap<std::shared_ptr<ColoredVertexArray<float>>, std::shared_ptr<IGpuVertexData>> gpu_vertex_datas_;
     mutable SafeAtomicSharedMutex gpu_vertex_datas_mutex_;
+    #endif
 };
 
 }

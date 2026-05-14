@@ -1,12 +1,12 @@
 #include "Collidable_Triangle_Sampler.hpp"
 #include <Mlib/Geometry/Mesh/Triangle_List.hpp>
-#include <Mlib/OpenGL/Renderables/Triangle_Sampler/Sample_Triangle_Interior_Instances.hpp>
-#include <Mlib/OpenGL/Renderables/Triangle_Sampler/Terrain_Styles.hpp>
-#include <Mlib/OpenGL/Renderables/Triangle_Sampler/Terrain_Triangles.hpp>
-#include <Mlib/OpenGL/Renderables/Triangle_Sampler/Terrain_Type.hpp>
 #include <Mlib/OpenGL/Resources/Heterogeneous_Resource.hpp>
 #include <Mlib/Scene_Graph/Descriptors/Resource_Instance_Descriptor.hpp>
 #include <Mlib/Scene_Graph/Resources/Batch_Resource_Instantiator.hpp>
+#include <Mlib/Scene_Graph/Resources/Sampler/Triangle_Sampler/Sample_Triangle_Interior_Instances.hpp>
+#include <Mlib/Scene_Graph/Resources/Sampler/Triangle_Sampler/Terrain_Styles.hpp>
+#include <Mlib/Scene_Graph/Resources/Sampler/Triangle_Sampler/Terrain_Triangles.hpp>
+#include <Mlib/Scene_Graph/Resources/Sampler/Triangle_Sampler/Terrain_Type.hpp>
 #include <list>
 #include <memory>
 

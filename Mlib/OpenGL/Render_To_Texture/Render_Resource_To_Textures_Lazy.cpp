@@ -9,8 +9,8 @@
 #include <Mlib/OpenGL/Render_Logics/Standard_Camera_Logic.hpp>
 #include <Mlib/OpenGL/Render_Logics/Standard_Render_Logic.hpp>
 #include <Mlib/OpenGL/Render_To_Texture/Render_Logic_To_Textures_Lazy.hpp>
-#include <Mlib/OpenGL/Rendering_Context.hpp>
 #include <Mlib/OpenGL/Selected_Cameras/Selected_Cameras.hpp>
+#include <Mlib/Resource_Context/Rendering_Context.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Light.hpp>
 #include <Mlib/Scene_Graph/Elements/Make_Scene_Node.hpp>

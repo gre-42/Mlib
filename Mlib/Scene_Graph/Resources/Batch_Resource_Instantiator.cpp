@@ -126,7 +126,9 @@ void BatchResourceInstantiator::instantiate_root_renderables(
             scene_node_resources.instantiate_child_renderable(
                 p.name,
                 ChildInstantiationOptions{
+                    #ifndef WITHOUT_GRAPHICS
                     .rendering_resources = options.rendering_resources,
+                    #endif
                     .instance_name = p.name,
                     .scene_node = node.ref(CURRENT_SOURCE_LOCATION),
                     .interpolation_mode = PoseInterpolationMode::DISABLED,
@@ -137,12 +139,14 @@ void BatchResourceInstantiator::instantiate_root_renderables(
                 options.scene.auto_add_root_node(node_name, std::move(node), RenderingDynamics::MOVING);
             } else {
                 if (p.aggregate_mode == AggregateMode::NONE) {
+                    #ifndef WITHOUT_GRAPHICS
                     if (p.create_imposter) {
                         if (options.imposters == nullptr) {
                             throw std::runtime_error("Imposter requested, but no imposters available");
                         }
                         options.imposters->set_imposter_info(node.ref(CURRENT_SOURCE_LOCATION), { *node_name, p.max_imposter_texture_size });
                     }
+                    #endif
                     options.scene.auto_add_root_node(
                         node_name,
                         std::move(node),
@@ -186,7 +190,9 @@ void BatchResourceInstantiator::instantiate_root_renderables(
                 scene_node_resources.instantiate_child_renderable(
                     name,
                     ChildInstantiationOptions{
+                        #ifndef WITHOUT_GRAPHICS
                         .rendering_resources = options.rendering_resources,
+                        #endif
                         .instance_name = name,
                         .scene_node = node.ref(CURRENT_SOURCE_LOCATION),
                         .interpolation_mode = PoseInterpolationMode::DISABLED,

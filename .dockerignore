@@ -1,2 +1,11 @@
-UDebug
-URelease
+Dockerfile*
+Caches
+*Debug
+*Release
+*RelWithDebInfo
+*VS*
+*RecastBuild
+*.pyc
+OpenAL
+engine-sim
+Android

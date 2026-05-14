@@ -1,9 +1,9 @@
 #pragma once
 #include <Mlib/Geometry/Mesh/Triangle_Sampler2.hpp>
 #include <Mlib/Geometry/Primitives/Bvh_Fwd.hpp>
-#include <Mlib/OpenGL/Renderables/Triangle_Sampler/Resource_Name_Cycle.hpp>
-#include <Mlib/OpenGL/Renderables/Triangle_Sampler/Terrain_Style.hpp>
 #include <Mlib/Scene_Config/Scene_Precision.hpp>
+#include <Mlib/Scene_Graph/Resources/Sampler/Triangle_Sampler/Resource_Name_Cycle.hpp>
+#include <Mlib/Scene_Graph/Resources/Sampler/Triangle_Sampler/Terrain_Style.hpp>
 #include <list>
 #include <memory>
 

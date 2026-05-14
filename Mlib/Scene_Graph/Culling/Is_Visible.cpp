@@ -28,11 +28,13 @@ bool Mlib::is_visible(
             " (0): Billboard id = " + std::to_string(billboard_id) +
             ", atlas size = " + std::to_string(material.billboard_atlas_instances.size()));
     }
+    #ifndef WITHOUT_GRAPHICS
     if ((scene_graph_config.renderable_hider != nullptr) &&
         !scene_graph_config.renderable_hider->is_visible(object_name))
     {
         return false;
     }
+    #endif
     if (external_render_pass != ExternalRenderPassType::STANDARD_AND_LOCAL_LIGHTMAP)
     {
         if (any(external_render_pass & ExternalRenderPassType::LIGHTMAP_ANY_MASK) ||

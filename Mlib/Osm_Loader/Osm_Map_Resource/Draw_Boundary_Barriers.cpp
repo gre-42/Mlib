@@ -5,10 +5,12 @@
 #include <Mlib/Geometry/Mesh/Triangle_List.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>
 #include <Mlib/Memory/Integral_Cast.hpp>
-#include <Mlib/OpenGL/Rendering_Context.hpp>
-#include <Mlib/OpenGL/Resource_Managers/Rendering_Resources.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Barrier_Style.hpp>
 #include <stdexcept>
+#ifndef WITHOUT_GRAPHICS
+#include <Mlib/Resource_Context/Rendering_Context.hpp>
+#include <Mlib/OpenGL/Resource_Managers/Rendering_Resources.hpp>
+#endif
 
 using namespace Mlib;
 
@@ -31,7 +33,9 @@ void Mlib::draw_boundary_barriers(
     const BarrierStyle& barrier_style,
     ContourDetectionStrategy contour_detection_strategy)
 {
+    #ifndef WITHOUT_GRAPHICS
     auto& primary_rendering_resources = RenderingContextStack::primary_rendering_resources();
+    #endif
     auto contours = find_contours(inner_triangles, contour_detection_strategy);
     const auto& tl = tls.emplace_back(std::make_shared<TriangleList<CompressedScenePos>>(
         "boundary_barriers",
@@ -46,7 +50,9 @@ void Mlib::draw_boundary_barriers(
     //     contours,
     //     {});
 
+    #ifndef WITHOUT_GRAPHICS
     tl->meta.material.textures_color = { primary_rendering_resources.get_blend_map_texture(barrier_style.texture) };
+    #endif
     tl->meta.material.blend_mode = barrier_style.blend_mode;
     tl->meta.material.cull_faces = barrier_style.cull_faces;
     tl->meta.material.reorient_uv0 = barrier_style.reorient_uv0;

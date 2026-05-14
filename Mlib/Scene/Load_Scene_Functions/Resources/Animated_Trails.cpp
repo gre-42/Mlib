@@ -4,11 +4,11 @@
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Misc/Argument_List.hpp>
 #include <Mlib/OpenGL/Batch_Renderers/Trails_Instance.hpp>
-#include <Mlib/OpenGL/Rendering_Context.hpp>
 #include <Mlib/OpenGL/Resource_Managers/Trail_Resources.hpp>
 #include <Mlib/OpenGL/Resources/Colored_Vertex_Array_Resource/Trail_Extender.hpp>
 #include <Mlib/OpenGL/Resources/Colored_Vertex_Array_Resource/Trail_Storage.hpp>
 #include <Mlib/Physics/Units.hpp>
+#include <Mlib/Resource_Context/Rendering_Context.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Load_Scene_Funcs.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>

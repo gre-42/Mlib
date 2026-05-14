@@ -18,7 +18,10 @@ void replace_terrain_material(
     double uv_scale,
     double uv_period,
     UpAxis up_axis,
-    SceneNodeResources& scene_node_resources,
-    RenderingResources& rendering_resources);
+    SceneNodeResources& scene_node_resources
+    #ifndef WITHOUT_GRAPHICS
+    , RenderingResources& rendering_resources
+    #endif
+    );
 
 }

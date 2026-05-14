@@ -1,13 +1,15 @@
 #include <Mlib/Geometry/Material/Color_Mode.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Misc/Argument_List.hpp>
+#include <Mlib/Scene/Json_User_Function_Args.hpp>
+#include <Mlib/Scene/Load_Scene_Funcs.hpp>
+#ifndef WITHOUT_GRAPHICS
 #include <Mlib/OpenGL/Render_Logic_Gallery.hpp>
 #include <Mlib/OpenGL/Render_Logics/Fill_With_Texture_Logic.hpp>
 #include <Mlib/OpenGL/Render_Logics/Resource_Update_Cycle.hpp>
-#include <Mlib/OpenGL/Rendering_Context.hpp>
+#include <Mlib/Resource_Context/Rendering_Context.hpp>
 #include <Mlib/OpenGL/Resource_Managers/Rendering_Resources.hpp>
-#include <Mlib/Scene/Json_User_Function_Args.hpp>
-#include <Mlib/Scene/Load_Scene_Funcs.hpp>
+#endif
 
 using namespace Mlib;
 
@@ -28,6 +30,7 @@ struct RegisterJsonUserFunction {
             [](const LoadSceneJsonUserFunctionArgs& args)
             {
                 args.arguments.validate(KnownArgs::options);
+#ifndef WITHOUT_GRAPHICS
                 args.gallery.insert(
                     args.arguments.at<std::string>(KnownArgs::instance),
                     std::make_unique<FillWithTextureLogic>(
@@ -43,6 +46,7 @@ struct RegisterJsonUserFunction {
                         args.arguments.at<bool>(KnownArgs::flip_horizontally, false)
                             ? horizontally_flipped_quad_vertices
                             : standard_quad_vertices));
+#endif
             });
     }
 } obj;

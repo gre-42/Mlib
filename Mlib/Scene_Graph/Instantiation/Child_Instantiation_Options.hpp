@@ -13,7 +13,9 @@ template <class T>
 class VariableAndHash;
 
 struct ChildInstantiationOptions {
+    #ifndef WITHOUT_GRAPHICS
     RenderingResources* rendering_resources = nullptr;
+    #endif
     const VariableAndHash<std::string>& instance_name;
     DanglingBaseClassRef<SceneNode> scene_node;
     std::optional<std::chrono::steady_clock::time_point> time;

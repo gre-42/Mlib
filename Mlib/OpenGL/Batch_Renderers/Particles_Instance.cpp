@@ -5,17 +5,20 @@
 #include <Mlib/Math/Transformation/Translation_Matrix.hpp>
 #include <Mlib/OpenGL/Batch_Renderers/Infer_Shader_Properties.hpp>
 #include <Mlib/OpenGL/Renderables/Renderable_Colored_Vertex_Array.hpp>
-#include <Mlib/OpenGL/Rendering_Context.hpp>
 #include <Mlib/OpenGL/Resources/Colored_Vertex_Array_Resource.hpp>
 #include <Mlib/OpenGL/Resources/Colored_Vertex_Array_Resource/Clear_On_Update.hpp>
-#include <Mlib/OpenGL/Resources/Colored_Vertex_Array_Resource/Dynamic_Instance_Buffers.hpp>
+#include <Mlib/Resource_Context/Rendering_Context.hpp>
 #include <Mlib/Scene_Graph/Instances/Static_World.hpp>
 #include <Mlib/Scene_Graph/Render/Caching_Behavior.hpp>
 #include <Mlib/Scene_Graph/Render/IGpu_Vertex_Data.hpp>
 #include <Mlib/Scene_Graph/Render_Pass.hpp>
+#ifndef WITHOUT_GRAPHICS
+#include <Mlib/OpenGL/Resources/Colored_Vertex_Array_Resource/Dynamic_Instance_Buffers.hpp>
+#endif
 
 using namespace Mlib;
 
+#ifndef WITHOUT_GRAPHICS
 static ClearOnUpdate get_clear_on_update(ParticleType particle_type) {
     switch (particle_type) {
         case ParticleType::NONE: throw std::runtime_error("Partice type \"none\" does not require a particles instance");
@@ -26,13 +29,16 @@ static ClearOnUpdate get_clear_on_update(ParticleType particle_type) {
     }
     throw std::runtime_error("Unknown particle substrate");
 }
+#endif
 
 ParticlesInstance::ParticlesInstance(
     const std::shared_ptr<IGpuVertexData>& vertex_data,
     size_t max_num_instances,
     const RenderableResourceFilter& filter,
     ParticleType particle_type)
-    : offset_((ScenePos)NAN)
+    #ifndef WITHOUT_GRAPHICS
+    : particle_type_{ particle_type }
+    , offset_((ScenePos)NAN)
     , dynamic_instance_buffers_{ std::make_shared<DynamicInstanceBuffers>(
         vertex_data->mesh_meta().material.transformation_mode,
         max_num_instances,
@@ -41,7 +47,7 @@ ParticlesInstance::ParticlesInstance(
         get_clear_on_update(particle_type)) }
     , cvar_{ std::make_shared<ColoredVertexArrayResource>(vertex_data, dynamic_instance_buffers_) }
     , rcva_{ std::make_unique<RenderableColoredVertexArray>(RenderingContextStack::primary_rendering_resources(), cvar_, CachingBehavior::DISABLED, filter) }
-    , particle_type_{ particle_type }
+    #endif
 {}
 
 ParticlesInstance::~ParticlesInstance() = default;
@@ -51,7 +57,11 @@ ParticleType ParticlesInstance::particle_type() const {
 }
 
 size_t ParticlesInstance::num_billboard_atlas_components() const {
+    #ifdef WITHOUT_GRAPHICS
+    return 0;
+    #else
     return dynamic_instance_buffers_->num_billboard_atlas_components();
+    #endif
 }
 
 void ParticlesInstance::add_particle(
@@ -62,6 +72,7 @@ void ParticlesInstance::add_particle(
     float air_resistance_halflife,
     float texture_layer)
 {
+    #ifndef WITHOUT_GRAPHICS
     // Lock must be above the condition for "ClearOnUpdate::YES".
     std::scoped_lock lock{ mutex_ };
     if (dynamic_instance_buffers_->tmp_length() < dynamic_instance_buffers_->capacity()) {
@@ -73,15 +84,22 @@ void ParticlesInstance::add_particle(
             (transformation_matrix.t - offset_).casted<float>()};
         dynamic_instance_buffers_->append(time, trafo, sequence, velocity, air_resistance_halflife, texture_layer);
     }
+    #endif
 }
 
 void ParticlesInstance::move(float dt, const StaticWorld& world) {
+    #ifndef WITHOUT_GRAPHICS
     std::scoped_lock lock{ mutex_ };
     dynamic_instance_buffers_->set_wind_vector(world.wind->vector);
+    #endif
 }
 
 void ParticlesInstance::preload() const {
+    #ifdef WITHOUT_GRAPHICS
+    throw std::runtime_error("ParticlesInstance::preload called without graphics support");
+    #else
     cvar_->preload(filter_);
+    #endif
 }
 
 void ParticlesInstance::render(
@@ -94,6 +112,9 @@ void ParticlesInstance::render(
     const RenderConfig& render_config,
     const RenderedSceneDescriptor& frame_id) const
 {
+    #ifdef WITHOUT_GRAPHICS
+    throw std::runtime_error("ParticlesInstance::render called without graphics support");
+    #else
     FixedArray<ScenePos, 3> offset = uninitialized;
     {
         // AperiodicLagFinder lag_finder{ "update " + std::to_string(instances->num_instances()) + " instances " + cva->name + ": ", std::chrono::milliseconds{5} };
@@ -120,4 +141,5 @@ void ParticlesInstance::render(
         { frame_id, InternalRenderPass::PARTICLES },
         nullptr,        // animation_state,
         nullptr);       // color_style
+    #endif
 }

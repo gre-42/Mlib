@@ -4,7 +4,7 @@
 #include <Mlib/Memory/Recursive_Deletion.hpp>
 #include <Mlib/Misc/Log.hpp>
 #include <Mlib/OpenGL/Render_Setup.hpp>
-#include <Mlib/OpenGL/Rendering_Context.hpp>
+#include <Mlib/Resource_Context/Rendering_Context.hpp>
 #include <mutex>
 #include <stdexcept>
 

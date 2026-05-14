@@ -12,14 +12,18 @@ std::shared_ptr<ISceneNodeResource> Mlib::load_renderable_kn5(
     const Utf8Path& file_or_directory,
     const LoadMeshConfig<TPos>& cfg,
     const SceneNodeResources& scene_node_resources,
+    #ifndef WITHOUT_GRAPHICS
     IDdsResources* dds_resources,
+    #endif
     IRaceLogic* race_logic)
 {
     auto hr = std::make_shared<HeterogeneousResource>(scene_node_resources);
     hr->acvas->template cvas<TPos>() = load_kn5_array<TPos>(
         file_or_directory,
         cfg,
+        #ifndef WITHOUT_GRAPHICS
         dds_resources,
+        #endif
         race_logic);
     return hr;
 }
@@ -29,12 +33,16 @@ template std::shared_ptr<ISceneNodeResource> load_renderable_kn5(
     const Utf8Path& file_or_directory,
     const LoadMeshConfig<float>&,
     const SceneNodeResources&,
+    #ifndef WITHOUT_GRAPHICS
     IDdsResources*,
+    #endif
     IRaceLogic*);
 template std::shared_ptr<ISceneNodeResource> load_renderable_kn5(
     const Utf8Path& file_or_directory,
     const LoadMeshConfig<CompressedScenePos>&,
     const SceneNodeResources&,
+    #ifndef WITHOUT_GRAPHICS
     IDdsResources*,
+    #endif
     IRaceLogic*);
 }

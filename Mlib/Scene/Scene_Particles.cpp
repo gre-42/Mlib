@@ -10,14 +10,20 @@ using namespace Mlib;
 
 SceneParticles::SceneParticles(
     SceneNodeResources& scene_node_resources,
+    #ifndef WITHOUT_GRAPHICS
     RenderingResources& rendering_resources,
+    #endif
     ParticleResources& particle_resources,
     Scene& scene,
     RigidBodies& rigid_bodies,
     const VariableAndHash<std::string>& node_name,
     ParticleType particle_type)
     : particle_renderer{ std::make_shared<ParticleRenderer>(particle_resources, particle_type) }
+    #ifdef WITHOUT_GRAPHICS
+    , smoke_particle_generator{ scene_node_resources, particle_renderer, scene, rigid_bodies }
+    #else
     , smoke_particle_generator{ rendering_resources, scene_node_resources, particle_renderer, scene, rigid_bodies }
+    #endif
 {
     switch (particle_type) {
         case ParticleType::NONE:

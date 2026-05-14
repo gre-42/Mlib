@@ -28,7 +28,9 @@ int main(int argc, char **argv) {
                 auto arrays = load_pssg_arrays<float, float>(
                     model,
                     LoadMeshConfig<float>{},
+                    #ifndef WITHOUT_GRAPHICS
                     nullptr,    // dds_resources
+                    #endif
                     "",         // resource_prefix
                     IoVerbosity::METADATA);
             }

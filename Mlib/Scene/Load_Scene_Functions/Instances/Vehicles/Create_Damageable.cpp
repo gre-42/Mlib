@@ -1,8 +1,5 @@
 #include "Create_Damageable.hpp"
-#include <Mlib/Audio/Audio_Periodicity.hpp>
-#include <Mlib/Audio/Audio_Resource_Context.hpp>
-#include <Mlib/Audio/Audio_Resources.hpp>
-#include <Mlib/Audio/One_Shot_Audio.hpp>
+#include <Mlib/Audio/Audio_Entity_State.hpp>
 #include <Mlib/Macro_Executor/Asset_Group_And_Id.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Macro_Executor/Translator.hpp>
@@ -17,6 +14,12 @@
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <stdexcept>
+#ifndef WITHOUT_AUDIO
+#include <Mlib/Audio/Audio_Periodicity.hpp>
+#include <Mlib/Audio/Audio_Resource_Context.hpp>
+#include <Mlib/Audio/Audio_Resources.hpp>
+#include <Mlib/Audio/One_Shot_Audio.hpp>
+#endif
 
 using namespace Mlib;
 
@@ -81,6 +84,7 @@ void CreateDamageable::execute(const JsonView& args)
                 };
             }
             std::function<void(const AudioSourceState<ScenePos>&, const StaticWorld&)> generate_explosion_audio;
+            #ifndef WITHOUT_AUDIO
             if (auto a = ev.try_at<VariableAndHash<std::string>>(KnownExplosionArgs::audio); a.has_value()) {
                 generate_explosion_audio =
                 [
@@ -92,15 +96,16 @@ void CreateDamageable::execute(const JsonView& args)
                 {
                     o.play(
                         *shot_audio_buffer,
-#ifndef USE_PCM_FILTERS
+                        #ifndef USE_PCM_FILTERS
                         shot_audio_meta.lowpass.get(),
-#endif
+                        #endif
                         state,
                         AudioPeriodicity::APERIODIC,
                         shot_audio_meta.distance_clamping,
                         shot_audio_meta.gain);
                 };
             }
+            #endif
             std::function<void(const AudioSourceState<ScenePos>&, const StaticWorld&)> generate_explosion =
                 [animation=std::move(generate_explosion_animation),
                 audio=std::move(generate_explosion_audio)]

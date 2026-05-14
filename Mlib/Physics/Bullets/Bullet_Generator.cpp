@@ -28,7 +28,9 @@
 using namespace Mlib;
 
 BulletGenerator::BulletGenerator(
+    #ifndef WITHOUT_GRAPHICS
     RenderingResources* rendering_resources,
+    #endif
     Scene& scene,
     SceneNodeResources& scene_node_resources,
     SmokeParticleGenerator& smoke_generator,
@@ -43,8 +45,10 @@ BulletGenerator::BulletGenerator(
     std::function<UpdateAudioSourceState(
         const AudioSourceState<ScenePos>& state,
         const VariableAndHash<std::string>& audio_resource)> generate_bullet_engine_audio)
-    : rendering_resources_{ rendering_resources }
-    , scene_{ scene }
+    : scene_{ scene }
+    #ifndef WITHOUT_GRAPHICS
+    , rendering_resources_{ rendering_resources }
+    #endif
     , scene_node_resources_{ scene_node_resources }
     , smoke_generator_{ smoke_generator }
     , dynamic_lights_{ dynamic_lights }
@@ -142,6 +146,7 @@ void BulletGenerator::generate_bullet(
         auto rc = DanglingBaseClassRef<RigidBodyVehicle>{*rcu, CURRENT_SOURCE_LOCATION};
         {
             AbsoluteMovableSetter ams{ scene_, node.ref(CURRENT_SOURCE_LOCATION), bullet_node_name, std::move(rcu), CURRENT_SOURCE_LOCATION };
+            #ifndef WITHOUT_GRAPHICS
             if (!bullet_properties.renderable_resource_name->empty()) {
                 scene_node_resources_.instantiate_child_renderable(
                     bullet_properties.renderable_resource_name,
@@ -152,6 +157,7 @@ void BulletGenerator::generate_bullet(
                         .interpolation_mode = PoseInterpolationMode::ENABLED,
                         .renderable_resource_filter = RenderableResourceFilter{} });
             }
+            #endif
             if (bullet_properties.hitbox_resource_name->empty()) {
                 rigid_bodies_.add_rigid_body(
                     *ams.absolute_movable,

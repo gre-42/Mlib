@@ -4,13 +4,13 @@
 #include <Mlib/Images/Bilinear_Interpolation.hpp>
 #include <Mlib/Math/Interp.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
-#include <Mlib/OpenGL/Renderables/Triangle_Sampler/Terrain_Type.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Entrance_Type.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Height_Sampler.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Node_Height_Binding.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Osm_Map_Resource_Helpers.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Osm_Triangle_Lists.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Vertex_Height_Binding.hpp>
+#include <Mlib/Scene_Graph/Resources/Sampler/Triangle_Sampler/Terrain_Type.hpp>
 #include <Mlib/Strings/String_View_To_Number.hpp>
 #include <stdexcept>
 

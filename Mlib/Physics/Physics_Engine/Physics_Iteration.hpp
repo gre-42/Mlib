@@ -28,7 +28,9 @@ class PhysicsIteration {
 public:
     PhysicsIteration(
         SceneNodeResources& scene_node_resources,
+        #ifndef WITHOUT_GRAPHICS
         RenderingResources& rendering_resources,
+        #endif
         Scene& scene,
         DynamicWorld& dynamic_world,
         PhysicsEngine& physics_engine,
@@ -39,7 +41,9 @@ public:
     void operator()(const TimeAndPause<std::chrono::steady_clock::time_point>& time);
 private:
     SceneNodeResources& scene_node_resources_;
+    #ifndef WITHOUT_GRAPHICS
     RenderingResources& rendering_resources_;
+    #endif
     Scene& scene_;
     DynamicWorld& dynamic_world_;
     PhysicsEngine& physics_engine_;

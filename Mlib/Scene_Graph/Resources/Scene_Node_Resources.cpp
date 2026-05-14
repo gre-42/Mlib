@@ -30,7 +30,10 @@
 using namespace Mlib;
 
 SceneNodeResources::SceneNodeResources(
-    IGpuObjectFactory& gpu_object_factory)
+    #ifndef WITHOUT_GRAPHICS
+    IGpuObjectFactory& gpu_object_factory
+    #endif
+)
     : resources_{ "Resource" }
     , instantiables_{ "Instantiable" }
     , geographic_mappings_{ "Geographic mapping" }
@@ -39,9 +42,11 @@ SceneNodeResources::SceneNodeResources(
     , companions_{ "Companion" }
     , resource_loaders_{ "Resource loader" }
     , modifiers_{ "Modifier" }
+    #ifndef WITHOUT_GRAPHICS
     , gpu_object_factory_{ gpu_object_factory }
     , gpu_vertex_data_groups_{ "GPU vertex data group" }
     , gpu_vertex_datas_{ "GPU vertex data", [](const auto& scva){ return scva->meta.name.full_name(); } }
+    #endif
 {}
 
 SceneNodeResources::~SceneNodeResources() = default;
@@ -148,7 +153,9 @@ void SceneNodeResources::instantiate_child_renderable(
                 instantiate_child_renderable(
                     resource_name,
                     ChildInstantiationOptions{
+                        #ifndef WITHOUT_GRAPHICS
                         .rendering_resources = options.rendering_resources,
+                        #endif
                         .instance_name = VariableAndHash{ *options.instance_name + "/" + *resource_name },
                         .scene_node = options.scene_node,
                         .renderable_resource_filter = filter},
@@ -183,7 +190,9 @@ void SceneNodeResources::instantiate_root_renderables(
                 instantiate_root_renderables(
                     resource_name,
                     RootInstantiationOptions{
+                        #ifndef WITHOUT_GRAPHICS
                         .rendering_resources = options.rendering_resources,
+                        #endif
                         .supply_depots = options.supply_depots,
                         .instantiated_nodes = options.instantiated_nodes,
                         .instance_name = VariableAndHash{ *options.instance_name + "/" + *resource_name },
@@ -649,6 +658,9 @@ const InstanceInformation<ScenePos>& SceneNodeResources::instantiable(
 const GpuVertexDatas& SceneNodeResources::get_gpu_vertex_data_group(
     const VariableAndHash<std::string>& name) const
 {
+    #ifdef WITHOUT_GRAPHICS
+    throw std::runtime_error("SceneNodeResources::get_gpu_vertex_data_group called without graphics support");
+    #else
     {
         std::shared_lock lock{gpu_vertex_data_groups_mutex_};
         if (auto it = gpu_vertex_data_groups_.try_get(name); it != nullptr) {
@@ -678,12 +690,16 @@ const GpuVertexDatas& SceneNodeResources::get_gpu_vertex_data_group(
         }
     }
     return gpu_vertex_data_groups_.add(name, std::move(result));
+    #endif
 }
 
 std::shared_ptr<IGpuVertexData> SceneNodeResources::get_gpu_vertex_data(
     const std::shared_ptr<ColoredVertexArray<float>>& scva,
     const std::shared_ptr<AnimatedColoredVertexArrays>& acvas) const
 {
+    #ifdef WITHOUT_GRAPHICS
+    throw std::runtime_error("SceneNodeResources::get_gpu_vertex_data called without graphics support");
+    #else
     {
         std::shared_lock lock{gpu_vertex_datas_mutex_};
         if (auto it = gpu_vertex_datas_.try_get(scva); it != nullptr) {
@@ -695,4 +711,5 @@ std::shared_ptr<IGpuVertexData> SceneNodeResources::get_gpu_vertex_data(
         return *it;
     }
     return gpu_vertex_datas_.add(scva, gpu_object_factory_.create_vertex_data(scva, acvas, CachingBehavior::ENABLED, TaskLocation::BACKGROUND));
+    #endif
 }

@@ -18,7 +18,9 @@ void Mlib::instantiate(
     const InstanceInformation<ScenePos>& info,
     std::optional<std::chrono::steady_clock::time_point> time,
     SceneNodeResources& scene_node_resources,
+    #ifndef WITHOUT_GRAPHICS
     RenderingResources& rendering_resources,
+    #endif
     const std::set<std::string>& required_prefixes,
     const std::set<VariableAndHash<std::string>>& exclude,
     std::set<VariableAndHash<std::string>>* instantiated_resources,
@@ -45,7 +47,9 @@ void Mlib::instantiate(
     scene_node_resources.instantiate_child_renderable(
         info.resource_name,
         ChildInstantiationOptions{
+            #ifndef WITHOUT_GRAPHICS
             .rendering_resources = &rendering_resources,
+            #endif
             .instance_name = name,
             .scene_node = node.ref(CURRENT_SOURCE_LOCATION),
             .renderable_resource_filter = RenderableResourceFilter{}},

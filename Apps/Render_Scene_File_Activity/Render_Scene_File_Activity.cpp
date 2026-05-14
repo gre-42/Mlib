@@ -1,19 +1,3 @@
-#ifdef __ANDROID__
-#include <Mlib/AGameHelper/Android/AContext.hpp>
-#include <Mlib/AGameHelper/Android/AEngine.hpp>
-#include <Mlib/AGameHelper/Android/ARenderLoop.hpp>
-#include <Mlib/AGameHelper/Android/AWindow.hpp>
-#include <Mlib/Os/Android/AUi.hpp>
-#include <Mlib/Os/Android/AndroidApp.hpp>
-#include <Mlib/Os/Android/NDKHelper.h>
-#endif
-#ifdef __EMSCRIPTEN__
-#include <Mlib/AGameHelper/Emscripten/AAnimation_Frame_Worker.hpp>
-#include <Mlib/AGameHelper/Emscripten/AContext.hpp>
-#include <Mlib/AGameHelper/Emscripten/AEngine.hpp>
-#include <Mlib/AGameHelper/Emscripten/ARenderLoop.hpp>
-#include <Mlib/Os/Emscripten/AUi.hpp>
-#endif
 #include <Mlib/Array/Verbose_Vector.hpp>
 #include <Mlib/Audio/Audio_Context.hpp>
 #include <Mlib/Audio/Audio_Device.hpp>
@@ -52,7 +36,6 @@
 #include <Mlib/OpenGL/Render_Logics/Menu_Logic.hpp>
 #include <Mlib/OpenGL/Render_Logics/Window_Logic.hpp>
 #include <Mlib/OpenGL/Renderables/OpenGL_Vertex_Array_Renderer.hpp>
-#include <Mlib/OpenGL/Rendering_Context.hpp>
 #include <Mlib/OpenGL/Resource_Managers/Particle_Resources.hpp>
 #include <Mlib/OpenGL/Resource_Managers/Trail_Resources.hpp>
 #include <Mlib/OpenGL/Text/Charsets.hpp>
@@ -64,16 +47,17 @@
 #include <Mlib/OpenGL/Viewport_Guard.hpp>
 #include <Mlib/OpenGL/Window.hpp>
 #include <Mlib/Os/Env.hpp>
-#include <Mlib/Regex/Pathes.hpp>
-#include <Mlib/Regex/Pathes.hpp>
 #include <Mlib/Physics/Bullets/Bullet_Property_Db.hpp>
 #include <Mlib/Physics/Dynamic_Lights/Dynamic_Light_Db.hpp>
 #include <Mlib/Physics/Smoke_Generation/Surface_Contact_Db.hpp>
 #include <Mlib/Players/Containers/Remote_Sites.hpp>
 #include <Mlib/Players/Containers/Users.hpp>
+#include <Mlib/Regex/Pathes.hpp>
+#include <Mlib/Regex/Pathes.hpp>
 #include <Mlib/Remote/Incremental_Objects/Scene_Level.hpp>
 #include <Mlib/Remote/Remote_Params.hpp>
 #include <Mlib/Remote/Remote_Role.hpp>
+#include <Mlib/Resource_Context/Rendering_Context.hpp>
 #include <Mlib/Scene/Load_Scene.hpp>
 #include <Mlib/Scene/Physics_Scene.hpp>
 #include <Mlib/Scene/Physics_Scenes.hpp>
@@ -96,6 +80,22 @@
 #include <Mlib/Time/Time_And_Pause.hpp>
 #include <filesystem>
 #include <thread>
+#ifdef __ANDROID__
+#include <Mlib/AGameHelper/Android/AContext.hpp>
+#include <Mlib/AGameHelper/Android/AEngine.hpp>
+#include <Mlib/AGameHelper/Android/ARenderLoop.hpp>
+#include <Mlib/AGameHelper/Android/AWindow.hpp>
+#include <Mlib/Os/Android/AUi.hpp>
+#include <Mlib/Os/Android/AndroidApp.hpp>
+#include <Mlib/Os/Android/NDKHelper.h>
+#endif
+#ifdef __EMSCRIPTEN__
+#include <Mlib/AGameHelper/Emscripten/AAnimation_Frame_Worker.hpp>
+#include <Mlib/AGameHelper/Emscripten/AContext.hpp>
+#include <Mlib/AGameHelper/Emscripten/AEngine.hpp>
+#include <Mlib/AGameHelper/Emscripten/ARenderLoop.hpp>
+#include <Mlib/Os/Emscripten/AUi.hpp>
+#endif
 
 using namespace Mlib;
 

@@ -9,7 +9,6 @@
 #include <Mlib/Geometry/Primitives/Intersectors/Swept_Sphere_Aabb.hpp>
 #include <Mlib/Geometry/Rectangle_Triangulation_Mode.hpp>
 #include <Mlib/Math/Fixed_Test.hpp>
-#include <Mlib/OpenGL/Rendering_Context.hpp>
 #include <Mlib/OpenGL/Resources/Colored_Vertex_Array_Resource.hpp>
 #include <Mlib/OpenGL/Resources/Obj_File_Resource.hpp>
 #include <Mlib/Os/Env.hpp>
@@ -18,6 +17,7 @@
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Primitives.hpp>
 #include <Mlib/Physics/Units.hpp>
+#include <Mlib/Resource_Context/Rendering_Context.hpp>
 #include <Mlib/Scene_Config/Physics_Engine_Config.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Absolute_Movable_Setter.hpp>

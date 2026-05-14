@@ -11,6 +11,8 @@
 
 namespace Mlib {
 
+struct RemoteSocket;
+
 struct ReceivedMessage {
     std::vector<std::byte> message;
     std::unique_ptr<ISendSocket> reply_socket;
@@ -18,9 +20,7 @@ struct ReceivedMessage {
 
 class UdpNode: public ISendSocket, public IReceiveSocket {
 public:
-    UdpNode(
-        const std::string& ip_address,
-        uint16_t port);
+    explicit UdpNode(const RemoteSocket& socket);
     UdpNode(
         std::shared_ptr<boost::asio::io_context> io_context,
         std::shared_ptr<boost::asio::ip::udp::socket> socket,

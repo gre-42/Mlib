@@ -2,6 +2,7 @@
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Macro_Executor/Notifying_Json_Macro_Arguments.hpp>
 #include <Mlib/Misc/Argument_List.hpp>
+#include <Mlib/Players/Containers/Users.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Load_Scene_Funcs.hpp>
 
@@ -22,6 +23,9 @@ struct RegisterJsonUserFunction {
             [](const LoadSceneJsonUserFunctionArgs& args)
             {
                 auto local_user_id = args.arguments.at<uint32_t>(KnownArgs::local_user_id);
+                if (local_user_id >= args.users.get_user_count()) {
+                    throw std::runtime_error("User ID greater or equal number of users");
+                }
                 auto variables = args.arguments.at(KnownArgs::variables);
                 for (const auto& [k, v] : variables.items()) {
                     args.ui_focuses[local_user_id].set_persisted_selection_id(k, v, PersistedValueType::DEFAULT);

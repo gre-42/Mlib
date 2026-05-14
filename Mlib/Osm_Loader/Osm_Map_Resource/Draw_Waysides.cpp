@@ -1,13 +1,13 @@
 #include "Draw_Waysides.hpp"
 #include <Mlib/Geometry/Mesh/Contour.hpp>
 #include <Mlib/Math/Interp.hpp>
-#include <Mlib/OpenGL/Renderables/Triangle_Sampler/Resource_Name_Cycle.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Ground_Bvh.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Street_Bvh.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Subdivided_Contour.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Waysides_Surface.hpp>
 #include <Mlib/Scene_Graph/Resources/Batch_Resource_Instantiator.hpp>
 #include <Mlib/Scene_Graph/Resources/Parsed_Resource_Name.hpp>
+#include <Mlib/Scene_Graph/Resources/Sampler/Triangle_Sampler/Resource_Name_Cycle.hpp>
 #include <Mlib/Stats/Fast_Random_Number_Generators.hpp>
 #include <stdexcept>
 

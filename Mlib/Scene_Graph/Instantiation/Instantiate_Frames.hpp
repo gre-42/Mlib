@@ -21,7 +21,9 @@ void instantiate(
     const InstanceInformation<ScenePos>& info,
     std::optional<std::chrono::steady_clock::time_point> time,
     SceneNodeResources& scene_node_resources,
+    #ifndef WITHOUT_GRAPHICS
     RenderingResources& rendering_resources,
+    #endif
     const std::set<std::string>& required_prefixes,
     const std::set<VariableAndHash<std::string>>& exclude,
     std::set<VariableAndHash<std::string>>* instantiated_resources,

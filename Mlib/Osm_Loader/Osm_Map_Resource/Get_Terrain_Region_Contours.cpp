@@ -1,8 +1,8 @@
 #include "Get_Terrain_Region_Contours.hpp"
-#include <Mlib/OpenGL/Renderables/Triangle_Sampler/Terrain_Type.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Compute_Area.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Osm_Map_Resource_Helpers.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Region_With_Margin.hpp>
+#include <Mlib/Scene_Graph/Resources/Sampler/Triangle_Sampler/Terrain_Type.hpp>
 #include <Mlib/Strings/String_View_To_Number.hpp>
 #include <stdexcept>
 

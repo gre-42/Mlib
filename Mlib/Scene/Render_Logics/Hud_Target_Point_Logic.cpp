@@ -18,21 +18,24 @@ using namespace Mlib;
 
 HudTargetPointLogic::HudTargetPointLogic(
     ObjectPool& object_pool,
+    #ifndef WITHOUT_GRAPHICS
     RenderLogic& scene_logic,
     RenderLogics& render_logics,
+    const std::shared_ptr<ITextureHandle>& texture,
+    const FixedArray<float, 2>& center,
+    const FixedArray<float, 2>& size,
+    #endif
     const DanglingBaseClassRef<Player>& player,
     CollisionQuery& collision_query,
     const DanglingBaseClassRef<SceneNode>& gun_node,
     const std::optional<std::vector<DanglingBaseClassPtr<const SceneNode>>>& exclusive_nodes,
     const DanglingBaseClassPtr<YawPitchLookAtNodes>& ypln,
     AdvanceTimes& advance_times,
-    const std::shared_ptr<ITextureHandle>& texture,
-    const FixedArray<float, 2>& center,
-    const FixedArray<float, 2>& size,
     HudErrorBehavior hud_error_behavior)
-    : collision_query_{ collision_query }
-    , gun_node_{ gun_node }
+    : gun_node_{ gun_node }
     , ypln_{ ypln }
+    #ifndef WITHOUT_GRAPHICS
+    , collision_query_{ collision_query }
     , scene_logic_{ scene_logic }
     , hud_tracker_{
         exclusive_nodes,
@@ -40,11 +43,14 @@ HudTargetPointLogic::HudTargetPointLogic(
         center,
         size,
         texture }
+    #endif
     , on_player_delete_vehicle_internals_{ player->delete_vehicle_internals, CURRENT_SOURCE_LOCATION }
     , on_destroy_gun_node_{ gun_node->on_destroy.deflt, CURRENT_SOURCE_LOCATION }
     , on_destroy_ypln_{ (ypln_ != nullptr) ? &ypln_->on_destroy.deflt : nullptr, CURRENT_SOURCE_LOCATION }
 {
+    #ifndef WITHOUT_GRAPHICS
     render_logics.append({ *this, CURRENT_SOURCE_LOCATION }, 0 /* z_order */, CURRENT_SOURCE_LOCATION);
+    #endif
     on_player_delete_vehicle_internals_.add([this, &object_pool]() { object_pool.remove(this); }, CURRENT_SOURCE_LOCATION);
     on_destroy_gun_node_.add([this, &object_pool]() { object_pool.remove(this); }, CURRENT_SOURCE_LOCATION);
     if (ypln_ != nullptr) {
@@ -59,6 +65,7 @@ HudTargetPointLogic::~HudTargetPointLogic() {
 }
 
 void HudTargetPointLogic::advance_time(float dt, const StaticWorld& world) {
+    #ifndef WITHOUT_GRAPHICS
     if (ypln_ != nullptr) {
         float dpitch_head = ypln_->pitch_look_at_node()->get_dpitch_head();
         if (!std::isnan(dpitch_head) && (dpitch_head != 0.f)) {
@@ -85,8 +92,10 @@ void HudTargetPointLogic::advance_time(float dt, const StaticWorld& world) {
         return;
     }
     ht.advance_time(intersection_point);
+    #endif
 }
 
+#ifndef WITHOUT_GRAPHICS
 std::optional<RenderSetup> HudTargetPointLogic::try_render_setup(
     const LayoutConstraintParameters& lx,
     const LayoutConstraintParameters& ly,
@@ -111,3 +120,4 @@ void HudTargetPointLogic::render_with_setup(
 void HudTargetPointLogic::print(std::ostream& ostr, size_t depth) const {
     ostr << std::string(depth, ' ') << "HudTargetPointLogic";
 }
+#endif

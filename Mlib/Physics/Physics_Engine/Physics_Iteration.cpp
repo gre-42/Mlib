@@ -25,7 +25,9 @@ using namespace Mlib;
 
 PhysicsIteration::PhysicsIteration(
     SceneNodeResources& scene_node_resources,
+    #ifndef WITHOUT_GRAPHICS
     RenderingResources& rendering_resources,
+    #endif
     Scene& scene,
     DynamicWorld& dynamic_world,
     PhysicsEngine& physics_engine,
@@ -33,7 +35,9 @@ PhysicsIteration::PhysicsIteration(
     const PhysicsEngineConfig& physics_cfg,
     BaseLog* base_log)
     : scene_node_resources_{ scene_node_resources }
+    #ifndef WITHOUT_GRAPHICS
     , rendering_resources_{ rendering_resources }
+    #endif
     , scene_{ scene }
     , dynamic_world_{ dynamic_world }
     , physics_engine_{ physics_engine }
@@ -104,7 +108,9 @@ void PhysicsIteration::operator()(const TimeAndPause<std::chrono::steady_clock::
                     scene_node_resources_.instantiate_child_renderable(
                         beacon.resource_name,
                         ChildInstantiationOptions{
+                            #ifndef WITHOUT_GRAPHICS
                             .rendering_resources = &rendering_resources_,
+                            #endif
                             .instance_name = VariableAndHash<std::string>{ "beacon" },
                             .scene_node = node.ref(CURRENT_SOURCE_LOCATION),
                             .interpolation_mode = PoseInterpolationMode::DISABLED,

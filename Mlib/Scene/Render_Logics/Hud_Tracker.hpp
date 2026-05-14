@@ -1,11 +1,13 @@
 #pragma once
 #include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/Memory/Dangling_Set.hpp>
-#include <Mlib/OpenGL/Render_Logics/Fill_With_Texture_Logic.hpp>
 #include <Mlib/Scene_Config/Scene_Precision.hpp>
 #include <Mlib/Signal/Exponential_Smoother.hpp>
 #include <Mlib/Threads/Fast_Mutex.hpp>
 #include <vector>
+#ifndef WITHOUT_GRAPHICS
+#include <Mlib/OpenGL/Render_Logics/Fill_With_Texture_Logic.hpp>
+#endif
 
 namespace Mlib {
 
@@ -22,6 +24,8 @@ enum class HudErrorBehavior {
 };
 
 HudErrorBehavior hud_error_behavior_from_string(const std::string& s);
+
+#ifndef WITHOUT_GRAPHICS
 
 class HudTrackerTimeAdvancer {
 public:
@@ -69,5 +73,7 @@ private:
     mutable float near_plane_;
     mutable float far_plane_;
 };
+
+#endif
 
 }

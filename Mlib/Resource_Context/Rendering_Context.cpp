@@ -28,6 +28,7 @@ TrailResources& RenderingContextStack::primary_trail_resources() {
     return instance().trail_resources;
 }
 
+#ifndef WITHOUT_GRAPHICS
 RenderingResources& RenderingContextStack::primary_rendering_resources() {
     return instance().rendering_resources;
 }
@@ -43,3 +44,4 @@ IGpuVertexArrayRenderer& RenderingContextStack::primary_gpu_vertex_array_rendere
 int RenderingContextStack::z_order() {
     return instance().z_order;
 }
+#endif

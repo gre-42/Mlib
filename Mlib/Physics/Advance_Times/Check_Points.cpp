@@ -40,7 +40,9 @@ CheckPoints::CheckPoints(
     float distance,
     size_t nahead,
     float radius,
+    #ifndef WITHOUT_GRAPHICS
     RenderingResources* rendering_resources,
+    #endif
     SceneNodeResources& scene_node_resources,
     Scene& scene,
     SafeAtomicRecursiveSharedMutex& delete_node_mutex,
@@ -71,7 +73,9 @@ CheckPoints::CheckPoints(
     , lap_index_{ 0 }
     , progress_{ 0. }
     , straight_progress_{ 0 }
+    #ifndef WITHOUT_GRAPHICS
     , rendering_resources_{ rendering_resources }
+    #endif
     , scene_node_resources_{ scene_node_resources }
     , scene_{ scene }
     , delete_node_mutex_{ delete_node_mutex }
@@ -169,6 +173,7 @@ void CheckPoints::advance_time_only(float dt, const SceneTime& time) {
                 SceneNodeDomain::RENDER | SceneNodeDomain::PHYSICS,
                 remote_viewable_);
             node->add_color_style(std::make_unique<ColorStyle>());
+            #ifndef WITHOUT_GRAPHICS
             if (rendering_resources_ != nullptr) {
                 scene_node_resources_.instantiate_child_renderable(
                     resource_name_,
@@ -179,6 +184,7 @@ void CheckPoints::advance_time_only(float dt, const SceneTime& time) {
                         .interpolation_mode = PoseInterpolationMode::DISABLED,
                         .renderable_resource_filter = RenderableResourceFilter{}});
             }
+            #endif
             node->clearing_observers.add({ *this, CURRENT_SOURCE_LOCATION });
             auto& beacon_info = beacon_nodes_.emplace_back(BeaconNode{
                 .beacon_node_name = VariableAndHash<std::string>{"checkpoint_beacon_node_" + scene_.get_temporary_instance_suffix()},

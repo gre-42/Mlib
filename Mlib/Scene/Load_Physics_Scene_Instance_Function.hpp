@@ -1,10 +1,14 @@
 #pragma once
-#include <Mlib/Audio/Audio_Resource_Context.hpp>
-#include <Mlib/OpenGL/Rendering_Context.hpp>
 #include <Mlib/Threads/Recursive_Shared_Mutex.hpp>
 #include <atomic>
 #include <functional>
 #include <optional>
+#ifndef WITHOUT_AUDIO
+#include <Mlib/Audio/Audio_Resource_Context.hpp>
+#endif
+#ifndef WITHOUT_GRAPHICS
+#include <Mlib/Resource_Context/Rendering_Context.hpp>
+#endif
 
 namespace Mlib {
 
@@ -67,9 +71,11 @@ protected:
     const MacroLineExecutor& macro_line_executor;
     const std::shared_ptr<Translator>& translator;
     BulletPropertyDb& bullet_property_db;
+    #ifndef WITHOUT_GRAPHICS
     DeferredInstantiator& deferred_instantiator;
     RenderLogics& render_logics;
     RenderingResources& rendering_resources;
+    #endif
     SceneNodeResources& scene_node_resources;
     AssetReferences& asset_references;
     ParticleResources& particle_resources;
@@ -78,7 +84,9 @@ protected:
     SceneParticles& sea_spray_particles;
     ITrailRenderer& trail_renderer;
     DynamicLights& dynamic_lights;
+    #ifndef WITHOUT_AUDIO
     OneShotAudio& one_shot_audio;
+    #endif
     BulletGenerator& bullet_generator;
     VehicleSpawners& vehicle_spawners;
     Players& players;
@@ -94,7 +102,9 @@ protected:
     RemoteScene* remote_scene;
     RemoteSites& remote_sites;
     CountdownPhysics& countdown_start;
+    #ifndef WITHOUT_GRAPHICS
     UiFocus& ui_focus;
+    #endif
     BaseLog& base_log;
     SafeAtomicRecursiveSharedMutex& delete_node_mutex;
     std::optional<EventReceiverDeletionToken<const UserInfo&>>& on_user_loaded_level_token;
@@ -102,8 +112,10 @@ protected:
     std::optional<LateJoinPlayerFactory>& late_join_player_factory;
 
 private:
+    #ifndef WITHOUT_AUDIO
     AudioResourceContextGuard arg0_;
     AudioResourceContextGuard arg1_;
+    #endif
 };
 
 }

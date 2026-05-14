@@ -5,15 +5,17 @@
 #include <Mlib/Geometry/Material_Configuration/Meta_Materials.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_List.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>
-#include <Mlib/OpenGL/Renderables/Triangle_Sampler/Terrain_Type.hpp>
-#include <Mlib/OpenGL/Rendering_Context.hpp>
-#include <Mlib/OpenGL/Resource_Managers/Rendering_Resources.hpp>
 #include <Mlib/Os/Os.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Entrance_Type.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Osm_Resource_Config.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Road_Type.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Styled_Road.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Water_Type.hpp>
+#ifndef WITHOUT_GRAPHICS
+#include <Mlib/Scene_Graph/Resources/Sampler/Triangle_Sampler/Terrain_Type.hpp>
+#include <Mlib/Resource_Context/Rendering_Context.hpp>
+#include <Mlib/OpenGL/Resource_Managers/Rendering_Resources.hpp>
+#endif
 
 using namespace Mlib;
 
@@ -115,7 +117,9 @@ OsmTriangleLists::OsmTriangleLists(
     const OsmResourceConfig& config,
     const std::string& name_suffix)
 {
+    #ifndef WITHOUT_GRAPHICS
     auto& primary_rendering_resources = RenderingContextStack::primary_rendering_resources();
+    #endif
     tl_terrain = std::make_shared<TerrainTypeTriangleList>();
     // Specify auxiliary triangle lists that are hidden from the results.
     // The mechanism that excludes these lists from the results is that they have
@@ -200,6 +204,7 @@ OsmTriangleLists::OsmTriangleLists(
                 .triangle_cluster_width = config.medium_triangle_cluster_width
             },
             ModifierBacklog{}));
+#ifndef WITHOUT_GRAPHICS
         for (auto& t : ttt) {
             // BlendMapTexture bt{ .texture_descriptor = {.color = t, .normal = primary_rendering_resources.get_normalmap(t), .anisotropic_filtering_level = anisotropic_filtering_level } };
             BlendMapTexture bt = primary_rendering_resources.get_blend_map_texture(t);
@@ -215,6 +220,7 @@ OsmTriangleLists::OsmTriangleLists(
         (*tl_terrain)[tt]->meta.material.compute_color_mode();
         tl_terrain_visuals[tt]->meta.material.compute_color_mode();
         tl_terrain_extrusion[tt]->meta.material.compute_color_mode();
+#endif
     }
     for (const auto& [tpe, textures] : config.street_crossing_textures) {
         auto pmit = config.street_materials.find(tpe);
@@ -223,10 +229,12 @@ OsmTriangleLists::OsmTriangleLists(
         }
         auto rit = config.street_reflection_map.find(tpe);
         std::vector<BlendMapTexture> blend_textures;
+#ifndef WITHOUT_GRAPHICS
         blend_textures.reserve(textures.size());
         for (const FPath& texture : textures) {
             blend_textures.push_back(primary_rendering_resources.get_blend_map_texture(texture));
         }
+#endif
         tl_street_crossing.insert(tpe, std::make_shared<TriangleList<CompressedScenePos>>(
             "crossing_" + road_type_to_string(tpe) + name_suffix,
             Material{
@@ -261,15 +269,19 @@ OsmTriangleLists::OsmTriangleLists(
                 ? config.street_alpha_textures.at(road_properties.type)
                 : std::vector<FPath>{};
             std::vector<BlendMapTexture> textures_color;
+#ifndef WITHOUT_GRAPHICS
             textures_color.reserve(road_style.textures.size());
             for (const FPath& texture : road_style.textures) {
                 textures_color.push_back(primary_rendering_resources.get_blend_map_texture(texture));
             }
+#endif
             std::vector<BlendMapTexture> textures_alpha;
+#ifndef WITHOUT_GRAPHICS
             textures_alpha.reserve(alpha_texture_names.size());
             for (const FPath& texture : alpha_texture_names) {
                 textures_alpha.push_back(primary_rendering_resources.get_blend_map_texture(texture));
             }
+#endif
             auto rit = config.street_reflection_map.find(road_properties.type);
             auto physics_material = (road_properties.type != RoadType::WALL) ? pmit->second : PhysicsMaterial::SURFACE_BASE_STONE;
             tl_street.append(StyledRoadEntry{
@@ -313,15 +325,19 @@ OsmTriangleLists::OsmTriangleLists(
                 ? config.street_mud_alpha_textures.at(road_properties.type)
                 : std::vector<FPath>{};
             std::vector<BlendMapTexture> textures_color;
+#ifndef WITHOUT_GRAPHICS
             textures_color.reserve(config.street_mud_textures.at(road_properties.type).size());
             for (const FPath& texture : config.street_mud_textures.at(road_properties.type)) {
                 textures_color.push_back(primary_rendering_resources.get_blend_map_texture(texture));
             }
+#endif
             std::vector<BlendMapTexture> textures_alpha;
+#ifndef WITHOUT_GRAPHICS
             textures_alpha.reserve(alpha_texture_names.size());
             for (const FPath& texture : alpha_texture_names) {
                 textures_alpha.push_back(primary_rendering_resources.get_blend_map_texture(texture));
             }
+#endif
             tl_street_mud_visuals.insert(road_properties.type, std::make_shared<TriangleList<CompressedScenePos>>(
                 "street_mud_visual_" + road_type_to_string(road_properties.type) + name_suffix,
                 Material{
@@ -358,7 +374,9 @@ OsmTriangleLists::OsmTriangleLists(
         tl_street_curb.insert(tpe, std::make_shared<TriangleList<CompressedScenePos>>(
             "curb_" + road_type_to_string(tpe) + name_suffix,
             Material{
+                #ifndef WITHOUT_GRAPHICS
                 .textures_color = {primary_rendering_resources.get_blend_map_texture(texture)},
+                #endif
                 .reflection_map = (rit != config.street_reflection_map.end())
                     ? rit->second
                     : FPath{},
@@ -384,7 +402,9 @@ OsmTriangleLists::OsmTriangleLists(
         tl_street_curb2.insert(tpe, std::make_shared<TriangleList<CompressedScenePos>>(
             "curb2_" + road_type_to_string(tpe) + name_suffix,
             Material{
+                #ifndef WITHOUT_GRAPHICS
                 .textures_color = {primary_rendering_resources.get_blend_map_texture(texture)},
+                #endif
                 .reflection_map = (rit != config.street_reflection_map.end())
                     ? rit->second
                     : FPath{},
@@ -409,7 +429,9 @@ OsmTriangleLists::OsmTriangleLists(
         tl_air_street_curb.insert(tpe, std::make_shared<TriangleList<CompressedScenePos>>(
             "air_curb_" + road_type_to_string(tpe) + name_suffix,
             Material{
+                #ifndef WITHOUT_GRAPHICS
                 .textures_color = {primary_rendering_resources.get_blend_map_texture(texture)},
+                #endif
                 .reflection_map = (rit != config.street_reflection_map.end())
                     ? rit->second
                     : FPath{},
@@ -439,7 +461,9 @@ OsmTriangleLists::OsmTriangleLists(
                 .continuous_blending_z_order = 2,
                 .depth_func = DepthFunc::EQUAL,
                 .blending_pass = BlendingPassType::EARLY,
+                #ifndef WITHOUT_GRAPHICS
                 .textures_color = {primary_rendering_resources.get_blend_map_texture(config.racing_line_texture)},
+                #endif
                 // .wrap_mode_s = WrapMode::CLAMP_TO_EDGE,
                 // .wrap_mode_t = WrapMode::REPEAT,
                 // depth-func==equal requires aggregation, because the terrain is also aggregated.
@@ -467,7 +491,9 @@ OsmTriangleLists::OsmTriangleLists(
         tl_air_support = std::make_shared<TriangleList<CompressedScenePos>>(
             "air_support" + name_suffix,
             Material{
+                #ifndef WITHOUT_GRAPHICS
                 .textures_color = {primary_rendering_resources.get_blend_map_texture(config.air_support_texture)},
+                #endif
                 .occluded_pass = ExternalRenderPassType::LIGHTMAP_BLACK_NODE,
                 .occluder_pass = ExternalRenderPassType::NONE,
                 .aggregate_mode = AggregateMode::NODE_TRIANGLES,
@@ -494,7 +520,9 @@ OsmTriangleLists::OsmTriangleLists(
         tl_tunnel_crossing = std::make_shared<TriangleList<CompressedScenePos>>(
             "tunnel_crossing" + name_suffix,
             Material{
+                #ifndef WITHOUT_GRAPHICS
                 .textures_color = {primary_rendering_resources.get_blend_map_texture(config.tunnel_pipe_texture)},
+                #endif
                 .occluded_pass = ExternalRenderPassType::LIGHTMAP_BLACK_NODE,
                 .occluder_pass = ExternalRenderPassType::NONE,
                 .aggregate_mode = AggregateMode::NODE_TRIANGLES,
@@ -508,7 +536,9 @@ OsmTriangleLists::OsmTriangleLists(
         tl_tunnel_pipe = std::make_shared<TriangleList<CompressedScenePos>>(
             "tunnel_pipe" + name_suffix,
             Material{
+                #ifndef WITHOUT_GRAPHICS
                 .textures_color = {primary_rendering_resources.get_blend_map_texture(config.tunnel_pipe_texture)},
+                #endif
                 .occluded_pass = ExternalRenderPassType::LIGHTMAP_BLACK_NODE,
                 .occluder_pass = ExternalRenderPassType::NONE,
                 .aggregate_mode = AggregateMode::NODE_TRIANGLES,
@@ -542,15 +572,19 @@ OsmTriangleLists::OsmTriangleLists(
     entrances[EntranceType::BRIDGE];
     if (config.water.has_value()) {
         std::vector<BlendMapTexture> blend_textures_color;
+#ifndef WITHOUT_GRAPHICS
         blend_textures_color.reserve(config.water->textures.color.size());
         for (const FPath& texture : config.water->textures.color) {
             blend_textures_color.push_back(primary_rendering_resources.get_blend_map_texture(texture));
         }
+#endif
         std::vector<BlendMapTexture> blend_textures_alpha;
+#ifndef WITHOUT_GRAPHICS
         blend_textures_alpha.reserve(config.water->textures.alpha.size());
         for (const FPath& texture : config.water->textures.alpha) {
             blend_textures_alpha.push_back(primary_rendering_resources.get_blend_map_texture(texture));
         }
+#endif
         for (const auto& wt : { WaterType::SHALLOW_LAKE, WaterType::UNDEFINED }) {
             tl_water.insert(wt, std::make_shared<TriangleList<CompressedScenePos>>(
                 "water" + name_suffix,

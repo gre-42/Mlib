@@ -44,13 +44,19 @@ public:
         ThreadSafeString& next_scene_filename,
         LocalSceneLevel scene_level,
         NotifyingJsonMacroArguments& external_json_macro_arguments,
-        std::atomic_size_t& num_renderings,
-        RealtimeDependentFps& render_set_fps,
         bool verbose,
         SurfaceContactDb& surface_contact_db,
         BulletPropertyDb& bullet_property_db,
         DynamicLightDb& dynamic_light_db,
         SceneConfig& scene_config,
+        Users& users,
+        RemoteSites& remote_sites,
+        AssetReferences& asset_references,
+        Translators& translators,
+        PhysicsScenes& physics_scenes,
+        #ifndef WITHOUT_GRAPHICS
+        std::atomic_size_t& num_renderings,
+        RealtimeDependentFps& render_set_fps,
         ButtonStates& button_states,
         CursorStates& cursor_states,
         CursorStates& scroll_wheel_states,
@@ -58,15 +64,11 @@ public:
         LockableKeyConfigurations& key_configurations,
         LockableKeyDescriptions& key_descriptions,
         UiFocuses& ui_focuses,
-        Users& users,
-        RemoteSites& remote_sites,
         LayoutConstraints& layout_constraints,
         RenderLogicGallery& gallery,
-        AssetReferences& asset_references,
-        Translators& translators,
-        PhysicsScenes& physics_scenes,
         RenderableScenes& renderable_scenes,
         WindowLogic& window_logic,
+        #endif
         const std::function<void()>& exit);
     ~LoadScene();
     void operator () ();
@@ -77,7 +79,9 @@ private:
     MacroLineExecutor::JsonUserFunction json_user_function_;
     MacroLineExecutor macro_line_executor_;
     MacroRecorder macro_file_executor_;
+    #ifndef WITHOUT_GRAPHICS
     FocusFinalizer focus_finalizer_;
+    #endif
     SceneLevelSelector scene_level_selector_;
 };
 

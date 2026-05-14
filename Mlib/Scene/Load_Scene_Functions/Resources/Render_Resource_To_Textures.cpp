@@ -5,7 +5,7 @@
 #include <Mlib/OpenGL/Instance_Handles/Frame_Buffer_Channel_Kind.hpp>
 #include <Mlib/OpenGL/Render_To_Texture/Color_Extrapolation_mode.hpp>
 #include <Mlib/OpenGL/Render_To_Texture/Render_Resource_To_Textures_Lazy.hpp>
-#include <Mlib/OpenGL/Rendering_Context.hpp>
+#include <Mlib/Resource_Context/Rendering_Context.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Load_Scene_Funcs.hpp>
 

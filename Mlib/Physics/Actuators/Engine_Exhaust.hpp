@@ -20,7 +20,9 @@ class RigidBodies;
 class EngineExhaust: public IEngineEventListener {
 public:
     explicit EngineExhaust(
+        #ifndef WITHOUT_GRAPHICS
         RenderingResources& rendering_resources,
+        #endif
         SceneNodeResources& scene_node_resources,
         std::shared_ptr<IParticleRenderer> particle_renderer,
         Scene& scene,

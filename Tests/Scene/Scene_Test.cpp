@@ -36,7 +36,6 @@
 #include <Mlib/OpenGL/Render_Logics/Standard_Render_Logic.hpp>
 #include <Mlib/OpenGL/Render_Results.hpp>
 #include <Mlib/OpenGL/Renderables/OpenGL_Vertex_Array_Renderer.hpp>
-#include <Mlib/OpenGL/Rendering_Context.hpp>
 #include <Mlib/OpenGL/Resource_Managers/Particle_Resources.hpp>
 #include <Mlib/OpenGL/Resource_Managers/Rendering_Resources.hpp>
 #include <Mlib/OpenGL/Resource_Managers/Trail_Resources.hpp>
@@ -58,6 +57,7 @@
 #include <Mlib/Physics/Smoke_Generation/Contact_Smoke_Generator.hpp>
 #include <Mlib/Physics/Smoke_Generation/Smoke_Particle_Generator.hpp>
 #include <Mlib/Physics/Smoke_Generation/Surface_Contact_Db.hpp>
+#include <Mlib/Resource_Context/Rendering_Context.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Absolute_Movable_Setter.hpp>
 #include <Mlib/Scene_Graph/Elements/Light.hpp>

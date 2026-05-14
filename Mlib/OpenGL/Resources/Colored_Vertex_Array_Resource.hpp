@@ -3,7 +3,6 @@
 #include <Mlib/Geometry/Mesh/Animated_Colored_Vertex_Arrays.hpp>
 #include <Mlib/Initialization/Default_Uninitialized_Vector.hpp>
 #include <Mlib/Map/Threadsafe_Unordered_Map.hpp>
-#include <Mlib/OpenGL/Instance_Handles/Render_Program.hpp>
 #include <Mlib/Scene_Config/Scene_Precision.hpp>
 #include <Mlib/Scene_Graph/Interfaces/IScene_Node_Resource.hpp>
 #include <Mlib/Threads/Recursive_Shared_Mutex.hpp>
@@ -13,18 +12,10 @@
 
 namespace Mlib {
 
-struct AttributeIndexCalculator;
-struct RenderProgramIdentifier;
-struct ColoredRenderProgram;
-struct Light;
-struct Skidmark;
 class SceneNodeResources;
 class RenderingResources;
-struct TransformationAndBillboardId;
-struct BlendMapTexture;
 class IGpuVertexData;
 class IGpuInstanceBuffers;
-enum class TaskLocation;
 class IGpuObjectFactory;
 class IGpuVertexArray;
 
@@ -37,6 +28,7 @@ class ColoredVertexArrayResource:
     ColoredVertexArrayResource(const ColoredVertexArrayResource& other) = delete;
     ColoredVertexArrayResource& operator = (const ColoredVertexArrayResource& other) = delete;
 public:
+    #ifndef WITHOUT_GRAPHICS
     using GpuVertices = std::list<std::shared_ptr<IGpuVertexData>>;
     explicit ColoredVertexArrayResource(
         std::list<std::shared_ptr<IGpuVertexArray>> gpu_vertex_arrays);
@@ -45,6 +37,7 @@ public:
     ColoredVertexArrayResource(
         std::shared_ptr<IGpuVertexData> gpu_vertex_data,
         std::shared_ptr<IGpuInstanceBuffers> gpu_instances);
+    #endif
     
     explicit ColoredVertexArrayResource(const std::shared_ptr<AnimatedColoredVertexArrays>& triangles);
     ColoredVertexArrayResource(
@@ -100,8 +93,10 @@ public:
         PhysicsMaterial remove,
         const ColoredVertexArrayFilter& filter) override;
     
+    #ifndef WITHOUT_GRAPHICS
     bool copy_in_progress() const;
     void wait() const;
+    #endif
 private:
     ColoredVertexArrayResource(
         std::shared_ptr<AnimatedColoredVertexArrays> triangles,
@@ -109,11 +104,13 @@ private:
         std::list<std::shared_ptr<IGpuVertexArray>> gpu_vertex_arrays);
     bool requires_aggregation(const ColoredVertexArray<float> &cva) const;
     SceneNodeResources& scene_node_resources_;
+    #ifndef WITHOUT_GRAPHICS
     RenderingResources& rendering_resources_;
     IGpuObjectFactory& gpu_object_factory_;
-    std::shared_ptr<AnimatedColoredVertexArrays> triangles_res_;
     std::list<std::shared_ptr<IGpuVertexData>> gpu_vertex_data_;
     std::list<std::shared_ptr<IGpuVertexArray>> gpu_vertex_arrays_;
+    #endif
+    std::shared_ptr<AnimatedColoredVertexArrays> triangles_res_;
     mutable FastMutex gpu_triangles_res_mutex_;
 };
 

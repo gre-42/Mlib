@@ -64,13 +64,15 @@ public:
         const RenderedSceneDescriptor& frame_id) const;
 
 private:
+    ParticleType particle_type_;
+    #ifndef WITHOUT_GRAPHICS
     FixedArray<ScenePos, 3> offset_;
     std::shared_ptr<DynamicInstanceBuffers> dynamic_instance_buffers_;
     std::shared_ptr<ColoredVertexArrayResource> cvar_;
     std::unique_ptr<RenderableColoredVertexArray> rcva_;
     RenderableResourceFilter filter_;
-    ParticleType particle_type_;
     mutable FastMutex mutex_;
+    #endif
 };
 
 }

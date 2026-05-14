@@ -6,10 +6,9 @@
 #include <Mlib/Geometry/Mesh/Typed_Mesh.hpp>
 #include <Mlib/Iterator/Enumerate.hpp>
 #include <Mlib/Memory/Dangling_Base_Class.hpp>
-#include <Mlib/OpenGL/Rendering_Context.hpp>
-#include <Mlib/OpenGL/Resource_Managers/Rendering_Resources.hpp>
 #include <Mlib/OpenGL/Resources/Colored_Vertex_Array_Resource.hpp>
 #include <Mlib/Regex/Regex_Select.hpp>
+#include <Mlib/Resource_Context/Rendering_Context.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Make_Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
@@ -21,6 +20,9 @@
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
 #include <mutex>
 #include <stdexcept>
+#ifndef WITHOUT_GRAPHICS
+#include <Mlib/OpenGL/Resource_Managers/Rendering_Resources.hpp>
+#endif
 
 using namespace Mlib;
 
@@ -43,6 +45,7 @@ HeterogeneousResource::~HeterogeneousResource()
 
 void HeterogeneousResource::preload(const RenderableResourceFilter& filter) const {
     bri->preload(scene_node_resources_, filter);
+    #ifndef WITHOUT_GRAPHICS
     auto preload_textures = [&filter](const auto& cvas) {
         for (const auto& [i, cva] : enumerate(cvas)) {
             if (!filter.matches(i, *cva)) {
@@ -58,6 +61,7 @@ void HeterogeneousResource::preload(const RenderableResourceFilter& filter) cons
     };
     preload_textures(acvas->scvas);
     preload_textures(acvas->dcvas);
+    #endif
 }
 
 void HeterogeneousResource::instantiate_root_renderables(const RootInstantiationOptions& options) const

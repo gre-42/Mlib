@@ -9,10 +9,10 @@
 #include <Mlib/OpenGL/Instance_Handles/Render_Guards.hpp>
 #include <Mlib/OpenGL/Render_Logics/Clear_Mode.hpp>
 #include <Mlib/OpenGL/Render_Logics/Resource_Update_Cycle.hpp>
-#include <Mlib/OpenGL/Rendering_Context.hpp>
 #include <Mlib/OpenGL/Resource_Managers/Rendering_Resources.hpp>
 #include <Mlib/OpenGL/Shader_Version_3_0.hpp>
 #include <Mlib/OpenGL/Viewport_Guard.hpp>
+#include <Mlib/Resource_Context/Rendering_Context.hpp>
 #include <sstream>
 
 using namespace Mlib;

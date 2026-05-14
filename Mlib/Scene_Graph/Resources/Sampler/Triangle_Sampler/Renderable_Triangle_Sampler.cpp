@@ -8,11 +8,6 @@
 #include <Mlib/Geometry/Primitives/Bounding_Sphere.hpp>
 #include <Mlib/Geometry/Primitives/Bvh.hpp>
 #include <Mlib/Math/Transformation/Translation_Matrix.hpp>
-#include <Mlib/OpenGL/Renderables/Triangle_Sampler/Resource_Name_Cycle.hpp>
-#include <Mlib/OpenGL/Renderables/Triangle_Sampler/Sample_Triangle_Interior_Instances.hpp>
-#include <Mlib/OpenGL/Renderables/Triangle_Sampler/Terrain_Style.hpp>
-#include <Mlib/OpenGL/Renderables/Triangle_Sampler/Terrain_Styles.hpp>
-#include <Mlib/OpenGL/Renderables/Triangle_Sampler/Terrain_Type.hpp>
 #include <Mlib/OpenGL/Yield.hpp>
 #include <Mlib/Scene_Config/Scene_Graph_Config.hpp>
 #include <Mlib/Scene_Graph/Culling/Visibility_Check.hpp>
@@ -21,6 +16,11 @@
 #include <Mlib/Scene_Graph/Instances/Small_Instances_Queues.hpp>
 #include <Mlib/Scene_Graph/Render/Gpu_Vertex_Datas.hpp>
 #include <Mlib/Scene_Graph/Resources/Parsed_Resource_Name.hpp>
+#include <Mlib/Scene_Graph/Resources/Sampler/Triangle_Sampler/Resource_Name_Cycle.hpp>
+#include <Mlib/Scene_Graph/Resources/Sampler/Triangle_Sampler/Sample_Triangle_Interior_Instances.hpp>
+#include <Mlib/Scene_Graph/Resources/Sampler/Triangle_Sampler/Terrain_Style.hpp>
+#include <Mlib/Scene_Graph/Resources/Sampler/Triangle_Sampler/Terrain_Styles.hpp>
+#include <Mlib/Scene_Graph/Resources/Sampler/Triangle_Sampler/Terrain_Type.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
 #include <stdexcept>
 

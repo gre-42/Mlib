@@ -27,10 +27,10 @@
 #include <Mlib/Scene/Linker.hpp>
 #include <Mlib/Scene/Load_Scene_Funcs.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Nodes/Create_Child_Node.hpp>
-#include <Mlib/Scene/Load_Scene_Functions/Instances/Render/Child_Renderable_Instance.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Create_Damageable.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Create_Rigid_Cuboid.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Create_Rigid_Disk.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Instantiate/Child_Renderable_Instance.hpp>
 #include <Mlib/Scene/Physics_Scene.hpp>
 #include <Mlib/Scene/Scene_Config.hpp>
 #include <Mlib/Scene/Scene_Particles.hpp>
@@ -254,6 +254,7 @@ void CreateGenericCar::execute(const JsonView& args)
             engine_listeners->add(std::move(l));
         };
 
+        #ifndef WITHOUT_AUDIO
         if (!args.at<bool>(KnownArgs::mute)) {
             if (auto engine_audio = vdb.try_at_non_null<std::string>(KnownDb::engine_audio); engine_audio.has_value()) {
                 const auto& adb = asset_references["engine_audio"].at(*engine_audio).rp.database;
@@ -266,6 +267,7 @@ void CreateGenericCar::execute(const JsonView& args)
                     adb.at<float>(KnownAudio::p_reference) * hp));
             }
         }
+        #endif
         if (auto engine_exhausts = vdb.try_at_non_null<std::vector<nlohmann::json>>(KnownDb::engine_exhaust); engine_exhausts.has_value()) {
             if (engine_exhausts->empty()) {
                 throw std::runtime_error("Engine exhaust array is empty");
@@ -281,7 +283,9 @@ void CreateGenericCar::execute(const JsonView& args)
                 JsonView jv{ engine_exhaust };
                 jv.validate(KnownExhaust::options);
                 add_engine_listener(std::make_shared<EngineExhaust>(
+                    #ifndef WITHOUT_GRAPHICS
                     RenderingContextStack::primary_rendering_resources(),
+                    #endif
                     scene_node_resources,
                     particle_renderer,
                     scene,

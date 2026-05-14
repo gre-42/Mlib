@@ -34,14 +34,6 @@
 #include <Mlib/Misc/Cereal_Memory.hpp>
 #include <Mlib/Misc/Log.hpp>
 #include <Mlib/Navigation/Navigation_Mesh_Builder.hpp>
-#include <Mlib/OpenGL/Renderables/Color_Cycle.hpp>
-#include <Mlib/OpenGL/Renderables/Triangle_Sampler/Collidable_Triangle_Sampler.hpp>
-#include <Mlib/OpenGL/Renderables/Triangle_Sampler/Renderable_Triangle_Sampler.hpp>
-#include <Mlib/OpenGL/Renderables/Triangle_Sampler/Resource_Name_Cycle.hpp>
-#include <Mlib/OpenGL/Renderables/Triangle_Sampler/Sample_Triangle_Interior_Instances.hpp>
-#include <Mlib/OpenGL/Renderables/Triangle_Sampler/Terrain_Triangles.hpp>
-#include <Mlib/OpenGL/Rendering_Context.hpp>
-#include <Mlib/OpenGL/Resource_Managers/Rendering_Resources.hpp>
 #include <Mlib/OpenGL/Resources/Colored_Vertex_Array_Resource.hpp>
 #include <Mlib/Os/Env.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Add_Bridge_Piers.hpp>
@@ -110,6 +102,7 @@
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Waysides_Vertex.hpp>
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Regex/Split.hpp>
+#include <Mlib/Resource_Context/Rendering_Context.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Descriptors/Object_Resource_Descriptor.hpp>
 #include <Mlib/Scene_Graph/Descriptors/Resource_Instance_Descriptor.hpp>
@@ -119,6 +112,12 @@
 #include <Mlib/Scene_Graph/Instantiation/Child_Instantiation_Options.hpp>
 #include <Mlib/Scene_Graph/Instantiation/Root_Instantiation_Options.hpp>
 #include <Mlib/Scene_Graph/Joined_Way_Point_Sandbox.hpp>
+#include <Mlib/Scene_Graph/Resources/Sampler/Color_Cycle.hpp>
+#include <Mlib/Scene_Graph/Resources/Sampler/Triangle_Sampler/Collidable_Triangle_Sampler.hpp>
+#include <Mlib/Scene_Graph/Resources/Sampler/Triangle_Sampler/Renderable_Triangle_Sampler.hpp>
+#include <Mlib/Scene_Graph/Resources/Sampler/Triangle_Sampler/Resource_Name_Cycle.hpp>
+#include <Mlib/Scene_Graph/Resources/Sampler/Triangle_Sampler/Sample_Triangle_Interior_Instances.hpp>
+#include <Mlib/Scene_Graph/Resources/Sampler/Triangle_Sampler/Terrain_Triangles.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
 #include <Mlib/Scene_Graph/Spawn_Point.hpp>
 #include <Mlib/Scene_Graph/Way_Point_Location.hpp>
@@ -140,6 +139,9 @@
 #include <poly2tri/point_exception.hpp>
 #include <stb_cpp/stb_array.hpp>
 #include <stb_cpp/stb_image_load.hpp>
+#ifndef WITHOUT_GRAPHICS
+#include <Mlib/OpenGL/Resource_Managers/Rendering_Resources.hpp>
+#endif
 
 // #undef LOG_FUNCTION
 // #undef LOG_INFO
@@ -773,14 +775,18 @@ OsmMapResource::OsmMapResource(
         if (config.roof_rail_texture.empty()) {
             throw std::runtime_error("with_roofs requires roof_rail_texture");
         }
+        #ifndef WITHOUT_GRAPHICS
         auto& primary_rendering_resources = RenderingContextStack::primary_rendering_resources();
+        #endif
         draw_roofs(
             tls_buildings,
             scene_node_resources,
             config.roof_model,
             displacements,
             Material{
+                #ifndef WITHOUT_GRAPHICS
                 .textures_color = { primary_rendering_resources.get_blend_map_texture(config.roof_texture) },
+                #endif
                 .occluder_pass = ExternalRenderPassType::LIGHTMAP_BLACK_GLOBAL_STATIC,
                 .aggregate_mode = (config.object_cluster_width == 0)
                     ? AggregateMode::SORTED_CONTINUOUSLY
@@ -788,7 +794,9 @@ OsmMapResource::OsmMapResource(
                 .shading = material_shading(RawShading::ROOF, config.shading_factors),
                 .draw_distance_noperations = 1000}.compute_color_mode(),
             Material{
+                #ifndef WITHOUT_GRAPHICS
                 .textures_color = { primary_rendering_resources.get_blend_map_texture(config.roof_rail_texture) },
+                #endif
                 .occluder_pass = ExternalRenderPassType::LIGHTMAP_BLACK_GLOBAL_STATIC,
                 .aggregate_mode = (config.object_cluster_width == 0)
                     ? AggregateMode::SORTED_CONTINUOUSLY
@@ -1321,12 +1329,14 @@ OsmMapResource::OsmMapResource(
             throw std::runtime_error("Bridge pier texture not set");
         }
         std::vector<BlendMapTexture> textures_color;
+        #ifndef WITHOUT_GRAPHICS
         textures_color.reserve(config.bridge_pier_textures.size());
         auto& primary_rendering_resources = RenderingContextStack::primary_rendering_resources();
         for (const auto& t : config.bridge_pier_textures) {
             BlendMapTexture bt = primary_rendering_resources.get_blend_map_texture(t);
             textures_color.push_back(bt);
         }
+        #endif
         try {
             add_bridge_piers(
                 tls_bridge_piers,
@@ -1863,6 +1873,9 @@ void OsmMapResource::save_to_obj_file(
     const std::string& prefix,
     const TransformationMatrix<float, double, 3>* tm) const
 {
+#ifdef WITHOUT_GRAPHICS
+    throw std::runtime_error("OsmMapResource::save_to_obj_file requires graphics");
+#else
     auto filename = prefix + "_osm_map.obj";
     auto& primary_rendering_resources = RenderingContextStack::primary_rendering_resources();
     std::map<ColormapWithModifiers, std::string> autogen_textures;
@@ -1907,6 +1920,7 @@ void OsmMapResource::save_to_obj_file(
             }
             return result;
         });
+#endif
 }
 
 void OsmMapResource::save_bad_triangles_to_obj_file(const std::string& filename) const {
@@ -1939,7 +1953,9 @@ OsmMapResource::~OsmMapResource()
 
 void OsmMapResource::preload(const RenderableResourceFilter& filter) const {
     hri_.preload(filter);
+    #ifndef WITHOUT_GRAPHICS
     ColoredVertexArrayResource(buildings_).preload(filter);
+    #endif
     auto preload_styles = [&](const TerrainStyle& style) {
         if (style.is_visible()) {
             for (const auto& p : style.config.near_resource_names_valley_regular) {
@@ -1995,8 +2011,10 @@ void OsmMapResource::instantiate_root_renderables(const RootInstantiationOptions
     {
         std::list<VariableAndHash<std::string>> instantiated_nodes;
         hri_.instantiate_root_renderables(RootInstantiationOptions{
+            #ifndef WITHOUT_GRAPHICS
             .rendering_resources = options.rendering_resources,
             .imposters = options.imposters,
+            #endif
             .supply_depots = options.supply_depots,
             .instantiated_nodes = &instantiated_nodes,
             .instance_name = options.instance_name,
@@ -2031,7 +2049,9 @@ void OsmMapResource::instantiate_root_renderables(const RootInstantiationOptions
     }
     std::make_shared<ColoredVertexArrayResource>(buildings_)->instantiate_root_renderables(
         RootInstantiationOptions{
+            #ifndef WITHOUT_GRAPHICS
             .rendering_resources = options.rendering_resources,
+            #endif
             .instance_name = VariableAndHash<std::string>{ "building" },
             .absolute_model_matrix = options.absolute_model_matrix,
             .scene = options.scene,

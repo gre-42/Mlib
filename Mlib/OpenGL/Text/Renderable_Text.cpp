@@ -10,7 +10,6 @@
 #include <Mlib/OpenGL/Deallocate/Render_Deallocator.hpp>
 #include <Mlib/OpenGL/Instance_Handles/Render_Guards.hpp>
 #include <Mlib/OpenGL/Instance_Handles/Render_Program.hpp>
-#include <Mlib/OpenGL/Rendering_Context.hpp>
 #include <Mlib/OpenGL/Resource_Managers/Rendering_Resources.hpp>
 #include <Mlib/OpenGL/Shader_Version_3_0.hpp>
 #include <Mlib/OpenGL/Text/Align_Text.hpp>
@@ -20,6 +19,7 @@
 #include <Mlib/OpenGL/Viewport_Guard.hpp>
 #include <Mlib/OpenGL/linmath.hpp>
 #include <Mlib/Os/Os.hpp>
+#include <Mlib/Resource_Context/Rendering_Context.hpp>
 #include <Mlib/Strings/Encoding.hpp>
 #include <stb/stb_truetype.h>
 

@@ -1,14 +1,10 @@
 #pragma once
-#include <Mlib/Audio/Audio_Resource_Context.hpp>
 #include <Mlib/Macro_Executor/Macro_Line_Executor.hpp>
 #include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/Memory/Destruction_Functions.hpp>
 #include <Mlib/Memory/Event_Emitter.hpp>
 #include <Mlib/Memory/Object_Pool.hpp>
 #include <Mlib/Memory/Usage_Counter.hpp>
-#include <Mlib/OpenGL/Deferred_Instantiator.hpp>
-#include <Mlib/OpenGL/Render_Logics/Render_Logics.hpp>
-#include <Mlib/OpenGL/Resource_Managers/Rendering_Resources.hpp>
 #include <Mlib/Physics/Advance_Times/Countdown_Physics.hpp>
 #include <Mlib/Physics/Bullets/Bullet_Generator.hpp>
 #include <Mlib/Physics/Misc/Gravity_Efp.hpp>
@@ -27,6 +23,14 @@
 #include <Mlib/Time/Fps/Realtime_Sleeper.hpp>
 #include <Mlib/Time/Fps/Set_Fps.hpp>
 #include <memory>
+#ifndef WITHOUT_AUDIO
+#include <Mlib/Audio/Audio_Resource_Context.hpp>
+#endif
+#ifndef WITHOUT_GRAPHICS
+#include <Mlib/OpenGL/Deferred_Instantiator.hpp>
+#include <Mlib/OpenGL/Render_Logics/Render_Logics.hpp>
+#include <Mlib/OpenGL/Resource_Managers/Rendering_Resources.hpp>
+#endif
 
 namespace Mlib {
 
@@ -65,8 +69,12 @@ public:
     PhysicsScene(
         std::string name,
         VariableAndHash<std::string> world,
+        #ifndef WITHOUT_GRAPHICS
         std::string rendering_resources_name,
         unsigned int max_anisotropic_filtering_level,
+        DependentSleeper& dependent_sleeper,
+        UiFocus& ui_focus,
+        #endif
         SceneConfig& scene_config,
         const MacroLineExecutor& macro_line_executor,
         SceneLevelSelector& scene_level_selector,
@@ -81,8 +89,6 @@ public:
         size_t max_tracks,
         bool save_playback,
         const RaceIdentifier& race_identfier,
-        DependentSleeper& dependent_sleeper,
-        UiFocus& ui_focus,
         std::shared_ptr<Translator> translator,
         const std::optional<RemoteParams>& remote_params);
     ~PhysicsScene();
@@ -103,25 +109,35 @@ public:
     DestructionFunctions on_stop_and_join_;
     MacroLineExecutor macro_line_executor_;
     DanglingBaseClassRef<RemoteSites> remote_sites_;
+    #ifndef WITHOUT_GRAPHICS
     UiFocus& ui_focus_;
+    #endif
     std::string name_;
     const SceneConfig& scene_config_;
     DanglingBaseClassRef<AssetReferences> asset_references_;
     SceneNodeResources& scene_node_resources_;
     ParticleResources& particle_resources_;
     BulletPropertyDb& bullet_property_db_;
+    #ifndef WITHOUT_GRAPHICS
     RenderingResources rendering_resources_;
+    #endif
     std::function<bool()> paused_;
     EventEmitter<> paused_changed_;
     std::unique_ptr<ITrailRenderer> trail_renderer_;
     std::unique_ptr<DynamicLights> dynamic_lights_;
     DynamicWorld dynamic_world_;
+    #ifndef WITHOUT_GRAPHICS
     RenderLogics render_logics_;
+    #endif
     PhysicsEngine physics_engine_;
+    #ifndef WITHOUT_GRAPHICS
     DeferredInstantiator deferred_instantiator_;
+    #endif
     Scene scene_;
     ObjectPool object_pool_;
+    #ifndef WITHOUT_AUDIO
     OneShotAudio& one_shot_audio_;
+    #endif
     SceneParticles air_particles_;
     SceneParticles skidmark_particles_;
     SceneParticles sea_spray_particles_;
@@ -130,7 +146,9 @@ public:
     RealtimeSleeper physics_sleeper_;
     FifoLog fifo_log_{10 * 1000};
     SetFps physics_set_fps_;
+    #ifndef WITHOUT_GRAPHICS
     BusyStateProviderGuard busy_state_provider_guard_;
+    #endif
     GravityEfp gefp_;
     std::unique_ptr<PhysicsIteration> physics_iteration_;
     std::unique_ptr<PhysicsLoop> physics_loop_;
@@ -146,9 +164,10 @@ public:
     std::optional<EventReceiverDeletionToken<const UserInfo&>> on_user_loaded_level_token_;
     std::optional<EventReceiverDeletionToken<>> on_all_users_loaded_level_token_;
     std::optional<LateJoinPlayerFactory> late_join_player_factory_;
-
+    #ifndef WITHOUT_AUDIO
     AudioResourceContext primary_audio_resource_context_;
     AudioResourceContext secondary_audio_resource_context_;
+    #endif
 };
 
 }

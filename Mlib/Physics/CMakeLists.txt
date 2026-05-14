@@ -18,7 +18,12 @@ target_link_libraries(MlibPhysics
         MlibMap
         MlibGeometry
         MlibSceneGraph
-        MlibAudio
         MlibThreads
         MlibTime
         MlibMemory)
+
+if (BUILD_AUDIO)
+    target_link_libraries(MlibPhysics
+        PUBLIC
+            MlibAudio)
+endif()

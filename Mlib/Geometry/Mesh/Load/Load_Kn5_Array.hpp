@@ -17,7 +17,9 @@ template <class TPos>
 std::list<std::shared_ptr<ColoredVertexArray<TPos>>> load_kn5_array(
     const Utf8Path& filename,
     const LoadMeshConfig<TPos>& cfg,
+    #ifndef WITHOUT_GRAPHICS
     IDdsResources* dds_resources,
+    #endif
     IRaceLogic* race_logic);
 
 }

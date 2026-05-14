@@ -1,6 +1,6 @@
 #pragma once
 #include <Mlib/Audio/Audio_Resource_Context.hpp>
-#include <Mlib/OpenGL/Rendering_Context.hpp>
+#include <Mlib/Resource_Context/Rendering_Context.hpp>
 #include <Mlib/Threads/Recursive_Shared_Mutex.hpp>
 #include <atomic>
 #include <functional>

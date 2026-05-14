@@ -9,6 +9,7 @@
 #include <Mlib/Remote/Incremental_Objects/Proxy_Tasks.hpp>
 #include <Mlib/Remote/Incremental_Objects/Transmission_History.hpp>
 #include <Mlib/Remote/Incremental_Objects/Transmitted_Fields.hpp>
+#include <Mlib/Remote/Remote_Socket.hpp>
 #include <Mlib/Remote/Sockets/Udp_Node.hpp>
 #include <cstdint>
 
@@ -136,10 +137,10 @@ private:
 };
 
 void test_remote() {
-    UdpNode server{"127.0.0.1", 1542};
+    UdpNode server{{"127.0.0.1", 1542}};
     server.bind();
     server.start_receive_thread(100);
-    auto client = std::make_shared<UdpNode>("127.0.0.1", 1542);
+    auto client = std::make_shared<UdpNode>(RemoteSocket{"127.0.0.1", 1542});
     client->start_receive_thread(100);
 
     linfo() << "server: " << &server << ", client: " << &client;

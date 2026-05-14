@@ -30,7 +30,9 @@ template <class TResourcePos, class TInstancePos>
 PssgArrays<TResourcePos, TInstancePos> load_pssg_arrays(
     const PssgModel& model,
     const LoadMeshConfig<TResourcePos>& cfg,
+    #ifndef WITHOUT_GRAPHICS
     IDdsResources* dds_resources,
+    #endif
     const std::string& resource_prefix,
     IoVerbosity verbosity);
 

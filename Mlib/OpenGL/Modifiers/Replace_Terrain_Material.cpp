@@ -4,11 +4,13 @@
 #include <Mlib/Geometry/Material/Merged_Texture_Name.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
 #include <Mlib/Geometry/Mesh/Terrain_Uv.hpp>
-#include <Mlib/OpenGL/Resource_Managers/Rendering_Resources.hpp>
 #include <Mlib/OpenGL/Resources/Colored_Vertex_Array_Resource.hpp>
 #include <Mlib/Scene_Graph/Interfaces/IScene_Node_Resource.hpp>
 #include <Mlib/Scene_Graph/Resources/Renderable_Resource_Filter.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
+#ifndef WITHOUT_GRAPHICS
+#include <Mlib/OpenGL/Resource_Managers/Rendering_Resources.hpp>
+#endif
 
 using namespace Mlib;
 
@@ -19,8 +21,11 @@ void Mlib::replace_terrain_material(
     double uv_scale,
     double uv_period,
     UpAxis up_axis,
-    SceneNodeResources& scene_node_resources,
-    RenderingResources& rendering_resources)
+    SceneNodeResources& scene_node_resources
+    #ifndef WITHOUT_GRAPHICS
+    , RenderingResources& rendering_resources
+    #endif
+    )
 {
     scene_node_resources.add_modifier(
         resource_name,
@@ -28,8 +33,11 @@ void Mlib::replace_terrain_material(
          uv_scale,
          uv_period,
          up_axis,
-         textures,
-         &rendering_resources]
+         textures
+         #ifndef WITHOUT_GRAPHICS
+         , &rendering_resources
+         #endif
+        ]
         (ISceneNodeResource& scene_node_resource){
             auto replace = [&]<typename T>(const std::list<std::shared_ptr<ColoredVertexArray<T>>>& cvas){
                 for (const auto& cva : cvas) {
@@ -37,10 +45,13 @@ void Mlib::replace_terrain_material(
                         continue;
                     }
                     cva->meta.material.textures_color.clear();
+                    #ifndef WITHOUT_GRAPHICS
+                    cva->meta.material.textures_color.reserve(textures.size());
                     for (auto& t : textures) {
                         BlendMapTexture bt = rendering_resources.get_blend_map_texture(t);
                         cva->meta.material.textures_color.push_back(bt);
                     }
+                    #endif
                     cva->meta.material.blend_mode = BlendMode::OFF;
                     for (auto& t : cva->triangles) {
                         using I = funpack_t<T>;

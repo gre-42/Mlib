@@ -24,11 +24,11 @@
 #include <Mlib/OpenGL/Render_Config.hpp>
 #include <Mlib/OpenGL/Render_Logics/Imposter_Parameters.hpp>
 #include <Mlib/OpenGL/Render_Setup.hpp>
-#include <Mlib/OpenGL/Rendering_Context.hpp>
 #include <Mlib/OpenGL/Resource_Managers/Rendering_Resources.hpp>
 #include <Mlib/OpenGL/Resources/Square_Resource.hpp>
 #include <Mlib/OpenGL/Selected_Cameras/Selected_Cameras.hpp>
 #include <Mlib/OpenGL/Viewport_Guard.hpp>
+#include <Mlib/Resource_Context/Rendering_Context.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Culling/Visibility_Check.hpp>
 #include <Mlib/Scene_Graph/Elements/Make_Scene_Node.hpp>

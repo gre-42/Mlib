@@ -59,6 +59,7 @@ public:
         const RenderedSceneDescriptor& frame_id) const;
 
 private:
+    #ifndef WITHOUT_GRAPHICS
     FixedArray<ScenePos, 3> offset_;
     std::shared_ptr<AnimatedTextureLayerBuffers> dynamic_vertex_buffers_;
     std::shared_ptr<IGpuVertexArray> dynamic_vertex_array_;
@@ -66,6 +67,7 @@ private:
     std::unique_ptr<RenderableColoredVertexArray> rcva_;
     RenderableResourceFilter filter_;
     mutable FastMutex mutex_;
+    #endif
 };
 
 }

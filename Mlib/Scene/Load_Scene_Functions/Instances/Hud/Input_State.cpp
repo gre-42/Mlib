@@ -9,7 +9,7 @@
 #include <Mlib/Misc/Argument_List.hpp>
 #include <Mlib/OpenGL/Render_Logics/Input_State_Logic.hpp>
 #include <Mlib/OpenGL/Render_Logics/Render_Logics.hpp>
-#include <Mlib/OpenGL/Rendering_Context.hpp>
+#include <Mlib/Resource_Context/Rendering_Context.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Load_Scene_Funcs.hpp>
 

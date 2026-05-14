@@ -19,13 +19,13 @@
 #include <Mlib/OpenGL/Render_Logics/Resource_Update_Cycle.hpp>
 #include <Mlib/OpenGL/Render_Texture_Atlas.hpp>
 #include <Mlib/OpenGL/Renderables/OpenGL_Vertex_Array_Renderer.hpp>
-#include <Mlib/OpenGL/Rendering_Context.hpp>
 #include <Mlib/OpenGL/Resource_Managers/Particle_Resources.hpp>
 #include <Mlib/OpenGL/Resource_Managers/Rendering_Resources.hpp>
 #include <Mlib/OpenGL/Resource_Managers/Trail_Resources.hpp>
 #include <Mlib/OpenGL/Text/Renderable_Text.hpp>
 #include <Mlib/OpenGL/Window.hpp>
 #include <Mlib/Regex/Regex_Select.hpp>
+#include <Mlib/Resource_Context/Rendering_Context.hpp>
 #include <Mlib/Scene_Graph/Render/Caching_Gpu_Object_Factory.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
 #include <Mlib/Strings/U32_Regex.hpp>

@@ -1,8 +1,8 @@
 #pragma once
 #include <Mlib/Initialization/Default_Uninitialized_List.hpp>
-#include <Mlib/OpenGL/Renderables/Triangle_Sampler/Terrain_Styles.hpp>
 #include <Mlib/Scene_Config/Scene_Precision.hpp>
 #include <Mlib/Scene_Graph/Interfaces/IScene_Node_Resource.hpp>
+#include <Mlib/Scene_Graph/Resources/Sampler/Triangle_Sampler/Terrain_Styles.hpp>
 #include <list>
 #include <vector>
 

@@ -23,8 +23,10 @@ template <class T>
 class VariableAndHash;
 
 struct RootInstantiationOptions {
+    #ifndef WITHOUT_GRAPHICS
     RenderingResources* rendering_resources = nullptr;
     IImposters* imposters = nullptr;
+    #endif
     ISupplyDepots* supply_depots = nullptr;
     AnimationState* animation_state = nullptr;
     RigidBodies* rigid_bodies = nullptr;

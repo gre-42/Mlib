@@ -2,6 +2,7 @@
 #include <Mlib/Memory/Integral_Cast.hpp>
 #include <Mlib/Os/Env.hpp>
 #include <Mlib/Os/Io/Binary.hpp>
+#include <Mlib/Remote/Remote_Socket.hpp>
 #include <Mlib/Remote/Sockets/Asio.hpp>
 #include <mutex>
 #include <stdexcept>
@@ -10,12 +11,10 @@ using boost::asio::ip::udp;
 using boost::asio::ip::address;
 using namespace Mlib;
 
-UdpNode::UdpNode(
-    const std::string& ip_address,
-    uint16_t port)
+UdpNode::UdpNode(const RemoteSocket& socket)
     : io_context_{ std::make_shared<boost::asio::io_context>() }
     , socket_{ std::make_shared<boost::asio::ip::udp::socket>(*io_context_) }
-    , endpoint_{ address{boost::asio::ip::make_address_v4(ip_address)}, port }
+    , endpoint_{ address{boost::asio::ip::make_address_v4(socket.hostname)}, socket.port }
 {
     socket_->open(udp::v4());
 }

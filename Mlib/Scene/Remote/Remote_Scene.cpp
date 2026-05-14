@@ -16,7 +16,7 @@ RemoteScene::RemoteScene(
     const RemoteParams& remote_params,
     IoVerbosity verbosity)
     : verbosity_{ verbosity }
-    , home_node_{ std::make_shared<UdpNode>(remote_params.ip, remote_params.port) }
+    , home_node_{ std::make_shared<UdpNode>(remote_params.socket) }
     , remote_scene_object_factory_{
         physics_scene,
         scene_level_selector,

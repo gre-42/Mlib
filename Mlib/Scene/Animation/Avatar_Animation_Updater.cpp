@@ -1,11 +1,11 @@
 #include "Avatar_Animation_Updater.hpp"
 #include <Mlib/Components/Gun.hpp>
-#include <Mlib/OpenGL/Rendering_Context.hpp>
 #include <Mlib/Physics/Actuators/Rigid_Body_Engine.hpp>
 #include <Mlib/Physics/Advance_Times/Gun.hpp>
 #include <Mlib/Physics/Interfaces/IDamageable.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Physics/Units.hpp>
+#include <Mlib/Resource_Context/Rendering_Context.hpp>
 #include <Mlib/Scene_Graph/Elements/Animation_State.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>

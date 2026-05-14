@@ -17,8 +17,7 @@ target_include_directories(
         ${Mlib_INCLUDE_DIR}
         ${glfw3_INCLUDE_DIR}
         ${RECAST_INCLUDE_DIRS}
-        ${DETOUR_INCLUDE_DIRS}
-        ${MlibCereal_INCLUDE_DIR})
+        ${DETOUR_INCLUDE_DIRS})
 
 target_link_libraries(MlibOsmLoader
     PUBLIC
@@ -28,7 +27,8 @@ target_link_libraries(MlibOsmLoader
         MlibNavigation
         MlibGeography
         MlibGeometry
-        MlibMacroExecutor)
+        MlibMacroExecutor
+        MlibCereal)
 if (NOT EMSCRIPTEN)
     target_link_openmp(MlibOsmLoader)
 endif()

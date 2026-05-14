@@ -42,13 +42,13 @@
 #include <Mlib/OpenGL/Render_Texture_Atlas.hpp>
 #include <Mlib/OpenGL/Render_To_Texture/Render_To_Texture_2D.hpp>
 #include <Mlib/OpenGL/Render_To_Texture/Render_To_Texture_2D_Array.hpp>
-#include <Mlib/OpenGL/Rendering_Context.hpp>
 #include <Mlib/OpenGL/Resource_Managers/Lazy_Texture.hpp>
 #include <Mlib/OpenGL/Resource_Managers/Texture_Warn_Flags.hpp>
 #include <Mlib/OpenGL/Text/Loaded_Font.hpp>
 #include <Mlib/OpenGL/Viewport_Guard.hpp>
 #include <Mlib/Os/Env.hpp>
 #include <Mlib/Os/Os.hpp>
+#include <Mlib/Resource_Context/Rendering_Context.hpp>
 #include <Mlib/Strings/Utf8_Path.hpp>
 #include <Mlib/Testing/Assert.hpp>
 #include <Mlib/Threads/Recursion_Guard.hpp>

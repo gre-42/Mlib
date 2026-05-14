@@ -3,14 +3,16 @@
 #include <Mlib/Geometry/Mesh/Animated_Colored_Vertex_Arrays.hpp>
 #include <Mlib/Geometry/Mesh/Load/Load_Mesh_Config.hpp>
 #include <Mlib/Json/Misc.hpp>
-#include <Mlib/OpenGL/Rendering_Context.hpp>
-#include <Mlib/OpenGL/Resource_Managers/Rendering_Resources.hpp>
 #include <Mlib/OpenGL/Resources/Colored_Vertex_Array_Resource.hpp>
+#include <Mlib/Resource_Context/Rendering_Context.hpp>
 #include <proctree/proctree.hpp>
 #include <proctree/proctree_array.hpp>
 #include <proctree/properties_and_seed.hpp>
 #include <proctree/properties_and_seed_json.hpp>
 #include <stdexcept>
+#ifndef WITHOUT_GRAPHICS
+#include <Mlib/OpenGL/Resource_Managers/Rendering_Resources.hpp>
+#endif
 
 using namespace Mlib;
 
@@ -39,6 +41,7 @@ ProctreeFileResource::ProctreeFileResource(
         srand(ps.seed);
     }
     tree.generate();
+    #ifndef WITHOUT_GRAPHICS
     auto& primary_rendering_resources = RenderingContextStack::primary_rendering_resources();
     auto trunk_color = ColormapWithModifiers{
         .filename = FPath{ps.trunk_diffuse},
@@ -62,6 +65,9 @@ ProctreeFileResource::ProctreeFileResource(
             .texture_descriptor = {
                 .color = primary_rendering_resources.colormap(twig_color)}}}};
     auto cvas = proctree_to_cvas(tree, trunk_material, twig_material);
+    #else
+    auto cvas = proctree_to_cvas(tree, Material{}, Material{});
+    #endif
     rva_ = std::make_shared<ColoredVertexArrayResource>(cvas);
 }
 

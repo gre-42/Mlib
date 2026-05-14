@@ -2,14 +2,16 @@
 #include <Mlib/Macro_Executor/Focus_Filter.hpp>
 #include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/Memory/Dangling_Base_Class.hpp>
-#include <Mlib/OpenGL/Data_Display/Pacenote_Display.hpp>
-#include <Mlib/OpenGL/Render_Logic.hpp>
-#include <Mlib/OpenGL/Text/Renderable_Text.hpp>
 #include <Mlib/Physics/Interfaces/IAdvance_Time.hpp>
 #include <Mlib/Physics/Misc/Pacenote_Reader.hpp>
 #include <Mlib/Threads/Recursive_Shared_Mutex.hpp>
 #include <optional>
 #include <vector>
+#ifndef WITHOUT_GRAPHICS
+#include <Mlib/OpenGL/Data_Display/Pacenote_Display.hpp>
+#include <Mlib/OpenGL/Render_Logic.hpp>
+#include <Mlib/OpenGL/Text/Renderable_Text.hpp>
+#endif
 
 namespace Mlib {
 
@@ -21,9 +23,37 @@ template <typename TData, size_t... tshape>
 class FixedArray;
 class ExpressionWatcher;
 
+#ifdef WITHOUT_GRAPHICS
+class CheckPointsPacenotes: public IAdvanceTime, public virtual DanglingBaseClass {
+public:
+    CheckPointsPacenotes(
+        const std::string& pacenotes_filename,
+        const DanglingBaseClassRef<const CheckPoints>& check_points,
+        size_t nlaps,
+        double pacenotes_meters_read_ahead,
+        double pacenotes_minimum_covered_meters,
+        size_t pacenotes_maximum_number);
+    ~CheckPointsPacenotes();
+
+    // IAdvanceTime
+    virtual void advance_time(float dt, const StaticWorld& world) override;
+
+private:
+    DanglingBaseClassPtr<const CheckPoints> check_points_;
+    PacenoteReader pacenote_reader_;
+    std::vector<const Pacenote*> pacenotes_;
+    DestructionFunctionsRemovalTokens on_destroy_check_points_;
+};
+#else
 class CheckPointsPacenotes: public IAdvanceTime, public RenderLogic {
 public:
     CheckPointsPacenotes(
+        const std::string& pacenotes_filename,
+        const DanglingBaseClassRef<const CheckPoints>& check_points,
+        size_t nlaps,
+        double pacenotes_meters_read_ahead,
+        double pacenotes_minimum_covered_meters,
+        size_t pacenotes_maximum_number,
         RenderLogicGallery& gallery,
         const std::vector<std::string>& pictures_left,
         const std::vector<std::string>& pictures_right,
@@ -35,12 +65,6 @@ public:
         std::string charset,
         std::string ttf_filename,
         const FixedArray<float, 3>& font_color,
-        const std::string& pacenotes_filename,
-        const DanglingBaseClassRef<const CheckPoints>& check_points,
-        size_t nlaps,
-        double pacenotes_meters_read_ahead,
-        double pacenotes_minimum_covered_meters,
-        size_t pacenotes_maximum_number,
         FocusFilter focus_filter);
     ~CheckPointsPacenotes();
 
@@ -79,5 +103,6 @@ private:
     DestructionFunctionsRemovalTokens on_destroy_check_points_;
     mutable SafeAtomicRecursiveSharedMutex mutex_;
 };
+#endif
 
 }

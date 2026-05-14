@@ -11,6 +11,7 @@ all: recastnavigation cmake build
 ENV           :=
 CMAKE_CMD     :=
 CONTAINER     := unknown_container
+CMAKE_OPTIONS :=
 ifneq ($(filter MSYS% CYGWIN% MINGW%,$(ostype)),)
     PLATFORM_CHAR := M
 else
@@ -38,6 +39,10 @@ ifeq ($(UBSAN),1)
     CXXFLAGS  += -fsanitize=undefined
     LDFLAGS   += -fsanitize=undefined
     BUILD_DIR := B$(BUILD_DIR)
+endif
+ifeq ($(HEADLESS),1)
+    CMAKE_OPTIONS := -D BUILD_AUDIO=OFF -D BUILD_GRAPHICS=OFF -D BUILD_ICU=OFF
+    BUILD_DIR     := H$(BUILD_DIR)
 endif
 # CLANG
 ifeq ($(CLANG),1)
@@ -111,7 +116,7 @@ emsdk_image:
 	podman build -f Dockerfile.emsdk -t mgame/emsdk
 
 cmake:
-	$(CMAKE_CMD) cmake -G Ninja -DCMAKE_BUILD_TYPE="$(CMAKE_BUILD_TYPE)" -B "$(BUILD_DIR)" -D DEPEND_PREFIX=$(DEPEND_PREFIX)
+	$(CMAKE_CMD) cmake -G Ninja -DCMAKE_BUILD_TYPE="$(CMAKE_BUILD_TYPE)" -B "$(BUILD_DIR)" -D DEPEND_PREFIX=$(DEPEND_PREFIX) $(CMAKE_OPTIONS)
 
 cmake_fresh:
 	# This is the same as "cmake $(BUILD_DIR) --fresh"
@@ -128,7 +133,7 @@ daemon:
 	$(DAEMON_CMD) sleep infinity
 
 empackage:
-	$(INTER_CMD) /emsdk/upstream/emscripten/tools/file_packager /src/assets.data --preload /src/data@/ --js-output=/src/assets.js
+	$(INTER_CMD) /emsdk/upstream/emscripten/tools/file_packager /src/static/assets.data --preload /src/static/data@/ --js-output=/src/static/assets.js
 
 clang-tidy:
 	find Mlib -iname "*.cpp" -exec clang-tidy '{}' -checks=-clang-diagnostic-gnu-designator -- -I. ';'

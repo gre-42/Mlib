@@ -1,8 +1,4 @@
 #include "Create_Gun.hpp"
-#include <Mlib/Audio/Audio_Periodicity.hpp>
-#include <Mlib/Audio/Audio_Resource_Context.hpp>
-#include <Mlib/Audio/Audio_Resources.hpp>
-#include <Mlib/Audio/One_Shot_Audio.hpp>
 #include <Mlib/Components/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Geometry/Material/Particle_Type.hpp>
 #include <Mlib/Json/Chrono_Time_Point.hpp>
@@ -10,7 +6,6 @@
 #include <Mlib/Macro_Executor/Macro_Line_Executor.hpp>
 #include <Mlib/Memory/Object_Pool.hpp>
 #include <Mlib/Misc/Argument_List.hpp>
-#include <Mlib/OpenGL/Batch_Renderers/Particle_Renderer.hpp>
 #include <Mlib/Physics/Advance_Times/Gun.hpp>
 #include <Mlib/Physics/Bullets/Bullet_Property_Db.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Engine.hpp>
@@ -32,6 +27,15 @@
 #include <Mlib/Stats/Random_Process.hpp>
 #include <memory>
 #include <stdexcept>
+#ifndef WITHOUT_AUDIO
+#include <Mlib/Audio/Audio_Periodicity.hpp>
+#include <Mlib/Audio/Audio_Resource_Context.hpp>
+#include <Mlib/Audio/Audio_Resources.hpp>
+#include <Mlib/Audio/One_Shot_Audio.hpp>
+#endif
+#ifndef WITHOUT_GRAPHICS
+#include <Mlib/OpenGL/Batch_Renderers/Particle_Renderer.hpp>
+#endif
 
 using namespace Mlib;
 
@@ -143,6 +147,7 @@ void CreateGun::operator()(const JsonView& args)
             };
     }
     std::function<void(const AudioSourceState<ScenePos>&)> generate_shot_audio;
+    #ifndef WITHOUT_AUDIO
     if (auto a = args.try_at<VariableAndHash<std::string>>(KnownArgs::shot_audio); a.has_value()) {
         generate_shot_audio =
         [
@@ -154,15 +159,16 @@ void CreateGun::operator()(const JsonView& args)
         {
             o.play(
                 *audio_buffer,
-#ifndef USE_PCM_FILTERS
+                #ifndef USE_PCM_FILTERS
                 audio_meta.lowpass.get(),
-#endif
+                #endif
                 state,
                 AudioPeriodicity::APERIODIC,
                 audio_meta.distance_clamping,
                 audio_meta.gain);
         };
     }
+    #endif
     std::function<void(const StaticWorld&)> generate_muzzle_flash;
     if (auto macro = args.try_at_non_null(KnownArgs::generate_muzzle_flash); macro.has_value()) {
         generate_muzzle_flash =

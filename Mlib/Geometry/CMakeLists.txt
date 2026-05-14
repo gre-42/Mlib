@@ -7,7 +7,7 @@ my_add_library(
     EXCLUDED_FILES ""
 )
 
-target_include_directories(MlibGeometry PUBLIC ${Mlib_INCLUDE_DIR} ${MlibCereal_INCLUDE_DIR})
+target_include_directories(MlibGeometry PUBLIC ${Mlib_INCLUDE_DIR})
 
 target_link_libraries(MlibGeometry
     PUBLIC
@@ -16,4 +16,5 @@ target_link_libraries(MlibGeometry
         MlibHalf
         MlibImages
         MlibMacroExecutor
-        MlibCompression)
+        MlibCompression
+        MlibCereal)

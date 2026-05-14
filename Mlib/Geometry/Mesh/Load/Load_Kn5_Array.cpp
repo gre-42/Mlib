@@ -200,7 +200,9 @@ template <class TPos>
 std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
     const Utf8Path& filename,
     const LoadMeshConfig<TPos>& cfg,
+    #ifndef WITHOUT_GRAPHICS
     IDdsResources* dds_resources,
+    #endif
     IRaceLogic* race_logic)
 {
     const bool show_only_collidables = false;
@@ -822,12 +824,14 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
         }
         for (const auto& cva : result) {
             auto register_colormap = [&](const ColormapWithModifiers& cm) {
+                #ifndef WITHOUT_GRAPHICS
                 if (dds_resources != nullptr) {
                     auto n = textures.extract(cm.filename.variable_and_hash());
                     if (!n.empty()) {
                         dds_resources->add_texture(cm, std::move(n.mapped().data), FlipMode::VERTICAL, TextureAlreadyExistsBehavior::WARN);
                     }
                 }
+                #endif
                 };
             for (auto& t : cva->meta.material.textures_color) {
                 t.texture_descriptor.color.compute_hash();
@@ -869,10 +873,14 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
 template std::list<std::shared_ptr<ColoredVertexArray<float>>> Mlib::load_kn5_array<float>(
     const Utf8Path& file_or_directory,
     const LoadMeshConfig<float>&,
+    #ifndef WITHOUT_GRAPHICS
     IDdsResources*,
+    #endif
     IRaceLogic*);
 template std::list<std::shared_ptr<ColoredVertexArray<CompressedScenePos>>> Mlib::load_kn5_array<CompressedScenePos>(
     const Utf8Path& file_or_directory,
     const LoadMeshConfig<CompressedScenePos>&,
+    #ifndef WITHOUT_GRAPHICS
     IDdsResources*,
+    #endif
     IRaceLogic*);

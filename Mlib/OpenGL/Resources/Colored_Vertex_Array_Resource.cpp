@@ -26,14 +26,8 @@
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Transformation/Translation_Matrix.hpp>
 #include <Mlib/Memory/Integral_Cast.hpp>
-#include <Mlib/OpenGL/Context_Query.hpp>
-#include <Mlib/OpenGL/Deallocate/Render_Deallocator.hpp>
-#include <Mlib/OpenGL/Instance_Handles/Colored_Render_Program.hpp>
-#include <Mlib/OpenGL/Instance_Handles/IArray_Buffer.hpp>
 #include <Mlib/OpenGL/Renderables/Renderable_Colored_Vertex_Array.hpp>
-#include <Mlib/OpenGL/Rendering_Context.hpp>
-#include <Mlib/OpenGL/Resource_Managers/Rendering_Resources.hpp>
-#include <Mlib/OpenGL/Resources/Colored_Vertex_Array_Resource/Distant_Triangle_Hider.hpp>
+#include <Mlib/Resource_Context/Rendering_Context.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Culling/Visibility_Check.hpp>
 #include <Mlib/Scene_Graph/Elements/Light.hpp>
@@ -57,6 +51,13 @@
 #include <Mlib/Testing/Assert.hpp>
 #include <iostream>
 #include <mutex>
+#ifndef WITHOUT_GRAPHICS
+#include <Mlib/OpenGL/Context_Query.hpp>
+#include <Mlib/OpenGL/Deallocate/Render_Deallocator.hpp>
+#include <Mlib/OpenGL/Instance_Handles/Colored_Render_Program.hpp>
+#include <Mlib/OpenGL/Instance_Handles/IArray_Buffer.hpp>
+#include <Mlib/OpenGL/Resource_Managers/Rendering_Resources.hpp>
+#endif
 
 using namespace Mlib;
 
@@ -66,19 +67,30 @@ ColoredVertexArrayResource::ColoredVertexArrayResource(
     std::list<std::shared_ptr<IGpuVertexArray>> gpu_vertex_arrays)
     : ISceneNodeResource{"ColoredVertexArrayResource"}
     , scene_node_resources_{ RenderingContextStack::primary_scene_node_resources() }
+    #ifndef WITHOUT_GRAPHICS
     , rendering_resources_{ RenderingContextStack::primary_rendering_resources() }
     , gpu_object_factory_{ RenderingContextStack::primary_gpu_object_factory() }
-    , triangles_res_{ std::move(triangles) }
     , gpu_vertex_data_{ std::move(gpu_vertex_data) }
     , gpu_vertex_arrays_{ std::move(gpu_vertex_arrays) }
+    #endif
+    , triangles_res_{ std::move(triangles) }
 {
-#ifdef DEBUG
+    #ifdef DEBUG
     if (triangles_res_ != nullptr) {
         triangles_res_->check_consistency();
     }
-#endif
+    #endif
+    #ifdef WITHOUT_GRAPHICS
+    if (!gpu_vertex_data.empty()) {
+        throw std::runtime_error("Received gpu_vertex_data without graphics");
+    }
+    if (!gpu_vertex_arrays.empty()) {
+        throw std::runtime_error("Received gpu_vertex_arrays without graphics");
+    }
+    #endif
 }
 
+#ifndef WITHOUT_GRAPHICS
 ColoredVertexArrayResource::ColoredVertexArrayResource(
     std::list<std::shared_ptr<IGpuVertexArray>> gpu_vertex_arrays)
     : ColoredVertexArrayResource{nullptr, {}, gpu_vertex_arrays}
@@ -97,6 +109,7 @@ ColoredVertexArrayResource::ColoredVertexArrayResource(
     gpu_vertex_arrays_.push_back(gpu_object_factory_.create_vertex_array(
         gpu_vertex_data, gpu_instances));
 }
+#endif
 
 ColoredVertexArrayResource::ColoredVertexArrayResource(
     const std::list<std::shared_ptr<ColoredVertexArray<float>>>& striangles,
@@ -149,6 +162,7 @@ ColoredVertexArrayResource::ColoredVertexArrayResource(
 ColoredVertexArrayResource::~ColoredVertexArrayResource() = default;
 
 void ColoredVertexArrayResource::preload(const RenderableResourceFilter& filter) const {
+    #ifndef WITHOUT_GRAPHICS
     auto preload_meta = [&](const MeshMeta& meta) {
         for (auto& t : meta.material.textures_color) {
             rendering_resources_.preload(t.texture_descriptor);
@@ -185,20 +199,25 @@ void ColoredVertexArrayResource::preload(const RenderableResourceFilter& filter)
             a->preload();
         }
     }
+    #endif
 }
 
 void ColoredVertexArrayResource::instantiate_child_renderable(const ChildInstantiationOptions& options) const
 {
-#ifdef DEBUG
+    #ifdef DEBUG
     if (triangles_res_ != nullptr) {
         triangles_res_->check_consistency();
     }
-#endif
+    #endif
+    #ifndef WITHOUT_GRAPHICS
     if (options.rendering_resources == nullptr) {
         throw std::runtime_error("ColoredVertexArrayResource::instantiate_child_renderable: rendering-resources is null");
     }
+    #endif
     options.scene_node->add_renderable(options.instance_name, std::make_shared<RenderableColoredVertexArray>(
+        #ifndef WITHOUT_GRAPHICS
         *options.rendering_resources,
+        #endif
         shared_from_this(),
         CachingBehavior::ENABLED,
         options.renderable_resource_filter));
@@ -251,12 +270,15 @@ void ColoredVertexArrayResource::instantiate_root_renderables(const RootInstanti
             }
             auto rcva = std::make_shared<ColoredVertexArrayResource>(std::move(scvas));
             rcva->instantiate_child_renderable(ChildInstantiationOptions{
+                #ifndef WITHOUT_GRAPHICS
                 .rendering_resources = options.rendering_resources,
+                #endif
                 .instance_name = VariableAndHash<std::string>{
                     *options.instance_name + suffix + '_' + std::to_string(continuous_blending_z_order) },
                 .scene_node = node.ref(CURRENT_SOURCE_LOCATION),
                 .renderable_resource_filter = options.renderable_resource_filter});
         }
+        #ifndef WITHOUT_GRAPHICS
         if (options.max_imposter_texture_size != 0) {
             if (options.imposters == nullptr) {
                 throw std::runtime_error("Imposters not set for \"" + *options.instance_name + '"');
@@ -264,6 +286,7 @@ void ColoredVertexArrayResource::instantiate_root_renderables(const RootInstanti
             auto imposter_node_name = *options.instance_name + "-" + std::to_string(options.scene.get_uuid());
             options.imposters->set_imposter_info(node.ref(CURRENT_SOURCE_LOCATION), { imposter_node_name, options.max_imposter_texture_size });
         }
+        #endif
         auto node_name = VariableAndHash<std::string>{*options.instance_name + suffix};
         options.scene.auto_add_root_node(
             node_name,
@@ -317,10 +340,13 @@ void ColoredVertexArrayResource::instantiate_root_renderables(const RootInstanti
             std::nullopt,
             PoseInterpolationMode::DISABLED);
         instantiate_child_renderable(ChildInstantiationOptions{
+            #ifndef WITHOUT_GRAPHICS
             .rendering_resources = options.rendering_resources,
+            #endif
             .instance_name = options.instance_name,
             .scene_node = node.ref(CURRENT_SOURCE_LOCATION),
             .renderable_resource_filter = options.renderable_resource_filter});
+        #ifndef WITHOUT_GRAPHICS
         if (options.max_imposter_texture_size != 0) {
             if (options.imposters == nullptr) {
                 throw std::runtime_error("Imposters not set for \"" + *options.instance_name + '"');
@@ -328,6 +354,7 @@ void ColoredVertexArrayResource::instantiate_root_renderables(const RootInstanti
             auto imposter_node_name = *options.instance_name + "-" + std::to_string(options.scene.get_uuid());
             options.imposters->set_imposter_info(node.ref(CURRENT_SOURCE_LOCATION), { imposter_node_name, options.max_imposter_texture_size });
         }
+        #endif
         auto node_name = VariableAndHash<std::string>{*options.instance_name + "_cva_world"};
         options.scene.auto_add_root_node(
             node_name,
@@ -604,6 +631,7 @@ void ColoredVertexArrayResource::import_bone_weights(
         max_distance);
 }
 
+#ifndef WITHOUT_GRAPHICS
 bool ColoredVertexArrayResource::copy_in_progress() const {
     for (const auto& a : gpu_vertex_arrays_) {
         if (a->copy_in_progress()) {
@@ -618,3 +646,4 @@ void ColoredVertexArrayResource::wait() const {
         a->wait();
     }
 }
+#endif

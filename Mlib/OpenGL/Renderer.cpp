@@ -2,6 +2,7 @@
 #include <Mlib/Images/Revert_Axis.hpp>
 #include <Mlib/Images/Vectorial_Pixels.hpp>
 #include <Mlib/Layout/Layout_Constraint_Parameters.hpp>
+#include <Mlib/Math/Bounded_Atomic_Dec_Equals_Zero.hpp>
 #include <Mlib/Memory/Destruction_Guards.hpp>
 #include <Mlib/OpenGL/CHK.hpp>
 #include <Mlib/OpenGL/Deallocate/Render_Garbage_Collector.hpp>
@@ -70,7 +71,7 @@ void Renderer::render(RenderLogic& logic, const SceneGraphConfig& scene_graph_co
             // lag_finder.start();
             TIME_GUARD_INITIALIZE(1000 * 60, MaxLogLengthExceededBehavior::THROW_EXCEPTION);
             if (num_renderings_ != SIZE_MAX) {
-                --num_renderings_;
+                bounded_atomic_dec_equals_zero(num_renderings_);
             }
             int width, height;
 

@@ -12,7 +12,6 @@
 #include <Mlib/Memory/Object_Pool.hpp>
 #include <Mlib/Misc/Argument_List.hpp>
 #include <Mlib/Misc/FPath.hpp>
-#include <Mlib/OpenGL/Render_Logics/Render_Logics.hpp>
 #include <Mlib/Physics/Advance_Times/Check_Points.hpp>
 #include <Mlib/Physics/Misc/Track_Element_File.hpp>
 #include <Mlib/Physics/Misc/Track_Element_Vector.hpp>
@@ -25,10 +24,13 @@
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Load_Scene_Funcs.hpp>
 #include <Mlib/Scene/Render_Logics/Check_Points_Pacenotes.hpp>
-#include <Mlib/Scene/Renderable_Scenes.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
+#ifndef WITHOUT_GRAPHICS
+#include <Mlib/OpenGL/Render_Logics/Render_Logics.hpp>
+#include <Mlib/Scene/Renderable_Scenes.hpp>
+#endif
 
 using namespace Mlib;
 
@@ -86,12 +88,14 @@ void CreateCheckPoints::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     args.arguments.validate(KnownArgs::options);
 
-    auto user_is_local = args.arguments.at<bool>(KnownArgs::user_is_local);
+    #ifndef WITHOUT_GRAPHICS
     RenderableScene* renderable_scene = nullptr;
+    auto user_is_local = args.arguments.at<bool>(KnownArgs::user_is_local);
     if (user_is_local) {
         auto renderable_scene_name = args.arguments.at<std::string>(KnownArgs::renderable_scene);
         renderable_scene = &args.renderable_scenes[renderable_scene_name];
     }
+    #endif
 
     auto moving_asset_id = args.arguments.at<std::string>(KnownArgs::moving_asset_id);
     auto on_finish = args.arguments.at(KnownArgs::on_finish);
@@ -130,9 +134,11 @@ void CreateCheckPoints::execute(const LoadSceneJsonUserFunctionArgs& args)
         args.arguments.at<float>(KnownArgs::distance) * meters,
         args.arguments.at<size_t>(KnownArgs::nahead),
         args.arguments.at<float>(KnownArgs::radius) * meters,
+        #ifndef WITHOUT_GRAPHICS
         renderable_scene != nullptr
             ? &rendering_resources
             : nullptr,
+        #endif
         scene_node_resources,
         scene,
         delete_node_mutex,
@@ -148,7 +154,13 @@ void CreateCheckPoints::execute(const LoadSceneJsonUserFunctionArgs& args)
     if (args.arguments.at<bool>(KnownArgs::pacenotes_enabled)) {
         pacenotes_filename = args.arguments.path(KnownArgs::pacenotes_filename, "");
     }
-    if ((renderable_scene != nullptr) && !pacenotes_filename.empty()) {
+    if (
+        #ifndef WITHOUT_GRAPHICS
+        (renderable_scene != nullptr) &&
+        #endif
+        !pacenotes_filename.empty())
+    {
+        #ifndef WITHOUT_GRAPHICS
         auto text_widget = std::make_unique<Widget>(
             args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::pacenotes_text_left)),
             args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::pacenotes_text_right)),
@@ -159,9 +171,17 @@ void CreateCheckPoints::execute(const LoadSceneJsonUserFunctionArgs& args)
             args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::pacenotes_picture_right)),
             args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::pacenotes_picture_bottom)),
             args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::pacenotes_picture_top)));
-        auto& renderable_pace_notes = global_object_pool.create<CheckPointsPacenotes>(
+        #endif
+            auto& renderable_pace_notes = global_object_pool.create<CheckPointsPacenotes>(
             CURRENT_SOURCE_LOCATION,
-            args.gallery,
+            std::move(pacenotes_filename),
+            DanglingBaseClassRef<const CheckPoints>{ check_points, CURRENT_SOURCE_LOCATION },
+            nlaps,
+            args.arguments.at<double>(KnownArgs::pacenotes_meters_ahead),
+            args.arguments.at<double>(KnownArgs::pacenotes_minimum_covered_meters),
+            args.arguments.at<size_t>(KnownArgs::pacenotes_maximum_number)
+            #ifndef WITHOUT_GRAPHICS
+            , args.gallery,
             args.arguments.at<std::vector<std::string>>(KnownArgs::pacenotes_pictures_left),
             args.arguments.at<std::vector<std::string>>(KnownArgs::pacenotes_pictures_right),
             args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::pacenotes_widget_distance)),
@@ -172,18 +192,16 @@ void CreateCheckPoints::execute(const LoadSceneJsonUserFunctionArgs& args)
             args.arguments.at<std::string>(KnownArgs::pacenotes_charset),
             args.arguments.path(KnownArgs::pacenotes_ttf),
             args.arguments.at<EFixedArray<float, 3>>(KnownArgs::pacenotes_font_color),
-            std::move(pacenotes_filename),
-            DanglingBaseClassRef<const CheckPoints>{ check_points, CURRENT_SOURCE_LOCATION },
-            nlaps,
-            args.arguments.at<double>(KnownArgs::pacenotes_meters_ahead),
-            args.arguments.at<double>(KnownArgs::pacenotes_minimum_covered_meters),
-            args.arguments.at<size_t>(KnownArgs::pacenotes_maximum_number),
             FocusFilter{
                 .focus_mask = focus_from_string(args.arguments.at<std::string>(KnownArgs::focus_mask)),
-                .submenu_ids = string_to_set(args.arguments.at<std::string>(KnownArgs::submenus, {}))});
-        renderable_scene->render_logics_.append({ renderable_pace_notes, CURRENT_SOURCE_LOCATION }, 0 /* z_order */, CURRENT_SOURCE_LOCATION);
+                .submenu_ids = string_to_set(args.arguments.at<std::string>(KnownArgs::submenus, {}))}
+            #endif
+            );
         physics_engine.advance_times_.add_advance_time({ renderable_pace_notes, CURRENT_SOURCE_LOCATION }, CURRENT_SOURCE_LOCATION);
+        #ifndef WITHOUT_GRAPHICS
+        renderable_scene->render_logics_.append({ renderable_pace_notes, CURRENT_SOURCE_LOCATION }, 0 /* z_order */, CURRENT_SOURCE_LOCATION);
         renderable_pace_notes.preload();
+        #endif
     }
     physics_engine.advance_times_.add_advance_time({ check_points, CURRENT_SOURCE_LOCATION }, CURRENT_SOURCE_LOCATION);
 }

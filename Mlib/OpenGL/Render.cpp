@@ -13,9 +13,9 @@
 #include <Mlib/OpenGL/Render_Logics/Rotating_Logic.hpp>
 #include <Mlib/OpenGL/Render_Results.hpp>
 #include <Mlib/OpenGL/Renderer.hpp>
-#include <Mlib/OpenGL/Rendering_Context.hpp>
 #include <Mlib/OpenGL/Ui/Button_States.hpp>
 #include <Mlib/OpenGL/Window.hpp>
+#include <Mlib/Resource_Context/Rendering_Context.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Light.hpp>
 #include <Mlib/Scene_Graph/Elements/Make_Scene_Node.hpp>

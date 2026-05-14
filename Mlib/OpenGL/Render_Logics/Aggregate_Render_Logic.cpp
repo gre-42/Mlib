@@ -3,7 +3,7 @@
 #include <Mlib/Misc/Log.hpp>
 #include <Mlib/OpenGL/Batch_Renderers/Aggregate_Array_Renderer.hpp>
 #include <Mlib/OpenGL/Render_Setup.hpp>
-#include <Mlib/OpenGL/Rendering_Context.hpp>
+#include <Mlib/Resource_Context/Rendering_Context.hpp>
 #include <Mlib/Scene_Graph/Render/Batch_Renderers/Array_Instances_Renderer.hpp>
 #include <Mlib/Scene_Graph/Render/Batch_Renderers/Array_Instances_Renderers.hpp>
 #include <Mlib/Scene_Graph/Render/Batch_Renderers/IAggregate_Renderer.hpp>

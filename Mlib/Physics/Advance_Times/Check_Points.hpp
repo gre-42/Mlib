@@ -61,7 +61,9 @@ public:
         float distance,
         size_t nahead,
         float radius,
+        #ifndef WITHOUT_GRAPHICS
         RenderingResources* rendering_resources,
+        #endif
         SceneNodeResources& scene_node_resources,
         Scene& scene,
         SafeAtomicRecursiveSharedMutex& delete_node_mutex,
@@ -97,7 +99,9 @@ private:
     size_t lap_index_;
     double progress_;
     double straight_progress_;
+    #ifndef WITHOUT_GRAPHICS
     RenderingResources* rendering_resources_;
+    #endif
     SceneNodeResources& scene_node_resources_;
     Scene& scene_;
     SafeAtomicRecursiveSharedMutex& delete_node_mutex_;

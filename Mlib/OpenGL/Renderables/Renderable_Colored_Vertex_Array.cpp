@@ -12,13 +12,8 @@
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Memory/Integral_Cast.hpp>
 #include <Mlib/Misc/Log.hpp>
-#include <Mlib/OpenGL/CHK.hpp>
-#include <Mlib/OpenGL/Frame_Index_From_Animation_Time.hpp>
-#include <Mlib/OpenGL/Instance_Handles/Vertex_Array.hpp>
-#include <Mlib/OpenGL/Instance_Handles/Wrap_Mode.hpp>
-#include <Mlib/OpenGL/Rendering_Context.hpp>
 #include <Mlib/OpenGL/Resources/Colored_Vertex_Array_Resource.hpp>
-#include <Mlib/OpenGL/Toggle_Benchmark_Rendering.hpp>
+#include <Mlib/Resource_Context/Rendering_Context.hpp>
 #include <Mlib/Scene_Config/Scene_Graph_Config.hpp>
 #include <Mlib/Scene_Graph/Culling/Visibility_Check.hpp>
 #include <Mlib/Scene_Graph/Elements/Animation_State.hpp>
@@ -38,6 +33,13 @@
 #include <climits>
 #include <stdexcept>
 #include <unordered_map>
+#ifndef WITHOUT_GRAPHICS
+#include <Mlib/OpenGL/CHK.hpp>
+#include <Mlib/OpenGL/Toggle_Benchmark_Rendering.hpp>
+#include <Mlib/OpenGL/Frame_Index_From_Animation_Time.hpp>
+#include <Mlib/OpenGL/Instance_Handles/Vertex_Array.hpp>
+#include <Mlib/OpenGL/Instance_Handles/Wrap_Mode.hpp>
+#endif
 
 // #undef LOG_FUNCTION
 // #undef LOG_INFO
@@ -47,8 +49,10 @@
 
 using namespace Mlib;
 
+#ifndef WITHOUT_GRAPHICS
 static const int CONTINUOUS_BLENDING_Z_ORDER_UNDEFINED = INT_MAX;
 static const int CONTINUOUS_BLENDING_Z_ORDER_CONFLICTING = INT_MIN;
+#endif
 
 inline bool has_instances(const IGpuVertexData& v) {
     return false;
@@ -74,7 +78,11 @@ inline std::shared_ptr<IGpuVertexData> RenderableColoredVertexArray::to_gpu_data
     std::shared_ptr<ColoredVertexArray<float>> v,
     CachingBehavior caching_behavior) const
 {
+    #ifdef WITHOUT_GRAPHICS
+    throw std::runtime_error("RenderableColoredVertexArray::to_gpu_data despite no graphics");
+    #else
     return rcva_->gpu_object_factory_.create_vertex_data(v, rcva_->triangles_res_, caching_behavior, TaskLocation::BACKGROUND);
+    #endif
 }
 
 inline std::shared_ptr<IGpuVertexArray> RenderableColoredVertexArray::to_gpu_array(
@@ -88,7 +96,11 @@ inline std::shared_ptr<IGpuVertexArray> RenderableColoredVertexArray::to_gpu_arr
     std::shared_ptr<ColoredVertexArray<float>> v,
     CachingBehavior caching_behavior) const
 {
+    #ifdef WITHOUT_GRAPHICS
+    throw std::runtime_error("RenderableColoredVertexArray::to_gpu_data despite no graphics");
+    #else
     return rcva_->gpu_object_factory_.create_vertex_array(v, rcva_->triangles_res_, caching_behavior, TaskLocation::BACKGROUND);
+    #endif
 }
 
 inline const MeshMeta& get_meta(const std::shared_ptr<IGpuVertexData>& v) {
@@ -128,26 +140,31 @@ struct FloatingPointType<ColoredVertexArray<CompressedScenePos>> {
 };
 
 RenderableColoredVertexArray::RenderableColoredVertexArray(
+    #ifndef WITHOUT_GRAPHICS
     RenderingResources& rendering_resources,
+    #endif
     const std::shared_ptr<const ColoredVertexArrayResource>& rcva,
     CachingBehavior caching_behavior,
     const RenderableResourceFilter& renderable_resource_filter)
     : rcva_{ rcva }
+    #ifndef WITHOUT_GRAPHICS
     , continuous_blending_z_order_{ CONTINUOUS_BLENDING_Z_ORDER_UNDEFINED }
+    , gpu_vertex_array_renderer_{ RenderingContextStack::primary_rendering_resources(), rendering_resources }
+    , required_blending_passes_{ BlendingPassType::NONE }
     , aabb_{ ExtremalBoundingVolume::EMPTY }
     , bounding_sphere_{ ExtremalBoundingVolume::EMPTY }
-    , gpu_vertex_array_renderer_{ RenderingContextStack::primary_rendering_resources(), rendering_resources }
+    #endif
 {
-#ifdef DEBUG
+    #ifdef DEBUG
     rcva_->triangles_res_->check_consistency();
-#endif
-    required_blending_passes_ = BlendingPassType::NONE;
+    #endif
     auto add_cvas = [&]<typename TArray>(const std::list<std::shared_ptr<TArray>>& cvas)
     {
         using TPos = FloatingPointType<TArray>::value_type;
         for (const auto& [i, t] : enumerate(cvas)) {
             const auto& meta = get_meta(t);
             if (renderable_resource_filter.matches(i, meta)) {
+                #ifndef WITHOUT_GRAPHICS
                 if (any(meta.morphology.physics_material & PhysicsMaterial::ATTR_VISIBLE)) {
                     if ((meta.material.aggregate_mode == AggregateMode::NONE) ||
                         has_instances(*t))
@@ -211,6 +228,7 @@ RenderableColoredVertexArray::RenderableColoredVertexArray(
                         }
                     }
                 }
+                #endif
                 if (any(meta.morphology.physics_material & PhysicsMaterial::ATTR_COLLIDE)) {
                     if constexpr (std::is_same_v<TArray, IGpuVertexData> || std::is_same_v<TArray, IGpuVertexArray>) {
                         throw std::runtime_error("attr_collide requires arrays: \"" + meta.name.full_name() + '"');
@@ -234,14 +252,19 @@ RenderableColoredVertexArray::RenderableColoredVertexArray(
         add_cvas(rcva->triangles_res_->scvas);
         add_cvas(rcva->triangles_res_->dcvas);
     }
+    #ifndef WITHOUT_GRAPHICS
     add_cvas(rcva->gpu_vertex_data_);
     add_cvas(rcva->gpu_vertex_arrays_);
-    if (aggregate_off_.empty() &&
+    #endif
+    if (
+        #ifndef WITHOUT_GRAPHICS
+        aggregate_off_.empty() &&
         aggregate_once_.empty() &&
         saggregate_sorted_continuously_.empty() &&
         daggregate_sorted_continuously_.empty() &&
         instances_once_.empty() &&
         instances_sorted_continuously_.empty() &&
+        #endif
         sphysics_.empty() &&
         dphysics_.empty())
     {
@@ -250,6 +273,7 @@ RenderableColoredVertexArray::RenderableColoredVertexArray(
             (std::stringstream() << renderable_resource_filter).str());
     }
 
+    #ifndef WITHOUT_GRAPHICS
     for (auto& cva : aggregate_off_) {
         cva->extend_aabb(aabb_);
         cva->extend_bounding_sphere(bounding_sphere_);
@@ -266,6 +290,7 @@ RenderableColoredVertexArray::RenderableColoredVertexArray(
         cva->extend_aabb(aabb_);
         cva->extend_bounding_sphere(bounding_sphere_);
     }
+    #endif
 }
 
 RenderableColoredVertexArray::~RenderableColoredVertexArray() = default;
@@ -275,7 +300,7 @@ UUVector<OffsetAndQuaternion<float, float>> RenderableColoredVertexArray::calcul
     if ((rcva_->triangles_res_ == nullptr) || rcva_->triangles_res_->bone_indices.empty()) {
         return {};
     }
-    TIME_GUARD_DECLARE(time_guard, "calculate_absolute_bone_transformations", "calculate_absolute_bone_transformations");
+    // TIME_GUARD_DECLARE(time_guard, "calculate_absolute_bone_transformations", "calculate_absolute_bone_transformations");
     if (animation_state == nullptr) {
         throw std::runtime_error("Animation without animation state");
     }
@@ -323,6 +348,9 @@ void RenderableColoredVertexArray::render(
     #ifdef DEBUG
     rcva_->triangles_res_->check_consistency();
     #endif
+    #ifdef WITHOUT_GRAPHICS
+    throw std::runtime_error("RenderableColoredVertexArray::render called without graphics support");
+    #else
     UUVector<OffsetAndQuaternion<float, float>> absolute_bone_transformations =
         calculate_absolute_bone_transformations(animation_state);
     for (auto& cva : aggregate_off_) {
@@ -348,10 +376,12 @@ void RenderableColoredVertexArray::render(
             animation_state,
             color_style);
     }
+    #endif
 }
 
 PhysicsMaterial RenderableColoredVertexArray::physics_attributes() const {
     auto result = PhysicsMaterial::NONE;
+    #ifndef WITHOUT_GRAPHICS
     for (const auto& m : aggregate_off_) {
         result |= m->vertices()->mesh_meta().morphology.physics_material;
     }
@@ -370,6 +400,7 @@ PhysicsMaterial RenderableColoredVertexArray::physics_attributes() const {
     for (const auto& m : instances_sorted_continuously_) {
         result |= m->mesh_meta().morphology.physics_material;
     }
+    #endif
     for (const auto& m : sphysics_) {
         result |= m->meta.morphology.physics_material;
     }
@@ -381,6 +412,7 @@ PhysicsMaterial RenderableColoredVertexArray::physics_attributes() const {
 
 RenderingStrategies RenderableColoredVertexArray::rendering_strategies() const {
     auto result = RenderingStrategies::NONE;
+    #ifndef WITHOUT_GRAPHICS
     if (!aggregate_off_.empty()) {
         result |= RenderingStrategies::OBJECT;
     }
@@ -398,10 +430,14 @@ RenderingStrategies RenderableColoredVertexArray::rendering_strategies() const {
     if (!instances_sorted_continuously_.empty()) {
         result |= RenderingStrategies::INSTANCES_SORTED_CONTINUOUSLY;
     }
+    #endif
     return result;
 }
 
 bool RenderableColoredVertexArray::requires_render_pass(ExternalRenderPassType render_pass) const {
+    #ifdef WITHOUT_GRAPHICS
+    return false;
+    #else
     if (aggregate_off_.empty()) {
         return false;
     }
@@ -412,9 +448,13 @@ bool RenderableColoredVertexArray::requires_render_pass(ExternalRenderPassType r
         return required_occluder_passes_.contains(render_pass);
     }
     return true;
+    #endif
 }
 
 BlendingPassType RenderableColoredVertexArray::required_blending_passes(ExternalRenderPassType render_pass) const {
+    #ifdef WITHOUT_GRAPHICS
+    throw std::runtime_error("RenderableColoredVertexArray::required_blending_passes called without graphics support");
+    #else
     if (!any(required_blending_passes_)) {
         return BlendingPassType::NONE;
     }
@@ -424,9 +464,13 @@ BlendingPassType RenderableColoredVertexArray::required_blending_passes(External
         return BlendingPassType::NONE;
     }
     return required_blending_passes_;
+    #endif
 }
 
 int RenderableColoredVertexArray::continuous_blending_z_order() const {
+    #ifdef WITHOUT_GRAPHICS
+    throw std::runtime_error("RenderableColoredVertexArray::continuous_blending_z_order called without graphics support");
+    #else
     if (continuous_blending_z_order_ == CONTINUOUS_BLENDING_Z_ORDER_UNDEFINED) {
         throw std::runtime_error("Undefined z order");
     }
@@ -434,6 +478,7 @@ int RenderableColoredVertexArray::continuous_blending_z_order() const {
         throw std::runtime_error("Conflicting z orders");
     }
     return continuous_blending_z_order_;
+    #endif
 }
 
 void RenderableColoredVertexArray::append_physics_to_queue(
@@ -456,6 +501,9 @@ void RenderableColoredVertexArray::append_sorted_aggregates_to_queue(
     const ExternalRenderPass& external_render_pass,
     std::list<std::pair<float, std::shared_ptr<ColoredVertexArray<float>>>>& aggregate_queue) const
 {
+    #ifdef WITHOUT_GRAPHICS
+    throw std::runtime_error("RenderableColoredVertexArray::append_sorted_aggregates_to_queue called without graphics support");
+    #else
     for (const auto& cva : saggregate_sorted_continuously_) {
         VisibilityCheck vc{mvp};
         if (vc.is_visible(cva->meta.name.full_name_and_hash(), cva->meta.material, cva->meta.morphology, BILLBOARD_ID_NONE, scene_graph_config, external_render_pass.pass))
@@ -472,6 +520,7 @@ void RenderableColoredVertexArray::append_sorted_aggregates_to_queue(
             aggregate_queue.push_back({ (float)vc.sorting_key(cva->meta.material), cva->transformed<float>(mo, "_transformed_tm") });
         }
     }
+    #endif
 }
 
 void RenderableColoredVertexArray::append_large_aggregates_to_queue(
@@ -480,10 +529,14 @@ void RenderableColoredVertexArray::append_large_aggregates_to_queue(
     const SceneGraphConfig& scene_graph_config,
     std::list<std::shared_ptr<ColoredVertexArray<float>>>& aggregate_queue) const
 {
+    #ifdef WITHOUT_GRAPHICS
+    throw std::runtime_error("RenderableColoredVertexArray::append_large_aggregates_to_queue called without graphics support");
+    #else
     for (const auto& cva : aggregate_once_) {
         TransformationMatrix<SceneDir, ScenePos, 3> mo{m.R, m.t - offset};
         aggregate_queue.push_back(cva->transformed<float>(mo, "_transformed_tm"));
     }
+    #endif
 }
 
 void RenderableColoredVertexArray::append_sorted_instances_to_queue(
@@ -495,6 +548,9 @@ void RenderableColoredVertexArray::append_sorted_instances_to_queue(
     const SceneGraphConfig& scene_graph_config,
     SmallInstancesQueues& instances_queues) const
 {
+    #ifdef WITHOUT_GRAPHICS
+    throw std::runtime_error("RenderableColoredVertexArray::append_sorted_instances_to_queue called without graphics support");
+    #else
     instances_queues.insert(
         instances_sorted_continuously_,
         mvp,
@@ -502,6 +558,7 @@ void RenderableColoredVertexArray::append_sorted_instances_to_queue(
         offset,
         billboard_id,
         scene_graph_config);
+    #endif
 }
 
 void RenderableColoredVertexArray::append_large_instances_to_queue(
@@ -512,6 +569,9 @@ void RenderableColoredVertexArray::append_large_instances_to_queue(
     const SceneGraphConfig& scene_graph_config,
     LargeInstancesQueue& instances_queue) const
 {
+    #ifdef WITHOUT_GRAPHICS
+    throw std::runtime_error("RenderableColoredVertexArray::append_large_instances_to_queue called without graphics support");
+    #else
     instances_queue.insert(
         instances_once_,
         mvp,
@@ -530,6 +590,7 @@ void RenderableColoredVertexArray::append_large_instances_to_queue(
             scene_graph_config,
             InvisibilityHandling::SKIP);
     }
+    #endif
 }
 
 void RenderableColoredVertexArray::extend_aabb(
@@ -537,6 +598,9 @@ void RenderableColoredVertexArray::extend_aabb(
     ExternalRenderPassType render_pass,
     AxisAlignedBoundingBox<CompressedScenePos, 3>& aabb) const
 {
+    #ifdef WITHOUT_GRAPHICS
+    throw std::runtime_error("RenderableColoredVertexArray::extend_aabb called without graphics support");
+    #else
     auto extend = [&](auto& cvas){
         for (const auto& cva : cvas) {
             const auto& meta = get_meta(cva);
@@ -552,17 +616,29 @@ void RenderableColoredVertexArray::extend_aabb(
     extend(daggregate_sorted_continuously_);
     extend(instances_once_);
     extend(instances_sorted_continuously_);
+    #endif
 }
 
 ExtremalAxisAlignedBoundingBox<CompressedScenePos, 3> RenderableColoredVertexArray::aabb() const {
+    #ifdef WITHOUT_GRAPHICS
+    throw std::runtime_error("RenderableColoredVertexArray::aabb called without graphics support");
+    #else
     return aabb_;
+    #endif
 }
 
 ExtremalBoundingSphere<CompressedScenePos, 3> RenderableColoredVertexArray::bounding_sphere() const {
+    #ifdef WITHOUT_GRAPHICS
+    throw std::runtime_error("RenderableColoredVertexArray::bounding_sphere called without graphics support");
+    #else
     return bounding_sphere_;
+    #endif
 }
 
 ScenePos RenderableColoredVertexArray::max_center_distance2(BillboardId billboard_id) const {
+    #ifdef WITHOUT_GRAPHICS
+    throw std::runtime_error("RenderableColoredVertexArray::max_center_distance2 called without graphics support");
+    #else
     ScenePos result = 0.;
     for (const auto& cva : aggregate_off_) { result = std::max(result, cva->max_center_distance2(billboard_id)); }
     for (const auto& cva : aggregate_once_) { result = std::max(result, cva->max_center_distance2(billboard_id)); }
@@ -574,6 +650,7 @@ ScenePos RenderableColoredVertexArray::max_center_distance2(BillboardId billboar
     //     throw std::runtime_error("Could not calculate visibility AABB, renderable seems to be empty");
     // }
     return result;
+    #endif
 }
 
 void RenderableColoredVertexArray::print_stats(std::ostream& ostr) const {
@@ -585,14 +662,19 @@ void RenderableColoredVertexArray::print_stats(std::ostream& ostr) const {
             cva->print_stats(ostr);
         }
     };
+    #ifndef WITHOUT_GRAPHICS
     print_list(aggregate_off_, "aggregate_off");
     print_list(aggregate_once_, "aggregate_once");
     print_list(saggregate_sorted_continuously_, "saggregate_sorted_continuously");
     print_list(daggregate_sorted_continuously_, "daggregate_sorted_continuously");
     print_list(instances_once_, "instances_once");
     print_list(instances_sorted_continuously_, "instances_sorted_continuously");
+    #endif
+    print_list(sphysics_, "sphysics_");
+    print_list(dphysics_, "dphysics_");
 }
 
+#ifndef WITHOUT_GRAPHICS
 void RenderableColoredVertexArray::initialize_gpu_arrays() {
     for (auto& cva : aggregate_off_) {
         if (!cva->initialized()) {
@@ -615,6 +697,7 @@ void RenderableColoredVertexArray::wait() const {
         cva->wait();
     }
 }
+#endif
 
 std::ostream& Mlib::operator << (std::ostream& ostr, const RenderableColoredVertexArray& rcvi)
 {

@@ -1,6 +1,6 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
-#include <Mlib/OpenGL/Renderables/Triangle_Sampler/Terrain_Style.hpp>
+#include <Mlib/Scene_Graph/Resources/Sampler/Triangle_Sampler/Terrain_Style.hpp>
 
 namespace Mlib {
 

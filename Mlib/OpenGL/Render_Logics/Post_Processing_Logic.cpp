@@ -11,10 +11,10 @@
 #include <Mlib/OpenGL/Instance_Handles/Render_Guards.hpp>
 #include <Mlib/OpenGL/Render_Config.hpp>
 #include <Mlib/OpenGL/Render_Setup.hpp>
-#include <Mlib/OpenGL/Rendering_Context.hpp>
 #include <Mlib/OpenGL/Resource_Managers/Rendering_Resources.hpp>
 #include <Mlib/OpenGL/Shader_Version_3_0.hpp>
 #include <Mlib/OpenGL/Viewport_Guard.hpp>
+#include <Mlib/Resource_Context/Rendering_Context.hpp>
 #include <Mlib/Scene_Graph/Rendered_Scene_Descriptor.hpp>
 #include <Mlib/Testing/Assert.hpp>
 #include <stdexcept>

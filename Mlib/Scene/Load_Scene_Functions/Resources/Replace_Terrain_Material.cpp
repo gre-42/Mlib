@@ -5,7 +5,7 @@
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Misc/Argument_List.hpp>
 #include <Mlib/OpenGL/Modifiers/Replace_Terrain_Material.hpp>
-#include <Mlib/OpenGL/Rendering_Context.hpp>
+#include <Mlib/Resource_Context/Rendering_Context.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Load_Scene_Funcs.hpp>
 #include <Mlib/Scene_Graph/Interfaces/IScene_Node_Resource.hpp>
@@ -34,7 +34,9 @@ struct RegisterJsonUserFunction {
                 args.arguments.validate(KnownArgs::options);
 
                 auto& scene_node_resources = RenderingContextStack::primary_scene_node_resources();
+                #ifndef WITHOUT_GRAPHICS
                 auto& rendering_resources = RenderingContextStack::primary_rendering_resources();
+                #endif
                 replace_terrain_material(
                     args.arguments.at<VariableAndHash<std::string>>(KnownArgs::resource_name),
                     args.arguments.pathes_or_variables(KnownArgs::textures),
@@ -42,8 +44,11 @@ struct RegisterJsonUserFunction {
                     args.arguments.at<double>(KnownArgs::uv_scale),
                     args.arguments.at<double>(KnownArgs::uv_period),
                     up_axis_from_string(args.arguments.at<std::string>(KnownArgs::up_axis, "y")),
-                    scene_node_resources,
-                    rendering_resources);
+                    scene_node_resources
+                    #ifndef WITHOUT_GRAPHICS
+                    , rendering_resources
+                    #endif
+                    );
             });
     }
 } obj;

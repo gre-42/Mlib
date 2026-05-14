@@ -6,7 +6,6 @@
 #include <Mlib/Geometry/Mesh/Triangle_List.hpp>
 #include <Mlib/Geometry/Primitives/Bvh.hpp>
 #include <Mlib/Hashing/Variable_And_Hash.hpp>
-#include <Mlib/OpenGL/Renderables/Triangle_Sampler/Resource_Name_Cycle.hpp>
 #include <Mlib/Os/Os.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Entrance_Type.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Get_Way_Width.hpp>
@@ -25,6 +24,7 @@
 #include <Mlib/Scene_Graph/Driving_Direction.hpp>
 #include <Mlib/Scene_Graph/Resources/Batch_Resource_Instantiator.hpp>
 #include <Mlib/Scene_Graph/Resources/Parsed_Resource_Name.hpp>
+#include <Mlib/Scene_Graph/Resources/Sampler/Triangle_Sampler/Resource_Name_Cycle.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
 #include <Mlib/Scene_Graph/Way_Point_Location.hpp>
 #include <Mlib/Scene_Graph/Way_Point_Sandbox.hpp>

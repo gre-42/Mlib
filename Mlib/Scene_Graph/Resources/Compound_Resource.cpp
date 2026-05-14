@@ -51,7 +51,9 @@ void CompoundResource::instantiate_child_renderable(const ChildInstantiationOpti
         scene_node_resources_.instantiate_child_renderable(
             resource_name,
             ChildInstantiationOptions{
+                #ifndef WITHOUT_GRAPHICS
                 .rendering_resources = options.rendering_resources,
+                #endif
                 .instance_name = VariableAndHash{ *options.instance_name + "_compound_" + std::to_string(i) },
                 .scene_node = options.scene_node,
                 .renderable_resource_filter = options.renderable_resource_filter});
@@ -66,8 +68,10 @@ void CompoundResource::instantiate_root_renderables(const RootInstantiationOptio
         scene_node_resources_.instantiate_root_renderables(
             resource_name,
             RootInstantiationOptions{
+                #ifndef WITHOUT_GRAPHICS
                 .rendering_resources = options.rendering_resources,
                 .imposters = options.imposters,
+                #endif
                 .supply_depots = options.supply_depots,
                 .instantiated_nodes = options.instantiated_nodes,
                 .instance_name = VariableAndHash{ *options.instance_name + "_compound_" + std::to_string(i) },

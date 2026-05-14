@@ -1,4 +1,42 @@
 #include <Mlib/Array/Verbose_Vector.hpp>
+#include <Mlib/Io/Arg_Parser.hpp>
+#include <Mlib/Macro_Executor/Asset_References.hpp>
+#include <Mlib/Macro_Executor/Focus.hpp>
+#include <Mlib/Macro_Executor/Notifying_Json_Macro_Arguments.hpp>
+#include <Mlib/Macro_Executor/Translators.hpp>
+#include <Mlib/Memory/Destruction_Guard.hpp>
+#include <Mlib/Misc/Floating_Point_Exceptions.hpp>
+#include <Mlib/OpenGL/Resource_Managers/Particle_Resources.hpp>
+#include <Mlib/OpenGL/Resource_Managers/Trail_Resources.hpp>
+#include <Mlib/Os/Env.hpp>
+#include <Mlib/Physics/Bullets/Bullet_Property_Db.hpp>
+#include <Mlib/Physics/Dynamic_Lights/Dynamic_Light_Db.hpp>
+#include <Mlib/Physics/Smoke_Generation/Surface_Contact_Db.hpp>
+#include <Mlib/Players/Containers/Remote_Sites.hpp>
+#include <Mlib/Players/Containers/Users.hpp>
+#include <Mlib/Regex/Pathes.hpp>
+#include <Mlib/Remote/Incremental_Objects/Scene_Level.hpp>
+#include <Mlib/Remote/Remote_Params.hpp>
+#include <Mlib/Remote/Remote_Role.hpp>
+#include <Mlib/Resource_Context/Rendering_Context.hpp>
+#include <Mlib/Scene/Load_Scene.hpp>
+#include <Mlib/Scene/Physics_Scene.hpp>
+#include <Mlib/Scene/Physics_Scenes.hpp>
+#include <Mlib/Scene/Scene_Config.hpp>
+#include <Mlib/Scene_Config/Scene_Graph_Config.hpp>
+#include <Mlib/Scene_Graph/Render/Caching_Gpu_Object_Factory.hpp>
+#include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
+#include <Mlib/Strings/String_View_To_Number.hpp>
+#include <Mlib/Threads/Containers/Thread_Safe_String.hpp>
+#include <Mlib/Threads/J_Thread.hpp>
+#include <Mlib/Threads/Realtime_Threads.hpp>
+#include <Mlib/Threads/Termination_Manager.hpp>
+#include <Mlib/Threads/Thread_Affinity.hpp>
+#include <Mlib/Threads/Thread_Initializer.hpp>
+#include <Mlib/Time/Fps/Realtime_Dependent_Fps.hpp>
+#include <Mlib/Time/Time_And_Pause.hpp>
+#include <filesystem>
+#ifndef WITHOUT_AUDIO
 #include <Mlib/Audio/Audio_Context.hpp>
 #include <Mlib/Audio/Audio_Device.hpp>
 #include <Mlib/Audio/Audio_Distance_Model.hpp>
@@ -6,14 +44,9 @@
 #include <Mlib/Audio/Audio_Scene.hpp>
 #include <Mlib/Audio/CHK.hpp>
 #include <Mlib/Audio/List_Audio_Devices.hpp>
-#include <Mlib/Io/Arg_Parser.hpp>
+#endif
+#ifndef WITHOUT_GRAPHICS
 #include <Mlib/Layout/Layout_Constraints.hpp>
-#include <Mlib/Macro_Executor/Asset_References.hpp>
-#include <Mlib/Macro_Executor/Focus.hpp>
-#include <Mlib/Macro_Executor/Notifying_Json_Macro_Arguments.hpp>
-#include <Mlib/Macro_Executor/Translators.hpp>
-#include <Mlib/Memory/Destruction_Guard.hpp>
-#include <Mlib/Misc/Floating_Point_Exceptions.hpp>
 #include <Mlib/OpenGL/CHK.hpp>
 #include <Mlib/OpenGL/Clear_Wrapper.hpp>
 #include <Mlib/OpenGL/Deallocate/Render_Allocator.hpp>
@@ -32,48 +65,23 @@
 #include <Mlib/OpenGL/Render_Logics/Window_Logic.hpp>
 #include <Mlib/OpenGL/Renderables/OpenGL_Vertex_Array_Renderer.hpp>
 #include <Mlib/OpenGL/Renderer.hpp>
-#include <Mlib/OpenGL/Rendering_Context.hpp>
-#include <Mlib/OpenGL/Resource_Managers/Particle_Resources.hpp>
-#include <Mlib/OpenGL/Resource_Managers/Trail_Resources.hpp>
 #include <Mlib/OpenGL/Text/Charsets.hpp>
 #include <Mlib/OpenGL/Ui/Button_States.hpp>
 #include <Mlib/OpenGL/Ui/Cursor_States.hpp>
 #include <Mlib/OpenGL/Ui/Renderable_Hider/File_Renderable_Hider.hpp>
 #include <Mlib/OpenGL/Ui/Renderable_Hider/Static_Renderable_Hider.hpp>
 #include <Mlib/OpenGL/Ui/Renderable_Hider/Tty_Renderable_Hider.hpp>
-#include <Mlib/Os/Env.hpp>
-#include <Mlib/Physics/Bullets/Bullet_Property_Db.hpp>
-#include <Mlib/Physics/Dynamic_Lights/Dynamic_Light_Db.hpp>
-#include <Mlib/Physics/Smoke_Generation/Surface_Contact_Db.hpp>
-#include <Mlib/Players/Containers/Remote_Sites.hpp>
-#include <Mlib/Players/Containers/Users.hpp>
-#include <Mlib/Regex/Pathes.hpp>
-#include <Mlib/Remote/Incremental_Objects/Scene_Level.hpp>
-#include <Mlib/Remote/Remote_Params.hpp>
-#include <Mlib/Remote/Remote_Role.hpp>
-#include <Mlib/Scene/Load_Scene.hpp>
-#include <Mlib/Scene/Physics_Scene.hpp>
-#include <Mlib/Scene/Physics_Scenes.hpp>
 #include <Mlib/Scene/Renderable_Scene.hpp>
 #include <Mlib/Scene/Renderable_Scenes.hpp>
-#include <Mlib/Scene/Scene_Config.hpp>
-#include <Mlib/Scene_Graph/Render/Caching_Gpu_Object_Factory.hpp>
-#include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
-#include <Mlib/Strings/String_View_To_Number.hpp>
-#include <Mlib/Threads/Containers/Thread_Safe_String.hpp>
-#include <Mlib/Threads/J_Thread.hpp>
-#include <Mlib/Threads/Realtime_Threads.hpp>
-#include <Mlib/Threads/Termination_Manager.hpp>
-#include <Mlib/Threads/Thread_Affinity.hpp>
-#include <Mlib/Threads/Thread_Initializer.hpp>
-#include <Mlib/Time/Fps/Realtime_Dependent_Fps.hpp>
-#include <Mlib/Time/Time_And_Pause.hpp>
-#include <filesystem>
+#else
+#include <Mlib/Remote/Config_Server/Config_Server.hpp>
+#endif
 
 using namespace Mlib;
 
-static const auto& g = make_gamepad_button;
 using S = VariableAndHash<std::string>;
+#ifndef WITHOUT_GRAPHICS
+static const auto& g = make_gamepad_button;
 
 std::unique_ptr<JThread> render_thread(
     const ParsedArgs& args,
@@ -159,6 +167,7 @@ std::unique_ptr<JThread> render_thread(
         }
     });
 }
+#endif
 
 void print_debug_info(
     const ParsedArgs& args,
@@ -192,23 +201,41 @@ JThread loader_thread(
     const ParsedArgs& args,
     RemoteSites& remote_sites,
     PhysicsScenes& physics_scenes,
-    RenderableScenes& renderable_scenes,
-    LoadScene& load_scene,
+    #ifndef WITHOUT_AUDIO
     std::chrono::steady_clock::duration render_delay,
-    std::chrono::steady_clock::duration velocity_dt)
+    std::chrono::steady_clock::duration velocity_dt,
+    #endif
+    #ifndef WITHOUT_GRAPHICS
+    RenderableScenes& renderable_scenes,
+    #endif
+    LoadScene& load_scene
+)
 {
-    return JThread{[&, render_delay, velocity_dt](){
+    return JThread{[&
+        #ifndef WITHOUT_AUDIO
+        , render_delay, velocity_dt
+        #endif
+    ](){
         try {
             ThreadInitializer ti{"Scene loader", ThreadAffinity::POOL};
+            #ifndef WITHOUT_AUDIO
             AudioResourceContext arc;
+            #endif
             {
+                #ifndef WITHOUT_AUDIO
                 AudioResourceContextGuard arcg{ arc };
                 AudioListener::set_gain(safe_stof(args.named_svalue("--audio_gain", "1")));
+                #endif
                 // GlContextGuard gcg{ render2.window() };
                 load_scene();
+                #if defined(WITHOUT_GRAPHICS) && !defined(WITHOUT_AUDIO)
+                #error "WITHOUT_GRAPHICS implies WITHOUT_AUDIO"
+                #endif
+                #ifndef WITHOUT_AUDIO
                 renderable_scenes["primary_scene_" + remote_sites.get_local_user(0)->full_name].instantiate_audio_listener(
                     render_delay,
                     velocity_dt);
+                #endif
                 if (!args.has_named("--no_physics")) {
                     if (args.has_named("--no_render")) {
                         for (auto& [n, r] : physics_scenes.guarded_iterable()) {
@@ -228,6 +255,7 @@ JThread loader_thread(
     }};
 }
 
+#ifndef WITHOUT_GRAPHICS
 static void main_func(
     std::function<void(uint32_t)> char_callback,
     ButtonStates& button_states,
@@ -255,9 +283,11 @@ static void main_func(
         // }
     }
 }
+#endif
 
 int main(int argc, char** argv) {
     enable_floating_point_exceptions();
+    convert_sigterm_to_exception();
     reserve_realtime_threads(0);
     ThreadInitializer ti{"Main", ThreadAffinity::POOL};
 
@@ -329,6 +359,7 @@ int main(int argc, char** argv) {
         "    [--medium_triangle_cluster_width <width>]\n"
         "    [--dense_triangle_cluster_width <width>]\n"
         "    [--object_cluster_width <width>]\n"
+        #ifndef WITHOUT_GRAPHICS
         "    [--no_vfx]\n"
         "    [--depth_fog_vfx]\n"
         "    [--low_pass]\n"
@@ -340,6 +371,7 @@ int main(int argc, char** argv) {
         "    [--bloom_intensities <intensities>]\n"
         "    [--motion_interpolation]\n"
         "    [--no_render]\n"
+        #endif
         "    [--save_playback]\n"
         "    [--optimize_search_time]\n"
         "    [--plot_triangle_bvh]\n"
@@ -357,16 +389,20 @@ int main(int argc, char** argv) {
         "    [--audio_frequency <value>]\n"
         "    [--audio_alpha <value>]\n"
         "    [--audio_distance_model <value>]\n"
-        "    [--user_count <n>]\n"
-        "    [--remote_site_id <id>]\n"
-        "    [--remote_role {server,client}]\n"
-        "    [--remote_ip <ip>]\n"
-        "    [--remote_port <port>]\n"
         "    [--tty_hider]\n"
         "    [--show_only <name>]\n"
         "    [--show_only_file <filename>]\n"
         "    [--show_hitbox]\n"
         "    [--show_massbox]\n"
+        "    [--user_count <n>]\n"
+        "    [--remote_site_id <id>]\n"
+        "    [--remote_role {server,client}]\n"
+        "    [--udp_ip <ip>]\n"
+        "    [--udp_port <port>]\n"
+        #ifdef WITHOUT_GRAPHICS
+        "    [--http_ip <ip>]\n"
+        "    [--http_port <port>]\n"
+        #else
         "    [--check_al_errors]\n"
         "    [--check_gl_errors]\n"
         "    [--print_gl_calls]\n"
@@ -374,6 +410,7 @@ int main(int argc, char** argv) {
         "    [--print_rendered_materials]\n"
         "    [--rgba_debug_image <name>]\n"
         "    [--window_title <title>]\n"
+        #endif
         "    [--verbose]";
     const ArgParser parser(
         help,
@@ -389,12 +426,14 @@ int main(int argc, char** argv) {
          "--print_physics_residual_time",
          "--print_render_residual_time",
          "--single_threaded",
+         #ifndef WITHOUT_GRAPHICS
          "--no_vfx",
          "--depth_fog_vfx",
          "--low_pass",
          "--high_pass",
          "--motion_interpolation",
          "--no_render",
+         #endif
          "--save_playback",
          "--optimize_search_time",
          "--plot_triangle_bvh",
@@ -410,11 +449,15 @@ int main(int argc, char** argv) {
          "--tty_hider",
          "--show_hitbox",
          "--show_massbox",
+         #ifndef WITHOUT_AUDIO
          "--check_al_errors",
+         #endif
+         #ifndef WITHOUT_GRAPHICS
          "--check_gl_errors",
          "--print_gl_calls",
          "--print_glfw_calls",
          "--print_rendered_materials",
+         #endif
          "--verbose"},
         {"--app_reldir",
          "--record_track_basename",
@@ -479,8 +522,12 @@ int main(int argc, char** argv) {
          "--user_count",
          "--remote_site_id",
          "--remote_role",
-         "--remote_ip",
-         "--remote_port",
+         "--udp_ip",
+         "--udp_port",
+         #ifdef WITHOUT_GRAPHICS
+         "--http_ip",
+         "--http_port",
+         #else
          "--bloom_x",
          "--bloom_y",
          "--bloom_threshold",
@@ -489,7 +536,9 @@ int main(int argc, char** argv) {
          "--show_only",
          "--show_only_file",
          "--rgba_debug_image",
-         "--window_title"});
+         "--window_title"
+         #endif
+        });
     try {
         const auto args = parser.parsed(argc, argv);
         if (args.has_named("--help")) {
@@ -506,9 +555,19 @@ int main(int argc, char** argv) {
         auto initial_main_scene_filename = std::filesystem::absolute(args.unnamed_value(1)).string();
         auto main_scene_filename = initial_main_scene_filename;
 
+        #ifndef WITHOUT_AUDIO
         if (args.has_named("--check_al_errors")) {
             check_al_errors(CheckAlErrors::ENABLED);
         }
+        list_audio_devices(linfo(LogFlags::NO_APPEND_NEWLINE).ref());
+        AudioDevice audio_device;
+        linfo() << "Selected audio device: " << audio_device.get_name();
+        AudioContext audio_context{audio_device, safe_stou(args.named_svalue("--audio_frequency", "0"))};
+        linfo() << "Audio frequency: " << audio_device.get_frequency();
+        AudioScene::set_default_alpha(safe_stof(args.named_svalue("--audio_alpha", "0.1")));
+        AudioScene::set_distance_model(audio_distance_model_from_string(args.named_svalue("--audio_distance_model", "inverse_distance_clamped")));
+        #endif
+        #ifndef WITHOUT_GRAPHICS
         if (args.has_named("--check_gl_errors")) {
             check_gl_errors(CheckGlErrors::ENABLED);
         }
@@ -521,14 +580,6 @@ int main(int argc, char** argv) {
         if (args.has_named("--print_rendered_materials")) {
             print_rendered_materials(PrintRenderedMaterials::ENABLED);
         }
-        list_audio_devices(linfo(LogFlags::NO_APPEND_NEWLINE).ref());
-        AudioDevice audio_device;
-        linfo() << "Selected audio device: " << audio_device.get_name();
-        AudioContext audio_context{audio_device, safe_stou(args.named_svalue("--audio_frequency", "0"))};
-        linfo() << "Audio frequency: " << audio_device.get_frequency();
-        AudioScene::set_default_alpha(safe_stof(args.named_svalue("--audio_alpha", "0.1")));
-        AudioScene::set_distance_model(audio_distance_model_from_string(args.named_svalue("--audio_distance_model", "inverse_distance_clamped")));
-
         auto window_title = args.named_svalue("--window_title", "");
         auto generate_window_title = [&](){
             return window_title + main_scene_filename;
@@ -564,7 +615,9 @@ int main(int argc, char** argv) {
             .polling_interval_seconds = safe_stof(args.named_svalue("--input_polling_interval", "0.00416667")),
             .show_mouse_cursor = args.has_named("--show_mouse_cursor"),
         };
+        #endif
         auto physics_dt = safe_stof(args.named_svalue("--physics_dt", "0.01667"));
+        #ifndef WITHOUT_GRAPHICS
         auto render_delay = std::chrono::duration_cast<std::chrono::steady_clock::duration>(
             std::chrono::duration<float>{ 1.0f * physics_dt });
         auto velocity_dt = std::chrono::duration_cast<std::chrono::steady_clock::duration>(
@@ -614,7 +667,6 @@ int main(int argc, char** argv) {
         }
         UiFocuses ui_focuses{ get_path_in_appdata_directory({"focus.json"}) };
         ui_focuses.try_load();
-        NotifyingJsonMacroArguments external_json_macro_arguments;
         // FifoLog fifo_log{10 * 1000};
 
         WindowUserClass window_user_object{
@@ -631,16 +683,31 @@ int main(int argc, char** argv) {
             render.glfw_window(),
             window_user_object};
         MenuLogic menu_logic{menu_user_object};
+        #else
+        ConfigServer config_server{
+            RemoteSocket{
+                args.named_svalue("--http_ip"),
+                safe_sto<uint16_t>(args.named_svalue("--http_port"))
+            },
+            "static"};
+        #endif
+        NotifyingJsonMacroArguments external_json_macro_arguments;
 
         std::optional<RemoteParams> remote_params;
         if (args.has_named_value("--remote_role")) {
             remote_params.emplace(
                 safe_sto<RemoteSiteId>(args.named_svalue("--remote_site_id")),
                 remote_role_from_string(args.named_svalue("--remote_role")),
-                args.named_svalue("--remote_ip"),
-                safe_sto<uint16_t>(args.named_svalue("--remote_port")));
+                RemoteSocket{
+                    args.named_svalue("--udp_ip"),
+                    safe_sto<uint16_t>(args.named_svalue("--udp_port"))
+                });
         }
+        #ifdef WITHOUT_GRAPHICS
+        auto user_count = safe_sto<uint32_t>(args.named_svalue("--user_count", "0"));
+        #else
         auto user_count = safe_sto<uint32_t>(args.named_svalue("--user_count", "1"));
+        #endif
         Users users;
         RemoteSites remote_sites{ {users, CURRENT_SOURCE_LOCATION}, remote_params };
         remote_sites.set_local_user_count(user_count);
@@ -678,6 +745,16 @@ int main(int argc, char** argv) {
                 {"if_show_global_log", args.has_named("--show_global_log")},
                 {"if_android", false},
                 {"if_compressed", false},
+                #ifdef WITHOUT_AUDIO
+                {"if_audio", false},
+                #else
+                {"if_audio", true},
+                #endif
+                #ifdef WITHOUT_GRAPHICS
+                {"if_graphics", false},
+                #else
+                {"if_graphics", true},
+                #endif
                 {"flavor", args.named_svalue("--flavor", "main")},
                 {"mesh", args.named_svalue("--mesh", "obj")},
                 {"animated_mesh", args.named_svalue("--animated_mesh", "mhx2")},
@@ -714,6 +791,7 @@ int main(int argc, char** argv) {
             }
             external_json_macro_arguments.merge_and_notify(JsonMacroArguments{std::move(j)});
         }
+        #ifndef WITHOUT_GRAPHICS
         IRenderableHider* renderable_hider = nullptr;
         auto set_renderable_hider = [&](IRenderableHider& rh){
             if (renderable_hider != nullptr) {
@@ -733,17 +811,30 @@ int main(int argc, char** argv) {
         if (auto it = args.try_named_value("--show_only"); it != nullptr) {
             set_renderable_hider(static_renderable_hider.emplace(VariableAndHash{args.named_svalue("--show_only", "")}));
         }
-        LocalSceneLevel local_scene_level;
         size_t args_num_renderings = safe_stoz(args.named_svalue("--num_renderings", "-1"));
-        while (!render.window_should_close() && !unhandled_exceptions_occured()) {
+        #endif
+        LocalSceneLevel local_scene_level;
+        while (
+            #ifndef WITHOUT_GRAPHICS
+            !render.window_should_close() &&
+            #else
+            !config_server.application_should_exit() &&
+            #endif
+            !unhandled_exceptions_occured())
+        {
+            #ifndef WITHOUT_GRAPHICS
             num_renderings = args_num_renderings;
             ui_focuses.clear();
+            #endif
 
             SceneGraphConfig scene_graph_config{
                 .max_distance_black = safe_stof(args.named_svalue("--max_distance_black", "200")) * meters,
                 .small_aggregate_update_interval = safe_stoz(args.named_svalue("--small_aggregate_update_interval", "60")),
                 .large_max_offset_deviation = safe_stof(args.named_svalue("--large_max_offset_deviation", "200")) * meters,
-                .renderable_hider = renderable_hider };
+                #ifndef WITHOUT_GRAPHICS
+                .renderable_hider = renderable_hider
+                #endif
+            };
 
             PhysicsEngineConfig physics_engine_config{
                 .dt = physics_dt * seconds,
@@ -769,21 +860,27 @@ int main(int argc, char** argv) {
                 .nsubsteps = safe_stoz(args.named_svalue("--nsubsteps", "8"))};
 
             SceneConfig scene_config{
+                #ifndef WITHOUT_GRAPHICS
                 .render_config = render_config,
+                #endif
                 .scene_graph_config = scene_graph_config,
                 .physics_engine_config = physics_engine_config};
 
+            #ifndef WITHOUT_GRAPHICS
             OpenGLObjectFactory gpu_object_factory;
             CachingGpuObjectFactory caching_gpu_object_factory{gpu_object_factory};
             SceneNodeResources scene_node_resources{caching_gpu_object_factory};
+            LockableKeyConfigurations key_configurations;
+            LockableKeyDescriptions key_descriptions;
+            LayoutConstraints layout_constraints;
+            #else
+            SceneNodeResources scene_node_resources;
+            #endif
             ParticleResources particle_resources;
             TrailResources trail_resources;
             SurfaceContactDb surface_contact_db;
             BulletPropertyDb bullet_property_db;
             DynamicLightDb dynamic_light_db;
-            LayoutConstraints layout_constraints;
-            LockableKeyConfigurations key_configurations;
-            LockableKeyDescriptions key_descriptions;
             
             // "load_scene" must be above "renderable_scenes", because the "RenderableScene" background
             // threads have lambda functions operating on the "load_scene.macro_recorder_" object.
@@ -792,6 +889,7 @@ int main(int argc, char** argv) {
             std::unique_ptr<LoadScene> load_scene;
             ThreadSafeString next_scene_filename;
             {
+                #ifndef WITHOUT_GRAPHICS
                 RenderingResources rendering_resources{
                     "primary_rendering_resources",
                     render_config.anisotropic_filtering_level
@@ -810,15 +908,29 @@ int main(int argc, char** argv) {
                 RenderingContextGuard rcg{ primary_rendering_context };
 
                 RenderLogicGallery gallery;
+                RenderableScenes renderable_scenes;
+                #else
+                RenderingContext primary_rendering_context{
+                    .scene_node_resources = scene_node_resources,
+                    .particle_resources = particle_resources,
+                    .trail_resources = trail_resources
+                };
+                RenderingContextGuard rcg{ primary_rendering_context };
+                #endif
                 AssetReferences asset_references;
                 Translators translators{ asset_references, external_json_macro_arguments };
-                RenderableScenes renderable_scenes;
                 PhysicsScenes physics_scenes;
 
+                #ifdef WITHOUT_GRAPHICS
+                std::function<void()> exit = [](){
+                    lwarn() << "Exit not supported for dedicated servers";
+                };
+                #else
                 std::function<void()> exit = [&render](){
                     render.request_window_close();
                 };
                 render.window().set_title(generate_window_title());
+                #endif
 
                 remote_sites.set_user_status(UserTypes::ALL_REMOTE, UserStatus::INITIAL);
                 remote_sites.set_user_status(UserTypes::ALL_LOCAL, UserStatus::LEVEL_LOADING);
@@ -828,13 +940,19 @@ int main(int argc, char** argv) {
                     next_scene_filename,
                     local_scene_level,
                     external_json_macro_arguments,
-                    num_renderings,
-                    render_set_fps,
                     args.has_named("--verbose"),
                     surface_contact_db,
                     bullet_property_db,
                     dynamic_light_db,
                     scene_config,
+                    users,
+                    remote_sites,
+                    asset_references,
+                    translators,
+                    physics_scenes,
+                    #ifndef WITHOUT_GRAPHICS
+                    num_renderings,
+                    render_set_fps,
                     button_states,
                     cursor_states,
                     scroll_wheel_states,
@@ -842,17 +960,14 @@ int main(int argc, char** argv) {
                     key_configurations,
                     key_descriptions,
                     ui_focuses,
-                    users,
-                    remote_sites,
                     layout_constraints,
                     gallery,
-                    asset_references,
-                    translators,
-                    physics_scenes,
                     renderable_scenes,
                     window_logic,
+                    #endif
                     exit));
 
+                #ifndef WITHOUT_GRAPHICS
                 std::unique_ptr<Renderer> renderer;
                 std::unique_ptr<JThread> render_future;
                 if (!args.has_named("--no_render")) {
@@ -868,16 +983,23 @@ int main(int argc, char** argv) {
                         scene_config,
                         menu_logic);
                 }
+                #endif
 
                 JThread loader_future_guard{loader_thread(
                     args,
                     remote_sites,
                     physics_scenes,
-                    renderable_scenes,
-                    *load_scene,
+                    #ifndef WITHOUT_AUDIO
                     render_delay,
-                    velocity_dt)};
+                    velocity_dt,
+                    #endif
+                    #ifndef WITHOUT_GRAPHICS
+                    renderable_scenes,
+                    #endif
+                    *load_scene
+                )};
                 try {
+                    #ifndef WITHOUT_GRAPHICS
                     main_func(
                         [&f0=ui_focuses[0]](uint32_t c32){
                             std::scoped_lock lock{ f0.edit_mutex };
@@ -898,6 +1020,11 @@ int main(int argc, char** argv) {
                         renderer.get(),
                         input_config,
                         [&window_logic](){ window_logic.handle_events(); });
+                    #else
+                    linfo() << "Wait until reload required";
+                    config_server.wait_until_reload_required();
+                    linfo() << "Finished waiting until reload required";
+                    #endif
                 } catch (...) {
                     add_unhandled_exception(std::current_exception());
                 }
@@ -906,16 +1033,18 @@ int main(int argc, char** argv) {
                 }
                 local_scene_level = load_scene->scene_level();
             }
+            #ifndef WITHOUT_GRAPHICS
             ui_focuses.clear_focuses();
+            #endif
             if (auto s = (std::string)next_scene_filename; !s.empty()) {
                 main_scene_filename = s;
             } else {
                 main_scene_filename = initial_main_scene_filename;
             }
         }
-
+        #ifndef WITHOUT_GRAPHICS
         ui_focuses.try_save();
-
+        #endif
         // if (!TimeGuard::is_empty(std::this_thread::get_id())) {
         //     lerr() << "write svg";
         //     TimeGuard::write_svg(std::this_thread::get_id(), "/tmp/events.svg");

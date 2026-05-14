@@ -13,9 +13,11 @@ LoadPhysicsSceneInstanceFunction::LoadPhysicsSceneInstanceFunction(
         : *macro_line_executor}
     , translator{ physics_scene.translator_ }
     , bullet_property_db{ physics_scene.bullet_property_db_ }
+    #ifndef WITHOUT_GRAPHICS
     , deferred_instantiator{ physics_scene.deferred_instantiator_ }
     , render_logics{ physics_scene.render_logics_ }
     , rendering_resources{ physics_scene.rendering_resources_ }
+    #endif
     , scene_node_resources{ physics_scene.scene_node_resources_ }
     , asset_references{ physics_scene.asset_references_.get() }
     , particle_resources{ physics_scene.particle_resources_ }
@@ -24,7 +26,9 @@ LoadPhysicsSceneInstanceFunction::LoadPhysicsSceneInstanceFunction(
     , sea_spray_particles{ physics_scene.sea_spray_particles_ }
     , trail_renderer{ *physics_scene.trail_renderer_ }
     , dynamic_lights{ *physics_scene.dynamic_lights_ }
+    #ifndef WITHOUT_AUDIO
     , one_shot_audio{ physics_scene.one_shot_audio_ }
+    #endif
     , bullet_generator{ physics_scene.bullet_generator_ }
     , vehicle_spawners{ physics_scene.vehicle_spawners_ }
     , players{ physics_scene.players_ }
@@ -40,14 +44,18 @@ LoadPhysicsSceneInstanceFunction::LoadPhysicsSceneInstanceFunction(
     , remote_scene{ physics_scene.remote_scene_.get() }
     , remote_sites{ physics_scene.remote_sites_.get() }
     , countdown_start{ physics_scene.countdown_start_ }
+    #ifndef WITHOUT_GRAPHICS
     , ui_focus{ physics_scene.ui_focus_ }
+    #endif
     , base_log{ physics_scene.fifo_log_ }
     , delete_node_mutex{ physics_scene.scene_.delete_node_mutex }
     , on_user_loaded_level_token{ physics_scene.on_user_loaded_level_token_ }
     , on_all_users_loaded_level_token{ physics_scene.on_all_users_loaded_level_token_ }
     , late_join_player_factory{ physics_scene.late_join_player_factory_ }
+    #ifndef WITHOUT_AUDIO
     , arg0_{ physics_scene.primary_audio_resource_context_ }
     , arg1_{ physics_scene.secondary_audio_resource_context_ }
+    #endif
 {}
 
 LoadPhysicsSceneInstanceFunction::~LoadPhysicsSceneInstanceFunction() = default;

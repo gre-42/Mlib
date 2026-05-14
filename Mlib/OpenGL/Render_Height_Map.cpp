@@ -1,8 +1,8 @@
 #include "Render_Height_Map.hpp"
 #include <Mlib/Geometry/Cameras/Perspective_Camera.hpp>
 #include <Mlib/OpenGL/Render.hpp>
-#include <Mlib/OpenGL/Rendering_Context.hpp>
 #include <Mlib/OpenGL/Resources/Height_Map_Resource.hpp>
+#include <Mlib/Resource_Context/Rendering_Context.hpp>
 #include <Mlib/Scene_Graph/Elements/Make_Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Instantiation/Child_Instantiation_Options.hpp>

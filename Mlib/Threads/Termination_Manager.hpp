@@ -10,5 +10,6 @@ bool unhandled_exceptions_occured();
 
 void print_unhandled_exceptions();
 void print_unhandled_exceptions(std::ostream& ostr);
+void convert_sigterm_to_exception();
 
 }

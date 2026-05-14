@@ -97,7 +97,9 @@ LoadMeshConfig<TPos> Mlib::load_mesh_config_from_json(const JsonMacroArguments& 
         .desaturation_exponent = j.at<float>(KnownArgs::desaturation_exponent, 0.f),
         .histogram = j.try_path_or_variable(KnownArgs::histogram),
         .lighten = j.at<EFixedArray<float, 3>>(KnownArgs::lighten, fixed_zeros<float, 3>()),
+        #ifndef WITHOUT_GRAPHICS
         .textures = blend_map_textures_from_json(j, KnownArgs::textures),
+        #endif
         .period_world = j.contains(KnownArgs::period_world)
             ? j.at<float>(KnownArgs::period_world)
             : 0.f,

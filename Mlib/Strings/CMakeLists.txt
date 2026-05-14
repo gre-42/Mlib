@@ -16,7 +16,7 @@ if (NOT EMSCRIPTEN)
     target_link_libraries(MlibStrings PUBLIC Boost::boost)
 endif()
 
-if (WITH_ICU)
+if (BUILD_ICU)
     target_link_libraries(MlibStrings PUBLIC ICU::i18n ICU::uc)
 endif()
 

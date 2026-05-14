@@ -3,12 +3,14 @@
 #include <Mlib/Geometry/Coordinates/Homogeneous.hpp>
 #include <Mlib/Layout/Layout_Constraint_Parameters.hpp>
 #include <Mlib/Misc/Pragma_Gcc.hpp>
+#include <Mlib/Testing/Assert.hpp>
+#ifndef WITHOUT_GRAPHICS
 #include <Mlib/OpenGL/CHK.hpp>
 #include <Mlib/OpenGL/Render_Logic.hpp>
 #include <Mlib/OpenGL/Render_Logics/Clear_Mode.hpp>
 #include <Mlib/OpenGL/Render_Setup.hpp>
-#include <Mlib/OpenGL/Rendering_Context.hpp>
-#include <Mlib/Testing/Assert.hpp>
+#include <Mlib/Resource_Context/Rendering_Context.hpp>
+#endif
 
 using namespace Mlib;
 
@@ -22,6 +24,8 @@ HudErrorBehavior Mlib::hud_error_behavior_from_string(const std::string& s) {
     }
     return it->second;
 }
+
+#ifndef WITHOUT_GRAPHICS
 
 HudTrackerTimeAdvancer::HudTrackerTimeAdvancer(HudTracker& tracker)
     : tracker_{ tracker }
@@ -171,3 +175,5 @@ void HudTracker::render(
 
     FillWithTextureLogic::render(ClearMode::OFF);
 }
+
+#endif
