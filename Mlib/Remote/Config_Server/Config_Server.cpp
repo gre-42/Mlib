@@ -1,14 +1,19 @@
 #include "Config_Server.hpp"
 #include <Mlib/Os/Os.hpp>
+#include <Mlib/Remote/Datagram_Nodes/Datagram_Node_Factory.hpp>
+#include <Mlib/Remote/Datagram_Nodes/IDatagram_Node.hpp>
+#include <Mlib/Remote/ISend_Socket.hpp>
 #include <Mlib/Remote/Remote_Socket.hpp>
+#include <Mlib/Remote/Sockets/Websocket.hpp>
 #include <Mlib/Threads/Termination_Manager.hpp>
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/beast/core.hpp>
 #include <boost/beast/http.hpp>
-#include <boost/beast/websocket.hpp>
+#include <boost/url/parse.hpp>
 #include <boost/url/parse_path.hpp>
 #include <concepts>
 #include <map>
+#include <sstream>
 #ifdef _WIN32
 #include <winsock2.h>
 #else
@@ -24,16 +29,20 @@ namespace asio = boost::asio;
 using tcp = asio::ip::tcp;
 
 template <typename T>
-concept UrlSegment = std::convertible_to<T, boost::core::string_view>;
+concept UrlSegment = std::convertible_to<T, boost::urls::url_view>;
 
 template <UrlSegment... Args>
 static Utf8Path concatenate(Utf8Path root, Args&&... targets) {
     auto process_one = [&](boost::core::string_view target) {
-        for (auto const& seg : boost::urls::parse_path(target).value()) {
+        auto parsed = boost::urls::parse_path(target);
+        if (parsed.has_error()) {
+            throw std::system_error(parsed.error(), (std::stringstream() << "Could not parse \"" << target << '"').str());
+        }
+        for (auto const& seg : *parsed) {
             if ((seg == ".") || (seg == "..")) {
                 throw std::runtime_error("Detected illegal character in URL");
             }
-            root /= std::string(seg);
+            root /= Utf8Path{seg};
         }
     };
 
@@ -89,7 +98,7 @@ ConfigServer::ConfigServer(
     Utf8Path static_dir)
     : static_dir_{std::move(static_dir)}
     , reload_required_{false}
-    , thread_{[this, remote_socket](){
+    , http_thread_{[this, remote_socket](){
         auto const address = asio::ip::make_address(remote_socket.hostname);
         asio::io_context ioc{1};
         tcp::acceptor acceptor{ioc, {address, remote_socket.port}};
@@ -97,7 +106,7 @@ ConfigServer::ConfigServer(
         acceptor.native_non_blocking(false);
         try {
             while (!unhandled_exceptions_occured() &&
-                   !thread_.get_stop_token().stop_requested())
+                   !http_thread_.get_stop_token().stop_requested())
             {
                 if (!wait_for_connection(ioc, acceptor, std::chrono::milliseconds{500})) {
                     continue;
@@ -119,11 +128,12 @@ ConfigServer::ConfigServer(
         }
         linfo() << "Exit configuration server";
         notify_reload_required();
+        ioc.run();
     }}
 {}
 
 ConfigServer::~ConfigServer() {
-    thread_.get_stop_token().request_stop();
+    http_thread_.get_stop_token().request_stop();
 }
 
 void ConfigServer::handle_session(tcp::socket socket) {
@@ -134,24 +144,27 @@ void ConfigServer::handle_session(tcp::socket socket) {
         http::read(socket, buffer, req);
 
         if (websocket::is_upgrade(req)) {
+            linfo() << "Handle request to upgrade to websockets";
+            // Handle websockets
             websocket::stream<tcp::socket> ws{std::move(socket)};
 
             ws.accept(req);
 
-            // Handle WebSocket messages (simple echo)
-            while (true) {
-                beast::flat_buffer ws_buffer;
-                ws.read(ws_buffer);
-                ws.text(ws.got_text());
-                ws.write(ws_buffer.data());
-            }
+            std::scoped_lock lock{receive_mutex_};
+            auto& node = websocket_nodes_.emplace_back(DatagramNodeFactory::create_websocket(std::move(ws)));
+            node->start_receive_thread(500); // 500: max_stored_received_messages
         } else {
-            // Handle as standard HTTP
+            // Handle HTTP
             auto send_file = [&req, &socket](
                 const Utf8Path& path,
                 const std::string& content_type,
                 http::status status,
-                const std::vector<std::pair<http::field, std::string>>* headers = nullptr)
+                #ifdef __EMSCRIPTEN__
+                const std::vector<std::pair<std::string, std::string>>* headers = nullptr
+                #else
+                const std::vector<std::pair<http::field, std::string>>* headers = nullptr
+                #endif
+            )
             {
                 linfo() << "Send file \"" << path.string() << '"';
                 http::file_body::value_type body;
@@ -196,23 +209,38 @@ void ConfigServer::handle_session(tcp::socket socket) {
             static const std::map<std::string, std::string> redirects = {
                 {"/", "server/index.html"}
             };
+            Utf8Path path;
             auto redirect = redirects.find(req.target());
-            auto target = (redirect != redirects.end())
-                ? boost::beast::string_view{redirect->second}
-                : req.target();
-            auto p = concatenate(static_dir_, target);
-            auto extension = p.extension();
+            if (redirect != redirects.end()) {
+                path = concatenate(static_dir_, redirect->second);
+            } else {
+                auto res = boost::urls::parse_origin_form(req.target());
+                if (res.has_error()) {
+                    throw std::system_error(res.error(), "Could not parse URL");
+                }
+                path = concatenate(static_dir_, res->path());
+            }
+            auto extension = path.extension();
             static const std::map<std::string, std::string> mime_types = {
                 {".html", "text/html"},
                 {".js", "text/javascript"},
                 {".data", "application/octet-stream"},
                 {".wasm", "application/wasm"},
             };
+            #ifdef __EMSCRIPTEN__
+            auto cross_origin = std::vector<std::pair<std::string, std::string>>{
+                {"Cross-Origin-Opener-Policy", "same-origin"},
+                {"Cross-Origin-Embedder-Policy", "require-corp"}
+            };
+            static const std::map<std::string, std::vector<std::pair<std::string, std::string>>> headers =
+            #else
             auto cross_origin = std::vector<std::pair<http::field, std::string>>{
                 {http::field::cross_origin_opener_policy, "same-origin"},
                 {http::field::cross_origin_embedder_policy, "require-corp"}
             };
-            static const std::map<std::string, std::vector<std::pair<http::field, std::string>>> headers = {
+            static const std::map<std::string, std::vector<std::pair<http::field, std::string>>> headers =
+            #endif
+            {
                 {".html", cross_origin},
                 {".js", cross_origin},
                 {".wasm", cross_origin},
@@ -224,16 +252,16 @@ void ConfigServer::handle_session(tcp::socket socket) {
                 const auto* header = (header_it != headers.end())
                     ? &header_it->second
                     : nullptr;
-                if (!send_file(p, mime_type->second, http::status::ok, header)) {
+                if (!send_file(path, mime_type->second, http::status::ok, header)) {
                     send_error_html(http::status::not_found);
                 }
             } else {
                 send_error_html(http::status::not_implemented);
             }
         }
-    } catch (beast::system_error const& se) {
-        if (se.code() != websocket::error::closed) {
-            lwarn() << se.code().message();
+    } catch (beast::system_error const& e) {
+        if (e.code() != websocket::error::closed) {
+            lwarn() << "Caught exception: " << e.what();
         }
     }
 }
@@ -250,4 +278,26 @@ void ConfigServer::notify_reload_required() {
 void ConfigServer::wait_until_reload_required() const {
     std::unique_lock lock{mutex_};
     cv_.wait(lock, [this](){ return reload_required_; });
+}
+
+std::shared_ptr<ISendSocket> ConfigServer::try_receive(std::ostream& ostr) {
+    std::scoped_lock lock{receive_mutex_};
+    if (!websocket_nodes_in_progress_.has_value()) {
+        websocket_nodes_in_progress_.emplace();
+        for (auto& n : websocket_nodes_) {
+            websocket_nodes_in_progress_->emplace_back(
+                DanglingBaseClassRef<IDatagramNode>{*n, CURRENT_SOURCE_LOCATION},
+                CURRENT_SOURCE_LOCATION);
+        }
+    }
+    while (!websocket_nodes_in_progress_->empty()) {
+        auto node = websocket_nodes_in_progress_->begin();
+        auto socket = node->object()->try_receive(ostr);
+        websocket_nodes_in_progress_->erase(node);
+        if (socket != nullptr) {
+            return socket;
+        }
+    }
+    websocket_nodes_in_progress_.reset();
+    return nullptr;
 }

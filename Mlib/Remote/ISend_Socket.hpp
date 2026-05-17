@@ -7,6 +7,7 @@ namespace Mlib {
 
 class ISendSocket: public virtual DestructionNotifier, public virtual DanglingBaseClass {
 public:
+    virtual ~ISendSocket() = default;
     virtual void send(std::istream& istr) = 0;
 };
 

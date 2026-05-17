@@ -1,6 +1,8 @@
 #include <Mlib/Memory/Object_Pool.hpp>
 #include <Mlib/Os/Io/Binary.hpp>
 #include <Mlib/Remote/Communicator_Proxies.hpp>
+#include <Mlib/Remote/Datagram_Nodes/Datagram_Node_Factory.hpp>
+#include <Mlib/Remote/Datagram_Nodes/IDatagram_Node.hpp>
 #include <Mlib/Remote/Incremental_Objects/IIncremental_Object.hpp>
 #include <Mlib/Remote/Incremental_Objects/IIncremental_Object_Factory.hpp>
 #include <Mlib/Remote/Incremental_Objects/Incremental_Communicator_Proxy.hpp>
@@ -10,7 +12,6 @@
 #include <Mlib/Remote/Incremental_Objects/Transmission_History.hpp>
 #include <Mlib/Remote/Incremental_Objects/Transmitted_Fields.hpp>
 #include <Mlib/Remote/Remote_Socket.hpp>
-#include <Mlib/Remote/Sockets/Udp_Node.hpp>
 #include <cstdint>
 
 using namespace Mlib;
@@ -137,10 +138,11 @@ private:
 };
 
 void test_remote() {
-    UdpNode server{{"127.0.0.1", 1542}};
-    server.bind();
-    server.start_receive_thread(100);
-    auto client = std::make_shared<UdpNode>(RemoteSocket{"127.0.0.1", 1542});
+    boost::asio::io_context ioc;
+    auto server = DatagramNodeFactory::create_udp(ioc, {"127.0.0.1", 1542});
+    server->bind();
+    server->start_receive_thread(100);
+    auto client = DatagramNodeFactory::create_udp(ioc, {"127.0.0.1", 1542});
     client->start_receive_thread(100);
 
     linfo() << "server: " << &server << ", client: " << &client;
@@ -194,7 +196,7 @@ void test_remote() {
     for (size_t i = 0; i < 3; ++i) {
         send_and_receive();
     }
-    server_sys.add_receive_socket({server, CURRENT_SOURCE_LOCATION});
+    server_sys.add_receive_socket({*server, CURRENT_SOURCE_LOCATION});
     client_sys.add_receive_socket({*client, CURRENT_SOURCE_LOCATION});
     client_sys.send_and_receive(TransmissionType::HANDSHAKE);
     for (size_t i = 0; i < 3; ++i) {

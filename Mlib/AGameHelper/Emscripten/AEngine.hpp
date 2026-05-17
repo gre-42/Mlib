@@ -13,11 +13,13 @@ class ButtonStates;
 class CursorStates;
 enum class RenderEvent;
 struct LayoutConstraintParameters;
+struct InputConfig;
 
 class AEngine {
 public:
     explicit AEngine(
         IRenderer& renderer,
+        const InputConfig& input_config,
         ButtonStates& button_states,
         CursorStates& cursor_states,
         CursorStates& scroll_wheel_states);

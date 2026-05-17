@@ -6,6 +6,7 @@
 #include <Mlib/Players/Containers/Remote_Sites.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Load_Scene_Funcs.hpp>
+#include <Mlib/Scene/Remote/Remote_Config.hpp>
 
 using namespace Mlib;
 
@@ -18,10 +19,10 @@ void ComputeRandomUserRanks::execute(const LoadSceneJsonUserFunctionArgs& args) 
     if (args.local_json_macro_arguments == nullptr) {
         throw std::runtime_error("compute_random_user_ranks must be called from within a block");
     }
-    auto nusers = args.remote_sites.compute_random_user_ranks();
+    auto nusers = args.remote_config_and_sites.sites.compute_random_user_ranks();
     {
         auto& vars = *args.local_json_macro_arguments;
-        args.remote_sites.for_each_site_user(
+        args.remote_config_and_sites.sites.for_each_site_user(
             [&](UserInfo& user)
             {
                 vars.set("random_rank_" + user.full_name, user.random_rank);

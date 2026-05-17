@@ -1,48 +1,29 @@
-#include "Udp_Node.hpp"
+#include "Threaded_Datagram_Node.hpp"
 #include <Mlib/Memory/Integral_Cast.hpp>
 #include <Mlib/Os/Env.hpp>
 #include <Mlib/Os/Io/Binary.hpp>
 #include <Mlib/Remote/Remote_Socket.hpp>
-#include <Mlib/Remote/Sockets/Asio.hpp>
+#include <Mlib/Remote/Sockets/IDatagram_Socket.hpp>
 #include <mutex>
 #include <stdexcept>
 
-using boost::asio::ip::udp;
-using boost::asio::ip::address;
 using namespace Mlib;
 
-UdpNode::UdpNode(const RemoteSocket& socket)
-    : io_context_{ std::make_shared<boost::asio::io_context>() }
-    , socket_{ std::make_shared<boost::asio::ip::udp::socket>(*io_context_) }
-    , endpoint_{ address{boost::asio::ip::make_address_v4(socket.hostname)}, socket.port }
-{
-    socket_->open(udp::v4());
-}
-
-UdpNode::UdpNode(
-    std::shared_ptr<boost::asio::io_context> io_context,
-    std::shared_ptr<boost::asio::ip::udp::socket> socket,
-    boost::asio::ip::udp::endpoint endpoint,
-    size_t max_stored_received_messages)
-    : io_context_{ io_context }
-    , socket_{ socket }
-    , endpoint_{ endpoint }
+ThreadedDatagramNode::ThreadedDatagramNode(
+    std::shared_ptr<IDatagramSocket> socket)
+    : socket_{ std::move(socket) }
 {}
 
-void UdpNode::start_receive_thread(size_t max_stored_received_messages) {
+void ThreadedDatagramNode::start_receive_thread(size_t max_stored_received_messages) {
     if (receive_thread_.joinable()) {
         throw std::runtime_error("UDP receive-thread already started");
     }
     receive_thread_ = std::jthread{[&, max_stored_received_messages](){
         std::vector<std::byte> receive_buffer(1024 * 1024);
         while (!receive_thread_.get_stop_token().stop_requested()) {
-            boost::system::error_code ec;
-            boost::asio::ip::udp::endpoint endpoint2;
-            auto len = socket_->receive_from(
-                boost::asio::buffer(receive_buffer),
-                endpoint2,
-                0,
-                ec);
+            std::error_code ec;
+            std::shared_ptr<IDatagramSocket> reply_socket;
+            auto len = socket_->receive(receive_buffer, reply_socket, ec);
             if (getenv_default_bool("NET_DEBUG", false)) {
                 linfo() << this << " receive_from. Error: " << (int)(bool)ec << ", Length: " << len;
             }
@@ -61,17 +42,14 @@ void UdpNode::start_receive_thread(size_t max_stored_received_messages) {
                 }
                 messages_received_.emplace_back(
                     std::vector<std::byte>(receive_buffer.data(), receive_buffer.data() + len),
-                    std::make_unique<UdpNode>(
-                        io_context_,
-                        socket_,
-                        endpoint2,
-                        max_stored_received_messages));
+                    std::make_unique<ThreadedDatagramNode>(reply_socket));
             }
         }
     }};
 }
 
-UdpNode::~UdpNode() {
+ThreadedDatagramNode::~ThreadedDatagramNode() {
+    on_destroy.clear();
     if (receive_thread_.joinable()) {
         // linfo() << "---------------- shutdown --------------";
         shutdown();
@@ -81,24 +59,24 @@ UdpNode::~UdpNode() {
     }
 }
 
-void UdpNode::bind() {
-    socket_->bind(endpoint_);
+void ThreadedDatagramNode::bind() {
+    socket_->bind();
 }
 
-void UdpNode::shutdown() {
-    boost::system::error_code ec;
-    socket_->shutdown(boost::asio::socket_base::shutdown_both, ec);
+void ThreadedDatagramNode::shutdown() {
+    std::error_code ec;
+    socket_->shutdown(ec);
     socket_->close();
 }
 
-void UdpNode::send(std::istream& istr) {
-    boost::system::error_code ec;
+void ThreadedDatagramNode::send(std::istream& istr) {
+    std::error_code ec;
     istr.seekg(0, std::ios::end);
     auto len = integral_cast<size_t>(istr.tellg() - std::streampos(0));
     istr.seekg(0);
     std::vector<std::byte> data(len);
     read_vector(istr, data, "send buffer", IoVerbosity::SILENT);
-    auto sent = socket_->send_to(boost::asio::buffer(data), endpoint_, 0, ec);
+    auto sent = socket_->send(data, ec);
     if (getenv_default_bool("NET_DEBUG", false)) {
         linfo() << this << " send_to. Error: " << (int)(bool)ec << ", Length: " << sent << " / " << data.size();
     }
@@ -110,7 +88,7 @@ void UdpNode::send(std::istream& istr) {
     }
 }
 
-std::unique_ptr<ISendSocket> UdpNode::try_receive(std::ostream& ostr) {
+std::shared_ptr<ISendSocket> ThreadedDatagramNode::try_receive(std::ostream& ostr) {
     std::scoped_lock lock{ message_mutex_ };
     // linfo() << this << " contains " << messages_received_.size() << " messages";
     if (messages_received_.empty()) {

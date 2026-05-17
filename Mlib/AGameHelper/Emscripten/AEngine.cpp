@@ -4,6 +4,7 @@
 #include <Mlib/Layout/Layout_Constraint_Parameters.hpp>
 #include <Mlib/Memory/Integral_Cast.hpp>
 #include <Mlib/OpenGL/IRenderer.hpp>
+#include <Mlib/OpenGL/Input_Config.hpp>
 #include <Mlib/OpenGL/Input_Map/Key_Events.hpp>
 #include <Mlib/OpenGL/Input_Map/Key_Map_I18n.hpp>
 #include <Mlib/OpenGL/Ui/Button_States.hpp>
@@ -36,6 +37,7 @@ void update_canvas_size() {
 
 AEngine::AEngine(
     IRenderer& renderer,
+    const InputConfig& input_config,
     ButtonStates& button_states,
     CursorStates& cursor_states,
     CursorStates& scroll_wheel_states)
@@ -49,7 +51,7 @@ AEngine::AEngine(
         auto dgs_add = [this](std::function<void()> f){
             dgs_.add([f=std::move(f)](){ execute_in_main_thread(f); });
         };
-        execute_in_main_thread([this, &dgs_add](){
+        execute_in_main_thread([this, &dgs_add, &input_config](){
             linfo() << "Register input callbacks";
             // Key down
             if (emscripten_set_keydown_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, this, EM_FALSE, key_callback) != EMSCRIPTEN_RESULT_SUCCESS) {
@@ -61,31 +63,33 @@ AEngine::AEngine(
                 throw std::runtime_error("Could not set emscripten keyup callback");
             }
             dgs_add([](){emscripten_set_keyup_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, nullptr, EM_FALSE, nullptr);});
-            // Mouse click
-            if (emscripten_set_click_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, this, EM_FALSE, on_click) != EMSCRIPTEN_RESULT_SUCCESS) {
-                throw std::runtime_error("Could not set emscripten click callback");
+            if (!input_config.show_mouse_cursor) {
+                // Mouse click
+                if (emscripten_set_click_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, this, EM_FALSE, on_click) != EMSCRIPTEN_RESULT_SUCCESS) {
+                    throw std::runtime_error("Could not set emscripten click callback");
+                }
+                dgs_add([](){emscripten_set_click_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, nullptr, EM_FALSE, nullptr);});
+                // Mouse move
+                if (emscripten_set_mousemove_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, this, EM_FALSE, on_mouse_move) != EMSCRIPTEN_RESULT_SUCCESS) {
+                    throw std::runtime_error("Could not set emscripten mouse move callback");
+                }
+                dgs_add([](){emscripten_set_mousemove_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, nullptr, EM_FALSE, nullptr);});
+                // Mouse down
+                if (emscripten_set_mousedown_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, this, EM_FALSE, on_mouse_down) != EMSCRIPTEN_RESULT_SUCCESS) {
+                    throw std::runtime_error("Could not set emscripten mouse down callback");
+                }
+                dgs_add([](){emscripten_set_mousedown_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, nullptr, EM_FALSE, nullptr);});
+                // Mouse up
+                if (emscripten_set_mouseup_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, this, EM_FALSE, on_mouse_up) != EMSCRIPTEN_RESULT_SUCCESS) {
+                    throw std::runtime_error("Could not set emscripten mouse up callback");
+                }
+                dgs_add([](){emscripten_set_mouseup_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, nullptr, EM_FALSE, nullptr);});
+                // Scroll wheel
+                if (emscripten_set_wheel_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, this, EM_FALSE, on_wheel_scroll) != EMSCRIPTEN_RESULT_SUCCESS) {
+                    throw std::runtime_error("Could not set emscripten mouse up callback");
+                }
+                dgs_add([](){emscripten_set_wheel_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, nullptr, EM_FALSE, nullptr);});
             }
-            dgs_add([](){emscripten_set_click_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, nullptr, EM_FALSE, nullptr);});
-            // Mouse move
-            if (emscripten_set_mousemove_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, this, EM_FALSE, on_mouse_move) != EMSCRIPTEN_RESULT_SUCCESS) {
-                throw std::runtime_error("Could not set emscripten mouse move callback");
-            }
-            dgs_add([](){emscripten_set_mousemove_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, nullptr, EM_FALSE, nullptr);});
-            // Mouse down
-            if (emscripten_set_mousedown_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, this, EM_FALSE, on_mouse_down) != EMSCRIPTEN_RESULT_SUCCESS) {
-                throw std::runtime_error("Could not set emscripten mouse down callback");
-            }
-            dgs_add([](){emscripten_set_mousedown_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, nullptr, EM_FALSE, nullptr);});
-            // Mouse up
-            if (emscripten_set_mouseup_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, this, EM_FALSE, on_mouse_up) != EMSCRIPTEN_RESULT_SUCCESS) {
-                throw std::runtime_error("Could not set emscripten mouse up callback");
-            }
-            dgs_add([](){emscripten_set_mouseup_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, nullptr, EM_FALSE, nullptr);});
-            // Scroll wheel
-            if (emscripten_set_wheel_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, this, EM_FALSE, on_wheel_scroll) != EMSCRIPTEN_RESULT_SUCCESS) {
-                throw std::runtime_error("Could not set emscripten mouse up callback");
-            }
-            dgs_add([](){emscripten_set_wheel_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, nullptr, EM_FALSE, nullptr);});
         });
     }
     {

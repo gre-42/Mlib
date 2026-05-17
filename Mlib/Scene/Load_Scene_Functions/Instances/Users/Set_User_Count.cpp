@@ -5,6 +5,7 @@
 #include <Mlib/Players/Containers/Remote_Sites.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Load_Scene_Funcs.hpp>
+#include <Mlib/Scene/Remote/Remote_Config.hpp>
 
 using namespace Mlib;
 
@@ -15,7 +16,7 @@ DECLARE_ARGUMENT(user_count);
 
 void SetUserCount::execute(const LoadSceneJsonUserFunctionArgs& args) {
     args.arguments.validate(KnownArgs::options);
-    args.remote_sites.set_local_user_count(args.arguments.at<uint32_t>(KnownArgs::user_count));
+    args.remote_config_and_sites.sites.set_local_user_count(args.arguments.at<uint32_t>(KnownArgs::user_count));
 }
 
 namespace {

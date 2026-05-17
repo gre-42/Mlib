@@ -22,6 +22,7 @@
 #include <Mlib/Scene/Load_Scene.hpp>
 #include <Mlib/Scene/Physics_Scene.hpp>
 #include <Mlib/Scene/Physics_Scenes.hpp>
+#include <Mlib/Scene/Remote/Remote_Config.hpp>
 #include <Mlib/Scene/Scene_Config.hpp>
 #include <Mlib/Scene_Config/Scene_Graph_Config.hpp>
 #include <Mlib/Scene_Graph/Render/Caching_Gpu_Object_Factory.hpp>
@@ -396,7 +397,9 @@ int main(int argc, char** argv) {
         "    [--show_massbox]\n"
         "    [--user_count <n>]\n"
         "    [--remote_site_id <id>]\n"
+        #ifndef WITHOUT_GRAPHICS
         "    [--remote_role {server,client}]\n"
+        #endif
         "    [--udp_ip <ip>]\n"
         "    [--udp_port <port>]\n"
         #ifdef WITHOUT_GRAPHICS
@@ -521,7 +524,9 @@ int main(int argc, char** argv) {
          "--audio_distance_model",
          "--user_count",
          "--remote_site_id",
+         #ifndef WITHOUT_GRAPHICS
          "--remote_role",
+         #endif
          "--udp_ip",
          "--udp_port",
          #ifdef WITHOUT_GRAPHICS
@@ -694,6 +699,16 @@ int main(int argc, char** argv) {
         NotifyingJsonMacroArguments external_json_macro_arguments;
 
         std::optional<RemoteParams> remote_params;
+        #ifdef WITHOUT_GRAPHICS
+        remote_params.emplace(
+            safe_sto<RemoteSiteId>(args.named_svalue("--remote_site_id")),
+            RemoteRole::SERVER,
+            RemoteSocket{
+                args.named_svalue("--udp_ip"),
+                safe_sto<uint16_t>(args.named_svalue("--udp_port"))
+            });
+        uint32_t user_count = 0;
+        #else
         if (args.has_named_value("--remote_role")) {
             remote_params.emplace(
                 safe_sto<RemoteSiteId>(args.named_svalue("--remote_site_id")),
@@ -703,14 +718,21 @@ int main(int argc, char** argv) {
                     safe_sto<uint16_t>(args.named_svalue("--udp_port"))
                 });
         }
-        #ifdef WITHOUT_GRAPHICS
-        auto user_count = safe_sto<uint32_t>(args.named_svalue("--user_count", "0"));
-        #else
         auto user_count = safe_sto<uint32_t>(args.named_svalue("--user_count", "1"));
         #endif
         Users users;
         RemoteSites remote_sites{ {users, CURRENT_SOURCE_LOCATION}, remote_params };
         remote_sites.set_local_user_count(user_count);
+        RemoteConfig remote_config{
+            .game = remote_params
+            #ifdef WITHOUT_GRAPHICS
+            , .admin_socket = DanglingBaseClassRef<ConfigServer>{config_server, CURRENT_SOURCE_LOCATION}
+            #endif
+        };
+        RemoteConfigAndSites remote_config_and_sites{
+            .sites = remote_sites,
+            .config = remote_config
+        };
         {
             auto record_track_basename = args.try_named_value("--record_track_basename");
             auto rgba_debug_image = args.try_named_value("--rgba_debug_image");
@@ -770,16 +792,15 @@ int main(int argc, char** argv) {
                 {"scene_sea_spray_width", safe_stoi(args.named_svalue("--scene_sea_spray_width", "2048"))},
                 {"scene_sea_spray_height", safe_stoi(args.named_svalue("--scene_sea_spray_height", "2048"))},
                 {"selected_user_count", user_count},
+                #ifndef WITHOUT_GRAPHICS
                 {"remote_role", args.named_svalue("--remote_role", "none")},
+                #else
+                {"remote_role", "server"},
+                #endif
                 {"sparse_triangle_cluster_width", safe_stof(args.named_svalue("--sparse_triangle_cluster_width", "3e3"))},
                 {"medium_triangle_cluster_width", safe_stof(args.named_svalue("--medium_triangle_cluster_width", "700"))},
                 {"dense_triangle_cluster_width", safe_stof(args.named_svalue("--dense_triangle_cluster_width", "250"))},
                 {"object_cluster_width", safe_stof(args.named_svalue("--object_cluster_width", "500"))}};
-            if (remote_params.has_value()) {
-                j["remote_params"] = *remote_params;
-            } else {
-                j["remote_params"] = nlohmann::json();
-            }
             {
                 auto show_hitbox = args.has_named("--show_hitbox");
                 auto show_massbox = args.has_named("--show_massbox");
@@ -946,7 +967,7 @@ int main(int argc, char** argv) {
                     dynamic_light_db,
                     scene_config,
                     users,
-                    remote_sites,
+                    remote_config_and_sites,
                     asset_references,
                     translators,
                     physics_scenes,

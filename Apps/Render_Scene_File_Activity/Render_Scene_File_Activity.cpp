@@ -23,6 +23,7 @@
 #include <Mlib/OpenGL/Deallocate/Render_Garbage_Collector.hpp>
 #include <Mlib/OpenGL/Gl_Context_Guard.hpp>
 #include <Mlib/OpenGL/IRenderer.hpp>
+#include <Mlib/OpenGL/Input_Config.hpp>
 #include <Mlib/OpenGL/Key_Bindings/Base_Key_Combination.hpp>
 #include <Mlib/OpenGL/Key_Bindings/Key_Configuration.hpp>
 #include <Mlib/OpenGL/Key_Bindings/Key_Configurations.hpp>
@@ -61,6 +62,7 @@
 #include <Mlib/Scene/Load_Scene.hpp>
 #include <Mlib/Scene/Physics_Scene.hpp>
 #include <Mlib/Scene/Physics_Scenes.hpp>
+#include <Mlib/Scene/Remote/Remote_Config.hpp>
 #include <Mlib/Scene/Renderable_Scene.hpp>
 #include <Mlib/Scene/Renderable_Scenes.hpp>
 #include <Mlib/Scene/Scene_Config.hpp>
@@ -444,6 +446,9 @@ void android_main(android_app* app)
         "    [--print_gl_calls]\n"
         "    [--print_rendered_materials]\n"
         "    [--rgba_debug_image <name>]\n"
+        #ifdef __EMSCRIPTEN__
+        "    [--ver <dummy>]\n"
+        #endif
         "    [--verbose]",
         {"--wire_frame",
          "--cull_faces",
@@ -481,6 +486,9 @@ void android_main(android_app* app)
          "--check_gl_errors",
          "--print_gl_calls",
          "--print_rendered_materials",
+        #ifdef __EMSCRIPTEN__
+         "--ver",
+        #endif
          "--verbose"},
         {"--record_track_basename",
          "--mesh",
@@ -607,10 +615,12 @@ void android_main(android_app* app)
             .double_buffer = !args.has_named("--no_double_buffer"),
             .anisotropic_filtering_level = safe_stou(args.named_svalue("--anisotropic_filtering_level", "0")),
             .normalmaps = !args.has_named("--no_normalmaps"),
-            .show_mouse_cursor = args.has_named("--show_mouse_cursor"),
             .swap_interval = safe_stoi(args.named_svalue("--swap_interval", "1")),
             .fullscreen_refresh_rate = safe_stoi(args.named_svalue("--fullscreen_refresh_rate", "0")),
             .draw_distance_add = safe_stof(args.named_svalue("--draw_distance_add", "inf"))};
+        InputConfig input_config{
+            .show_mouse_cursor = args.has_named("--show_mouse_cursor"),
+        };
         auto physics_dt = safe_stof(args.named_svalue("--physics_dt", "0.01667"));
         auto render_delay = std::chrono::duration_cast<std::chrono::steady_clock::duration>(
             std::chrono::duration<float>{ 1.0f * physics_dt });
@@ -672,13 +682,22 @@ void android_main(android_app* app)
             remote_params.emplace(
                 safe_sto<RemoteSiteId>(args.named_svalue("--remote_site_id")),
                 remote_role_from_string(args.named_value("--remote_role")),
-                args.named_value("--remote_ip"),
-                safe_sto<uint16_t>(args.named_svalue("--remote_port")));
+                RemoteSocket{
+                    args.named_value("--remote_ip"),
+                    safe_sto<uint16_t>(args.named_svalue("--remote_port"))
+                });
         }
         auto user_count = safe_sto<uint32_t>(args.named_svalue("--user_count", "1"));
         Users users;
         RemoteSites remote_sites{ {users, CURRENT_SOURCE_LOCATION}, remote_params };
         remote_sites.set_local_user_count(user_count);
+        RemoteConfig remote_config{
+            .game = remote_params
+        };
+        RemoteConfigAndSites remote_config_and_sites{
+            .sites = remote_sites,
+            .config = remote_config
+        };
         {
             auto record_track_basename = args.try_named_value("--record_track_basename");
             auto rgba_debug_image = args.try_named_value("--rgba_debug_image");
@@ -711,6 +730,8 @@ void android_main(android_app* app)
                 {"if_devel", args.has_named("--devel_mode")},
                 {"if_show_debug_wheels", args.has_named("--show_debug_wheels")},
                 {"if_show_global_log", args.has_named("--show_global_log")},
+                {"if_audio", true},
+                {"if_graphics", true},
 #ifdef __ANDROID__
                 {"if_android", true},
                 {"if_compressed", false},
@@ -740,11 +761,6 @@ void android_main(android_app* app)
                 {"medium_triangle_cluster_width", safe_stof(args.named_svalue("--medium_triangle_cluster_width", "700"))},
                 {"dense_triangle_cluster_width", safe_stof(args.named_svalue("--dense_triangle_cluster_width", "250"))},
                 {"object_cluster_width", safe_stof(args.named_svalue("--object_cluster_width", "500"))}};
-                if (remote_params.has_value()) {
-                    j["remote_params"] = *remote_params;
-                } else {
-                    j["remote_params"] = nlohmann::json();
-                }
                 {
                     auto show_hitbox = args.has_named("--show_hitbox");
                     auto show_massbox = args.has_named("--show_massbox");
@@ -783,7 +799,7 @@ void android_main(android_app* app)
             args,
             render_set_fps,
             menu_logic};
-        AEngine a_engine{ scene_renderer, button_states, cursor_states, scroll_wheel_states };
+        AEngine a_engine{ scene_renderer, input_config, button_states, cursor_states, scroll_wheel_states };
         AContext context;
         ContextQueryGuard context_query_guard{ context };
         ClearWrapperGuard clear_wrapper_guard;
@@ -837,14 +853,14 @@ void android_main(android_app* app)
             OpenGLObjectFactory gpu_object_factory;
             CachingGpuObjectFactory caching_gpu_object_factory{gpu_object_factory};
             SceneNodeResources scene_node_resources{caching_gpu_object_factory};
+            LockableKeyConfigurations key_configurations;
+            LockableKeyDescriptions key_descriptions;
+            LayoutConstraints layout_constraints;
             ParticleResources particle_resources;
             TrailResources trail_resources;
             SurfaceContactDb surface_contact_db;
             BulletPropertyDb bullet_property_db;
             DynamicLightDb dynamic_light_db;
-            LayoutConstraints layout_constraints;
-            LockableKeyConfigurations key_configurations;
-            LockableKeyDescriptions key_descriptions;
             
             // "load_scene" must be above "renderable_scenes", because the "RenderableScene" background
             // threads have lambda functions operating on the "load_scene.macro_recorder_" object.
@@ -889,13 +905,18 @@ void android_main(android_app* app)
                     next_scene_filename,
                     local_scene_level,
                     external_json_macro_arguments,
-                    num_renderings,
-                    render_set_fps,
                     args.has_named("--verbose"),
                     surface_contact_db,
                     bullet_property_db,
                     dynamic_light_db,
                     scene_config,
+                    users,
+                    remote_config_and_sites,
+                    asset_references,
+                    translators,
+                    physics_scenes,
+                    num_renderings,
+                    render_set_fps,
                     button_states,
                     cursor_states,
                     scroll_wheel_states,
@@ -903,13 +924,8 @@ void android_main(android_app* app)
                     key_configurations,
                     key_descriptions,
                     ui_focuses,
-                    users,
-                    remote_sites,
                     layout_constraints,
                     gallery,
-                    asset_references,
-                    translators,
-                    physics_scenes,
                     renderable_scenes,
                     window_logic,
                     exit));

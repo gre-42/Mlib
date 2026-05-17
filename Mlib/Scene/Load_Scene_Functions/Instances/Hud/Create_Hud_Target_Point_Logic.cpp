@@ -56,14 +56,9 @@ void CreateHudTargetPointLogic::execute(const LoadSceneJsonUserFunctionArgs& arg
     object_pool.create<HudTargetPointLogic>(
         CURRENT_SOURCE_LOCATION,
         object_pool,
+        #ifndef WITHOUT_GRAPHICS
         scene_logic,
         render_logics,
-        player,
-        physics_engine.collision_query_,
-        gun_node,
-        exclusive_nodes,
-        ypln,
-        physics_engine.advance_times_,
         RenderingContextStack::primary_rendering_resources().get_texture_lazy(
             ColormapWithModifiers{
                 .filename = args.arguments.path_or_variable(KnownArgs::filename),
@@ -72,6 +67,13 @@ void CreateHudTargetPointLogic::execute(const LoadSceneJsonUserFunctionArgs& arg
             TextureRole::COLOR_FROM_DB),
         args.arguments.at<EFixedArray<float, 2>>(KnownArgs::center),
         args.arguments.at<EFixedArray<float, 2>>(KnownArgs::size),
+        #endif
+        player,
+        physics_engine.collision_query_,
+        gun_node,
+        exclusive_nodes,
+        ypln,
+        physics_engine.advance_times_,
         hud_error_behavior_from_string(args.arguments.at<std::string>(KnownArgs::error_behavior)));
 }
 

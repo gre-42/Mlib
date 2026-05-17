@@ -10,7 +10,8 @@ class ISendSocket;
 
 class IReceiveSocket: public virtual DestructionNotifier, public virtual DanglingBaseClass {
 public:
-    virtual std::unique_ptr<ISendSocket> try_receive(std::ostream& ostr) = 0;
+    virtual ~IReceiveSocket() = default;
+    virtual std::shared_ptr<ISendSocket> try_receive(std::ostream& ostr) = 0;
 };
 
 }

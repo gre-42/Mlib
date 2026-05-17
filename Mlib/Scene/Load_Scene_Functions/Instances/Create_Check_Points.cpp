@@ -23,6 +23,7 @@
 #include <Mlib/Regex/Split.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Load_Scene_Funcs.hpp>
+#include <Mlib/Scene/Remote/Remote_Config.hpp>
 #include <Mlib/Scene/Render_Logics/Check_Points_Pacenotes.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
@@ -117,7 +118,7 @@ void CreateCheckPoints::execute(const LoadSceneJsonUserFunctionArgs& args)
     if (auto full_user_name = args.arguments.try_at<VariableAndHash<std::string>>(KnownArgs::full_user_name);
         full_user_name.has_value())
     {
-        auto user = args.remote_sites.get_user(*full_user_name);
+        auto user = args.remote_config_and_sites.sites.get_user(*full_user_name);
         viewable = { user->site_id, user->user_id };
     }
     auto& check_points = global_object_pool.create<CheckPoints>(

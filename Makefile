@@ -8,6 +8,11 @@ MAKE_TARGET ?= build
 
 all: recastnavigation cmake build
 
+ifeq ($(PODMAN),1)
+    E_FLAG := -e
+else
+    E_FLAG :=
+endif
 ENV           :=
 CMAKE_CMD     :=
 CONTAINER     := unknown_container
@@ -49,7 +54,7 @@ ifeq ($(CLANG),1)
     # If the default Clang version is too old, pick Clang 20.
     DEFAULT_CLANG_VERSION := $(shell clang --version | sed -nE 's/.*version ([0-9]+).*/\1/p')
     CLANG_SUFFIX := $(shell if [[ "$(DEFAULT_CLANG_VERSION)" -lt 20 ]]; then echo 20; else echo ""; fi)
-    ENV       += CC=clang$(CLANG_SUFFIX) CXX=clang++$(CLANG_SUFFIX)
+    ENV       += $(E_FLAG) CC=clang$(CLANG_SUFFIX) $(E_FLAG) CXX=clang++$(CLANG_SUFFIX)
     BUILD_DIR := L$(BUILD_DIR)
 endif
 # LIBCPP
@@ -57,29 +62,30 @@ ifeq ($(LIBCPP),1)
     CXXFLAGS  += -stdlib=libc++
     BUILD_DIR := C$(BUILD_DIR)
 endif
-# EMSDK, EMSDK32
-ES_LDFLAGS_COMMON := -pthread -sWASM_BIGINT -sSTACK_SIZE=1MB -sPTHREAD_POOL_SIZE=8 -sMALLOC=mimalloc -fexceptions
+# EMSDK64, EMSDK32
+EM_LDFLAGS_COMMON := -pthread --bind -sMODULARIZE=1 -sEXPORT_ES6=1 -sASYNCIFY=2 -sWASM_BIGINT -sSTACK_SIZE=1MB -sPTHREAD_POOL_SIZE=8 -sMALLOC=mimalloc -fwasm-exceptions
+EM_COMPILEFLAGS_COMMON := -pthread
 ifneq (,$(filter $(CMAKE_BUILD_TYPE),Debug RelWithDebInfo))
-    ES_LDFLAGS_COMMON := ${ES_LDFLAGS_COMMON} -sASSERTIONS=2
+    EM_LDFLAGS_COMMON := ${EM_LDFLAGS_COMMON} -sASSERTIONS=2
 else
-    ES_LDFLAGS_COMMON := ${ES_LDFLAGS_COMMON} -sASSERTIONS=0
+    EM_LDFLAGS_COMMON := ${EM_LDFLAGS_COMMON} -sASSERTIONS=0
 endif
-ifeq ($(EMSDK),1)
-    CFLAGS    += -sMEMORY64=1 -pthread
-    CXXFLAGS  += -sMEMORY64=1 -pthread -fexceptions
-    LDFLAGS   += ${ES_LDFLAGS_COMMON} -sMEMORY64=1 -sINITIAL_MEMORY=4294967296 -sALLOW_MEMORY_GROWTH=0
-    BUILD_DIR     := E$(BUILD_DIR)
-    DEPEND_PREFIX := E
-    CMAKE_CMD     := emcmake
+ifeq ($(EMSDK64),1)
+    CFLAGS    += -sMEMORY64=1 ${EM_COMPILEFLAGS_COMMON}
+    CXXFLAGS  += -sMEMORY64=1 ${EM_COMPILEFLAGS_COMMON} -fwasm-exceptions
+    LDFLAGS   += ${EM_LDFLAGS_COMMON} -sMEMORY64=1 -sINITIAL_MEMORY=4294967296 -sALLOW_MEMORY_GROWTH=0
+    BUILD_DIR     := E64$(BUILD_DIR)
+    DEPEND_PREFIX := E64
+    CMAKE_CMD     := /emsdk/upstream/emscripten/emcmake
     CONTAINER     := mgame/emsdk
 endif
 ifeq ($(EMSDK32),1)
-    CFLAGS    += -sMEMORY64=0 -pthread
-    CXXFLAGS  += -sMEMORY64=0 -pthread -fexceptions
-    LDFLAGS   += ${ES_LDFLAGS_COMMON} -sMEMORY64=0 -sINITIAL_MEMORY=2146435072 -sALLOW_MEMORY_GROWTH=0
+    CFLAGS    += -sMEMORY64=0 ${EM_COMPILEFLAGS_COMMON}
+    CXXFLAGS  += -sMEMORY64=0 ${EM_COMPILEFLAGS_COMMON} -fwasm-exceptions
+    LDFLAGS   += ${EM_LDFLAGS_COMMON} -sMEMORY64=0 -sINITIAL_MEMORY=2146435072 -sALLOW_MEMORY_GROWTH=0
     BUILD_DIR     := E32$(BUILD_DIR)
     DEPEND_PREFIX := E32
-    CMAKE_CMD     := emcmake
+    CMAKE_CMD     := /emsdk/upstream/emscripten/emcmake
     CONTAINER     := mgame/emsdk
 endif
 ifeq ($(PROF),1)
@@ -89,16 +95,15 @@ ifeq ($(PROF),1)
     BUILD_DIR     := P$(BUILD_DIR)
     DEPEND_PREFIX := P$(DEPEND_PREFIX)
 endif
-ENV += CFLAGS="$(CFLAGS)"
-ENV += CXXFLAGS="$(CXXFLAGS)"
-ENV += LDFLAGS="$(LDFLAGS)"
+ENV += $(E_FLAG) CFLAGS="$(CFLAGS)"
+ENV += $(E_FLAG) CXXFLAGS="$(CXXFLAGS)"
+ENV += $(E_FLAG) LDFLAGS="$(LDFLAGS)"
 ifeq ($(PODMAN),1)
-    PODMAN_FLAGS := $(addprefix -e ,$(ENV))
     WDIR      := $(shell realpath -s --relative-to="$(PWD)" "$(CURDIR)")
-    CMAKE_CMD := podman run --rm -it -v "$(PWD):/src:Z" -w "/src/$(WDIR)" $(PODMAN_FLAGS) $(CONTAINER) $(CMAKE_CMD)
+    CMAKE_CMD := podman run --rm -it -v "$(PWD):/src:Z" -w "/src/$(WDIR)" $(ENV) $(CONTAINER) $(CMAKE_CMD)
     BUILD_CMD := podman run --rm -it -v "$(PWD):/src:Z" -w "/src/$(WDIR)" $(CONTAINER)
     INTER_CMD := podman run --rm -it -v "$(PWD):/src:Z" -w "/src/$(WDIR)" $(CONTAINER)
-    DAEMON_CMD := podman run -d -v "$(PWD):/src:Z" -w "/src/$(WDIR)" $(CONTAINER)
+    DAEMON_CMD := podman run --rm -d -v "$(PWD):/src:Z" -w "/src/$(WDIR)" -p 2222:22 $(CONTAINER)
 else
     CMAKE_CMD := $(ENV) $(CMAKE_CMD)
     BUILD_CMD :=
@@ -113,7 +118,7 @@ echo_build_dir:
 	@echo "$(BUILD_DIR)"
 
 emsdk_image:
-	podman build -f Dockerfile.emsdk -t mgame/emsdk
+	podman build -f Dockerfile.build.emsdk -t mgame/emsdk
 
 cmake:
 	$(CMAKE_CMD) cmake -G Ninja -DCMAKE_BUILD_TYPE="$(CMAKE_BUILD_TYPE)" -B "$(BUILD_DIR)" -D DEPEND_PREFIX=$(DEPEND_PREFIX) $(CMAKE_OPTIONS)
@@ -131,9 +136,6 @@ login:
 
 daemon:
 	$(DAEMON_CMD) sleep infinity
-
-empackage:
-	$(INTER_CMD) /emsdk/upstream/emscripten/tools/file_packager /src/static/assets.data --preload /src/static/data@/ --js-output=/src/static/assets.js
 
 clang-tidy:
 	find Mlib -iname "*.cpp" -exec clang-tidy '{}' -checks=-clang-diagnostic-gnu-designator -- -I. ';'

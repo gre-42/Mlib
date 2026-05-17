@@ -4,6 +4,7 @@
 #include <Mlib/Players/Game_Logic/Late_Join_Player_Factory.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Load_Scene_Funcs.hpp>
+#include <Mlib/Scene/Remote/Remote_Config.hpp>
 
 using namespace Mlib;
 
@@ -26,7 +27,7 @@ void LoadPlayers::execute(const LoadSceneJsonUserFunctionArgs& args)
         args.arguments.path(KnownArgs::json),
         args.macro_line_executor,
         args.asset_references,
-        args.remote_sites);
+        args.remote_config_and_sites.sites);
 }
 
 namespace {

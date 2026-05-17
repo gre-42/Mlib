@@ -3,12 +3,12 @@
 #include <Mlib/Macro_Executor/Translator.hpp>
 #include <Mlib/Misc/Argument_List.hpp>
 #include <Mlib/Physics/Containers/Race_Identifier.hpp>
-#include <Mlib/Remote/Remote_Params.hpp>
 #include <Mlib/Resource_Context/Rendering_Context.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Load_Scene_Funcs.hpp>
 #include <Mlib/Scene/Physics_Scene.hpp>
 #include <Mlib/Scene/Physics_Scenes.hpp>
+#include <Mlib/Scene/Remote/Remote_Config.hpp>
 #include <Mlib/Scene/Scene_Config.hpp>
 #include <Mlib/Time/Fps/Realtime_Dependent_Fps.hpp>
 #include <stdexcept>
@@ -28,7 +28,7 @@ DECLARE_ARGUMENT(max_tracks);
 DECLARE_ARGUMENT(save_playback);
 DECLARE_ARGUMENT(gid);
 DECLARE_ARGUMENT(primary_user_id);
-DECLARE_ARGUMENT(remote_params);
+DECLARE_ARGUMENT(remote);
 }
 
 struct RegisterJsonUserFunction {
@@ -53,7 +53,7 @@ struct RegisterJsonUserFunction {
                     args.scene_config,
                     args.macro_line_executor.changed_context(name, nlohmann::json::object()),
                     args.scene_level_selector,
-                    args.remote_sites,
+                    args.remote_config_and_sites.sites,
                     args.asset_references,
                     RenderingContextStack::primary_scene_node_resources(),
                     RenderingContextStack::primary_particle_resources(),
@@ -69,7 +69,9 @@ struct RegisterJsonUserFunction {
                         .laps = 0,
                         .milliseconds = 0},
                     std::make_unique<Translator>(args.translators, VariableAndHash{ args.arguments.at<AssetGroupAndId>(KnownArgs::gid) }),
-                    args.arguments.try_at_non_null<RemoteParams>(KnownArgs::remote_params));
+                    args.arguments.at<bool>(KnownArgs::remote, false)
+                        ? &args.remote_config_and_sites.config
+                        : nullptr);
                 if (state == InsertionStatus::FAILURE_NAME_COLLISION) {
                     throw std::runtime_error("Scene with name \"" + name + "\" already exists");
                 }

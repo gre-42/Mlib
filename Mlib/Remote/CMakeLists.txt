@@ -1,11 +1,21 @@
 include(../../CMakeCommands.cmake)
 
-my_add_library(
-    NAME MlibRemote
-    RECURSIVE
-    ADDITIONAL_FILES ""
-    EXCLUDED_FILES ""
-)
+if (EMSCRIPTEN)
+    my_add_library(
+        NAME MlibRemote
+        RECURSIVE
+        ADDITIONAL_FILES ""
+        EXCLUDED_FILES ""
+    )
+else()
+    my_add_library(
+        NAME MlibRemote
+        RECURSIVE
+        ADDITIONAL_FILES ""
+        EXCLUDED_FILES "/Web_Transport_Datagram_Node\.cpp$"
+    )
+endif()
+
 # https://issuetracker.google.com/issues/214811726
 if (NOT ANDROID)
     target_precompile_headers(MlibRemote PRIVATE ../Misc/Precompiled_Header.hpp)

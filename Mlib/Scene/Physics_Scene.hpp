@@ -51,6 +51,7 @@ class RemoteScene;
 class Translator;
 class NotifyingJsonMacroArguments;
 class RemoteSites;
+struct RemoteConfig;
 class SceneLevelSelector;
 class PhysicsIteration;
 class PhysicsLoop;
@@ -59,7 +60,6 @@ class TimeAndPause;
 
 struct SceneConfig;
 struct RaceIdentifier;
-struct RemoteParams;
 
 enum class ThreadAffinity;
 enum class RemoteRole;
@@ -90,7 +90,7 @@ public:
         bool save_playback,
         const RaceIdentifier& race_identfier,
         std::shared_ptr<Translator> translator,
-        const std::optional<RemoteParams>& remote_params);
+        RemoteConfig* remote_config);
     ~PhysicsScene();
 
     // Misc

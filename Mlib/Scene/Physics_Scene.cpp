@@ -12,6 +12,7 @@
 #include <Mlib/Players/Containers/Remote_Sites.hpp>
 #include <Mlib/Remote/Incremental_Objects/Scene_Level.hpp>
 #include <Mlib/Remote/Remote_Params.hpp>
+#include <Mlib/Scene/Remote/Remote_Config.hpp>
 #include <Mlib/Scene/Remote/Remote_Scene.hpp>
 #include <Mlib/Scene/Scene_Config.hpp>
 #include <Mlib/Scene_Graph/Interfaces/IParticle_Renderer.hpp>
@@ -48,7 +49,7 @@ PhysicsScene::PhysicsScene(
     bool save_playback,
     const RaceIdentifier& race_identfier,
     std::shared_ptr<Translator> translator,
-    const std::optional<RemoteParams>& remote_params)
+    RemoteConfig* remote_config)
     : macro_line_executor_{ macro_line_executor }
     , remote_sites_{ remote_sites, CURRENT_SOURCE_LOCATION }
     #ifndef WITHOUT_GRAPHICS
@@ -237,11 +238,13 @@ PhysicsScene::PhysicsScene(
         #ifndef WITHOUT_AUDIO
         physics_engine_.advance_times_.add_advance_time({ one_shot_audio_, CURRENT_SOURCE_LOCATION }, CURRENT_SOURCE_LOCATION);
         #endif
-        if (!remote_params.has_value() || (remote_params->role == RemoteRole::SERVER)) {
+        if ((remote_config == nullptr) ||
+            (remote_config->game.has_value() && (remote_config->game->role == RemoteRole::SERVER)))
+        {
             physics_engine_.advance_times_.add_advance_time({ countdown_start_, CURRENT_SOURCE_LOCATION }, CURRENT_SOURCE_LOCATION);
         }
 
-        if (remote_params.has_value()) {
+        if ((remote_config != nullptr) && remote_config->game.has_value()) {
             auto verbosity = IoVerbosity::SILENT;
             if (getenv_default_bool("REMOTE_DEBUG_DATA", false)) {
                 verbosity |= IoVerbosity::DATA;
@@ -252,7 +255,7 @@ PhysicsScene::PhysicsScene(
             remote_scene_ = std::make_unique<RemoteScene>(
                 DanglingBaseClassRef<PhysicsScene>{*this, CURRENT_SOURCE_LOCATION},
                 DanglingBaseClassRef<SceneLevelSelector>{scene_level_selector, CURRENT_SOURCE_LOCATION},
-                *remote_params,
+                *remote_config,
                 verbosity);
             remote_counter_user_.set(true);
         }

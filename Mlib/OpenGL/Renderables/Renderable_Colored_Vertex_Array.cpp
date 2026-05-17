@@ -148,9 +148,9 @@ RenderableColoredVertexArray::RenderableColoredVertexArray(
     const RenderableResourceFilter& renderable_resource_filter)
     : rcva_{ rcva }
     #ifndef WITHOUT_GRAPHICS
+    , required_blending_passes_{ BlendingPassType::NONE }
     , continuous_blending_z_order_{ CONTINUOUS_BLENDING_Z_ORDER_UNDEFINED }
     , gpu_vertex_array_renderer_{ RenderingContextStack::primary_rendering_resources(), rendering_resources }
-    , required_blending_passes_{ BlendingPassType::NONE }
     , aabb_{ ExtremalBoundingVolume::EMPTY }
     , bounding_sphere_{ ExtremalBoundingVolume::EMPTY }
     #endif

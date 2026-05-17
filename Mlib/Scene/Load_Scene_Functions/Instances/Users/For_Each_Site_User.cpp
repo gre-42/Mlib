@@ -5,6 +5,7 @@
 #include <Mlib/Players/Containers/Remote_Sites.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Load_Scene_Funcs.hpp>
+#include <Mlib/Scene/Remote/Remote_Config.hpp>
 
 using namespace Mlib;
 
@@ -53,10 +54,10 @@ ForEachSiteUser::~ForEachSiteUser() = default;
 void ForEachSiteUser::execute(const LoadSceneJsonUserFunctionArgs& args) {
     args.arguments.validate(KnownArgs::options);
     auto content = args.arguments.at(KnownArgs::content);
-    args.remote_sites.for_each_site_user(
+    args.remote_config_and_sites.sites.for_each_site_user(
         [&](const UserInfo& user)
         {
-            visit_user(args.macro_line_executor, args.remote_sites, args.local_json_macro_arguments, content, user);
+            visit_user(args.macro_line_executor, args.remote_config_and_sites.sites, args.local_json_macro_arguments, content, user);
             return true;
         }, user_types_);
 }
@@ -74,10 +75,10 @@ void OnUserLoadedLevel::execute(const LoadSceneJsonUserFunctionArgs& args) {
         throw std::runtime_error("on_user_loaded_level_token already set");
     }
     on_user_loaded_level_token.emplace(
-        args.remote_sites.on_user_loaded_level,
+        args.remote_config_and_sites.sites.on_user_loaded_level,
         [mle = args.macro_line_executor,
          content = args.arguments.at(KnownArgs::content),
-         &remote_sites = args.remote_sites](const UserInfo& user)
+         &remote_sites = args.remote_config_and_sites.sites](const UserInfo& user)
         {
             visit_user(mle, remote_sites, nullptr, content, user);
             return true;

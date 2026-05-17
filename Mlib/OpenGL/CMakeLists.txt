@@ -25,6 +25,7 @@ if (BUILD_GRAPHICS)
             MlibMacroExecutor
             MlibNvDds
             MlibProctree
+            MlibResourceContext
             MlibStats
             MlibSceneGraph
             MlibStb

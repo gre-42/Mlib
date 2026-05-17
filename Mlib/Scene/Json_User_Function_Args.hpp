@@ -16,6 +16,7 @@ class NotifyingJsonMacroArguments;
 class UiFocuses;
 class Users;
 class RemoteSites;
+struct RemoteConfigAndSites;
 class RenderLogicGallery;
 class PhysicsScene;
 class PhysicsScenes;
@@ -49,7 +50,7 @@ struct LoadSceneJsonUserFunctionArgs {
     DynamicLightDb& dynamic_light_db;
     SceneConfig& scene_config;
     Users& users;
-    RemoteSites& remote_sites;
+    RemoteConfigAndSites& remote_config_and_sites;
     const std::string& script_filename;
     ThreadSafeString& next_scene_filename;
     AssetReferences& asset_references;

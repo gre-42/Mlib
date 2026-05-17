@@ -53,14 +53,9 @@ void CreateHudOpponentTracker::execute(const LoadSceneJsonUserFunctionArgs& args
     object_pool.create<HudOpponentTrackerLogic>(
         CURRENT_SOURCE_LOCATION,
         object_pool,
+        #ifndef WITHOUT_GRAPHICS
         scene_logic,
-        #ifdef WITHOUT_GRAPHICS
         render_logics,
-        #endif
-        player,
-        exclusive_nodes,
-        physics_engine.advance_times_,
-        #ifdef WITHOUT_GRAPHICS
         RenderingContextStack::primary_rendering_resources().get_texture_lazy(
             ColormapWithModifiers{
                 .filename = args.arguments.path_or_variable(KnownArgs::filename),
@@ -70,6 +65,9 @@ void CreateHudOpponentTracker::execute(const LoadSceneJsonUserFunctionArgs& args
         args.arguments.at<EFixedArray<float, 2>>(KnownArgs::center),
         args.arguments.at<EFixedArray<float, 2>>(KnownArgs::size),
         #endif
+        player,
+        exclusive_nodes,
+        physics_engine.advance_times_,
         hud_error_behavior_from_string(args.arguments.at<std::string>(KnownArgs::error_behavior)));
 }
 

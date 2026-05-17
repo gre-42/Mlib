@@ -7,6 +7,9 @@
 #include <Mlib/Scene/Remote/Remote_Scene_Object_Factory.hpp>
 #include <chrono>
 #include <memory>
+#ifndef __EMSCRIPTEN__
+#include <Mlib/Remote/Sockets/Asio.hpp>
+#endif
 
 namespace Mlib {
 
@@ -14,16 +17,18 @@ template <class TTimepoint>
 class TimeAndPause;
 class PhysicsScene;
 class SceneLevelSelector;
-class UdpNode;
+class IDatagramNode;
+class IReceiveSocket;
 struct RemoteParams;
 enum class IoVerbosity;
+struct RemoteConfig;
 
 class RemoteScene {
 public:
     RemoteScene(
         const DanglingBaseClassRef<PhysicsScene>& physics_scene,
         const DanglingBaseClassRef<SceneLevelSelector>& scene_level_selector,
-        const RemoteParams& remote_params,
+        RemoteConfig& remote_config,
         IoVerbosity verbosity);
     ~RemoteScene();
     RemoteObjectId add_local_object(const DanglingBaseClassRef<IIncrementalObject>& object);
@@ -38,7 +43,10 @@ public:
     RemoteSiteId local_site_id() const;
 private:
     IoVerbosity verbosity_;
-    std::shared_ptr<UdpNode> home_node_;
+    #ifndef __EMSCRIPTEN__
+    boost::asio::io_context ctx_;
+    #endif
+    std::shared_ptr<IDatagramNode> home_node_;
     RemoteSceneObjectFactory remote_scene_object_factory_;
     IncrementalRemoteObjects objects_;
     IncrementalCommunicatorProxyFactory communicator_proxy_factory_;

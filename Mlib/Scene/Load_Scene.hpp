@@ -26,7 +26,7 @@ class CursorStates;
 class ButtonPress;
 class UiFocuses;
 class Users;
-class RemoteSites;
+struct RemoteConfigAndSites;
 class RenderLogics;
 class ThreadSafeString;
 class SurfaceContactDb;
@@ -50,7 +50,7 @@ public:
         DynamicLightDb& dynamic_light_db,
         SceneConfig& scene_config,
         Users& users,
-        RemoteSites& remote_sites,
+        RemoteConfigAndSites& remote_config_and_sites,
         AssetReferences& asset_references,
         Translators& translators,
         PhysicsScenes& physics_scenes,
