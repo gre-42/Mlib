@@ -9,7 +9,6 @@ public:
     virtual ~IDatagramNode() = default;
     virtual void start_receive_thread(size_t max_stored_received_messages) = 0;
     virtual void bind() = 0;
-    virtual void shutdown() = 0;
 };
 
 }

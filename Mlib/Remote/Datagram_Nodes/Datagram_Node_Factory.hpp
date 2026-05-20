@@ -4,6 +4,8 @@
 #include <memory>
 #ifndef __EMSCRIPTEN__
 #include <Mlib/Remote/Sockets/Asio.hpp>
+#include <cstddef>
+#include <vector>
 #endif
 
 namespace Mlib {
@@ -15,7 +17,8 @@ namespace DatagramNodeFactory {
 
 #ifdef __EMSCRIPTEN__
  std::shared_ptr<IDatagramNode> create_web_transport(
-    const RemoteSocket& socket);
+    const RemoteSocket& socket,
+    std::vector<std::byte> cert_hash);
 #else
 std::shared_ptr<IDatagramNode> create_udp(
     boost::asio::io_context& io_context,

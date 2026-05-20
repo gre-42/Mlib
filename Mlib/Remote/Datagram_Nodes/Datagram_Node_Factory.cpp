@@ -16,9 +16,10 @@ using namespace Mlib;
 
 #ifdef __EMSCRIPTEN__
 std::shared_ptr<IDatagramNode> DatagramNodeFactory::create_web_transport(
-    const RemoteSocket& socket)
+    const RemoteSocket& socket,
+    std::vector<std::byte> cert_hash)
 {
-    return std::make_shared<WebTransportDatagramNode>(socket);
+    return WebTransportDatagramNode::create(socket, std::move(cert_hash));
 }
 #else
 std::shared_ptr<IDatagramNode> DatagramNodeFactory::create_udp(

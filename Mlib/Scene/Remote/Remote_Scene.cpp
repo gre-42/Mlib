@@ -26,7 +26,7 @@ RemoteScene::RemoteScene(
     IoVerbosity verbosity)
     : verbosity_{ verbosity }
     #ifdef __EMSCRIPTEN__
-    , home_node_{ DatagramNodeFactory::create_web_transport(get_remote_params(remote_config).socket) }
+    , home_node_{ DatagramNodeFactory::create_web_transport(get_remote_params(remote_config).socket, get_remote_params(remote_config).cert_hash) }
     #else
     , ctx_{1}
     , home_node_{ DatagramNodeFactory::create_udp(ctx_, get_remote_params(remote_config).socket) }

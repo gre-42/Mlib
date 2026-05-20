@@ -1,0 +1,9 @@
+[package]
+name = "webtransport_proxy"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+tokio = { version = "1.52.3", features = ["full"] }
+wtransport = "0.7.1"
+anyhow = "1.0.102"

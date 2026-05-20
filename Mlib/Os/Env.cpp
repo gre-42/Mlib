@@ -2,6 +2,7 @@
 #include <Mlib/Strings/String_View_To_Number.hpp>
 #include <cstdlib>
 #include <filesystem>
+#include <mutex>
 #include <stdexcept>
 
 using namespace Mlib;
@@ -9,7 +10,9 @@ using namespace Mlib;
 static std::string g_app_reldir;
 
 std::optional<std::string> Mlib::try_getenv(const char* name) {
-    const char* result = getenv(name);
+    static std::mutex mutex;
+    std::scoped_lock lock{mutex};
+    const char* result = std::getenv(name);
     if (result == nullptr) {
         return std::nullopt;
     } else {
@@ -26,53 +29,53 @@ std::string Mlib::str_getenv(const char* name) {
     }
 }
 
-const char* Mlib::getenv_default(const char* name, const char* deflt) {
-    const char* result = getenv(name);
-    if (result == nullptr) {
+std::string Mlib::getenv_default(const char* name, const std::string& deflt) {
+    auto result = try_getenv(name);
+    if (!result.has_value()) {
         return deflt;
     } else {
-        return result;
+        return *result;
     }
 }
 
 float Mlib::getenv_default_float(const char* n, float deflt) {
-    const char* v = getenv(n);
-    if (v == nullptr) {
+    auto v = try_getenv(n);
+    if (!v.has_value()) {
         return deflt;
     }
-    return Mlib::safe_stof(v);
+    return Mlib::safe_stof(*v);
 }
 
 int Mlib::getenv_default_int(const char* n, int deflt) {
-    const char* v = getenv(n);
-    if (v == nullptr) {
+    auto v = try_getenv(n);
+    if (!v.has_value()) {
         return deflt;
     }
-    return Mlib::safe_stoi(v);
+    return Mlib::safe_stoi(*v);
 }
 
 unsigned int Mlib::getenv_default_uint(const char* n, unsigned int deflt) {
-    const char* v = getenv(n);
-    if (v == nullptr) {
+    auto v = try_getenv(n);
+    if (!v.has_value()) {
         return deflt;
     }
-    return Mlib::safe_stou(v);
+    return Mlib::safe_stou(*v);
 }
 
 size_t Mlib::getenv_default_size_t(const char* n, size_t deflt) {
-    const char* v = getenv(n);
-    if (v == nullptr) {
+    auto v = try_getenv(n);
+    if (!v.has_value()) {
         return deflt;
     }
-    return Mlib::safe_stoz(v);
+    return Mlib::safe_stoz(*v);
 }
 
 bool Mlib::getenv_default_bool(const char* n, bool deflt) {
-    const char* v = getenv(n);
-    if (v == nullptr) {
+    auto v = try_getenv(n);
+    if (!v.has_value()) {
         return deflt;
     }
-    return Mlib::safe_stob(v);
+    return Mlib::safe_stob(*v);
 }
 
 #if defined(__ANDROID__) || defined(__EMSCRIPTEN__)
@@ -95,16 +98,16 @@ Utf8Path Mlib::get_appdata_directory() {
         throw std::runtime_error("set_app_reldir not called before get_appdata_directory");
     }
 #if defined(__linux__) || defined(__APPLE__)
-    const char* parent = getenv("HOME");
+    auto parent = try_getenv("HOME");
 #elif _WIN32
-    const char* parent = getenv("APPDATA");
+    auto parent = try_getenv("APPDATA");
 #else
     #error Could not determine OS
 #endif
-    if (parent == nullptr) {
+    if (!parent.has_value()) {
         throw std::runtime_error("Could not determine home directory");
     }
-    return Utf8Path{parent} / g_app_reldir;
+    return Utf8Path{*parent} / g_app_reldir;
 }
 #endif
 

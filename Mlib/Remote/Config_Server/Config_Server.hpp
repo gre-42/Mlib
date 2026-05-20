@@ -29,6 +29,7 @@ public:
 private:
     void handle_session(boost::asio::ip::tcp::socket socket);
     Utf8Path static_dir_;
+    std::string cert_hash_;
     bool reload_required_;
     mutable std::mutex mutex_;
     mutable std::condition_variable cv_;

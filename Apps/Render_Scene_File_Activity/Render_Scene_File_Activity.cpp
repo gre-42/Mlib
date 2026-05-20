@@ -70,6 +70,7 @@
 #include <Mlib/Scene_Graph/Render/Caching_Gpu_Object_Factory.hpp>
 #include <Mlib/Scene_Graph/Rendered_Scene_Descriptor.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
+#include <Mlib/Strings/Base64.hpp>
 #include <Mlib/Strings/Iterate_Over_Chunks_Of_String.hpp>
 #include <Mlib/Strings/String_View_To_Number.hpp>
 #include <Mlib/Threads/Containers/Thread_Safe_String.hpp>
@@ -388,6 +389,9 @@ void android_main(android_app* app)
         "    [--animated_mesh <mhx2.gz>]\n"
         "    [--audio <mp3>]\n"
         "    [--devel_mode]\n"
+        #ifdef __EMSCRIPTEN__
+        "    [--cert_hash <base64>]\n"
+        #endif
         "    [--parking_brake_velocity <x>]\n"
         "    [--slow_velocity <x>]\n"
         "    [--stiction_coefficient <x>]\n"
@@ -492,8 +496,11 @@ void android_main(android_app* app)
          "--verbose"},
         {"--record_track_basename",
          "--mesh",
-         "--animated_mesh"
-         "--audio"
+         "--animated_mesh",
+         "--audio",
+        #ifdef __EMSCRIPTEN__
+         "--cert_hash",
+        #endif
          "--swap_interval",
          "--fullscreen_refresh_rate",
          "--nsamples_msaa",
@@ -686,6 +693,18 @@ void android_main(android_app* app)
                     args.named_value("--remote_ip"),
                     safe_sto<uint16_t>(args.named_svalue("--remote_port"))
                 });
+            #ifdef __EMSCRIPTEN__
+            if (auto h = args.try_named_value("--cert_hash"); h != nullptr) {
+                try {
+                    remote_params->cert_hash = decode_base64(*h);
+                    if (remote_params->cert_hash.size() != 32) {
+                        throw std::runtime_error("Cert hash does not have 32 bytes");
+                    }
+                } catch (const std::runtime_error& e) {
+                    throw std::runtime_error("Could not decode Base64 \"" + *h + "\": " + e.what());
+                }
+            }
+            #endif
         }
         auto user_count = safe_sto<uint32_t>(args.named_svalue("--user_count", "1"));
         Users users;

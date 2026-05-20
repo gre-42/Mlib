@@ -4,6 +4,7 @@
 #include <Mlib/Images/Bilinear_Interpolation.hpp>
 #include <Mlib/Math/Interp.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
+#include <Mlib/Os/Env.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Entrance_Type.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Height_Sampler.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Node_Height_Binding.hpp>
@@ -173,7 +174,7 @@ void Mlib::apply_heightmap(
             }
         }
     }
-    if (auto filename = getenv("TUNNEL_ENTRANCES_OBJ"); filename != nullptr) {
+    if (auto filename = try_getenv("TUNNEL_ENTRANCES_OBJ"); filename.has_value()) {
         std::list<FixedArray<ColoredVertex<CompressedScenePos>, 3>> tcp;
         for (const auto& [_, tt] : tl_terrain.map()) {
             for (const auto& t : tt->triangles) {
@@ -190,7 +191,7 @@ void Mlib::apply_heightmap(
             }
         }
         save_obj(
-            filename,
+            *filename,
             IndexedFaceSet<float, CompressedScenePos, size_t>{ tcp },
             nullptr);  // material
     }

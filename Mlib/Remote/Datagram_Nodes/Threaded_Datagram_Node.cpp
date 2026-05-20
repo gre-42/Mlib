@@ -52,7 +52,11 @@ ThreadedDatagramNode::~ThreadedDatagramNode() {
     on_destroy.clear();
     if (receive_thread_.joinable()) {
         // linfo() << "---------------- shutdown --------------";
-        shutdown();
+        {
+            std::error_code ec;
+            socket_->shutdown(ec);
+            socket_->close();
+        }
         receive_thread_.request_stop();
         receive_thread_.join();
         messages_received_.clear();
@@ -61,12 +65,6 @@ ThreadedDatagramNode::~ThreadedDatagramNode() {
 
 void ThreadedDatagramNode::bind() {
     socket_->bind();
-}
-
-void ThreadedDatagramNode::shutdown() {
-    std::error_code ec;
-    socket_->shutdown(ec);
-    socket_->close();
 }
 
 void ThreadedDatagramNode::send(std::istream& istr) {

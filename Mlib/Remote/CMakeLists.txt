@@ -32,6 +32,8 @@ target_link_libraries(MlibRemote
 
 if (NOT EMSCRIPTEN)
     target_link_libraries(MlibRemote PUBLIC Boost::boost Boost::url)
+else()
+    target_link_libraries(MlibRemote PUBLIC AGameHelper)
 endif()
 
 if (MINGW)

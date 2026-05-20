@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Os/Env.hpp>
 #include <Mlib/Time/Sleep.hpp>
 #include <atomic>
 #include <cstdint>
@@ -16,11 +17,11 @@ public:
     inline ~AtomicMutex() = default;
     inline void lock() {
         static const uint32_t spinlock = [](){
-            const char* v = getenv("SPINLOCK");
-            if ((v == nullptr) || (strcmp(v, "0") == 0)) {
+            auto v = try_getenv("SPINLOCK");
+            if (!v.has_value() || (*v == "0")) {
                 return false;
             }
-            if (strcmp(v, "1") == 0) {
+            if (*v == "1") {
                 return true;
             }
             throw std::runtime_error("Could not parse SPINLOCK variable");

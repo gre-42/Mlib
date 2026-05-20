@@ -1,19 +1,31 @@
 #include "Config_Server.hpp"
+#include <Mlib/Json/Base.hpp>
+#include <Mlib/Json/Json_Object_File.hpp>
+#include <Mlib/Misc/Pragma_Clang.hpp>
 #include <Mlib/Os/Os.hpp>
 #include <Mlib/Remote/Datagram_Nodes/Datagram_Node_Factory.hpp>
 #include <Mlib/Remote/Datagram_Nodes/IDatagram_Node.hpp>
 #include <Mlib/Remote/ISend_Socket.hpp>
 #include <Mlib/Remote/Remote_Socket.hpp>
 #include <Mlib/Remote/Sockets/Websocket.hpp>
+#include <Mlib/Strings/Base64.hpp>
 #include <Mlib/Threads/Termination_Manager.hpp>
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/beast/core.hpp>
 #include <boost/beast/http.hpp>
+#include <boost/url/encode.hpp>
 #include <boost/url/parse.hpp>
 #include <boost/url/parse_path.hpp>
+#include <boost/url/rfc/pchars.hpp>
+#include <boost/url/rfc/unreserved_chars.hpp>
 #include <concepts>
 #include <map>
 #include <sstream>
+PRAGMA_CLANG_DIAGNOSTIC_PUSH
+PRAGMA_CLANG_DIAGNOSTIC_IGNORED(-Wsign-conversion)
+PRAGMA_CLANG_DIAGNOSTIC_IGNORED(-Wimplicit-int-float-conversion)
+#include <inja/inja.hpp>
+PRAGMA_CLANG_DIAGNOSTIC_POP
 #ifdef _WIN32
 #include <winsock2.h>
 #else
@@ -130,7 +142,25 @@ ConfigServer::ConfigServer(
         notify_reload_required();
         ioc.run();
     }}
-{}
+{
+    cert_hash_ = []() -> std::string {
+        auto filename = try_getenv("CERT_HASH_FILENAME");
+        if (filename.has_value()) {
+            linfo() << "Reading CERT_HASH_FILENAME";
+            JsonObjectFile obj;
+            obj.load_from_file(*filename);
+            auto s = obj.at<std::string>("hash");
+            auto v = decode_base64(s);
+            if (v.size() != 32) {
+                throw std::runtime_error("Cert hash does not have 32 bytes");
+            }
+            linfo() << "CERT_HASH_FILENAME has been read";
+            return s;
+        }
+        linfo() << "CERT_HASH_FILENAME not set";
+        return "";
+    }();
+}
 
 ConfigServer::~ConfigServer() {
     http_thread_.get_stop_token().request_stop();
@@ -155,7 +185,7 @@ void ConfigServer::handle_session(tcp::socket socket) {
             node->start_receive_thread(500); // 500: max_stored_received_messages
         } else {
             // Handle HTTP
-            auto send_file = [&req, &socket](
+            auto send_file = [this, &req, &socket](
                 const Utf8Path& path,
                 const std::string& content_type,
                 http::status status,
@@ -167,34 +197,50 @@ void ConfigServer::handle_session(tcp::socket socket) {
             )
             {
                 linfo() << "Send file \"" << path.string() << '"';
-                http::file_body::value_type body;
-                beast::error_code ec;
-                body.open(path.c_str(), beast::file_mode::scan, ec);
-                if (ec.failed()) {
-                    lerr() << "Could not open file \"" << path.string() << '"';
-                    return false;
-                }
-                if (body.size() == 0) {
-                    lerr() << "File is empty: \"" << path.string() << '"';
-                    return false;
-                }
-                http::response<http::file_body> res{
-                    std::piecewise_construct,
-                    std::make_tuple(std::move(body)),
-                    std::make_tuple(status, req.version())
-                };
-                res.set(http::field::content_type, content_type);
-                if (headers != nullptr) {
-                    for (const auto& h : *headers) {
-                        res.set(h.first, h.second);
+                auto send_res = [&](const auto& body, auto& res){
+                    res.set(http::field::content_type, content_type);
+                    if (headers != nullptr) {
+                        for (const auto& h : *headers) {
+                            res.set(h.first, h.second);
+                        }
                     }
+                    res.content_length(body.size());
+                    res.prepare_payload();
+                    linfo() << "Write file body: \"" << path.string() << '"';
+                    http::write(socket, res);
+                    linfo() << "File body written: \"" << path.string() << '"';
+                    return true;
+                };
+                if (path.filename() == "index.html") {
+                    inja::Environment env;
+                    nlohmann::json data;
+                    data["cert_hash"] = boost::urls::encode(cert_hash_, boost::urls::unreserved_chars);
+                    std::string body = env.render_file(path, data);
+                    http::response<http::string_body> res{
+                        std::piecewise_construct,
+                        std::make_tuple(std::move(body)),
+                        std::make_tuple(status, req.version())
+                    };
+                    return send_res(body, res);
+                } else {
+                    http::file_body::value_type body;
+                    beast::error_code ec;
+                    body.open(path.c_str(), beast::file_mode::scan, ec);
+                    if (ec.failed()) {
+                        lerr() << "Could not open file \"" << path.string() << '"';
+                        return false;
+                    }
+                    if (body.size() == 0) {
+                        lerr() << "File is empty: \"" << path.string() << '"';
+                        return false;
+                    }
+                    http::response<http::file_body> res{
+                        std::piecewise_construct,
+                        std::make_tuple(std::move(body)),
+                        std::make_tuple(status, req.version())
+                    };
+                    return send_res(body, res);
                 }
-                res.content_length(body.size());
-                res.prepare_payload();
-                linfo() << "Write file body: \"" << path.string() << '"';
-                http::write(socket, res);
-                linfo() << "File body written: \"" << path.string() << '"';
-                return true;
             };
             auto send_error_html = [&](http::status status){
                 auto e = concatenate(static_dir_, "server", "error.html");

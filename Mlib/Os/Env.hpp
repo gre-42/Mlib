@@ -8,7 +8,7 @@ namespace Mlib {
 
 std::optional<std::string> try_getenv(const char* name);
 std::string str_getenv(const char * name);
-const char* getenv_default(const char* name, const char* deflt);
+std::string getenv_default(const char* name, const std::string& deflt);
 float getenv_default_float(const char* n, float deflt);
 int getenv_default_int(const char* n, int deflt);
 unsigned int getenv_default_uint(const char* n, unsigned int deflt);
