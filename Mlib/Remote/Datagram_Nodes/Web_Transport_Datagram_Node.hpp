@@ -33,7 +33,7 @@ public:
     virtual std::shared_ptr<ISendSocket> try_receive(std::ostream& ostr) override;
 private:
     RemoteSocket remote_socket_;
-    double socket_handle_;
+    int socket_handle_;
     std::vector<std::byte> cert_hash_;
 };
 

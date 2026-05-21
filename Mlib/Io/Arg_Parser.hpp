@@ -139,7 +139,7 @@ public:
                     }
                 } else if (!eoopts && options_with_value.contains(name)) {
                     if (i + 1 == argc) {
-                        throw CommandLineArgumentError(help);
+                        throw CommandLineArgumentError("Unexpected end of command line: " + name);
                     }
                     if (!result.named_values_.try_emplace(name, (u8char*)argv[i+1]).second) {
                         throw CommandLineArgumentError("Multiple values for " + name);
@@ -161,7 +161,7 @@ public:
                     }
                 } else {
                     if (!eoopts && name.size() > 0 && name[0] == '-') {
-                        throw CommandLineArgumentError(help);
+                        throw CommandLineArgumentError("Not an unnamed argument: " + name);
                     }
                     result.unnamed_values_.emplace_back((u8char*)argv[i]);
                 }
