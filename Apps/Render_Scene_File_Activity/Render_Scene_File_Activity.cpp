@@ -54,7 +54,6 @@
 #include <Mlib/Players/Containers/Remote_Sites.hpp>
 #include <Mlib/Players/Containers/Users.hpp>
 #include <Mlib/Regex/Pathes.hpp>
-#include <Mlib/Regex/Pathes.hpp>
 #include <Mlib/Remote/Incremental_Objects/Scene_Level.hpp>
 #include <Mlib/Remote/Remote_Params.hpp>
 #include <Mlib/Remote/Remote_Role.hpp>
@@ -63,6 +62,7 @@
 #include <Mlib/Scene/Physics_Scene.hpp>
 #include <Mlib/Scene/Physics_Scenes.hpp>
 #include <Mlib/Scene/Remote/Remote_Config.hpp>
+#include <Mlib/Scene/Remote/Remote_Verbosity.hpp>
 #include <Mlib/Scene/Renderable_Scene.hpp>
 #include <Mlib/Scene/Renderable_Scenes.hpp>
 #include <Mlib/Scene/Scene_Config.hpp>
@@ -453,6 +453,8 @@ void android_main(android_app* app)
         #ifdef __EMSCRIPTEN__
         "    [--ver <dummy>]\n"
         #endif
+        "    [--print_remote_data\n"
+        "    [--print_remote_metadata\n"
         "    [--verbose]",
         {"--wire_frame",
          "--cull_faces",
@@ -493,6 +495,8 @@ void android_main(android_app* app)
         #ifdef __EMSCRIPTEN__
          "--ver",
         #endif
+         "--print_remote_data",
+         "--print_remote_metadata",
          "--verbose"},
         {"--record_track_basename",
          "--mesh",
@@ -590,6 +594,16 @@ void android_main(android_app* app)
         }
         if (args.has_named("--print_rendered_materials")) {
             print_rendered_materials(PrintRenderedMaterials::ENABLED);
+        }
+        {
+            auto verbosity = IoVerbosity::SILENT;
+            if (args.has_named("--print_remote_data")) {
+                verbosity |= IoVerbosity::DATA;
+            }
+            if (args.has_named("--print_remote_metadata")) {
+                verbosity |= IoVerbosity::METADATA;
+            }
+            set_remote_io_verbosity(verbosity);
         }
         list_audio_devices(linfo(LogFlags::NO_APPEND_NEWLINE).ref());
         AudioDevice audio_device;

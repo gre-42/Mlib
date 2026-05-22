@@ -23,6 +23,7 @@
 #include <Mlib/Scene/Physics_Scene.hpp>
 #include <Mlib/Scene/Physics_Scenes.hpp>
 #include <Mlib/Scene/Remote/Remote_Config.hpp>
+#include <Mlib/Scene/Remote/Remote_Verbosity.hpp>
 #include <Mlib/Scene/Scene_Config.hpp>
 #include <Mlib/Scene_Config/Scene_Graph_Config.hpp>
 #include <Mlib/Scene_Graph/Render/Caching_Gpu_Object_Factory.hpp>
@@ -238,7 +239,10 @@ JThread loader_thread(
                     velocity_dt);
                 #endif
                 if (!args.has_named("--no_physics")) {
-                    if (args.has_named("--no_render")) {
+                    #ifndef WITHOUT_GRAPHICS
+                    if (args.has_named("--no_render"))
+                    #endif
+                    {
                         for (auto& [n, r] : physics_scenes.guarded_iterable()) {
                             r.start_physics_loop(("Phys_" + n).substr(0, 15), ThreadAffinity::POOL, [](){ return false; /*loading*/ });
                         }
@@ -414,6 +418,8 @@ int main(int argc, char** argv) {
         "    [--rgba_debug_image <name>]\n"
         "    [--window_title <title>]\n"
         #endif
+        "    [--print_remote_data\n"
+        "    [--print_remote_metadata\n"
         "    [--verbose]";
     const ArgParser parser(
         help,
@@ -461,6 +467,8 @@ int main(int argc, char** argv) {
          "--print_glfw_calls",
          "--print_rendered_materials",
          #endif
+         "--print_remote_data",
+         "--print_remote_metadata",
          "--verbose"},
         {"--app_reldir",
          "--record_track_basename",
@@ -584,6 +592,16 @@ int main(int argc, char** argv) {
         }
         if (args.has_named("--print_rendered_materials")) {
             print_rendered_materials(PrintRenderedMaterials::ENABLED);
+        }
+        {
+            auto verbosity = IoVerbosity::SILENT;
+            if (args.has_named("--print_remote_data")) {
+                verbosity |= IoVerbosity::DATA;
+            }
+            if (args.has_named("--print_remote_metadata")) {
+                verbosity |= IoVerbosity::METADATA;
+            }
+            set_remote_io_verbosity(verbosity);
         }
         auto window_title = args.named_svalue("--window_title", "");
         auto generate_window_title = [&](){

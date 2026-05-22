@@ -14,6 +14,7 @@
 #include <Mlib/Remote/Remote_Params.hpp>
 #include <Mlib/Scene/Remote/Remote_Config.hpp>
 #include <Mlib/Scene/Remote/Remote_Scene.hpp>
+#include <Mlib/Scene/Remote/Remote_Verbosity.hpp>
 #include <Mlib/Scene/Scene_Config.hpp>
 #include <Mlib/Scene_Graph/Interfaces/IParticle_Renderer.hpp>
 #ifndef WITHOUT_AUDIO
@@ -245,18 +246,11 @@ PhysicsScene::PhysicsScene(
         }
 
         if ((remote_config != nullptr) && remote_config->game.has_value()) {
-            auto verbosity = IoVerbosity::SILENT;
-            if (getenv_default_bool("REMOTE_DEBUG_DATA", false)) {
-                verbosity |= IoVerbosity::DATA;
-            }
-            if (getenv_default_bool("REMOTE_DEBUG_METADATA", false)) {
-                verbosity |= IoVerbosity::METADATA;
-            }
             remote_scene_ = std::make_unique<RemoteScene>(
                 DanglingBaseClassRef<PhysicsScene>{*this, CURRENT_SOURCE_LOCATION},
                 DanglingBaseClassRef<SceneLevelSelector>{scene_level_selector, CURRENT_SOURCE_LOCATION},
                 *remote_config,
-                verbosity);
+                get_remote_io_verbosity());
             remote_counter_user_.set(true);
         }
         {

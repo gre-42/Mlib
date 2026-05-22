@@ -3,10 +3,10 @@
 #include <Mlib/Memory/Integral_Cast.hpp>
 #include <Mlib/Os/Io/Binary.hpp>
 #include <Mlib/Remote/Remote_Socket.hpp>
+#include <emscripten/bind.h>
 #include <emscripten/em_js.h>
 #include <emscripten/val.h>
 #include <future>
-#include <emscripten/bind.h>
 
 using namespace Mlib;
 using emscripten::EM_VAL;
@@ -248,9 +248,9 @@ void WebTransportDatagramNode::send(std::istream& istr) {
     if (!success) {
         lwarn() << "Could not send WebTransport message";
     } else {
-        linfo() << "Send: Waiting for WebTransport status code";
+        // linfo() << "Send: Waiting for WebTransport status code";
         auto status_code = done.get_future().get();
-        linfo() << "Send: Received WebTransport status code " + std::to_string((int)status_code);
+        // linfo() << "Send: Received WebTransport status code " + std::to_string((int)status_code);
         if (status_code != JsStatusCode::SUCCESS) {
             lwarn() << "Could not send using WebTransport";
         }
