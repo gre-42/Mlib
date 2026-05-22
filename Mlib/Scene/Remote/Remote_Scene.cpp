@@ -62,7 +62,7 @@ RemoteScene::RemoteScene(
                         verbosity,
                         physics_scene),
                     CURRENT_SOURCE_LOCATION},
-                RemoteObjectVisibility::PUBLIC);
+                RemoteObjectVisibility::PRIVATE);
             return;
         case RemoteRole::CLIENT:
             proxies_.add_handshake_socket(home_node_);

@@ -567,7 +567,16 @@ int main(int argc, char** argv) {
         auto search_path = split_semicolon_separated_pathes(args.unnamed_value(0));
         auto initial_main_scene_filename = std::filesystem::absolute(args.unnamed_value(1)).string();
         auto main_scene_filename = initial_main_scene_filename;
-
+        {
+            auto verbosity = IoVerbosity::SILENT;
+            if (args.has_named("--print_remote_data")) {
+                verbosity |= IoVerbosity::DATA;
+            }
+            if (args.has_named("--print_remote_metadata")) {
+                verbosity |= IoVerbosity::METADATA;
+            }
+            set_remote_io_verbosity(verbosity);
+        }
         #ifndef WITHOUT_AUDIO
         if (args.has_named("--check_al_errors")) {
             check_al_errors(CheckAlErrors::ENABLED);
@@ -592,16 +601,6 @@ int main(int argc, char** argv) {
         }
         if (args.has_named("--print_rendered_materials")) {
             print_rendered_materials(PrintRenderedMaterials::ENABLED);
-        }
-        {
-            auto verbosity = IoVerbosity::SILENT;
-            if (args.has_named("--print_remote_data")) {
-                verbosity |= IoVerbosity::DATA;
-            }
-            if (args.has_named("--print_remote_metadata")) {
-                verbosity |= IoVerbosity::METADATA;
-            }
-            set_remote_io_verbosity(verbosity);
         }
         auto window_title = args.named_svalue("--window_title", "");
         auto generate_window_title = [&](){

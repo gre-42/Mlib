@@ -44,7 +44,7 @@ DanglingBaseClassPtr<IIncrementalObject> RemoteSceneObjectFactory::try_create_sh
     case RemoteSceneObjectType::RIGID_BODY_AVATAR:
         return RemoteRigidBodyVehicle::try_create_from_stream(
             type, physics_scene_.get(), istr,
-        transmitted_fields, remote_object_id, verbosity_);
+            transmitted_fields, remote_object_id, verbosity_);
     case RemoteSceneObjectType::COUNTDOWN:
         return RemoteCountdown::try_create_from_stream(
             physics_scene_.get(), istr,

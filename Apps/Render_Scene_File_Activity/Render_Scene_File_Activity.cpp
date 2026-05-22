@@ -582,7 +582,16 @@ void android_main(android_app* app)
         auto search_path = split_semicolon_separated_pathes(args.unnamed_value(0));
         auto initial_main_scene_filename = std::filesystem::absolute(args.unnamed_value(1)).string();
         auto main_scene_filename = initial_main_scene_filename;
-
+        {
+            auto verbosity = IoVerbosity::SILENT;
+            if (args.has_named("--print_remote_data")) {
+                verbosity |= IoVerbosity::DATA;
+            }
+            if (args.has_named("--print_remote_metadata")) {
+                verbosity |= IoVerbosity::METADATA;
+            }
+            set_remote_io_verbosity(verbosity);
+        }
         if (args.has_named("--check_al_errors")) {
             check_al_errors(CheckAlErrors::ENABLED);
         }
@@ -594,16 +603,6 @@ void android_main(android_app* app)
         }
         if (args.has_named("--print_rendered_materials")) {
             print_rendered_materials(PrintRenderedMaterials::ENABLED);
-        }
-        {
-            auto verbosity = IoVerbosity::SILENT;
-            if (args.has_named("--print_remote_data")) {
-                verbosity |= IoVerbosity::DATA;
-            }
-            if (args.has_named("--print_remote_metadata")) {
-                verbosity |= IoVerbosity::METADATA;
-            }
-            set_remote_io_verbosity(verbosity);
         }
         list_audio_devices(linfo(LogFlags::NO_APPEND_NEWLINE).ref());
         AudioDevice audio_device;

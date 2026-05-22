@@ -1,5 +1,6 @@
 #include "Remote_Countdown.hpp"
 #include <Mlib/Array/Fixed_Array.hpp>
+#include <Mlib/Misc/To_Underlying.hpp>
 #include <Mlib/Os/Io/Binary_Reader.hpp>
 #include <Mlib/Os/Io/Binary_Writer.hpp>
 #include <Mlib/Players/Containers/Remote_Sites.hpp>
@@ -56,7 +57,9 @@ void RemoteCountdown::read(
 {
     auto type = read_binary<RemoteSceneObjectType>(istr, "scene object type", verbosity_);
     if (type != RemoteSceneObjectType::COUNTDOWN) {
-        throw std::runtime_error("RemoteCountdown::read: Unexpected scene object type");
+        throw std::runtime_error((std::stringstream() <<
+            "RemoteCountdown::read: Unexpected scene object type. Object ID = " <<
+            remote_object_id << ", type = 0x" << std::hex << to_underlying(type)).str());
     }
     read_data(istr, remote_object_id);
 }
@@ -88,7 +91,7 @@ void RemoteCountdown::write(
         throw std::runtime_error("Local site ID not set");
     }
     if (remote_object_id.site_id != *physics_scene_->remote_sites_->get_local_site_id()) {
-        return;
+        throw std::runtime_error("Attempt to send RemoteCountdown from client");
     }
     transmission_history_writer.write_remote_object_id(ostr, remote_object_id, TransmittedFields::END);
     

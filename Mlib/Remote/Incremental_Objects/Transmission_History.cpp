@@ -65,10 +65,19 @@ void TransmissionHistoryWriter::write_remote_object_id(
     if (any(transmitted_fields & TransmittedFields::SITE_ID)) {
         throw std::runtime_error("Transmitted fields unexpectedly have the SITE_ID flag set");
     }
-    if (any(history_ & TransmissionHistory::SITE_ID)) {
+    auto site_id = [this](){
+        if (!site_id_.has_value()) {
+            throw std::runtime_error("Site ID not yet transmitted");
+        }
+        return *site_id_;
+    };
+    if (any(history_ & TransmissionHistory::SITE_ID) &&
+        (site_id() == remote_object_id.site_id))
+    {
         write_binary(ostr, transmitted_fields, "transmitted fields");
         write_binary(ostr, remote_object_id.object_id, "object ID");
     } else {
+        site_id_.emplace(remote_object_id.site_id);
         write_binary(ostr, transmitted_fields | TransmittedFields::SITE_ID, "transmitted fields");
         write_binary(ostr, remote_object_id, "remote object ID");
         history_ |= TransmissionHistory::SITE_ID;

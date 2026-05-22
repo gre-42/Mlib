@@ -68,6 +68,7 @@ public:
         std::chrono::steady_clock::time_point time) const;
 private:
     std::chrono::steady_clock::time_point base_time_;
+    std::optional<RemoteSiteId> site_id_;
     TransmissionHistory history_;
 };
 
