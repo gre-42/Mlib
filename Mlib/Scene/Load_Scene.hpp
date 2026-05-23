@@ -18,6 +18,7 @@ class AssetReferences;
 class Translators;
 class PhysicsScenes;
 class RenderableScenes;
+class IndexHttpResponseGenerator;
 class NotifyingJsonMacroArguments;
 struct SceneConfig;
 struct RenderConfig;
@@ -54,7 +55,9 @@ public:
         AssetReferences& asset_references,
         Translators& translators,
         PhysicsScenes& physics_scenes,
-        #ifndef WITHOUT_GRAPHICS
+        #ifdef WITHOUT_GRAPHICS
+        IndexHttpResponseGenerator& index_html,
+        #else
         std::atomic_size_t& num_renderings,
         RealtimeDependentFps& render_set_fps,
         ButtonStates& button_states,

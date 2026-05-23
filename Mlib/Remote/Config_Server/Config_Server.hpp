@@ -9,18 +9,22 @@
 #include <memory>
 #include <mutex>
 #include <optional>
+#include <vector>
 
 namespace Mlib {
 
-class ISendSocket;
 struct RemoteSocket;
+class ISendSocket;
 class IDatagramNode;
+class IHttpResponseGenerator;
 
 class ConfigServer: public IReceiveSocket {
 public:
-    explicit ConfigServer(
+    ConfigServer(
         const RemoteSocket& remote_socket,
-        Utf8Path static_dir);
+        Utf8Path static_dir,
+        std::vector<std::shared_ptr<IHttpResponseGenerator>> response_generators,
+        std::shared_ptr<IHttpResponseGenerator> error_generator);
     ~ConfigServer();
     bool application_should_exit() const;
     void notify_reload_required();
@@ -29,6 +33,8 @@ public:
 private:
     void handle_session(boost::asio::ip::tcp::socket socket);
     Utf8Path static_dir_;
+    std::vector<std::shared_ptr<IHttpResponseGenerator>> response_generators_;
+    std::shared_ptr<IHttpResponseGenerator> error_generator_;
     std::string cert_hash_;
     bool reload_required_;
     mutable std::mutex mutex_;

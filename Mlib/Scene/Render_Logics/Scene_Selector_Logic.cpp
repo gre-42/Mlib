@@ -48,7 +48,7 @@ const ReplacementParameterRequired& SceneEntry::required() const {
 }
 
 bool SceneEntry::operator < (const SceneEntry& other) const {
-    return id() < other.id();
+    return rpe_ < other.rpe_;
 }
 
 SceneEntryContents::SceneEntryContents(

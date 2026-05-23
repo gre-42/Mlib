@@ -79,3 +79,7 @@ void Mlib::from_json(const nlohmann::json& j, ReplacementParameter& rp) {
         jv.at(KnownArgs::on_execute).get_to(rp.on_execute);
     }
 }
+
+bool ReplacementParameterAndFilename::operator < (const ReplacementParameterAndFilename& other) const {
+    return rp.id < other.rp.id;
+}

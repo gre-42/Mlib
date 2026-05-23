@@ -27,7 +27,9 @@ LoadScene::LoadScene(
     AssetReferences& asset_references,
     Translators& translators,
     PhysicsScenes& physics_scenes,
-    #ifndef WITHOUT_GRAPHICS
+    #ifdef WITHOUT_GRAPHICS
+    IndexHttpResponseGenerator& index_html,
+    #else
     std::atomic_size_t& num_renderings,
     RealtimeDependentFps& render_set_fps,
     ButtonStates& button_states,
@@ -77,7 +79,9 @@ LoadScene::LoadScene(
             .asset_references = asset_references,
             .translators = translators,
             .physics_scenes = physics_scenes,
-            #ifndef WITHOUT_GRAPHICS
+            #ifdef WITHOUT_GRAPHICS
+            .index_html = index_html,
+            #else
             .layout_constraints = layout_constraints,
             .num_renderings = num_renderings,
             .render_set_fps = render_set_fps,

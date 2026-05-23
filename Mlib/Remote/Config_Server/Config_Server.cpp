@@ -1,36 +1,19 @@
 #include "Config_Server.hpp"
-#include <Mlib/Json/Base.hpp>
 #include <Mlib/Json/Json_Object_File.hpp>
-#include <Mlib/Misc/Pragma_Clang.hpp>
-#include <Mlib/Os/Os.hpp>
+#include <Mlib/Memory/Destruction_Guard.hpp>
+#include <Mlib/Remote/Config_Server/IHttp_Response_Generator.hpp>
+#include <Mlib/Remote/Config_Server/Request_Overrides.hpp>
 #include <Mlib/Remote/Datagram_Nodes/Datagram_Node_Factory.hpp>
 #include <Mlib/Remote/Datagram_Nodes/IDatagram_Node.hpp>
-#include <Mlib/Remote/ISend_Socket.hpp>
 #include <Mlib/Remote/Remote_Socket.hpp>
 #include <Mlib/Remote/Sockets/Websocket.hpp>
 #include <Mlib/Strings/Base64.hpp>
 #include <Mlib/Threads/Termination_Manager.hpp>
-#include <boost/asio/ip/tcp.hpp>
 #include <boost/beast/core.hpp>
 #include <boost/beast/http.hpp>
-#include <boost/url/encode.hpp>
 #include <boost/url/parse.hpp>
 #include <boost/url/parse_path.hpp>
-#include <boost/url/rfc/pchars.hpp>
-#include <boost/url/rfc/unreserved_chars.hpp>
-#include <concepts>
-#include <map>
-#include <sstream>
-PRAGMA_CLANG_DIAGNOSTIC_PUSH
-PRAGMA_CLANG_DIAGNOSTIC_IGNORED(-Wsign-conversion)
-PRAGMA_CLANG_DIAGNOSTIC_IGNORED(-Wimplicit-int-float-conversion)
-#include <inja/inja.hpp>
-PRAGMA_CLANG_DIAGNOSTIC_POP
-#ifdef _WIN32
-#include <winsock2.h>
-#else
-#include <sys/time.h>
-#endif
+#include <boost/url/url_view.hpp>
 
 using namespace Mlib;
 
@@ -107,8 +90,12 @@ bool wait_for_connection(
 
 ConfigServer::ConfigServer(
     const RemoteSocket& remote_socket,
-    Utf8Path static_dir)
+    Utf8Path static_dir,
+    std::vector<std::shared_ptr<IHttpResponseGenerator>> response_generators,
+    std::shared_ptr<IHttpResponseGenerator> error_generator)
     : static_dir_{std::move(static_dir)}
+    , response_generators_{std::move(response_generators)}
+    , error_generator_{std::move(error_generator)}
     , reload_required_{false}
     , http_thread_{[this, remote_socket](){
         auto const address = asio::ip::make_address(remote_socket.hostname);
@@ -167,147 +154,121 @@ ConfigServer::~ConfigServer() {
 }
 
 void ConfigServer::handle_session(tcp::socket socket) {
-    try {
-        beast::flat_buffer buffer;
+    auto shared_socket = std::make_shared<tcp::socket>(std::move(socket));
+    auto ws_stream = std::make_shared<std::optional<websocket::stream<tcp::socket>>>();
 
+    DestructionGuard guard([shared_socket, ws_stream]() {
+        boost::beast::error_code ec;
+        
+        // Path A: A WebSocket upgrade attempt was made, and it failed
+        if (*ws_stream && (*ws_stream)->next_layer().is_open()) {
+            (*ws_stream)->next_layer().shutdown(tcp::socket::shutdown_both, ec);
+            (*ws_stream)->next_layer().close(ec);
+        } 
+        // Path B: Normal HTTP mode
+        else if (shared_socket && shared_socket->is_open()) {
+            shared_socket->shutdown(tcp::socket::shutdown_both, ec);
+            shared_socket->close(ec);
+        }
+    });
+
+    beast::flat_buffer buffer;
+    
+    for(;;) {
         http::request<http::string_body> req;
-        http::read(socket, buffer, req);
+        boost::beast::error_code ec;
+        
+        http::read(*shared_socket, buffer, req, ec);
+        
+        if (ec == boost::beast::http::error::end_of_stream || ec) {
+            if (ec && ec != boost::beast::http::error::end_of_stream) {
+                lerr() << "Read error: " << ec.message();
+            }
+            break; 
+        }
 
         if (websocket::is_upgrade(req)) {
             linfo() << "Handle request to upgrade to websockets";
-            // Handle websockets
-            websocket::stream<tcp::socket> ws{std::move(socket)};
+            
+            ws_stream->emplace(std::move(*shared_socket));
 
-            ws.accept(req);
+            beast::error_code ws_ec;
+            (*ws_stream)->accept(req, ws_ec);
+            
+            if (ws_ec.failed()) {
+                lerr() << "Websocket accept failed: " << ws_ec.message();
+                return;
+            }
 
             std::scoped_lock lock{receive_mutex_};
-            auto& node = websocket_nodes_.emplace_back(DatagramNodeFactory::create_websocket(std::move(ws)));
-            node->start_receive_thread(500); // 500: max_stored_received_messages
+            
+            websocket::stream<tcp::socket> final_ws = std::move(**ws_stream);
+            ws_stream->reset(); // Deactivate WebSocket path for the guard
+
+            auto& node = websocket_nodes_.emplace_back(DatagramNodeFactory::create_websocket(std::move(final_ws)));
+            node->start_receive_thread(500); 
+            return; 
         } else {
-            // Handle HTTP
-            auto send_file = [this, &req, &socket](
-                const Utf8Path& path,
-                const std::string& content_type,
-                http::status status,
-                #ifdef __EMSCRIPTEN__
-                const std::vector<std::pair<std::string, std::string>>* headers = nullptr
-                #else
-                const std::vector<std::pair<http::field, std::string>>* headers = nullptr
-                #endif
-            )
-            {
-                linfo() << "Send file \"" << path.string() << '"';
-                auto send_res = [&](const auto& body, auto& res){
-                    res.set(http::field::content_type, content_type);
-                    if (headers != nullptr) {
-                        for (const auto& h : *headers) {
-                            res.set(h.first, h.second);
-                        }
-                    }
-                    res.content_length(body.size());
-                    res.prepare_payload();
-                    linfo() << "Write file body: \"" << path.string() << '"';
-                    http::write(socket, res);
-                    linfo() << "File body written: \"" << path.string() << '"';
-                    return true;
-                };
-                if (path.filename() == "index.html") {
-                    inja::Environment env;
-                    nlohmann::json data;
-                    data["cert_hash"] = boost::urls::encode(cert_hash_, boost::urls::unreserved_chars);
-                    std::string body = env.render_file(path, data);
-                    http::response<http::string_body> res{
-                        std::piecewise_construct,
-                        std::make_tuple(std::move(body)),
-                        std::make_tuple(status, req.version())
-                    };
-                    return send_res(body, res);
-                } else {
-                    http::file_body::value_type body;
-                    beast::error_code ec;
-                    body.open(path.c_str(), beast::file_mode::scan, ec);
-                    if (ec.failed()) {
-                        lerr() << "Could not open file \"" << path.string() << '"';
-                        return false;
-                    }
-                    if (body.size() == 0) {
-                        lerr() << "File is empty: \"" << path.string() << '"';
-                        return false;
-                    }
-                    http::response<http::file_body> res{
-                        std::piecewise_construct,
-                        std::make_tuple(std::move(body)),
-                        std::make_tuple(status, req.version())
-                    };
-                    return send_res(body, res);
-                }
-            };
-            auto send_error_html = [&](http::status status){
-                auto e = concatenate(static_dir_, "server", "error.html");
-                if (!send_file(e, "text/html", status)) {
-                    lerr() << "Close the socket after failed error handling";
-                    boost::beast::error_code ec;
-                    // Tell the OS to stop sending/receiving and drop buffered data
-                    socket.shutdown(boost::asio::ip::tcp::socket::shutdown_both, ec);
-                    socket.close(ec);
-                }
-            };
-            static const std::map<std::string, std::string> redirects = {
-                {"/", "server/index.html"}
-            };
-            Utf8Path path;
-            auto redirect = redirects.find(req.target());
-            if (redirect != redirects.end()) {
-                path = concatenate(static_dir_, redirect->second);
-            } else {
-                auto res = boost::urls::parse_origin_form(req.target());
-                if (res.has_error()) {
-                    throw std::system_error(res.error(), "Could not parse URL");
-                }
-                path = concatenate(static_dir_, res->path());
-            }
-            auto extension = path.extension();
-            static const std::map<std::string, std::string> mime_types = {
-                {".html", "text/html"},
-                {".js", "text/javascript"},
-                {".data", "application/octet-stream"},
-                {".wasm", "application/wasm"},
-            };
             #ifdef __EMSCRIPTEN__
-            auto cross_origin = std::vector<std::pair<std::string, std::string>>{
-                {"Cross-Origin-Opener-Policy", "same-origin"},
-                {"Cross-Origin-Embedder-Policy", "require-corp"}
-            };
-            static const std::map<std::string, std::vector<std::pair<std::string, std::string>>> headers =
+            static const auto headers = std::make_shared<std::vector<std::pair<std::string, std::string>>>(
+                std::vector<std::pair<std::string, std::string>>{
+                    {"Cross-Origin-Opener-Policy", "same-origin"},
+                    {"Cross-Origin-Embedder-Policy", "require-corp"}
+                });
             #else
-            auto cross_origin = std::vector<std::pair<http::field, std::string>>{
-                {http::field::cross_origin_opener_policy, "same-origin"},
-                {http::field::cross_origin_embedder_policy, "require-corp"}
-            };
-            static const std::map<std::string, std::vector<std::pair<http::field, std::string>>> headers =
+            static const auto headers = std::make_shared<std::vector<std::pair<http::field, std::string>>>(
+                std::vector<std::pair<http::field, std::string>>{
+                    {http::field::cross_origin_opener_policy, "same-origin"},
+                    {http::field::cross_origin_embedder_policy, "require-corp"}
+                });
             #endif
-            {
-                {".html", cross_origin},
-                {".js", cross_origin},
-                {".wasm", cross_origin},
-                {".data", cross_origin},
-            };
-            auto mime_type = mime_types.find(extension);
-            if (mime_type != mime_types.end()) {
-                auto header_it = headers.find(extension);
-                const auto* header = (header_it != headers.end())
-                    ? &header_it->second
-                    : nullptr;
-                if (!send_file(path, mime_type->second, http::status::ok, header)) {
-                    send_error_html(http::status::not_found);
+
+            auto send_message = [&shared_socket](boost::beast::http::message_generator msg){
+                beast::error_code write_ec;
+                beast::write(*shared_socket, std::move(msg), write_ec);
+                if (write_ec.failed()) {
+                    lerr() << "Failure during send: " << write_ec.message();
                 }
+            };
+
+            bool keep_alive = req.keep_alive();
+            bool message_sent = false;
+            http::status status = http::status::not_found;
+            
+            auto url_res = boost::urls::parse_origin_form(req.target());
+            if (url_res.has_error()) {
+                lerr() << "URL parsing failed: " << url_res.error().message();
+                status = http::status::bad_request; 
             } else {
-                send_error_html(http::status::not_implemented);
+                RequestOverrides reo{headers, req, url_res->path(), concatenate(static_dir_, url_res->path()), std::nullopt};
+                for (const auto& g : response_generators_) {
+                    auto response = g->reply(reo);
+                    if (auto* message = std::get_if<http::message_generator>(&response)) {
+                        send_message(std::move(*message));
+                        message_sent = true;
+                        break; 
+                    }
+                    if (auto* s = std::get_if<http::status>(&response)) {
+                        status = *s;
+                        break;
+                    }
+                }
             }
-        }
-    } catch (beast::system_error const& e) {
-        if (e.code() != websocket::error::closed) {
-            lwarn() << "Caught exception: " << e.what();
+
+            if (!message_sent) {
+                RequestOverrides reo{headers, req, "server/error.html", concatenate(static_dir_, "server", "error.html"), status};
+                auto response = error_generator_->reply(reo);
+                if (auto* message = std::get_if<http::message_generator>(&response)) {
+                    send_message(std::move(*message));
+                } else {
+                    lerr() << "Close after failed error handling";
+                    return;
+                }
+            }
+
+            if (!keep_alive) {
+                break; 
+            }
         }
     }
 }

@@ -15,6 +15,7 @@
 #include <Mlib/Players/Containers/Remote_Sites.hpp>
 #include <Mlib/Players/Containers/Users.hpp>
 #include <Mlib/Regex/Pathes.hpp>
+#include <Mlib/Remote/Config_Server/Static_Http_Response_Generator.hpp>
 #include <Mlib/Remote/Incremental_Objects/Scene_Level.hpp>
 #include <Mlib/Remote/Remote_Params.hpp>
 #include <Mlib/Remote/Remote_Role.hpp>
@@ -22,6 +23,7 @@
 #include <Mlib/Scene/Load_Scene.hpp>
 #include <Mlib/Scene/Physics_Scene.hpp>
 #include <Mlib/Scene/Physics_Scenes.hpp>
+#include <Mlib/Scene/Remote/Config_Server/Index_Http_Response_Generator.hpp>
 #include <Mlib/Scene/Remote/Remote_Config.hpp>
 #include <Mlib/Scene/Remote/Remote_Verbosity.hpp>
 #include <Mlib/Scene/Scene_Config.hpp>
@@ -706,12 +708,22 @@ int main(int argc, char** argv) {
             window_user_object};
         MenuLogic menu_logic{menu_user_object};
         #else
+        Utf8Path static_dir = "static";
+        auto index_generator = std::make_shared<IndexHttpResponseGenerator>(static_dir);
+        auto static_generator = std::make_shared<StaticHttpResponseGenerator>();
+        auto response_generators = std::vector<std::shared_ptr<IHttpResponseGenerator>>{
+            index_generator,
+            static_generator
+        };
+        auto error_generator = static_generator;
         ConfigServer config_server{
             RemoteSocket{
                 args.named_svalue("--http_ip"),
                 safe_sto<uint16_t>(args.named_svalue("--http_port"))
             },
-            "static"};
+            static_dir,
+            std::move(response_generators),
+            std::move(error_generator)};
         #endif
         NotifyingJsonMacroArguments external_json_macro_arguments;
 
@@ -970,6 +982,9 @@ int main(int argc, char** argv) {
                 render.window().set_title(generate_window_title());
                 #endif
 
+                #ifdef WITHOUT_GRAPHICS
+                index_generator->clear_lists();
+                #endif
                 remote_sites.set_user_status(UserTypes::ALL_REMOTE, UserStatus::INITIAL);
                 remote_sites.set_user_status(UserTypes::ALL_LOCAL, UserStatus::LEVEL_LOADING);
                 load_scene.reset(new LoadScene(
@@ -988,7 +1003,9 @@ int main(int argc, char** argv) {
                     asset_references,
                     translators,
                     physics_scenes,
-                    #ifndef WITHOUT_GRAPHICS
+                    #ifdef WITHOUT_GRAPHICS
+                    *index_generator,
+                    #else
                     num_renderings,
                     render_set_fps,
                     button_states,

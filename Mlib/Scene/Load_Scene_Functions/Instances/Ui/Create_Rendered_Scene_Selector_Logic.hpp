@@ -4,9 +4,9 @@
 
 namespace Mlib {
 
-class CreateSceneSelectorLogic: public LoadRenderableSceneInstanceFunction {
+class CreateRenderedSceneSelectorLogic: public LoadRenderableSceneInstanceFunction {
 public:
-    explicit CreateSceneSelectorLogic(RenderableScene& renderable_scene);
+    explicit CreateRenderedSceneSelectorLogic(RenderableScene& renderable_scene);
     void execute(const LoadSceneJsonUserFunctionArgs& args);
 };
 

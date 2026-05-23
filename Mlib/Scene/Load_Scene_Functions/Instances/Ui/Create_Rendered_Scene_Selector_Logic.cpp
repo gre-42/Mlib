@@ -1,4 +1,4 @@
-#include "Create_Scene_Selector_Logic.hpp"
+#include "Create_Rendered_Scene_Selector_Logic.hpp"
 #include <Mlib/Layout/Layout_Constraints.hpp>
 #include <Mlib/Layout/Widget.hpp>
 #include <Mlib/Macro_Executor/Asset_Group_Replacement_Parameters.hpp>
@@ -25,6 +25,13 @@ BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(id);
 DECLARE_ARGUMENT(title);
 DECLARE_ARGUMENT(icon);
+DECLARE_ARGUMENT(on_change);
+DECLARE_ARGUMENT(assets);
+DECLARE_ARGUMENT(local_user_id);
+DECLARE_ARGUMENT(appearance);
+}
+
+namespace AppearanceArgs {
 DECLARE_ARGUMENT(charset);
 DECLARE_ARGUMENT(ttf_file);
 DECLARE_ARGUMENT(left);
@@ -34,17 +41,15 @@ DECLARE_ARGUMENT(top);
 DECLARE_ARGUMENT(font_color);
 DECLARE_ARGUMENT(font_height);
 DECLARE_ARGUMENT(line_distance);
-DECLARE_ARGUMENT(on_change);
-DECLARE_ARGUMENT(assets);
-DECLARE_ARGUMENT(local_user_id);
 }
 
-CreateSceneSelectorLogic::CreateSceneSelectorLogic(RenderableScene& renderable_scene) 
+CreateRenderedSceneSelectorLogic::CreateRenderedSceneSelectorLogic(RenderableScene& renderable_scene) 
     : LoadRenderableSceneInstanceFunction{ renderable_scene }
 {}
 
-void CreateSceneSelectorLogic::execute(const LoadSceneJsonUserFunctionArgs& args)
+void CreateRenderedSceneSelectorLogic::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
+    args.arguments.validate(KnownArgs::options);
     std::list<SceneEntry> scene_entries;
     for (const auto& [_, rpe] : args.asset_references[args.arguments.at<std::string>(KnownArgs::assets)]) {
         scene_entries.emplace_back(rpe);
@@ -64,20 +69,21 @@ void CreateSceneSelectorLogic::execute(const LoadSceneJsonUserFunctionArgs& args
             .icon=args.arguments.at<std::string>(KnownArgs::icon)},
         focus_filter,
         0);
+    auto appearance = args.arguments.child(KnownArgs::appearance);
     auto& scene_selector_logic = object_pool.create<SceneSelectorLogic>(
         CURRENT_SOURCE_LOCATION,
         std::move(id),
         std::vector<SceneEntry>{scene_entries.begin(), scene_entries.end()},
-        args.arguments.at<std::string>(KnownArgs::charset),
-        args.arguments.path(KnownArgs::ttf_file),
+        appearance.at<std::string>(AppearanceArgs::charset),
+        args.arguments.path(AppearanceArgs::ttf_file),
         std::make_unique<Widget>(
-            args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::left)),
-            args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::right)),
-            args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::bottom)),
-            args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::top))),
-        args.arguments.at<EFixedArray<float, 3>>(KnownArgs::font_color),
-        args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::font_height)),
-        args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::line_distance)),
+            args.layout_constraints.get_pixels(appearance.at<std::string>(AppearanceArgs::left)),
+            args.layout_constraints.get_pixels(appearance.at<std::string>(AppearanceArgs::right)),
+            args.layout_constraints.get_pixels(appearance.at<std::string>(AppearanceArgs::bottom)),
+            args.layout_constraints.get_pixels(appearance.at<std::string>(AppearanceArgs::top))),
+        appearance.at<EFixedArray<float, 3>>(AppearanceArgs::font_color),
+        args.layout_constraints.get_pixels(appearance.at<std::string>(AppearanceArgs::font_height)),
+        args.layout_constraints.get_pixels(appearance.at<std::string>(AppearanceArgs::line_distance)),
         focus_filter,
         std::make_unique<ExpressionWatcher>(args.macro_line_executor),
         args.next_scene_filename,
@@ -102,11 +108,10 @@ namespace {
 struct RegisterJsonUserFunction {
     RegisterJsonUserFunction() {
         LoadSceneFuncs::register_json_user_function(
-            "scene_selector",
+            "rendered_scene_selector",
             [](const LoadSceneJsonUserFunctionArgs& args)
             {
-                args.arguments.validate(KnownArgs::options);
-                CreateSceneSelectorLogic(args.renderable_scene()).execute(args);
+                CreateRenderedSceneSelectorLogic(args.renderable_scene()).execute(args);
             });
     }
 } obj;

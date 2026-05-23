@@ -36,6 +36,7 @@ class Translators;
 struct RealtimeDependentFps;
 class WindowLogic;
 class SceneLevelSelector;
+class IndexHttpResponseGenerator;
 
 struct LoadSceneJsonUserFunctionArgs {
     const std::string& name;
@@ -56,7 +57,9 @@ struct LoadSceneJsonUserFunctionArgs {
     AssetReferences& asset_references;
     Translators& translators;
     PhysicsScenes& physics_scenes;
-    #ifndef WITHOUT_GRAPHICS
+    #ifdef WITHOUT_GRAPHICS
+    IndexHttpResponseGenerator& index_html;
+    #else
     LayoutConstraints& layout_constraints;
     std::atomic_size_t& num_renderings;
     RealtimeDependentFps& render_set_fps;

@@ -1,5 +1,5 @@
 #pragma once
-#include <Mlib/OpenGL/Render_Logic.hpp>
+#include <cstddef>
 
 namespace Mlib {
 

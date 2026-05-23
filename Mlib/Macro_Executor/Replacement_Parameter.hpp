@@ -31,6 +31,7 @@ struct ReplacementParameterAndFilename {
     static ReplacementParameterAndFilename from_json(const std::string& filename);
     ReplacementParameter rp;
     std::string filename;
+    bool operator < (const ReplacementParameterAndFilename& other) const;
 };
 
 }
