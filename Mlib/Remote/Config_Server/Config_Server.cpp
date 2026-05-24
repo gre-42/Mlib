@@ -1,6 +1,7 @@
 #include "Config_Server.hpp"
 #include <Mlib/Json/Json_Object_File.hpp>
 #include <Mlib/Memory/Destruction_Guard.hpp>
+#include <Mlib/Remote/Config_Server/Http_Session.hpp>
 #include <Mlib/Remote/Config_Server/IHttp_Response_Generator.hpp>
 #include <Mlib/Remote/Config_Server/Request_Overrides.hpp>
 #include <Mlib/Remote/Datagram_Nodes/Datagram_Node_Factory.hpp>
@@ -45,49 +46,6 @@ static Utf8Path concatenate(Utf8Path root, Args&&... targets) {
     return root;
 }
 
-bool wait_for_connection(
-    boost::asio::io_context& io_context,
-    tcp::acceptor& acceptor,
-    std::chrono::milliseconds timeout)
-{
-    acceptor.non_blocking(true);
-    
-    bool ready = false;
-    bool expired = false;
-    std::error_code select_ec = std::make_error_code(std::errc::operation_in_progress);
-
-    // Start asynchronous wait on the socket
-    acceptor.async_wait(tcp::acceptor::wait_read, [&](const std::error_code& ec) {
-        if (!expired) {
-            ready = true;
-            select_ec = ec;
-        }
-    });
-
-    // Start a timer for the timeout duration
-    boost::asio::steady_timer timer(io_context, timeout);
-    timer.async_wait([&](const std::error_code& ec) {
-        if (!ec && !ready) {
-            expired = true;
-            acceptor.cancel(); // Cancel the pending socket wait
-        }
-    });
-
-    // Block the thread until one of the operations completes
-    io_context.restart();
-    io_context.run_for(timeout + std::chrono::milliseconds(10)); 
-
-    // Evaluate outcomes
-    if (expired || (select_ec == std::errc::interrupted)) {
-        return false;
-    }
-    if (select_ec) {
-        throw std::system_error(select_ec, "Wait failed in configuration server");
-    }
-
-    return true; // Connection is ready to accept
-}
-
 ConfigServer::ConfigServer(
     const RemoteSocket& remote_socket,
     Utf8Path static_dir,
@@ -97,27 +55,43 @@ ConfigServer::ConfigServer(
     , response_generators_{std::move(response_generators)}
     , error_generator_{std::move(error_generator)}
     , reload_required_{false}
+    , ioc_{1}
     , http_thread_{[this, remote_socket](){
         auto const address = asio::ip::make_address(remote_socket.hostname);
-        asio::io_context ioc{1};
-        tcp::acceptor acceptor{ioc, {address, remote_socket.port}};
+        
+        auto acceptor = std::make_shared<tcp::acceptor>(ioc_, tcp::endpoint{address, remote_socket.port});
+        
         linfo() << "Configuration server started at http://" << remote_socket;
-        acceptor.native_non_blocking(false);
-        try {
-            while (!unhandled_exceptions_occured() &&
-                   !http_thread_.get_stop_token().stop_requested())
-            {
-                if (!wait_for_connection(ioc, acceptor, std::chrono::milliseconds{500})) {
-                    continue;
-                }
-                tcp::socket socket{ioc};
-                boost::system::error_code ec;
-                acceptor.accept(socket, ec);
-                if (ec) {
-                    throw boost::system::system_error(ec); 
-                }
-                handle_session(std::move(socket));
+        
+        // Definition of the asynchronous accept loop (without use of 'ioc_')
+        std::function<void()> do_accept = [this, acceptor, &do_accept]() {
+            if (http_thread_.get_stop_token().stop_requested() || unhandled_exceptions_occured()) {
+                acceptor->close(); 
+                return;
             }
+
+            acceptor->async_accept([this, acceptor, &do_accept](boost::system::error_code ec, tcp::socket socket) {
+                if (!ec) {
+                    handle_session(std::move(socket));
+                } else if (ec != asio::error::operation_aborted) {
+                    lerr() << "Accept error: " << ec.message();
+                    add_unhandled_exception(std::make_exception_ptr(boost::system::system_error(ec)));
+                    acceptor->close();
+                    return;
+                }
+
+                // Initiates the next asynchronous accept process
+                do_accept();
+            });
+        };
+
+        try {
+            // Initiates the chain
+            do_accept();
+
+            // The event loop blocks the thread and processes in the background
+            ioc_.run();
+
         } catch (const std::exception& e) {
             lerr() << "Unhandled exception in configuration server: " << e.what();
             add_unhandled_exception(std::current_exception());
@@ -125,9 +99,9 @@ ConfigServer::ConfigServer(
             lerr() << "Unknown unhandled exception in configuration server";
             add_unhandled_exception(std::current_exception());
         }
+        
         linfo() << "Exit configuration server";
         notify_reload_required();
-        ioc.run();
     }}
 {
     cert_hash_ = []() -> std::string {
@@ -151,126 +125,101 @@ ConfigServer::ConfigServer(
 
 ConfigServer::~ConfigServer() {
     http_thread_.get_stop_token().request_stop();
+    ioc_.stop();
 }
 
-void ConfigServer::handle_session(tcp::socket socket) {
-    auto shared_socket = std::make_shared<tcp::socket>(std::move(socket));
-    auto ws_stream = std::make_shared<std::optional<websocket::stream<tcp::socket>>>();
+boost::beast::http::message_generator ConfigServer::handle_request(
+    boost::beast::http::request<boost::beast::http::string_body> req)
+{
+    #ifdef __EMSCRIPTEN__
+    static const auto headers = std::make_shared<std::vector<std::pair<std::string, std::string>>>(
+        std::vector<std::pair<std::string, std::string>>{
+            {"Cross-Origin-Opener-Policy", "same-origin"},
+            {"Cross-Origin-Embedder-Policy", "require-corp"}
+        });
+    #else
+    static const auto headers = std::make_shared<std::vector<std::pair<http::field, std::string>>>(
+        std::vector<std::pair<http::field, std::string>>{
+            {http::field::cross_origin_opener_policy, "same-origin"},
+            {http::field::cross_origin_embedder_policy, "require-corp"}
+        });
+    #endif
 
-    DestructionGuard guard([shared_socket, ws_stream]() {
-        boost::beast::error_code ec;
-        
-        // Path A: A WebSocket upgrade attempt was made, and it failed
-        if (*ws_stream && (*ws_stream)->next_layer().is_open()) {
-            (*ws_stream)->next_layer().shutdown(tcp::socket::shutdown_both, ec);
-            (*ws_stream)->next_layer().close(ec);
-        } 
-        // Path B: Normal HTTP mode
-        else if (shared_socket && shared_socket->is_open()) {
-            shared_socket->shutdown(tcp::socket::shutdown_both, ec);
-            shared_socket->close(ec);
-        }
-    });
-
-    beast::flat_buffer buffer;
+    http::status status = http::status::not_found;
     
-    for(;;) {
-        http::request<http::string_body> req;
-        boost::beast::error_code ec;
+    auto url_res = boost::urls::parse_origin_form(req.target());
+    if (url_res.has_error()) {
+        lerr() << "URL parsing failed: " << url_res.error().message();
+        status = http::status::bad_request; 
+    } else {
+        auto url_path = url_res->path();
+        RequestOverrides reo{headers, req, url_path, concatenate(static_dir_, url_path), std::nullopt};
         
-        http::read(*shared_socket, buffer, req, ec);
-        
-        if (ec == boost::beast::http::error::end_of_stream || ec) {
-            if (ec && ec != boost::beast::http::error::end_of_stream) {
-                lerr() << "Read error: " << ec.message();
-            }
-            break; 
-        }
-
-        if (websocket::is_upgrade(req)) {
-            linfo() << "Handle request to upgrade to websockets";
+        for (const auto& g : response_generators_) {
+            auto response = g->reply(reo);
             
-            ws_stream->emplace(std::move(*shared_socket));
-
-            beast::error_code ws_ec;
-            (*ws_stream)->accept(req, ws_ec);
-            
-            if (ws_ec.failed()) {
-                lerr() << "Websocket accept failed: " << ws_ec.message();
-                return;
+            if (auto* message = std::get_if<http::message_generator>(&response)) {
+                return std::move(*message); 
             }
-
-            std::scoped_lock lock{receive_mutex_};
             
-            websocket::stream<tcp::socket> final_ws = std::move(**ws_stream);
-            ws_stream->reset(); // Deactivate WebSocket path for the guard
-
-            auto& node = websocket_nodes_.emplace_back(DatagramNodeFactory::create_websocket(std::move(final_ws)));
-            node->start_receive_thread(500); 
-            return; 
-        } else {
-            #ifdef __EMSCRIPTEN__
-            static const auto headers = std::make_shared<std::vector<std::pair<std::string, std::string>>>(
-                std::vector<std::pair<std::string, std::string>>{
-                    {"Cross-Origin-Opener-Policy", "same-origin"},
-                    {"Cross-Origin-Embedder-Policy", "require-corp"}
-                });
-            #else
-            static const auto headers = std::make_shared<std::vector<std::pair<http::field, std::string>>>(
-                std::vector<std::pair<http::field, std::string>>{
-                    {http::field::cross_origin_opener_policy, "same-origin"},
-                    {http::field::cross_origin_embedder_policy, "require-corp"}
-                });
-            #endif
-
-            auto send_message = [&shared_socket](boost::beast::http::message_generator msg){
-                beast::error_code write_ec;
-                beast::write(*shared_socket, std::move(msg), write_ec);
-                if (write_ec.failed()) {
-                    lerr() << "Failure during send: " << write_ec.message();
-                }
-            };
-
-            bool keep_alive = req.keep_alive();
-            bool message_sent = false;
-            http::status status = http::status::not_found;
-            
-            auto url_res = boost::urls::parse_origin_form(req.target());
-            if (url_res.has_error()) {
-                lerr() << "URL parsing failed: " << url_res.error().message();
-                status = http::status::bad_request; 
-            } else {
-                RequestOverrides reo{headers, req, url_res->path(), concatenate(static_dir_, url_res->path()), std::nullopt};
-                for (const auto& g : response_generators_) {
-                    auto response = g->reply(reo);
-                    if (auto* message = std::get_if<http::message_generator>(&response)) {
-                        send_message(std::move(*message));
-                        message_sent = true;
-                        break; 
-                    }
-                    if (auto* s = std::get_if<http::status>(&response)) {
-                        status = *s;
-                        break;
-                    }
-                }
-            }
-
-            if (!message_sent) {
-                RequestOverrides reo{headers, req, "server/error.html", concatenate(static_dir_, "server", "error.html"), status};
-                auto response = error_generator_->reply(reo);
-                if (auto* message = std::get_if<http::message_generator>(&response)) {
-                    send_message(std::move(*message));
-                } else {
-                    lerr() << "Close after failed error handling";
-                    return;
-                }
-            }
-
-            if (!keep_alive) {
-                break; 
+            if (auto* s = std::get_if<http::status>(&response)) {
+                status = *s;
+                break;
             }
         }
     }
+
+    RequestOverrides reo{headers, req, "server/error.html", concatenate(static_dir_, "server", "error.html"), status};
+    auto response = error_generator_->reply(reo);
+    
+    if (auto* message = std::get_if<http::message_generator>(&response)) {
+        return std::move(*message);
+    } 
+
+    lerr() << "Close after failed error handling";
+    http::response<http::string_body> res{http::status::internal_server_error, req.version()};
+    res.set(http::field::content_type, "text/plain");
+    res.body() = "Internal Server Error";
+    res.prepare_payload();
+    return res;
+}
+
+void ConfigServer::handle_websocket_upgrade(
+    boost::beast::http::request<boost::beast::http::string_body> req,
+    boost::asio::ip::tcp::socket socket)
+{
+    linfo() << "Handle request to upgrade to websockets";
+
+    auto ws_stream = std::make_shared<websocket::stream<tcp::socket>>(std::move(socket));
+
+    ws_stream->async_accept(std::move(req), 
+        [this, ws_stream](beast::error_code ws_ec) {
+            if (ws_ec.failed()) {
+                lerr() << "Websocket async accept failed: " << ws_ec.message();
+                
+                // Explicitly close in case of an error
+                beast::error_code ec;
+                ws_stream->next_layer().shutdown(tcp::socket::shutdown_both, ec);
+                ws_stream->next_layer().close(ec);
+                return;
+            }
+
+            linfo() << "Websocket async accept successful";
+
+            // Success: Lock and add to nodes
+            std::scoped_lock lock{receive_mutex_};
+            
+            auto& node = websocket_nodes_.emplace_back(
+                DatagramNodeFactory::create_websocket(std::move(*ws_stream))
+            );
+            
+            node->start_receive_thread(500);
+        });
+}
+
+void ConfigServer::handle_session(tcp::socket socket) {
+    // This is non-blocking, so ioc.run() can process other sockets.
+    std::make_shared<HttpSession>(std::move(socket), *this)->run();
 }
 
 bool ConfigServer::application_should_exit() const {
@@ -283,8 +232,9 @@ void ConfigServer::notify_reload_required() {
 }
 
 void ConfigServer::wait_until_reload_required() const {
+    TerminationNotificationGuard tng{cv_};
     std::unique_lock lock{mutex_};
-    cv_.wait(lock, [this](){ return reload_required_; });
+    cv_.wait(lock, [this](){ return reload_required_ || unhandled_exceptions_occured(); });
 }
 
 std::shared_ptr<ISendSocket> ConfigServer::try_receive(std::ostream& ostr) {

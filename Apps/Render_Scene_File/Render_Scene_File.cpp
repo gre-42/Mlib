@@ -708,8 +708,9 @@ int main(int argc, char** argv) {
             window_user_object};
         MenuLogic menu_logic{menu_user_object};
         #else
-        Utf8Path static_dir = "static";
-        auto index_generator = std::make_shared<IndexHttpResponseGenerator>(static_dir);
+        Utf8Path private_dir = "private";
+        Utf8Path public_dir = "public";
+        auto index_generator = std::make_shared<IndexHttpResponseGenerator>(private_dir);
         auto static_generator = std::make_shared<StaticHttpResponseGenerator>();
         auto response_generators = std::vector<std::shared_ptr<IHttpResponseGenerator>>{
             index_generator,
@@ -721,7 +722,7 @@ int main(int argc, char** argv) {
                 args.named_svalue("--http_ip"),
                 safe_sto<uint16_t>(args.named_svalue("--http_port"))
             },
-            static_dir,
+            public_dir,
             std::move(response_generators),
             std::move(error_generator)};
         #endif
@@ -983,7 +984,7 @@ int main(int argc, char** argv) {
                 #endif
 
                 #ifdef WITHOUT_GRAPHICS
-                index_generator->clear_lists();
+                index_generator->clear_temporaries();
                 #endif
                 remote_sites.set_user_status(UserTypes::ALL_REMOTE, UserStatus::INITIAL);
                 remote_sites.set_user_status(UserTypes::ALL_LOCAL, UserStatus::LEVEL_LOADING);

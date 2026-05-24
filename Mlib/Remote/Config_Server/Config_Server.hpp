@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Memory/Dangling_List.hpp>
+#include <Mlib/Remote/Config_Server/IRequest_Handler.hpp>
 #include <Mlib/Remote/IReceive_Socket.hpp>
 #include <Mlib/Strings/Utf8_Path.hpp>
 #include <Mlib/Threads/Fast_Mutex.hpp>
@@ -18,7 +19,7 @@ class ISendSocket;
 class IDatagramNode;
 class IHttpResponseGenerator;
 
-class ConfigServer: public IReceiveSocket {
+class ConfigServer: public IReceiveSocket, public IRequestHandler {
 public:
     ConfigServer(
         const RemoteSocket& remote_socket,
@@ -29,7 +30,14 @@ public:
     bool application_should_exit() const;
     void notify_reload_required();
     void wait_until_reload_required() const;
+    // IReceiveSocket
     virtual std::shared_ptr<ISendSocket> try_receive(std::ostream& ostr) override;
+    // IRequestHandler
+    virtual boost::beast::http::message_generator handle_request(
+        boost::beast::http::request<boost::beast::http::string_body> req) override;
+    virtual void handle_websocket_upgrade(
+        boost::beast::http::request<boost::beast::http::string_body> req,
+        boost::asio::ip::tcp::socket socket) override;
 private:
     void handle_session(boost::asio::ip::tcp::socket socket);
     Utf8Path static_dir_;
@@ -42,6 +50,7 @@ private:
     mutable FastMutex receive_mutex_;
     std::list<std::shared_ptr<IDatagramNode>> websocket_nodes_;
     std::optional<DanglingList<IDatagramNode>> websocket_nodes_in_progress_;
+    boost::asio::io_context ioc_;
     JThread http_thread_;
 };
 

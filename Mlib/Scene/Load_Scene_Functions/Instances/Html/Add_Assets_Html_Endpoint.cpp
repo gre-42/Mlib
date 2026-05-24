@@ -12,12 +12,10 @@ using namespace Mlib;
 
 namespace KnownArgs {
 BEGIN_ARGUMENT_LIST;
-DECLARE_ARGUMENT(id);
-DECLARE_ARGUMENT(title);
-DECLARE_ARGUMENT(on_change);
+DECLARE_ARGUMENT(items_path);
+DECLARE_ARGUMENT(selection_path);
 DECLARE_ARGUMENT(assets);
-DECLARE_ARGUMENT(local_user_id);
-DECLARE_ARGUMENT(appearance);
+DECLARE_ARGUMENT(title);
 }
 
 namespace {
@@ -25,7 +23,7 @@ namespace {
 struct RegisterJsonUserFunction {
     RegisterJsonUserFunction() {
         LoadSceneFuncs::register_json_user_function(
-            "html_scene_selector",
+            "add_assets_html_endpoint",
             [](const LoadSceneJsonUserFunctionArgs& args)
             {
                 args.arguments.validate(KnownArgs::options);
@@ -38,6 +36,8 @@ struct RegisterJsonUserFunction {
                 }
                 scene_entries.sort();
                 args.index_html.add_list(
+                    args.arguments.at<std::string>(KnownArgs::items_path),
+                    args.arguments.at<std::string>(KnownArgs::selection_path),
                     args.arguments.at<std::string>(KnownArgs::title),
                     std::vector(scene_entries.begin(), scene_entries.end()),
                     args.macro_line_executor);
