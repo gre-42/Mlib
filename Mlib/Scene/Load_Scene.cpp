@@ -1,9 +1,11 @@
 #include "Load_Scene.hpp"
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Macro_Executor/Macro_Line_Executor.hpp>
+#include <Mlib/Remote/Remote_Params.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Load_Scene_Funcs.hpp>
 #include <Mlib/Scene/Physics_Scenes.hpp>
+#include <Mlib/Scene/Remote/Remote_Config.hpp>
 #ifndef WITHOUT_GRAPHICS
 #include <Mlib/Scene/Renderable_Scenes.hpp>
 #endif
@@ -27,10 +29,10 @@ LoadScene::LoadScene(
     AssetReferences& asset_references,
     Translators& translators,
     PhysicsScenes& physics_scenes,
+    ThreadSafePromise<void>& reload_requested,
     #ifdef WITHOUT_GRAPHICS
     IndexHttpResponseGenerator& index_html,
     #else
-    std::atomic_size_t& num_renderings,
     RealtimeDependentFps& render_set_fps,
     ButtonStates& button_states,
     CursorStates& cursor_states,
@@ -65,7 +67,6 @@ LoadScene::LoadScene(
             .arguments = arguments,
             .physics_scene = physics_scene,
             .macro_line_executor = macro_line_executor,
-            .scene_level_selector = scene_level_selector_,
             .external_json_macro_arguments = external_json_macro_arguments,
             .local_json_macro_arguments = local_json_macro_arguments,
             .surface_contact_db = surface_contact_db,
@@ -75,7 +76,8 @@ LoadScene::LoadScene(
             .users = users,
             .remote_config_and_sites = remote_config_and_sites,
             .script_filename = script_filename,
-            .next_scene_filename = next_scene_filename,
+            .scene_level_selector = scene_level_selector_,
+            .scene_reloader = scene_reloader_,
             .asset_references = asset_references,
             .translators = translators,
             .physics_scenes = physics_scenes,
@@ -83,7 +85,6 @@ LoadScene::LoadScene(
             .index_html = index_html,
             #else
             .layout_constraints = layout_constraints,
-            .num_renderings = num_renderings,
             .render_set_fps = render_set_fps,
             .renderable_scene = renderable_scene,
             .button_states = button_states,
@@ -123,6 +124,14 @@ LoadScene::LoadScene(
         [this](){
             macro_line_executor_({{"playback", "remote.level.load_" + scene_level_selector_.get_next_scene_name()}}, nullptr);
         }}
+    , scene_reloader_{
+        scene_level_selector_,
+        next_scene_filename,
+        reload_requested,
+        remote_config_and_sites.config.game.has_value()
+            ? std::optional{remote_config_and_sites.config.game->role}
+            : std::nullopt,
+        [&](){ return macro_line_executor_.at("selected_level_id"); }}
 {}
 
 LoadScene::~LoadScene() = default;

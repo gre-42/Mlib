@@ -16,6 +16,7 @@ DECLARE_ARGUMENT(comment);
 // Only macro
 DECLARE_ARGUMENT(content);
 // Macro and function
+DECLARE_ARGUMENT(else_);
 DECLARE_ARGUMENT(required);
 DECLARE_ARGUMENT(exclude);
 DECLARE_ARGUMENT(context);

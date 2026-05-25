@@ -10,6 +10,7 @@
 #include <Mlib/Remote/Sockets/Websocket.hpp>
 #include <Mlib/Strings/Base64.hpp>
 #include <Mlib/Threads/Termination_Manager.hpp>
+#include <Mlib/Threads/Thread_Safe_Promise.hpp>
 #include <boost/beast/core.hpp>
 #include <boost/beast/http.hpp>
 #include <boost/url/parse.hpp>
@@ -54,7 +55,6 @@ ConfigServer::ConfigServer(
     : static_dir_{std::move(static_dir)}
     , response_generators_{std::move(response_generators)}
     , error_generator_{std::move(error_generator)}
-    , reload_required_{false}
     , ioc_{1}
     , http_thread_{[this, remote_socket](){
         auto const address = asio::ip::make_address(remote_socket.hostname);
@@ -99,9 +99,7 @@ ConfigServer::ConfigServer(
             lerr() << "Unknown unhandled exception in configuration server";
             add_unhandled_exception(std::current_exception());
         }
-        
         linfo() << "Exit configuration server";
-        notify_reload_required();
     }}
 {
     cert_hash_ = []() -> std::string {
@@ -224,17 +222,6 @@ void ConfigServer::handle_session(tcp::socket socket) {
 
 bool ConfigServer::application_should_exit() const {
     return false;
-}
-
-void ConfigServer::notify_reload_required() {
-    reload_required_ = true;
-    cv_.notify_all();
-}
-
-void ConfigServer::wait_until_reload_required() const {
-    TerminationNotificationGuard tng{cv_};
-    std::unique_lock lock{mutex_};
-    cv_.wait(lock, [this](){ return reload_required_ || unhandled_exceptions_occured(); });
 }
 
 std::shared_ptr<ISendSocket> ConfigServer::try_receive(std::ostream& ostr) {

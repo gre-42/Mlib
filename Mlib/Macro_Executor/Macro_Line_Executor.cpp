@@ -257,7 +257,7 @@ void MacroLineExecutor::operator () (
             }
             throw std::runtime_error(msg.str());
         }
-        if (include) {
+        if (include || jv.contains(MacroKeys::else_)) {
             std::string context;
             if (auto c = jv.try_at<std::string>(MacroKeys::context); c.has_value()) {
                 context = Mlib::eval<std::string>(*c, global_args, merged_args, asset_references_);
@@ -285,6 +285,9 @@ void MacroLineExecutor::operator () (
             // BENCHMARK times.emplace_back("subst", ot.elapsed());
             auto jv = JsonView{ j };
             if (jv.contains(MacroKeys::playback)) {
+                if (jv.contains(MacroKeys::else_)) {
+                    throw std::runtime_error("\"else_\" not supported for \"playback\"");
+                }
                 if (jv.contains(MacroKeys::with)) {
                     std::stringstream msg;
                     msg << "\"with\" not supported for \"playback\": " << std::setw(2) << j;
@@ -341,6 +344,9 @@ void MacroLineExecutor::operator () (
                     throw std::runtime_error(msg.str());
                 }
             } else if (jv.contains(MacroKeys::call)) {
+                if (jv.contains(MacroKeys::else_)) {
+                    throw std::runtime_error("\"else_\" not supported for \"call\"");
+                }
                 if (jv.contains(MacroKeys::with)) {
                     std::stringstream msg;
                     msg << "\"with\" not supported for \"call\": " << std::setw(2) << j;
@@ -413,8 +419,15 @@ void MacroLineExecutor::operator () (
                 }
                 auto mle2 = changed_context(context, let.json());
                 // BENCHMARK times.emplace_back("execute fork", ot.elapsed());
-                mle2(jv.at(MacroKeys::execute), nullptr);
+                if (include) {
+                    mle2(jv.at(MacroKeys::execute), nullptr);
+                } else {
+                    mle2(jv.at(MacroKeys::else_), nullptr);
+                }
             } else if (jv.contains(MacroKeys::include)) {
+                if (jv.contains(MacroKeys::else_)) {
+                    throw std::runtime_error("\"else_\" not supported for \"include\"");
+                }
                 if (jv.contains(MacroKeys::with)) {
                     std::stringstream msg;
                     msg << "\"with\" not supported for \"include\": " << std::setw(2) << j;
@@ -434,6 +447,9 @@ void MacroLineExecutor::operator () (
                 // BENCHMARK times.emplace_back("include fork", ot.elapsed());
                 macro_recorder_(mle2);
             } else if (jv.contains(MacroKeys::declare_macro)) {
+                if (jv.contains(MacroKeys::else_)) {
+                    throw std::runtime_error("\"else_\" not supported for \"declare_macro\"");
+                }
                 if (jv.contains(MacroKeys::without)) {
                     std::stringstream msg;
                     msg << "\"without\" not supported for \"declare_macro\": " << std::setw(2) << j;

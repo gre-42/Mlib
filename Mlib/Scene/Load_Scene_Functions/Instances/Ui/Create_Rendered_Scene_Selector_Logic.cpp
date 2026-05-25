@@ -50,7 +50,7 @@ CreateRenderedSceneSelectorLogic::CreateRenderedSceneSelectorLogic(RenderableSce
 void CreateRenderedSceneSelectorLogic::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     args.arguments.validate(KnownArgs::options);
-    std::list<SceneEntry> scene_entries;
+    std::list<ReplacementParameterAndFilename> scene_entries;
     for (const auto& [_, rpe] : args.asset_references[args.arguments.at<std::string>(KnownArgs::assets)]) {
         scene_entries.emplace_back(rpe);
     }
@@ -73,7 +73,7 @@ void CreateRenderedSceneSelectorLogic::execute(const LoadSceneJsonUserFunctionAr
     auto& scene_selector_logic = object_pool.create<SceneSelectorLogic>(
         CURRENT_SOURCE_LOCATION,
         std::move(id),
-        std::vector<SceneEntry>{scene_entries.begin(), scene_entries.end()},
+        std::vector<ReplacementParameterAndFilename>{scene_entries.begin(), scene_entries.end()},
         appearance.at<std::string>(AppearanceArgs::charset),
         args.arguments.path(AppearanceArgs::ttf_file),
         std::make_unique<Widget>(
@@ -86,7 +86,7 @@ void CreateRenderedSceneSelectorLogic::execute(const LoadSceneJsonUserFunctionAr
         args.layout_constraints.get_pixels(appearance.at<std::string>(AppearanceArgs::line_distance)),
         focus_filter,
         std::make_unique<ExpressionWatcher>(args.macro_line_executor),
-        args.next_scene_filename,
+        args.scene_reloader,
         args.scene_level_selector,
         args.button_states,
         ui_focus,

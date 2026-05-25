@@ -1,5 +1,6 @@
 #include "Termination_Manager.hpp"
 #include <Mlib/Os/Os.hpp>
+#include <Mlib/Threads/Thread_Safe_Promise.hpp>
 #include <csignal>
 #include <list>
 #include <mutex>
@@ -11,8 +12,11 @@ using namespace Mlib;
 static std::list<std::exception_ptr> unhandled_exceptions;
 static std::shared_mutex unhandled_exceptions_mutex;
 
-static std::unordered_set<std::condition_variable*> exception_observers;
-static std::mutex exception_observers_mutex;
+static std::unordered_set<std::condition_variable*> exception_observers_cv;
+static std::mutex exception_observers_cv_mutex;
+
+static std::unordered_set<ThreadSafePromise<void>*> exception_observers_promise;
+static std::mutex exception_observers_promise_mutex;
 
 void Mlib::add_unhandled_exception(std::exception_ptr ptr) {
     {
@@ -20,9 +24,15 @@ void Mlib::add_unhandled_exception(std::exception_ptr ptr) {
         unhandled_exceptions.push_back(ptr);
     }
     {
-        std::scoped_lock lock{exception_observers_mutex};
-        for (auto& cv : exception_observers) {
+        std::scoped_lock lock{exception_observers_cv_mutex};
+        for (auto& cv : exception_observers_cv) {
             cv->notify_all();
+        }
+    }
+    {
+        std::scoped_lock lock{exception_observers_promise_mutex};
+        for (auto& promise : exception_observers_promise) {
+            promise->set();
         }
     }
 }
@@ -75,18 +85,36 @@ void Mlib::convert_sigterm_to_exception() {
     std::signal(SIGTERM, signal_handler);
 }
 
-TerminationNotificationGuard::TerminationNotificationGuard(std::condition_variable& cv)
+TerminationNotificationGuardCv::TerminationNotificationGuardCv(std::condition_variable& cv)
     : cv_{cv}
 {
-    std::scoped_lock lock{exception_observers_mutex};
-    if (!exception_observers.insert(&cv).second) {
+    std::scoped_lock lock{exception_observers_cv_mutex};
+    if (!exception_observers_cv.insert(&cv).second) {
         throw std::runtime_error("Condition variable already registered");
     }
 }
 
-TerminationNotificationGuard::~TerminationNotificationGuard() {
-    std::scoped_lock lock{exception_observers_mutex};
-    if (exception_observers.erase(&cv_) != 1) {
+TerminationNotificationGuardCv::~TerminationNotificationGuardCv() {
+    std::scoped_lock lock{exception_observers_cv_mutex};
+    if (exception_observers_cv.erase(&cv_) != 1) {
         verbose_abort("Could not find condition variable to be removed");
+    }
+}
+
+
+TerminationNotificationGuardPromise::TerminationNotificationGuardPromise(
+    ThreadSafePromise<void>& promise)
+    : promise_{promise}
+{
+    std::scoped_lock lock{exception_observers_promise_mutex};
+    if (!exception_observers_promise.insert(&promise).second) {
+        throw std::runtime_error("Promise already registered");
+    }
+}
+
+TerminationNotificationGuardPromise::~TerminationNotificationGuardPromise() {
+    std::scoped_lock lock{exception_observers_promise_mutex};
+    if (exception_observers_promise.erase(&promise_) != 1) {
+        verbose_abort("Could not find promise to be removed");
     }
 }

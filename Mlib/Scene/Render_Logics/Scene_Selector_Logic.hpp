@@ -16,7 +16,7 @@ template <class T>
 class VariableAndHash;
 class UiFocus;
 class ButtonStates;
-class ThreadSafeString;
+class SceneReloader;
 class IWidget;
 class ILayoutPixels;
 struct ReplacementParameterAndFilename;
@@ -25,33 +25,19 @@ template <typename TData, size_t... tshape>
 class FixedArray;
 class ExpressionWatcher;
 class JsonView;
-class SceneLevelSelector;
-
-class SceneEntry {
-public:
-    explicit SceneEntry(const ReplacementParameterAndFilename& rpe);
-    const std::string& id() const;
-    const std::string& name() const;
-    const std::string& filename() const;
-    const nlohmann::json& on_before_select() const;
-    const ReplacementParameterRequired& required() const;
-    JsonView locals() const;
-    bool operator < (const SceneEntry& other) const;
-private:
-    const ReplacementParameterAndFilename& rpe_;
-};
+class SceneReloader;
 
 class SceneEntryContents: public IListViewContents {
 public:
     explicit SceneEntryContents(
-        const std::vector<SceneEntry>& scene_entries,
+        const std::vector<ReplacementParameterAndFilename>& scene_entries,
         const ExpressionWatcher& ew);
 
     // IListViewContents
     virtual size_t num_entries() const override;
     virtual bool is_visible(size_t index) const override;
 private:
-    const std::vector<SceneEntry>& scene_entries_;
+    const std::vector<ReplacementParameterAndFilename>& scene_entries_;
     const ExpressionWatcher& ew_;
 };
 
@@ -59,7 +45,7 @@ class SceneSelectorLogic: public RenderLogic {
 public:
     SceneSelectorLogic(
         std::string id,
-        std::vector<SceneEntry> scene_files,
+        std::vector<ReplacementParameterAndFilename> scene_files,
         std::string charset,
         std::string ttf_filename,
         std::unique_ptr<IWidget>&& widget,
@@ -68,8 +54,7 @@ public:
         const ILayoutPixels& line_distance,
         FocusFilter focus_filter,
         std::unique_ptr<ExpressionWatcher>&& ew,
-        ThreadSafeString& next_scene_filename,
-        SceneLevelSelector& scene_level_selector,
+        SceneReloader& scene_reloader,
         ButtonStates& button_states,
         UiFocus& ui_focus,
         uint32_t local_user_id,
@@ -97,7 +82,7 @@ private:
     std::string charset_;
     std::string globals_prefix_;
     std::unique_ptr<TextResource> renderable_text_;
-    std::vector<SceneEntry> scene_files_;
+    std::vector<ReplacementParameterAndFilename> scene_files_;
     std::vector<std::string> scene_titles_;
     SceneEntryContents contents_;
     std::unique_ptr<IWidget> widget_;
@@ -106,8 +91,6 @@ private:
     FocusFilter focus_filter_;
     UiFocus& ui_focus_;
     std::string id_;
-    ThreadSafeString& next_scene_filename_;
-    SceneLevelSelector& scene_level_selector_;
     ListView list_view_;
     JsonMacroArgumentsObserverToken ot_;
 };

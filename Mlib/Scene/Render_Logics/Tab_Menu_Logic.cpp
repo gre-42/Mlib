@@ -64,7 +64,6 @@ TabMenuLogic::TabMenuLogic(
     const AssetReferences& asset_references,
     std::unique_ptr<ExpressionWatcher>&& ew,
     UiFocus& ui_focus,
-    std::atomic_size_t& num_renderings,
     ButtonStates& button_states,
     uint32_t user_id,
     std::function<void()> reload_transient_objects,
@@ -91,7 +90,6 @@ TabMenuLogic::TabMenuLogic(
     , widget_{ std::move(widget) }
     , font_height_{ font_height }
     , line_distance_{ line_distance }
-    , num_renderings_{ num_renderings }
     , on_execute_{ std::move(reload_transient_objects) }
     , list_view_{
         "id = " + id_,

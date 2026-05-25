@@ -92,7 +92,6 @@ void CreateTabMenuLogic::execute(const LoadSceneJsonUserFunctionArgs& args)
         args.asset_references,
         std::make_unique<ExpressionWatcher>(args.macro_line_executor),
         ui_focus,
-        args.num_renderings,
         args.button_states,
         local_user_id,
         on_execute);

@@ -182,16 +182,16 @@ IHttpResponseGenerator::ResponseVariant IndexHttpResponseGenerator::reply_with_f
 void IndexHttpResponseGenerator::clear_temporaries() {
     std::scoped_lock lock{mutex_};
     while (!list_paths_.empty()) {
-        if (!responders_.erase(list_paths_.back()->items_path)) {
+        if (!responders_.erase('/' + list_paths_.back()->items_path)) {
             verbose_abort("Could not erase items endpoint");
         }
-        if (!responders_.erase(list_paths_.back()->selection_path)) {
+        if (!responders_.erase('/' + list_paths_.back()->selection_path)) {
             verbose_abort("Could not erase selection endpoint");
         }
         list_paths_.pop_back();
     }
     while (!function_pathes_.empty()) {
-        if (!responders_.erase(function_pathes_.back())) {
+        if (!responders_.erase('/' + function_pathes_.back())) {
             verbose_abort("Could not erase function endpoint");
         }
         function_pathes_.pop_back();
@@ -214,6 +214,9 @@ void IndexHttpResponseGenerator::add_list(
     }
     if (responders_.contains(selection_path2)) {
         throw std::runtime_error("Endpoint with name \"" + selection_path2 + "\" already exists");
+    }
+    if (items_path == selection_path) {
+        throw std::runtime_error("Endpoints have the same name: \"" + items_path + '"');
     }
     std::vector<ReplacementParameterAndFilename> filtered_list;
     filtered_list.reserve(items.size());
@@ -256,4 +259,5 @@ void IndexHttpResponseGenerator::add_function(
     {
         throw std::runtime_error("Endpoint with name \"" + path + "\" already exists");
     }
+    function_pathes_.push_back(path);
 }

@@ -22,6 +22,7 @@
 #include <Mlib/Threads/Termination_Manager.hpp>
 #include <Mlib/Threads/Thread_Affinity.hpp>
 #include <Mlib/Threads/Thread_Initializer.hpp>
+#include <Mlib/Threads/Thread_Safe_Promise.hpp>
 #include <Mlib/Time/Fps/Lag_Finder.hpp>
 #include <Mlib/Time/Fps/Set_Fps.hpp>
 #include <Mlib/Time/Sleep.hpp>
@@ -37,6 +38,7 @@ Renderer::Renderer(
     const RenderConfig& render_config,
     const InputConfig& input_config,
     std::atomic_size_t& num_renderings,
+    ThreadSafePromise<void>& reload_requested,
     SetFps& set_fps,
     std::function<std::chrono::steady_clock::time_point()> frame_time,
     RenderResults* render_results)
@@ -44,6 +46,7 @@ Renderer::Renderer(
     , render_config_{ render_config }
     , input_config_{ input_config }
     , num_renderings_{ num_renderings }
+    , reload_requested_{ reload_requested }
     , render_results_{ render_results }
     , set_fps_{ set_fps }
     , frame_time_{ std::move(frame_time) }
@@ -253,6 +256,7 @@ bool Renderer::continue_rendering() const {
     return
         !window_.close_requested() &&
         (num_renderings_ != 0) &&
+        !reload_requested_.fulfilled() &&
         !unhandled_exceptions_occured();
 }
 

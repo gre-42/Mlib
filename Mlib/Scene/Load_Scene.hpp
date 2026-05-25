@@ -5,8 +5,8 @@
 #include <Mlib/OpenGL/Key_Bindings/Lockable_Key_Configurations_Fwd.hpp>
 #include <Mlib/OpenGL/Key_Bindings/Lockable_Key_Descriptions_Fwd.hpp>
 #include <Mlib/Remote/Incremental_Objects/Scene_Level.hpp>
+#include <Mlib/Scene/Scene_Reloader.hpp>
 #include <Mlib/Strings/Utf8_Path.hpp>
-#include <atomic>
 #include <functional>
 
 namespace Mlib {
@@ -55,10 +55,10 @@ public:
         AssetReferences& asset_references,
         Translators& translators,
         PhysicsScenes& physics_scenes,
+        ThreadSafePromise<void>& reload_requested,
         #ifdef WITHOUT_GRAPHICS
         IndexHttpResponseGenerator& index_html,
         #else
-        std::atomic_size_t& num_renderings,
         RealtimeDependentFps& render_set_fps,
         ButtonStates& button_states,
         CursorStates& cursor_states,
@@ -86,6 +86,7 @@ private:
     FocusFinalizer focus_finalizer_;
     #endif
     SceneLevelSelector scene_level_selector_;
+    SceneReloader scene_reloader_;
 };
 
 }

@@ -2,7 +2,8 @@
 #include <Mlib/Misc/Argument_List.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Load_Scene_Funcs.hpp>
-#include <Mlib/Threads/Containers/Thread_Safe_String.hpp>
+#include <Mlib/Scene/Scene_Reloader.hpp>
+#include <Mlib/Threads/Thread_Safe_Promise.hpp>
 
 using namespace Mlib;
 
@@ -20,10 +21,7 @@ struct RegisterJsonUserFunction {
             [](const LoadSceneJsonUserFunctionArgs& args)
             {
                 args.arguments.validate(KnownArgs::options);
-                args.next_scene_filename = args.arguments.at<std::string>(KnownArgs::filename);
-                #ifndef WITHOUT_GRAPHICS
-                args.num_renderings = 0;
-                #endif
+                args.scene_reloader.load_scene_by_filename(args.arguments.at<std::string>(KnownArgs::filename));
             });
     }
 } obj;

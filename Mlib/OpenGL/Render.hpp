@@ -29,6 +29,9 @@ struct RenderConfig;
 struct InputConfig;
 class SetFps;
 
+template <class T>
+class ThreadSafePromise;
+
 template <typename TData, size_t... tshape>
 class FixedArray;
 
@@ -48,7 +51,7 @@ public:
 
     void print_hardware_info(std::ostream& ostr) const;
 
-    Renderer generate_renderer() const;
+    Renderer generate_renderer(ThreadSafePromise<void>& reload_requested) const;
 
     void render(
         RenderLogic& logic,

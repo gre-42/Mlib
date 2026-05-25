@@ -6,7 +6,6 @@
 #include <Mlib/Threads/Fast_Mutex.hpp>
 #include <Mlib/Threads/J_Thread.hpp>
 #include <boost/asio/ip/tcp.hpp>
-#include <condition_variable>
 #include <memory>
 #include <mutex>
 #include <optional>
@@ -28,8 +27,6 @@ public:
         std::shared_ptr<IHttpResponseGenerator> error_generator);
     ~ConfigServer();
     bool application_should_exit() const;
-    void notify_reload_required();
-    void wait_until_reload_required() const;
     // IReceiveSocket
     virtual std::shared_ptr<ISendSocket> try_receive(std::ostream& ostr) override;
     // IRequestHandler
@@ -44,9 +41,7 @@ private:
     std::vector<std::shared_ptr<IHttpResponseGenerator>> response_generators_;
     std::shared_ptr<IHttpResponseGenerator> error_generator_;
     std::string cert_hash_;
-    bool reload_required_;
     mutable std::mutex mutex_;
-    mutable std::condition_variable cv_;
     mutable FastMutex receive_mutex_;
     std::list<std::shared_ptr<IDatagramNode>> websocket_nodes_;
     std::optional<DanglingList<IDatagramNode>> websocket_nodes_in_progress_;

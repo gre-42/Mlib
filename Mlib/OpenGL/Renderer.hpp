@@ -21,6 +21,8 @@ struct RenderConfig;
 template <typename TData, size_t... tshape>
 class FixedArray;
 struct InputConfig;
+template <class T>
+class ThreadSafePromise;
 
 class Renderer {
     friend void handle_events(
@@ -37,6 +39,7 @@ public:
         const RenderConfig& render_config,
         const InputConfig& input_config,
         std::atomic_size_t& num_renderings,
+        ThreadSafePromise<void>& reload_requested,
         SetFps& set_fps,
         std::function<std::chrono::steady_clock::time_point()> frame_time,
         RenderResults* render_results);
@@ -58,6 +61,7 @@ private:
     const RenderConfig& render_config_;
     const InputConfig& input_config_;
     std::atomic_size_t& num_renderings_;
+    ThreadSafePromise<void>& reload_requested_;
     RenderResults* render_results_;
     SetFps& set_fps_;
     std::function<std::chrono::steady_clock::time_point()> frame_time_;

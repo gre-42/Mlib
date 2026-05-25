@@ -5,6 +5,9 @@
 
 namespace Mlib {
 
+template <class T>
+class ThreadSafePromise;
+
 void add_unhandled_exception(std::exception_ptr ptr);
 
 bool unhandled_exceptions_occured();
@@ -13,12 +16,21 @@ void print_unhandled_exceptions();
 void print_unhandled_exceptions(std::ostream& ostr);
 void convert_sigterm_to_exception();
 
-class TerminationNotificationGuard {
+class TerminationNotificationGuardCv {
 public:
-    explicit TerminationNotificationGuard(std::condition_variable& cv);
-    ~TerminationNotificationGuard();
+    explicit TerminationNotificationGuardCv(std::condition_variable& cv);
+    ~TerminationNotificationGuardCv();
 private:
     std::condition_variable& cv_;
+};
+
+class TerminationNotificationGuardPromise {
+public:
+    explicit TerminationNotificationGuardPromise(
+        ThreadSafePromise<void>& promise);
+    ~TerminationNotificationGuardPromise();
+private:
+    ThreadSafePromise<void>& promise_;
 };
 
 }

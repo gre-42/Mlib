@@ -51,14 +51,20 @@ std::string SceneLevelSelector::get_next_scene_name() const {
 
 void SceneLevelSelector::server_set_next_scene_level(std::string level) {
     std::scoped_lock lock{ mutex_ };
+    if (!on_schedule_load_scene_) {
+        throw std::runtime_error("on_schedule_load_scene not set in server");
+    }
     next_scene_level_.name = std::move(level);
     next_scene_level_.reload_count = local_scene_level_.reload_count + 1;
+    if (on_schedule_load_scene_) {
+        on_schedule_load_scene_();
+    }
 }
 
 void SceneLevelSelector::client_schedule_load_scene_level(LocalSceneLevel level) {
     std::scoped_lock lock{ mutex_ };
     if (!on_schedule_load_scene_) {
-        throw std::runtime_error("on_schedule_load_scene not set");
+        throw std::runtime_error("on_schedule_load_scene not set in client");
     }
     next_scene_level_ = std::move(level);
     if (on_schedule_load_scene_) {

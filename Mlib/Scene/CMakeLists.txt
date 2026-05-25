@@ -87,7 +87,6 @@ if (NOT BUILD_GRAPHICS)
         "/Default_Persistent.cpp$"
         "/Persisted_Globals.cpp$"
         "/Clear_Selection_Ids.cpp$"
-        "/Reload_Scene.cpp$"
         )
 endif()
 

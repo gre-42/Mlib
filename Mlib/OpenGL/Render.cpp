@@ -22,6 +22,7 @@
 #include <Mlib/Scene_Graph/Elements/Rendering_Strategies.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Testing/Assert.hpp>
+#include <Mlib/Threads/Thread_Safe_Promise.hpp>
 #include <stdexcept>
 
 #if !defined(__ANDROID__) && !defined(__EMSCRIPTEN__)
@@ -119,9 +120,18 @@ void Render::print_hardware_info(std::ostream& ostr) const {
 // #endif
 }
 
-Renderer Render::generate_renderer() const
+Renderer Render::generate_renderer(ThreadSafePromise<void>& reload_requested) const
 {
-    return Renderer{ *window_, render_config_, input_config_, num_renderings_, set_fps_, frame_time_, render_results_ };
+    return Renderer{
+        *window_,
+        render_config_,
+        input_config_,
+        num_renderings_,
+        reload_requested,
+        set_fps_,
+        frame_time_,
+        render_results_
+    };
 }
 
 void Render::render(
@@ -133,7 +143,8 @@ void Render::render(
     CursorStates* cursor_states,
     CursorStates* scroll_wheel_states) const
 {
-    generate_renderer().render_and_handle_events(
+    ThreadSafePromise<void> reload_requested;
+    generate_renderer(reload_requested).render_and_handle_events(
         logic,
         event_callback,
         scene_graph_config,

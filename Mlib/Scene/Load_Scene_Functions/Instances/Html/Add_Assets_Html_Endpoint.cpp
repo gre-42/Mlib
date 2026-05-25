@@ -27,19 +27,23 @@ struct RegisterJsonUserFunction {
             [](const LoadSceneJsonUserFunctionArgs& args)
             {
                 args.arguments.validate(KnownArgs::options);
-                std::list<ReplacementParameterAndFilename> scene_entries;
+                std::list<ReplacementParameterAndFilename> entries;
                 for (const auto& [_, rpe] : args.asset_references[args.arguments.at<std::string>(KnownArgs::assets)]) {
-                    scene_entries.emplace_back(rpe);
+                    entries.emplace_back(rpe);
                 }
-                if (scene_entries.empty()) {
-                    throw std::runtime_error("Could not find a single scene file");
+                if (entries.empty()) {
+                    throw std::runtime_error(
+                        "Could not find a single \"" +
+                        args.arguments.at<std::string>(KnownArgs::assets) +
+                        "\" *_manifest.json file in path \"" +
+                        args.arguments.at<std::string>(KnownArgs::items_path) + '"');
                 }
-                scene_entries.sort();
+                entries.sort();
                 args.index_html.add_list(
                     args.arguments.at<std::string>(KnownArgs::items_path),
                     args.arguments.at<std::string>(KnownArgs::selection_path),
                     args.arguments.at<std::string>(KnownArgs::title),
-                    std::vector(scene_entries.begin(), scene_entries.end()),
+                    std::vector(entries.begin(), entries.end()),
                     args.macro_line_executor);
             });
     }

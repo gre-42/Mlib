@@ -37,6 +37,7 @@
 #include <Mlib/Threads/Termination_Manager.hpp>
 #include <Mlib/Threads/Thread_Affinity.hpp>
 #include <Mlib/Threads/Thread_Initializer.hpp>
+#include <Mlib/Threads/Thread_Safe_Promise.hpp>
 #include <Mlib/Time/Fps/Realtime_Dependent_Fps.hpp>
 #include <Mlib/Time/Time_And_Pause.hpp>
 #include <filesystem>
@@ -873,6 +874,8 @@ int main(int argc, char** argv) {
             #endif
             !unhandled_exceptions_occured())
         {
+            ThreadSafePromise<void> reload_requested;
+            TerminationNotificationGuardPromise tngp{reload_requested};
             #ifndef WITHOUT_GRAPHICS
             num_renderings = args_num_renderings;
             ui_focuses.clear();
@@ -1004,10 +1007,10 @@ int main(int argc, char** argv) {
                     asset_references,
                     translators,
                     physics_scenes,
+                    reload_requested,
                     #ifdef WITHOUT_GRAPHICS
                     *index_generator,
                     #else
-                    num_renderings,
                     render_set_fps,
                     button_states,
                     cursor_states,
@@ -1027,7 +1030,7 @@ int main(int argc, char** argv) {
                 std::unique_ptr<Renderer> renderer;
                 std::unique_ptr<JThread> render_future;
                 if (!args.has_named("--no_render")) {
-                    renderer = std::make_unique<Renderer>(render.generate_renderer());
+                    renderer = std::make_unique<Renderer>(render.generate_renderer(reload_requested));
                     render_future = render_thread(
                         args,
                         button_states,
@@ -1078,7 +1081,7 @@ int main(int argc, char** argv) {
                         [&window_logic](){ window_logic.handle_events(); });
                     #else
                     linfo() << "Wait until reload required";
-                    config_server.wait_until_reload_required();
+                    reload_requested.get();
                     linfo() << "Finished waiting until reload required";
                     #endif
                 } catch (...) {
@@ -1093,8 +1096,10 @@ int main(int argc, char** argv) {
             ui_focuses.clear_focuses();
             #endif
             if (auto s = (std::string)next_scene_filename; !s.empty()) {
+                linfo() << "Setting scene filename: \"" << s << '"';
                 main_scene_filename = s;
             } else {
+                linfo() << "Setting initial scene filename: \"" << initial_main_scene_filename << '"';
                 main_scene_filename = initial_main_scene_filename;
             }
         }

@@ -25,7 +25,6 @@ class RenderableScenes;
 class SurfaceContactDb;
 class BulletPropertyDb;
 class DynamicLightDb;
-class ThreadSafeString;
 struct SceneConfig;
 class ButtonStates;
 class CursorStates;
@@ -36,6 +35,7 @@ class Translators;
 struct RealtimeDependentFps;
 class WindowLogic;
 class SceneLevelSelector;
+class SceneReloader;
 class IndexHttpResponseGenerator;
 
 struct LoadSceneJsonUserFunctionArgs {
@@ -43,7 +43,6 @@ struct LoadSceneJsonUserFunctionArgs {
     const JsonMacroArguments& arguments;
     const std::function<PhysicsScene&()>& physics_scene;
     const MacroLineExecutor& macro_line_executor;
-    SceneLevelSelector& scene_level_selector;
     NotifyingJsonMacroArguments& external_json_macro_arguments;
     JsonMacroArguments* local_json_macro_arguments;
     SurfaceContactDb& surface_contact_db;
@@ -53,7 +52,8 @@ struct LoadSceneJsonUserFunctionArgs {
     Users& users;
     RemoteConfigAndSites& remote_config_and_sites;
     const std::string& script_filename;
-    ThreadSafeString& next_scene_filename;
+    SceneLevelSelector& scene_level_selector;
+    SceneReloader& scene_reloader;
     AssetReferences& asset_references;
     Translators& translators;
     PhysicsScenes& physics_scenes;
@@ -61,7 +61,6 @@ struct LoadSceneJsonUserFunctionArgs {
     IndexHttpResponseGenerator& index_html;
     #else
     LayoutConstraints& layout_constraints;
-    std::atomic_size_t& num_renderings;
     RealtimeDependentFps& render_set_fps;
     const std::function<RenderableScene&()>& renderable_scene;
     ButtonStates& button_states;

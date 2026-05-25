@@ -5,7 +5,6 @@
 #include <Mlib/OpenGL/Render_Logic.hpp>
 #include <Mlib/OpenGL/Ui/IList_View_Contents.hpp>
 #include <Mlib/OpenGL/Ui/List_View.hpp>
-#include <atomic>
 #include <cstddef>
 #include <cstdint>
 #include <functional>
@@ -63,7 +62,6 @@ public:
         const AssetReferences& asset_references,
         std::unique_ptr<ExpressionWatcher>&& ew,
         UiFocus& ui_focus,
-        std::atomic_size_t& num_renderings,
         ButtonStates& button_states,
         uint32_t user_id,
         std::function<void()> on_execute,
@@ -108,7 +106,6 @@ private:
     std::unordered_map<size_t, std::unique_ptr<TextResource>> title_resources_;
     const ILayoutPixels& font_height_;
     const ILayoutPixels& line_distance_;
-    std::atomic_size_t& num_renderings_;
     std::function<void()> on_execute_;
     ListView list_view_;
     JsonMacroArgumentsObserverToken ot_;

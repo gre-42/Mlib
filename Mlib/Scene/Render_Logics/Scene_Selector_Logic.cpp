@@ -15,44 +15,12 @@
 #include <Mlib/OpenGL/Ui/List_View_Orientation.hpp>
 #include <Mlib/OpenGL/Ui/List_View_String_Drawer.hpp>
 #include <Mlib/Remote/Incremental_Objects/Scene_Level.hpp>
-#include <Mlib/Threads/Containers/Thread_Safe_String.hpp>
+#include <Mlib/Scene/Scene_Reloader.hpp>
 
 using namespace Mlib;
 
-SceneEntry::SceneEntry(const ReplacementParameterAndFilename& rpe)
-    : rpe_{ rpe }
-{}
-
-const std::string& SceneEntry::id() const {
-    return rpe_.rp.id;
-}
-
-const std::string& SceneEntry::name() const {
-    return rpe_.rp.title;
-}
-
-const std::string& SceneEntry::filename() const {
-    return rpe_.filename;
-}
-
-const nlohmann::json& SceneEntry::on_before_select() const {
-    return rpe_.rp.on_before_select;
-}
-
-JsonView SceneEntry::locals() const {
-    return JsonView{ rpe_.rp.database };
-}
-
-const ReplacementParameterRequired& SceneEntry::required() const {
-    return rpe_.rp.required;
-}
-
-bool SceneEntry::operator < (const SceneEntry& other) const {
-    return rpe_ < other.rpe_;
-}
-
 SceneEntryContents::SceneEntryContents(
-    const std::vector<SceneEntry>& scene_entries,
+    const std::vector<ReplacementParameterAndFilename>& scene_entries,
     const ExpressionWatcher& ew)
     : scene_entries_{scene_entries}
     , ew_{ew}
@@ -65,15 +33,15 @@ size_t SceneEntryContents::num_entries() const {
 bool SceneEntryContents::is_visible(size_t index) const {
     const auto& entry = scene_entries_.at(index);
     try {
-        return ew_.eval(entry.required().dynamic, entry.locals());
+        return ew_.eval(entry.rp.required.dynamic, entry.rp.database);
     } catch (const std::runtime_error& e) {
-        throw std::runtime_error("Could not evaluate dynamic visibility expression of entry \"" + entry.id() + "\": " + e.what());
+        throw std::runtime_error("Could not evaluate dynamic visibility expression of entry \"" + entry.rp.id + "\": " + e.what());
     }
 }
 
 SceneSelectorLogic::SceneSelectorLogic(
     std::string id,
-    std::vector<SceneEntry> scene_files,
+    std::vector<ReplacementParameterAndFilename> scene_files,
     std::string charset,
     std::string ttf_filename,
     std::unique_ptr<IWidget>&& widget,
@@ -82,8 +50,7 @@ SceneSelectorLogic::SceneSelectorLogic(
     const ILayoutPixels& line_distance,
     FocusFilter focus_filter,
     std::unique_ptr<ExpressionWatcher>&& ew,
-    ThreadSafeString& next_scene_filename,
-    SceneLevelSelector& scene_level_selector,
+    SceneReloader& scene_reloader,
     ButtonStates& button_states,
     UiFocus& ui_focus,
     uint32_t local_user_id,
@@ -102,8 +69,6 @@ SceneSelectorLogic::SceneSelectorLogic(
     , focus_filter_{ std::move(focus_filter) }
     , ui_focus_{ ui_focus }
     , id_{ std::move(id) }
-    , next_scene_filename_{ next_scene_filename }
-    , scene_level_selector_{ scene_level_selector }
     , list_view_{
         "id = " + id_,
         button_states,
@@ -112,10 +77,9 @@ SceneSelectorLogic::SceneSelectorLogic(
         ListViewOrientation::VERTICAL,
         ui_focus,
         local_user_id,
-        [this, oc = std::move(on_change)]() {
+        [this, oc = std::move(on_change), sr = &scene_reloader]() {
             const auto& entry = scene_files_.at(list_view_.selected_element());
-            next_scene_filename_ = entry.filename();
-            scene_level_selector_.server_set_next_scene_level(entry.id());
+            sr->set_next_scene_by_manifest(entry);
             merge_substitutions();
             oc();
         } }
@@ -150,7 +114,7 @@ void SceneSelectorLogic::render_without_setup(
     auto ew = widget_->evaluate(lx, ly, YOrientation::AS_IS, RegionRoundMode::ENABLED);
     if (ew_->result_may_have_changed()) {
         for (const auto& [i, s] : enumerate(scene_files_)) {
-            scene_titles_.at(i) = ew_->eval<std::string>(s.name(), s.locals());
+            scene_titles_.at(i) = ew_->eval<std::string>(s.rp.title, s.rp.database);
         }
         renderable_text_->set_charset(VariableAndHash{ew_->eval<std::string>(charset_)});
     }
@@ -175,7 +139,7 @@ void SceneSelectorLogic::merge_substitutions() const {
     ui_focus_.all_selection_ids[id_] = list_view_.selected_element();
 
     const auto& element = scene_files_.at(list_view_.selected_element());
-    const auto& on_before_select = element.on_before_select();
+    const auto& on_before_select = element.rp.on_before_select;
     if (!on_before_select.is_null()) {
         ew_->execute(on_before_select, nullptr);
     }
