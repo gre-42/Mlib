@@ -71,6 +71,8 @@ public:
         const RenderableResourceFilter& filter) const;
 
     // Misc
+    bool is_invisible_resource(
+        const VariableAndHash<std::string>& name) const;
     void add_resource(
         const VariableAndHash<std::string>& name,
         const std::shared_ptr<ISceneNodeResource>& resource);

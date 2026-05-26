@@ -112,7 +112,11 @@ void RootNodes::add_root_node(
         throw std::runtime_error("Unsupported scene node state: " + std::to_string(int(scene_node_state)));
     }
     auto ref = DanglingBaseClassRef<SceneNode>{*scene_node, CURRENT_SOURCE_LOCATION};
+    #ifdef WITHOUT_GRAPHICS
+    auto md2 = 0.f;
+    #else
     auto md2 = scene_node->max_center_distance2(BILLBOARD_ID_NONE);
+    #endif
     scene_->register_node(name, ref);
     try {
         scene_node->set_scene_and_state(scene_, scene_node_state);

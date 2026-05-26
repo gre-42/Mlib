@@ -181,6 +181,9 @@ void BatchResourceInstantiator::instantiate_root_renderables(
             auto scale = options.absolute_model_matrix.get_scale();
 
             for (const auto& [name, ps] : positions) {
+                if (scene_node_resources.is_invisible_resource(name)) {
+                    continue;
+                }
                 auto node = make_unique_scene_node(
                     fixed_zeros<ScenePos, 3>(),
                     rotation_,

@@ -22,6 +22,7 @@
 #include <Mlib/Scene_Graph/Render/Caching_Behavior.hpp>
 #include <Mlib/Scene_Graph/Render/Gpu_Vertex_Datas.hpp>
 #include <Mlib/Scene_Graph/Render/IGpu_Object_Factory.hpp>
+#include <Mlib/Scene_Graph/Resources/Invisible_Resource.hpp>
 #include <Mlib/Scene_Graph/Resources/Renderable_Resource_Filter.hpp>
 #include <Mlib/Scene_Graph/Spawn_Point.hpp>
 #include <stdexcept>
@@ -105,6 +106,13 @@ void SceneNodeResources::preload_single(
     } catch (const std::runtime_error& e) {
         throw std::runtime_error("Could not preload resource \"" + *name + "\": " + e.what());
     }
+}
+
+bool SceneNodeResources::is_invisible_resource(
+    const VariableAndHash<std::string>& name) const
+{
+    auto res = get_resource(name);
+    return (dynamic_cast<InvisibleResource*>(res.get()) != nullptr);
 }
 
 void SceneNodeResources::add_resource(

@@ -31,6 +31,8 @@ DECLARE_ARGUMENT(velocity_error_std);
 DECLARE_ARGUMENT(error_alpha);
 DECLARE_ARGUMENT(yaw_error_std);
 DECLARE_ARGUMENT(pitch_error_std);
+DECLARE_ARGUMENT(show_hitbox);
+DECLARE_ARGUMENT(show_massbox);
 }
 
 RegisterLocalCar::RegisterLocalCar(

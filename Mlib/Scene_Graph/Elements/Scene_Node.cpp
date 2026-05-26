@@ -1405,7 +1405,7 @@ void SceneNode::append_physics_to_queue(
     TransformationMatrix<float, ScenePos, 3> rel = relative_model_matrix();
     std::shared_lock lock{ mutex_ };
     if (state_ != SceneNodeState::STATIC) {
-        throw std::runtime_error("Cannot append physics to queue for a non-static node");
+        throw std::runtime_error("Cannot append physics to queue for a non-static node. State: " + std::to_string((int)state_));
     }
     rel.t += delta_pose.position.casted<ScenePos>();
     if (delta_pose.yangle != 0) {

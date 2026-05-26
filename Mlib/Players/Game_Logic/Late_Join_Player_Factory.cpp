@@ -254,8 +254,7 @@ LateJoinPlayerFactory::LateJoinPlayerFactory(
                 };
                 JsonMacroArguments locals{{
                     {ToplevelKeys::library, jv.at<std::string>(ToplevelKeys::library)},
-                    {"vehicle_class", vars.database.at<std::string>("vehicle_class")},
-                    {"controller", *controller}}
+                    {"vehicle_class", vars.database.at<std::string>("vehicle_class")}}
                 };
                 nlohmann::json line{
                     {

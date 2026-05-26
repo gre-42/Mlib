@@ -41,7 +41,9 @@ IParticleCreator& ParticleRenderer::get_instantiator(const VariableAndHash<std::
 }
 
 void ParticleRenderer::preload(const VariableAndHash<std::string>& name) {
+    #ifndef WITHOUT_GRAPHICS
     instances_.get(resources_.get_instance_for_creator(name))->preload();
+    #endif
 }
 
 void ParticleRenderer::advance_time(float dt, const StaticWorld& world) {

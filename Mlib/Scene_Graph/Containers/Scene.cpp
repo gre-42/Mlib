@@ -951,14 +951,15 @@ void Scene::append_physics_to_queue(
             double_queue);
         return true;
         });
-    root_physics_nodes_.visit_all([&](const auto& node) {
-        node->append_physics_to_queue(
-            TransformationMatrix<float, ScenePos, 3>::identity(),
-            zero,
-            float_queue,
-            double_queue);
-        return true;
-        });
+    // Only static nodes are considered here. Rename this method?
+    // root_physics_nodes_.visit_all([&](const auto& node) {
+    //     node->append_physics_to_queue(
+    //         TransformationMatrix<float, ScenePos, 3>::identity(),
+    //         zero,
+    //         float_queue,
+    //         double_queue);
+    //     return true;
+    //     });
     static_root_physics_nodes_.visit_all([&](const auto& node) {
         node->append_physics_to_queue(
             TransformationMatrix<float, ScenePos, 3>::identity(),
