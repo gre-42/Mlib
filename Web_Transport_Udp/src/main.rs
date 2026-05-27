@@ -1,8 +1,9 @@
 use std::env;
 use std::net::SocketAddr;
 use std::sync::Arc;
-use tokio::net::UdpSocket;
 use anyhow::{Context, Result};
+use pretty_hex::PrettyHex;
+use tokio::net::UdpSocket;
 // Change Certificate to Identity here:
 use wtransport::{Endpoint, ServerConfig, Identity};
 
@@ -91,9 +92,11 @@ async fn handle_session(
             match udp_socket_recv.recv(&mut buffer).await {
                 Ok(bytes_read) => {
                     if bytes_read == 0 { break; }
+                    let payload = &buffer[..bytes_read];
                     // Push the response chunk directly back to the WebTransport stream
-                    if let Err(e) = connection_clone.send_datagram(&buffer[..bytes_read]) {
+                    if let Err(e) = connection_clone.send_datagram(&payload) {
                         eprintln!("Failed sending datagram to WebTransport client: {:?}", e);
+                        eprintln!("Buffer content ({} bytes):\n{:?}", payload.len(), payload.hex_dump());
                         break;
                     }
                 }
