@@ -81,15 +81,6 @@ public:
             verbose_abort("Could not occupy index " + std::to_string(large));
         }
     }
-    TLarge largest() const {
-        return largest_;
-    }
-    TSmall compress(TLarge large) const {
-        return integral_cast<TSmall>(largest_ - large);
-    }
-    static TLarge decompress(TLarge largest, TSmall small) {
-        return largest - small;
-    }
 private:
     TLarge capacity_;
     TLarge largest_;
