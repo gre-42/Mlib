@@ -4,6 +4,7 @@
 #include <Mlib/Os/Io/Binary.hpp>
 #include <Mlib/Remote/Remote_Socket.hpp>
 #include <Mlib/Remote/Sockets/IDatagram_Socket.hpp>
+#include <Mlib/Threads/Termination_Manager.cpp>
 #include <mutex>
 #include <stdexcept>
 
@@ -20,29 +21,34 @@ void ThreadedDatagramNode::start_receive_thread(size_t max_stored_received_messa
     }
     receive_thread_ = std::jthread{[&, max_stored_received_messages](){
         std::vector<std::byte> receive_buffer(1024 * 1024);
-        while (!receive_thread_.get_stop_token().stop_requested()) {
-            std::error_code ec;
-            std::shared_ptr<IDatagramSocket> reply_socket;
-            auto len = socket_->receive(receive_buffer, reply_socket, ec);
-            if (getenv_default_bool("NET_DEBUG", false)) {
-                linfo() << this << " receive_from. Error: " << (int)(bool)ec << ", Length: " << len;
-            }
-            if (ec) {
-                linfo() << "receive_from failed: " << ec.message();
-                continue;
-            }
-            // for (size_t i = 0; i < len; ++i) {
-            //     print_char((char)receive_buffer[i]);
-            // }
-            {
-                std::scoped_lock lock{ message_mutex_ };
-                if (messages_received_.size() >= max_stored_received_messages) {
-                    lwarn() << "Message buffer overflow, discarding oldest message";
-                    messages_received_.pop_front();
+        while (!receive_thread_.get_stop_token().stop_requested() && !unhandled_exceptions_occured()) {
+            try {
+                std::error_code ec;
+                std::shared_ptr<IDatagramSocket> reply_socket;
+                auto len = socket_->receive(receive_buffer, reply_socket, ec);
+                if (getenv_default_bool("NET_DEBUG", false)) {
+                    linfo() << this << " receive_from. Error: " << (int)(bool)ec << ", Length: " << len;
                 }
-                messages_received_.emplace_back(
-                    std::vector<std::byte>(receive_buffer.data(), receive_buffer.data() + len),
-                    std::make_unique<ThreadedDatagramNode>(reply_socket));
+                if (ec) {
+                    linfo() << "receive_from failed: " << ec.message();
+                    continue;
+                }
+                // for (size_t i = 0; i < len; ++i) {
+                //     print_char((char)receive_buffer[i]);
+                // }
+                {
+                    std::scoped_lock lock{ message_mutex_ };
+                    if (messages_received_.size() >= max_stored_received_messages) {
+                        lwarn() << "Message buffer overflow, discarding oldest message";
+                        messages_received_.pop_front();
+                    }
+                    messages_received_.emplace_back(
+                        std::vector<std::byte>(receive_buffer.data(), receive_buffer.data() + len),
+                        std::make_unique<ThreadedDatagramNode>(reply_socket));
+                }
+            } catch (...) {
+                lerr() << "Unhandled exception in ThreadedDatagramNode";
+                add_unhandled_exception(std::current_exception());
             }
         }
     }};

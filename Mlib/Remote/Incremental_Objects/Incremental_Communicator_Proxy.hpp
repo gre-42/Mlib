@@ -2,11 +2,10 @@
 #include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/Remote/Communicator_Proxies.hpp>
 #include <Mlib/Remote/Incremental_Objects/Incremental_Remote_Objects.hpp>
-#include <Mlib/Remote/Incremental_Objects/Known_Fields.hpp>
 #include <Mlib/Remote/Incremental_Objects/Scene_Level.hpp>
-#include <Mlib/Remote/Remote_Site_Id.hpp>
+#include <Mlib/Scene_Config/Remote_Integers.hpp>
 #include <iosfwd>
-#include <unordered_map>
+#include <unordered_set>
 
 namespace Mlib {
 
@@ -29,7 +28,8 @@ public:
     virtual void receive_from_home(std::istream& istr) override;
     virtual void send_home(std::iostream& iostr) override;
 private:
-    std::unordered_map<RemoteObjectId, KnownFields> known_fields_;
+    std::unordered_set<RemoteObjectId> objects_unknown_at_home_;
+    std::unordered_set<RemoteObjectId> objects_unknown_here_;
     std::shared_ptr<ISendSocket> send_socket_;
     DanglingBaseClassRef<IIncrementalObjectFactory> shared_object_factory_;
     DanglingBaseClassRef<IncrementalRemoteObjects> objects_;

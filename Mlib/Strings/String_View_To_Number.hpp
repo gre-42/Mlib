@@ -15,6 +15,7 @@ double safe_stod(const std::string_view& s);
 float safe_stof(const std::string_view& s);
 int safe_stoi(const std::string_view& s);
 unsigned int safe_stou(const std::string_view& s);
+uint8_t safe_stou8(const std::string_view& s);
 uint16_t safe_stou16(const std::string_view& s);
 uint64_t safe_stou64(const std::string_view& s);
 size_t safe_stoz(const std::string_view& s);
@@ -27,6 +28,7 @@ template <> inline double safe_sto<double>(const std::string_view& s) { return s
 template <> inline float safe_sto<float>(const std::string_view& s) { return safe_stof(s); }
 template <> inline int safe_sto<int>(const std::string_view& s) { return safe_stoi(s); }
 template <> inline unsigned int safe_sto<unsigned>(const std::string_view& s) { return safe_stou(s); }
+template <> inline uint8_t safe_sto<uint8_t>(const std::string_view& s) { return safe_stou8(s); }
 template <> inline uint16_t safe_sto<uint16_t>(const std::string_view& s) { return safe_stou16(s); }
 template <> inline uint64_t safe_sto<uint64_t>(const std::string_view& s) { return safe_stou64(s); }
 // Disabled because it is either "unsigned int" or "uint64_t"

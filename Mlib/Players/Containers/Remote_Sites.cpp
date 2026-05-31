@@ -12,7 +12,7 @@ using namespace Mlib;
 UserInfo::UserInfo(
     const DanglingBaseClassRef<RemoteSites>& remote_sites,
     const std::optional<RemoteSiteId>& site_id,
-    uint32_t user_id,
+    NUserCountType user_id,
     std::string name,
     std::string full_name,
     UserType type)
@@ -61,6 +61,20 @@ void UserInfo::set_status(UserStatus status) {
     status_ = status;
 }
 
+std::ostream& Mlib::operator << (std::ostream& ostr, const UserInfo& user_info) {
+    if (user_info.site_id.has_value()) {
+        ostr << "Site: " << (*user_info.site_id + 0) << ", ";
+    }
+    ostr <<
+        "ID: " << (user_info.user_id + 0) <<
+        ", name: \"" << user_info.name << '"' <<
+        ", full name: \"" << user_info.full_name << '"' <<
+        ", type: " << "0x" << std::hex << (int)user_info.type <<
+        ", random rank: " << (user_info.random_rank + 0) <<
+        ", status: " << "0x" << std::hex << (int)user_info.get_status();
+    return ostr;
+}
+
 SiteInfo::SiteInfo()
     : users{ 0 }
 {}
@@ -85,22 +99,22 @@ std::optional<RemoteSiteId> RemoteSites::get_local_site_id() const {
     }
 }
 
-uint32_t RemoteSites::get_local_user_count() const {
+NUserCountType RemoteSites::get_local_user_count() const {
     assert_local_users_consistents();
     return local_users_->get_user_count();
 }
 
-uint32_t RemoteSites::get_user_count(RemoteSiteId site_id) const {
+NUserCountType RemoteSites::get_user_count(RemoteSiteId site_id) const {
     std::shared_lock lock{ mutex_ };
     if (!remote_params_.has_value() || (site_id == remote_params_->site_id)) {
         return get_local_user_count();
     } else {
-        return integral_cast<uint32_t>(remote_sites_.get(site_id).users.size());
+        return integral_cast<NUserCountType>(remote_sites_.get(site_id).users.size());
     }
 }
 
-uint32_t RemoteSites::get_total_user_count(UserTypes user_types) const {
-    uint32_t result = 0;
+NUserCountType RemoteSites::get_total_user_count(UserTypes user_types) const {
+    NUserCountType result = 0;
     for_each_site_user(
         [&](const UserInfo& user){
             ++result;
@@ -109,12 +123,12 @@ uint32_t RemoteSites::get_total_user_count(UserTypes user_types) const {
     return result;
 }
 
-void RemoteSites::set_local_user_count(uint32_t user_count) {
+void RemoteSites::set_local_user_count(NUserCountType user_count) {
     std::scoped_lock lock{ mutex_ };
     local_users_->set_user_count(user_count);
     local_site_.users.clear_and_reserve(user_count);
     if (remote_params_.has_value()) {
-        for (uint32_t i = 0; i < user_count; ++i) {
+        for (NUserCountType i = 0; i < user_count; ++i) {
             auto name = std::to_string(i);
             auto full_name = VariableAndHash<std::string>{std::to_string(remote_params_->site_id) + '_' + name};
             auto& user = local_site_.users.emplace_back(
@@ -126,7 +140,7 @@ void RemoteSites::set_local_user_count(uint32_t user_count) {
                 CURRENT_SOURCE_LOCATION);
         }
     } else {
-        for (uint32_t i = 0; i < user_count; ++i) {
+        for (NUserCountType i = 0; i < user_count; ++i) {
             auto name = VariableAndHash<std::string>{std::to_string(i)};
             auto& user = local_site_.users.emplace_back(
                 DanglingBaseClassRef<RemoteSites>{*this, CURRENT_SOURCE_LOCATION},
@@ -139,10 +153,10 @@ void RemoteSites::set_local_user_count(uint32_t user_count) {
     }
 }
 
-void RemoteSites::set_user_count(RemoteSiteId site_id, uint32_t user_count) {
+void RemoteSites::set_user_count(RemoteSiteId site_id, NUserCountType user_count) {
     std::scoped_lock lock{ mutex_ };
-    if (user_count > 256) {
-        throw std::runtime_error("User-count per site cannot be greater than 256");
+    if (user_count > 100) {
+        throw std::runtime_error("User-count per site cannot be greater than 100");
     }
     if (!remote_params_.has_value() || (site_id == remote_params_->site_id)) {
         assert_local_users_consistents();
@@ -164,7 +178,7 @@ void RemoteSites::set_user_count(RemoteSiteId site_id, uint32_t user_count) {
         remote_sites_.erase(site_id);
         auto& site = remote_sites_.add(site_id);
         site.users.clear_and_reserve(user_count);
-        for (uint32_t i = 0; i < user_count; ++i) {
+        for (NUserCountType i = 0; i < user_count; ++i) {
             auto name = std::to_string(i);
             auto full_name = VariableAndHash<std::string>{std::to_string(site_id) + '_' + name};
             auto& user = site.users.emplace_back(
@@ -193,7 +207,7 @@ bool RemoteSites::for_each_site_user(
         if (any(user_types & UserTypes::REMOTE)) {
             for (auto& [site_id, site] : remote_sites_) {
                 if (site_id != remote_params_->site_id) {
-                    for (auto&& [user_id, user] : tenumerate<uint32_t>(site.users)) {
+                    for (auto&& [user_id, user] : tenumerate<NUserCountType>(site.users)) {
                         if (include_user(user)) {
                             if (!operation(user)) {
                                 return false;
@@ -205,7 +219,7 @@ bool RemoteSites::for_each_site_user(
         }
     }
     if (any(user_types & UserTypes::LOCAL)) {
-        if (!local_users_->for_each_user([&](uint32_t user_id){
+        if (!local_users_->for_each_user([&](NUserCountType user_id){
             auto& user = local_site_.users.at(user_id);
             if (include_user(user)) {
                 return operation(user);
@@ -229,7 +243,7 @@ bool RemoteSites::for_each_site_user(
         }, user_types);
 }
 
-DanglingBaseClassRef<UserInfo> RemoteSites::get_user(RemoteSiteId site_id, uint32_t id) {
+DanglingBaseClassRef<UserInfo> RemoteSites::get_user(RemoteSiteId site_id, NUserCountType id) {
     auto& site = get_site_info(site_id);
     if (id >= site.users.size()) {
         throw std::runtime_error("User ID too large");
@@ -237,7 +251,7 @@ DanglingBaseClassRef<UserInfo> RemoteSites::get_user(RemoteSiteId site_id, uint3
     return DanglingBaseClassRef<UserInfo>{ site.users.at(id), CURRENT_SOURCE_LOCATION };
 }
 
-DanglingBaseClassRef<const UserInfo> RemoteSites::get_user(RemoteSiteId site_id, uint32_t id) const {
+DanglingBaseClassRef<const UserInfo> RemoteSites::get_user(RemoteSiteId site_id, NUserCountType id) const {
     return const_cast<RemoteSites*>(this)->get_user(site_id, id);
 }
 
@@ -255,14 +269,14 @@ DanglingBaseClassRef<const UserInfo> RemoteSites::get_user(
     return const_cast<RemoteSites*>(this)->get_user(full_name);
 }
 
-DanglingBaseClassRef<const UserInfo> RemoteSites::get_local_user(uint32_t id) const {
+DanglingBaseClassRef<const UserInfo> RemoteSites::get_local_user(NUserCountType id) const {
     return {local_site_.users.at(id), CURRENT_SOURCE_LOCATION};
 }
 
 void RemoteSites::print(std::ostream& ostr) const {
     for_each_site_user([&](const UserInfo& user){
         if (user.site_id.has_value()) {
-            ostr << "Site: " << *user.site_id << ", user: " << user.user_id << '\n';
+            ostr << "Site: " << (*user.site_id + 0) << ", user: " << user.user_id << '\n';
         } else {
             ostr << "User: " << user.user_id << '\n';
         }
@@ -270,7 +284,7 @@ void RemoteSites::print(std::ostream& ostr) const {
     }, UserTypes::ALL);
 }
 
-DanglingBaseClassRef<const UserInfo> RemoteSites::get_user_by_rank(uint32_t rank) const {
+DanglingBaseClassRef<const UserInfo> RemoteSites::get_user_by_rank(NUserCountType rank) const {
     DanglingBaseClassPtr<const UserInfo> result = nullptr;
     for_each_site_user([&](const UserInfo& user){
         if (user.random_rank == rank) {
@@ -303,13 +317,13 @@ void RemoteSites::assert_local_users_consistents() const {
     }
 }
 
-uint32_t RemoteSites::compute_random_user_ranks() {
+NUserCountType RemoteSites::compute_random_user_ranks() {
     auto nusers = get_total_user_count(UserTypes::ALL);
-    auto perm = arange<uint32_t>(nusers);
+    auto perm = arange<NUserCountType>(nusers);
     std::mt19937 rng_;
     rng_.seed(42);
     std::shuffle(perm.flat_begin(), perm.flat_end(), rng_);
-    uint32_t i = 0;
+    NUserCountType i = 0;
     for_each_site_user(
         [&](UserInfo& user){
             if (i >= perm.length()) {

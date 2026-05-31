@@ -152,8 +152,13 @@ EM_JS(int, tryReadFromWebTransportSocket, (int transportHandle, uint8_t* outBuff
     const transport = globalThis.webTransportSockets[transportHandle];
     
     if (!transport) return -3;
-    if (transport["_isClosed"] && transport["_packetQueue"].length === 0) return -1;
-    if (transport["_packetQueue"].length === 0) return 0;
+    if (transport["_packetQueue"].length === 0) {
+        if (transport["_isClosed"]) {
+            return -1;
+        } else {
+            return 0;
+        }
+    }
 
     const value = transport["_packetQueue"].shift();
 

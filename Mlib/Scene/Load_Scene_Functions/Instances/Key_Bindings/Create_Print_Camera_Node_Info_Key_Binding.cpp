@@ -33,7 +33,7 @@ void CreatePrintCameraNodeInfoKeyBinding::execute(const LoadSceneJsonUserFunctio
         .button_press{
             args.button_states,
             args.key_configurations,
-            args.arguments.at<uint32_t>(KnownArgs::local_user_id),
+            args.arguments.at<NUserCountType>(KnownArgs::local_user_id),
             args.arguments.at<std::string>(KnownArgs::id),
             args.arguments.at<std::string>(KnownArgs::seat)},
         .geographic_mapping = scene_node_resources.get_geographic_mapping(VariableAndHash<std::string>{"world"}),

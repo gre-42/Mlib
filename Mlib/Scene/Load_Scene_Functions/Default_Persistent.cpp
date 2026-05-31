@@ -5,6 +5,7 @@
 #include <Mlib/Players/Containers/Users.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Load_Scene_Funcs.hpp>
+#include <Mlib/Scene_Config/Remote_Integers.hpp>
 
 using namespace Mlib;
 
@@ -22,7 +23,7 @@ struct RegisterJsonUserFunction {
             "default_persistent",
             [](const LoadSceneJsonUserFunctionArgs& args)
             {
-                auto local_user_id = args.arguments.at<uint32_t>(KnownArgs::local_user_id);
+                auto local_user_id = args.arguments.at<NUserCountType>(KnownArgs::local_user_id);
                 if (local_user_id >= args.users.get_user_count()) {
                     throw std::runtime_error("User ID greater or equal number of users");
                 }

@@ -1,11 +1,12 @@
 #pragma once
 #include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/Memory/Destruction_Notifier.hpp>
+#include <Mlib/Scene_Config/Remote_Integers.hpp>
 #include <iosfwd>
 
 namespace Mlib {
 
-enum class TransmittedFields: uint32_t;
+enum class TransmittedFields: TransmittedFieldsType;
 enum class ProxyTasks;
 struct RemoteObjectId;
 class IIncrementalObject;

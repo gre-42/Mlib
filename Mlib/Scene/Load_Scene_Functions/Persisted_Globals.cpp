@@ -4,6 +4,7 @@
 #include <Mlib/Misc/Argument_List.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Load_Scene_Funcs.hpp>
+#include <Mlib/Scene_Config/Remote_Integers.hpp>
 
 using namespace Mlib;
 
@@ -21,7 +22,7 @@ struct RegisterJsonUserFunction {
             "persisted_globals",
             [](const LoadSceneJsonUserFunctionArgs& args)
             {
-                auto local_user_id = args.arguments.at<uint32_t>(KnownArgs::local_user_id);
+                auto local_user_id = args.arguments.at<NUserCountType>(KnownArgs::local_user_id);
                 auto variables = args.arguments.at(KnownArgs::variables);
                 if (variables.type() != nlohmann::detail::value_t::object) {
                     throw std::runtime_error("Variables not of type \"object\"");

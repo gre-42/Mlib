@@ -1,5 +1,5 @@
 #pragma once
-#include <Mlib/Remote/Remote_Site_Id.hpp>
+#include <Mlib/Scene_Config/Remote_Integers.hpp>
 #include <compare>
 #include <cstddef>
 #include <optional>
@@ -17,13 +17,13 @@ public:
     ViewableRemoteObject() = default;
     ViewableRemoteObject(
         const std::optional<RemoteSiteId>& site_id,
-        const std::optional<uint32_t>& user_id)
+        const std::optional<NUserCountType>& user_id)
         : site_id_{ site_id }
         , user_id_{ user_id }
     {}
 private:
     std::optional<RemoteSiteId> site_id_;
-    std::optional<uint32_t> user_id_;
+    std::optional<NUserCountType> user_id_;
 };
 
 class RemoteObserver {
@@ -34,7 +34,7 @@ public:
     RemoteObserver() = default;
     RemoteObserver(
         const std::optional<RemoteSiteId>& site_id,
-        const std::optional<uint32_t>& user_id)
+        const std::optional<NUserCountType>& user_id)
         : site_id_{ site_id }
         , user_id_{ user_id }
     {}
@@ -42,7 +42,7 @@ public:
     std::strong_ordering operator <=> (const RemoteObserver&) const = default;
 private:
     std::optional<RemoteSiteId> site_id_;
-    std::optional<uint32_t> user_id_;
+    std::optional<NUserCountType> user_id_;
 };
 
 inline bool RemoteObserver::can_see(const ViewableRemoteObject& obj) const

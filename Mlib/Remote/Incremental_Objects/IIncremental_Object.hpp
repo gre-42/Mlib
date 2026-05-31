@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/Memory/Destruction_Notifier.hpp>
+#include <Mlib/Scene_Config/Remote_Integers.hpp>
 #include <cstdint>
 #include <iosfwd>
 
@@ -9,8 +10,8 @@ namespace Mlib {
 struct RemoteObjectId;
 class TransmissionHistoryReader;
 class TransmissionHistoryWriter;
-enum class KnownFields: uint32_t;
-enum class TransmittedFields: uint32_t;
+enum class KnownFields;
+enum class TransmittedFields: TransmittedFieldsType;
 enum class ProxyTasks;
 
 class IIncrementalObject: public virtual DestructionNotifier, public virtual DanglingBaseClass {

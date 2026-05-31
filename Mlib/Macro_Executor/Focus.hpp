@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/Macro_Executor/Boolean_Expression.hpp>
 #include <Mlib/Macro_Executor/Notifying_Json_Macro_Arguments.hpp>
+#include <Mlib/Scene_Config/Remote_Integers.hpp>
 #include <Mlib/Threads/Recursive_Shared_Mutex.hpp>
 #include <atomic>
 #include <functional>
@@ -168,9 +169,9 @@ public:
     ~UiFocuses();
     UiFocuses(const UiFocuses&) = delete;
     UiFocuses& operator = (const UiFocuses&) = delete;
-    UiFocus& operator [] (uint32_t user_id);
-    const UiFocus& operator [] (uint32_t user_id) const;
-    void trim(uint32_t user_count);
+    UiFocus& operator [] (NUserCountType user_id);
+    const UiFocus& operator [] (NUserCountType user_id) const;
+    void trim(NUserCountType user_count);
     void try_load();
     void try_save();
     void clear();

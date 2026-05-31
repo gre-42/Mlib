@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/OpenGL/Key_Bindings/Lockable_Key_Configurations_Fwd.hpp>
 #include <Mlib/OpenGL/Ui/Incremental_Movement.hpp>
+#include <Mlib/Scene_Config/Remote_Integers.hpp>
 #include <cstdint>
 #include <string>
 
@@ -14,14 +15,14 @@ public:
     explicit CursorMovement(
         CursorStates& cursor_states,
         const LockableKeyConfigurations& key_configurations,
-        uint32_t user_id,
+        NUserCountType user_id,
         std::string id);
     ~CursorMovement();
     float axis_alpha(float ncached);
 private:
     IncrementalMovement incremental_movement_;
     const LockableKeyConfigurations& key_configurations_;
-    uint32_t user_id_;
+    NUserCountType user_id_;
     std::string id_;
 };
 

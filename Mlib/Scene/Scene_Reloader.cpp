@@ -25,25 +25,30 @@ SceneReloader::~SceneReloader() = default;
 
 void SceneReloader::load_scene_by_filename(const std::string& filename) {
     std::scoped_lock lock{mutex_};
+    linfo() << "Set next_scene_filename (0) = \"" << filename << '"';
     next_scene_filename_ = filename;
     reload_requested_.set();
 }
 
 void SceneReloader::set_next_scene_by_manifest(const ReplacementParameterAndFilename& rpe) {
     std::scoped_lock lock{mutex_};
+    linfo() << "Set next_scene_filename (1) = \"" << rpe.filename << '"';
     next_scene_filename_ = rpe.filename;
 }
 
 void SceneReloader::reload_scene() {
+    linfo() << "Reload scene";
     next_scene_filename_ = "";
     reload_requested_.set();
 }
 
 void SceneReloader::change_scene() {
     if (remote_role_ == RemoteRole::SERVER) {
+        linfo() << "Change scene as server";
         // The scene level selector triggers "local_load_scene_by_filename".
         scene_level_selector_.server_set_next_scene_level(get_selected_level_id_());
     } else {
+        linfo() << "Change scene as client";
         reload_requested_.set();
     }
 }

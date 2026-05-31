@@ -5,6 +5,7 @@
 #include <Mlib/OpenGL/Render_Logic.hpp>
 #include <Mlib/OpenGL/Ui/IList_View_Contents.hpp>
 #include <Mlib/OpenGL/Ui/List_View.hpp>
+#include <Mlib/Scene_Config/Remote_Integers.hpp>
 #include <cstddef>
 #include <cstdint>
 #include <functional>
@@ -63,7 +64,7 @@ public:
         std::unique_ptr<ExpressionWatcher>&& ew,
         UiFocus& ui_focus,
         ButtonStates& button_states,
-        uint32_t user_id,
+        NUserCountType user_id,
         std::function<void()> on_execute,
         const std::function<void()>& on_change = [](){});
     ~TabMenuLogic();

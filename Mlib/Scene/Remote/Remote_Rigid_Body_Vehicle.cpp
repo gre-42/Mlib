@@ -8,6 +8,7 @@
 #include <Mlib/Os/Io/Binary_Writer.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle_Flags.hpp>
+#include <Mlib/Remote/Incremental_Objects/Known_Fields.hpp>
 #include <Mlib/Remote/Incremental_Objects/Proxy_Tasks.hpp>
 #include <Mlib/Remote/Incremental_Objects/Transmission_History.hpp>
 #include <Mlib/Remote/Incremental_Objects/Transmitted_Fields.hpp>
@@ -17,6 +18,7 @@
 #include <Mlib/Scene/Remote/Remote_Scene.hpp>
 #include <Mlib/Scene/Remote/Remote_Scene_Object_Type.hpp>
 #include <Mlib/Scene_Config/Interpolation_Thresholds.hpp>
+#include <Mlib/Scene_Config/Remote_Integers.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Make_Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Elements/Rendering_Strategies.hpp>
@@ -28,30 +30,22 @@ using namespace Mlib;
 static_assert(sizeof(FixedArray<ScenePos, 3>) == 3 * 8);
 static_assert(sizeof(FixedArray<SceneDir, 3>) == 3 * 4);
 
-enum class RigidBodyTransmittedFields: uint32_t {
-    INITIAL = (uint32_t)TransmittedFields::END,
-    OWNERSHIP = (uint32_t)TransmittedFields::END << 1
+enum class RigidBodyTransmittedFields: TransmittedFieldsType {
+    INITIAL = (TransmittedFieldsType)TransmittedFields::END,
+    OWNERSHIP = (TransmittedFieldsType)TransmittedFields::END << 1
 };
 
 inline TransmittedFields operator & (TransmittedFields a, RigidBodyTransmittedFields b) {
-    return (TransmittedFields)((uint32_t)a & (uint32_t)b);
+    return (TransmittedFields)((TransmittedFieldsType)a & (TransmittedFieldsType)b);
 }
 
 inline TransmittedFields operator | (TransmittedFields a, RigidBodyTransmittedFields b) {
-    return (TransmittedFields)((uint32_t)a | (uint32_t)b);
+    return (TransmittedFields)((TransmittedFieldsType)a | (TransmittedFieldsType)b);
 }
 
 inline TransmittedFields& operator |= (TransmittedFields& a, RigidBodyTransmittedFields b) {
-    (uint32_t&)a |= (uint32_t)b;
+    (TransmittedFieldsType&)a |= (TransmittedFieldsType)b;
     return a;
-}
-
-enum class RigidBodyKnownFields: uint32_t {
-    INITIAL = (uint32_t)KnownFields::END
-};
-
-inline KnownFields operator & (KnownFields a, RigidBodyKnownFields b) {
-    return (KnownFields)((uint32_t)a & (uint32_t)b);
 }
 
 RemoteRigidBodyVehicle::RemoteRigidBodyVehicle(
@@ -114,7 +108,7 @@ DanglingBaseClassPtr<RemoteRigidBodyVehicle> RemoteRigidBodyVehicle::try_create_
     }
     auto initial_str = std::string("");
     if (any(transmitted_fields & RigidBodyTransmittedFields::INITIAL)) {
-        initial_str = reader.read_string("initial rigid body");
+        initial_str = reader.read_string<JSONLengthType>("initial rigid body");
     }
     auto position = reader.read_binary<EFixedArray<ScenePos, 3>>("position");
     auto rotation = reader.read_binary<EFixedArray<SceneDir, 3>>("rotation");
@@ -125,8 +119,8 @@ DanglingBaseClassPtr<RemoteRigidBodyVehicle> RemoteRigidBodyVehicle::try_create_
     if (any(transmitted_fields & RigidBodyTransmittedFields::OWNERSHIP)) {
         owner_site_id = reader.read_binary<RemoteSiteId>("owner_site_id");
     }
-    auto end = reader.read_binary<uint32_t>("inverted scene object type");
-    if (end != ~(uint32_t)type) {
+    auto end = reader.read_binary<RemoteSceneObjectType>("inverted scene object type");
+    if (end != ~type) {
         throw std::runtime_error("Invalid rigid body vehicle end (0)");
     }
     if ((type != RemoteSceneObjectType::RIGID_BODY_CAR) &&
@@ -246,7 +240,7 @@ void RemoteRigidBodyVehicle::read(
         throw std::runtime_error("RemoteRigidBodyVehicle::read: Unexpected scene object type");
     }
     if (any(transmitted_fields & RigidBodyTransmittedFields::INITIAL)) {
-        auto initial_len = reader.read_binary<uint32_t>("initial rigid body length");
+        auto initial_len = reader.read_binary<JSONLengthType>("initial rigid body length");
         reader.seek_relative_positive(initial_len);
     }
     auto position = reader.read_binary<EFixedArray<ScenePos, 3>>("position");
@@ -257,8 +251,8 @@ void RemoteRigidBodyVehicle::read(
     if (any(transmitted_fields & RigidBodyTransmittedFields::OWNERSHIP)) {
         rb_->owner_site_id_ = reader.read_binary<RemoteSiteId>("owner_site_id");
     }
-    auto end = reader.read_binary<uint32_t>("inverted scene object type");
-    if (end != ~(uint32_t)type_) {
+    auto end = reader.read_binary<RemoteSceneObjectType>("inverted scene object type");
+    if (end != ~type_) {
         throw std::runtime_error("Invalid rigid body vehicle end (1)");
     }
     if (physics_scene_->remote_scene_ == nullptr) {
@@ -312,7 +306,7 @@ void RemoteRigidBodyVehicle::write(
         throw std::runtime_error("RemoteRigidBodyVehicle::write: Rigid body is destroyed");
     }
     auto transmitted_fields = TransmittedFields::NONE;
-    if (!any(known_fields & RigidBodyKnownFields::INITIAL)) {
+    if (known_fields == KnownFields::NONE) {
         transmitted_fields |= RigidBodyTransmittedFields::INITIAL;
     }
     if (any(proxy_tasks & ProxyTasks::SEND_OWNERSHIP)) {
@@ -322,7 +316,7 @@ void RemoteRigidBodyVehicle::write(
     auto writer = BinaryWriter{ostr};
     writer.write_binary(type_, "rigid body vehicle");
     if (any(transmitted_fields & RigidBodyTransmittedFields::INITIAL)) {
-        writer.write_string(initial_, "initial rigid body");
+        writer.write_string<JSONLengthType>(initial_, "initial rigid body");
     }
     writer.write_binary(rb_->rbp_.abs_position(), "position");
     writer.write_binary(matrix_2_tait_bryan_angles(rb_->rbp_.rotation_), "rotation");
@@ -335,7 +329,7 @@ void RemoteRigidBodyVehicle::write(
         }
         writer.write_binary(*rb_->owner_site_id_, "owner site ID");
     }
-    writer.write_binary(~(uint32_t)type_, "inverted rigid body vehicle");
+    writer.write_binary(~type_, "inverted rigid body vehicle");
 }
 
 DanglingBaseClassRef<RigidBodyVehicle> RemoteRigidBodyVehicle::rb() {

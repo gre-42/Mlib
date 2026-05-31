@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/OpenGL/Key_Bindings/Lockable_Key_Configurations_Fwd.hpp>
+#include <Mlib/Scene_Config/Remote_Integers.hpp>
 #include <chrono>
 #include <cstdint>
 #include <string>
@@ -16,7 +17,7 @@ public:
     ButtonPress(
         const ButtonStates& button_states,
         const LockableKeyConfigurations& key_configurations,
-        uint32_t user_id,
+        NUserCountType user_id,
         std::string id,
         std::string role);
     ~ButtonPress();
@@ -34,7 +35,7 @@ private:
     bool keys_down_;
 
     const LockableKeyConfigurations& key_configurations_;
-    uint32_t user_id_;
+    NUserCountType user_id_;
     std::string id_;
     std::string role_;
 };

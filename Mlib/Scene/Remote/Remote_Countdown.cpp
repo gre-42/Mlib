@@ -74,8 +74,8 @@ void RemoteCountdown::read_data(std::istream& istr, const RemoteObjectId& remote
     if (remote_object_id.site_id != *physics_scene_->remote_sites_->get_local_site_id()) {
         physics_scene_->countdown_start_.set(elapsed, duration);
     }
-    auto end = reader.read_binary<uint32_t>("inverted countdown");
-    if (end != ~(uint32_t)RemoteSceneObjectType::COUNTDOWN) {
+    auto end = reader.read_binary<RemoteSceneObjectType>("inverted countdown");
+    if (end != ~RemoteSceneObjectType::COUNTDOWN) {
         throw std::runtime_error("Invalid countdown end");
     }
 }
@@ -99,5 +99,5 @@ void RemoteCountdown::write(
     writer.write_binary(RemoteSceneObjectType::COUNTDOWN, "countdown");
     writer.write_binary(physics_scene_->countdown_start_.elapsed(), "elapsed");
     writer.write_binary(physics_scene_->countdown_start_.duration(), "duration");
-    writer.write_binary(~(uint32_t)RemoteSceneObjectType::COUNTDOWN, "inverted countdown");
+    writer.write_binary(~RemoteSceneObjectType::COUNTDOWN, "inverted countdown");
 }

@@ -46,7 +46,7 @@ VideoModeSelectorLogic::VideoModeSelectorLogic(
     std::unique_ptr<ExpressionWatcher>&& ew,
     ButtonStates& button_states,
     UiFocus& ui_focus,
-    uint32_t local_user_id)
+    NUserCountType local_user_id)
     : ew_{ std::move(ew) }
     , confirm_button_{ confirm_button }
     , charset_{ std::move(charset) }

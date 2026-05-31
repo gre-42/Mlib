@@ -4,6 +4,7 @@
 #include <Mlib/Macro_Executor/Asset_References.hpp>
 #include <Mlib/Macro_Executor/Macro_Keys.hpp>
 #include <Mlib/Macro_Executor/Macro_Line_Executor.hpp>
+#include <Mlib/Iterator/Enumerate.hpp>
 #include <Mlib/Macro_Executor/Replacement_Parameter.hpp>
 #include <Mlib/Misc/Argument_List.hpp>
 #include <Mlib/Players/Containers/Remote_Sites.hpp>
@@ -95,7 +96,10 @@ LateJoinPlayerFactory::LateJoinPlayerFactory(
         [this](const UserInfo& user){
             auto it = create_rank_player_.find(user.random_rank);
             if (it != create_rank_player_.end()) {
+                linfo() << "Creating user: " << user;
                 it->second();
+            } else {
+                linfo() << "Not creating user: " << user;
             }
         }}
 {
@@ -143,14 +147,16 @@ LateJoinPlayerFactory::LateJoinPlayerFactory(
         validate(defaults, PlayerKeys::options);
         nlohmann::json default_skills = defaults.at(PlayerKeys::skills);
         JsonView default_skillsv{ default_skills };
-        for (const auto& jplayer : jv.at(ToplevelKeys::players)) {
+        for (const auto& [i, jplayer] : enumerate(jv.at(ToplevelKeys::players))) {
             JsonView player{jplayer};
             player.validate(PlayerKeys::options);
             if (auto rj = player.try_at(PlayerKeys::required); rj.has_value()) {
                 if (!macro_line_executor.eval_boolean_expression(*rj)) {
+                    linfo() << "Not creating **remote** user for slot " << i;
                     continue;
                 }
             }
+            linfo() << "Create **remote** user for slot " << i;
             auto get = [&defaults, &player](std::string_view name){
                 if (player.contains(name)) {
                     return player.at(name);

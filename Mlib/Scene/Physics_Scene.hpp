@@ -14,8 +14,8 @@
 #include <Mlib/Players/Containers/Vehicle_Spawners.hpp>
 #include <Mlib/Players/Game_Logic/Late_Join_Player_Factory.hpp>
 #include <Mlib/Players/Game_Logic/Supply_Depots.hpp>
-#include <Mlib/Remote/Remote_Site_Id.hpp>
 #include <Mlib/Scene/Scene_Particles.hpp>
+#include <Mlib/Scene_Config/Remote_Integers.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Fifo_Log.hpp>
 #include <Mlib/Scene_Graph/Instances/Dynamic_World.hpp>

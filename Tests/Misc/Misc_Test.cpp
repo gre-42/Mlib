@@ -5,7 +5,6 @@
 #include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
 #include <Mlib/Memory/Destruction_Functions.hpp>
-#include <Mlib/Memory/Int_Allocator.hpp>
 #include <Mlib/Memory/Object_Pool.hpp>
 #include <Mlib/Memory/Resource_Ptr.hpp>
 #include <Mlib/Misc/Floating_Point_Exceptions.hpp>
@@ -265,36 +264,10 @@ void test_thread_safe_list() {
     }
 }
 
-void test_int_allocator() {
-    IntAllocator<uint16_t, uint8_t> a{34};
-    linfo() << "Allocate and free handles";
-    for (size_t i = 0; i < 1000; ++i) {
-        auto id0 = a.allocate();
-        auto id1 = a.allocate();
-        auto id2 = a.allocate();
-        auto id3 = a.allocate();
-        a.free(id2.large);
-        a.free(id1.large);
-        a.free(id0.large);
-        a.free(id3.large);
-    }
-    linfo() << "Allocate until error";
-    for (size_t i = 0; i < 34; ++i) {
-        linfo() << a.allocate();
-    }
-    try {
-        a.allocate();
-        throw std::logic_error("Allocation did not fail");
-    } catch (const std::runtime_error&) {
-        // Do nothing
-    }
-}
-
 int main(int argc, const char** argv) {
     enable_floating_point_exceptions();
 
     try {
-        test_int_allocator();
         test_chunked_array();
         test_thread_safe_list();
         test_resource_ptr();

@@ -55,18 +55,18 @@ void CreateRelKeyBindingSpectator::execute(const LoadSceneJsonUserFunctionArgs& 
         .button_press{
             args.button_states,
             args.key_configurations,
-            args.arguments.at<uint32_t>(KnownArgs::local_user_id),
+            args.arguments.at<NUserCountType>(KnownArgs::local_user_id),
             args.arguments.at<std::string>(KnownArgs::id),
             args.arguments.at<std::string>(KnownArgs::seat)},
         .cursor_movement = std::make_shared<CursorMovement>(
             args.cursor_states,
             args.key_configurations,
-            args.arguments.at<uint32_t>(KnownArgs::local_user_id),
+            args.arguments.at<NUserCountType>(KnownArgs::local_user_id),
             args.arguments.at<std::string>(KnownArgs::id)),
         .gamepad_analog_axes_position{
             args.button_states,
             args.key_configurations,
-            args.arguments.at<uint32_t>(KnownArgs::local_user_id),
+            args.arguments.at<NUserCountType>(KnownArgs::local_user_id),
             args.arguments.at<std::string>(KnownArgs::id),
             args.arguments.at<std::string>(KnownArgs::seat)},
         .on_destroy_key_bindings{ DestructionFunctionsRemovalTokens{ key_bindings.on_destroy.deflt, CURRENT_SOURCE_LOCATION } },

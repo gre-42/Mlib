@@ -1,9 +1,10 @@
 #pragma once
+#include <Mlib/Scene_Config/Remote_Integers.hpp>
 #include <cstdint>
 
 namespace Mlib {
 
-enum class TransmittedFields: uint32_t {
+enum class TransmittedFields: TransmittedFieldsType {
     NONE = 0,
     SITE_ID = 1 << 0,
     END = 1 << 1
@@ -14,20 +15,20 @@ inline bool any(TransmittedFields tasks) {
 }
 
 inline TransmittedFields operator & (TransmittedFields a, TransmittedFields b) {
-    return (TransmittedFields)((int)a & (int)b);
+    return (TransmittedFields)((TransmittedFieldsType)a & (TransmittedFieldsType)b);
 }
 
 inline TransmittedFields operator | (TransmittedFields a, TransmittedFields b) {
-    return (TransmittedFields)((int)a | (int)b);
+    return (TransmittedFields)((TransmittedFieldsType)a | (TransmittedFieldsType)b);
 }
 
 inline TransmittedFields& operator |= (TransmittedFields& a, TransmittedFields b) {
-    (int&)a |= (int)b;
+    (TransmittedFieldsType&)a |= (TransmittedFieldsType)b;
     return a;
 }
 
 inline TransmittedFields operator ~ (TransmittedFields a) {
-    return (TransmittedFields)(~(uint32_t)a);
+    return (TransmittedFields)(~(TransmittedFieldsType)a);
 }
 
 }

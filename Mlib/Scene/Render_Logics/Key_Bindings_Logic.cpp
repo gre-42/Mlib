@@ -69,7 +69,7 @@ KeyBindingsLogic::KeyBindingsLogic(
     ButtonStates& button_states,
     UiFocus& ui_focus,
     std::atomic_size_t& selection_index,
-    uint32_t user_id)
+    NUserCountType user_id)
     : user_id_{ user_id }
     , charset_{ std::move(charset) }
     , ew_{ std::move(ew) }

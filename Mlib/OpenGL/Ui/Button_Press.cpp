@@ -14,7 +14,7 @@ using namespace Mlib;
 ButtonPress::ButtonPress(
     const ButtonStates& button_states,
     const LockableKeyConfigurations& key_configurations,
-    uint32_t user_id,
+    NUserCountType user_id,
     std::string id,
     std::string role)
     : button_states_{ button_states }

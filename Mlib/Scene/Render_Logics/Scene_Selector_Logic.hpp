@@ -6,6 +6,7 @@
 #include <Mlib/OpenGL/Ui/IList_View_Contents.hpp>
 #include <Mlib/OpenGL/Ui/List_View.hpp>
 #include <Mlib/Regex/Misc.hpp>
+#include <Mlib/Scene_Config/Remote_Integers.hpp>
 #include <cstdint>
 #include <memory>
 #include <vector>
@@ -57,7 +58,7 @@ public:
         SceneReloader& scene_reloader,
         ButtonStates& button_states,
         UiFocus& ui_focus,
-        uint32_t local_user_id,
+        NUserCountType local_user_id,
         std::function<void()> on_change = [](){});
     ~SceneSelectorLogic();
 

@@ -79,6 +79,7 @@
 #include <Mlib/Threads/Termination_Manager.hpp>
 #include <Mlib/Threads/Thread_Affinity.hpp>
 #include <Mlib/Threads/Thread_Initializer.hpp>
+#include <Mlib/Threads/Thread_Safe_Promise.hpp>
 #include <Mlib/Time/Fps/Realtime_Dependent_Fps.hpp>
 #include <Mlib/Time/Time_And_Pause.hpp>
 #include <filesystem>
@@ -719,7 +720,7 @@ void android_main(android_app* app)
             }
             #endif
         }
-        auto user_count = safe_sto<uint32_t>(args.named_svalue("--user_count", "1"));
+        auto user_count = safe_sto<NUserCountType>(args.named_svalue("--user_count", "1"));
         Users users;
         RemoteSites remote_sites{ {users, CURRENT_SOURCE_LOCATION}, remote_params };
         remote_sites.set_local_user_count(user_count);
@@ -850,6 +851,8 @@ void android_main(android_app* app)
         LocalSceneLevel local_scene_level;
         size_t args_num_renderings = safe_stoz(args.named_svalue("--num_renderings", "-1"));
         while (!render_loop.destroy_requested() && !unhandled_exceptions_occured()) {
+            ThreadSafePromise<void> reload_requested;
+            TerminationNotificationGuardPromise tngp{reload_requested};
             num_renderings = args_num_renderings;
             ui_focuses.clear();
             button_states.tap_buttons_.clear();
@@ -947,7 +950,7 @@ void android_main(android_app* app)
                     asset_references,
                     translators,
                     physics_scenes,
-                    num_renderings,
+                    reload_requested,
                     render_set_fps,
                     button_states,
                     cursor_states,
@@ -973,7 +976,7 @@ void android_main(android_app* app)
                     *load_scene,
                     render_delay,
                     velocity_dt)};
-                render_loop.render_loop([&num_renderings](){return (num_renderings == 0) || unhandled_exceptions_occured();});
+                render_loop.render_loop([&](){return (num_renderings == 0) || unhandled_exceptions_occured() || reload_requested.fulfilled();});
                 if (args.has_named_value("--write_loaded_resources")) {
                     scene_node_resources.write_loaded_resources(args.named_value("--write_loaded_resources"));
                 }

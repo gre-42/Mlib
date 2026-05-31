@@ -7,6 +7,7 @@
 #include <Mlib/OpenGL/Render_Logic.hpp>
 #include <Mlib/OpenGL/Ui/IList_View_Contents.hpp>
 #include <Mlib/OpenGL/Ui/List_View.hpp>
+#include <Mlib/Scene_Config/Remote_Integers.hpp>
 #include <atomic>
 #include <cstddef>
 #include <cstdint>
@@ -66,7 +67,7 @@ public:
         ButtonStates& button_states,
         UiFocus& ui_focus,
         std::atomic_size_t& selection_index,
-        uint32_t user_id);
+        NUserCountType user_id);
     ~KeyBindingsLogic();
 
     // RenderLogic
@@ -85,7 +86,7 @@ public:
     virtual void print(std::ostream& ostr, size_t depth) const override;
 
 private:
-    uint32_t user_id_;
+    NUserCountType user_id_;
     std::string charset_;
     std::unique_ptr<ExpressionWatcher> ew_;
     const LockableKeyDescriptions& key_descriptions_;

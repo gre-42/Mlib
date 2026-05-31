@@ -40,13 +40,13 @@ void CreateWeaponCycleKeyBinding::execute(const LoadSceneJsonUserFunctionArgs& a
         .button_press{
             args.button_states,
             args.key_configurations,
-            args.arguments.at<uint32_t>(KnownArgs::local_user_id),
+            args.arguments.at<NUserCountType>(KnownArgs::local_user_id),
             args.arguments.at<std::string>(KnownArgs::id),
             args.arguments.at<std::string>(KnownArgs::seat)},
         .scroll_wheel_movement = std::make_shared<ScrollWheelMovement>(
             args.scroll_wheel_states,
             args.key_configurations,
-            args.arguments.at<uint32_t>(KnownArgs::local_user_id),
+            args.arguments.at<NUserCountType>(KnownArgs::local_user_id),
             args.arguments.at<std::string>(KnownArgs::id)),
         .on_player_delete_vehicle_internals{ DestructionFunctionsRemovalTokens{ player->delete_vehicle_internals, CURRENT_SOURCE_LOCATION } }}));
     kb.on_player_delete_vehicle_internals.add(

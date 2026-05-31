@@ -12,6 +12,7 @@
 #include <Mlib/Scene/Remote/Remote_Config.hpp>
 #include <Mlib/Scene/Renderable_Scene.hpp>
 #include <Mlib/Scene/Renderable_Scenes.hpp>
+#include <Mlib/Scene_Config/Remote_Integers.hpp>
 
 using namespace Mlib;
 
@@ -71,7 +72,7 @@ struct RegisterJsonUserFunction {
                 auto layout = scene_layout_from_string(args.arguments.at<std::string>(KnownArgs::layout));
                 auto name = args.arguments.at<std::string>(KnownArgs::name);
                 auto& physics_scene = args.physics_scenes[args.arguments.at<std::string>(KnownArgs::physics)];
-                auto local_user_id = args.arguments.at<uint32_t>(KnownArgs::local_user_id);
+                auto local_user_id = args.arguments.at<NUserCountType>(KnownArgs::local_user_id);
                 auto remote_observer = RemoteObserver::all();
                 if (auto full_user_name = args.arguments.try_at<VariableAndHash<std::string>>(KnownArgs::full_user_name);
                     full_user_name.has_value())
@@ -128,7 +129,7 @@ struct RegisterJsonUserFunction {
                         break;
                     case SceneLayout::TILED:
                         args.renderable_scenes.add_tiled_scene(
-                            args.arguments.at<uint32_t>(KnownArgs::local_user_id),
+                            args.arguments.at<NUserCountType>(KnownArgs::local_user_id),
                             name);
                         break;
                     default:

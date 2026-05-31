@@ -26,7 +26,7 @@ struct RegisterJsonUserFunction {
                     std::chrono::seconds(2),
                     "Key configurations");
                 lock->load(
-                    args.arguments.at<uint32_t>(KnownArgs::user_id),
+                    args.arguments.at<NUserCountType>(KnownArgs::user_id),
                     args.arguments.path(KnownArgs::filename),
                     args.arguments.path(KnownArgs::fallback_filename));
             });

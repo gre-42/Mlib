@@ -89,6 +89,12 @@ if (NOT BUILD_GRAPHICS)
         "/Clear_Selection_Ids.cpp$"
         )
 endif()
+if (EMSCRIPTEN OR BUILD_GRAPHICS)
+    list(APPEND excluded_files
+        "/Load_Scene_Functions/Instances/Html/Add_Assets_Html_Endpoint.cpp$"
+        "/Load_Scene_Functions/Instances/Html/Add_Macro_Html_Endpoint.cpp$"
+        "/Config_Server/[^/]+$")
+endif()
 
 my_add_library(
     NAME MlibScene

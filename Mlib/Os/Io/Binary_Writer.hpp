@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Os/Io/Binary.hpp>
+#include <concepts>
 #include <cstdint>
 
 namespace Mlib {
@@ -9,8 +10,9 @@ public:
     inline explicit BinaryWriter(std::ostream& ostr)
         : ostr_{ ostr }
     {}
+    template <std::integral LengthType>
     inline void write_string(const std::string& str, const char* message) {
-        Mlib::write_binary(ostr_, integral_cast<uint32_t>(str.length()), message);
+        Mlib::write_binary(ostr_, integral_cast<LengthType>(str.length()), message);
         Mlib::write_iterable(ostr_, str, message);
     }
     template <class T>

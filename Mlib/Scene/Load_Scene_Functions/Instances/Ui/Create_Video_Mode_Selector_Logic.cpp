@@ -55,7 +55,7 @@ void CreateVideoModeSelectorLogic::execute(const LoadSceneJsonUserFunctionArgs& 
             .icon=args.arguments.at<std::string>(KnownArgs::icon)},
         focus_filter,
         0);
-    auto local_user_id = args.arguments.at<uint32_t>(KnownArgs::local_user_id);
+    auto local_user_id = args.arguments.at<NUserCountType>(KnownArgs::local_user_id);
     auto& video_selector_logic = object_pool.create<VideoModeSelectorLogic>(
         CURRENT_SOURCE_LOCATION,
         std::move(id),

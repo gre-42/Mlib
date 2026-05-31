@@ -38,6 +38,10 @@ unsigned int Mlib::safe_stou(const std::string_view& s) {
     return safe_stox<unsigned int>(s, "uint");
 }
 
+uint8_t Mlib::safe_stou8(const std::string_view& s) {
+    return safe_stox<uint8_t>(s, "uint8");
+}
+
 uint16_t Mlib::safe_stou16(const std::string_view& s) {
     return safe_stox<uint16_t>(s, "uint16");
 }

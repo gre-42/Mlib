@@ -16,7 +16,7 @@ DECLARE_ARGUMENT(user_count);
 
 void SetUserCount::execute(const LoadSceneJsonUserFunctionArgs& args) {
     args.arguments.validate(KnownArgs::options);
-    args.remote_config_and_sites.sites.set_local_user_count(args.arguments.at<uint32_t>(KnownArgs::user_count));
+    args.remote_config_and_sites.sites.set_local_user_count(args.arguments.at<NUserCountType>(KnownArgs::user_count));
 }
 
 namespace {

@@ -13,6 +13,8 @@ class RemoteSites;
 class UserInfo;
 
 class LateJoinPlayerFactory {
+    LateJoinPlayerFactory(const LateJoinPlayerFactory&) = delete;
+    LateJoinPlayerFactory& operator = (const LateJoinPlayerFactory&) = delete;
 public:
     explicit LateJoinPlayerFactory(
         const std::string& filename,

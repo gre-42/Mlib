@@ -116,7 +116,7 @@ KeyConfigurations::KeyConfigurations() = default;
 KeyConfigurations::~KeyConfigurations() = default;
 
 void KeyConfigurations::load(
-    uint32_t user_id,
+    NUserCountType user_id,
     const std::string& filename,
     const std::string& fallback_filename)
 {
@@ -213,13 +213,13 @@ void KeyConfigurations::load(
     }
 }
 
-void KeyConfigurations::insert(uint32_t user_id, std::string id, KeyConfiguration key_configuration) {
+void KeyConfigurations::insert(NUserCountType user_id, std::string id, KeyConfiguration key_configuration) {
     if (!key_configurations_[user_id].try_emplace(std::move(id), std::move(key_configuration)).second) {
         throw std::runtime_error("Key configuration with ID \"" + id + "\" already exists");
     }
 }
 
-const KeyConfiguration& KeyConfigurations::get(uint32_t user_id, const std::string& id) const {
+const KeyConfiguration& KeyConfigurations::get(NUserCountType user_id, const std::string& id) const {
     auto u = key_configurations_.find(user_id);
     if (u == key_configurations_.end()) {
         throw std::runtime_error("Cannot find key configurations for user with ID \"" + std::to_string(user_id) + '"');
@@ -231,7 +231,7 @@ const KeyConfiguration& KeyConfigurations::get(uint32_t user_id, const std::stri
     return c->second;
 }
 
-const KeyConfiguration* KeyConfigurations::try_get(uint32_t user_id, const std::string& id) const {
+const KeyConfiguration* KeyConfigurations::try_get(NUserCountType user_id, const std::string& id) const {
     auto u = key_configurations_.find(user_id);
     if (u == key_configurations_.end()) {
         return nullptr;

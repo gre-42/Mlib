@@ -1,7 +1,7 @@
 #pragma once
 #include <Mlib/Remote/Remote_Role.hpp>
-#include <Mlib/Remote/Remote_Site_Id.hpp>
 #include <Mlib/Remote/Remote_Socket.hpp>
+#include <Mlib/Scene_Config/Remote_Integers.hpp>
 #include <cstddef>
 #include <string>
 #include <vector>

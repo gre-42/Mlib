@@ -360,7 +360,7 @@ UiFocuses::UiFocuses(std::string filename_prefix)
 
 UiFocuses::~UiFocuses() = default;
 
-UiFocus& UiFocuses::operator [] (uint32_t user_id) {
+UiFocus& UiFocuses::operator [] (NUserCountType user_id) {
     auto it = focuses_.find(user_id);
     if (it == focuses_.end()) {
         auto res = focuses_.try_emplace(
@@ -378,11 +378,11 @@ UiFocus& UiFocuses::operator [] (uint32_t user_id) {
     return it->second;
 }
 
-const UiFocus& UiFocuses::operator [] (uint32_t user_id) const {
+const UiFocus& UiFocuses::operator [] (NUserCountType user_id) const {
     return const_cast<UiFocuses&>(*this)[user_id];
 }
 
-void UiFocuses::trim(uint32_t user_count) {
+void UiFocuses::trim(NUserCountType user_count) {
     std::erase_if(focuses_, [&](const auto& item) {
         return item.first >= user_count;
     });

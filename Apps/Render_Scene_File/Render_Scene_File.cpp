@@ -738,7 +738,7 @@ int main(int argc, char** argv) {
                 args.named_svalue("--udp_ip"),
                 safe_sto<uint16_t>(args.named_svalue("--udp_port"))
             });
-        uint32_t user_count = 0;
+        NUserCountType user_count = 0;
         #else
         if (args.has_named_value("--remote_role")) {
             remote_params.emplace(
@@ -749,7 +749,7 @@ int main(int argc, char** argv) {
                     safe_sto<uint16_t>(args.named_svalue("--udp_port"))
                 });
         }
-        auto user_count = safe_sto<uint32_t>(args.named_svalue("--user_count", "1"));
+        auto user_count = safe_sto<NUserCountType>(args.named_svalue("--user_count", "1"));
         #endif
         Users users;
         RemoteSites remote_sites{ {users, CURRENT_SOURCE_LOCATION}, remote_params };

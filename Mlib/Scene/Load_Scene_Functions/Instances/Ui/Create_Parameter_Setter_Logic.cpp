@@ -133,7 +133,7 @@ void CreateParameterSetterLogic::execute(const LoadSceneJsonUserFunctionArgs& ar
             mle(oe, nullptr);
         };
     }
-    auto local_user_id = args.arguments.at<uint32_t>(KnownArgs::local_user_id);
+    auto local_user_id = args.arguments.at<NUserCountType>(KnownArgs::local_user_id);
     auto& parameter_setter_logic = object_pool.create<ParameterSetterLogic>(
         CURRENT_SOURCE_LOCATION,
         std::move(required),

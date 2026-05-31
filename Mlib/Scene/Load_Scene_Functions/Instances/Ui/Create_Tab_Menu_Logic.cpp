@@ -68,7 +68,7 @@ void CreateTabMenuLogic::execute(const LoadSceneJsonUserFunctionArgs& args)
             // macro_line_executor(reload_transient_objects, nullptr);
         };
     }
-    auto local_user_id = args.arguments.at<uint32_t>(KnownArgs::local_user_id);
+    auto local_user_id = args.arguments.at<NUserCountType>(KnownArgs::local_user_id);
     // If the selection_ids array is not yet initialized, apply the default value.
     ui_focus.all_selection_ids.try_emplace(id, deflt);
     auto& tab_menu_logic = object_pool.create<TabMenuLogic>(

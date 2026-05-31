@@ -8,7 +8,7 @@ using namespace Mlib;
 CursorMovement::CursorMovement(
     CursorStates& cursor_states,
     const LockableKeyConfigurations& key_configurations,
-    uint32_t user_id,
+    NUserCountType user_id,
     std::string id)
     : incremental_movement_{ cursor_states }
     , key_configurations_{ key_configurations }

@@ -23,7 +23,7 @@ ListView::ListView(
     const IListViewContents& contents,
     ListViewOrientation orientation,
     UiFocus& ui_focus,
-    uint32_t local_user_id,
+    NUserCountType local_user_id,
     std::function<void()> on_change)
     : debug_hint_{ std::move(debug_hint) }
     , selection_index_{ selection_index }

@@ -6,6 +6,7 @@
 #include <Mlib/OpenGL/Input_Map/Tap_Button_Map.hpp>
 #include <Mlib/OpenGL/Ui/Button_States.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
+#include <Mlib/Scene_Config/Remote_Integers.hpp>
 #include <stdexcept>
 
 using namespace Mlib;
@@ -35,7 +36,7 @@ std::optional<decltype(TOperation()(T()))> otransform(const std::optional<T>& v,
 LoadSceneJsonUserFunction CreateTapButton::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
     args.arguments.validate(KnownArgs::options);
-    auto user_id = args.arguments.at<uint32_t>(KnownArgs::user_id);
+    auto user_id = args.arguments.at<NUserCountType>(KnownArgs::user_id);
     std::scoped_lock lock{args.button_states.tap_buttons_mutex_};
     auto key = args.arguments.try_at<std::string>(KnownArgs::key);
     args.button_states.tap_buttons_[user_id].button_states.push_back(

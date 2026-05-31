@@ -27,7 +27,7 @@ void CreateCameraKeyBinding::execute(const LoadSceneJsonUserFunctionArgs& args)
         .button_press{
             args.button_states,
             args.key_configurations,
-            args.arguments.at<uint32_t>(KnownArgs::local_user_id),
+            args.arguments.at<NUserCountType>(KnownArgs::local_user_id),
             args.arguments.at<std::string>(KnownArgs::id),
             "" }
     }));

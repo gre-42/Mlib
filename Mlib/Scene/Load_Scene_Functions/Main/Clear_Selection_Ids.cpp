@@ -3,6 +3,7 @@
 #include <Mlib/Misc/Argument_List.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Load_Scene_Funcs.hpp>
+#include <Mlib/Scene_Config/Remote_Integers.hpp>
 
 using namespace Mlib;
 
@@ -22,7 +23,7 @@ struct RegisterJsonUserFunction {
             {
                 args.arguments.validate(KnownArgs::options);
                 std::erase_if(
-                    args.ui_focuses[args.arguments.at<uint32_t>(KnownArgs::user_id)].all_selection_ids,
+                    args.ui_focuses[args.arguments.at<NUserCountType>(KnownArgs::user_id)].all_selection_ids,
                     [except=args.arguments.at<std::string>(KnownArgs::except)]
                     (const auto& it)
                     {return it.first != except;});

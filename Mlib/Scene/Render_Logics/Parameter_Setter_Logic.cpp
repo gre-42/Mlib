@@ -72,7 +72,7 @@ ParameterSetterLogic::ParameterSetterLogic(
     SubmenuHeader& header,
     std::string persisted,
     ButtonStates& button_states,
-    uint32_t local_user_id,
+    NUserCountType local_user_id,
     std::function<void()> on_change,
     std::function<void()> on_execute)
     : ew_{ std::move(ew) }

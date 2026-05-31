@@ -23,7 +23,7 @@
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Pulses.hpp>
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Remote/Incremental_Objects/Remote_Object_Id.hpp>
-#include <Mlib/Remote/Remote_Site_Id.hpp>
+#include <Mlib/Scene_Config/Remote_Integers.hpp>
 #include <Mlib/Scene_Graph/Interfaces/INode_Setter.hpp>
 #include <Mlib/Scene_Graph/Interfaces/Scene_Node/IAbsolute_Movable.hpp>
 #include <Mlib/Scene_Graph/Interfaces/Scene_Node/INode_Hider.hpp>

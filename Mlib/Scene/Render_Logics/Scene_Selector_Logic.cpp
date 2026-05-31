@@ -53,7 +53,7 @@ SceneSelectorLogic::SceneSelectorLogic(
     SceneReloader& scene_reloader,
     ButtonStates& button_states,
     UiFocus& ui_focus,
-    uint32_t local_user_id,
+    NUserCountType local_user_id,
     std::function<void()> on_change)
     : ew_{ std::move(ew) }
     , charset_{ std::move(charset) }

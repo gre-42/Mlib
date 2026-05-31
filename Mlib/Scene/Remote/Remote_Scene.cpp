@@ -65,9 +65,11 @@ RemoteScene::RemoteScene(
                 RemoteObjectVisibility::PRIVATE);
             return;
         case RemoteRole::CLIENT:
+            linfo() << "Sending handshake";
             proxies_.add_handshake_socket(home_node_);
             proxies_.add_receive_socket({*home_node_, CURRENT_SOURCE_LOCATION});
             proxies_.send_and_receive(TransmissionType::HANDSHAKE);
+            linfo() << "Handshake sent";
             return;
         }
         throw std::runtime_error("Unkown remote role: " + std::to_string((int)get_remote_params(remote_config).role));

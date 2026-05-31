@@ -10,6 +10,7 @@
 #include <Mlib/Scene/Physics_Scenes.hpp>
 #include <Mlib/Scene/Remote/Remote_Config.hpp>
 #include <Mlib/Scene/Scene_Config.hpp>
+#include <Mlib/Scene_Config/Remote_Integers.hpp>
 #include <Mlib/Time/Fps/Realtime_Dependent_Fps.hpp>
 #include <stdexcept>
 #ifndef WITHOUT_GRAPHICS
@@ -48,7 +49,7 @@ struct RegisterJsonUserFunction {
                     name + ".rendering_resources",
                     args.scene_config.render_config.anisotropic_filtering_level,
                     args.render_set_fps.ds,
-                    args.ui_focuses[args.arguments.at<uint32_t>(KnownArgs::primary_user_id)],
+                    args.ui_focuses[args.arguments.at<NUserCountType>(KnownArgs::primary_user_id)],
                     #endif
                     args.scene_config,
                     args.macro_line_executor.changed_context(name, nlohmann::json::object()),

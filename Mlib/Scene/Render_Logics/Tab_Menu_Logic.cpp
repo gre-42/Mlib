@@ -65,7 +65,7 @@ TabMenuLogic::TabMenuLogic(
     std::unique_ptr<ExpressionWatcher>&& ew,
     UiFocus& ui_focus,
     ButtonStates& button_states,
-    uint32_t user_id,
+    NUserCountType user_id,
     std::function<void()> reload_transient_objects,
     const std::function<void()>& on_change)
     : ew_{ std::move(ew) }

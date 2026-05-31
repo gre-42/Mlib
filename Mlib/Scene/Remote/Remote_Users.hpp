@@ -1,7 +1,7 @@
 #pragma once
 #include <Mlib/Memory/Destruction_Functions.hpp>
 #include <Mlib/Remote/Incremental_Objects/IIncremental_Object.hpp>
-#include <Mlib/Remote/Remote_Site_Id.hpp>
+#include <Mlib/Scene_Config/Remote_Integers.hpp>
 #include <memory>
 
 namespace Mlib {

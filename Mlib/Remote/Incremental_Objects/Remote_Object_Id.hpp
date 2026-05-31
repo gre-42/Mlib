@@ -1,14 +1,12 @@
 #pragma once
 #include <Mlib/Hashing/Hash.hpp>
 #include <Mlib/Hashing/Std_Hash.hpp>
-#include <Mlib/Remote/Remote_Site_Id.hpp>
+#include <Mlib/Scene_Config/Remote_Integers.hpp>
 #include <compare>
 #include <iosfwd>
 #include <string>
 
 namespace Mlib {
-
-using LocalObjectId = uint64_t;
 
 struct RemoteObjectId {
     RemoteSiteId site_id;

@@ -1,5 +1,5 @@
 #pragma once
-#include <Mlib/Remote/Remote_Site_Id.hpp>
+#include <Mlib/Scene_Config/Remote_Integers.hpp>
 #include <chrono>
 #include <cstdint>
 #include <iosfwd>
@@ -10,9 +10,9 @@ namespace Mlib {
 struct LocalSceneLevel;
 struct RemoteObjectId;
 enum class IoVerbosity;
-enum class TransmittedFields: uint32_t;
+enum class TransmittedFields: TransmittedFieldsType;
 
-enum class TransmissionHistory: uint32_t {
+enum class TransmissionHistory: TransmissionHistoryType {
     NONE = 0,
     SITE_ID = 1 << 1,
     END = 1 << 2
@@ -23,15 +23,15 @@ inline bool any(TransmissionHistory fields) {
 }
 
 inline TransmissionHistory operator & (TransmissionHistory a, TransmissionHistory b) {
-    return (TransmissionHistory)((int)a & (int)b);
+    return (TransmissionHistory)((TransmissionHistoryType)a & (TransmissionHistoryType)b);
 }
 
 inline TransmissionHistory operator | (TransmissionHistory a, TransmissionHistory b) {
-    return (TransmissionHistory)((int)a | (int)b);
+    return (TransmissionHistory)((TransmissionHistoryType)a | (TransmissionHistoryType)b);
 }
 
 inline TransmissionHistory& operator |= (TransmissionHistory& a, TransmissionHistory b) {
-    (int&)a |= (int)b;
+    (TransmissionHistoryType&)a |= (TransmissionHistoryType)b;
     return a;
 }
 

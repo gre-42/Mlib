@@ -4,6 +4,7 @@
 #include <Mlib/Misc/Argument_List.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Load_Scene_Funcs.hpp>
+#include <Mlib/Scene_Config/Remote_Integers.hpp>
 
 using namespace Mlib;
 
@@ -22,7 +23,7 @@ struct RegisterJsonUserFunction {
             "clear_requires_reload",
             [](const LoadSceneJsonUserFunctionArgs& args)
             {
-                auto& ui_focus = args.ui_focuses[args.arguments.at<uint32_t>(KnownArgs::local_user_id)];
+                auto& ui_focus = args.ui_focuses[args.arguments.at<NUserCountType>(KnownArgs::local_user_id)];
                 ui_focus.clear_requires_reload(args.arguments.at<std::string>(KnownArgs::id));
                 args.external_json_macro_arguments.set_and_notify(
                     args.arguments.at<std::string>(KnownArgs::indicator),

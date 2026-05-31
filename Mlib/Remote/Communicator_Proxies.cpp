@@ -69,11 +69,11 @@ void CommunicatorProxies::receive() {
                 auto site_id = read_binary<RemoteSiteId>(sstr, "node ID", IoVerbosity::SILENT);
                 auto it = unicast_communicator_proxies_.find(site_id);
                 if (it == unicast_communicator_proxies_.end()) {
-                    linfo() << "Add new communicator proxy for site " << site_id;
+                    linfo() << "Add new communicator proxy for site " << (site_id + 0);
                     auto f = communicator_proxy_factory_->create_communicator_proxy(std::move(responder), site_id);
                     auto res = unicast_communicator_proxies_.emplace(site_id, std::move(f), CURRENT_SOURCE_LOCATION);
                     if (!res.second) {
-                        verbose_abort("Could not add communicator proxy with ID \"" + std::to_string(site_id) + '"');
+                        verbose_abort("Could not add communicator proxy with ID \"" + std::to_string(site_id + 0) + '"');
                     }
                     return res.first->second.object();
                 } else {

@@ -3,7 +3,7 @@
 #include <Mlib/Memory/Dangling_Set.hpp>
 #include <Mlib/Memory/Dangling_Value_Unordered_Map.hpp>
 #include <Mlib/Memory/Destruction_Notifier.hpp>
-#include <Mlib/Remote/Remote_Site_Id.hpp>
+#include <Mlib/Scene_Config/Remote_Integers.hpp>
 #include <compare>
 #include <iosfwd>
 #include <memory>

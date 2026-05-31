@@ -5,7 +5,7 @@ if (EMSCRIPTEN)
         NAME MlibRemote
         RECURSIVE
         ADDITIONAL_FILES ""
-        EXCLUDED_FILES ""
+        EXCLUDED_FILES "/Config_Server/[^/]+$"
     )
 else()
     my_add_library(

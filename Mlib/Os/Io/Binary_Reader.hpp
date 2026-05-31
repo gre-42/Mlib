@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Os/Io/Binary.hpp>
+#include <concepts>
 
 namespace Mlib {
 
@@ -9,8 +10,9 @@ public:
         : istr_{ istr }
         , verbosity_{ verbosity }
     {}
+    template <std::integral LengthType>
     inline std::string read_string(const char* message) {
-        auto len = Mlib::read_binary<uint32_t>(istr_, message, verbosity_);
+        auto len = Mlib::read_binary<LengthType>(istr_, message, verbosity_);
         return Mlib::read_string(istr_, len, message, verbosity_);
     }
     template <class T>

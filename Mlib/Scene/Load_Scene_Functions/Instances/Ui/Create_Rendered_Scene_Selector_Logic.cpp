@@ -32,6 +32,7 @@ DECLARE_ARGUMENT(appearance);
 }
 
 namespace AppearanceArgs {
+BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(charset);
 DECLARE_ARGUMENT(ttf_file);
 DECLARE_ARGUMENT(left);
@@ -75,7 +76,7 @@ void CreateRenderedSceneSelectorLogic::execute(const LoadSceneJsonUserFunctionAr
         std::move(id),
         std::vector<ReplacementParameterAndFilename>{scene_entries.begin(), scene_entries.end()},
         appearance.at<std::string>(AppearanceArgs::charset),
-        args.arguments.path(AppearanceArgs::ttf_file),
+        appearance.path(AppearanceArgs::ttf_file),
         std::make_unique<Widget>(
             args.layout_constraints.get_pixels(appearance.at<std::string>(AppearanceArgs::left)),
             args.layout_constraints.get_pixels(appearance.at<std::string>(AppearanceArgs::right)),
@@ -87,10 +88,9 @@ void CreateRenderedSceneSelectorLogic::execute(const LoadSceneJsonUserFunctionAr
         focus_filter,
         std::make_unique<ExpressionWatcher>(args.macro_line_executor),
         args.scene_reloader,
-        args.scene_level_selector,
         args.button_states,
         ui_focus,
-        args.arguments.at<uint32_t>(KnownArgs::local_user_id),
+        args.arguments.at<NUserCountType>(KnownArgs::local_user_id),
         [mle=args.macro_line_executor, on_change=args.arguments.try_at(KnownArgs::on_change)]()
         {
             if (on_change.has_value()) {
