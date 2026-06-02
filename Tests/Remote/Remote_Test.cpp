@@ -150,8 +150,9 @@ void test_remote() {
     SharedString s{ "Hello world" };
     LocalSceneLevel local_scene_level;
     std::function<void()> on_schedule_load_scene;
-    SceneLevelSelector server_scene_level{local_scene_level, on_schedule_load_scene};
-    SceneLevelSelector client_scene_level{local_scene_level, on_schedule_load_scene};
+    std::function<void()> on_update_time_of_day;
+    SceneLevelSelector server_scene_level{local_scene_level, on_schedule_load_scene, on_update_time_of_day};
+    SceneLevelSelector client_scene_level{local_scene_level, on_schedule_load_scene, on_update_time_of_day};
 
     RemoteObjectFactory shared_object_factory;
     IncrementalRemoteObjects server_objects{ 42, {server_scene_level, CURRENT_SOURCE_LOCATION} };

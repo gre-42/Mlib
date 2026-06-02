@@ -1,10 +1,10 @@
 #include "Late_Join_Player_Factory.hpp"
+#include <Mlib/Iterator/Enumerate.hpp>
 #include <Mlib/Json/Misc.hpp>
 #include <Mlib/Macro_Executor/Asset_Group_Replacement_Parameters.hpp>
 #include <Mlib/Macro_Executor/Asset_References.hpp>
 #include <Mlib/Macro_Executor/Macro_Keys.hpp>
 #include <Mlib/Macro_Executor/Macro_Line_Executor.hpp>
-#include <Mlib/Iterator/Enumerate.hpp>
 #include <Mlib/Macro_Executor/Replacement_Parameter.hpp>
 #include <Mlib/Misc/Argument_List.hpp>
 #include <Mlib/Players/Containers/Remote_Sites.hpp>
@@ -152,11 +152,11 @@ LateJoinPlayerFactory::LateJoinPlayerFactory(
             player.validate(PlayerKeys::options);
             if (auto rj = player.try_at(PlayerKeys::required); rj.has_value()) {
                 if (!macro_line_executor.eval_boolean_expression(*rj)) {
-                    linfo() << "Not creating **remote** user for slot " << i;
+                    linfo() << "Not creating user for slot " << i;
                     continue;
                 }
             }
-            linfo() << "Create **remote** user for slot " << i;
+            linfo() << "Create user for slot " << i;
             auto get = [&defaults, &player](std::string_view name){
                 if (player.contains(name)) {
                     return player.at(name);

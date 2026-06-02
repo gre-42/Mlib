@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/Hashing/Hash.hpp>
 #include <Mlib/Scene_Graph/Render/IGpu_Object_Factory.hpp>
+#include <Mlib/Threads/Recursive_Shared_Mutex.hpp>
 #include <compare>
 #include <unordered_map>
 
@@ -46,6 +47,7 @@ public:
         const std::shared_ptr<IGpuVertexData>& gvd,
         const std::shared_ptr<IGpuInstanceBuffers>& instances) const override;
 private:
+    mutable SafeAtomicSharedMutex mutex_;
     IGpuObjectFactory& child_;
     mutable std::unordered_map<ArrayDataKey, std::shared_ptr<IGpuVertexData>> vertex_array_datas_;
 };

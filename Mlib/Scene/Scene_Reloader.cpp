@@ -13,12 +13,14 @@ SceneReloader::SceneReloader(
     ThreadSafeString& next_scene_filename,
     ThreadSafePromise<void>& reload_requested,
     std::optional<RemoteRole> remote_role,
-    std::function<std::string()> get_selected_level_id)
+    std::function<std::string()> get_selected_level_id,
+    std::function<std::string()> get_selected_time_of_day)
     : scene_level_selector_{scene_level_selector}
     , next_scene_filename_{next_scene_filename}
     , reload_requested_{reload_requested}
     , remote_role_{remote_role}
     , get_selected_level_id_{std::move(get_selected_level_id)}
+    , get_selected_time_of_day_{std::move(get_selected_time_of_day)}
 {}
 
 SceneReloader::~SceneReloader() = default;
@@ -46,9 +48,11 @@ void SceneReloader::change_scene() {
     if (remote_role_ == RemoteRole::SERVER) {
         linfo() << "Change scene as server";
         // The scene level selector triggers "local_load_scene_by_filename".
-        scene_level_selector_.server_set_next_scene_level(get_selected_level_id_());
+        scene_level_selector_.server_set_next_scene_level(
+            get_selected_level_id_(),
+            get_selected_time_of_day_());
     } else {
-        linfo() << "Change scene as client";
-        reload_requested_.set();
+        lerr() << "Change scene as client";
+        throw std::runtime_error("Client attempt to change the scene");
     }
 }

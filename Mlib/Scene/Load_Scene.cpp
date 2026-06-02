@@ -122,7 +122,18 @@ LoadScene::LoadScene(
     , scene_level_selector_{
         std::move(scene_level),
         [this](){
+            linfo() << "Time of day (0): " << scene_level_selector_.get_time_of_day();
+            auto args = macro_line_executor_.writable_json_macro_arguments();
+            args->set("loaded_time_of_day", scene_level_selector_.get_time_of_day());
+            args.unlock_and_notify();
             macro_line_executor_({{"playback", "remote.level.load_" + scene_level_selector_.get_next_scene_name()}}, nullptr);
+        },
+        [this](){
+            linfo() << "Time of day (1): " << scene_level_selector_.get_time_of_day();
+            auto args = macro_line_executor_.writable_json_macro_arguments();
+            args->set("loaded_time_of_day", scene_level_selector_.get_time_of_day());
+            args.unlock_and_notify();
+            macro_line_executor_({{"playback", "update_time_of_day"}}, nullptr);
         }}
     , scene_reloader_{
         scene_level_selector_,
@@ -131,7 +142,8 @@ LoadScene::LoadScene(
         remote_config_and_sites.config.game.has_value()
             ? std::optional{remote_config_and_sites.config.game->role}
             : std::nullopt,
-        [&](){ return macro_line_executor_.at("selected_level_id"); }}
+        [&](){ return macro_line_executor_.at("selected_level_id"); },
+        [&](){ return macro_line_executor_.at("selected_time_of_day"); }}
 {}
 
 LoadScene::~LoadScene() = default;

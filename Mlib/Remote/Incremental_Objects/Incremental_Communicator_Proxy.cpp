@@ -49,12 +49,16 @@ void IncrementalCommunicatorProxy::receive_from_home(std::istream& istr) {
     auto reader = BinaryReader{istr, verbosity_};
     {
         auto scene_level_name = reader.read_string<StringLengthType>("scene level name");
+        auto time_of_day = reader.read_string<StringLengthType>("time of day");
         auto reload_count = reader.read_binary<ReloadCountType>("reload_count");
-        home_scene_level_.emplace(std::move(scene_level_name), reload_count);
+        home_scene_level_.emplace(std::move(scene_level_name), std::move(time_of_day), reload_count);
         auto level_selector = objects_->local_scene_level_selector();
         if (any(tasks_ & ProxyTasks::RELOAD_SCENE)) {
-            if (level_selector->reload_required(*home_scene_level_)) {
-                level_selector->client_schedule_load_scene_level(*home_scene_level_);
+            if (level_selector->client_set_next_scene_level(
+                home_scene_level_->level_name,
+                home_scene_level_->time_of_day,
+                home_scene_level_->reload_count))
+            {
                 return;
             }
         }
@@ -129,7 +133,8 @@ void IncrementalCommunicatorProxy::send_home(std::iostream& iostr) {
         {
             auto level_selector = objects_->local_scene_level_selector();
             auto level = level_selector->get_local_scene_level();
-            writer.write_string<StringLengthType>(level.name, "level name");
+            writer.write_string<StringLengthType>(level.level_name, "level name");
+            writer.write_string<StringLengthType>(level.time_of_day, "time of day");
             writer.write_binary(level.reload_count, "reload count");
             writer.write_binary(level_selector->load_status(), "scene level load status");
             if (is_loading(level_selector->load_status())) {

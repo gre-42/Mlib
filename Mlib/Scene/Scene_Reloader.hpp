@@ -19,7 +19,8 @@ public:
         ThreadSafeString& next_scene_filename,
         ThreadSafePromise<void>& reload_requested,
         std::optional<RemoteRole> remote_role,
-        std::function<std::string()> get_selected_level_id);
+        std::function<std::string()> get_selected_level_id,
+        std::function<std::string()> get_selected_time_of_day);
     ~SceneReloader();
     void load_scene_by_filename(const std::string& filename);
     void set_next_scene_by_manifest(const ReplacementParameterAndFilename& rpe);
@@ -31,6 +32,7 @@ private:
     ThreadSafePromise<void>& reload_requested_;
     std::optional<RemoteRole> remote_role_;
     std::function<std::string()> get_selected_level_id_;
+    std::function<std::string()> get_selected_time_of_day_;
     mutable FastMutex mutex_;
 };
 

@@ -20,14 +20,23 @@ std::shared_ptr<IGpuVertexData> CachingGpuObjectFactory::create_vertex_data(
         return child_.create_vertex_data(cva, animation, CachingBehavior::DISABLED, task_location);
     }
     auto key = ArrayDataKey{cva, animation};
-    if (auto it = vertex_array_datas_.find(key); it != vertex_array_datas_.end()) {
-        return it->second;
+    {
+        std::shared_lock lock{mutex_};
+        if (auto it = vertex_array_datas_.find(key); it != vertex_array_datas_.end()) {
+            return it->second;
+        }
     }
-    auto res = vertex_array_datas_.try_emplace(std::move(key), child_.create_vertex_data(cva, animation, CachingBehavior::DISABLED, task_location));
-    if (!res.second) {
-        verbose_abort("Could not insert GPU vertex data");
+    {
+        std::scoped_lock lock{mutex_};
+        if (auto it = vertex_array_datas_.find(key); it != vertex_array_datas_.end()) {
+            return it->second;
+        }
+        auto res = vertex_array_datas_.try_emplace(std::move(key), child_.create_vertex_data(cva, animation, CachingBehavior::DISABLED, task_location));
+        if (!res.second) {
+            verbose_abort("Could not insert GPU vertex data");
+        }
+        return res.first->second;
     }
-    return res.first->second;
 }
 
 std::shared_ptr<IGpuVertexArray> CachingGpuObjectFactory::create_vertex_array_with_static_instances(
