@@ -64,15 +64,15 @@ EM_JS(int, createWebTransportSocket,
                 await transport.ready;
             } catch (e) {
                 console.error("Reader error:", e);
-                console.error("Sending status code", Module.JsStatusCode.FAILURE.value);
-                _resolve_promise(promise_ptr, Module.JsStatusCode.FAILURE.value);
+                console.error("Sending status code", Module["JsStatusCode"]["FAILURE"]["value"]);
+                _resolve_promise(promise_ptr, Module["JsStatusCode"]["FAILURE"]["value"]);
                 return;
             }
             transport["_packetQueue"] = [];
             transport["_isClosed"] = false;
             console.log("WebTransport ready");
-            console.error("Sending status code", Module.JsStatusCode.SUCCESS.value);
-            _resolve_promise(promise_ptr, Module.JsStatusCode.SUCCESS.value);
+            console.error("Sending status code", Module["JsStatusCode"]["SUCCESS"]["value"]);
+            _resolve_promise(promise_ptr, Module["JsStatusCode"]["SUCCESS"]["value"]);
 
             // Background reader
             (async () => {
@@ -134,12 +134,12 @@ EM_JS(bool, sendUsingWebTransportSocket, (int transportHandle, const uint8_t* da
                 await writer.write(dataArray);
             } catch (error) {
                 console.error("Failed to write data:", error);
-                _resolve_promise(promise_ptr, Module.JsStatusCode.FAILURE.value);
+                _resolve_promise(promise_ptr, Module["JsStatusCode"]["FAILURE"]["value"]);
                 return;
             } finally {
                 writer.releaseLock();
             }
-            _resolve_promise(promise_ptr, Module.JsStatusCode.SUCCESS.value);
+            _resolve_promise(promise_ptr, Module["JsStatusCode"]["SUCCESS"]["value"]);
         })();
         return true;
     } catch (error) {
