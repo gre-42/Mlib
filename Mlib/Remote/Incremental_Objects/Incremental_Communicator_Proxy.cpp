@@ -98,7 +98,7 @@ void IncrementalCommunicatorProxy::receive_from_home(std::istream& istr) {
             auto i = transmission_history_reader.read_remote_object_id(istr, transmitted_fields, verbosity_);
             if (auto it = objects_->try_get(i); it != nullptr) {
                 if (any(verbosity_ & IoVerbosity::METADATA)) {
-                    linfo() << this << " read frome home site " << (home_site_id_ + 0) << ", object " << i;
+                    linfo() << this << " read from home site " << (home_site_id_ + 0) << ", object " << i;
                 }
                 it->read(istr, i, tasks_, transmitted_fields, transmission_history_reader);
             } else {
