@@ -17,6 +17,7 @@ enum class ProxyTasks;
 class IIncrementalObject: public virtual DestructionNotifier, public virtual DanglingBaseClass {
 public:
     virtual ~IIncrementalObject() = default;
+    virtual std::string name() const = 0;
     virtual void read(
         std::istream& istr,
         const RemoteObjectId& remote_object_id,

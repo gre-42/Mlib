@@ -125,6 +125,10 @@ DanglingBaseClassPtr<RemotePlayer> RemotePlayer::try_create_from_stream(
         CURRENT_SOURCE_LOCATION};
 }
 
+std::string RemotePlayer::name() const {
+    return *player_->id();
+}
+
 void RemotePlayer::read(
     std::istream& istr,
     const RemoteObjectId& remote_object_id,

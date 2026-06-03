@@ -48,6 +48,10 @@ DanglingBaseClassPtr<RemoteCountdown> RemoteCountdown::try_create_from_stream(
     return {res.release(), CURRENT_SOURCE_LOCATION};
 }
 
+std::string RemoteCountdown::name() const {
+    return "countdown";
+}
+
 void RemoteCountdown::read(
     std::istream& istr,
     const RemoteObjectId& remote_object_id,

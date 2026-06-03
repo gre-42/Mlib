@@ -38,6 +38,9 @@ public:
     virtual ~SharedInteger() override {
         on_destroy.clear();
     }
+    virtual std::string name() const override {
+        return "int";
+    }
     virtual void read(
         std::istream& istr,
         const RemoteObjectId& remote_object_id,
@@ -82,6 +85,9 @@ public:
     }
     virtual ~SharedString() override {
         on_destroy.clear();
+    }
+    virtual std::string name() const override {
+        return "string";
     }
     virtual void read(
         std::istream& istr,

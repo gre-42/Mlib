@@ -20,6 +20,7 @@ public:
         std::istream& istr,
         const RemoteObjectId& remote_object_id,
         IoVerbosity verbosity);
+    virtual std::string name() const override;
     virtual void read(
         std::istream& istr,
         const RemoteObjectId& remote_object_id,

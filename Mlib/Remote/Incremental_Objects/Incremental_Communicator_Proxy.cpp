@@ -98,7 +98,7 @@ void IncrementalCommunicatorProxy::receive_from_home(std::istream& istr) {
             auto i = transmission_history_reader.read_remote_object_id(istr, transmitted_fields, verbosity_);
             if (auto it = objects_->try_get(i); it != nullptr) {
                 if (any(verbosity_ & IoVerbosity::METADATA)) {
-                    linfo() << this << " read from home site " << (home_site_id_ + 0) << ", object " << i;
+                    linfo() << this << " read from home site " << (home_site_id_ + 0) << ", object " << i << " \"" << it->name() << '"';
                 }
                 it->read(istr, i, tasks_, transmitted_fields, transmission_history_reader);
             } else {
@@ -173,7 +173,7 @@ void IncrementalCommunicatorProxy::send_home(std::iostream& iostr) {
                     : KnownFields::ALL;
                 if (known_fields == KnownFields::NONE) {
                     if (any(verbosity_ & IoVerbosity::METADATA)) {
-                        linfo() << "Maybe send complete object to home site " << (home_site_id_ + 0) << ", " << i;
+                        linfo() << "Maybe send complete object to home site " << (home_site_id_ + 0) << ", " << i << " \"" << o->name() << '"';
                     }
                     if (new_object_sent) {
                         if (any(verbosity_ & IoVerbosity::METADATA)) {
@@ -184,7 +184,7 @@ void IncrementalCommunicatorProxy::send_home(std::iostream& iostr) {
                     new_object_sent = true;
                 } else {
                     if (any(verbosity_ & IoVerbosity::METADATA)) {
-                        linfo() << "Maybe send partial object to home site " << (home_site_id_ + 0) << ", " << i;
+                        linfo() << "Maybe send partial object to home site " << (home_site_id_ + 0) << ", " << i << " \"" << o->name() << '"';
                     }
                 }
                 o->write(iostr, j, tasks_, known_fields, transmission_history_writer);
@@ -211,15 +211,12 @@ void IncrementalCommunicatorProxy::send_home(std::iostream& iostr) {
             }
             auto transmission_history_writer = TransmissionHistoryWriter{objects_->local_time()};
             for (auto& [i, o] : objects) {
-                if (any(verbosity_ & IoVerbosity::METADATA)) {
-                    linfo() << "Maybe send object to home site " << (home_site_id_ + 0) << ", " << i;
-                }
                 auto known_fields = objects_unknown_at_home_.contains(i)
                     ? KnownFields::NONE
                     : KnownFields::ALL;
                 if (known_fields == KnownFields::NONE) {
                     if (any(verbosity_ & IoVerbosity::METADATA)) {
-                        linfo() << "Maybe send complete object to home site " << (home_site_id_ + 0) << ", " << i;
+                        linfo() << "Maybe send complete object to home site " << (home_site_id_ + 0) << ", " << i << " \"" << o->name() << '"';
                     }
                     if (new_object_sent) {
                         continue;
@@ -227,7 +224,7 @@ void IncrementalCommunicatorProxy::send_home(std::iostream& iostr) {
                     new_object_sent = true;
                 } else {
                     if (any(verbosity_ & IoVerbosity::METADATA)) {
-                        linfo() << "Maybe send partial object to home site " << (home_site_id_ + 0) << ", " << i;
+                        linfo() << "Maybe send partial object to home site " << (home_site_id_ + 0) << ", " << i << " \"" << o->name() << '"';
                     }
                 }
                 o->write(iostr, i, tasks_, known_fields, transmission_history_writer);

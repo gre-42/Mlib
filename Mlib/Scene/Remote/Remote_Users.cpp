@@ -59,6 +59,10 @@ DanglingBaseClassPtr<RemoteUsers> RemoteUsers::try_create_from_stream(
     return {res.release(), CURRENT_SOURCE_LOCATION};
 }
 
+std::string RemoteUsers::name() const {
+    return "users";
+}
+
 void RemoteUsers::read(
     std::istream& istr,
     const RemoteObjectId& remote_object_id,

@@ -32,7 +32,8 @@ static_assert(sizeof(FixedArray<SceneDir, 3>) == 3 * 4);
 
 enum class RigidBodyTransmittedFields: TransmittedFieldsType {
     INITIAL = (TransmittedFieldsType)TransmittedFields::END,
-    OWNERSHIP = (TransmittedFieldsType)TransmittedFields::END << 1
+    OWNERSHIP = (TransmittedFieldsType)TransmittedFields::END << 1,
+    NONZERO = (TransmittedFieldsType)TransmittedFields::END << 2,
 };
 
 inline TransmittedFields operator & (TransmittedFields a, RigidBodyTransmittedFields b) {
@@ -102,7 +103,8 @@ DanglingBaseClassPtr<RemoteRigidBodyVehicle> RemoteRigidBodyVehicle::try_create_
         TransmittedFields::SITE_ID |
         TransmittedFields::END |
         RigidBodyTransmittedFields::INITIAL |
-        RigidBodyTransmittedFields::OWNERSHIP)))
+        RigidBodyTransmittedFields::OWNERSHIP |
+        RigidBodyTransmittedFields::NONZERO)))
     {
         throw std::runtime_error("RemoteRigidBodyVehicle::try_create_from_stream: Unknown transmitted fields");
     }
@@ -221,6 +223,10 @@ DanglingBaseClassPtr<RemoteRigidBodyVehicle> RemoteRigidBodyVehicle::try_create_
         CURRENT_SOURCE_LOCATION};
 }
 
+std::string RemoteRigidBodyVehicle::name() const {
+    return rb_->name();
+}
+
 void RemoteRigidBodyVehicle::read(
     std::istream& istr,
     const RemoteObjectId& remote_object_id,
@@ -306,6 +312,7 @@ void RemoteRigidBodyVehicle::write(
         throw std::runtime_error("RemoteRigidBodyVehicle::write: Rigid body is destroyed");
     }
     auto transmitted_fields = TransmittedFields::NONE;
+    transmitted_fields |= RigidBodyTransmittedFields::NONZERO;
     if (known_fields == KnownFields::NONE) {
         transmitted_fields |= RigidBodyTransmittedFields::INITIAL;
     }
