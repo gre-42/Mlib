@@ -114,7 +114,7 @@ void IncrementalCommunicatorProxy::receive_from_home(std::istream& istr) {
                     objects_unknown_here_.insert(i);
                 } else {
                     if (any(verbosity_ & IoVerbosity::METADATA)) {
-                        linfo() << this << " object created";
+                        linfo() << this << " object created: \"" << o->name() << '"';
                     }
                     objects_->add_remote_object(i, *o, visibility);
                     objects_unknown_here_.erase(i);

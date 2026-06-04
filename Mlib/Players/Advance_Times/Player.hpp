@@ -23,6 +23,7 @@
 #include <Mlib/Players/Player/Vehicle_Movement.hpp>
 #include <Mlib/Players/Scene_Vehicle/Internals_Mode.hpp>
 #include <Mlib/Remote/Events/Times_And_Events.hpp>
+#include <Mlib/Scene_Config/Remote_Integers.hpp>
 #include <Mlib/Scene_Config/Scene_Precision.hpp>
 #include <Mlib/Threads/Recursive_Shared_Mutex.hpp>
 #include <chrono>
@@ -62,18 +63,20 @@ enum class WayPointLocation;
 enum class WhenToEquip;
 
 enum class GameMode: uint32_t {
-    RALLY = 0x39B2A982,
-    RAMMING = 0x9F250C1E,
-    TEAM_DEATHMATCH = 0x4ABCD738
+    RALLY = 0,
+    RAMMING = 1,
+    TEAM_DEATHMATCH = 2
 };
+static const size_t GAME_MODE_BITS = 2;
 
 GameMode game_mode_from_string(const std::string& game_mode);
 std::string game_mode_to_string(GameMode game_mode);
 
 enum class PlayerRole: uint32_t {
-    COMPETITOR = 0x7EB29427,
-    BYSTANDER = 0xF362AF12
+    COMPETITOR = 0,
+    BYSTANDER = 1
 };
+static const size_t PLAYER_ROLE_BITS = 1;
 
 PlayerRole player_role_from_string(const std::string& role);
 std::string player_role_to_string(PlayerRole role);
@@ -81,19 +84,21 @@ std::string player_role_to_string(PlayerRole role);
 enum class ExternalsMode: uint32_t;
 
 enum class UnstuckMode: uint32_t {
-    OFF = 0x938A74FA,
-    REVERSE = 0xC84AEF70,
-    DELETE = 0x6EFB298A
+    OFF = 0,
+    REVERSE = 1,
+    DELETE = 2
 };
+static const size_t UNSTUCK_MODE_BITS = 2;
 
 UnstuckMode unstuck_mode_from_string(const std::string& unstuck_mode);
 std::string unstuck_mode_to_string(UnstuckMode unstuck_mode);
 
 enum class OpponentSelectionStrategy: uint32_t {
-    KEEP = 0x2EAB9423,
-    NEXT = 0x79DA3902,
-    BEST = 0x1EC28956
+    KEEP = 0,
+    NEXT = 1,
+    BEST = 2
 };
+static const size_t OPPONENT_SELECTION_STRATEGY_BITS = 2;
 
 enum class ControlSource;
 enum class PlayerSitePrivileges;

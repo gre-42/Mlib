@@ -17,5 +17,6 @@ using UserStatusType = uint8_t;
 using JSONLengthType = uint16_t;
 using StringLengthType = uint8_t;
 using ReloadCountType = uint8_t;
+using SkillsType = uint8_t;
 
 }

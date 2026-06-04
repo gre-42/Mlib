@@ -63,7 +63,7 @@ std::vector<int16_t> Mlib::read_wav_44_16_mono(const std::string& filename) {
             throw std::runtime_error("Unsupported wav file format (only 16bit supported)");
         }
         std::vector<int16_t> result(header.subchunk2_size / 2);
-        binary_reader.read_vector(result, "wav data", IoVerbosity::SILENT);
+        binary_reader.read_vector(result, "wav data");
         return result;
     } catch (const std::runtime_error& e) {
         throw std::runtime_error("Error opening file \"" + filename + "\": " + e.what());

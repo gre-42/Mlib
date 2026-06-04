@@ -20,12 +20,12 @@ public:
         return Mlib::read_binary<T>(istr_, message, verbosity_);
     }
     template <class TData>
-    void read_vector(const std::span<TData>& vec, const char* msg, IoVerbosity verbosity) {
-        Mlib::read_vector(istr_, vec, msg, verbosity);
+    void read_vector(const std::span<TData>& vec, const char* msg) {
+        Mlib::read_vector(istr_, vec, msg, verbosity_);
     }
     template <class TVec>
-    void read_vector(TVec& vec, const char* msg, IoVerbosity verbosity) {
-        Mlib::read_vector(istr_, vec, msg, verbosity);
+    void read_vector(TVec& vec, const char* msg) {
+        Mlib::read_vector(istr_, vec, msg, verbosity_);
     }
     inline std::vector<std::byte> read_all_vector(const char* msg) {
         return Mlib::read_all_vector(istr_, msg, verbosity_);

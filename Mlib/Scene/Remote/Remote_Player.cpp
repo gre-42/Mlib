@@ -3,8 +3,8 @@
 #include <Mlib/Json/Json_View.hpp>
 #include <Mlib/Macro_Executor/Macro_Line_Executor.hpp>
 #include <Mlib/Memory/Object_Pool.hpp>
-#include <Mlib/Os/Io/Binary_Reader.hpp>
-#include <Mlib/Os/Io/Binary_Writer.hpp>
+#include <Mlib/Os/Io/Binary_Bitwise_Words_Reader.hpp>
+#include <Mlib/Os/Io/Binary_Bitwise_Words_Writer.hpp>
 #include <Mlib/Physics/Ai/Control_Source.hpp>
 #include <Mlib/Physics/Misc/Weapon_Cycle.hpp>
 #include <Mlib/Physics/Misc/When_To_Equip.hpp>
@@ -13,6 +13,7 @@
 #include <Mlib/Players/Advance_Times/Player_Site_Privileges.hpp>
 #include <Mlib/Players/Containers/Players.hpp>
 #include <Mlib/Players/Containers/Remote_Sites.hpp>
+#include <Mlib/Players/Scene_Vehicle/Externals_Mode.hpp>
 #include <Mlib/Players/Scene_Vehicle/Scene_Vehicle.hpp>
 #include <Mlib/Players/User_Account/User_Account.hpp>
 #include <Mlib/Remote/Incremental_Objects/Transmission_History.hpp>
@@ -61,7 +62,7 @@ DanglingBaseClassPtr<RemotePlayer> RemotePlayer::try_create_from_stream(
     TransmissionHistoryReader& transmission_history_reader,
     IoVerbosity verbosity)
 {
-    BinaryReader reader{ istr, verbosity };
+    BinaryBitwiseWordsReader reader{ istr, verbosity };
     if (any(transmitted_fields & ~(TransmittedFields::SITE_ID | TransmittedFields::END))) {
         throw std::runtime_error("RemotePlayer::try_create_from_stream: Unknown transmitted fields");
     }
@@ -75,36 +76,32 @@ DanglingBaseClassPtr<RemotePlayer> RemotePlayer::try_create_from_stream(
     if (auto user_account_key = reader.read_string<StringLengthType>("user_account_key"); !user_account_key.empty()) {
         args["user_account_key"] = std::move(user_account_key);
     }
-    args["game_mode"] = game_mode_to_string(reader.read_binary<GameMode>("game_mode"));
-    args["player_role"] = player_role_to_string(reader.read_binary<PlayerRole>("player_role"));
-    args["unstuck_mode"] = unstuck_mode_to_string(reader.read_binary<UnstuckMode>("unstuck_mode"));
+    args["game_mode"] = game_mode_to_string(reader.read_bits<GameMode>(GAME_MODE_BITS, "game_mode"));
+    args["player_role"] = player_role_to_string(reader.read_bits<PlayerRole>(PLAYER_ROLE_BITS, "player_role"));
+    args["unstuck_mode"] = unstuck_mode_to_string(reader.read_bits<UnstuckMode>(UNSTUCK_MODE_BITS, "unstuck_mode"));
+    args["driving_direction"] = driving_direction_to_string(reader.read_bits<DrivingDirection>(DRIVING_DIRECTION_BITS, "driving_direction"));
+    auto has_scene_vehicle = reader.read_bool_bit("has_scene_vehicle");
     args["behavior"] = reader.read_string<StringLengthType>("behavior");
-    args["driving_direction"] = driving_direction_to_string(reader.read_binary<DrivingDirection>("driving_direction"));
+    reader.align_to_next_word();
     Skills{}.read(istr);
     Skills{}.read(istr);
-    auto has_scene_vehicle = reader.read_binary<bool>("has_scene_vehicle");
     if (has_scene_vehicle) {
         reader.read_binary<RemoteObjectId>("vehicle_object_id");
         reader.read_string<StringLengthType>("seat");
-        reader.read_binary<ExternalsMode>("externals mode");
-        {
-            auto has_weapon_cycle = reader.read_binary<bool>("has_weapon_cycle");
-            if (has_weapon_cycle) {
-                reader.read_string<StringLengthType>("weapon");
-                read_shot_history(istr, transmission_history_reader, verbosity);
-            }
+        reader.read_bits<ExternalsMode>(EXTERNALS_MODE_BITS, "externals mode");
+        auto has_weapon_cycle = reader.read_bool_bit("has_weapon_cycle");
+        auto has_gun_yaw = reader.read_bool_bit("has_gun_yaw");
+        auto has_gun_pitch = reader.read_bool_bit("has_gun_pitch");
+        reader.align_to_next_word();
+        if (has_weapon_cycle) {
+            reader.read_string<StringLengthType>("weapon");
+            read_shot_history(istr, transmission_history_reader, verbosity);
         }
-        {
-            auto has_gun_yaw = reader.read_binary<bool>("has_gun_yaw");
-            if (has_gun_yaw) {
-                reader.read_binary<float>("gun yaw");
-            }
+        if (has_gun_yaw) {
+            reader.read_binary<float>("gun yaw");
         }
-        {
-            auto has_gun_pitch = reader.read_binary<bool>("has_gun_pitch");
-            if (has_gun_pitch) {
-                reader.read_binary<float>("gun pitch");
-            }
+        if (has_gun_pitch) {
+            reader.read_binary<float>("gun pitch");
         }
     }
     read_select_next_vehicle_history(istr, transmission_history_reader, verbosity);
@@ -136,7 +133,7 @@ void RemotePlayer::read(
     TransmittedFields transmitted_fields,
     TransmissionHistoryReader& transmission_history_reader)
 {
-    BinaryReader reader{ istr, verbosity_ };
+    BinaryBitwiseWordsReader reader{ istr, verbosity_ };
     auto type = reader.read_binary<RemoteSceneObjectType>("scene object type");
     if (type != RemoteSceneObjectType::PLAYER) {
         throw std::runtime_error("RemotePlayer::read: Unexpected scene object type");
@@ -148,18 +145,19 @@ void RemotePlayer::read(
     reader.read_string<StringLengthType>("team");
     reader.read_string<StringLengthType>("full_user_name");
     reader.read_string<StringLengthType>("user_account_key");
-    reader.read_binary<GameMode>("game_mode");
-    reader.read_binary<PlayerRole>("player_role");
-    reader.read_binary<UnstuckMode>("unstuck_mode");
+    reader.read_bits<GameMode>(GAME_MODE_BITS, "game_mode");
+    reader.read_bits<PlayerRole>(PLAYER_ROLE_BITS, "player_role");
+    reader.read_bits<UnstuckMode>(UNSTUCK_MODE_BITS, "unstuck_mode");
+    reader.read_bits<DrivingDirection>(DRIVING_DIRECTION_BITS, "driving_direction");
+    auto has_scene_vehicle = reader.read_bool_bit("has_scene_vehicle");
     reader.read_string<StringLengthType>("behavior");
-    reader.read_binary<DrivingDirection>("driving_direction");
+    reader.align_to_next_word();
     player_->set_skills(ControlSource::AI, Skills{}.read(istr));
     player_->set_skills(ControlSource::USER, Skills{}.read(istr));
-    auto has_scene_vehicle = reader.read_binary<bool>("has_scene_vehicle");
     if (has_scene_vehicle) {
         auto vehicle_object_id = reader.read_binary<RemoteObjectId>("vehicle_object_id");
         auto seat = reader.read_string<StringLengthType>("seat");
-        auto externals_mode = reader.read_binary<ExternalsMode>("externals mode");
+        auto externals_mode = reader.read_bits<ExternalsMode>(EXTERNALS_MODE_BITS, "externals mode");
         if (!any(player_->site_privileges() & PlayerSitePrivileges::MANAGER)) {
             if (player_->has_scene_vehicle()) {
                 auto rb = player_->rigid_body();
@@ -215,48 +213,43 @@ void RemotePlayer::read(
                 }
             }
         }
-        {
-            auto has_weapon_cycle = reader.read_binary<bool>("has_weapon_cycle");
-            if (has_weapon_cycle) {
-                auto weapon = reader.read_string<StringLengthType>("weapon");
-                auto shot_history = read_shot_history(istr, transmission_history_reader, verbosity_);
-                if (!any(player_->site_privileges() & PlayerSitePrivileges::CONTROLLER) &&
-                    player_->has_scene_vehicle())
-                {
-                    auto rb = player_->rigid_body();
-                    if (!rb->remote_object_id_.has_value()) {
-                        throw std::runtime_error("remote vehicle object ID not set");
+        auto has_weapon_cycle = reader.read_bool_bit("has_weapon_cycle");
+        auto has_gun_yaw = reader.read_bool_bit("has_gun_yaw");
+        auto has_gun_pitch = reader.read_bool_bit("has_gun_pitch");
+        reader.align_to_next_word();
+        if (has_weapon_cycle) {
+            auto weapon = reader.read_string<StringLengthType>("weapon");
+            auto shot_history = read_shot_history(istr, transmission_history_reader, verbosity_);
+            if (!any(player_->site_privileges() & PlayerSitePrivileges::CONTROLLER) &&
+                player_->has_scene_vehicle())
+            {
+                auto rb = player_->rigid_body();
+                if (!rb->remote_object_id_.has_value()) {
+                    throw std::runtime_error("remote vehicle object ID not set");
+                }
+                if (*rb->remote_object_id_ == vehicle_object_id) {
+                    player_->shot_history = std::move(shot_history);
+                    if (has_weapon_cycle != player_->has_weapon_cycle()) {
+                        throw std::runtime_error("Inconsistent \"has_weapon_cycle\"");
                     }
-                    if (*rb->remote_object_id_ == vehicle_object_id) {
-                        player_->shot_history = std::move(shot_history);
-                        if (has_weapon_cycle != player_->has_weapon_cycle()) {
-                            throw std::runtime_error("Inconsistent \"has_weapon_cycle\"");
-                        }
-                        player_->set_desired_weapon(weapon, WhenToEquip::EQUIP_INSTANTLY);
-                    }
+                    player_->set_desired_weapon(weapon, WhenToEquip::EQUIP_INSTANTLY);
                 }
             }
         }
-        {
-            auto has_gun_yaw = reader.read_binary<bool>("has_gun_yaw");
-            if (has_gun_yaw) {
-                auto gun_yaw = reader.read_binary<float>("gun yaw");
-                if (!any(player_->site_privileges() & PlayerSitePrivileges::CONTROLLER) &&
-                    player_->has_gun_yaw())
-                {
-                    player_->set_gun_yaw(gun_yaw);
-                }
+        if (has_gun_yaw) {
+            auto gun_yaw = reader.read_binary<float>("gun yaw");
+            if (!any(player_->site_privileges() & PlayerSitePrivileges::CONTROLLER) &&
+                player_->has_gun_yaw())
+            {
+                player_->set_gun_yaw(gun_yaw);
             }
         }
-        {
-            auto has_gun_pitch = reader.read_binary<bool>("has_gun_pitch");
-            if (has_gun_pitch) {
-                auto gun_pitch = reader.read_binary<float>("gun pitch");
-                if (!any(player_->site_privileges() & PlayerSitePrivileges::CONTROLLER) &&
-                    player_->has_gun_pitch())
-                {
-                    player_->set_gun_pitch(gun_pitch);
-                }
+        if (has_gun_pitch) {
+            auto gun_pitch = reader.read_binary<float>("gun pitch");
+            if (!any(player_->site_privileges() & PlayerSitePrivileges::CONTROLLER) &&
+                player_->has_gun_pitch())
+            {
+                player_->set_gun_pitch(gun_pitch);
             }
         }
     } else if (!any(player_->site_privileges() & PlayerSitePrivileges::MANAGER)) {
@@ -288,7 +281,7 @@ void RemotePlayer::write(
     TransmissionHistoryWriter& transmission_history_writer)
 {
     transmission_history_writer.write_remote_object_id(ostr, remote_object_id, TransmittedFields::END);
-    auto writer = BinaryWriter{ostr};
+    auto writer = BinaryBitwiseWordsWriter{ostr};
     writer.write_binary(RemoteSceneObjectType::PLAYER, "scene object type");
     writer.write_string<StringLengthType>(*player_->id(), "player name");
     writer.write_string<StringLengthType>(player_->team_name(), "player team");
@@ -302,43 +295,41 @@ void RemotePlayer::write(
     } else {
         writer.write_string<StringLengthType>("", "player user account key (1)");
     }
-    writer.write_binary(player_->game_mode(), "player game mode");
-    writer.write_binary(player_->player_role(), "player role");
-    writer.write_binary(player_->unstuck_mode(), "player unstuck mode");
+    auto has_scene_vehicle = player_->has_scene_vehicle();
+    writer.write_bits(player_->game_mode(), GAME_MODE_BITS, "player game mode");
+    writer.write_bits(player_->player_role(), PLAYER_ROLE_BITS, "player role");
+    writer.write_bits(player_->unstuck_mode(), UNSTUCK_MODE_BITS, "player unstuck mode");
+    writer.write_bits(player_->driving_direction(), DRIVING_DIRECTION_BITS, "player driving direction");
+    writer.write_bool_bit(has_scene_vehicle, "has_scene_vehicle");
     writer.write_string<StringLengthType>(player_->behavior(), "player behavior");
-    writer.write_binary(player_->driving_direction(), "player driving direction");
+    writer.flush_partial("before player skills");
     player_->get_skills(ControlSource::AI).write(ostr);
     player_->get_skills(ControlSource::USER).write(ostr);
-    if (player_->has_scene_vehicle()) {
+    if (has_scene_vehicle) {
         auto rb = player_->rigid_body();
         if (!rb->remote_object_id_.has_value()) {
             throw std::runtime_error("remote vehicle object ID not set");
         }
-        writer.write_binary(true, "has_scene_vehicle (true)");
         writer.write_binary(*rb->remote_object_id_, "remote object ID");
         writer.write_string<StringLengthType>(player_->seat(), "seat");
-        writer.write_binary(player_->externals_mode(), "externals mode");
-        if (player_->has_weapon_cycle()) {
-            writer.write_binary(true, "has_weapon_cycle (true)");
+        writer.write_bits(player_->externals_mode(), EXTERNALS_MODE_BITS, "externals mode");
+        bool has_weapon_cycle = player_->has_weapon_cycle();
+        bool has_gun_yaw = player_->has_gun_yaw();
+        bool has_gun_pitch = player_->has_gun_pitch();
+        writer.write_bool_bit(has_weapon_cycle, "has_weapon_cycle");
+        writer.write_bool_bit(has_gun_yaw, "has_gun_yaw");
+        writer.write_bool_bit(has_gun_pitch, "has_gun_pitch");
+        writer.flush_partial("externals mode etc.");
+        if (has_weapon_cycle) {
             writer.write_string<StringLengthType>(player_->weapon_cycle()->weapon_name(), "weapon");
             write_shot_history(player_->shot_history, ostr, transmission_history_writer);
-        } else {
-            writer.write_binary(false, "has_weapon_cycle (false)");
         }
-        if (player_->has_gun_yaw()) {
-            writer.write_binary(true, "has_gun_yaw (true)");
+        if (has_gun_yaw) {
             writer.write_binary(player_->get_gun_yaw(), "gun yaw");
-        } else {
-            writer.write_binary(false, "has_gun_yaw (false)");
         }
-        if (player_->has_gun_pitch()) {
-            writer.write_binary(true, "has_gun_pitch (true)");
+        if (has_gun_pitch) {
             writer.write_binary(player_->get_gun_pitch(), "gun pitch");
-        } else {
-            writer.write_binary(false, "has_gun_pitch (false)");
         }
-    } else {
-        writer.write_binary(false, "has_scene_vehicle (false)");
     }
     write_select_next_vehicle_history(player_->select_next_vehicle_history, ostr, transmission_history_writer);
     writer.write_binary(~RemoteSceneObjectType::PLAYER, "inverted scene object type");

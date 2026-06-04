@@ -8,6 +8,8 @@
 #include <Mlib/Memory/Object_Pool.hpp>
 #include <Mlib/Memory/Resource_Ptr.hpp>
 #include <Mlib/Misc/Floating_Point_Exceptions.hpp>
+#include <Mlib/Os/Io/Binary_Bitwise_Words_Reader.hpp>
+#include <Mlib/Os/Io/Binary_Bitwise_Words_Writer.hpp>
 #include <Mlib/Os/Os.hpp>
 #include <Mlib/Regex/Misc.hpp>
 #include <Mlib/Regex/Template_Regex.hpp>
@@ -264,10 +266,25 @@ void test_thread_safe_list() {
     }
 }
 
+void test_bitwise_io() {
+    std::stringstream sstr;
+    auto reader = BinaryBitwiseWordsReader{sstr, IoVerbosity::DATA | IoVerbosity::METADATA};
+    auto writer = BinaryBitwiseWordsWriter{sstr};
+    writer.write_bits(uint32_t(3), 2, "write 3");
+    writer.write_bits(uint32_t(0x40FEE123), 31, "write 0x40FEE123");
+    writer.write_bool_bit(true, "write \"true\"");
+    writer.flush_partial("flush test");
+    // reader.seek_relative_positive(10);
+    linfo() << "0x" << std::hex << reader.read_bits<uint32_t>(2, "read 3");
+    linfo() << "0x" << std::hex << reader.read_bits<uint32_t>(31, "read 0x40FEE123");
+    linfo() << "0x" << std::hex << (uint32_t)reader.read_bits<bool>(1, "test \"true\"");
+}
+
 int main(int argc, const char** argv) {
     enable_floating_point_exceptions();
 
     try {
+        test_bitwise_io();
         test_chunked_array();
         test_thread_safe_list();
         test_resource_ptr();
@@ -283,7 +300,7 @@ int main(int argc, const char** argv) {
         test_try_find();
         test_log();
         test_atomic_recursive_shared_mutex();
-    } catch (const std::runtime_error& e) {
+    } catch (const std::exception& e) {
         lerr() << "Test failed: " << e.what();
         return 1;
     }
