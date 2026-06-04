@@ -56,8 +56,9 @@ private:
 
 class TransmissionHistoryWriter {
 public:
-    explicit TransmissionHistoryWriter(
-        std::chrono::steady_clock::time_point base_time);
+    TransmissionHistoryWriter(
+        std::chrono::steady_clock::time_point base_time,
+        uint32_t datagram_counter);
     ~TransmissionHistoryWriter();
     void write_remote_object_id(
         std::ostream& ostr,
@@ -66,8 +67,10 @@ public:
     void write_time(
         std::ostream& ostr,
         std::chrono::steady_clock::time_point time) const;
+    uint32_t datagram_counter() const;
 private:
     std::chrono::steady_clock::time_point base_time_;
+    uint32_t datagram_counter_;
     std::optional<RemoteSiteId> site_id_;
     TransmissionHistory history_;
 };

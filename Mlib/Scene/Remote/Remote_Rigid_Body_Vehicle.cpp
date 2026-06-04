@@ -32,9 +32,9 @@ static_assert(sizeof(FixedArray<ScenePos, 3>) == 3 * 8);
 static_assert(sizeof(FixedArray<SceneDir, 3>) == 3 * 4);
 
 enum class RigidBodyTransmittedFields: TransmittedFieldsType {
-    INITIAL = (TransmittedFieldsType)TransmittedFields::END,
-    OWNERSHIP = (TransmittedFieldsType)TransmittedFields::END << 1,
-    NONZERO = (TransmittedFieldsType)TransmittedFields::END << 2,
+    NONZERO = (TransmittedFieldsType)TransmittedFields::END,
+    INITIAL = (TransmittedFieldsType)TransmittedFields::END << 1,
+    OWNERSHIP = (TransmittedFieldsType)TransmittedFields::END << 2,
 };
 
 inline TransmittedFields operator & (TransmittedFields a, RigidBodyTransmittedFields b) {

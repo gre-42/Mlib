@@ -19,7 +19,8 @@ IncrementalCommunicatorProxy::IncrementalCommunicatorProxy(
     IoVerbosity verbosity,
     ProxyTasks tasks,
     RemoteSiteId home_site_id)
-    : send_socket_{ std::move(send_socket) }
+    : datagram_counter_{ 0 }
+    , send_socket_{ std::move(send_socket) }
     , shared_object_factory_{ shared_object_factory }
     , objects_{ objects }
     , verbosity_{ verbosity }
@@ -165,7 +166,7 @@ void IncrementalCommunicatorProxy::send_home(std::iostream& iostr) {
             if (any(verbosity_ & IoVerbosity::METADATA)) {
                 linfo() << "Maybe send " << objects.size() << " local objects";
             }
-            auto transmission_history_writer = TransmissionHistoryWriter{objects_->local_time()};
+            auto transmission_history_writer = TransmissionHistoryWriter{objects_->local_time(), datagram_counter_};
             for (auto& [i, o] : objects) {
                 auto j = RemoteObjectId{objects_->local_site_id(), i};
                 auto known_fields = objects_unknown_at_home_.contains(j)
@@ -209,7 +210,7 @@ void IncrementalCommunicatorProxy::send_home(std::iostream& iostr) {
             if (any(verbosity_ & IoVerbosity::METADATA)) {
                 linfo() << "Maybe send " << objects.size() << " remote objects";
             }
-            auto transmission_history_writer = TransmissionHistoryWriter{objects_->local_time()};
+            auto transmission_history_writer = TransmissionHistoryWriter{objects_->local_time(), datagram_counter_};
             for (auto& [i, o] : objects) {
                 auto known_fields = objects_unknown_at_home_.contains(i)
                     ? KnownFields::NONE
@@ -235,4 +236,5 @@ void IncrementalCommunicatorProxy::send_home(std::iostream& iostr) {
         }
     }
     send_socket_->send(iostr);
+    ++datagram_counter_;
 }

@@ -50,8 +50,10 @@ std::chrono::steady_clock::time_point TransmissionHistoryReader::read_time(
 }
 
 TransmissionHistoryWriter::TransmissionHistoryWriter(
-    std::chrono::steady_clock::time_point base_time)
+    std::chrono::steady_clock::time_point base_time,
+    uint32_t datagram_counter)
     : base_time_{ base_time }
+    , datagram_counter_{ datagram_counter }
     , history_{ TransmissionHistory::NONE }
 {}
 
@@ -100,4 +102,8 @@ void TransmissionHistoryWriter::write_time(
     }
     auto remote_offset = std::chrono::duration_cast<RemoteEventHistoryOffset>(offset);
     write_binary(ostr, remote_offset.count(), "remote time offset");
+}
+
+uint32_t TransmissionHistoryWriter::datagram_counter() const {
+    return datagram_counter_;
 }

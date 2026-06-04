@@ -28,6 +28,7 @@ public:
     virtual void receive_from_home(std::istream& istr) override;
     virtual void send_home(std::iostream& iostr) override;
 private:
+    uint32_t datagram_counter_;
     std::unordered_set<RemoteObjectId> objects_unknown_at_home_;
     std::unordered_set<RemoteObjectId> objects_unknown_here_;
     std::shared_ptr<ISendSocket> send_socket_;

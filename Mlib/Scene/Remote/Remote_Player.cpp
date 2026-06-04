@@ -16,6 +16,7 @@
 #include <Mlib/Players/Scene_Vehicle/Externals_Mode.hpp>
 #include <Mlib/Players/Scene_Vehicle/Scene_Vehicle.hpp>
 #include <Mlib/Players/User_Account/User_Account.hpp>
+#include <Mlib/Remote/Incremental_Objects/Known_Fields.hpp>
 #include <Mlib/Remote/Incremental_Objects/Transmission_History.hpp>
 #include <Mlib/Remote/Incremental_Objects/Transmitted_Fields.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Players/Create_Player.hpp>
@@ -30,6 +31,24 @@
 #include <Mlib/Scene_Graph/Driving_Direction.hpp>
 
 using namespace Mlib;
+
+enum class PlayerTransmittedFields: TransmittedFieldsType {
+    NONZERO = (TransmittedFieldsType)TransmittedFields::END,
+    SKILLS = (TransmittedFieldsType)TransmittedFields::END << 1,
+};
+
+inline TransmittedFields operator & (TransmittedFields a, PlayerTransmittedFields b) {
+    return (TransmittedFields)((TransmittedFieldsType)a & (TransmittedFieldsType)b);
+}
+
+inline TransmittedFields operator | (TransmittedFields a, PlayerTransmittedFields b) {
+    return (TransmittedFields)((TransmittedFieldsType)a | (TransmittedFieldsType)b);
+}
+
+inline TransmittedFields& operator |= (TransmittedFields& a, PlayerTransmittedFields b) {
+    (TransmittedFieldsType&)a |= (TransmittedFieldsType)b;
+    return a;
+}
 
 RemotePlayer::RemotePlayer(
     IoVerbosity verbosity,
@@ -63,28 +82,37 @@ DanglingBaseClassPtr<RemotePlayer> RemotePlayer::try_create_from_stream(
     IoVerbosity verbosity)
 {
     BinaryBitwiseWordsReader reader{ istr, verbosity };
-    if (any(transmitted_fields & ~(TransmittedFields::SITE_ID | TransmittedFields::END))) {
+    if (any(transmitted_fields & ~(
+        TransmittedFields::SITE_ID |
+        PlayerTransmittedFields::NONZERO |
+        PlayerTransmittedFields::SKILLS)))
+    {
         throw std::runtime_error("RemotePlayer::try_create_from_stream: Unknown transmitted fields");
     }
+    bool has_scene_vehicle;
     auto args = nlohmann::json::object();
     auto name = VariableAndHash<std::string>{reader.read_string<StringLengthType>("player ID")};
-    args["name"] = *name;
-    args["team"] = reader.read_string<StringLengthType>("team");
-    if (auto full_user_name = reader.read_string<StringLengthType>("full_user_name"); !full_user_name.empty()) {
-        args["full_user_name"] = std::move(full_user_name);
+    if (any(transmitted_fields & PlayerTransmittedFields::SKILLS)) {
+        args["name"] = *name;
+        args["team"] = reader.read_string<StringLengthType>("team");
+        if (auto full_user_name = reader.read_string<StringLengthType>("full_user_name"); !full_user_name.empty()) {
+            args["full_user_name"] = std::move(full_user_name);
+        }
+        if (auto user_account_key = reader.read_string<StringLengthType>("user_account_key"); !user_account_key.empty()) {
+            args["user_account_key"] = std::move(user_account_key);
+        }
+        args["game_mode"] = game_mode_to_string(reader.read_bits<GameMode>(GAME_MODE_BITS, "game_mode"));
+        args["player_role"] = player_role_to_string(reader.read_bits<PlayerRole>(PLAYER_ROLE_BITS, "player_role"));
+        args["unstuck_mode"] = unstuck_mode_to_string(reader.read_bits<UnstuckMode>(UNSTUCK_MODE_BITS, "unstuck_mode"));
+        args["driving_direction"] = driving_direction_to_string(reader.read_bits<DrivingDirection>(DRIVING_DIRECTION_BITS, "driving_direction"));
+        has_scene_vehicle = reader.read_bool_bit("has_scene_vehicle");
+        args["behavior"] = reader.read_string<StringLengthType>("behavior");
+        reader.align_to_next_word();
+        Skills{}.read(istr);
+        Skills{}.read(istr);
+    } else {
+        has_scene_vehicle = reader.read_bool_bit("has_scene_vehicle");
     }
-    if (auto user_account_key = reader.read_string<StringLengthType>("user_account_key"); !user_account_key.empty()) {
-        args["user_account_key"] = std::move(user_account_key);
-    }
-    args["game_mode"] = game_mode_to_string(reader.read_bits<GameMode>(GAME_MODE_BITS, "game_mode"));
-    args["player_role"] = player_role_to_string(reader.read_bits<PlayerRole>(PLAYER_ROLE_BITS, "player_role"));
-    args["unstuck_mode"] = unstuck_mode_to_string(reader.read_bits<UnstuckMode>(UNSTUCK_MODE_BITS, "unstuck_mode"));
-    args["driving_direction"] = driving_direction_to_string(reader.read_bits<DrivingDirection>(DRIVING_DIRECTION_BITS, "driving_direction"));
-    auto has_scene_vehicle = reader.read_bool_bit("has_scene_vehicle");
-    args["behavior"] = reader.read_string<StringLengthType>("behavior");
-    reader.align_to_next_word();
-    Skills{}.read(istr);
-    Skills{}.read(istr);
     if (has_scene_vehicle) {
         reader.read_binary<RemoteObjectId>("vehicle_object_id");
         reader.read_string<StringLengthType>("seat");
@@ -112,6 +140,9 @@ DanglingBaseClassPtr<RemotePlayer> RemotePlayer::try_create_from_stream(
     if (physics_scene.remote_scene_ == nullptr) {
         throw std::runtime_error("RemotePlayer: Remote scene is null");
     }
+    if (!any(transmitted_fields & PlayerTransmittedFields::SKILLS)) {
+        return nullptr;
+    }
     CreatePlayer{physics_scene, physics_scene.macro_line_executor_}.execute(JsonView{args}, PlayerCreator::REMOTE);
     return {
         global_object_pool.create<RemotePlayer>(
@@ -138,22 +169,31 @@ void RemotePlayer::read(
     if (type != RemoteSceneObjectType::PLAYER) {
         throw std::runtime_error("RemotePlayer::read: Unexpected scene object type");
     }
-    if (any(transmitted_fields & ~(TransmittedFields::SITE_ID | TransmittedFields::END))) {
+    if (any(transmitted_fields & ~(
+        TransmittedFields::SITE_ID |
+        PlayerTransmittedFields::NONZERO |
+        PlayerTransmittedFields::SKILLS)))
+    {
         throw std::runtime_error("RemotePlayer::read: Unknown transmitted fields");
     }
+    bool has_scene_vehicle;
     auto player_id = reader.read_string<StringLengthType>("player ID");
-    reader.read_string<StringLengthType>("team");
-    reader.read_string<StringLengthType>("full_user_name");
-    reader.read_string<StringLengthType>("user_account_key");
-    reader.read_bits<GameMode>(GAME_MODE_BITS, "game_mode");
-    reader.read_bits<PlayerRole>(PLAYER_ROLE_BITS, "player_role");
-    reader.read_bits<UnstuckMode>(UNSTUCK_MODE_BITS, "unstuck_mode");
-    reader.read_bits<DrivingDirection>(DRIVING_DIRECTION_BITS, "driving_direction");
-    auto has_scene_vehicle = reader.read_bool_bit("has_scene_vehicle");
-    reader.read_string<StringLengthType>("behavior");
-    reader.align_to_next_word();
-    player_->set_skills(ControlSource::AI, Skills{}.read(istr));
-    player_->set_skills(ControlSource::USER, Skills{}.read(istr));
+    if (any(transmitted_fields & PlayerTransmittedFields::SKILLS)) {
+        reader.read_string<StringLengthType>("team");
+        reader.read_string<StringLengthType>("full_user_name");
+        reader.read_string<StringLengthType>("user_account_key");
+        reader.read_bits<GameMode>(GAME_MODE_BITS, "game_mode");
+        reader.read_bits<PlayerRole>(PLAYER_ROLE_BITS, "player_role");
+        reader.read_bits<UnstuckMode>(UNSTUCK_MODE_BITS, "unstuck_mode");
+        reader.read_bits<DrivingDirection>(DRIVING_DIRECTION_BITS, "driving_direction");
+        has_scene_vehicle = reader.read_bool_bit("has_scene_vehicle");
+        reader.read_string<StringLengthType>("behavior");
+        reader.align_to_next_word();
+        player_->set_skills(ControlSource::AI, Skills{}.read(istr));
+        player_->set_skills(ControlSource::USER, Skills{}.read(istr));
+    } else {
+        has_scene_vehicle = reader.read_bool_bit("has_scene_vehicle");
+    }
     if (has_scene_vehicle) {
         auto vehicle_object_id = reader.read_binary<RemoteObjectId>("vehicle_object_id");
         auto seat = reader.read_string<StringLengthType>("seat");
@@ -280,31 +320,40 @@ void RemotePlayer::write(
     KnownFields known_fields,
     TransmissionHistoryWriter& transmission_history_writer)
 {
-    transmission_history_writer.write_remote_object_id(ostr, remote_object_id, TransmittedFields::END);
+    auto transmitted_fields = TransmittedFields::NONE;
+    transmitted_fields |= PlayerTransmittedFields::NONZERO;
+    if (known_fields == KnownFields::NONE) {
+        transmitted_fields |= PlayerTransmittedFields::SKILLS;
+    }
+    transmission_history_writer.write_remote_object_id(ostr, remote_object_id, transmitted_fields);
     auto writer = BinaryBitwiseWordsWriter{ostr};
     writer.write_binary(RemoteSceneObjectType::PLAYER, "scene object type");
     writer.write_string<StringLengthType>(*player_->id(), "player name");
-    writer.write_string<StringLengthType>(player_->team_name(), "player team");
-    if (auto u = player_->user_info(); u != nullptr) {
-        writer.write_string<StringLengthType>(u->full_name, "player full username (0)");
-    } else {
-        writer.write_string<StringLengthType>("", "player full username (1)");
-    }
-    if (auto a = player_->user_account(); a != nullptr) {
-        writer.write_string<StringLengthType>(a->key(), "player user account key (0)");
-    } else {
-        writer.write_string<StringLengthType>("", "player user account key (1)");
-    }
     auto has_scene_vehicle = player_->has_scene_vehicle();
-    writer.write_bits(player_->game_mode(), GAME_MODE_BITS, "player game mode");
-    writer.write_bits(player_->player_role(), PLAYER_ROLE_BITS, "player role");
-    writer.write_bits(player_->unstuck_mode(), UNSTUCK_MODE_BITS, "player unstuck mode");
-    writer.write_bits(player_->driving_direction(), DRIVING_DIRECTION_BITS, "player driving direction");
-    writer.write_bool_bit(has_scene_vehicle, "has_scene_vehicle");
-    writer.write_string<StringLengthType>(player_->behavior(), "player behavior");
-    writer.flush_partial("before player skills");
-    player_->get_skills(ControlSource::AI).write(ostr);
-    player_->get_skills(ControlSource::USER).write(ostr);
+    if (any(transmitted_fields & PlayerTransmittedFields::SKILLS)) {
+        writer.write_string<StringLengthType>(player_->team_name(), "player team");
+        if (auto u = player_->user_info(); u != nullptr) {
+            writer.write_string<StringLengthType>(u->full_name, "player full username (0)");
+        } else {
+            writer.write_string<StringLengthType>("", "player full username (1)");
+        }
+        if (auto a = player_->user_account(); a != nullptr) {
+            writer.write_string<StringLengthType>(a->key(), "player user account key (0)");
+        } else {
+            writer.write_string<StringLengthType>("", "player user account key (1)");
+        }
+        writer.write_bits(player_->game_mode(), GAME_MODE_BITS, "player game mode");
+        writer.write_bits(player_->player_role(), PLAYER_ROLE_BITS, "player role");
+        writer.write_bits(player_->unstuck_mode(), UNSTUCK_MODE_BITS, "player unstuck mode");
+        writer.write_bits(player_->driving_direction(), DRIVING_DIRECTION_BITS, "player driving direction");
+        writer.write_bool_bit(has_scene_vehicle, "has_scene_vehicle");
+        writer.write_string<StringLengthType>(player_->behavior(), "player behavior");
+        writer.flush_partial("before player skills");
+        player_->get_skills(ControlSource::AI).write(ostr);
+        player_->get_skills(ControlSource::USER).write(ostr);
+    } else {
+        writer.write_bool_bit(has_scene_vehicle, "has_scene_vehicle");
+    }
     if (has_scene_vehicle) {
         auto rb = player_->rigid_body();
         if (!rb->remote_object_id_.has_value()) {

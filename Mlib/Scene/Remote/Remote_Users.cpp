@@ -83,55 +83,65 @@ void RemoteUsers::read_data(
     TransmissionHistoryReader& transmission_history_reader)
 {
     auto reader = BinaryReader(istr, verbosity_);
-    auto user_count = reader.read_binary<NUserCountType>("user count");
+    auto user_count = reader.read_binary<NUserCountType>("#users");
     physics_scene_->remote_sites_->set_user_count(site_id_, user_count);
-    if (!physics_scene_->remote_sites_->get_local_site_id().has_value()) {
-        throw std::runtime_error("Local site ID not set");
-    }
-    auto local_site_id = *physics_scene_->remote_sites_->get_local_site_id();
-    {
-        auto args = physics_scene_->macro_line_executor_.writable_json_macro_arguments();
-        for (NUserCountType user_id = 0; user_id < user_count; ++user_id) {
-            auto suffix = std::to_string(site_id_) + '_' + std::to_string(user_id);
-            {
-                auto key = "selected_vehicle_id_" + suffix;
-                args->set(key, reader.read_string<StringLengthType>("selected vehicle ID"));
-            }
-            {
-                auto key = "selected_vehicle_color_" + suffix;
-                args->set(key, reader.read_binary<EFixedArray<float, 3>>("selected vehicle color"));
-            }
-            {
-                auto account = nlohmann::json::object();
-                account["name"] = reader.read_string<StringLengthType>("account name");
-                auto key = "account_" + suffix;
-                args->set(key, account);
-            }
+    if (user_count > 0) {
+        if (!physics_scene_->remote_sites_->get_local_site_id().has_value()) {
+            throw std::runtime_error("Local site ID not set");
         }
-        args.unlock_and_notify();
-    }
-    for (NUserCountType user_id = 0; user_id < user_count; ++user_id) {
-        auto user = physics_scene_->remote_sites_->get_user(site_id_, user_id);
-        auto status = reader.read_binary<UserStatus>("user status");
-        if (!any(proxy_tasks & ProxyTasks::RELOAD_SCENE)) {
-            auto final_status = [&](){
-                switch (status) {
-                case UserStatus::INITIAL:
-                case UserStatus::LEVEL_LOADING:
-                    return status;
-                case UserStatus::LEVEL_LOADED:
-                    {
-                        if (local_scene_level_selector_->reload_required(transmission_history_reader.home_scene_level)) {
-                            return UserStatus::INITIAL;
-                        }
-                        return status;
-                    }
+        auto local_site_id = *physics_scene_->remote_sites_->get_local_site_id();
+        auto transmitted_count = reader.read_binary<NUserCountType>("#users transmitted");
+        if (transmitted_count > 100) {
+            throw std::runtime_error("Too many users transmitted");
+        }
+        std::vector<NUserCountType> users_transmitted(transmitted_count);
+        for (auto& user_id : users_transmitted) {
+            user_id = reader.read_binary<NUserCountType>("user ID");
+        }
+        {
+            auto args = physics_scene_->macro_line_executor_.writable_json_macro_arguments();
+            for (auto user_id : users_transmitted) {
+                auto suffix = std::to_string(site_id_) + '_' + std::to_string(user_id);
+                {
+                    auto key = "selected_vehicle_id_" + suffix;
+                    args->set(key, reader.read_string<StringLengthType>("selected vehicle ID"));
                 }
-                throw std::runtime_error("Unknown user status");
-            }();
-            user->set_status(final_status);
-        } else if (site_id_ != local_site_id) {
-            user->set_status(status);
+                {
+                    auto key = "selected_vehicle_color_" + suffix;
+                    args->set(key, reader.read_binary<EFixedArray<float, 3>>("selected vehicle color"));
+                }
+                {
+                    auto account = nlohmann::json::object();
+                    account["name"] = reader.read_string<StringLengthType>("account name");
+                    auto key = "account_" + suffix;
+                    args->set(key, account);
+                }
+            }
+            args.unlock_and_notify();
+        }
+        for (auto user_id : users_transmitted) {
+            auto user = physics_scene_->remote_sites_->get_user(site_id_, user_id);
+            auto status = reader.read_binary<UserStatus>("user status");
+            if (!any(proxy_tasks & ProxyTasks::RELOAD_SCENE)) {
+                auto final_status = [&](){
+                    switch (status) {
+                    case UserStatus::INITIAL:
+                    case UserStatus::LEVEL_LOADING:
+                        return status;
+                    case UserStatus::LEVEL_LOADED:
+                        {
+                            if (local_scene_level_selector_->reload_required(transmission_history_reader.home_scene_level)) {
+                                return UserStatus::INITIAL;
+                            }
+                            return status;
+                        }
+                    }
+                    throw std::runtime_error("Unknown user status");
+                }();
+                user->set_status(final_status);
+            } else if (site_id_ != local_site_id) {
+                user->set_status(status);
+            }
         }
     }
     auto end = reader.read_binary<RemoteSceneObjectType>("inverted remote users");
@@ -149,37 +159,41 @@ void RemoteUsers::write(
 {
     transmission_history_writer.write_remote_object_id(ostr, remote_object_id, TransmittedFields::END);
     auto user_count = physics_scene_->remote_sites_->get_user_count(site_id_);
-    
     auto writer = BinaryWriter{ostr};
     writer.write_binary(RemoteSceneObjectType::REMOTE_USERS, "remote users");
     writer.write_binary(user_count, "user count");
-    {
-        auto args = physics_scene_->macro_line_executor_.json_macro_arguments();
-        for (NUserCountType user_id = 0; user_id < user_count; ++user_id) {
-            auto suffix = std::to_string(site_id_) + '_' + std::to_string(user_id);
-            // try {
+    if (user_count > 0) {
+        auto user_id = integral_cast<NUserCountType>(transmission_history_writer.datagram_counter() % user_count);
+        writer.write_binary((NUserCountType)1, "#users transmitted");
+        writer.write_binary(user_id, "user ID");
+        {
+            auto args = physics_scene_->macro_line_executor_.json_macro_arguments();
             {
-                auto key = "selected_vehicle_id_" + suffix;
-                writer.write_string<StringLengthType>(args->at<std::string>(key), "selected vehicle ID");
+                auto suffix = std::to_string(site_id_) + '_' + std::to_string(user_id);
+                // try {
+                {
+                    auto key = "selected_vehicle_id_" + suffix;
+                    writer.write_string<StringLengthType>(args->at<std::string>(key), "selected vehicle ID");
+                }
+                {
+                    auto key = "selected_vehicle_color_" + suffix;
+                    writer.write_binary(args->at<EFixedArray<float, 3>>(key), "selected vehicle color");
+                }
+                {
+                    auto key = "account_" + suffix;
+                    auto account_name = args->resolve_t<std::string>(key, "name");
+                    writer.write_string<StringLengthType>(account_name, "account name");
+                }
+                // } catch (const std::runtime_error& e) {
+                //     lerr() << "Could not write variable\n" << (const nlohmann::json&)args;
+                //     throw;
+                // }
             }
-            {
-                auto key = "selected_vehicle_color_" + suffix;
-                writer.write_binary(args->at<EFixedArray<float, 3>>(key), "selected vehicle color");
-            }
-            {
-                auto key = "account_" + suffix;
-                auto account_name = args->resolve_t<std::string>(key, "name");
-                writer.write_string<StringLengthType>(account_name, "account name");
-            }
-            // } catch (const std::runtime_error& e) {
-            //     lerr() << "Could not write variable\n" << (const nlohmann::json&)args;
-            //     throw;
-            // }
         }
-    }
-    for (NUserCountType user_id = 0; user_id < user_count; ++user_id) {
-        auto user = physics_scene_->remote_sites_->get_user(site_id_, user_id);
-        writer.write_binary(user->get_status(), "user status");
+        {
+            auto user = physics_scene_->remote_sites_->get_user(site_id_, user_id);
+            writer.write_binary(user->get_status(), "user status");
+        }
     }
     writer.write_binary(~RemoteSceneObjectType::REMOTE_USERS, "inverted remote users");
 }
