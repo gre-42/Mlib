@@ -82,7 +82,7 @@ void Preload::execute(const LoadSceneJsonUserFunctionArgs& args) {
                                             sea_spray_particles.particle_renderer->preload(s.visual->particle.resource_name);
                                             break;
                                         default:
-                                            throw std::runtime_error("Unknown particle type: " + std::to_string((int)s.visual->particle.type));
+                                            throw std::runtime_error("Unknown particle type (2): " + std::to_string((uint32_t)s.visual->particle.type));
                                     }
                                 }
                                 #ifndef WITHOUT_AUDIO

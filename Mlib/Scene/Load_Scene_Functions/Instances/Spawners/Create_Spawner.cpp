@@ -14,10 +14,17 @@ using namespace Mlib;
 namespace KnownArgs {
 BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(name);
-DECLARE_ARGUMENT(suffix);
+DECLARE_ARGUMENT(node);
 DECLARE_ARGUMENT(team);
 DECLARE_ARGUMENT(group);
 DECLARE_ARGUMENT(trigger);
+}
+
+namespace KnownNodeArgs {
+BEGIN_ARGUMENT_LIST;
+DECLARE_ARGUMENT(suffix);
+DECLARE_ARGUMENT(if_with_graphics);
+DECLARE_ARGUMENT(if_with_physics);
 }
 
 CreateSpawner::CreateSpawner(PhysicsScene& physics_scene)
@@ -27,12 +34,22 @@ CreateSpawner::CreateSpawner(PhysicsScene& physics_scene)
 void CreateSpawner::execute(const LoadSceneJsonUserFunctionArgs& args) {
     args.arguments.validate(KnownArgs::options);
     auto name = args.arguments.at<VariableAndHash<std::string>>(KnownArgs::name);
-    auto suffix = args.arguments.try_at<std::string>(KnownArgs::suffix);
+    auto get_node = [&](){
+        auto j = args.arguments.at(KnownArgs::node);
+        JsonView jv{j};
+        jv.validate(KnownNodeArgs::options);
+        auto suffix = args.arguments.try_at<std::string>(KnownNodeArgs::suffix);
+        return NodeSpawnArguments{
+            suffix.has_value() ? *suffix : '_' + *name + scene.get_temporary_instance_suffix(),
+            jv.at<bool>(KnownNodeArgs::if_with_graphics),
+            jv.at<bool>(KnownNodeArgs::if_with_physics)
+        };
+    };
     vehicle_spawners.set(
         name,
         std::make_unique<VehicleSpawner>(
             scene,
-            suffix.has_value() ? *suffix : '_' + *name + scene.get_temporary_instance_suffix(),
+            get_node(),
             args.arguments.at<std::string>(KnownArgs::team),
             args.arguments.at<std::string>(KnownArgs::group),
             spawn_trigger_from_string(args.arguments.at<std::string>(KnownArgs::trigger))));

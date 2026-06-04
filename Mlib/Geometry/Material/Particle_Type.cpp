@@ -1,5 +1,6 @@
 #include "Particle_Type.hpp"
 #include <map>
+#include <sstream>
 #include <stdexcept>
 
 using namespace Mlib;
@@ -32,5 +33,5 @@ std::string Mlib::particle_type_to_string(ParticleType s) {
     case ParticleType::SEA_SPRAY:
         return "sea_spray";
     }
-    throw std::runtime_error("Unknown particle type: " + std::to_string((int)s));
+    throw std::runtime_error((std::stringstream() << "Unknown particle type: " << std::hex << "0x" << (uint32_t)s).str());
 }

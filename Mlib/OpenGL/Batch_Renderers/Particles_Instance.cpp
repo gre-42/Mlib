@@ -36,8 +36,8 @@ ParticlesInstance::ParticlesInstance(
     size_t max_num_instances,
     const RenderableResourceFilter& filter,
     ParticleType particle_type)
-    #ifndef WITHOUT_GRAPHICS
     : particle_type_{ particle_type }
+    #ifndef WITHOUT_GRAPHICS
     , offset_((ScenePos)NAN)
     , dynamic_instance_buffers_{ std::make_shared<DynamicInstanceBuffers>(
         vertex_data->mesh_meta().material.transformation_mode,
@@ -58,7 +58,7 @@ ParticleType ParticlesInstance::particle_type() const {
 
 size_t ParticlesInstance::num_billboard_atlas_components() const {
     #ifdef WITHOUT_GRAPHICS
-    return 0;
+    throw std::runtime_error("ParticlesInstance::num_billboard_atlas_components called without graphics support");
     #else
     return dynamic_instance_buffers_->num_billboard_atlas_components();
     #endif

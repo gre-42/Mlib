@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/Physics/Smoke_Generation/Contact_Smoke_Generator.hpp>
 #include <Mlib/Physics/Smoke_Generation/Smoke_Particle_Generator.hpp>
+#include <cstdint>
 #include <memory>
 
 namespace Mlib {
@@ -12,7 +13,7 @@ class RigidBodies;
 class ParticleResources;
 template <class T>
 class VariableAndHash;
-enum class ParticleType;
+enum class ParticleType: uint32_t;
 
 struct SceneParticles {
     SceneParticles(

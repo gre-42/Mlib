@@ -52,7 +52,7 @@ void CreateSkidmark::execute(const LoadSceneJsonUserFunctionArgs& args)
         case ParticleType::SEA_SPRAY:
             return *sea_spray_particles.particle_renderer;
         }
-        throw std::runtime_error("Unknown particle type: " + std::to_string((int)particle_type));
+        throw std::runtime_error("Unknown particle type (1): " + std::to_string((uint32_t)particle_type));
     }();
     auto o = object_pool.create_unique<SkidmarkLogic>(
         CURRENT_SOURCE_LOCATION,

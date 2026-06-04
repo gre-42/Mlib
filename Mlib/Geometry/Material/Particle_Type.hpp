@@ -1,9 +1,10 @@
 #pragma once
+#include <cstdint>
 #include <string>
 
 namespace Mlib {
 
-enum class ParticleType {
+enum class ParticleType: uint32_t {
     NONE = 0,
     SMOKE = 1 << 0,
     SKIDMARK = 1 << 1,
@@ -19,25 +20,21 @@ inline bool any(ParticleType t) {
 }
 
 inline ParticleType operator & (ParticleType a, ParticleType b) {
-    return (ParticleType)((int)a & (int)b);
+    return (ParticleType)((uint32_t)a & (uint32_t)b);
 }
 
 inline ParticleType operator | (ParticleType a, ParticleType b) {
-    return (ParticleType)((int)a | (int)b);
+    return (ParticleType)((uint32_t)a | (uint32_t)b);
 }
 
 inline ParticleType& operator &= (ParticleType& a, ParticleType b) {
-    (int&)a &= (int)b;
+    (uint32_t&)a &= (uint32_t)b;
     return a;
 }
 
 inline ParticleType& operator |= (ParticleType& a, ParticleType b) {
-    (int&)a |= (int)b;
+    (uint32_t&)a |= (uint32_t)b;
     return a;
-}
-
-inline ParticleType operator ~ (ParticleType t) {
-    return (ParticleType)(~(int)t);
 }
 
 }

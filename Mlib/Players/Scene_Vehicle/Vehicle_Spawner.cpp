@@ -40,7 +40,7 @@ SpawnTrigger Mlib::spawn_trigger_from_string(const std::string& s) {
 
 VehicleSpawner::VehicleSpawner(
     Scene& scene,
-    std::string suffix,
+    NodeSpawnArguments node_args,
     std::string team_name,
     std::string group_name,
     SpawnTrigger spawn_trigger)
@@ -48,7 +48,7 @@ VehicleSpawner::VehicleSpawner(
     , player_{ nullptr }
     , on_player_destroy_{ nullptr, CURRENT_SOURCE_LOCATION }
     , on_primary_scene_vehicle_node_destroy_{ nullptr, CURRENT_SOURCE_LOCATION }
-    , suffix_{ std::move(suffix) }
+    , node_args_{ std::move(node_args) }
     , team_name_{ std::move(team_name) }
     , group_name_{ std::move(group_name) }
     , spawn_trigger_{ spawn_trigger }
@@ -60,7 +60,7 @@ VehicleSpawner::VehicleSpawner(
 
 VehicleSpawner::~VehicleSpawner() {
     if (!scene_vehicles_.empty()) {
-        verbose_abort("Spawner with suffix \"" + suffix_ + "\": ~VehicleSpawner: Scene vehicles remaining");
+        verbose_abort("Spawner with suffix \"" + node_args_.suffix + "\": ~VehicleSpawner: Scene vehicles remaining");
     }
 }
 
@@ -85,7 +85,7 @@ void VehicleSpawner::set_player(
     std::string role)
 {
     if (player_ != nullptr) {
-        throw std::runtime_error("Spawner with suffix \"" + suffix_ + "\": Player already set");
+        throw std::runtime_error("Spawner with suffix \"" + node_args_.suffix + "\": Player already set");
     }
     player_ = player.ptr();
     on_player_destroy_.set(player_->on_destroy.deflt, CURRENT_SOURCE_LOCATION);
@@ -95,7 +95,7 @@ void VehicleSpawner::set_player(
 
 DanglingBaseClassRef<Player> VehicleSpawner::get_player() {
     if (player_ == nullptr) {
-        throw std::runtime_error("Spawner with suffix \"" + suffix_ + "\": Player not set");
+        throw std::runtime_error("Spawner with suffix \"" + node_args_.suffix + "\": Player not set");
     }
     return *player_;
 }
@@ -120,7 +120,7 @@ void VehicleSpawner::set_spawn_vehicle(
     if ((dependencies_are_met_ || try_spawn_vehicle_) &&
         (vehicle_spawner_already_set_behavior == SpawnVehicleAlreadySetBehavior::THROW))
     {
-        throw std::runtime_error("Spawner with suffix \"" + suffix_ + "\": Spawn vehicle function already set");
+        throw std::runtime_error("Spawner with suffix \"" + node_args_.suffix + "\": Spawn vehicle function already set");
     }
     dependencies_are_met_ = std::move(depends_are_met);
     try_spawn_vehicle_ = std::move(try_spawn_vehicle);
@@ -144,7 +144,7 @@ bool VehicleSpawner::has_scene_vehicle() const {
 
 DanglingBaseClassRef<SceneVehicle> VehicleSpawner::get_primary_scene_vehicle() {
     if (scene_vehicles_.empty()) {
-        throw std::runtime_error("Spawner with suffix \"" + suffix_ + "\": Scene vehicles not set");
+        throw std::runtime_error("Spawner with suffix \"" + node_args_.suffix + "\": Scene vehicles not set");
     }
     return scene_vehicles_.front().object();
 }
@@ -162,17 +162,17 @@ void VehicleSpawner::set_scene_vehicles(
 {
     ThrowingLockGuard delete_lock{scene_.delete_node_mutex};
     if (!scene_vehicles_.empty()) {
-        throw std::runtime_error("Spawner with suffix \"" + suffix_ + "\": Scene vehicles already set");
+        throw std::runtime_error("Spawner with suffix \"" + node_args_.suffix + "\": Scene vehicles already set");
     }
     if (scene_vehicles.empty()) {
-        throw std::runtime_error("Spawner with suffix \"" + suffix_ + "\": Scene vehicles list is empty");
+        throw std::runtime_error("Spawner with suffix \"" + node_args_.suffix + "\": Scene vehicles list is empty");
     }
     for (const auto& v : scene_vehicles) {
         if (v->scene_node_name()->empty()) {
-            throw std::runtime_error("Spawner with suffix \"" + suffix_ + "\": Rigid body scene node name is empty");
+            throw std::runtime_error("Spawner with suffix \"" + node_args_.suffix + "\": Rigid body scene node name is empty");
         }
         if (v->scene_node()->shutdown_phase() != ShutdownPhase::NONE) {
-            throw std::runtime_error("Spawner with suffix \"" + suffix_ + "\": Player received scene node that is shutting down");
+            throw std::runtime_error("Spawner with suffix \"" + node_args_.suffix + "\": Player received scene node that is shutting down");
         }
     }
     for (auto& l : scene_vehicles) {
@@ -204,7 +204,7 @@ void VehicleSpawner::set_scene_vehicles(
 bool VehicleSpawner::dependencies_are_met() const {
     ThrowingLockGuard delete_lock{scene_.delete_node_mutex};
     if (!dependencies_are_met_) {
-        throw std::runtime_error("Spawner with suffix \"" + suffix_ + "\": Dependencies not initialized");
+        throw std::runtime_error("Spawner with suffix \"" + node_args_.suffix + "\": Dependencies not initialized");
     }
     return dependencies_are_met_();
 }
@@ -213,39 +213,34 @@ bool VehicleSpawner::try_spawn(const GeometrySpawnArguments& geometry)
 {
     ThrowingLockGuard delete_lock{scene_.delete_node_mutex};
     if (!try_spawn_vehicle_) {
-        throw std::runtime_error("Spawner with suffix \"" + suffix_ + "\": Vehicle spawner not initialized");
+        throw std::runtime_error("Spawner with suffix \"" + node_args_.suffix + "\": Vehicle spawner not initialized");
     }
     if (geometry.action == SpawnAction::DRY_RUN) {
         return try_spawn_vehicle_(geometry, nullptr);
     }
     if (geometry.action != SpawnAction::DO_IT) {
-        verbose_abort("Spawner with suffix \"" + suffix_ + "\": Unknown spawn action: " + std::to_string((int)geometry.action));
+        verbose_abort("Spawner with suffix \"" + node_args_.suffix + "\": Unknown spawn action: " + std::to_string((int)geometry.action));
     }
     if (has_player() && player_->has_scene_vehicle()) {
-        throw std::runtime_error("Spawner with suffix \"" + suffix_ + "\": Player \"" + *player_->id() + "\" already has a vehicle before spawning");
+        throw std::runtime_error("Spawner with suffix \"" + node_args_.suffix + "\": Player \"" + *player_->id() + "\" already has a vehicle before spawning");
     }
     if (!scene_vehicles_.empty()) {
-        throw std::runtime_error("Spawner with suffix \"" + suffix_ + "\": Scene vehicles already set before spawning");
+        throw std::runtime_error("Spawner with suffix \"" + node_args_.suffix + "\": Scene vehicles already set before spawning");
     }
-    auto node_args = NodeSpawnArguments{
-        .suffix = suffix_,
-        .if_with_graphics = true,
-        .if_with_physics = true
-    };
-    if (!try_spawn_vehicle_(geometry, &node_args)) {
+    if (!try_spawn_vehicle_(geometry, &node_args_)) {
         if (!scene_vehicles_.empty()) {
-            verbose_abort("Spawner with suffix \"" + suffix_ + "\": Scene vehicles set after failed spawning");
+            verbose_abort("Spawner with suffix \"" + node_args_.suffix + "\": Scene vehicles set after failed spawning");
         }
         if (has_player() && player_->has_scene_vehicle()) {
-            verbose_abort("Spawner with suffix \"" + suffix_ + "\": Player \"" + *player_->id() + "\" has a vehicle after failed spawning");
+            verbose_abort("Spawner with suffix \"" + node_args_.suffix + "\": Player \"" + *player_->id() + "\" has a vehicle after failed spawning");
         }
         return false;
     } else {
         if (scene_vehicles_.empty()) {
-            verbose_abort("Spawner with suffix \"" + suffix_ + "\": Scene vehicles not set after spawning");
+            verbose_abort("Spawner with suffix \"" + node_args_.suffix + "\": Scene vehicles not set after spawning");
         }
         if (has_player() && (&player_->vehicle().get() != &get_primary_scene_vehicle().get())) {
-            verbose_abort("Spawner with suffix \"" + suffix_ + "\": Player vehicle not set correctly after spawning");
+            verbose_abort("Spawner with suffix \"" + node_args_.suffix + "\": Player vehicle not set correctly after spawning");
         }
         notify_spawn();
         return true;
@@ -263,7 +258,7 @@ void VehicleSpawner::delete_vehicle() {
 void VehicleSpawner::notify_spawn() {
     ThrowingLockGuard delete_lock{scene_.delete_node_mutex};
     if (scene_vehicles_.empty()) {
-        throw std::runtime_error("Spawner with suffix \"" + suffix_ + "\": Scene vehicles not set");
+        throw std::runtime_error("Spawner with suffix \"" + node_args_.suffix + "\": Scene vehicles not set");
     }
     if (has_player()) {
         player_->single_waypoint_.notify_spawn();
@@ -274,7 +269,7 @@ void VehicleSpawner::notify_spawn() {
 
 float VehicleSpawner::get_time_since_spawn() const {
     if (std::isnan(time_since_spawn_)) {
-        throw std::runtime_error("Spawner with suffix \"" + suffix_ + "\": \"get_time_since_spawn\" requires previous call to \"notify_spawn\"");
+        throw std::runtime_error("Spawner with suffix \"" + node_args_.suffix + "\": \"get_time_since_spawn\" requires previous call to \"notify_spawn\"");
     }
     return time_since_spawn_;
 }
@@ -282,7 +277,7 @@ float VehicleSpawner::get_time_since_spawn() const {
 float VehicleSpawner::get_time_since_spotted_by_vip() const {
     if (std::isnan(time_since_spotted_by_vip_)) {
         throw std::runtime_error(
-            "Spawner with suffix \"" + suffix_ + "\": "
+            "Spawner with suffix \"" + node_args_.suffix + "\": "
             "\"get_time_since_spotted_by_vip\" requires previous call to "
             "\"notify_spawn\" or \"notify_spotted_by_vip\"");
     }

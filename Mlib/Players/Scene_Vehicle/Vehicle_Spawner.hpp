@@ -5,6 +5,7 @@
 #include <Mlib/Memory/Object_Pool.hpp>
 #include <Mlib/Physics/Interfaces/ISpawner.hpp>
 #include <Mlib/Scene_Config/Scene_Precision.hpp>
+#include <Mlib/Scene_Graph/Spawn_Arguments.hpp>
 #include <chrono>
 #include <functional>
 #include <list>
@@ -16,8 +17,6 @@ namespace Mlib {
 class Scene;
 template <class TDir, class TPos, size_t n>
 class TransformationMatrix;
-struct GeometrySpawnArguments;
-struct NodeSpawnArguments;
 class SceneVehicle;
 class RigidBodyVehicle;
 class Player;
@@ -48,7 +47,7 @@ public:
 
     VehicleSpawner(
         Scene& scene,
-        std::string suffix,
+        NodeSpawnArguments node_args,
         std::string team_name,
         std::string group_name,
         SpawnTrigger spawn_trigger);
@@ -104,7 +103,7 @@ private:
     std::string role_;
     DestructionFunctionsRemovalTokens on_player_destroy_;
     DestructionFunctionsRemovalTokens on_primary_scene_vehicle_node_destroy_;
-    std::string suffix_;
+    NodeSpawnArguments node_args_;
     std::string team_name_;
     std::string group_name_;
     SpawnTrigger spawn_trigger_;

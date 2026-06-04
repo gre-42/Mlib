@@ -12,7 +12,7 @@ enum class ParticleRotation {
 
 ParticleRotation particle_rotation_from_string(const std::string& s);
 
-enum class ParticleType;
+enum class ParticleType: uint32_t;
 
 struct ParticleDescriptor {
     VariableAndHash<std::string> resource_name;

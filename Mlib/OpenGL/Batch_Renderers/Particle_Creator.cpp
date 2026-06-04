@@ -9,11 +9,13 @@ ParticleCreator::ParticleCreator(
     : particles_instance_{ particles_instance }
     , billboard_sequence_{ billboard_sequence }
 {
+    #ifndef WITHOUT_GRAPHICS
     for (const auto& id : billboard_sequence.billboard_ids) {
         if (id >= particles_instance.num_billboard_atlas_components()) {
             throw std::runtime_error("Particle index out of bounds");
         }
     }
+    #endif
 }
 
 ParticleCreator::~ParticleCreator() = default;

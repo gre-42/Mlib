@@ -248,8 +248,8 @@ void CreateGenericAvatar::execute(const JsonView& args)
         }
     }
 
+    create_child_node("dynamic", animation_node, main_gun_node_visual0, {0.f, 0.f, 0.f});
     if (if_with_graphics) {
-        create_child_node("dynamic", animation_node, main_gun_node_visual0, {0.f, 0.f, 0.f});
         create_child_node("dynamic", main_gun_node_visual0, main_gun_node_visual, {-0.075f * meters, 0.f, 0.025f * meters}, {90 * degrees, 0.f, 90 * degrees});
     }
     if (if_with_physics) {

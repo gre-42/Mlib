@@ -4,7 +4,7 @@
 namespace Mlib {
 
 enum class PhysicsMaterial: uint32_t;
-enum class ParticleType;
+enum class ParticleType: uint32_t;
 
 ParticleType material_skidmarks(PhysicsMaterial material);
 

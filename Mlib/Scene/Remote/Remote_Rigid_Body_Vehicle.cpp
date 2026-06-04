@@ -14,6 +14,7 @@
 #include <Mlib/Remote/Incremental_Objects/Transmitted_Fields.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Fast_Macros/Create_Generic_Avatar.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Fast_Macros/Create_Generic_Car.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Remote/Vehicle_Parameters.hpp>
 #include <Mlib/Scene/Physics_Scene.hpp>
 #include <Mlib/Scene/Remote/Remote_Scene.hpp>
 #include <Mlib/Scene/Remote/Remote_Scene_Object_Type.hpp>
@@ -141,6 +142,9 @@ DanglingBaseClassPtr<RemoteRigidBodyVehicle> RemoteRigidBodyVehicle::try_create_
         return nullptr;
     }
     auto initial_json = nlohmann::json::parse(initial_str);
+    #ifdef WITHOUT_GRAPHICS
+    initial_json[VehicleParameters::if_with_graphics] = false;
+    #endif
     auto initial = JsonView{ initial_json };
     auto node = make_unique_scene_node(
         position,
@@ -151,7 +155,7 @@ DanglingBaseClassPtr<RemoteRigidBodyVehicle> RemoteRigidBodyVehicle::try_create_
         SceneNodeDomain::RENDER | SceneNodeDomain::PHYSICS,
         ViewableRemoteObject::all());
     auto pnode = node.ref(CURRENT_SOURCE_LOCATION);
-    std::string node_suffix = initial.at<std::string>("suffix");
+    std::string node_suffix = initial.at<std::string>(VehicleParameters::suffix);
     VariableAndHash<std::string> node_name;
     auto let = nlohmann::json::object();
     [&](){
@@ -161,7 +165,7 @@ DanglingBaseClassPtr<RemoteRigidBodyVehicle> RemoteRigidBodyVehicle::try_create_
             return;
         case RemoteSceneObjectType::RIGID_BODY_AVATAR:
             node_name = VariableAndHash<std::string>{"human_node" + node_suffix};
-            let["suffix"] = node_suffix;
+            let[VehicleParameters::suffix] = node_suffix;
             return;
         case RemoteSceneObjectType::REMOTE_USERS:
         case RemoteSceneObjectType::PLAYER:

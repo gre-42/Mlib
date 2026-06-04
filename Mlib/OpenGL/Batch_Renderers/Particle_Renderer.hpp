@@ -2,13 +2,14 @@
 #include <Mlib/Map/Threadsafe_Default_Map.hpp>
 #include <Mlib/Scene_Graph/Interfaces/IParticle_Renderer.hpp>
 #include <Mlib/Threads/Recursive_Shared_Mutex.hpp>
+#include <cstdint>
 #include <memory>
 
 namespace Mlib {
 
 class ParticleResources;
 class ParticlesInstance;
-enum class ParticleType;
+enum class ParticleType: uint32_t;
 
 class ParticleRenderer : public IParticleRenderer {
 public:

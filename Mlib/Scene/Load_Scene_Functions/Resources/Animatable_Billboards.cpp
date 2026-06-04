@@ -41,9 +41,13 @@ struct RegisterJsonUserFunction {
                      type = particle_type_from_string(args.arguments.at<std::string>(KnownArgs::type))]
                     ()
                     {
+                        #ifdef WITHOUT_GRAPHICS
+                        return std::make_shared<ParticlesInstance>(nullptr, max_num_instances, filter, type);
+                        #else
                         auto scva = snr.get_single_precision_array(billboards, filter.cva_filter);
                         auto gvd = snr.get_gpu_vertex_data(scva, nullptr);
                         return std::make_shared<ParticlesInstance>(gvd, max_num_instances, filter, type);
+                        #endif
                     });
             });
     }

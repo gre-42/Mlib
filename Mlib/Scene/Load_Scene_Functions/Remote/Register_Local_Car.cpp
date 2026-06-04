@@ -3,9 +3,9 @@
 #include <Mlib/Hashing/Variable_And_Hash.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Macro_Executor/Notifying_Json_Macro_Arguments.hpp>
-#include <Mlib/Misc/Argument_List.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Load_Scene_Funcs.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Remote/Car_Parameters.hpp>
 #include <Mlib/Scene/Physics_Scene.hpp>
 #include <Mlib/Scene/Remote/Remote_Rigid_Body_Vehicle.hpp>
 #include <Mlib/Scene/Remote/Remote_Scene.hpp>
@@ -14,27 +14,6 @@
 
 using namespace Mlib;
 
-namespace KnownArgs {
-BEGIN_ARGUMENT_LIST;
-DECLARE_ARGUMENT(asset_id);
-DECLARE_ARGUMENT(suffix);
-DECLARE_ARGUMENT(if_with_graphics);
-DECLARE_ARGUMENT(if_with_physics);
-DECLARE_ARGUMENT(if_car_body_renderable_style);
-DECLARE_ARGUMENT(if_damageable);
-DECLARE_ARGUMENT(color);
-DECLARE_ARGUMENT(parking_brake_pulled);
-DECLARE_ARGUMENT(velocity);
-DECLARE_ARGUMENT(angular_velocity);
-DECLARE_ARGUMENT(mute);
-DECLARE_ARGUMENT(velocity_error_std);
-DECLARE_ARGUMENT(error_alpha);
-DECLARE_ARGUMENT(yaw_error_std);
-DECLARE_ARGUMENT(pitch_error_std);
-DECLARE_ARGUMENT(show_hitbox);
-DECLARE_ARGUMENT(show_massbox);
-}
-
 RegisterLocalCar::RegisterLocalCar(
     PhysicsScene& physics_scene,
     const MacroLineExecutor& macro_line_executor) 
@@ -42,11 +21,11 @@ RegisterLocalCar::RegisterLocalCar(
 {}
 
 void RegisterLocalCar::execute(const JsonView& args) {
-    args.validate(KnownArgs::options);
+    args.validate(CarParameters::options);
     if (remote_scene == nullptr) {
         throw std::runtime_error("Remote scene is null");
     }
-    auto suffix = args.at<std::string>(KnownArgs::suffix);
+    auto suffix = args.at<std::string>(CarParameters::suffix);
     auto name = VariableAndHash<std::string>{"car_node" + suffix};
     auto rb = get_rigid_body_vehicle(scene.get_node(name, CURRENT_SOURCE_LOCATION).get(), CURRENT_SOURCE_LOCATION);
     rb->remote_object_id_ = remote_scene->create_local<RemoteRigidBodyVehicle>(

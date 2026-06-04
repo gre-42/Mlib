@@ -22,7 +22,7 @@ struct Skidmark;
 struct SceneGraphConfig;
 struct RenderConfig;
 struct RenderedSceneDescriptor;
-enum class ParticleType;
+enum class ParticleType: uint32_t;
 struct StaticWorld;
 
 class ParticlesInstance {
