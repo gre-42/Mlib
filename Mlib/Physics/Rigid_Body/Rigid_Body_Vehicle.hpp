@@ -29,6 +29,7 @@
 #include <Mlib/Scene_Graph/Interfaces/Scene_Node/INode_Hider.hpp>
 #include <Mlib/Scene_Graph/Status_Writer.hpp>
 #include <Mlib/Threads/Fast_Mutex.hpp>
+#include <cstdint>
 #include <map>
 #include <memory>
 #include <optional>
@@ -58,7 +59,7 @@ class Rotor;
 class IContactInfo;
 class Wing;
 enum class VelocityClassification;
-enum class RigidBodyVehicleFlags;
+enum class RigidBodyVehicleFlags: uint32_t;
 enum class VehicleDomain;
 enum class ActorType;
 enum class ActorTask;

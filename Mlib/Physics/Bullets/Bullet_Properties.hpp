@@ -3,6 +3,7 @@
 #include <Mlib/Hashing/Variable_And_Hash.hpp>
 #include <Mlib/Physics/Smoke_Generation/Constant_Particle_Trail.hpp>
 #include <cstdint>
+#include <cstdint>
 #include <optional>
 #include <string>
 #include <unordered_set>
@@ -11,7 +12,7 @@
 namespace Mlib {
 
 enum class PhysicsMaterial: uint32_t;
-enum class RigidBodyVehicleFlags;
+enum class RigidBodyVehicleFlags: uint32_t;
 enum class ParticleContainer;
 
 struct BulletExplosion {

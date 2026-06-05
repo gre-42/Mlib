@@ -152,7 +152,7 @@ DanglingBaseClassPtr<RemoteRigidBodyVehicle> RemoteRigidBodyVehicle::try_create_
                 initial[AvatarParameters::y_fov] = reader.read_binary<float>("y_fov");
                 initial[AvatarParameters::near_plane] = reader.read_binary<float>("near_plane");
                 initial[AvatarParameters::far_plane] = reader.read_binary<float>("far_plane");
-                initial[AvatarParameters::with_gun] = true;
+                initial[AvatarParameters::with_gun] = reader.read_binary<bool>("with_gun");
                 initial[AvatarParameters::mute] = false;
                 initial[AvatarParameters::if_with_graphics] = true;
                 initial[AvatarParameters::if_with_physics] = true;
@@ -165,11 +165,11 @@ DanglingBaseClassPtr<RemoteRigidBodyVehicle> RemoteRigidBodyVehicle::try_create_
             throw std::runtime_error("RemoteRigidBodyVehicle: Unknown scene object type");
         }();
     }
-    auto position = reader.read_binary<EFixedArray<ScenePos, 3>>("position");
+    auto position = reader.read_binary<EFixedArray<CompressedScenePos, 3>>("position").casted<ScenePos>();
     auto rotation = reader.read_binary<EFixedArray<SceneDir, 3>>("rotation");
     auto v_com = reader.read_binary<EFixedArray<SceneDir, 3>>("v_com");
     auto w = reader.read_binary<EFixedArray<SceneDir, 3>>("w");
-    auto flags = reader.read_binary<RigidBodyVehicleFlags>("rigid body flags");
+    auto flags = reader.read_bits<RigidBodyVehicleFlags>(RIGID_BODY_VEHICLE_FLAGS_NBITS, "rigid body flags");
     std::optional<RemoteSiteId> owner_site_id;
     if (any(transmitted_fields & RigidBodyTransmittedFields::OWNERSHIP)) {
         owner_site_id = reader.read_binary<RemoteSiteId>("owner_site_id");
@@ -341,6 +341,7 @@ void RemoteRigidBodyVehicle::read(
                 reader.read_binary<float>("y_fov");
                 reader.read_binary<float>("near_plane");
                 reader.read_binary<float>("far_plane");
+                reader.read_binary<bool>("with_gun");
                 return;
             case RemoteSceneObjectType::REMOTE_USERS:
             case RemoteSceneObjectType::PLAYER:
@@ -350,11 +351,11 @@ void RemoteRigidBodyVehicle::read(
             throw std::runtime_error("RemoteRigidBodyVehicle: Unknown scene object type");
         }();
     }
-    auto position = reader.read_binary<EFixedArray<ScenePos, 3>>("position");
+    auto position = reader.read_binary<EFixedArray<CompressedScenePos, 3>>("position").casted<ScenePos>();
     auto rotation = reader.read_binary<EFixedArray<SceneDir, 3>>("rotation");
     auto v_com = reader.read_binary<EFixedArray<SceneDir, 3>>("v_com");
     auto w = reader.read_binary<EFixedArray<SceneDir, 3>>("w");
-    auto flags = reader.read_binary<RigidBodyVehicleFlags>("rigid body flags");
+    auto flags = reader.read_bits<RigidBodyVehicleFlags>(RIGID_BODY_VEHICLE_FLAGS_NBITS, "rigid body flags");
     if (any(transmitted_fields & RigidBodyTransmittedFields::OWNERSHIP)) {
         rb_->owner_site_id_ = reader.read_binary<RemoteSiteId>("owner_site_id");
     }
@@ -461,6 +462,7 @@ void RemoteRigidBodyVehicle::write(
                 writer.write_binary(jv.at<float>(AvatarParameters::y_fov), "y_fov");
                 writer.write_binary(jv.at<float>(AvatarParameters::near_plane), "near_plane");
                 writer.write_binary(jv.at<float>(AvatarParameters::far_plane), "far_plane");
+                writer.write_binary(jv.at<bool>(AvatarParameters::with_gun), "with_gun");
                 return;
             case RemoteSceneObjectType::REMOTE_USERS:
             case RemoteSceneObjectType::PLAYER:
@@ -470,11 +472,11 @@ void RemoteRigidBodyVehicle::write(
             throw std::runtime_error("RemoteRigidBodyVehicle: Unknown scene object type");
         }();
     }
-    writer.write_binary(rb_->rbp_.abs_position(), "position");
+    writer.write_binary(rb_->rbp_.abs_position().casted<CompressedScenePos>(), "position");
     writer.write_binary(matrix_2_tait_bryan_angles(rb_->rbp_.rotation_), "rotation");
     writer.write_binary(rb_->rbp_.v_com_, "v_com");
     writer.write_binary(rb_->rbp_.w_, "w");
-    writer.write_binary(rb_->flags_, "rigid body flags");
+    writer.write_bits(rb_->flags_, RIGID_BODY_VEHICLE_FLAGS_NBITS, "rigid body flags");
     if (any(transmitted_fields & RigidBodyTransmittedFields::OWNERSHIP)) {
         if (!rb_->owner_site_id_.has_value()) {
             throw std::runtime_error("Owner site ID not set");

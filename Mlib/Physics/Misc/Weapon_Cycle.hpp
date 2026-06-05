@@ -2,6 +2,7 @@
 #include <Mlib/Physics/Misc/Inventory_Item.hpp>
 #include <Mlib/Scene_Graph/Interfaces/Scene_Node/INode_Modifier.hpp>
 #include <compare>
+#include <cstdint>
 #include <functional>
 #include <iosfwd>
 #include <map>
@@ -11,7 +12,7 @@
 namespace Mlib {
 
 class Inventory;
-enum class RigidBodyVehicleFlags;
+enum class RigidBodyVehicleFlags: uint32_t;
 struct BulletProperties;
 enum class WhenToEquip;
 

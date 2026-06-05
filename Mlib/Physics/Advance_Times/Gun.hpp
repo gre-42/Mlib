@@ -11,6 +11,7 @@
 #include <Mlib/Physics/Misc/Inventory_Item.hpp>
 #include <Mlib/Scene_Graph/Interfaces/Scene_Node/IAbsolute_Observer.hpp>
 #include <Mlib/Stats/Random_Number_Generators.hpp>
+#include <cstdint>
 #include <functional>
 #include <mutex>
 #include <optional>
@@ -25,7 +26,7 @@ class SceneNode;
 class IPlayer;
 class ITeam;
 struct BulletProperties;
-enum class RigidBodyVehicleFlags;
+enum class RigidBodyVehicleFlags: uint32_t;
 struct StaticWorld;
 template <class TPosition>
 struct AudioSourceState;

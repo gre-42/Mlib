@@ -30,7 +30,7 @@ class IPlayer;
 class ITeam;
 struct BulletExplosion;
 struct BulletProperties;
-enum class RigidBodyVehicleFlags;
+enum class RigidBodyVehicleFlags: uint32_t;
 template <class TPosition>
 struct AudioSourceState;
 class BulletPropertyDb;

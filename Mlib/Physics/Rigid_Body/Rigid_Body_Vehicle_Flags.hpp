@@ -1,15 +1,17 @@
 #pragma once
+#include <cstdint>
 #include <string>
 
 namespace Mlib {
 
-enum class RigidBodyVehicleFlags {
+enum class RigidBodyVehicleFlags: uint32_t {
     NONE = 0,
     FEELS_NO_GRAVITY = (1 << 0),
     IS_ACTIVATED_AVATAR = (1 << 1),
     IS_DEACTIVATED_AVATAR = (1 << 2),
     IS_ANY_AVATAR = IS_ACTIVATED_AVATAR | IS_DEACTIVATED_AVATAR
 };
+static const size_t RIGID_BODY_VEHICLE_FLAGS_NBITS = 3;
 
 inline RigidBodyVehicleFlags operator & (RigidBodyVehicleFlags a, RigidBodyVehicleFlags b) {
     return (RigidBodyVehicleFlags)((int)a & (int)b);

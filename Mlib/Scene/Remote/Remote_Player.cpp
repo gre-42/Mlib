@@ -15,6 +15,7 @@
 #include <Mlib/Players/Containers/Remote_Sites.hpp>
 #include <Mlib/Players/Scene_Vehicle/Externals_Mode.hpp>
 #include <Mlib/Players/Scene_Vehicle/Scene_Vehicle.hpp>
+#include <Mlib/Players/Scene_Vehicle/Vehicle_Seat.hpp>
 #include <Mlib/Players/User_Account/User_Account.hpp>
 #include <Mlib/Remote/Incremental_Objects/Known_Fields.hpp>
 #include <Mlib/Remote/Incremental_Objects/Transmission_History.hpp>
@@ -116,7 +117,7 @@ DanglingBaseClassPtr<RemotePlayer> RemotePlayer::try_create_from_stream(
     }
     if (has_scene_vehicle) {
         reader.read_binary<RemoteObjectId>("vehicle_object_id");
-        reader.read_string<StringLengthType>("seat");
+        reader.read_bits<VehicleSeat>(VEHICLE_SEAT_NBITS, "seat");
         reader.read_bits<ExternalsMode>(EXTERNALS_MODE_BITS, "externals mode");
         auto has_weapon_cycle = reader.read_bool_bit("has_weapon_cycle");
         auto has_gun_yaw = reader.read_bool_bit("has_gun_yaw");
@@ -197,7 +198,7 @@ void RemotePlayer::read(
     }
     if (has_scene_vehicle) {
         auto vehicle_object_id = reader.read_binary<RemoteObjectId>("vehicle_object_id");
-        auto seat = reader.read_string<StringLengthType>("seat");
+        auto seat = vehicle_seat_to_string(reader.read_bits<VehicleSeat>(VEHICLE_SEAT_NBITS, "seat"));
         auto externals_mode = reader.read_bits<ExternalsMode>(EXTERNALS_MODE_BITS, "externals mode");
         if (!any(player_->site_privileges() & PlayerSitePrivileges::MANAGER)) {
             if (player_->has_scene_vehicle()) {
@@ -361,7 +362,7 @@ void RemotePlayer::write(
             throw std::runtime_error("remote vehicle object ID not set");
         }
         writer.write_binary(*rb->remote_object_id_, "remote object ID");
-        writer.write_string<StringLengthType>(player_->seat(), "seat");
+        writer.write_bits(vehicle_seat_from_string(player_->seat()), VEHICLE_SEAT_NBITS, "seat");
         writer.write_bits(player_->externals_mode(), EXTERNALS_MODE_BITS, "externals mode");
         bool has_weapon_cycle = player_->has_weapon_cycle();
         bool has_gun_yaw = player_->has_gun_yaw();
