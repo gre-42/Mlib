@@ -21,6 +21,8 @@ public:
         , valid_bits_in_current_word_(0)
     {}
 
+    ~BitwiseWordsReader() = default;
+
     // Extracts bits across packed word boundaries
     template <std::unsigned_integral TValue>
     TValue read_bits(size_t nbits, const char* message) {

@@ -12,6 +12,7 @@
 #include <Mlib/Remote/Incremental_Objects/Proxy_Tasks.hpp>
 #include <Mlib/Remote/Incremental_Objects/Transmission_History.hpp>
 #include <Mlib/Remote/Incremental_Objects/Transmitted_Fields.hpp>
+#include <Mlib/Remote/Remote_Check.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Fast_Macros/Create_Generic_Avatar.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Fast_Macros/Create_Generic_Car.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Remote/Avatar_Parameters.hpp>
@@ -174,9 +175,11 @@ DanglingBaseClassPtr<RemoteRigidBodyVehicle> RemoteRigidBodyVehicle::try_create_
     if (any(transmitted_fields & RigidBodyTransmittedFields::OWNERSHIP)) {
         owner_site_id = reader.read_binary<RemoteSiteId>("owner_site_id");
     }
-    auto end = reader.read_binary<RemoteSceneObjectType>("inverted scene object type");
-    if (end != ~type) {
-        throw std::runtime_error("Invalid rigid body vehicle end (0)");
+    if (remote_end_check_enabled()) {
+        auto end = reader.read_binary<RemoteSceneObjectType>("inverted scene object type");
+        if (end != ~type) {
+            throw std::runtime_error("Invalid rigid body vehicle end (0)");
+        }
     }
     if ((type != RemoteSceneObjectType::RIGID_BODY_CAR) &&
         (type != RemoteSceneObjectType::RIGID_BODY_AVATAR))
@@ -359,9 +362,11 @@ void RemoteRigidBodyVehicle::read(
     if (any(transmitted_fields & RigidBodyTransmittedFields::OWNERSHIP)) {
         rb_->owner_site_id_ = reader.read_binary<RemoteSiteId>("owner_site_id");
     }
-    auto end = reader.read_binary<RemoteSceneObjectType>("inverted scene object type");
-    if (end != ~type_) {
-        throw std::runtime_error("Invalid rigid body vehicle end (1)");
+    if (remote_end_check_enabled()) {
+        auto end = reader.read_binary<RemoteSceneObjectType>("inverted scene object type");
+        if (end != ~type_) {
+            throw std::runtime_error("Invalid rigid body vehicle end (1)");
+        }
     }
     if (physics_scene_->remote_scene_ == nullptr) {
         throw std::runtime_error("RemoteRigidBodyVehicle: Remote scene is null");
@@ -483,7 +488,10 @@ void RemoteRigidBodyVehicle::write(
         }
         writer.write_binary(*rb_->owner_site_id_, "owner site ID");
     }
-    writer.write_binary(~type_, "inverted rigid body vehicle");
+    if (remote_end_check_enabled()) {
+        writer.write_binary(~type_, "inverted rigid body vehicle");
+    }
+    writer.flush_partial("flush rigid body vehicle");
 }
 
 DanglingBaseClassRef<RigidBodyVehicle> RemoteRigidBodyVehicle::rb() {

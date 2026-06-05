@@ -6,7 +6,7 @@ namespace Mlib {
 using TransmissionHistoryType = uint8_t;
 using TransmittedFieldsType = uint8_t;
 using RemoteSiteId = uint8_t;
-using LocalObjectId = uint32_t;
+using LocalObjectId = uint16_t;
 using RemoteSceneObjectUnderlyingType = uint8_t;
 using NUnknownType = uint16_t;
 using NDeletedType = uint16_t;

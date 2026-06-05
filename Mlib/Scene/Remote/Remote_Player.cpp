@@ -20,6 +20,7 @@
 #include <Mlib/Remote/Incremental_Objects/Known_Fields.hpp>
 #include <Mlib/Remote/Incremental_Objects/Transmission_History.hpp>
 #include <Mlib/Remote/Incremental_Objects/Transmitted_Fields.hpp>
+#include <Mlib/Remote/Remote_Check.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Players/Create_Player.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Set_Externals_Creator.hpp>
 #include <Mlib/Scene/Physics_Scene.hpp>
@@ -135,9 +136,11 @@ DanglingBaseClassPtr<RemotePlayer> RemotePlayer::try_create_from_stream(
         }
     }
     read_select_next_vehicle_history(istr, transmission_history_reader, verbosity);
-    auto end = reader.read_binary<RemoteSceneObjectType>("inverted scene object type");
-    if (end != ~RemoteSceneObjectType::PLAYER) {
-        throw std::runtime_error("Invalid player message end (0). Player ID: \"" + *name.value_or(VariableAndHash<std::string>{"<not transmitted>"}) + '"');
+    if (remote_end_check_enabled()) {
+        auto end = reader.read_binary<RemoteSceneObjectType>("inverted scene object type");
+        if (end != ~RemoteSceneObjectType::PLAYER) {
+            throw std::runtime_error("Invalid player message end (0). Player ID: \"" + *name.value_or(VariableAndHash<std::string>{"<not transmitted>"}) + '"');
+        }
     }
     if (physics_scene.remote_scene_ == nullptr) {
         throw std::runtime_error("RemotePlayer: Remote scene is null");
@@ -303,9 +306,11 @@ void RemotePlayer::read(
             player_->select_next_vehicle_history = std::move(select_next_vehicle_history);
         }
     }
-    auto end = reader.read_binary<RemoteSceneObjectType>("inverted scene object type");
-    if (end != ~RemoteSceneObjectType::PLAYER) {
-        throw std::runtime_error("Invalid player message end (1). Player-ID: \"" + *player_->id() + '"');
+    if (remote_end_check_enabled()) {
+        auto end = reader.read_binary<RemoteSceneObjectType>("inverted scene object type");
+        if (end != ~RemoteSceneObjectType::PLAYER) {
+            throw std::runtime_error("Invalid player message end (1). Player-ID: \"" + *player_->id() + '"');
+        }
     }
 }
 
@@ -383,5 +388,8 @@ void RemotePlayer::write(
         }
     }
     write_select_next_vehicle_history(player_->select_next_vehicle_history, ostr, transmission_history_writer);
-    writer.write_binary(~RemoteSceneObjectType::PLAYER, "inverted scene object type");
+    if (remote_end_check_enabled()) {
+        writer.write_binary(~RemoteSceneObjectType::PLAYER, "inverted scene object type");
+    }
+    writer.flush_partial("flush player");
 }

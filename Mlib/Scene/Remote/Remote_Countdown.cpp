@@ -6,6 +6,7 @@
 #include <Mlib/Players/Containers/Remote_Sites.hpp>
 #include <Mlib/Remote/Incremental_Objects/Transmission_History.hpp>
 #include <Mlib/Remote/Incremental_Objects/Transmitted_Fields.hpp>
+#include <Mlib/Remote/Remote_Check.hpp>
 #include <Mlib/Scene/Physics_Scene.hpp>
 #include <Mlib/Scene/Remote/Remote_Scene.hpp>
 #include <Mlib/Scene/Remote/Remote_Scene_Object_Type.hpp>
@@ -78,9 +79,11 @@ void RemoteCountdown::read_data(std::istream& istr, const RemoteObjectId& remote
     if (remote_object_id.site_id != *physics_scene_->remote_sites_->get_local_site_id()) {
         physics_scene_->countdown_start_.set(elapsed, duration);
     }
-    auto end = reader.read_binary<RemoteSceneObjectType>("inverted countdown");
-    if (end != ~RemoteSceneObjectType::COUNTDOWN) {
-        throw std::runtime_error("Invalid countdown end");
+    if (remote_end_check_enabled()) {
+        auto end = reader.read_binary<RemoteSceneObjectType>("inverted countdown");
+        if (end != ~RemoteSceneObjectType::COUNTDOWN) {
+            throw std::runtime_error("Invalid countdown end");
+        }
     }
 }
 
@@ -103,5 +106,7 @@ void RemoteCountdown::write(
     writer.write_binary(RemoteSceneObjectType::COUNTDOWN, "countdown");
     writer.write_binary(physics_scene_->countdown_start_.elapsed(), "elapsed");
     writer.write_binary(physics_scene_->countdown_start_.duration(), "duration");
-    writer.write_binary(~RemoteSceneObjectType::COUNTDOWN, "inverted countdown");
+    if (remote_end_check_enabled()) {
+        writer.write_binary(~RemoteSceneObjectType::COUNTDOWN, "inverted countdown");
+    }
 }

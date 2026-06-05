@@ -1,12 +1,13 @@
 #include "Remote_Users.hpp"
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Macro_Executor/Notifying_Json_Macro_Arguments.hpp>
-#include <Mlib/Os/Io/Binary_Reader.hpp>
-#include <Mlib/Os/Io/Binary_Writer.hpp>
+#include <Mlib/Os/Io/Binary_Bitwise_Words_Reader.hpp>
+#include <Mlib/Os/Io/Binary_Bitwise_Words_Writer.hpp>
 #include <Mlib/Players/Containers/Remote_Sites.hpp>
 #include <Mlib/Remote/Incremental_Objects/Proxy_Tasks.hpp>
 #include <Mlib/Remote/Incremental_Objects/Transmission_History.hpp>
 #include <Mlib/Remote/Incremental_Objects/Transmitted_Fields.hpp>
+#include <Mlib/Remote/Remote_Check.hpp>
 #include <Mlib/Scene/Physics_Scene.hpp>
 #include <Mlib/Scene/Remote/Remote_Scene.hpp>
 #include <Mlib/Scene/Remote/Remote_Scene_Object_Type.hpp>
@@ -82,7 +83,7 @@ void RemoteUsers::read_data(
     ProxyTasks proxy_tasks,
     TransmissionHistoryReader& transmission_history_reader)
 {
-    auto reader = BinaryReader(istr, verbosity_);
+    auto reader = BinaryBitwiseWordsReader(istr, verbosity_);
     auto user_count = reader.read_binary<NUserCountType>("#users");
     physics_scene_->remote_sites_->set_user_count(site_id_, user_count);
     if (user_count > 0) {
@@ -144,9 +145,11 @@ void RemoteUsers::read_data(
             }
         }
     }
-    auto end = reader.read_binary<RemoteSceneObjectType>("inverted remote users");
-    if (end != ~RemoteSceneObjectType::REMOTE_USERS) {
-        throw std::runtime_error("Invalid remote users end");
+    if (remote_end_check_enabled()) {
+        auto end = reader.read_binary<RemoteSceneObjectType>("inverted remote users");
+        if (end != ~RemoteSceneObjectType::REMOTE_USERS) {
+            throw std::runtime_error("Invalid remote users end");
+        }
     }
 }
 
@@ -159,7 +162,7 @@ void RemoteUsers::write(
 {
     transmission_history_writer.write_remote_object_id(ostr, remote_object_id, TransmittedFields::END);
     auto user_count = physics_scene_->remote_sites_->get_user_count(site_id_);
-    auto writer = BinaryWriter{ostr};
+    auto writer = BinaryBitwiseWordsWriter{ostr};
     writer.write_binary(RemoteSceneObjectType::REMOTE_USERS, "remote users");
     writer.write_binary(user_count, "user count");
     if (user_count > 0) {
@@ -195,5 +198,8 @@ void RemoteUsers::write(
             writer.write_binary(user->get_status(), "user status");
         }
     }
-    writer.write_binary(~RemoteSceneObjectType::REMOTE_USERS, "inverted remote users");
+    if (remote_end_check_enabled()) {
+        writer.write_binary(~RemoteSceneObjectType::REMOTE_USERS, "inverted remote users");
+    }
+    writer.flush_partial("flush remote user");
 }
