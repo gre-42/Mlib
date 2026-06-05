@@ -100,10 +100,10 @@ ENV += $(E_FLAG) CXXFLAGS="$(CXXFLAGS)"
 ENV += $(E_FLAG) LDFLAGS="$(LDFLAGS)"
 ifeq ($(PODMAN),1)
     WDIR      := $(shell realpath -s --relative-to="$(PWD)" "$(CURDIR)")
-    CMAKE_CMD := podman run --rm -it -v "$(PWD):/src:Z" -w "/src/$(WDIR)" $(ENV) $(CONTAINER) $(CMAKE_CMD)
-    BUILD_CMD := podman run --rm -it -v "$(PWD):/src:Z" -w "/src/$(WDIR)" $(CONTAINER)
-    INTER_CMD := podman run --rm -it -v "$(PWD):/src:Z" -w "/src/$(WDIR)" $(CONTAINER)
-    DAEMON_CMD := podman run --rm -d -v "$(PWD):/src:Z" -w "/src/$(WDIR)" -p 2222:22 $(CONTAINER)
+    CMAKE_CMD := podman run --rm -it -v "$(PWD):/src:Z" -v emscripten_cache:/emsdk/upstream/emscripten/cache -w "/src/$(WDIR)" $(ENV) $(CONTAINER) $(CMAKE_CMD)
+    BUILD_CMD := podman run --rm -it -v "$(PWD):/src:Z" -v emscripten_cache:/emsdk/upstream/emscripten/cache -w "/src/$(WDIR)" $(CONTAINER)
+    INTER_CMD := podman run --rm -it -v "$(PWD):/src:Z" -v emscripten_cache:/emsdk/upstream/emscripten/cache -w "/src/$(WDIR)" $(CONTAINER)
+    DAEMON_CMD := podman run --rm -d -v "$(PWD):/src:Z" -v emscripten_cache:/emsdk/upstream/emscripten/cache -w "/src/$(WDIR)" -p 2222:22 $(CONTAINER)
 else
     CMAKE_CMD := $(ENV) $(CMAKE_CMD)
     BUILD_CMD :=

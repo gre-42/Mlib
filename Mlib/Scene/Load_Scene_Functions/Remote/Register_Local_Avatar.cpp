@@ -34,7 +34,7 @@ void RegisterLocalAvatar::execute(const JsonView& args) {
     rb->remote_object_id_ = remote_scene->create_local<RemoteRigidBodyVehicle>(
         CURRENT_SOURCE_LOCATION,
         RemoteSceneObjectType::RIGID_BODY_AVATAR,
-        args.json().dump(),
+        args.json(),
         suffix,
         rb.set_loc(CURRENT_SOURCE_LOCATION),
         DanglingBaseClassRef<PhysicsScene>{physics_scene, CURRENT_SOURCE_LOCATION});

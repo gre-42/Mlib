@@ -3,6 +3,7 @@
 #include <Mlib/Remote/Incremental_Objects/IIncremental_Object.hpp>
 #include <Mlib/Scene_Config/Remote_Integers.hpp>
 #include <memory>
+#include <nlohmann/json.hpp>
 #include <string>
 
 namespace Mlib {
@@ -17,7 +18,7 @@ public:
     explicit RemoteRigidBodyVehicle(
         IoVerbosity verbosity,
         RemoteSceneObjectType type,
-        std::string initial,
+        nlohmann::json initial,
         std::string node_suffix,
         const DanglingBaseClassRef<RigidBodyVehicle>& rb,
         const DanglingBaseClassRef<PhysicsScene>& physics_scene);
@@ -48,7 +49,7 @@ public:
 
 private:
     RemoteSceneObjectType type_;
-    std::string initial_;
+    nlohmann::json initial_;
     std::string node_suffix_;
     DanglingBaseClassPtr<RigidBodyVehicle> rb_;
     DanglingBaseClassRef<PhysicsScene> physics_scene_;
