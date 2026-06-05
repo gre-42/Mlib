@@ -11,6 +11,11 @@ namespace Mlib {
 struct RemoteObjectId {
     RemoteSiteId site_id;
     LocalObjectId object_id;
+    template <class Archive>
+    void serialize(Archive& archive) {
+        archive(site_id);
+        archive(object_id);
+    }
     std::string to_string() const;
     std::string to_displayname() const;
     std::strong_ordering operator <=> (const RemoteObjectId&) const = default;

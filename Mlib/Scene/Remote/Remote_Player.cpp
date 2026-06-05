@@ -110,14 +110,13 @@ DanglingBaseClassPtr<RemotePlayer> RemotePlayer::try_create_from_stream(
         args["driving_direction"] = driving_direction_to_string(reader.read_bits<DrivingDirection>(DRIVING_DIRECTION_BITS, "driving_direction"));
         has_scene_vehicle = reader.read_bool_bit("has_scene_vehicle");
         args["behavior"] = reader.read_string<StringLengthType>("behavior");
-        reader.align_to_next_word();
-        Skills{}.read(istr);
-        Skills{}.read(istr);
+        reader.deserialize<Skills>("AI skills");
+        reader.deserialize<Skills>("user skills");
     } else {
         has_scene_vehicle = reader.read_bool_bit("has_scene_vehicle");
     }
     if (has_scene_vehicle) {
-        reader.read_binary<RemoteObjectId>("vehicle_object_id");
+        reader.deserialize<RemoteObjectId>("vehicle_object_id");
         reader.read_bits<VehicleSeat>(VEHICLE_SEAT_NBITS, "seat");
         reader.read_bits<ExternalsMode>(EXTERNALS_MODE_BITS, "externals mode");
         auto has_weapon_cycle = reader.read_bool_bit("has_weapon_cycle");
@@ -193,14 +192,13 @@ void RemotePlayer::read(
         reader.read_bits<DrivingDirection>(DRIVING_DIRECTION_BITS, "driving_direction");
         has_scene_vehicle = reader.read_bool_bit("has_scene_vehicle");
         reader.read_string<StringLengthType>("behavior");
-        reader.align_to_next_word();
-        player_->set_skills(ControlSource::AI, Skills{}.read(istr));
-        player_->set_skills(ControlSource::USER, Skills{}.read(istr));
+        player_->set_skills(ControlSource::AI, reader.deserialize<Skills>("AI skills"));
+        player_->set_skills(ControlSource::USER, reader.deserialize<Skills>("user skills"));
     } else {
         has_scene_vehicle = reader.read_bool_bit("has_scene_vehicle");
     }
     if (has_scene_vehicle) {
-        auto vehicle_object_id = reader.read_binary<RemoteObjectId>("vehicle_object_id");
+        auto vehicle_object_id = reader.deserialize<RemoteObjectId>("vehicle_object_id");
         auto seat = vehicle_seat_to_string(reader.read_bits<VehicleSeat>(VEHICLE_SEAT_NBITS, "seat"));
         auto externals_mode = reader.read_bits<ExternalsMode>(EXTERNALS_MODE_BITS, "externals mode");
         if (!any(player_->site_privileges() & PlayerSitePrivileges::MANAGER)) {
@@ -355,9 +353,8 @@ void RemotePlayer::write(
         writer.write_bits(player_->driving_direction(), DRIVING_DIRECTION_BITS, "player driving direction");
         writer.write_bool_bit(has_scene_vehicle, "has_scene_vehicle");
         writer.write_string<StringLengthType>(player_->behavior(), "player behavior");
-        writer.flush_partial("before player skills");
-        player_->get_skills(ControlSource::AI).write(ostr);
-        player_->get_skills(ControlSource::USER).write(ostr);
+        writer.serialize(player_->get_skills(ControlSource::AI), "AI skills");
+        writer.serialize(player_->get_skills(ControlSource::USER), "user skills");
     } else {
         writer.write_bool_bit(has_scene_vehicle, "has_scene_vehicle");
     }
@@ -366,7 +363,7 @@ void RemotePlayer::write(
         if (!rb->remote_object_id_.has_value()) {
             throw std::runtime_error("remote vehicle object ID not set");
         }
-        writer.write_binary(*rb->remote_object_id_, "remote object ID");
+        writer.serialize(*rb->remote_object_id_, "remote object ID");
         writer.write_bits(vehicle_seat_from_string(player_->seat()), VEHICLE_SEAT_NBITS, "seat");
         writer.write_bits(player_->externals_mode(), EXTERNALS_MODE_BITS, "externals mode");
         bool has_weapon_cycle = player_->has_weapon_cycle();

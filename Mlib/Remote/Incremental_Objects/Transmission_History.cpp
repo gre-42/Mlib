@@ -1,5 +1,6 @@
 #include "Transmission_History.hpp"
-#include <Mlib/Os/Io/Binary.hpp>
+#include <Mlib/Os/Io/Binary_Bitwise_Words_Reader.hpp>
+#include <Mlib/Os/Io/Binary_Bitwise_Words_Writer.hpp>
 #include <Mlib/Remote/Incremental_Objects/Remote_Object_Id.hpp>
 #include <Mlib/Remote/Incremental_Objects/Transmitted_Fields.hpp>
 #include <Mlib/Scene_Config/Remote_Event_History_Duration.hpp>
@@ -20,16 +21,17 @@ RemoteObjectId TransmissionHistoryReader::read_remote_object_id(
     TransmittedFields transmitted_fields,
     IoVerbosity verbosity)
 {
+    auto reader = BinaryBitwiseWordsReader{istr, verbosity};
     if (!any(transmitted_fields & TransmittedFields::SITE_ID)) {
         if (!site_id_.has_value()) {
             throw std::runtime_error("Site ID neither set in history nor in current transmission");
         }
         return RemoteObjectId{
             *site_id_,
-            read_binary<LocalObjectId>(istr, "object ID", verbosity)
+            reader.read_binary<LocalObjectId>("object ID")
         };
     } else {
-        auto remote_object_id = read_binary<RemoteObjectId>(istr, "remote object ID", verbosity);
+        auto remote_object_id = reader.deserialize<RemoteObjectId>("remote object ID");
         site_id_ = remote_object_id.site_id;
         return remote_object_id;
     }
@@ -64,6 +66,7 @@ void TransmissionHistoryWriter::write_remote_object_id(
     const RemoteObjectId& remote_object_id,
     TransmittedFields transmitted_fields)
 {
+    auto writer = BinaryBitwiseWordsWriter{ostr};
     if (any(transmitted_fields & TransmittedFields::SITE_ID)) {
         throw std::runtime_error("Transmitted fields unexpectedly have the SITE_ID flag set");
     }
@@ -76,12 +79,12 @@ void TransmissionHistoryWriter::write_remote_object_id(
     if (any(history_ & TransmissionHistory::SITE_ID) &&
         (site_id() == remote_object_id.site_id))
     {
-        write_binary(ostr, transmitted_fields, "transmitted fields");
-        write_binary(ostr, remote_object_id.object_id, "object ID");
+        writer.write_binary(transmitted_fields, "transmitted fields");
+        writer.write_binary(remote_object_id.object_id, "object ID");
     } else {
         site_id_.emplace(remote_object_id.site_id);
-        write_binary(ostr, transmitted_fields | TransmittedFields::SITE_ID, "transmitted fields");
-        write_binary(ostr, remote_object_id, "remote object ID");
+        writer.write_binary(transmitted_fields | TransmittedFields::SITE_ID, "transmitted fields");
+        writer.serialize(remote_object_id, "remote object ID");
         history_ |= TransmissionHistory::SITE_ID;
     }
 }

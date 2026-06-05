@@ -5,6 +5,24 @@
 
 namespace Mlib {
 
+class BinaryBitwiseWordsWriter;
+
+class WritingArchive {
+public:
+    WritingArchive(BinaryBitwiseWordsWriter& writer, const char* message)
+        : writer_{writer}
+        , message_{message}
+    {}
+    struct is_saving {
+        static const bool value = true;
+    };
+    void operator () (const auto& element);
+
+private:
+    BinaryBitwiseWordsWriter& writer_;
+    const char* message_;
+};
+
 class BinaryBitwiseWordsWriter {
 public:
     inline explicit BinaryBitwiseWordsWriter(std::ostream& ostr)
@@ -33,6 +51,12 @@ public:
     void write_bool_bit(bool value, const char* message) {
         write_bits((uint8_t)value, 1, message);
     }
+    template <class T>
+    void serialize(const T& value, const char* message) {
+        WritingArchive archive{*this, message};
+        words_writer_.flush_partial(message);
+        const_cast<T&>(value).serialize(archive);
+    }
     inline void flush_partial(const char* message) {
         words_writer_.flush_partial(message);
     }
@@ -40,5 +64,9 @@ private:
     BitwiseWordsWriter<uint8_t> words_writer_;
     BinaryWriter binary_writer_;
 };
+
+void WritingArchive::operator () (const auto& element) {
+    writer_.write_binary(element, message_);
+}
 
 }

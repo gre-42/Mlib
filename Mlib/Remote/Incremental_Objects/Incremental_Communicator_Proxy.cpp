@@ -1,7 +1,7 @@
 #include "Incremental_Communicator_Proxy.hpp"
 #include <Mlib/Os/Io/Binary.hpp>
-#include <Mlib/Os/Io/Binary_Reader.hpp>
-#include <Mlib/Os/Io/Binary_Writer.hpp>
+#include <Mlib/Os/Io/Binary_Bitwise_Words_Reader.hpp>
+#include <Mlib/Os/Io/Binary_Bitwise_Words_Writer.hpp>
 #include <Mlib/Remote/ISend_Socket.hpp>
 #include <Mlib/Remote/Incremental_Objects/IIncremental_Object.hpp>
 #include <Mlib/Remote/Incremental_Objects/IIncremental_Object_Factory.hpp>
@@ -47,7 +47,7 @@ static bool is_loading(LocalSceneLevelLoadStatus status) {
 }
 
 void IncrementalCommunicatorProxy::receive_from_home(std::istream& istr) {
-    auto reader = BinaryReader{istr, verbosity_};
+    auto reader = BinaryBitwiseWordsReader{istr, verbosity_};
     {
         auto scene_level_name = reader.read_string<StringLengthType>("scene level name");
         auto time_of_day = reader.read_string<StringLengthType>("time of day");
@@ -70,16 +70,10 @@ void IncrementalCommunicatorProxy::receive_from_home(std::istream& istr) {
             return;
         }
     }
-    auto read_remote_object_id = [&](const char* message){
-        return RemoteObjectId{
-            reader.read_binary<RemoteSiteId>(message),
-            reader.read_binary<LocalObjectId>(message),
-        }; 
-    };
     {
         auto ndeleted = reader.read_binary<NDeletedType>("#deleted");
         for (NDeletedType i = 0; i < ndeleted; ++i) {
-            auto id = read_remote_object_id("deleted ID");
+            auto id = reader.deserialize<RemoteObjectId>("deleted ID");
             objects_->try_remove(id);
         }
     }
@@ -90,7 +84,7 @@ void IncrementalCommunicatorProxy::receive_from_home(std::istream& istr) {
             linfo() << this << ' ' << (nunknown + 0) << " objects unknown to home site " << (home_site_id_ + 0);
         }
         for (NUnknownType i = 0; i < nunknown; ++i) {
-            auto id = read_remote_object_id("unknown ID");
+            auto id = reader.deserialize<RemoteObjectId>("unknown ID");
             objects_unknown_at_home_.insert(id);
         }
     }
@@ -135,7 +129,7 @@ void IncrementalCommunicatorProxy::receive_from_home(std::istream& istr) {
 }
 
 void IncrementalCommunicatorProxy::send_home(std::iostream& iostr) {
-    auto writer = BinaryWriter{iostr};
+    auto writer = BinaryBitwiseWordsWriter{iostr};
     switch (0) { case 0:
         {
             auto level_selector = objects_->local_scene_level_selector();
@@ -148,10 +142,6 @@ void IncrementalCommunicatorProxy::send_home(std::iostream& iostr) {
                 break;
             }
         }
-        auto write_remote_object_id = [&](const RemoteObjectId& id, const char* message){
-            writer.write_binary(id.site_id, message);
-            writer.write_binary(id.object_id, message);
-        };
         {
             const auto& deleted = objects_->deleted_objects();
             if (any(verbosity_ & IoVerbosity::METADATA)) {
@@ -159,7 +149,7 @@ void IncrementalCommunicatorProxy::send_home(std::iostream& iostr) {
             }
             writer.write_binary(integral_cast<NDeletedType>(deleted.size()), "#ndeleted");
             for (const auto& [id, time] : deleted) {
-                write_remote_object_id(id, "deleted ID");
+                writer.serialize(id, "deleted ID");
             }
         }
         {
@@ -168,7 +158,7 @@ void IncrementalCommunicatorProxy::send_home(std::iostream& iostr) {
             }
             writer.write_binary(integral_cast<NUnknownType>(objects_unknown_here_.size()), "#unknown");
             for (const auto& id : objects_unknown_here_) {
-                write_remote_object_id(id, "unknown ID");
+                writer.serialize(id, "unknown ID");
             }
         }
         bool new_object_sent = false;
