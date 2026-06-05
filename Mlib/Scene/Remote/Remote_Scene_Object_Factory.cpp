@@ -34,7 +34,8 @@ DanglingBaseClassPtr<IIncrementalObject> RemoteSceneObjectFactory::try_create_sh
     switch (type) {
     case RemoteSceneObjectType::REMOTE_USERS:
         return RemoteUsers::try_create_from_stream(
-            physics_scene_.get(), scene_level_selector_.get(), istr, remote_object_id.site_id,
+            physics_scene_.get(), scene_level_selector_.get(), istr,
+            transmitted_fields, remote_object_id.site_id,
             proxy_tasks, transmission_history_reader, verbosity_);
     case RemoteSceneObjectType::PLAYER:
         return RemotePlayer::try_create_from_stream(

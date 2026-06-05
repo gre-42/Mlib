@@ -22,6 +22,7 @@ public:
         PhysicsScene& physics_scene,
         SceneLevelSelector& scene_level_selector,
         std::istream& istr,
+        TransmittedFields transmitted_fields,
         RemoteSiteId site_id,
         ProxyTasks proxy_tasks,
         TransmissionHistoryReader& transmission_history_reader,
@@ -43,6 +44,7 @@ public:
 private:
     void read_data(
         std::istream& istr,
+        TransmittedFields transmitted_fields,
         ProxyTasks proxy_tasks,
         TransmissionHistoryReader& transmission_history_reader);
 

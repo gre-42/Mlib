@@ -70,10 +70,16 @@ void IncrementalCommunicatorProxy::receive_from_home(std::istream& istr) {
             return;
         }
     }
+    auto read_remote_object_id = [&](const char* message){
+        return RemoteObjectId{
+            reader.read_binary<RemoteSiteId>(message),
+            reader.read_binary<LocalObjectId>(message),
+        }; 
+    };
     {
         auto ndeleted = reader.read_binary<NDeletedType>("#deleted");
         for (NDeletedType i = 0; i < ndeleted; ++i) {
-            auto id = reader.read_binary<RemoteObjectId>("deleted ID");
+            auto id = read_remote_object_id("deleted ID");
             objects_->try_remove(id);
         }
     }
@@ -84,7 +90,7 @@ void IncrementalCommunicatorProxy::receive_from_home(std::istream& istr) {
             linfo() << this << ' ' << (nunknown + 0) << " objects unknown to home site " << (home_site_id_ + 0);
         }
         for (NUnknownType i = 0; i < nunknown; ++i) {
-            auto id = reader.read_binary<RemoteObjectId>("unknown ID");
+            auto id = read_remote_object_id("unknown ID");
             objects_unknown_at_home_.insert(id);
         }
     }
@@ -142,6 +148,10 @@ void IncrementalCommunicatorProxy::send_home(std::iostream& iostr) {
                 break;
             }
         }
+        auto write_remote_object_id = [&](const RemoteObjectId& id, const char* message){
+            writer.write_binary(id.site_id, message);
+            writer.write_binary(id.object_id, message);
+        };
         {
             const auto& deleted = objects_->deleted_objects();
             if (any(verbosity_ & IoVerbosity::METADATA)) {
@@ -149,7 +159,7 @@ void IncrementalCommunicatorProxy::send_home(std::iostream& iostr) {
             }
             writer.write_binary(integral_cast<NDeletedType>(deleted.size()), "#ndeleted");
             for (const auto& [id, time] : deleted) {
-                writer.write_binary(id, "deleted ID");
+                write_remote_object_id(id, "deleted ID");
             }
         }
         {
@@ -158,7 +168,7 @@ void IncrementalCommunicatorProxy::send_home(std::iostream& iostr) {
             }
             writer.write_binary(integral_cast<NUnknownType>(objects_unknown_here_.size()), "#unknown");
             for (const auto& id : objects_unknown_here_) {
-                writer.write_binary(id, "unknown ID");
+                write_remote_object_id(id, "unknown ID");
             }
         }
         bool new_object_sent = false;
