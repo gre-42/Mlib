@@ -91,8 +91,9 @@ DanglingBaseClassPtr<RemotePlayer> RemotePlayer::try_create_from_stream(
     }
     bool has_scene_vehicle;
     auto args = nlohmann::json::object();
-    auto name = VariableAndHash<std::string>{reader.read_string<StringLengthType>("player ID")};
+    std::optional<VariableAndHash<std::string>> name;
     if (any(transmitted_fields & PlayerTransmittedFields::SKILLS)) {
+        name.emplace(reader.read_string<StringLengthType>("player ID"));
         args["name"] = *name;
         args["team"] = reader.read_string<StringLengthType>("team");
         if (auto full_user_name = reader.read_string<StringLengthType>("full_user_name"); !full_user_name.empty()) {
@@ -135,7 +136,7 @@ DanglingBaseClassPtr<RemotePlayer> RemotePlayer::try_create_from_stream(
     read_select_next_vehicle_history(istr, transmission_history_reader, verbosity);
     auto end = reader.read_binary<RemoteSceneObjectType>("inverted scene object type");
     if (end != ~RemoteSceneObjectType::PLAYER) {
-        throw std::runtime_error("Invalid player message end (0). Player ID: \"" + *name + '"');
+        throw std::runtime_error("Invalid player message end (0). Player ID: \"" + *name.value_or(VariableAndHash<std::string>{"<not transmitted>"}) + '"');
     }
     if (physics_scene.remote_scene_ == nullptr) {
         throw std::runtime_error("RemotePlayer: Remote scene is null");
@@ -148,7 +149,7 @@ DanglingBaseClassPtr<RemotePlayer> RemotePlayer::try_create_from_stream(
         global_object_pool.create<RemotePlayer>(
             CURRENT_SOURCE_LOCATION,
             verbosity,
-            physics_scene.players_.get_player(name, CURRENT_SOURCE_LOCATION),
+            physics_scene.players_.get_player(name.value(), CURRENT_SOURCE_LOCATION),
             DanglingBaseClassRef<PhysicsScene>{physics_scene, CURRENT_SOURCE_LOCATION}),
         CURRENT_SOURCE_LOCATION};
 }
@@ -177,8 +178,8 @@ void RemotePlayer::read(
         throw std::runtime_error("RemotePlayer::read: Unknown transmitted fields");
     }
     bool has_scene_vehicle;
-    auto player_id = reader.read_string<StringLengthType>("player ID");
     if (any(transmitted_fields & PlayerTransmittedFields::SKILLS)) {
+        auto player_id = reader.read_string<StringLengthType>("player ID");
         reader.read_string<StringLengthType>("team");
         reader.read_string<StringLengthType>("full_user_name");
         reader.read_string<StringLengthType>("user_account_key");
@@ -303,7 +304,7 @@ void RemotePlayer::read(
     }
     auto end = reader.read_binary<RemoteSceneObjectType>("inverted scene object type");
     if (end != ~RemoteSceneObjectType::PLAYER) {
-        throw std::runtime_error("Invalid player message end (1). Player-ID: \"" + player_id + '"');
+        throw std::runtime_error("Invalid player message end (1). Player-ID: \"" + *player_->id() + '"');
     }
 }
 
@@ -328,9 +329,9 @@ void RemotePlayer::write(
     transmission_history_writer.write_remote_object_id(ostr, remote_object_id, transmitted_fields);
     auto writer = BinaryBitwiseWordsWriter{ostr};
     writer.write_binary(RemoteSceneObjectType::PLAYER, "scene object type");
-    writer.write_string<StringLengthType>(*player_->id(), "player name");
     auto has_scene_vehicle = player_->has_scene_vehicle();
     if (any(transmitted_fields & PlayerTransmittedFields::SKILLS)) {
+        writer.write_string<StringLengthType>(*player_->id(), "player name");
         writer.write_string<StringLengthType>(player_->team_name(), "player team");
         if (auto u = player_->user_info(); u != nullptr) {
             writer.write_string<StringLengthType>(u->full_name, "player full username (0)");
