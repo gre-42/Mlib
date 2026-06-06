@@ -42,6 +42,9 @@ public:
     virtual std::string name() const override {
         return "int";
     }
+    virtual int32_t priority() const override {
+        return 0;
+    }
     virtual void read(
         BinaryBitwiseWordsReader& reader,
         const RemoteObjectId& remote_object_id,
@@ -89,6 +92,9 @@ public:
     }
     virtual std::string name() const override {
         return "string";
+    }
+    virtual int32_t priority() const override {
+        return 0;
     }
     virtual void read(
         BinaryBitwiseWordsReader& reader,

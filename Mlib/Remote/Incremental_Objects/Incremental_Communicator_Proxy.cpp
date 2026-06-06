@@ -129,6 +129,36 @@ void IncrementalCommunicatorProxy::receive_from_home(std::istream& istr) {
 }
 
 void IncrementalCommunicatorProxy::send_home(std::iostream& iostr) {
+    std::optional<RemoteObjectId> object_to_send_completely;
+    {
+        std::optional<int32_t> highest_priority;
+        auto update_object_to_send_completely_local = [&](const LocalObjects& objects){
+            for (const auto& [i, o] : objects) {
+                auto j = RemoteObjectId{objects_->local_site_id(), i};
+                if (!objects_unknown_at_home_.contains(j)) {
+                    continue;
+                }
+                if (!object_to_send_completely.has_value() || (o->priority() > *highest_priority)) {
+                    object_to_send_completely.emplace(j);
+                    highest_priority.emplace(o->priority());
+                }
+            }
+        };
+        auto update_object_to_send_completely_remote = [&](const RemoteObjects& objects){
+            for (const auto& [i, o] : objects) {
+                if (!objects_unknown_at_home_.contains(i)) {
+                    continue;
+                }
+                if (!object_to_send_completely.has_value() || (o->priority() > *highest_priority)) {
+                    object_to_send_completely.emplace(i);
+                    highest_priority.emplace(o->priority());
+                }
+            }
+        };
+        update_object_to_send_completely_local(objects_->private_local_objects());
+        update_object_to_send_completely_local(objects_->public_local_objects());
+        update_object_to_send_completely_remote(objects_->public_remote_objects());
+    }
     auto writer = BinaryBitwiseWordsWriter{iostr};
     switch (0) { case 0:
         {
@@ -176,7 +206,7 @@ void IncrementalCommunicatorProxy::send_home(std::iostream& iostr) {
                     if (any(verbosity_ & IoVerbosity::METADATA)) {
                         linfo() << "Maybe send complete object to home site " << (home_site_id_ + 0) << ", " << i << " \"" << o->name() << '"';
                     }
-                    if (new_object_sent) {
+                    if (new_object_sent || (object_to_send_completely.has_value() && (j != *object_to_send_completely))) {
                         if (any(verbosity_ & IoVerbosity::METADATA)) {
                             linfo() << "Not sending object";
                         }
@@ -219,7 +249,10 @@ void IncrementalCommunicatorProxy::send_home(std::iostream& iostr) {
                     if (any(verbosity_ & IoVerbosity::METADATA)) {
                         linfo() << "Maybe send complete object to home site " << (home_site_id_ + 0) << ", " << i << " \"" << o->name() << '"';
                     }
-                    if (new_object_sent) {
+                    if (new_object_sent || (object_to_send_completely.has_value() && (i != *object_to_send_completely))) {
+                        if (any(verbosity_ & IoVerbosity::METADATA)) {
+                            linfo() << "Not sending object";
+                        }
                         continue;
                     }
                     new_object_sent = true;

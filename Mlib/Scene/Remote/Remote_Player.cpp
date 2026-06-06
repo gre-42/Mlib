@@ -31,6 +31,7 @@
 #include <Mlib/Scene/Remote/Remote_Events/Remote_Shot_History.hpp>
 #include <Mlib/Scene/Remote/Remote_Rigid_Body_Vehicle.hpp>
 #include <Mlib/Scene/Remote/Remote_Scene.hpp>
+#include <Mlib/Scene/Remote/Remote_Scene_Object_Priority.hpp>
 #include <Mlib/Scene/Remote/Remote_Scene_Object_Type.hpp>
 #include <Mlib/Scene_Config/Remote_Integers.hpp>
 #include <Mlib/Scene_Graph/Driving_Direction.hpp>
@@ -150,7 +151,6 @@ DanglingBaseClassPtr<RemotePlayer> RemotePlayer::try_create_from_stream(
     if (!any(transmitted_fields & PlayerTransmittedFields::SKILLS)) {
         return nullptr;
     }
-    JsonView jv{args};
     if (full_user_name.has_value() &&
         !(*full_user_name)->empty() &&
         !physics_scene.remote_sites_->contains_user(*full_user_name))
@@ -158,7 +158,7 @@ DanglingBaseClassPtr<RemotePlayer> RemotePlayer::try_create_from_stream(
         linfo() << "Not creating player for user \"" << **full_user_name << '"';
         return nullptr;
     }
-    CreatePlayer{physics_scene, physics_scene.macro_line_executor_}.execute(jv, PlayerCreator::REMOTE);
+    CreatePlayer{physics_scene, physics_scene.macro_line_executor_}.execute(JsonView{args}, PlayerCreator::REMOTE);
     return {
         global_object_pool.create<RemotePlayer>(
             CURRENT_SOURCE_LOCATION,
@@ -170,6 +170,10 @@ DanglingBaseClassPtr<RemotePlayer> RemotePlayer::try_create_from_stream(
 
 std::string RemotePlayer::name() const {
     return *player_->id();
+}
+
+int32_t RemotePlayer::priority() const {
+    return RemoteSceneObjectPriority::PLAYER;
 }
 
 void RemotePlayer::read(

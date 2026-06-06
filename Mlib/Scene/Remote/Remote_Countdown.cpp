@@ -9,6 +9,7 @@
 #include <Mlib/Remote/Remote_Check.hpp>
 #include <Mlib/Scene/Physics_Scene.hpp>
 #include <Mlib/Scene/Remote/Remote_Scene.hpp>
+#include <Mlib/Scene/Remote/Remote_Scene_Object_Priority.hpp>
 #include <Mlib/Scene/Remote/Remote_Scene_Object_Type.hpp>
 
 using namespace Mlib;
@@ -51,6 +52,10 @@ DanglingBaseClassPtr<RemoteCountdown> RemoteCountdown::try_create_from_stream(
 
 std::string RemoteCountdown::name() const {
     return "countdown";
+}
+
+int32_t RemoteCountdown::priority() const {
+    return RemoteSceneObjectPriority::COUNTDOWN;
 }
 
 void RemoteCountdown::read(

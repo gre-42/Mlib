@@ -19,6 +19,7 @@ class IIncrementalObject: public virtual DestructionNotifier, public virtual Dan
 public:
     virtual ~IIncrementalObject() = default;
     virtual std::string name() const = 0;
+    virtual int32_t priority() const = 0;
     virtual void read(
         BinaryBitwiseWordsReader& reader,
         const RemoteObjectId& remote_object_id,

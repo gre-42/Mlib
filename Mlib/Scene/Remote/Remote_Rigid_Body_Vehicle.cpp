@@ -23,6 +23,7 @@
 #include <Mlib/Scene/Remote/Coordinate_Deserialization.hpp>
 #include <Mlib/Scene/Remote/Coordinate_Serialization.hpp>
 #include <Mlib/Scene/Remote/Remote_Scene.hpp>
+#include <Mlib/Scene/Remote/Remote_Scene_Object_Priority.hpp>
 #include <Mlib/Scene/Remote/Remote_Scene_Object_Type.hpp>
 #include <Mlib/Scene_Config/Interpolation_Thresholds.hpp>
 #include <Mlib/Scene_Config/Remote_Integers.hpp>
@@ -306,6 +307,10 @@ DanglingBaseClassPtr<RemoteRigidBodyVehicle> RemoteRigidBodyVehicle::try_create_
 
 std::string RemoteRigidBodyVehicle::name() const {
     return rb_->name();
+}
+
+int32_t RemoteRigidBodyVehicle::priority() const {
+    return RemoteSceneObjectPriority::RIGID_BODY_VEHICLE;
 }
 
 void RemoteRigidBodyVehicle::read(

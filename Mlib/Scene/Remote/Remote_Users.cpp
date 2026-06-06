@@ -11,6 +11,7 @@
 #include <Mlib/Remote/Remote_Check.hpp>
 #include <Mlib/Scene/Physics_Scene.hpp>
 #include <Mlib/Scene/Remote/Remote_Scene.hpp>
+#include <Mlib/Scene/Remote/Remote_Scene_Object_Priority.hpp>
 #include <Mlib/Scene/Remote/Remote_Scene_Object_Type.hpp>
 #include <Mlib/Scene_Config/Remote_Integers.hpp>
 
@@ -87,6 +88,10 @@ std::string RemoteUsers::name() const {
     return "users";
 }
 
+int32_t RemoteUsers::priority() const {
+    return RemoteSceneObjectPriority::REMOTE_USERS;
+}
+
 void RemoteUsers::read(
     BinaryBitwiseWordsReader& reader,
     const RemoteObjectId& remote_object_id,
@@ -120,9 +125,11 @@ void RemoteUsers::read_data(
                 throw std::runtime_error("Too many users transmitted");
             }
             std::vector<NUserCountType> users_transmitted(transmitted_count);
+            // Read user IDs
             for (auto& user_id : users_transmitted) {
                 user_id = reader.read_binary<NUserCountType>("user ID");
             }
+            // Read global variables
             {
                 auto args = physics_scene_->macro_line_executor_.writable_json_macro_arguments();
                 for (auto user_id : users_transmitted) {
@@ -144,6 +151,7 @@ void RemoteUsers::read_data(
                 }
                 args.unlock_and_notify();
             }
+            // Read status
             for (auto user_id : users_transmitted) {
                 auto user = physics_scene_->remote_sites_->get_user(site_id_, user_id);
                 auto status = reader.read_binary<UserStatus>("user status");
@@ -232,5 +240,4 @@ void RemoteUsers::write(
     if (remote_end_check_enabled()) {
         writer.write_binary(~RemoteSceneObjectType::REMOTE_USERS, "inverted remote users");
     }
-    writer.flush_partial("flush remote user");
 }

@@ -21,6 +21,7 @@ public:
         const RemoteObjectId& remote_object_id,
         IoVerbosity verbosity);
     virtual std::string name() const override;
+    virtual int32_t priority() const override;
     virtual void read(
         BinaryBitwiseWordsReader& reader,
         const RemoteObjectId& remote_object_id,
