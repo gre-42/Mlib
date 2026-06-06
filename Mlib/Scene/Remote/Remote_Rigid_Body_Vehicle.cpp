@@ -1,5 +1,6 @@
 #include "Remote_Rigid_Body_Vehicle.hpp"
 #include <Mlib/Components/Rigid_Body_Vehicle.hpp>
+#include <Mlib/Geometry/Coordinates/To_Tait_Bryan_Angles.hpp>
 #include <Mlib/Geometry/Instance/Rendering_Dynamics.hpp>
 #include <Mlib/Json/Base.hpp>
 #include <Mlib/Json/Json_View.hpp>
@@ -168,9 +169,26 @@ DanglingBaseClassPtr<RemoteRigidBodyVehicle> RemoteRigidBodyVehicle::try_create_
         }();
     }
     auto position = deserialize_position(reader, "position");
-    auto rotation = deserialize_angles(reader, "rotation");
     auto v_com = deserialize_direction(reader, "v_com");
-    auto w = deserialize_direction(reader, "w");
+    FixedArray<SceneDir, 3> rotation = uninitialized;
+    FixedArray<SceneDir, 3> w = uninitialized;
+    [&](){
+        switch (type) {
+        case RemoteSceneObjectType::RIGID_BODY_CAR:
+            rotation = deserialize_angles(reader, "rotation");
+            w = deserialize_direction(reader, "w");
+            return;
+        case RemoteSceneObjectType::RIGID_BODY_AVATAR:
+            rotation = {0.f, deserialize_angle(reader, "avatar yaw"), 0.f};
+            w = {0.f, reader.read_binary<SceneDir>("w"), 0.f};
+            return;
+        case RemoteSceneObjectType::REMOTE_USERS:
+        case RemoteSceneObjectType::PLAYER:
+        case RemoteSceneObjectType::COUNTDOWN:
+            throw std::runtime_error("RemoteRigidBodyVehicle: Unexpected object type");
+        }
+        throw std::runtime_error("RemoteRigidBodyVehicle: Unknown scene object type");
+    }();
     auto flags = reader.read_bits<RigidBodyVehicleFlags>(RIGID_BODY_VEHICLE_FLAGS_NBITS, "rigid body flags");
     std::optional<RemoteSiteId> owner_site_id;
     if (any(transmitted_fields & RigidBodyTransmittedFields::OWNERSHIP)) {
@@ -355,9 +373,26 @@ void RemoteRigidBodyVehicle::read(
         }();
     }
     auto position = deserialize_position(reader, "position");
-    auto rotation = deserialize_angles(reader, "rotation");
     auto v_com = deserialize_direction(reader, "v_com");
-    auto w = deserialize_direction(reader, "w");
+    FixedArray<SceneDir, 3> rotation = uninitialized;
+    FixedArray<SceneDir, 3> w = uninitialized;
+    [&](){
+        switch (type) {
+        case RemoteSceneObjectType::RIGID_BODY_CAR:
+            rotation = deserialize_angles(reader, "rotation");
+            w = deserialize_direction(reader, "w");
+            return;
+        case RemoteSceneObjectType::RIGID_BODY_AVATAR:
+            rotation = {0.f, deserialize_angle(reader, "avatar yaw"), 0.f};
+            w = {0.f, reader.read_binary<SceneDir>("w"), 0.f};
+            return;
+        case RemoteSceneObjectType::REMOTE_USERS:
+        case RemoteSceneObjectType::PLAYER:
+        case RemoteSceneObjectType::COUNTDOWN:
+            throw std::runtime_error("RemoteRigidBodyVehicle: Unexpected object type");
+        }
+        throw std::runtime_error("RemoteRigidBodyVehicle: Unknown scene object type");
+    }();
     auto flags = reader.read_bits<RigidBodyVehicleFlags>(RIGID_BODY_VEHICLE_FLAGS_NBITS, "rigid body flags");
     if (any(transmitted_fields & RigidBodyTransmittedFields::OWNERSHIP)) {
         rb_->owner_site_id_ = reader.read_binary<RemoteSiteId>("owner_site_id");
@@ -477,9 +512,24 @@ void RemoteRigidBodyVehicle::write(
         }();
     }
     serialize_position(writer, rb_->rbp_.abs_position(), "position");
-    serialize_angles(writer, matrix_2_tait_bryan_angles(rb_->rbp_.rotation_), "rotation");
     serialize_direction(writer, rb_->rbp_.v_com_, "v_com");
-    serialize_direction(writer, rb_->rbp_.w_, "w");
+    [&](){
+        switch (type_) {
+        case RemoteSceneObjectType::RIGID_BODY_CAR:
+            serialize_angles(writer, matrix_2_tait_bryan_angles(rb_->rbp_.rotation_), "rotation");
+            serialize_direction(writer, rb_->rbp_.w_, "w");
+            return;
+        case RemoteSceneObjectType::RIGID_BODY_AVATAR:
+            serialize_angle(writer, z_to_yaw(rb_->rbp_.rotation_.column(2)), "avatar yaw");
+            writer.write_binary<SceneDir>(rb_->rbp_.w_(1), "w");
+            return;
+        case RemoteSceneObjectType::REMOTE_USERS:
+        case RemoteSceneObjectType::PLAYER:
+        case RemoteSceneObjectType::COUNTDOWN:
+            throw std::runtime_error("RemoteRigidBodyVehicle: Unexpected object type");
+        }
+        throw std::runtime_error("RemoteRigidBodyVehicle: Unknown scene object type");
+    }();
     writer.write_bits(rb_->flags_, RIGID_BODY_VEHICLE_FLAGS_NBITS, "rigid body flags");
     if (any(transmitted_fields & RigidBodyTransmittedFields::OWNERSHIP)) {
         if (!rb_->owner_site_id_.has_value()) {
