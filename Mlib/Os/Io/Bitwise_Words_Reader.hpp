@@ -25,7 +25,7 @@ public:
 
     // Extracts bits across packed word boundaries
     template <std::unsigned_integral TValue>
-    TValue read_bits(size_t nbits, const char* message) {
+    TValue read_bits(size_t nbits, std::string_view message) {
         if (nbits == 0) {
             return 0;
         }
@@ -53,7 +53,7 @@ public:
     }
 
     template <UnsignedEnum TValue>
-    TValue read_bits(size_t nbits, const char* message) {
+    TValue read_bits(size_t nbits, std::string_view message) {
         return (TValue)read_bits<std::underlying_type_t<TValue>>(nbits, message);
     }
 
@@ -69,7 +69,7 @@ private:
     const size_t bits_per_word = sizeof(T) * 8;
     size_t valid_bits_in_current_word_;
 
-    void fetch_next_word(const char* message) {
+    void fetch_next_word(std::string_view message) {
         T data = reader_.read_binary<T>(message);
         valid_bits_in_current_word_ = bits_per_word;
         active_word_ = BitwiseWordReader<T>(data, 0);

@@ -33,7 +33,7 @@ public:
 
     // Appends bits. If it exceeds the current word, it splits across the boundary.
     template <std::unsigned_integral TValue>
-    void write_bits(TValue value, size_t nbits, const char* message) {
+    void write_bits(TValue value, size_t nbits, std::string_view message) {
         if ((value & ~TValue((1 << nbits) - 1)) != 0) {
             throw std::runtime_error((std::stringstream() <<
                 "Value too large for " << nbits << " bits: 0x" << std::hex << value).str());
@@ -60,12 +60,12 @@ public:
     }
 
     template <UnsignedEnum TValue>
-    void write_bits(TValue value, size_t nbits, const char* message) {
+    void write_bits(TValue value, size_t nbits, std::string_view message) {
         write_bits((std::underlying_type_t<TValue>)value, nbits, message);
     }
 
     // Flushes residual bits when closing or destroying the wrapper
-    void flush_partial(const char* message) {
+    void flush_partial(std::string_view message) {
         if (active_word_.get_bit_index() > 0) {
             flush_full_word(message);
         }
@@ -76,7 +76,7 @@ private:
     const size_t bits_per_word = sizeof(T) * 8;
 
     // Flushes a completely packed word to the stream
-    void flush_full_word(const char* message) {
+    void flush_full_word(std::string_view message) {
         T data = active_word_.get_storage();
         writer_.write_binary(data, message);
         active_word_ = BitwiseWordWriter<T>(0, 0); // Reset

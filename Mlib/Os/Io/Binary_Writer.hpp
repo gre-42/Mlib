@@ -11,17 +11,17 @@ public:
         : ostr_{ ostr }
     {}
     template <std::integral LengthType>
-    inline void write_string(const std::string& str, const char* message) {
+    inline void write_string(const std::string& str, std::string_view message) {
         Mlib::write_binary(ostr_, integral_cast<LengthType>(str.length()), message);
         Mlib::write_iterable(ostr_, str, message);
     }
     template <class T>
-    inline void write_binary(const T& v, const char* message) {
+    inline void write_binary(const T& v, std::string_view message) {
         Mlib::write_binary(ostr_, v, message);
     }
     template <class TIterable>
-    void write_iterable(const TIterable& iterable, const char* msg) {
-        Mlib::write_iterable(ostr_, iterable, msg);
+    void write_iterable(const TIterable& iterable, std::string_view message) {
+        Mlib::write_iterable(ostr_, iterable, message);
     }
 private:
     std::ostream& ostr_;

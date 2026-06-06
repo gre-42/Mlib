@@ -3,7 +3,6 @@
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Macro_Executor/Macro_Line_Executor.hpp>
 #include <Mlib/Memory/Object_Pool.hpp>
-#include <Mlib/Misc/Argument_List.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Engine.hpp>
 #include <Mlib/Players/Advance_Times/Game_Logic.hpp>
 #include <Mlib/Players/Advance_Times/Player.hpp>
@@ -13,6 +12,7 @@
 #include <Mlib/Players/User_Account/User_Account.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Load_Scene_Funcs.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Instances/Players/Player_Args.hpp>
 #include <Mlib/Scene/Physics_Scene.hpp>
 #include <Mlib/Scene/Remote/Remote_Player.hpp>
 #include <Mlib/Scene/Remote/Remote_Scene.hpp>
@@ -24,19 +24,6 @@
 
 using namespace Mlib;
 
-namespace KnownArgs {
-BEGIN_ARGUMENT_LIST;
-DECLARE_ARGUMENT(name);
-DECLARE_ARGUMENT(team);
-DECLARE_ARGUMENT(full_user_name);
-DECLARE_ARGUMENT(user_account_key);
-DECLARE_ARGUMENT(game_mode);
-DECLARE_ARGUMENT(player_role);
-DECLARE_ARGUMENT(unstuck_mode);
-DECLARE_ARGUMENT(behavior);
-DECLARE_ARGUMENT(driving_direction);
-}
-
 CreatePlayer::CreatePlayer(
     PhysicsScene& physics_scene,
     const MacroLineExecutor& macro_line_executor) 
@@ -45,23 +32,23 @@ CreatePlayer::CreatePlayer(
 
 void CreatePlayer::execute(const JsonView& args, PlayerCreator creator)
 {
-    args.validate(KnownArgs::options);
+    args.validate(PlayerArgs::options);
     if (game_logic == nullptr) {
         throw std::runtime_error("Game logic is null, cannot create player");
     }
     std::shared_ptr<UserAccount> user_account;
-    if (auto user_account_key = args.try_at_non_null<std::string>(KnownArgs::user_account_key);
+    if (auto user_account_key = args.try_at_non_null<std::string>(PlayerArgs::user_account_key);
         user_account_key.has_value())
     {
         user_account = std::make_shared<UserAccount>(macro_line_executor, *user_account_key);
     }
     DanglingBaseClassPtr<const UserInfo> user_info = nullptr;
-    if (auto full_user_name = args.try_at<VariableAndHash<std::string>>(KnownArgs::full_user_name);
+    if (auto full_user_name = args.try_at<VariableAndHash<std::string>>(PlayerArgs::full_user_name);
         full_user_name.has_value())
     {
         user_info = remote_sites.get_user(*full_user_name).ptr().set_loc(CURRENT_SOURCE_LOCATION);
     }
-    auto name = args.at<VariableAndHash<std::string>>(KnownArgs::name);
+    auto name = args.at<VariableAndHash<std::string>>(PlayerArgs::name);
     auto site_privileges = PlayerSitePrivileges::NONE;
     if (remote_scene != nullptr) {
         if (((user_info != nullptr) && (user_info->site_id == remote_scene->local_site_id())) ||
@@ -90,13 +77,13 @@ void CreatePlayer::execute(const JsonView& args, PlayerCreator creator)
         site_privileges,
         user_info,
         name,
-        args.at<std::string>(KnownArgs::team),
+        args.at<std::string>(PlayerArgs::team),
         std::move(user_account),
-        game_mode_from_string(args.at<std::string>(KnownArgs::game_mode)),
-        player_role_from_string(args.at<std::string>(KnownArgs::player_role)),
-        unstuck_mode_from_string(args.at<std::string>(KnownArgs::unstuck_mode)),
-        args.at<std::string>(KnownArgs::behavior),
-        driving_direction_from_string(args.at<std::string>(KnownArgs::driving_direction)),
+        game_mode_from_string(args.at<std::string>(PlayerArgs::game_mode)),
+        player_role_from_string(args.at<std::string>(PlayerArgs::player_role)),
+        unstuck_mode_from_string(args.at<std::string>(PlayerArgs::unstuck_mode)),
+        args.at<std::string>(PlayerArgs::behavior),
+        driving_direction_from_string(args.at<std::string>(PlayerArgs::driving_direction)),
         delete_node_mutex,
         countdown_start);
     players.add_player({ *player, CURRENT_SOURCE_LOCATION });

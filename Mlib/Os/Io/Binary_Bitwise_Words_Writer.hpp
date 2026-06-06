@@ -9,7 +9,7 @@ class BinaryBitwiseWordsWriter;
 
 class WritingArchive {
 public:
-    WritingArchive(BinaryBitwiseWordsWriter& writer, const char* message)
+    WritingArchive(BinaryBitwiseWordsWriter& writer, std::string_view message)
         : writer_{writer}
         , message_{message}
     {}
@@ -20,7 +20,7 @@ public:
 
 private:
     BinaryBitwiseWordsWriter& writer_;
-    const char* message_;
+    std::string_view message_;
 };
 
 class BinaryBitwiseWordsWriter {
@@ -30,34 +30,34 @@ public:
         , binary_writer_{ ostr }
     {}
     template <std::integral LengthType>
-    inline void write_string(const std::string& str, const char* message) {
+    inline void write_string(const std::string& str, std::string_view message) {
         words_writer_.flush_partial(message);
         binary_writer_.write_string<LengthType>(str, message);
     }
     template <class T>
-    inline void write_binary(const T& v, const char* message) {
+    inline void write_binary(const T& v, std::string_view message) {
         words_writer_.flush_partial(message);
         binary_writer_.write_binary(v, message);
     }
     template <class TIterable>
-    void write_iterable(const TIterable& iterable, const char* message) {
+    void write_iterable(const TIterable& iterable, std::string_view message) {
         words_writer_.flush_partial(message);
         binary_writer_.write_iterable(iterable, message);
     }
     template <class T>
-    void write_bits(const T& value, size_t nbits, const char* message) {
+    void write_bits(const T& value, size_t nbits, std::string_view message) {
         words_writer_.write_bits(value, nbits, message);
     }
-    void write_bool_bit(bool value, const char* message) {
+    void write_bool_bit(bool value, std::string_view message) {
         write_bits((uint8_t)value, 1, message);
     }
     template <class T>
-    void serialize(const T& value, const char* message) {
+    void serialize(const T& value, std::string_view message) {
         WritingArchive archive{*this, message};
         words_writer_.flush_partial(message);
         const_cast<T&>(value).serialize(archive);
     }
-    inline void flush_partial(const char* message) {
+    inline void flush_partial(std::string_view message) {
         words_writer_.flush_partial(message);
     }
 private:

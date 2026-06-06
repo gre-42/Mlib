@@ -269,6 +269,10 @@ DanglingBaseClassRef<const UserInfo> RemoteSites::get_user(
     return const_cast<RemoteSites*>(this)->get_user(full_name);
 }
 
+bool RemoteSites::contains_user(const VariableAndHash<std::string>& full_name) const {
+    return (named_users_.find(full_name) != named_users_.end());
+}
+
 DanglingBaseClassRef<const UserInfo> RemoteSites::get_local_user(NUserCountType id) const {
     return {local_site_.users.at(id), CURRENT_SOURCE_LOCATION};
 }
@@ -276,9 +280,9 @@ DanglingBaseClassRef<const UserInfo> RemoteSites::get_local_user(NUserCountType 
 void RemoteSites::print(std::ostream& ostr) const {
     for_each_site_user([&](const UserInfo& user){
         if (user.site_id.has_value()) {
-            ostr << "Site: " << (*user.site_id + 0) << ", user: " << user.user_id << '\n';
+            ostr << "Site: " << (*user.site_id + 0) << ", user: " << (user.user_id + 0) << ", " << user.full_name << '\n';
         } else {
-            ostr << "User: " << user.user_id << '\n';
+            ostr << "User: " << (user.user_id + 0) << ", " << user.full_name << '\n';
         }
         return true;
     }, UserTypes::ALL);

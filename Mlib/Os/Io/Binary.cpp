@@ -8,30 +8,30 @@ void Mlib::print_char(char c) {
     linfo() << "Read: " << std::hex << "0x" << std::setfill('0') << std::setw(2) << (uint32_t)(uint8_t)c << " - " << v;
 }
 
-void Mlib::print_chars(std::span<char> span, const char* msg) {
-    if (msg != nullptr) {
-        linfo() << "Msg: " << msg;
+void Mlib::print_chars(std::span<char> span, std::string_view message) {
+    if (!message.empty()) {
+        linfo() << "Msg: " << message;
     }
     for (char c : span) {
         print_char(c);
     }
 }
 
-std::vector<std::byte> Mlib::read_all_vector(std::istream& istr, const char* msg, IoVerbosity verbosity) {
+std::vector<std::byte> Mlib::read_all_vector(std::istream& istr, std::string_view message, IoVerbosity verbosity) {
     istr.seekg(0, std::istream::end);
     std::streamoff file_size = istr.tellg();
     istr.seekg(0, std::istream::beg);
     std::vector<std::byte> res(integral_cast<size_t>(file_size));
-    read_vector(istr, res, msg, verbosity);
+    read_vector(istr, res, message, verbosity);
     return res;
 }
 
-std::string Mlib::read_string(std::istream& istr, size_t length, const char* msg, IoVerbosity verbosity) {
+std::string Mlib::read_string(std::istream& istr, size_t length, std::string_view message, IoVerbosity verbosity) {
     if (length > 1'000) {
-        throw std::runtime_error("String too large: " + std::string(msg));
+        throw std::runtime_error("String too large: " + std::string(message));
     }
     std::string s(length, '?');
-    read_vector(istr, s, msg, verbosity);
+    read_vector(istr, s, message, verbosity);
     return s;
 }
 

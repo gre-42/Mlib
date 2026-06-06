@@ -22,6 +22,7 @@
 #include <Mlib/Remote/Incremental_Objects/Transmitted_Fields.hpp>
 #include <Mlib/Remote/Remote_Check.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Players/Create_Player.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Instances/Players/Player_Args.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Set_Externals_Creator.hpp>
 #include <Mlib/Scene/Physics_Scene.hpp>
 #include <Mlib/Scene/Remote/Remote_Events/Remote_Select_Next_Vehicle_History.hpp>
@@ -94,22 +95,24 @@ DanglingBaseClassPtr<RemotePlayer> RemotePlayer::try_create_from_stream(
     bool has_scene_vehicle;
     auto args = nlohmann::json::object();
     std::optional<VariableAndHash<std::string>> name;
+    std::optional<VariableAndHash<std::string>> full_user_name;
     if (any(transmitted_fields & PlayerTransmittedFields::SKILLS)) {
         name.emplace(reader.read_string<StringLengthType>("player ID"));
-        args["name"] = *name;
-        args["team"] = reader.read_string<StringLengthType>("team");
-        if (auto full_user_name = reader.read_string<StringLengthType>("full_user_name"); !full_user_name.empty()) {
-            args["full_user_name"] = std::move(full_user_name);
+        args[PlayerArgs::name] = *name;
+        args[PlayerArgs::team] = reader.read_string<StringLengthType>(PlayerArgs::team);
+        full_user_name.emplace(reader.read_string<StringLengthType>(PlayerArgs::full_user_name));
+        if (!(*full_user_name)->empty()) {
+            args[PlayerArgs::full_user_name] = **full_user_name;
         }
-        if (auto user_account_key = reader.read_string<StringLengthType>("user_account_key"); !user_account_key.empty()) {
-            args["user_account_key"] = std::move(user_account_key);
+        if (auto user_account_key = reader.read_string<StringLengthType>(PlayerArgs::user_account_key); !user_account_key.empty()) {
+            args[PlayerArgs::user_account_key] = std::move(user_account_key);
         }
-        args["game_mode"] = game_mode_to_string(reader.read_bits<GameMode>(GAME_MODE_BITS, "game_mode"));
-        args["player_role"] = player_role_to_string(reader.read_bits<PlayerRole>(PLAYER_ROLE_BITS, "player_role"));
-        args["unstuck_mode"] = unstuck_mode_to_string(reader.read_bits<UnstuckMode>(UNSTUCK_MODE_BITS, "unstuck_mode"));
-        args["driving_direction"] = driving_direction_to_string(reader.read_bits<DrivingDirection>(DRIVING_DIRECTION_BITS, "driving_direction"));
+        args[PlayerArgs::game_mode] = game_mode_to_string(reader.read_bits<GameMode>(GAME_MODE_BITS, PlayerArgs::game_mode));
+        args[PlayerArgs::player_role] = player_role_to_string(reader.read_bits<PlayerRole>(PLAYER_ROLE_BITS, PlayerArgs::player_role));
+        args[PlayerArgs::unstuck_mode] = unstuck_mode_to_string(reader.read_bits<UnstuckMode>(UNSTUCK_MODE_BITS, PlayerArgs::unstuck_mode));
+        args[PlayerArgs::driving_direction] = driving_direction_to_string(reader.read_bits<DrivingDirection>(DRIVING_DIRECTION_BITS, PlayerArgs::driving_direction));
         has_scene_vehicle = reader.read_bool_bit("has_scene_vehicle");
-        args["behavior"] = reader.read_string<StringLengthType>("behavior");
+        args[PlayerArgs::behavior] = reader.read_string<StringLengthType>("behavior");
         reader.deserialize<Skills>("AI skills");
         reader.deserialize<Skills>("user skills");
     } else {
@@ -147,7 +150,15 @@ DanglingBaseClassPtr<RemotePlayer> RemotePlayer::try_create_from_stream(
     if (!any(transmitted_fields & PlayerTransmittedFields::SKILLS)) {
         return nullptr;
     }
-    CreatePlayer{physics_scene, physics_scene.macro_line_executor_}.execute(JsonView{args}, PlayerCreator::REMOTE);
+    JsonView jv{args};
+    if (full_user_name.has_value() &&
+        !(*full_user_name)->empty() &&
+        !physics_scene.remote_sites_->contains_user(*full_user_name))
+    {
+        linfo() << "Not creating player for user \"" << **full_user_name << '"';
+        return nullptr;
+    }
+    CreatePlayer{physics_scene, physics_scene.macro_line_executor_}.execute(jv, PlayerCreator::REMOTE);
     return {
         global_object_pool.create<RemotePlayer>(
             CURRENT_SOURCE_LOCATION,

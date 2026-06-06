@@ -118,6 +118,7 @@ public:
     DanglingBaseClassRef<const UserInfo> get_user(RemoteSiteId site_id, NUserCountType id) const;
     DanglingBaseClassRef<UserInfo> get_user(const VariableAndHash<std::string>& full_name);
     DanglingBaseClassRef<const UserInfo> get_user(const VariableAndHash<std::string>& full_name) const;
+    bool contains_user(const VariableAndHash<std::string>& full_name) const;
     DanglingBaseClassRef<const UserInfo> get_local_user(NUserCountType id) const;
     DanglingBaseClassRef<const UserInfo> get_user_by_rank(NUserCountType rank) const;
     void print(std::ostream& ostr) const;
