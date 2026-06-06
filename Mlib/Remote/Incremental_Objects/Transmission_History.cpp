@@ -17,11 +17,9 @@ TransmissionHistoryReader::TransmissionHistoryReader(
 TransmissionHistoryReader::~TransmissionHistoryReader() = default;
 
 RemoteObjectId TransmissionHistoryReader::read_remote_object_id(
-    std::istream& istr,
-    TransmittedFields transmitted_fields,
-    IoVerbosity verbosity)
+    BinaryBitwiseWordsReader& reader,
+    TransmittedFields transmitted_fields)
 {
-    auto reader = BinaryBitwiseWordsReader{istr, verbosity};
     if (!any(transmitted_fields & TransmittedFields::SITE_ID)) {
         if (!site_id_.has_value()) {
             throw std::runtime_error("Site ID neither set in history nor in current transmission");
@@ -38,13 +36,12 @@ RemoteObjectId TransmissionHistoryReader::read_remote_object_id(
 }
 
 std::chrono::steady_clock::time_point TransmissionHistoryReader::read_time(
-    std::istream& istr,
-    IoVerbosity verbosity) const
+    BinaryBitwiseWordsReader& reader) const
 {
     if (base_time_ == std::chrono::steady_clock::time_point()) {
         throw std::runtime_error("Attempt to read time, but no base time was set");
     }
-    auto offset = read_binary<RemoteEventHistoryOffset>(istr, "remote time offset", verbosity);
+    auto offset = reader.read_binary<RemoteEventHistoryOffset>("remote time offset");
     if (offset >= base_time_.time_since_epoch()) {
         throw std::runtime_error("Time offset larger or equal the time since epoch");
     }
@@ -62,11 +59,10 @@ TransmissionHistoryWriter::TransmissionHistoryWriter(
 TransmissionHistoryWriter::~TransmissionHistoryWriter() = default;
 
 void TransmissionHistoryWriter::write_remote_object_id(
-    std::ostream& ostr,
+    BinaryBitwiseWordsWriter& writer,
     const RemoteObjectId& remote_object_id,
     TransmittedFields transmitted_fields)
 {
-    auto writer = BinaryBitwiseWordsWriter{ostr};
     if (any(transmitted_fields & TransmittedFields::SITE_ID)) {
         throw std::runtime_error("Transmitted fields unexpectedly have the SITE_ID flag set");
     }
@@ -90,7 +86,7 @@ void TransmissionHistoryWriter::write_remote_object_id(
 }
 
 void TransmissionHistoryWriter::write_time(
-    std::ostream& ostr,
+    BinaryBitwiseWordsWriter& writer,
     std::chrono::steady_clock::time_point time) const
 {
     if (base_time_ == std::chrono::steady_clock::time_point()) {
@@ -104,7 +100,7 @@ void TransmissionHistoryWriter::write_time(
         throw std::runtime_error("Time offset is larger than the maximum event history duration");
     }
     auto remote_offset = std::chrono::duration_cast<RemoteEventHistoryOffset>(offset);
-    write_binary(ostr, remote_offset.count(), "remote time offset");
+    writer.write_binary(remote_offset.count(), "remote time offset");
 }
 
 uint32_t TransmissionHistoryWriter::datagram_counter() const {

@@ -26,19 +26,19 @@ public:
     static DanglingBaseClassPtr<RemoteRigidBodyVehicle> try_create_from_stream(
         RemoteSceneObjectType type,
         PhysicsScene& physics_scene,
-        std::istream& istr,
+        BinaryBitwiseWordsReader& reader,
         TransmittedFields transmitted_fields,
         const RemoteObjectId& remote_object_id,
         IoVerbosity verbosity);
     virtual std::string name() const override;
     virtual void read(
-        std::istream& istr,
+        BinaryBitwiseWordsReader& reader,
         const RemoteObjectId& remote_object_id,
         ProxyTasks proxy_tasks,
         TransmittedFields transmitted_fields,
         TransmissionHistoryReader& transmission_history_reader) override;
     virtual void write(
-        std::ostream& ostr,
+        BinaryBitwiseWordsWriter& writer,
         const RemoteObjectId& remote_object_id,
         ProxyTasks proxy_tasks,
         KnownFields known_fields,

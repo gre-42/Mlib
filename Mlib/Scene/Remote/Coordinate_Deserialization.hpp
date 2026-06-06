@@ -19,4 +19,8 @@ inline FixedArray<SceneDir, 3> deserialize_angles(BinaryBitwiseWordsReader& read
     return reader.deserialize<EFixedArray<CompressedSceneAngle, 3>>(message).casted<SceneDir>();
 }
 
+inline SceneDir deserialize_angle(BinaryBitwiseWordsReader& reader, std::string_view message) {
+    return (SceneDir)reader.deserialize<CompressedSceneAngle>(message);
+}
+
 }

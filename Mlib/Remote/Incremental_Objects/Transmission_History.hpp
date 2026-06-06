@@ -2,15 +2,15 @@
 #include <Mlib/Scene_Config/Remote_Integers.hpp>
 #include <chrono>
 #include <cstdint>
-#include <iosfwd>
 #include <optional>
 
 namespace Mlib {
 
 struct LocalSceneLevel;
 struct RemoteObjectId;
-enum class IoVerbosity;
 enum class TransmittedFields: TransmittedFieldsType;
+class BinaryBitwiseWordsReader;
+class BinaryBitwiseWordsWriter;
 
 enum class TransmissionHistory: TransmissionHistoryType {
     NONE = 0,
@@ -42,12 +42,10 @@ public:
         std::chrono::steady_clock::time_point base_time);
     ~TransmissionHistoryReader();
     RemoteObjectId read_remote_object_id(
-        std::istream& istr,
-        TransmittedFields transmitted_fields,
-        IoVerbosity verbosity);
+        BinaryBitwiseWordsReader& reader,
+        TransmittedFields transmitted_fields);
     std::chrono::steady_clock::time_point read_time(
-        std::istream& istr,
-        IoVerbosity verbosity) const;
+        BinaryBitwiseWordsReader& reader) const;
     const LocalSceneLevel& home_scene_level;
 private:
     std::chrono::steady_clock::time_point base_time_;
@@ -61,11 +59,11 @@ public:
         uint32_t datagram_counter);
     ~TransmissionHistoryWriter();
     void write_remote_object_id(
-        std::ostream& ostr,
+        BinaryBitwiseWordsWriter& writer,
         const RemoteObjectId& remote_object_id,
         TransmittedFields transmitted_fields);
     void write_time(
-        std::ostream& ostr,
+        BinaryBitwiseWordsWriter& writer,
         std::chrono::steady_clock::time_point time) const;
     uint32_t datagram_counter() const;
 private:

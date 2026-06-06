@@ -1,8 +1,8 @@
 #include "Remote_Countdown.hpp"
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Misc/To_Underlying.hpp>
-#include <Mlib/Os/Io/Binary_Reader.hpp>
-#include <Mlib/Os/Io/Binary_Writer.hpp>
+#include <Mlib/Os/Io/Binary_Bitwise_Words_Reader.hpp>
+#include <Mlib/Os/Io/Binary_Bitwise_Words_Writer.hpp>
 #include <Mlib/Players/Containers/Remote_Sites.hpp>
 #include <Mlib/Remote/Incremental_Objects/Transmission_History.hpp>
 #include <Mlib/Remote/Incremental_Objects/Transmitted_Fields.hpp>
@@ -37,7 +37,7 @@ RemoteCountdown::~RemoteCountdown() {
 
 DanglingBaseClassPtr<RemoteCountdown> RemoteCountdown::try_create_from_stream(
     PhysicsScene& physics_scene,
-    std::istream& istr,
+    BinaryBitwiseWordsReader& reader,
     const RemoteObjectId& remote_object_id,
     IoVerbosity verbosity)
 {
@@ -45,7 +45,7 @@ DanglingBaseClassPtr<RemoteCountdown> RemoteCountdown::try_create_from_stream(
         CURRENT_SOURCE_LOCATION,
         verbosity,
         DanglingBaseClassRef<PhysicsScene>{physics_scene, CURRENT_SOURCE_LOCATION});
-    res->read_data(istr, remote_object_id);
+    res->read_data(reader, remote_object_id);
     return {res.release(), CURRENT_SOURCE_LOCATION};
 }
 
@@ -54,23 +54,22 @@ std::string RemoteCountdown::name() const {
 }
 
 void RemoteCountdown::read(
-    std::istream& istr,
+    BinaryBitwiseWordsReader& reader,
     const RemoteObjectId& remote_object_id,
     ProxyTasks proxy_tasks,
     TransmittedFields transmitted_fields,
     TransmissionHistoryReader& transmission_history_reader)
 {
-    auto type = read_binary<RemoteSceneObjectType>(istr, "scene object type", verbosity_);
+    auto type = reader.read_binary<RemoteSceneObjectType>("scene object type");
     if (type != RemoteSceneObjectType::COUNTDOWN) {
         throw std::runtime_error((std::stringstream() <<
             "RemoteCountdown::read: Unexpected scene object type. Object ID = " <<
             remote_object_id << ", type = 0x" << std::hex << to_underlying(type)).str());
     }
-    read_data(istr, remote_object_id);
+    read_data(reader, remote_object_id);
 }
 
-void RemoteCountdown::read_data(std::istream& istr, const RemoteObjectId& remote_object_id) {
-    auto reader = BinaryReader(istr, verbosity_);
+void RemoteCountdown::read_data(BinaryBitwiseWordsReader& reader, const RemoteObjectId& remote_object_id) {
     float elapsed = reader.read_binary<float>("elapsed");
     float duration = reader.read_binary<float>("duration");
     if (!physics_scene_->remote_sites_->get_local_site_id().has_value()) {
@@ -88,7 +87,7 @@ void RemoteCountdown::read_data(std::istream& istr, const RemoteObjectId& remote
 }
 
 void RemoteCountdown::write(
-    std::ostream& ostr,
+    BinaryBitwiseWordsWriter& writer,
     const RemoteObjectId& remote_object_id,
     ProxyTasks proxy_tasks,
     KnownFields known_fields,
@@ -100,9 +99,8 @@ void RemoteCountdown::write(
     if (remote_object_id.site_id != *physics_scene_->remote_sites_->get_local_site_id()) {
         throw std::runtime_error("Attempt to send RemoteCountdown from client");
     }
-    transmission_history_writer.write_remote_object_id(ostr, remote_object_id, TransmittedFields::END);
+    transmission_history_writer.write_remote_object_id(writer, remote_object_id, TransmittedFields::END);
     
-    auto writer = BinaryWriter{ostr};
     writer.write_binary(RemoteSceneObjectType::COUNTDOWN, "countdown");
     writer.write_binary(physics_scene_->countdown_start_.elapsed(), "elapsed");
     writer.write_binary(physics_scene_->countdown_start_.duration(), "duration");

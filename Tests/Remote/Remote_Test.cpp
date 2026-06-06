@@ -1,5 +1,6 @@
 #include <Mlib/Memory/Object_Pool.hpp>
-#include <Mlib/Os/Io/Binary.hpp>
+#include <Mlib/Os/Io/Binary_Bitwise_Words_Reader.hpp>
+#include <Mlib/Os/Io/Binary_Bitwise_Words_Writer.hpp>
 #include <Mlib/Remote/Communicator_Proxies.hpp>
 #include <Mlib/Remote/Datagram_Nodes/Datagram_Node_Factory.hpp>
 #include <Mlib/Remote/Datagram_Nodes/IDatagram_Node.hpp>
@@ -27,13 +28,13 @@ public:
         : value_{ i }
     {}
     explicit SharedInteger(
-        std::istream& istr,
+        BinaryBitwiseWordsReader& reader,
         const RemoteObjectId& remote_object_id,
         ProxyTasks proxy_tasks,
         TransmittedFields transmitted_fields,
         TransmissionHistoryReader& transmission_history_reader)
     {
-        read(istr, remote_object_id, proxy_tasks, transmitted_fields, transmission_history_reader);
+        read(reader, remote_object_id, proxy_tasks, transmitted_fields, transmission_history_reader);
     }
     virtual ~SharedInteger() override {
         on_destroy.clear();
@@ -42,7 +43,7 @@ public:
         return "int";
     }
     virtual void read(
-        std::istream& istr,
+        BinaryBitwiseWordsReader& reader,
         const RemoteObjectId& remote_object_id,
         ProxyTasks proxy_tasks,
         TransmittedFields transmitted_fields,
@@ -52,18 +53,18 @@ public:
         {
             throw std::runtime_error("Unexpected transmitted fields");
         }
-        value_ = read_binary<int32_t>(istr, "int32", IoVerbosity::SILENT);
+        value_ = reader.read_binary<int32_t>("int32");
     }
     virtual void write(
-        std::ostream& ostr,
+        BinaryBitwiseWordsWriter& writer,
         const RemoteObjectId& remote_object_id,
         ProxyTasks proxy_tasks,
         KnownFields known_fields,
         TransmissionHistoryWriter& transmission_history_writer) override
     {
-        transmission_history_writer.write_remote_object_id(ostr, remote_object_id, TransmittedFields::END);
-        write_binary(ostr, ObjectType::INT32, "ObjectType::INT32");
-        write_binary(ostr, value_, "int32");
+        transmission_history_writer.write_remote_object_id(writer, remote_object_id, TransmittedFields::END);
+        writer.write_binary(ObjectType::INT32, "ObjectType::INT32");
+        writer.write_binary(value_, "int32");
     }
 private:
     int32_t value_;
@@ -75,13 +76,13 @@ public:
         : value_{ std::move(s) }
     {}
     explicit SharedString(
-        std::istream& istr,
+        BinaryBitwiseWordsReader& reader,
         const RemoteObjectId& remote_object_id,
         ProxyTasks proxy_tasks,
         TransmittedFields transmitted_fields,
         TransmissionHistoryReader& transmission_history_reader)
     {
-        read(istr, remote_object_id, proxy_tasks, transmitted_fields, transmission_history_reader);
+        read(reader, remote_object_id, proxy_tasks, transmitted_fields, transmission_history_reader);
     }
     virtual ~SharedString() override {
         on_destroy.clear();
@@ -90,26 +91,24 @@ public:
         return "string";
     }
     virtual void read(
-        std::istream& istr,
+        BinaryBitwiseWordsReader& reader,
         const RemoteObjectId& remote_object_id,
         ProxyTasks proxy_tasks,
         TransmittedFields transmitted_fields,
         TransmissionHistoryReader& transmission_history_reader) override
     {
-        auto len = read_binary<uint32_t>(istr, "len", IoVerbosity::SILENT);
-        value_ = read_string(istr, len, "string", IoVerbosity::SILENT);
+        value_ = reader.read_string<uint32_t>("string");
     }
     virtual void write(
-        std::ostream& ostr,
+        BinaryBitwiseWordsWriter& writer,
         const RemoteObjectId& remote_object_id,
         ProxyTasks proxy_tasks,
         KnownFields known_fields,
         TransmissionHistoryWriter& transmission_history_writer) override
     {
-        transmission_history_writer.write_remote_object_id(ostr, remote_object_id, TransmittedFields::END);
-        write_binary(ostr, ObjectType::STRING, "ObjectType::STRING");
-        write_binary(ostr, integral_cast<uint32_t>(value_.length()), "len");
-        write_iterable(ostr, value_, "string");
+        transmission_history_writer.write_remote_object_id(writer, remote_object_id, TransmittedFields::END);
+        writer.write_binary(ObjectType::STRING, "ObjectType::STRING");
+        writer.write_string<uint32_t>(value_, "string");
     }
 private:
     std::string value_;
@@ -124,18 +123,18 @@ public:
         on_destroy.clear();
     }
     virtual DanglingBaseClassPtr<IIncrementalObject> try_create_shared_object(
-        std::istream& istr,
+        BinaryBitwiseWordsReader& reader,
         const RemoteObjectId& id,
         ProxyTasks proxy_tasks,
         TransmittedFields transmitted_fields,
         TransmissionHistoryReader& transmission_history_reader) override
     {
-        auto t = read_binary<ObjectType>(istr, "object type", IoVerbosity::SILENT);
+        auto t = reader.read_binary<ObjectType>("object type");
         switch (t) {
         case ObjectType::INT32:
-            return { object_pool_.create<SharedInteger>(CURRENT_SOURCE_LOCATION, istr, id, proxy_tasks, transmitted_fields, transmission_history_reader), CURRENT_SOURCE_LOCATION };
+            return { object_pool_.create<SharedInteger>(CURRENT_SOURCE_LOCATION, reader, id, proxy_tasks, transmitted_fields, transmission_history_reader), CURRENT_SOURCE_LOCATION };
         case ObjectType::STRING:
-            return { object_pool_.create<SharedString>(CURRENT_SOURCE_LOCATION, istr, id, proxy_tasks, transmitted_fields, transmission_history_reader), CURRENT_SOURCE_LOCATION };
+            return { object_pool_.create<SharedString>(CURRENT_SOURCE_LOCATION, reader, id, proxy_tasks, transmitted_fields, transmission_history_reader), CURRENT_SOURCE_LOCATION };
         }
         throw std::runtime_error("Unknown object type: " + std::to_string((uint32_t)t));
     }

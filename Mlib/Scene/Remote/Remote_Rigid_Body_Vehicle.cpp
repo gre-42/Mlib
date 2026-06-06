@@ -99,12 +99,11 @@ RemoteRigidBodyVehicle::~RemoteRigidBodyVehicle() {
 DanglingBaseClassPtr<RemoteRigidBodyVehicle> RemoteRigidBodyVehicle::try_create_from_stream(
     RemoteSceneObjectType type,
     PhysicsScene& physics_scene,
-    std::istream& istr,
+    BinaryBitwiseWordsReader& reader,
     TransmittedFields transmitted_fields,
     const RemoteObjectId& remote_object_id,
     IoVerbosity verbosity)
 {
-    auto reader = BinaryBitwiseWordsReader{istr, verbosity};
     if (any(transmitted_fields & ~(
         TransmittedFields::SITE_ID |
         TransmittedFields::END |
@@ -292,7 +291,7 @@ std::string RemoteRigidBodyVehicle::name() const {
 }
 
 void RemoteRigidBodyVehicle::read(
-    std::istream& istr,
+    BinaryBitwiseWordsReader& reader,
     const RemoteObjectId& remote_object_id,
     ProxyTasks proxy_tasks,
     TransmittedFields transmitted_fields,
@@ -304,7 +303,6 @@ void RemoteRigidBodyVehicle::read(
     if (rb_->scene_node_ == nullptr) {
         throw std::runtime_error("RemoteRigidBodyVehicle::read: Scene node is destroyed");
     }
-    auto reader = BinaryBitwiseWordsReader{istr, verbosity_};
     auto type = reader.read_binary<RemoteSceneObjectType>("scene object type");
     if (type != type_) {
         throw std::runtime_error("RemoteRigidBodyVehicle::read: Unexpected scene object type");
@@ -411,7 +409,7 @@ void RemoteRigidBodyVehicle::read(
 }
 
 void RemoteRigidBodyVehicle::write(
-    std::ostream& ostr,
+    BinaryBitwiseWordsWriter& writer,
     const RemoteObjectId& remote_object_id,
     ProxyTasks proxy_tasks,
     KnownFields known_fields,
@@ -428,8 +426,7 @@ void RemoteRigidBodyVehicle::write(
     if (any(proxy_tasks & ProxyTasks::SEND_OWNERSHIP)) {
         transmitted_fields |= RigidBodyTransmittedFields::OWNERSHIP;
     }
-    transmission_history_writer.write_remote_object_id(ostr, remote_object_id, transmitted_fields);
-    auto writer = BinaryBitwiseWordsWriter{ostr};
+    transmission_history_writer.write_remote_object_id(writer, remote_object_id, transmitted_fields);
     writer.write_binary(type_, "rigid body vehicle");
     if (any(transmitted_fields & RigidBodyTransmittedFields::INITIAL)) {
         JsonView jv{initial_};

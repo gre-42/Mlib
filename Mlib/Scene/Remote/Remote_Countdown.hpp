@@ -17,25 +17,25 @@ public:
     ~RemoteCountdown();
     static DanglingBaseClassPtr<RemoteCountdown> try_create_from_stream(
         PhysicsScene& physics_scene,
-        std::istream& istr,
+        BinaryBitwiseWordsReader& reader,
         const RemoteObjectId& remote_object_id,
         IoVerbosity verbosity);
     virtual std::string name() const override;
     virtual void read(
-        std::istream& istr,
+        BinaryBitwiseWordsReader& reader,
         const RemoteObjectId& remote_object_id,
         ProxyTasks proxy_tasks,
         TransmittedFields transmitted_fields,
         TransmissionHistoryReader& transmission_history_reader) override;
     virtual void write(
-        std::ostream& ostr,
+        BinaryBitwiseWordsWriter& writer,
         const RemoteObjectId& remote_object_id,
         ProxyTasks proxy_tasks,
         KnownFields known_fields,
         TransmissionHistoryWriter& transmission_history_writer) override;
 
 private:
-    void read_data(std::istream& istr, const RemoteObjectId& remote_object_id);
+    void read_data(BinaryBitwiseWordsReader& reader, const RemoteObjectId& remote_object_id);
 
     DanglingBaseClassRef<PhysicsScene> physics_scene_;
     IoVerbosity verbosity_;

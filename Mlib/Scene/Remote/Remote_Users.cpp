@@ -63,7 +63,7 @@ RemoteUsers::~RemoteUsers() {
 DanglingBaseClassPtr<RemoteUsers> RemoteUsers::try_create_from_stream(
     PhysicsScene& physics_scene,
     SceneLevelSelector& local_scene_level_selector,
-    std::istream& istr,
+    BinaryBitwiseWordsReader& reader,
     TransmittedFields transmitted_fields,
     RemoteSiteId site_id,
     ProxyTasks proxy_tasks,
@@ -79,7 +79,7 @@ DanglingBaseClassPtr<RemoteUsers> RemoteUsers::try_create_from_stream(
         DanglingBaseClassRef<PhysicsScene>{physics_scene, CURRENT_SOURCE_LOCATION},
         DanglingBaseClassRef<SceneLevelSelector>{local_scene_level_selector, CURRENT_SOURCE_LOCATION},
         site_id);
-    res->read_data(istr, transmitted_fields, proxy_tasks, transmission_history_reader);
+    res->read_data(reader, transmitted_fields, proxy_tasks, transmission_history_reader);
     return {res.release(), CURRENT_SOURCE_LOCATION};
 }
 
@@ -88,26 +88,25 @@ std::string RemoteUsers::name() const {
 }
 
 void RemoteUsers::read(
-    std::istream& istr,
+    BinaryBitwiseWordsReader& reader,
     const RemoteObjectId& remote_object_id,
     ProxyTasks proxy_tasks,
     TransmittedFields transmitted_fields,
     TransmissionHistoryReader& transmission_history_reader)
 {
-    auto type = read_binary<RemoteSceneObjectType>(istr, "scene object type", verbosity_);
+    auto type = reader.read_binary<RemoteSceneObjectType>("scene object type");
     if (type != RemoteSceneObjectType::REMOTE_USERS) {
         throw std::runtime_error("RemoteUsers::read: Unexpected scene object type");
     }
-    read_data(istr, transmitted_fields, proxy_tasks, transmission_history_reader);
+    read_data(reader, transmitted_fields, proxy_tasks, transmission_history_reader);
 }
 
 void RemoteUsers::read_data(
-    std::istream& istr,
+    BinaryBitwiseWordsReader& reader,
     TransmittedFields transmitted_fields,
     ProxyTasks proxy_tasks,
     TransmissionHistoryReader& transmission_history_reader)
 {
-    auto reader = BinaryBitwiseWordsReader(istr, verbosity_);
     if (any(transmitted_fields & RemoteUsersTransmittedFields::ALL)) {
         auto user_count = reader.read_binary<NUserCountType>("#users");
         physics_scene_->remote_sites_->set_user_count(site_id_, user_count);
@@ -180,7 +179,7 @@ void RemoteUsers::read_data(
 }
 
 void RemoteUsers::write(
-    std::ostream& ostr,
+    BinaryBitwiseWordsWriter& writer,
     const RemoteObjectId& remote_object_id,
     ProxyTasks proxy_tasks,
     KnownFields known_fields,
@@ -191,8 +190,7 @@ void RemoteUsers::write(
     if (known_fields == KnownFields::NONE) {
         transmitted_fields |= RemoteUsersTransmittedFields::ALL;
     }
-    transmission_history_writer.write_remote_object_id(ostr, remote_object_id, transmitted_fields);
-    auto writer = BinaryBitwiseWordsWriter{ostr};
+    transmission_history_writer.write_remote_object_id(writer, remote_object_id, transmitted_fields);
     writer.write_binary(RemoteSceneObjectType::REMOTE_USERS, "remote users");
     if (any(transmitted_fields & RemoteUsersTransmittedFields::ALL)) {
         auto user_count = physics_scene_->remote_sites_->get_user_count(site_id_);

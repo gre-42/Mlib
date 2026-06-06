@@ -16,7 +16,7 @@ public:
         IoVerbosity verbosity);
     virtual ~RemoteSceneObjectFactory() override;
     virtual DanglingBaseClassPtr<IIncrementalObject> try_create_shared_object(
-        std::istream& istr,
+        BinaryBitwiseWordsReader& reader,
         const RemoteObjectId& remote_object_id,
         ProxyTasks proxy_tasks,
         TransmittedFields transmitted_fields,

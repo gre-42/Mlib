@@ -3,11 +3,12 @@
 #include <Mlib/Memory/Destruction_Notifier.hpp>
 #include <Mlib/Scene_Config/Remote_Integers.hpp>
 #include <cstdint>
-#include <iosfwd>
 
 namespace Mlib {
 
 struct RemoteObjectId;
+class BinaryBitwiseWordsReader;
+class BinaryBitwiseWordsWriter;
 class TransmissionHistoryReader;
 class TransmissionHistoryWriter;
 enum class KnownFields;
@@ -19,13 +20,13 @@ public:
     virtual ~IIncrementalObject() = default;
     virtual std::string name() const = 0;
     virtual void read(
-        std::istream& istr,
+        BinaryBitwiseWordsReader& reader,
         const RemoteObjectId& remote_object_id,
         ProxyTasks proxy_tasks,
         TransmittedFields transmitted_fields,
         TransmissionHistoryReader& transmission_history_reader) = 0;
     virtual void write(
-        std::ostream& ostr,
+        BinaryBitwiseWordsWriter& writer,
         const RemoteObjectId& remote_object_id,
         ProxyTasks proxy_tasks,
         KnownFields known_fields,

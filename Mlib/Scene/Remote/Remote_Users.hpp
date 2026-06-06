@@ -21,7 +21,7 @@ public:
     static DanglingBaseClassPtr<RemoteUsers> try_create_from_stream(
         PhysicsScene& physics_scene,
         SceneLevelSelector& scene_level_selector,
-        std::istream& istr,
+        BinaryBitwiseWordsReader& reader,
         TransmittedFields transmitted_fields,
         RemoteSiteId site_id,
         ProxyTasks proxy_tasks,
@@ -29,13 +29,13 @@ public:
         IoVerbosity verbosity);
     virtual std::string name() const override;
     virtual void read(
-        std::istream& istr,
+        BinaryBitwiseWordsReader& reader,
         const RemoteObjectId& remote_object_id,
         ProxyTasks proxy_tasks,
         TransmittedFields transmitted_fields,
         TransmissionHistoryReader& transmission_history_reader) override;
     virtual void write(
-        std::ostream& ostr,
+        BinaryBitwiseWordsWriter& writer,
         const RemoteObjectId& remote_object_id,
         ProxyTasks proxy_tasks,
         KnownFields known_fields,
@@ -43,7 +43,7 @@ public:
 
 private:
     void read_data(
-        std::istream& istr,
+        BinaryBitwiseWordsReader& reader,
         TransmittedFields transmitted_fields,
         ProxyTasks proxy_tasks,
         TransmissionHistoryReader& transmission_history_reader);

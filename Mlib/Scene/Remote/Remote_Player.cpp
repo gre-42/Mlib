@@ -25,6 +25,8 @@
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Players/Player_Args.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Set_Externals_Creator.hpp>
 #include <Mlib/Scene/Physics_Scene.hpp>
+#include <Mlib/Scene/Remote/Coordinate_Deserialization.hpp>
+#include <Mlib/Scene/Remote/Coordinate_Serialization.hpp>
 #include <Mlib/Scene/Remote/Remote_Events/Remote_Select_Next_Vehicle_History.hpp>
 #include <Mlib/Scene/Remote/Remote_Events/Remote_Shot_History.hpp>
 #include <Mlib/Scene/Remote/Remote_Rigid_Body_Vehicle.hpp>
@@ -79,12 +81,11 @@ RemotePlayer::~RemotePlayer() {
 
 DanglingBaseClassPtr<RemotePlayer> RemotePlayer::try_create_from_stream(
     PhysicsScene& physics_scene,
-    std::istream& istr,
+    BinaryBitwiseWordsReader& reader,
     TransmittedFields transmitted_fields,
     TransmissionHistoryReader& transmission_history_reader,
     IoVerbosity verbosity)
 {
-    BinaryBitwiseWordsReader reader{ istr, verbosity };
     if (any(transmitted_fields & ~(
         TransmittedFields::SITE_ID |
         PlayerTransmittedFields::NONZERO |
@@ -125,19 +126,18 @@ DanglingBaseClassPtr<RemotePlayer> RemotePlayer::try_create_from_stream(
         auto has_weapon_cycle = reader.read_bool_bit("has_weapon_cycle");
         auto has_gun_yaw = reader.read_bool_bit("has_gun_yaw");
         auto has_gun_pitch = reader.read_bool_bit("has_gun_pitch");
-        reader.align_to_next_word();
         if (has_weapon_cycle) {
             reader.read_string<StringLengthType>("weapon");
-            read_shot_history(istr, transmission_history_reader, verbosity);
+            read_shot_history(reader, transmission_history_reader);
         }
         if (has_gun_yaw) {
-            reader.read_binary<float>("gun yaw");
+            deserialize_angle(reader, "gun yaw");
         }
         if (has_gun_pitch) {
-            reader.read_binary<float>("gun pitch");
+            deserialize_angle(reader, "gun pitch");
         }
     }
-    read_select_next_vehicle_history(istr, transmission_history_reader, verbosity);
+    read_select_next_vehicle_history(reader, transmission_history_reader);
     if (remote_end_check_enabled()) {
         auto end = reader.read_binary<RemoteSceneObjectType>("inverted scene object type");
         if (end != ~RemoteSceneObjectType::PLAYER) {
@@ -173,13 +173,12 @@ std::string RemotePlayer::name() const {
 }
 
 void RemotePlayer::read(
-    std::istream& istr,
+    BinaryBitwiseWordsReader& reader,
     const RemoteObjectId& remote_object_id,
     ProxyTasks proxy_tasks,
     TransmittedFields transmitted_fields,
     TransmissionHistoryReader& transmission_history_reader)
 {
-    BinaryBitwiseWordsReader reader{ istr, verbosity_ };
     auto type = reader.read_binary<RemoteSceneObjectType>("scene object type");
     if (type != RemoteSceneObjectType::PLAYER) {
         throw std::runtime_error("RemotePlayer::read: Unexpected scene object type");
@@ -270,10 +269,9 @@ void RemotePlayer::read(
         auto has_weapon_cycle = reader.read_bool_bit("has_weapon_cycle");
         auto has_gun_yaw = reader.read_bool_bit("has_gun_yaw");
         auto has_gun_pitch = reader.read_bool_bit("has_gun_pitch");
-        reader.align_to_next_word();
         if (has_weapon_cycle) {
             auto weapon = reader.read_string<StringLengthType>("weapon");
-            auto shot_history = read_shot_history(istr, transmission_history_reader, verbosity_);
+            auto shot_history = read_shot_history(reader, transmission_history_reader);
             if (!any(player_->site_privileges() & PlayerSitePrivileges::CONTROLLER) &&
                 player_->has_scene_vehicle())
             {
@@ -291,7 +289,7 @@ void RemotePlayer::read(
             }
         }
         if (has_gun_yaw) {
-            auto gun_yaw = reader.read_binary<float>("gun yaw");
+            auto gun_yaw = deserialize_angle(reader, "gun yaw");
             if (!any(player_->site_privileges() & PlayerSitePrivileges::CONTROLLER) &&
                 player_->has_gun_yaw())
             {
@@ -299,7 +297,7 @@ void RemotePlayer::read(
             }
         }
         if (has_gun_pitch) {
-            auto gun_pitch = reader.read_binary<float>("gun pitch");
+            auto gun_pitch = deserialize_angle(reader, "gun pitch");
             if (!any(player_->site_privileges() & PlayerSitePrivileges::CONTROLLER) &&
                 player_->has_gun_pitch())
             {
@@ -310,7 +308,7 @@ void RemotePlayer::read(
         reset_node();
     }
     {
-        auto select_next_vehicle_history = read_select_next_vehicle_history(istr, transmission_history_reader, verbosity_);
+        auto select_next_vehicle_history = read_select_next_vehicle_history(reader, transmission_history_reader);
         if (!any(player_->site_privileges() & PlayerSitePrivileges::CONTROLLER)) {
             player_->select_next_vehicle_history = std::move(select_next_vehicle_history);
         }
@@ -330,7 +328,7 @@ void RemotePlayer::reset_node() {
 }
 
 void RemotePlayer::write(
-    std::ostream& ostr,
+    BinaryBitwiseWordsWriter& writer,
     const RemoteObjectId& remote_object_id,
     ProxyTasks proxy_tasks,
     KnownFields known_fields,
@@ -341,8 +339,7 @@ void RemotePlayer::write(
     if (known_fields == KnownFields::NONE) {
         transmitted_fields |= PlayerTransmittedFields::SKILLS;
     }
-    transmission_history_writer.write_remote_object_id(ostr, remote_object_id, transmitted_fields);
-    auto writer = BinaryBitwiseWordsWriter{ostr};
+    transmission_history_writer.write_remote_object_id(writer, remote_object_id, transmitted_fields);
     writer.write_binary(RemoteSceneObjectType::PLAYER, "scene object type");
     auto has_scene_vehicle = player_->has_scene_vehicle();
     if (any(transmitted_fields & PlayerTransmittedFields::SKILLS)) {
@@ -383,19 +380,18 @@ void RemotePlayer::write(
         writer.write_bool_bit(has_weapon_cycle, "has_weapon_cycle");
         writer.write_bool_bit(has_gun_yaw, "has_gun_yaw");
         writer.write_bool_bit(has_gun_pitch, "has_gun_pitch");
-        writer.flush_partial("externals mode etc.");
         if (has_weapon_cycle) {
             writer.write_string<StringLengthType>(player_->weapon_cycle()->weapon_name(), "weapon");
-            write_shot_history(player_->shot_history, ostr, transmission_history_writer);
+            write_shot_history(player_->shot_history, writer, transmission_history_writer);
         }
         if (has_gun_yaw) {
-            writer.write_binary(player_->get_gun_yaw(), "gun yaw");
+            serialize_angle(writer, player_->get_gun_yaw(), "gun yaw");
         }
         if (has_gun_pitch) {
-            writer.write_binary(player_->get_gun_pitch(), "gun pitch");
+            serialize_angle(writer, player_->get_gun_pitch(), "gun pitch");
         }
     }
-    write_select_next_vehicle_history(player_->select_next_vehicle_history, ostr, transmission_history_writer);
+    write_select_next_vehicle_history(player_->select_next_vehicle_history, writer, transmission_history_writer);
     if (remote_end_check_enabled()) {
         writer.write_binary(~RemoteSceneObjectType::PLAYER, "inverted scene object type");
     }

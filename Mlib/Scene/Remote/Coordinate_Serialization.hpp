@@ -25,4 +25,8 @@ inline void serialize_angles(BinaryBitwiseWordsWriter& writer, const FixedArray<
     writer.serialize(angles.casted<CompressedSceneAngle>(), message);
 }
 
+inline void serialize_angle(BinaryBitwiseWordsWriter& writer, const SceneDir& angle, std::string_view message) {
+    writer.serialize((CompressedSceneAngle)angle, message);
+}
+
 }

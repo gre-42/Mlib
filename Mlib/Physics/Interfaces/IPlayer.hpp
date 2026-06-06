@@ -34,6 +34,7 @@ enum class SelectNextVehicleQuery: uint8_t {
     ENTER_BY_FORCE = 1 << 2,
     ANY_ENTER = ENTER_IF_FREE | ENTER_BY_FORCE
 };
+static const size_t SELECT_NEXT_VEHICLE_QUERY_NBITS = 3;
 
 inline bool any(SelectNextVehicleQuery q) {
     return q != SelectNextVehicleQuery::NONE;
