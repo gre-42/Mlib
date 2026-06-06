@@ -14,10 +14,10 @@ inline void serialize_direction(BinaryBitwiseWordsWriter& writer, const FixedArr
     SceneDir len = std::sqrt(sum(squared(dir)));
     if (len < 1e-12) {
         writer.write_binary(0.f, message);
-        writer.serialize(fixed_zeros<CompressedSceneDir, 3>(), message);
+        writer.serialize(fixed_zeros<CompressedSceneDir, 2>(), message);
     } else {
         writer.write_binary(len, message);
-        writer.serialize((dir / len).casted<CompressedSceneDir>(), message);
+        writer.serialize(FixedArray<SceneDir, 2>{dir(0) / len, dir(1) / len}.casted<CompressedSceneDir>(), message);
     }
 }
 
