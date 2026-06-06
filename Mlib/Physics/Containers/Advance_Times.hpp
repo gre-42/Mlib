@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Misc/Source_Location.hpp>
+#include <Mlib/Threads/Recursive_Shared_Mutex.hpp>
 #include <list>
 #include <map>
 #include <memory>
@@ -25,6 +26,7 @@ public:
 private:
     bool advancing_time_;
     std::list<std::pair<std::unique_ptr<DestructionFunctionsTokensRef<IAdvanceTime>>, SourceLocation>> advance_times_;
+    mutable SafeAtomicRecursiveSharedMutex mutex_;
 };
 
 }

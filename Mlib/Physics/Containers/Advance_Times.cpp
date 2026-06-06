@@ -1,5 +1,6 @@
 #include "Advance_Times.hpp"
 #include <Mlib/Memory/Destruction_Functions_Removeal_Tokens_Ref.hpp>
+#include <Mlib/Memory/Destruction_Guard.hpp>
 #include <Mlib/Os/Os.hpp>
 #include <Mlib/Physics/Interfaces/IAdvance_Time.hpp>
 
@@ -11,6 +12,9 @@ AdvanceTimes::AdvanceTimes()
 
 AdvanceTimes::~AdvanceTimes()
 {
+    if (advancing_time_) {
+        verbose_abort("~AdvanceTimes despite advancing time");
+    }
     advance_times_.remove_if([](const auto& a){ return a.first == nullptr; });
     if (!advance_times_.empty()) {
         lerr() << "~AdvanceTimes: " << advance_times_.size() << " advance_times still exist.";
@@ -22,11 +26,13 @@ AdvanceTimes::~AdvanceTimes()
 }
 
 void AdvanceTimes::add_advance_time(const DanglingBaseClassRef<IAdvanceTime>& advance_time, SourceLocation loc) {
+    std::scoped_lock lock{mutex_};
     auto& o = advance_times_.emplace_back(new DestructionFunctionsTokensRef<IAdvanceTime>{ advance_time, loc }, loc);
     o.first->on_destroy([this, advance_time](){ delete_advance_time(advance_time.get(), CURRENT_SOURCE_LOCATION); }, CURRENT_SOURCE_LOCATION);
 }
 
 void AdvanceTimes::delete_advance_time(const IAdvanceTime& advance_time, SourceLocation loc) {
+    std::scoped_lock lock{mutex_};
     if (advancing_time_) {
         size_t nfound = 0;
         for (auto& [a, loc] : advance_times_) {
@@ -62,10 +68,12 @@ void AdvanceTimes::delete_advance_time(const IAdvanceTime& advance_time, SourceL
 }
 
 void AdvanceTimes::advance_time(float dt, const StaticWorld& world) {
+    std::scoped_lock lock{mutex_};
     if (advancing_time_) {
         verbose_abort("AdvanceTimes::advance_time already called");
     }
     advancing_time_ = true;
+    DestructionGuard dg{[&](){ advancing_time_ = false; }};
     advance_times_.remove_if([&dt, &world](const auto& a){
         if (a.first == nullptr) {
             return true;
@@ -73,9 +81,9 @@ void AdvanceTimes::advance_time(float dt, const StaticWorld& world) {
         a.first->object()->advance_time(dt, world);
         return false;
     });
-    advancing_time_ = false;
 }
 
 bool AdvanceTimes::empty() const {
+    std::shared_lock lock{mutex_};
     return advance_times_.empty();
 }
