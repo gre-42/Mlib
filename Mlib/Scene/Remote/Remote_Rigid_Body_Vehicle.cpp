@@ -19,6 +19,8 @@
 #include <Mlib/Scene/Load_Scene_Functions/Remote/Car_Parameters.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Remote/Vehicle_Parameters.hpp>
 #include <Mlib/Scene/Physics_Scene.hpp>
+#include <Mlib/Scene/Remote/Coordinate_Deserialization.hpp>
+#include <Mlib/Scene/Remote/Coordinate_Serialization.hpp>
 #include <Mlib/Scene/Remote/Remote_Scene.hpp>
 #include <Mlib/Scene/Remote/Remote_Scene_Object_Type.hpp>
 #include <Mlib/Scene_Config/Interpolation_Thresholds.hpp>
@@ -166,10 +168,10 @@ DanglingBaseClassPtr<RemoteRigidBodyVehicle> RemoteRigidBodyVehicle::try_create_
             throw std::runtime_error("RemoteRigidBodyVehicle: Unknown scene object type");
         }();
     }
-    auto position = reader.read_binary<EFixedArray<CompressedScenePos, 3>>("position").casted<ScenePos>();
-    auto rotation = reader.read_binary<EFixedArray<SceneDir, 3>>("rotation");
-    auto v_com = reader.read_binary<EFixedArray<SceneDir, 3>>("v_com");
-    auto w = reader.read_binary<EFixedArray<SceneDir, 3>>("w");
+    auto position = deserialize_position(reader, "position");
+    auto rotation = deserialize_angles(reader, "rotation");
+    auto v_com = deserialize_direction(reader, "v_com");
+    auto w = deserialize_direction(reader, "w");
     auto flags = reader.read_bits<RigidBodyVehicleFlags>(RIGID_BODY_VEHICLE_FLAGS_NBITS, "rigid body flags");
     std::optional<RemoteSiteId> owner_site_id;
     if (any(transmitted_fields & RigidBodyTransmittedFields::OWNERSHIP)) {
@@ -354,10 +356,10 @@ void RemoteRigidBodyVehicle::read(
             throw std::runtime_error("RemoteRigidBodyVehicle: Unknown scene object type");
         }();
     }
-    auto position = reader.read_binary<EFixedArray<CompressedScenePos, 3>>("position").casted<ScenePos>();
-    auto rotation = reader.read_binary<EFixedArray<SceneDir, 3>>("rotation");
-    auto v_com = reader.read_binary<EFixedArray<SceneDir, 3>>("v_com");
-    auto w = reader.read_binary<EFixedArray<SceneDir, 3>>("w");
+    auto position = deserialize_position(reader, "position");
+    auto rotation = deserialize_angles(reader, "rotation");
+    auto v_com = deserialize_direction(reader, "v_com");
+    auto w = deserialize_direction(reader, "w");
     auto flags = reader.read_bits<RigidBodyVehicleFlags>(RIGID_BODY_VEHICLE_FLAGS_NBITS, "rigid body flags");
     if (any(transmitted_fields & RigidBodyTransmittedFields::OWNERSHIP)) {
         rb_->owner_site_id_ = reader.read_binary<RemoteSiteId>("owner_site_id");
@@ -477,10 +479,10 @@ void RemoteRigidBodyVehicle::write(
             throw std::runtime_error("RemoteRigidBodyVehicle: Unknown scene object type");
         }();
     }
-    writer.write_binary(rb_->rbp_.abs_position().casted<CompressedScenePos>(), "position");
-    writer.write_binary(matrix_2_tait_bryan_angles(rb_->rbp_.rotation_), "rotation");
-    writer.write_binary(rb_->rbp_.v_com_, "v_com");
-    writer.write_binary(rb_->rbp_.w_, "w");
+    serialize_position(writer, rb_->rbp_.abs_position(), "position");
+    serialize_angles(writer, matrix_2_tait_bryan_angles(rb_->rbp_.rotation_), "rotation");
+    serialize_direction(writer, rb_->rbp_.v_com_, "v_com");
+    serialize_direction(writer, rb_->rbp_.w_, "w");
     writer.write_bits(rb_->flags_, RIGID_BODY_VEHICLE_FLAGS_NBITS, "rigid body flags");
     if (any(transmitted_fields & RigidBodyTransmittedFields::OWNERSHIP)) {
         if (!rb_->owner_site_id_.has_value()) {
