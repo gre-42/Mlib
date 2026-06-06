@@ -14,19 +14,19 @@ inline void serialize_direction(BinaryBitwiseWordsWriter& writer, const FixedArr
     SceneDir len = std::sqrt(sum(squared(dir)));
     if (len < 1e-12) {
         writer.write_binary(0.f, message);
-        writer.serialize(fixed_zeros<CompressedSceneDir, 2>(), message);
+        writer.serialize(fixed_zeros<CompressedSceneDir8, 2>(), message);
     } else {
         writer.write_binary(len, message);
-        writer.serialize(FixedArray<SceneDir, 2>{dir(0) / len, dir(1) / len}.casted<CompressedSceneDir>(), message);
+        writer.serialize(FixedArray<SceneDir, 2>{dir(0) / len, dir(1) / len}.casted<CompressedSceneDir8>(), message);
     }
 }
 
 inline void serialize_angles(BinaryBitwiseWordsWriter& writer, const FixedArray<SceneDir, 3>& angles, std::string_view message) {
-    writer.serialize(angles.casted<CompressedSceneAngle>(), message);
+    writer.serialize(angles.casted<CompressedSceneAngle8>(), message);
 }
 
 inline void serialize_angle(BinaryBitwiseWordsWriter& writer, const SceneDir& angle, std::string_view message) {
-    writer.serialize((CompressedSceneAngle)angle, message);
+    writer.serialize((CompressedSceneAngle8)angle, message);
 }
 
 }
