@@ -14,7 +14,10 @@ async fn main() -> Result<()> {
     let target_host = env::var("TARGET_UDP_HOST").unwrap_or_else(|_| "udp-backend".to_string());
     let target_port = env::var("TARGET_UDP_PORT").unwrap_or_else(|_| "5005".to_string());
     let target_addr_str = format!("{}:{}", target_host, target_port);
-    let verbose = env::var("WT_VERBOSE").is_ok_and(|val| val == "1");
+    let verbosity: i32 = env::var("WT_VERBOSE")
+        .expect("WT_VERBOSE environment variable is not set")
+        .parse()
+        .expect("WT_VERBOSE is not a valid integer");
 
     println!("Starting WebTransport proxy on {}", listen_addr);
     println!("Target UDP Backend: {}", target_addr_str);
@@ -42,7 +45,7 @@ async fn main() -> Result<()> {
         let target_backend = target_addr_str.clone();
 
         tokio::spawn(async move {
-            if let Err(e) = handle_session(incoming_session, target_backend, verbose).await {
+            if let Err(e) = handle_session(incoming_session, target_backend, verbosity).await {
                 eprintln!("Session error: {:?}", e);
             }
         });
@@ -52,7 +55,7 @@ async fn main() -> Result<()> {
 async fn handle_session(
         incoming_session: wtransport::endpoint::IncomingSession, 
         target_backend: String,
-        verbose: bool) -> Result<()> {
+        verbosity: i32) -> Result<()> {
     // Validate and accept the WebTransport handshake
     let session_request = incoming_session.await?;
     let connection = session_request.accept().await?;
@@ -79,9 +82,11 @@ async fn handle_session(
                         eprintln!("Buffer content ({} bytes):\n{:?}", payload.len(), payload.hex_dump());
                         break;
                     }
-                    if verbose {
+                    if verbosity >= 1 {
                         eprintln!("WT -> UDP: Success");
-                        eprintln!("Buffer content ({} bytes):\n{:?}", payload.len(), payload.hex_dump());
+                        if verbosity >= 2 {
+                            eprintln!("Buffer content ({} bytes):\n{:?}", payload.len(), payload.hex_dump());
+                        }
                     }
                 }
                 Err(_) => {
@@ -106,9 +111,11 @@ async fn handle_session(
                         eprintln!("Buffer content ({} bytes):\n{:?}", payload.len(), payload.hex_dump());
                         break;
                     }
-                    if verbose {
+                    if verbosity >= 1 {
                         eprintln!("UDP -> WT: Success");
-                        eprintln!("Buffer content ({} bytes):\n{:?}", payload.len(), payload.hex_dump());
+                        if verbosity >= 2 {
+                            eprintln!("Buffer content ({} bytes):\n{:?}", payload.len(), payload.hex_dump());
+                        }
                     }
                 }
                 Err(e) => {
