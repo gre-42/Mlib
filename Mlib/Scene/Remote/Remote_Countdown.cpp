@@ -60,6 +60,7 @@ int32_t RemoteCountdown::priority() const {
 
 void RemoteCountdown::read(
     BinaryBitwiseWordsReader& reader,
+    RemoteSiteId sender_site_id,
     const RemoteObjectId& remote_object_id,
     ProxyTasks proxy_tasks,
     TransmittedFields transmitted_fields,

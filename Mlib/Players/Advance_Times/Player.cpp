@@ -1569,7 +1569,3 @@ void Player::set_way_point_location_filter(JoinedWayPointSandbox filter) {
             joined_way_point_sandbox_to_string(final_filter) + '"');
     }
 }
-
-PlayerSitePrivileges Player::site_privileges() const {
-    return site_privileges_;
-}

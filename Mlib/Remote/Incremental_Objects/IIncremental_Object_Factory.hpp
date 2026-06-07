@@ -16,6 +16,7 @@ class IIncrementalObjectFactory: public virtual DestructionNotifier, public virt
 public:
     virtual DanglingBaseClassPtr<IIncrementalObject> try_create_shared_object(
         BinaryBitwiseWordsReader& reader,
+        RemoteSiteId sender_site_id,
         const RemoteObjectId& remote_object_id,
         ProxyTasks proxy_tasks,
         TransmittedFields transmitted_fields,

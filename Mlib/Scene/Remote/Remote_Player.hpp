@@ -28,6 +28,7 @@ public:
     virtual int32_t priority() const override;
     virtual void read(
         BinaryBitwiseWordsReader& reader,
+        RemoteSiteId sender_site_id,
         const RemoteObjectId& remote_object_id,
         ProxyTasks proxy_tasks,
         TransmittedFields transmitted_fields,

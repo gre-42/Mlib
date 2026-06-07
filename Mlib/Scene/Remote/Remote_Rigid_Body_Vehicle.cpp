@@ -22,6 +22,7 @@
 #include <Mlib/Scene/Physics_Scene.hpp>
 #include <Mlib/Scene/Remote/Coordinate_Deserialization.hpp>
 #include <Mlib/Scene/Remote/Coordinate_Serialization.hpp>
+#include <Mlib/Scene/Remote/Remote_Privileges.hpp>
 #include <Mlib/Scene/Remote/Remote_Scene.hpp>
 #include <Mlib/Scene/Remote/Remote_Scene_Object_Priority.hpp>
 #include <Mlib/Scene/Remote/Remote_Scene_Object_Type.hpp>
@@ -315,6 +316,7 @@ int32_t RemoteRigidBodyVehicle::priority() const {
 
 void RemoteRigidBodyVehicle::read(
     BinaryBitwiseWordsReader& reader,
+    RemoteSiteId sender_site_id,
     const RemoteObjectId& remote_object_id,
     ProxyTasks proxy_tasks,
     TransmittedFields transmitted_fields,
@@ -414,36 +416,34 @@ void RemoteRigidBodyVehicle::read(
     if (!rb_->owner_site_id_.has_value()) {
         throw std::runtime_error("RemoteRigidBodyVehicle: Owner site ID not set");
     }
-    bool is_manager = (remote_object_id.site_id == physics_scene_->remote_scene_->local_site_id());
-    bool is_owner = (*rb_->owner_site_id_ == physics_scene_->remote_scene_->local_site_id());
-    bool is_remotely_activated_avatar = [&](){
-        if (is_manager) {
-            return false;
+    auto privileges = RemotePrivileges{
+        physics_scene_->remote_scene_->local_site_id(),
+        sender_site_id,
+        *rb_->owner_site_id_,
+        remote_object_id.site_id};
+    auto pf = PositionFlags::NONE;
+    if (sum(squared(rb_->rbp_.abs_position() - position)) > squared(REMOTE_INTERPOLATION_JUMP_DISTANCE)) {
+        pf |= PositionFlags::POSITION_CONTAINS_JUMP;
+    }
+    if (!privileges.is_manager_local) {
+        if (rb_->is_deactivated_avatar() && !any(flags & RigidBodyVehicleFlags::IS_DEACTIVATED_AVATAR)) {
+            pf |= PositionFlags::IS_REMOTELY_ACTIVATED_AVATAR;
         }
-        return (rb_->is_deactivated_avatar() && !any(flags & RigidBodyVehicleFlags::IS_DEACTIVATED_AVATAR));
-    }();
-    bool position_contains_jump = (sum(squared(rb_->rbp_.abs_position() - position)) > squared(REMOTE_INTERPOLATION_JUMP_DISTANCE));
-    bool invalidate_transformation_history = (position_contains_jump || is_remotely_activated_avatar) && !is_manager;
-    bool update_position = [&](){
-        if (is_manager) {
-            return !position_contains_jump && !is_owner;
-        } else {
-            return invalidate_transformation_history || !is_owner;
-        }
-    }();
-    if (invalidate_transformation_history) {
+    }
+    auto pp = privileges.position(pf);
+    if (pp.invalidate_transformation_history) {
         rb_->scene_node_->set_absolute_pose(
             position,
             rotation,
             1.f,
             SceneTime::initial(physics_scene_->dynamic_world_.get_time()));
     }
-    if (update_position) {
+    if (pp.update_position) {
         rb_->rbp_.set_pose(tait_bryan_angles_2_matrix(rotation), position);
         rb_->rbp_.v_com_ = v_com;
         rb_->rbp_.w_ = w;
     }
-    if (!is_manager) {
+    if (!privileges.is_manager_local) {
         rb_->flags_ = flags;
     }
 }

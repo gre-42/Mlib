@@ -94,6 +94,7 @@ int32_t RemoteUsers::priority() const {
 
 void RemoteUsers::read(
     BinaryBitwiseWordsReader& reader,
+    RemoteSiteId sender_site_id,
     const RemoteObjectId& remote_object_id,
     ProxyTasks proxy_tasks,
     TransmittedFields transmitted_fields,

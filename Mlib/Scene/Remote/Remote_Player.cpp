@@ -29,6 +29,7 @@
 #include <Mlib/Scene/Remote/Coordinate_Serialization.hpp>
 #include <Mlib/Scene/Remote/Remote_Events/Remote_Select_Next_Vehicle_History.hpp>
 #include <Mlib/Scene/Remote/Remote_Events/Remote_Shot_History.hpp>
+#include <Mlib/Scene/Remote/Remote_Privileges.hpp>
 #include <Mlib/Scene/Remote/Remote_Rigid_Body_Vehicle.hpp>
 #include <Mlib/Scene/Remote/Remote_Scene.hpp>
 #include <Mlib/Scene/Remote/Remote_Scene_Object_Priority.hpp>
@@ -178,6 +179,7 @@ int32_t RemotePlayer::priority() const {
 
 void RemotePlayer::read(
     BinaryBitwiseWordsReader& reader,
+    RemoteSiteId sender_site_id,
     const RemoteObjectId& remote_object_id,
     ProxyTasks proxy_tasks,
     TransmittedFields transmitted_fields,
@@ -194,6 +196,23 @@ void RemotePlayer::read(
     {
         throw std::runtime_error("RemotePlayer::read: Unknown transmitted fields");
     }
+    auto owner_site_id = [&](){
+        auto user = player_->user_info();
+        if (user == nullptr) {
+            return remote_object_id.site_id;
+        } else {
+            if (!user->site_id.has_value()) {
+                throw std::runtime_error("RemotePlayer::read: User site ID not set");
+            }
+            return *user->site_id;
+        }
+    }();
+    auto privileges = RemotePrivileges{
+        physics_scene_->remote_scene_->local_site_id(),
+        sender_site_id,
+        owner_site_id,
+        remote_object_id.site_id};
+    auto pp = privileges.position(PositionFlags::NONE);
     bool has_scene_vehicle;
     if (any(transmitted_fields & PlayerTransmittedFields::SKILLS)) {
         auto player_id = reader.read_string<StringLengthType>("player ID");
@@ -215,7 +234,7 @@ void RemotePlayer::read(
         auto vehicle_object_id = reader.deserialize<RemoteObjectId>("vehicle_object_id");
         auto seat = vehicle_seat_to_string(reader.read_bits<VehicleSeat>(VEHICLE_SEAT_NBITS, "seat"));
         auto externals_mode = reader.read_bits<ExternalsMode>(EXTERNALS_MODE_BITS, "externals mode");
-        if (!any(player_->site_privileges() & PlayerSitePrivileges::MANAGER)) {
+        if (!privileges.is_manager_local) {
             if (player_->has_scene_vehicle()) {
                 auto rb = player_->rigid_body();
                 if (!rb->remote_object_id_.has_value()) {
@@ -276,9 +295,7 @@ void RemotePlayer::read(
         if (has_weapon_cycle) {
             auto weapon = reader.read_string<StringLengthType>("weapon");
             auto shot_history = read_shot_history(reader, transmission_history_reader);
-            if (!any(player_->site_privileges() & PlayerSitePrivileges::CONTROLLER) &&
-                player_->has_scene_vehicle())
-            {
+            if (pp.update_position && player_->has_scene_vehicle()) {
                 auto rb = player_->rigid_body();
                 if (!rb->remote_object_id_.has_value()) {
                     throw std::runtime_error("remote vehicle object ID not set");
@@ -294,26 +311,22 @@ void RemotePlayer::read(
         }
         if (has_gun_yaw) {
             auto gun_yaw = deserialize_angle(reader, "gun yaw");
-            if (!any(player_->site_privileges() & PlayerSitePrivileges::CONTROLLER) &&
-                player_->has_gun_yaw())
-            {
+            if (pp.update_position && player_->has_gun_yaw()) {
                 player_->set_gun_yaw(gun_yaw);
             }
         }
         if (has_gun_pitch) {
             auto gun_pitch = deserialize_angle(reader, "gun pitch");
-            if (!any(player_->site_privileges() & PlayerSitePrivileges::CONTROLLER) &&
-                player_->has_gun_pitch())
-            {
+            if (pp.update_position && player_->has_gun_pitch()) {
                 player_->set_gun_pitch(gun_pitch);
             }
         }
-    } else if (!any(player_->site_privileges() & PlayerSitePrivileges::MANAGER)) {
+    } else if (!privileges.is_manager_local) {
         reset_node();
     }
     {
         auto select_next_vehicle_history = read_select_next_vehicle_history(reader, transmission_history_reader);
-        if (!any(player_->site_privileges() & PlayerSitePrivileges::CONTROLLER)) {
+        if (pp.update_position) {
             player_->select_next_vehicle_history = std::move(select_next_vehicle_history);
         }
     }

@@ -29,12 +29,13 @@ public:
     {}
     explicit SharedInteger(
         BinaryBitwiseWordsReader& reader,
+        RemoteSiteId sender_site_id,
         const RemoteObjectId& remote_object_id,
         ProxyTasks proxy_tasks,
         TransmittedFields transmitted_fields,
         TransmissionHistoryReader& transmission_history_reader)
     {
-        read(reader, remote_object_id, proxy_tasks, transmitted_fields, transmission_history_reader);
+        read(reader, sender_site_id, remote_object_id, proxy_tasks, transmitted_fields, transmission_history_reader);
     }
     virtual ~SharedInteger() override {
         on_destroy.clear();
@@ -47,6 +48,7 @@ public:
     }
     virtual void read(
         BinaryBitwiseWordsReader& reader,
+        RemoteSiteId sender_site_id,
         const RemoteObjectId& remote_object_id,
         ProxyTasks proxy_tasks,
         TransmittedFields transmitted_fields,
@@ -80,12 +82,13 @@ public:
     {}
     explicit SharedString(
         BinaryBitwiseWordsReader& reader,
+        RemoteSiteId sender_site_id,
         const RemoteObjectId& remote_object_id,
         ProxyTasks proxy_tasks,
         TransmittedFields transmitted_fields,
         TransmissionHistoryReader& transmission_history_reader)
     {
-        read(reader, remote_object_id, proxy_tasks, transmitted_fields, transmission_history_reader);
+        read(reader, sender_site_id, remote_object_id, proxy_tasks, transmitted_fields, transmission_history_reader);
     }
     virtual ~SharedString() override {
         on_destroy.clear();
@@ -98,6 +101,7 @@ public:
     }
     virtual void read(
         BinaryBitwiseWordsReader& reader,
+        RemoteSiteId sender_site_id,
         const RemoteObjectId& remote_object_id,
         ProxyTasks proxy_tasks,
         TransmittedFields transmitted_fields,
@@ -130,6 +134,7 @@ public:
     }
     virtual DanglingBaseClassPtr<IIncrementalObject> try_create_shared_object(
         BinaryBitwiseWordsReader& reader,
+        RemoteSiteId sender_site_id,
         const RemoteObjectId& id,
         ProxyTasks proxy_tasks,
         TransmittedFields transmitted_fields,
@@ -138,9 +143,9 @@ public:
         auto t = reader.read_binary<ObjectType>("object type");
         switch (t) {
         case ObjectType::INT32:
-            return { object_pool_.create<SharedInteger>(CURRENT_SOURCE_LOCATION, reader, id, proxy_tasks, transmitted_fields, transmission_history_reader), CURRENT_SOURCE_LOCATION };
+            return { object_pool_.create<SharedInteger>(CURRENT_SOURCE_LOCATION, reader, sender_site_id, id, proxy_tasks, transmitted_fields, transmission_history_reader), CURRENT_SOURCE_LOCATION };
         case ObjectType::STRING:
-            return { object_pool_.create<SharedString>(CURRENT_SOURCE_LOCATION, reader, id, proxy_tasks, transmitted_fields, transmission_history_reader), CURRENT_SOURCE_LOCATION };
+            return { object_pool_.create<SharedString>(CURRENT_SOURCE_LOCATION, reader, sender_site_id, id, proxy_tasks, transmitted_fields, transmission_history_reader), CURRENT_SOURCE_LOCATION };
         }
         throw std::runtime_error("Unknown object type: " + std::to_string((uint32_t)t));
     }

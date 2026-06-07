@@ -263,7 +263,6 @@ public:
     SingleWaypoint& single_waypoint();
     PathfindingWaypoints& pathfinding_waypoints();
     PlaybackWaypoints& playback_waypoints();
-    PlayerSitePrivileges site_privileges() const;
 
     // IPlayer
     virtual const VariableAndHash<std::string>& id() const override;
