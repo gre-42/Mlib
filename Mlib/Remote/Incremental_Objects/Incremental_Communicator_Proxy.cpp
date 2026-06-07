@@ -70,6 +70,7 @@ void IncrementalCommunicatorProxy::receive_from_home(std::istream& istr) {
             return;
         }
     }
+    std::unordered_set<LocalObjectId> objects_known_and_owned_by_home;
     {
         auto ndeleted = reader.read_binary<NDeletedType>("#deleted");
         for (NDeletedType i = 0; i < ndeleted; ++i) {
@@ -97,6 +98,9 @@ void IncrementalCommunicatorProxy::receive_from_home(std::istream& istr) {
                 break;
             }
             auto i = transmission_history_reader.read_remote_object_id(reader, transmitted_fields);
+            if (i.site_id == home_site_id_) {
+                objects_known_and_owned_by_home.insert(i.object_id);
+            }
             if (auto it = objects_->try_get(i); it != nullptr) {
                 if (any(verbosity_ & IoVerbosity::METADATA)) {
                     linfo() << this << " read from home site " << (home_site_id_ + 0) << ", object " << i << " \"" << it->name() << '"';
@@ -112,7 +116,9 @@ void IncrementalCommunicatorProxy::receive_from_home(std::istream& istr) {
                     if (any(verbosity_ & IoVerbosity::METADATA)) {
                         linfo() << this << " cannot create object";
                     }
-                    objects_unknown_here_.insert(i);
+                    if (i.site_id != objects_->local_site_id()) {
+                        objects_unknown_here_.insert(i);
+                    }
                 } else {
                     if (any(verbosity_ & IoVerbosity::METADATA)) {
                         linfo() << this << " object created: \"" << o->name() << '"';
@@ -126,6 +132,20 @@ void IncrementalCommunicatorProxy::receive_from_home(std::istream& istr) {
     receive_local(RemoteObjectVisibility::PRIVATE);
     receive_local(RemoteObjectVisibility::PUBLIC);
     receive_local(RemoteObjectVisibility::PUBLIC);
+    {
+        std::vector<LocalObjectId> objects_to_be_deleted;
+        objects_to_be_deleted.reserve(objects_known_and_owned_by_home.size());
+        for (auto& [i, o] : objects_->public_remote_objects()) {
+            if ((i.site_id == home_site_id_) &&
+                !objects_known_and_owned_by_home.contains(i.object_id))
+            {
+                objects_to_be_deleted.push_back(i.object_id);
+            }
+        }
+        for (auto i : objects_to_be_deleted) {
+            objects_->try_remove({home_site_id_, i});
+        }
+    }
 }
 
 void IncrementalCommunicatorProxy::send_home(std::iostream& iostr) {
