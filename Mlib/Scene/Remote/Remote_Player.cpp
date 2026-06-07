@@ -25,8 +25,8 @@
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Players/Player_Args.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Set_Externals_Creator.hpp>
 #include <Mlib/Scene/Physics_Scene.hpp>
-#include <Mlib/Scene/Remote/Coordinate_Deserialization.hpp>
-#include <Mlib/Scene/Remote/Coordinate_Serialization.hpp>
+#include <Mlib/Scene/Remote/Coordinate_Deserialization_Generic.hpp>
+#include <Mlib/Scene/Remote/Coordinate_Serialization_Generic.hpp>
 #include <Mlib/Scene/Remote/Remote_Events/Remote_Select_Next_Vehicle_History.hpp>
 #include <Mlib/Scene/Remote/Remote_Events/Remote_Shot_History.hpp>
 #include <Mlib/Scene/Remote/Remote_Privileges.hpp>

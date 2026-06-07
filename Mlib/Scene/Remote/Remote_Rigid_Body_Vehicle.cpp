@@ -20,8 +20,10 @@
 #include <Mlib/Scene/Load_Scene_Functions/Remote/Car_Parameters.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Remote/Vehicle_Parameters.hpp>
 #include <Mlib/Scene/Physics_Scene.hpp>
-#include <Mlib/Scene/Remote/Coordinate_Deserialization.hpp>
-#include <Mlib/Scene/Remote/Coordinate_Serialization.hpp>
+#include <Mlib/Scene/Remote/Coordinate_Deserialization_Generic.hpp>
+#include <Mlib/Scene/Remote/Coordinate_Deserialization_Physics.hpp>
+#include <Mlib/Scene/Remote/Coordinate_Serialization_Generic.hpp>
+#include <Mlib/Scene/Remote/Coordinate_Serialization_Physics.hpp>
 #include <Mlib/Scene/Remote/Remote_Privileges.hpp>
 #include <Mlib/Scene/Remote/Remote_Scene.hpp>
 #include <Mlib/Scene/Remote/Remote_Scene_Object_Priority.hpp>
@@ -171,18 +173,18 @@ DanglingBaseClassPtr<RemoteRigidBodyVehicle> RemoteRigidBodyVehicle::try_create_
         }();
     }
     auto position = deserialize_position(reader, "position");
-    auto v_com = deserialize_direction(reader, "v_com");
+    auto v_com = deserialize_vs_8(reader, "v_com");
     FixedArray<SceneDir, 3> rotation = uninitialized;
     FixedArray<SceneDir, 3> w = uninitialized;
     [&](){
         switch (type) {
         case RemoteSceneObjectType::RIGID_BODY_CAR:
             rotation = deserialize_angles(reader, "rotation");
-            w = deserialize_direction(reader, "w");
+            w = deserialize_ws_8(reader, "w");
             return;
         case RemoteSceneObjectType::RIGID_BODY_AVATAR:
             rotation = {0.f, deserialize_angle(reader, "avatar yaw"), 0.f};
-            w = {0.f, reader.read_binary<SceneDir>("w"), 0.f};
+            w = {0.f, deserialize_w_8(reader, "w"), 0.f};
             return;
         case RemoteSceneObjectType::REMOTE_USERS:
         case RemoteSceneObjectType::PLAYER:
@@ -380,18 +382,18 @@ void RemoteRigidBodyVehicle::read(
         }();
     }
     auto position = deserialize_position(reader, "position");
-    auto v_com = deserialize_direction(reader, "v_com");
+    auto v_com = deserialize_vs_8(reader, "v_com");
     FixedArray<SceneDir, 3> rotation = uninitialized;
     FixedArray<SceneDir, 3> w = uninitialized;
     [&](){
         switch (type) {
         case RemoteSceneObjectType::RIGID_BODY_CAR:
             rotation = deserialize_angles(reader, "rotation");
-            w = deserialize_direction(reader, "w");
+            w = deserialize_ws_8(reader, "w");
             return;
         case RemoteSceneObjectType::RIGID_BODY_AVATAR:
             rotation = {0.f, deserialize_angle(reader, "avatar yaw"), 0.f};
-            w = {0.f, reader.read_binary<SceneDir>("w"), 0.f};
+            w = {0.f, deserialize_w_8(reader, "w"), 0.f};
             return;
         case RemoteSceneObjectType::REMOTE_USERS:
         case RemoteSceneObjectType::PLAYER:
@@ -517,16 +519,16 @@ void RemoteRigidBodyVehicle::write(
         }();
     }
     serialize_position(writer, rb_->rbp_.abs_position(), "position");
-    serialize_direction(writer, rb_->rbp_.v_com_, "v_com");
+    serialize_vs_8(writer, rb_->rbp_.v_com_, "v_com");
     [&](){
         switch (type_) {
         case RemoteSceneObjectType::RIGID_BODY_CAR:
             serialize_angles(writer, matrix_2_tait_bryan_angles(rb_->rbp_.rotation_), "rotation");
-            serialize_direction(writer, rb_->rbp_.w_, "w");
+            serialize_ws_8(writer, rb_->rbp_.w_, "w");
             return;
         case RemoteSceneObjectType::RIGID_BODY_AVATAR:
             serialize_angle(writer, z_to_yaw(rb_->rbp_.rotation_.column(2)), "avatar yaw");
-            writer.write_binary<SceneDir>(rb_->rbp_.w_(1), "w");
+            serialize_w_8(writer, rb_->rbp_.w_(1), "w");
             return;
         case RemoteSceneObjectType::REMOTE_USERS:
         case RemoteSceneObjectType::PLAYER:

@@ -13,6 +13,7 @@
 #include <Mlib/Os/Os.hpp>
 #include <Mlib/Regex/Misc.hpp>
 #include <Mlib/Regex/Template_Regex.hpp>
+#include <Mlib/Scene_Config/Physics_Precision.hpp>
 #include <Mlib/Testing/Assert.hpp>
 #include <Mlib/Threads/Dispatcher.hpp>
 #include <Mlib/Threads/Recursive_Shared_Mutex.hpp>
@@ -86,6 +87,10 @@ void test_dangling_unique2() {
         D n1(DanglingRef<Ads>::from_object(*n->ptr(), CURRENT_SOURCE_LOCATION));
         n.get(CURRENT_SOURCE_LOCATION);
     }
+}
+
+void test_physics_precision() {
+    linfo() << "1w " << (CompressedSceneW8(0.5f * rps).count + 0);
 }
 
 void test_template_regex() {
@@ -284,6 +289,7 @@ int main(int argc, const char** argv) {
     enable_floating_point_exceptions();
 
     try {
+        test_physics_precision();
         test_bitwise_io();
         test_chunked_array();
         test_thread_safe_list();
