@@ -16,13 +16,16 @@ IncrementalCommunicatorProxy::IncrementalCommunicatorProxy(
     std::shared_ptr<ISendSocket> send_socket,
     const DanglingBaseClassRef<IIncrementalObjectFactory>& shared_object_factory,
     const DanglingBaseClassRef<IncrementalRemoteObjects>& objects,
+    const DanglingBaseClassRef<ProxyObjectsCaches>& proxy_objects_caches,
     IoVerbosity verbosity,
     ProxyTasks tasks,
     RemoteSiteId home_site_id)
-    : datagram_counter_{ 0 }
+    : incremental_cache_proxy_token_{ proxy_objects_caches, home_site_id }
+    , datagram_counter_{ 0 }
     , send_socket_{ std::move(send_socket) }
     , shared_object_factory_{ shared_object_factory }
     , objects_{ objects }
+    , proxy_objects_caches_{ proxy_objects_caches }
     , verbosity_{ verbosity }
     , tasks_{ tasks }
     , home_site_id_{ home_site_id }
@@ -105,13 +108,13 @@ void IncrementalCommunicatorProxy::receive_from_home(std::istream& istr) {
                 if (any(verbosity_ & IoVerbosity::METADATA)) {
                     linfo() << this << " read from home site " << (home_site_id_ + 0) << ", object " << i << " \"" << it->name() << '"';
                 }
-                it->read(reader, home_site_id_, i, tasks_, transmitted_fields, transmission_history_reader);
+                it->read(reader, home_site_id_, i, tasks_, transmitted_fields, proxy_objects_caches_.get(), transmission_history_reader);
             } else {
                 if (any(verbosity_ & IoVerbosity::METADATA)) {
                     linfo() << this << " create from home site " << (home_site_id_ + 0) << ", object " << i;
                 }
                 auto o = shared_object_factory_->try_create_shared_object(
-                    reader, home_site_id_, i, tasks_, transmitted_fields, transmission_history_reader);
+                    reader, home_site_id_, i, tasks_, transmitted_fields, proxy_objects_caches_.get(), transmission_history_reader);
                 if (o == nullptr) {
                     if (any(verbosity_ & IoVerbosity::METADATA)) {
                         linfo() << this << " cannot create object";
@@ -238,7 +241,7 @@ void IncrementalCommunicatorProxy::send_home(std::iostream& iostr) {
                         linfo() << "Maybe send partial object to home site " << (home_site_id_ + 0) << ", " << i << " \"" << o->name() << '"';
                     }
                 }
-                o->write(writer, j, tasks_, known_fields, transmission_history_writer);
+                o->write(writer, home_site_id_, j, tasks_, known_fields, proxy_objects_caches_.get(), transmission_history_writer);
             }
             writer.write_binary(TransmittedFields::NONE, "transmitted fields EOF");
         };
@@ -281,7 +284,7 @@ void IncrementalCommunicatorProxy::send_home(std::iostream& iostr) {
                         linfo() << "Maybe send partial object to home site " << (home_site_id_ + 0) << ", " << i << " \"" << o->name() << '"';
                     }
                 }
-                o->write(writer, i, tasks_, known_fields, transmission_history_writer);
+                o->write(writer, home_site_id_, i, tasks_, known_fields, proxy_objects_caches_.get(), transmission_history_writer);
             }
             writer.write_binary(TransmittedFields::NONE, "transmitted fields EOF");
         } else {

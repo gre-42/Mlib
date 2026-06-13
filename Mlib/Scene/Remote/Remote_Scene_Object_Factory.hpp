@@ -21,6 +21,7 @@ public:
         const RemoteObjectId& remote_object_id,
         ProxyTasks proxy_tasks,
         TransmittedFields transmitted_fields,
+        ProxyObjectsCaches& proxy_objects_caches,
         TransmissionHistoryReader& transmission_history_reader) override;
 private:
     DanglingBaseClassRef<PhysicsScene> physics_scene_;

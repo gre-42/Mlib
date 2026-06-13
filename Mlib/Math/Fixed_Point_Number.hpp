@@ -2,7 +2,6 @@
 #include <Mlib/Math/Round.hpp>
 #include <cmath>
 #include <concepts>
-#include <concepts>
 #include <cstdint>
 #include <iosfwd>
 #include <iostream>
@@ -28,6 +27,12 @@ struct IntermediateTypes<int16_t> {
     using float_type = float;
 };
 
+template <>
+struct IntermediateTypes<int8_t> {
+    using count_type = int16_t;
+    using float_type = float;
+};
+
 template <class T>
 using intermediate_count = IntermediateTypes<T>::count_type;
 
@@ -36,9 +41,11 @@ using intermediate_float = IntermediateTypes<T>::float_type;
 
 static const struct Explicit {} explicit_;
 
-template <std::integral TInt, std::intmax_t denominator>
+template <std::integral TInt, std::intmax_t r_shift>
 class FixedPointNumber {
 private:
+    constexpr static const std::intmax_t numerator = (r_shift < 0) ? (1 << -r_shift) : 1;
+    constexpr static const std::intmax_t denominator = (r_shift > 0) ? (1 << r_shift) : 1;
     constexpr FixedPointNumber(TInt count, Explicit)
         : count{ count }
     {}
@@ -56,13 +63,13 @@ public:
             throw std::runtime_error("Floating-point value is not finite");
         }
         auto res = FixedPointNumber{ value };
-        if (std::abs((F)res - value) > (F)5 / denominator) {
+        if (std::abs((F)res - value) > ((F)5 * numerator) / denominator) {
             throw std::runtime_error("Large deviation after converting to fixed point");
         }
         return res;
     }
     inline constexpr explicit FixedPointNumber(const std::floating_point auto& value)
-        : count{ static_cast<TInt>(Mlib::round(value * denominator)) }
+        : count{ static_cast<TInt>(Mlib::round((value * denominator) / numerator)) }
     {}
     constexpr inline FixedPointNumber& operator = (const FixedPointNumber& other) {
         count = other.count;
@@ -70,15 +77,23 @@ public:
     }
     template <std::floating_point TFloat>
     constexpr inline explicit operator TFloat () const {
-        return TFloat(count) / denominator;
+        return (TFloat(count) * numerator) / denominator;
     }
     template <std::integral TInt2>
     constexpr inline explicit operator TInt2 () const {
         return (TInt2)(intermediate_float<TInt>)(*this);
     }
-    template <class TInt2>
-    constexpr inline explicit operator FixedPointNumber<TInt2, denominator> () const {
-        return FixedPointNumber<TInt2, denominator>::from_count((TInt2)count);
+    template <class TInt2, std::intmax_t r_shift2>
+    constexpr inline explicit operator FixedPointNumber<TInt2, r_shift2> () const {
+        if constexpr (r_shift2 > r_shift) {
+            if constexpr (std::numeric_limits<TInt2>::max() > std::numeric_limits<TInt>::max()) {
+                return FixedPointNumber<TInt2, r_shift2>::from_count(TInt2(count) << (r_shift2 - r_shift));
+            } else {
+                return FixedPointNumber<TInt2, r_shift2>::from_count(TInt2(count << (r_shift2 - r_shift)));
+            }
+        } else {
+            return FixedPointNumber<TInt2, r_shift2>::from_count(TInt2(count >> (r_shift - r_shift2)));
+        }
     }
     constexpr inline FixedPointNumber& operator += (const FixedPointNumber& other) {
         count += other.count;
@@ -122,128 +137,128 @@ public:
     TInt count;
 };
 
-template <std::integral TInt, std::intmax_t denominator>
-inline FixedPointNumber<TInt, denominator> operator + (
-    const FixedPointNumber<TInt, denominator>& a,
-    const FixedPointNumber<TInt, denominator>& b)
+template <std::integral TInt, std::intmax_t r_shift>
+inline FixedPointNumber<TInt, r_shift> operator + (
+    const FixedPointNumber<TInt, r_shift>& a,
+    const FixedPointNumber<TInt, r_shift>& b)
 {
-    return FixedPointNumber<TInt, denominator>::from_count(a.count + b.count);
+    return FixedPointNumber<TInt, r_shift>::from_count(a.count + b.count);
 }
 
-template <std::integral TInt, std::intmax_t denominator>
+template <std::integral TInt, std::intmax_t r_shift>
 inline intermediate_float<TInt> operator + (
     const intermediate_float<TInt>& a,
-    const FixedPointNumber<TInt, denominator>& b)
+    const FixedPointNumber<TInt, r_shift>& b)
 {
     return a + (intermediate_float<TInt>)b;
 }
 
-template <std::integral TInt, std::intmax_t denominator>
-inline FixedPointNumber<TInt, denominator> operator - (
-        const FixedPointNumber<TInt, denominator>& a,
-        const FixedPointNumber<TInt, denominator>& b)
+template <std::integral TInt, std::intmax_t r_shift>
+inline FixedPointNumber<TInt, r_shift> operator - (
+        const FixedPointNumber<TInt, r_shift>& a,
+        const FixedPointNumber<TInt, r_shift>& b)
 {
-    return FixedPointNumber<TInt, denominator>::from_count(a.count - b.count);
+    return FixedPointNumber<TInt, r_shift>::from_count(a.count - b.count);
 }
 
-// template <class TInt, std::intmax_t denominator>
-// inline FixedPointNumber<TInt, denominator> operator * (
-//     const FixedPointNumber<TInt, denominator>& a,
-//     const FixedPointNumber<TInt, denominator>& b)
+// template <class TInt, std::intmax_t r_shift>
+// inline FixedPointNumber<TInt, r_shift> operator * (
+//     const FixedPointNumber<TInt, r_shift>& a,
+//     const FixedPointNumber<TInt, r_shift>& b)
 // {
 //     using I = intermediate_float<TInt>;
 //     return { (I)a * (I)b };
 // }
 
-template <std::integral TInt, std::intmax_t denominator, std::integral I>
-inline FixedPointNumber<TInt, denominator> operator * (
-    const FixedPointNumber<TInt, denominator>& a,
+template <std::integral TInt, std::intmax_t r_shift, std::integral I>
+inline FixedPointNumber<TInt, r_shift> operator * (
+    const FixedPointNumber<TInt, r_shift>& a,
     I b)
 {
-    return FixedPointNumber<TInt, denominator>::from_count((TInt)(a.count * b));
+    return FixedPointNumber<TInt, r_shift>::from_count((TInt)(a.count * b));
 }
 
-template <std::integral TInt, std::intmax_t denominator, std::floating_point F>
-inline FixedPointNumber<TInt, denominator> operator * (
-    const FixedPointNumber<TInt, denominator>& a,
+template <std::integral TInt, std::intmax_t r_shift, std::floating_point F>
+inline FixedPointNumber<TInt, r_shift> operator * (
+    const FixedPointNumber<TInt, r_shift>& a,
     F b)
 {
-    return (FixedPointNumber<TInt, denominator>)((F)a * b);
+    return (FixedPointNumber<TInt, r_shift>)((F)a * b);
 }
 
-template <std::integral TInt, std::intmax_t denominator, std::floating_point F>
-inline FixedPointNumber<TInt, denominator> operator * (
+template <std::integral TInt, std::intmax_t r_shift, std::floating_point F>
+inline FixedPointNumber<TInt, r_shift> operator * (
     F a,
-    const FixedPointNumber<TInt, denominator>& b)
+    const FixedPointNumber<TInt, r_shift>& b)
 {
-    return (FixedPointNumber<TInt, denominator>)(a * (F)b);
+    return (FixedPointNumber<TInt, r_shift>)(a * (F)b);
 }
 
-// template <std::integral TInt, std::intmax_t denominator>
-// inline FixedPointNumber<intermediate_count<TInt>, denominator> operator * (
-//     const FixedPointNumber<TInt, denominator>& a,
-//     const FixedPointNumber<TInt, denominator>& b)
+// template <std::integral TInt, std::intmax_t r_shift>
+// inline FixedPointNumber<intermediate_count<TInt>, r_shift> operator * (
+//     const FixedPointNumber<TInt, r_shift>& a,
+//     const FixedPointNumber<TInt, r_shift>& b)
 // {
 //     using I = intermediate_count<TInt>;
-//     return FixedPointNumber<I, denominator>::from_count(((I)a * (I)b) / denominator);
+//     return FixedPointNumber<I, r_shift>::from_count(((I)a * (I)b) / r_shift);
 // }
 
-template <std::integral TInt, std::intmax_t denominator, std::integral I>
-inline FixedPointNumber<TInt, denominator> operator / (
-    const FixedPointNumber<TInt, denominator>& a,
+template <std::integral TInt, std::intmax_t r_shift, std::integral I>
+inline FixedPointNumber<TInt, r_shift> operator / (
+    const FixedPointNumber<TInt, r_shift>& a,
     I b)
 {
-    return FixedPointNumber<TInt, denominator>::from_count(a.count / b);
+    return FixedPointNumber<TInt, r_shift>::from_count(a.count / b);
 }
 
-// template <std::integral TInt, std::intmax_t denominator>
-// inline FixedPointNumber<TInt, denominator> operator / (
-//         const FixedPointNumber<TInt, denominator>& a,
-//         const FixedPointNumber<TInt, denominator>& b)
+// template <std::integral TInt, std::intmax_t r_shift>
+// inline FixedPointNumber<TInt, r_shift> operator / (
+//         const FixedPointNumber<TInt, r_shift>& a,
+//         const FixedPointNumber<TInt, r_shift>& b)
 // {
 //     using I = intermediate_float<TInt>;
 //     return { (I)a / (I)b };
 // }
 
-template <std::integral TInt, std::intmax_t denominator, std::integral I>
-inline FixedPointNumber<TInt, denominator>& operator /= (
-    FixedPointNumber<TInt, denominator>& a,
+template <std::integral TInt, std::intmax_t r_shift, std::integral I>
+inline FixedPointNumber<TInt, r_shift>& operator /= (
+    FixedPointNumber<TInt, r_shift>& a,
     I n)
 {
     a.count /= n;
     return a;
 }
 
-template <std::integral TInt, std::intmax_t denominator>
-inline FixedPointNumber<TInt, denominator>& operator *= (
-    FixedPointNumber<TInt, denominator>& a,
+template <std::integral TInt, std::intmax_t r_shift>
+inline FixedPointNumber<TInt, r_shift>& operator *= (
+    FixedPointNumber<TInt, r_shift>& a,
     TInt n)
 {
     a.count *= n;
     return a;
 }
 
-template <std::integral TInt, std::intmax_t denominator, std::floating_point F>
-inline FixedPointNumber<TInt, denominator>& operator *= (
-    FixedPointNumber<TInt, denominator>& a,
+template <std::integral TInt, std::intmax_t r_shift, std::floating_point F>
+inline FixedPointNumber<TInt, r_shift>& operator *= (
+    FixedPointNumber<TInt, r_shift>& a,
     F b)
 {
     a = a * b;
     return a;
 }
 
-template <std::integral TInt, std::intmax_t denominator>
-inline std::ostream& operator << (std::ostream& ostr, const FixedPointNumber<TInt, denominator>& i) {
+template <std::integral TInt, std::intmax_t r_shift>
+inline std::ostream& operator << (std::ostream& ostr, const FixedPointNumber<TInt, r_shift>& i) {
     i.print(ostr);
     return ostr;
 }
 
-template <std::integral TInt, std::intmax_t denominator>
-inline std::iostream& operator >> (std::iostream& istr, FixedPointNumber<TInt, denominator>& i) {
+template <std::integral TInt, std::intmax_t r_shift>
+inline std::iostream& operator >> (std::iostream& istr, FixedPointNumber<TInt, r_shift>& i) {
     intermediate_float<TInt> f;
     istr >> f;
     if (!istr.fail()) {
-        i = FixedPointNumber<TInt, denominator>{ f };
+        i = FixedPointNumber<TInt, r_shift>{ f };
     }
     return istr;
 }
@@ -251,29 +266,30 @@ inline std::iostream& operator >> (std::iostream& istr, FixedPointNumber<TInt, d
 }
 
 namespace std {
-    template <std::integral TInt, std::intmax_t denominator>
-    class numeric_limits<Mlib::FixedPointNumber<TInt, denominator>> {
-        using T = Mlib::FixedPointNumber<TInt, denominator>;
+    template <std::integral TInt, std::intmax_t r_shift>
+    class numeric_limits<Mlib::FixedPointNumber<TInt, r_shift>> {
+        using T = Mlib::FixedPointNumber<TInt, r_shift>;
     public:
         static constexpr T lowest() { return T::from_count(std::numeric_limits<TInt>::lowest()); };
+        static constexpr T min() { return T::from_count(1); };
         static constexpr T max() { return T::from_count(std::numeric_limits<TInt>::max()); };
     };
 
-    template <std::integral TInt, std::intmax_t denominator>
-    std::string to_string(const Mlib::FixedPointNumber<TInt, denominator>& v) {
+    template <std::integral TInt, std::intmax_t r_shift>
+    std::string to_string(const Mlib::FixedPointNumber<TInt, r_shift>& v) {
         return (std::stringstream() << v).str();
     }
 
 #ifndef __clang__
-    template <std::integral TInt, std::intmax_t denominator>
+    template <std::integral TInt, std::intmax_t r_shift>
     std::from_chars_result from_chars( const char* first, const char* last,
-        Mlib::FixedPointNumber<TInt, denominator>& value,
+        Mlib::FixedPointNumber<TInt, r_shift>& value,
         std::chars_format fmt = std::chars_format::general)
     {
         Mlib::intermediate_float<TInt> fvalue;
         auto result = std::from_chars(first, last, fvalue, fmt);
         if (result.ec == std::errc()) {
-            value = Mlib::FixedPointNumber<TInt, denominator>{fvalue};
+            value = Mlib::FixedPointNumber<TInt, r_shift>{fvalue};
         }
         return result;
     }

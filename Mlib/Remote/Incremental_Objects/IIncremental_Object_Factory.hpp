@@ -8,8 +8,9 @@ namespace Mlib {
 enum class TransmittedFields: TransmittedFieldsType;
 enum class ProxyTasks;
 struct RemoteObjectId;
-class IIncrementalObject;
 class BinaryBitwiseWordsReader;
+class IIncrementalObject;
+class ProxyObjectsCaches;
 class TransmissionHistoryReader;
 
 class IIncrementalObjectFactory: public virtual DestructionNotifier, public virtual DanglingBaseClass {
@@ -20,6 +21,7 @@ public:
         const RemoteObjectId& remote_object_id,
         ProxyTasks proxy_tasks,
         TransmittedFields transmitted_fields,
+        ProxyObjectsCaches& proxy_objects_caches,
         TransmissionHistoryReader& transmission_history_reader) = 0;
 };
 

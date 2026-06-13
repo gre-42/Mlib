@@ -38,7 +38,8 @@ RemoteScene::RemoteScene(
     , objects_{ get_remote_params(remote_config).site_id, scene_level_selector }
     , communicator_proxy_factory_{
         { remote_scene_object_factory_, CURRENT_SOURCE_LOCATION },
-        { objects_, CURRENT_SOURCE_LOCATION},
+        { objects_, CURRENT_SOURCE_LOCATION },
+        { proxy_objects_caches_, CURRENT_SOURCE_LOCATION },
         verbosity,
         get_remote_params(remote_config).role == RemoteRole::SERVER
             ? ProxyTasks::SEND_LOCAL | ProxyTasks::SEND_REMOTE | ProxyTasks::SEND_OWNERSHIP
@@ -110,6 +111,10 @@ DanglingBaseClassPtr<IIncrementalObject> RemoteScene::try_get(
     const RemoteObjectId& id) const
 {
     return objects_.try_get(id);
+}
+
+LocalObjectId RemoteScene::next_local_object_id() const {
+    return objects_.next_local_object_id();
 }
 
 bool RemoteScene::try_remove(const RemoteObjectId& id) {

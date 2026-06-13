@@ -25,8 +25,6 @@
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Players/Player_Args.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Set_Externals_Creator.hpp>
 #include <Mlib/Scene/Physics_Scene.hpp>
-#include <Mlib/Scene/Remote/Coordinate_Deserialization_Generic.hpp>
-#include <Mlib/Scene/Remote/Coordinate_Serialization_Generic.hpp>
 #include <Mlib/Scene/Remote/Remote_Events/Remote_Select_Next_Vehicle_History.hpp>
 #include <Mlib/Scene/Remote/Remote_Events/Remote_Shot_History.hpp>
 #include <Mlib/Scene/Remote/Remote_Privileges.hpp>
@@ -34,6 +32,7 @@
 #include <Mlib/Scene/Remote/Remote_Scene.hpp>
 #include <Mlib/Scene/Remote/Remote_Scene_Object_Priority.hpp>
 #include <Mlib/Scene/Remote/Remote_Scene_Object_Type.hpp>
+#include <Mlib/Scene_Config/Physics_Precision.hpp>
 #include <Mlib/Scene_Config/Remote_Integers.hpp>
 #include <Mlib/Scene_Graph/Driving_Direction.hpp>
 
@@ -133,10 +132,10 @@ DanglingBaseClassPtr<RemotePlayer> RemotePlayer::try_create_from_stream(
             read_shot_history(reader, transmission_history_reader);
         }
         if (has_gun_yaw) {
-            deserialize_angle(reader, "gun yaw");
+            reader.deserialize<CompressedSceneR16>("gun yaw");
         }
         if (has_gun_pitch) {
-            deserialize_angle(reader, "gun pitch");
+            reader.deserialize<CompressedSceneR16>("gun pitch");
         }
     }
     read_select_next_vehicle_history(reader, transmission_history_reader);
@@ -183,6 +182,7 @@ void RemotePlayer::read(
     const RemoteObjectId& remote_object_id,
     ProxyTasks proxy_tasks,
     TransmittedFields transmitted_fields,
+    ProxyObjectsCaches& proxy_objects_caches,
     TransmissionHistoryReader& transmission_history_reader)
 {
     auto type = reader.read_binary<RemoteSceneObjectType>("scene object type");
@@ -310,15 +310,15 @@ void RemotePlayer::read(
             }
         }
         if (has_gun_yaw) {
-            auto gun_yaw = deserialize_angle(reader, "gun yaw");
+            auto gun_yaw = reader.read_binary<CompressedSceneR16>("gun yaw");
             if (pp.update_position && player_->has_gun_yaw()) {
-                player_->set_gun_yaw(gun_yaw);
+                player_->set_gun_yaw((SceneDir)gun_yaw);
             }
         }
         if (has_gun_pitch) {
-            auto gun_pitch = deserialize_angle(reader, "gun pitch");
+            auto gun_pitch = reader.read_binary<CompressedSceneR16>("gun pitch");
             if (pp.update_position && player_->has_gun_pitch()) {
-                player_->set_gun_pitch(gun_pitch);
+                player_->set_gun_pitch((SceneDir)gun_pitch);
             }
         }
     } else if (!privileges.is_manager_local) {
@@ -346,9 +346,11 @@ void RemotePlayer::reset_node() {
 
 void RemotePlayer::write(
     BinaryBitwiseWordsWriter& writer,
+    RemoteSiteId receiver_site_id,
     const RemoteObjectId& remote_object_id,
     ProxyTasks proxy_tasks,
     KnownFields known_fields,
+    ProxyObjectsCaches& proxy_objects_caches,
     TransmissionHistoryWriter& transmission_history_writer)
 {
     auto transmitted_fields = TransmittedFields::NONE;
@@ -402,10 +404,10 @@ void RemotePlayer::write(
             write_shot_history(player_->shot_history, writer, transmission_history_writer);
         }
         if (has_gun_yaw) {
-            serialize_angle(writer, player_->get_gun_yaw(), "gun yaw");
+            writer.write_binary((CompressedSceneR16)player_->get_gun_yaw(), "gun yaw");
         }
         if (has_gun_pitch) {
-            serialize_angle(writer, player_->get_gun_pitch(), "gun pitch");
+            writer.write_binary((CompressedSceneR16)player_->get_gun_pitch(), "gun pitch");
         }
     }
     write_select_next_vehicle_history(player_->select_next_vehicle_history, writer, transmission_history_writer);

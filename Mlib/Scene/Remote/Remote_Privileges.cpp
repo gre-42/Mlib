@@ -15,9 +15,20 @@ RemotePrivileges::RemotePrivileges(
 
 PositionPrivileges RemotePrivileges::position(PositionFlags flags) {
     PositionPrivileges result;
-    result.invalidate_transformation_history =
-        ((any(flags & PositionFlags::POSITION_CONTAINS_JUMP) || (flags == PositionFlags::IS_REMOTELY_ACTIVATED_AVATAR)) && !is_manager_local);
+    result.invalidate_transformation_history = [&](){
+        if (is_manager_local) {
+            return false;
+        }
+        if (any(flags & PositionFlags::WAITING_FOR_INITIAL_POSITION)) {
+            return false;
+        }
+        return any(flags & PositionFlags::POSITION_CONTAINS_JUMP) ||
+               (flags == PositionFlags::IS_REMOTELY_ACTIVATED_AVATAR);
+    }();
     result.update_position = [&](){
+        if (any(flags & PositionFlags::WAITING_FOR_INITIAL_POSITION)) {
+            return false;
+        }
         if (is_manager_local) {
             return !any(flags & PositionFlags::POSITION_CONTAINS_JUMP) && is_owner_sender;
         } else {

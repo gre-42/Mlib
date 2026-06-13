@@ -42,7 +42,7 @@ void PhysicsEngine::compute_transformed_objects(const PhysicsPhase* phase) {
     });
     for (auto& o : rigid_bodies_.objects_) {
         if ((o.rigid_body->mass() == INFINITY) ||
-            o.rigid_body->is_deactivated_avatar() ||
+            o.rigid_body->is_deactivated() ||
             !o.has_meshes())
         {
             continue;
@@ -135,7 +135,7 @@ void PhysicsEngine::move_rigid_bodies(
     const PhysicsPhase& phase)
 {
     for (const auto& rbm : rigid_bodies_.objects_) {
-        if (rbm.rigid_body->is_deactivated_avatar()) {
+        if (rbm.rigid_body->is_deactivated()) {
             continue;
         }
         auto& rb = rbm.rigid_body;
@@ -167,6 +167,9 @@ void PhysicsEngine::burn_in(
         if (o.rigid_body->is_deactivated_avatar()) {
             continue;
         }
+        if (o.rigid_body->is_waiting_for_initial_position()) {
+            throw std::runtime_error("Attempt to burn-in rigidy body waiting for its initial position");
+        }
         for (auto& [_, e] : o.rigid_body->engines_) {
             e.set_surface_power(EnginePowerIntent{
                 .state = EngineState::OFF,
@@ -191,6 +194,9 @@ void PhysicsEngine::burn_in(
                     for (const auto& o : rigid_bodies_.objects_) {
                         if (o.rigid_body->is_deactivated_avatar()) {
                             continue;
+                        }
+                        if (o.rigid_body->is_waiting_for_initial_position()) {
+                            throw std::runtime_error("Attempt to burn-in rigidy body waiting for its initial position");
                         }
                         o.rigid_body->rbp_.w_ = 0;
                     }

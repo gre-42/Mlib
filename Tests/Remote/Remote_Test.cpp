@@ -33,9 +33,10 @@ public:
         const RemoteObjectId& remote_object_id,
         ProxyTasks proxy_tasks,
         TransmittedFields transmitted_fields,
+        ProxyObjectsCaches& proxy_objects_caches,
         TransmissionHistoryReader& transmission_history_reader)
     {
-        read(reader, sender_site_id, remote_object_id, proxy_tasks, transmitted_fields, transmission_history_reader);
+        read(reader, sender_site_id, remote_object_id, proxy_tasks, transmitted_fields, proxy_objects_caches, transmission_history_reader);
     }
     virtual ~SharedInteger() override {
         on_destroy.clear();
@@ -52,6 +53,7 @@ public:
         const RemoteObjectId& remote_object_id,
         ProxyTasks proxy_tasks,
         TransmittedFields transmitted_fields,
+        ProxyObjectsCaches& proxy_objects_caches,
         TransmissionHistoryReader& transmission_history_reader) override
     {
         if (any(transmitted_fields & ~(TransmittedFields::SITE_ID | TransmittedFields::END)))
@@ -62,9 +64,11 @@ public:
     }
     virtual void write(
         BinaryBitwiseWordsWriter& writer,
+        RemoteSiteId receiver_site_id,
         const RemoteObjectId& remote_object_id,
         ProxyTasks proxy_tasks,
         KnownFields known_fields,
+        ProxyObjectsCaches& proxy_objects_caches,
         TransmissionHistoryWriter& transmission_history_writer) override
     {
         transmission_history_writer.write_remote_object_id(writer, remote_object_id, TransmittedFields::END);
@@ -86,9 +90,10 @@ public:
         const RemoteObjectId& remote_object_id,
         ProxyTasks proxy_tasks,
         TransmittedFields transmitted_fields,
+        ProxyObjectsCaches& proxy_objects_caches,
         TransmissionHistoryReader& transmission_history_reader)
     {
-        read(reader, sender_site_id, remote_object_id, proxy_tasks, transmitted_fields, transmission_history_reader);
+        read(reader, sender_site_id, remote_object_id, proxy_tasks, transmitted_fields, proxy_objects_caches, transmission_history_reader);
     }
     virtual ~SharedString() override {
         on_destroy.clear();
@@ -105,15 +110,18 @@ public:
         const RemoteObjectId& remote_object_id,
         ProxyTasks proxy_tasks,
         TransmittedFields transmitted_fields,
+        ProxyObjectsCaches& proxy_objects_caches,
         TransmissionHistoryReader& transmission_history_reader) override
     {
         value_ = reader.read_string<uint32_t>("string");
     }
     virtual void write(
         BinaryBitwiseWordsWriter& writer,
+        RemoteSiteId receiver_site_id,
         const RemoteObjectId& remote_object_id,
         ProxyTasks proxy_tasks,
         KnownFields known_fields,
+        ProxyObjectsCaches& proxy_objects_caches,
         TransmissionHistoryWriter& transmission_history_writer) override
     {
         transmission_history_writer.write_remote_object_id(writer, remote_object_id, TransmittedFields::END);
@@ -138,14 +146,15 @@ public:
         const RemoteObjectId& id,
         ProxyTasks proxy_tasks,
         TransmittedFields transmitted_fields,
+        ProxyObjectsCaches& proxy_objects_caches,
         TransmissionHistoryReader& transmission_history_reader) override
     {
         auto t = reader.read_binary<ObjectType>("object type");
         switch (t) {
         case ObjectType::INT32:
-            return { object_pool_.create<SharedInteger>(CURRENT_SOURCE_LOCATION, reader, sender_site_id, id, proxy_tasks, transmitted_fields, transmission_history_reader), CURRENT_SOURCE_LOCATION };
+            return { object_pool_.create<SharedInteger>(CURRENT_SOURCE_LOCATION, reader, sender_site_id, id, proxy_tasks, transmitted_fields, proxy_objects_caches, transmission_history_reader), CURRENT_SOURCE_LOCATION };
         case ObjectType::STRING:
-            return { object_pool_.create<SharedString>(CURRENT_SOURCE_LOCATION, reader, sender_site_id, id, proxy_tasks, transmitted_fields, transmission_history_reader), CURRENT_SOURCE_LOCATION };
+            return { object_pool_.create<SharedString>(CURRENT_SOURCE_LOCATION, reader, sender_site_id, id, proxy_tasks, transmitted_fields, proxy_objects_caches, transmission_history_reader), CURRENT_SOURCE_LOCATION };
         }
         throw std::runtime_error("Unknown object type: " + std::to_string((uint32_t)t));
     }
@@ -170,17 +179,20 @@ void test_remote() {
     SceneLevelSelector server_scene_level{local_scene_level, on_schedule_load_scene, on_update_time_of_day};
     SceneLevelSelector client_scene_level{local_scene_level, on_schedule_load_scene, on_update_time_of_day};
 
+    ProxyObjectsCaches caches;
     RemoteObjectFactory shared_object_factory;
     IncrementalRemoteObjects server_objects{ 42, {server_scene_level, CURRENT_SOURCE_LOCATION} };
     IncrementalRemoteObjects client_objects{ 43, {client_scene_level, CURRENT_SOURCE_LOCATION} };
     IncrementalCommunicatorProxyFactory server_communicator_proxy_factory{
         {shared_object_factory, CURRENT_SOURCE_LOCATION},
         {server_objects, CURRENT_SOURCE_LOCATION},
+        {caches, CURRENT_SOURCE_LOCATION},
         IoVerbosity::SILENT,
         ProxyTasks::SEND_LOCAL | ProxyTasks::SEND_REMOTE };
     IncrementalCommunicatorProxyFactory client_communicator_proxy_factory{
         {shared_object_factory, CURRENT_SOURCE_LOCATION},
         {client_objects, CURRENT_SOURCE_LOCATION},
+        {caches, CURRENT_SOURCE_LOCATION},
         IoVerbosity::SILENT,
         ProxyTasks::SEND_LOCAL | ProxyTasks::SEND_REMOTE };
 

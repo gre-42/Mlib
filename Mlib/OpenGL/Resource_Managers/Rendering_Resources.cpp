@@ -18,6 +18,7 @@
 #include <Mlib/Images/To_From_Multichannel.hpp>
 #include <Mlib/Iterator/Enumerate.hpp>
 #include <Mlib/Map/Unordered_Map.hpp>
+#include <Mlib/Math/Int_Log2.hpp>
 #include <Mlib/Math/Is_Power_Of_Two.hpp>
 #include <Mlib/Math/Math.hpp>
 #include <Mlib/Memory/Destruction_Guard.hpp>
@@ -159,15 +160,6 @@ std::ostream& Mlib::operator << (std::ostream& ostr, const AutoTextureAtlasDescr
         }
     }
     return ostr;
-}
-
-/**
- * From: https://stackoverflow.com/questions/994593/how-to-do-an-integer-log2-in-c
- */
-static int log2(int n) {
-    int result = 0;
-    while (n >>= 1) ++result;
-    return result;
 }
 
 static StbInfo<uint8_t> stb_load_texture(
@@ -632,7 +624,7 @@ static void check_color_mode(
 //         throw std::runtime_error("Image size is not a power of 2");
 //     }
 //     assert_true(si.nrChannels == 4);
-//     CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, log2(std::max(si.width, si.height))));
+//     CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, int_log2(std::max(si.width, si.height))));
 // 
 //     int level = 0;
 //     RgbaDownsampler rds{si.data(), si.width, si.height};
@@ -640,7 +632,7 @@ static void check_color_mode(
 //         glPixelStorei(GL_UNPACK_ALIGNMENT, 1);  // https://stackoverflow.com/a/49126350/2292832
 //         CHK(glTexImage2D(GL_TEXTURE_2D, level++, GL_RGBA, im.width, im.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, im.data));
 //     }
-//     assert_true(level - 1 == log2(std::max(si.width, si.height)));
+//     assert_true(level - 1 == int_log2(std::max(si.width, si.height)));
 // }
 
 void RenderingResources::print(std::ostream& ostr, size_t indentation) const {
@@ -1031,7 +1023,7 @@ std::shared_ptr<ITextureHandle> TextureSizeAndMipmaps::flipped_vertically(float 
     auto mlc = (handle->mipmap_mode() == MipmapMode::NO_MIPMAPS)
         ? 0
         : (mip_level_count == 0)
-            ? integral_cast<GLsizei>(log2(std::max(width, height)))
+            ? integral_cast<GLsizei>(int_log2(std::max(width, height)))
             : mip_level_count;
     GLuint texture = render_to_texture_2d(
         width,

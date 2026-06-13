@@ -412,7 +412,7 @@ std::vector<CollisionGroup> RigidBodies::collision_groups() {
     std::list<RigidBodyAndMesh> standard_movables;
     std::unordered_set<RigidBodyPulses*> bullet_line_segments;
     for (auto& m : objects_) {
-        if ((m.rigid_body->mass() != INFINITY) && !m.rigid_body->is_deactivated_avatar()) {
+        if ((m.rigid_body->mass() != INFINITY) && !m.rigid_body->is_deactivated()) {
             for (auto& mesh : m.meshes) {
                 // Bullet line segments are artificially long,
                 // so they work without substepping.

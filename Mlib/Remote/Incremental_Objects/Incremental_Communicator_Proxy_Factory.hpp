@@ -6,6 +6,7 @@ namespace Mlib {
 
 class IIncrementalObjectFactory;
 class IncrementalRemoteObjects;
+class ProxyObjectsCaches;
 enum class IoVerbosity;
 enum class ProxyTasks;
 
@@ -14,6 +15,7 @@ public:
     explicit IncrementalCommunicatorProxyFactory(
         const DanglingBaseClassRef<IIncrementalObjectFactory>& shared_object_factory,
         const DanglingBaseClassRef<IncrementalRemoteObjects>& objects,
+        const DanglingBaseClassRef<ProxyObjectsCaches>& proxy_objects_caches,
         IoVerbosity verbosity,
         ProxyTasks tasks);
     virtual ~IncrementalCommunicatorProxyFactory() override;
@@ -25,6 +27,7 @@ public:
 private:
     DanglingBaseClassRef<IIncrementalObjectFactory> shared_object_factory_;
     DanglingBaseClassRef<IncrementalRemoteObjects> objects_;
+    DanglingBaseClassRef<ProxyObjectsCaches> proxy_objects_caches_;
     IoVerbosity verbosity_;
     ProxyTasks tasks_;
     ObjectPool object_pool_;

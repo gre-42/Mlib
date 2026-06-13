@@ -10,6 +10,7 @@ RigidBodyVehicleFlags single_rigid_body_vehicle_flags_from_string(const std::str
     static const std::map<std::string, RigidBodyVehicleFlags> m{
         {"none", RigidBodyVehicleFlags::NONE},
         {"feels_no_gravity", RigidBodyVehicleFlags::FEELS_NO_GRAVITY},
+        {"waiting_for_initial_position", RigidBodyVehicleFlags::WAITING_FOR_INITIAL_POSITION},
         {"is_deactivated_avatar", RigidBodyVehicleFlags::IS_DEACTIVATED_AVATAR},
         {"is_activated_avatar", RigidBodyVehicleFlags::IS_ACTIVATED_AVATAR}
     };

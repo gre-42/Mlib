@@ -41,6 +41,10 @@ DanglingBaseClassRef<SceneLevelSelector> IncrementalRemoteObjects::local_scene_l
     return local_scene_level_selector_;
 }
 
+LocalObjectId IncrementalRemoteObjects::next_local_object_id() const {
+    return next_local_object_id_;
+}
+
 RemoteObjectId IncrementalRemoteObjects::add_local_object(
     const DanglingBaseClassRef<IIncrementalObject>& object,
     RemoteObjectVisibility visibility)

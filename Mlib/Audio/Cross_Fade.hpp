@@ -19,7 +19,7 @@ class AudioBuffer;
 template <class TPosition>
 struct AudioSourceState;
 
-using Gain = FixedPointNumber<int32_t, (1 << 13)>;
+using Gain = FixedPointNumber<int32_t, 13>;
 
 struct AudioSourceAndGain {
     const AudioBuffer* audio_buffer;

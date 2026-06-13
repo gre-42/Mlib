@@ -28,12 +28,15 @@ public:
         const RemoteObjectId& remote_object_id,
         ProxyTasks proxy_tasks,
         TransmittedFields transmitted_fields,
+        ProxyObjectsCaches& proxy_objects_caches,
         TransmissionHistoryReader& transmission_history_reader) override;
     virtual void write(
         BinaryBitwiseWordsWriter& writer,
+        RemoteSiteId receiver_site_id,
         const RemoteObjectId& remote_object_id,
         ProxyTasks proxy_tasks,
         KnownFields known_fields,
+        ProxyObjectsCaches& proxy_objects_caches,
         TransmissionHistoryWriter& transmission_history_writer) override;
 
 private:

@@ -511,7 +511,7 @@ void test_fixed_sum() {
 
 void test_fixed_point() {
     double v = 1.234;
-    auto fixed = FixedPointNumber<int32_t, (1 << 11)>::from_float_safe(v);
+    auto fixed = FixedPointNumber<int32_t, 11>::from_float_safe(v);
     linfo() << fixed;
 }
 

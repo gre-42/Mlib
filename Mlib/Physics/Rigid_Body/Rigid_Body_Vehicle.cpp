@@ -137,8 +137,8 @@ void RigidBodyVehicle::reset_forces(const PhysicsPhase& phase) {
     if (!phase.group.rigid_bodies.contains(&rbp_)) {
         return;
     }
-    if (is_deactivated_avatar()) {
-        throw std::runtime_error("Attempt to reset forces of deactivated avatar");
+    if (is_deactivated()) {
+        throw std::runtime_error("Attempt to reset forces of deactivated rigid body");
     }
     for (auto& e : engines_) {
         e.second.reset_forces();
@@ -208,8 +208,8 @@ void RigidBodyVehicle::integrate_force(
     const PhysicsEngineConfig& cfg,
     const PhysicsPhase& phase)
 {
-    if (is_deactivated_avatar()) {
-        throw std::runtime_error("Attempt to integrate forces of deactivated avatar");
+    if (is_deactivated()) {
+        throw std::runtime_error("Attempt to integrate forces of deactivated rigid body");
     }
     integrate_force(F, cfg, phase);
     if (damping != 0) {
@@ -228,8 +228,8 @@ void RigidBodyVehicle::collide_with_air(CollisionHistory& c)
     if (!c.phase.group.rigid_bodies.contains(&rbp_)) {
         return;
     }
-    if (is_deactivated_avatar()) {
-        throw std::runtime_error("Attempt to collide deactivated avatar with air");
+    if (is_deactivated()) {
+        throw std::runtime_error("Attempt to collide deactivated rigid body with air");
     }
     for (auto& [rotor_id, rotor] : rotors_) {
         TirePowerIntent P = consume_rotor_surface_power(rotor_id);
@@ -517,8 +517,8 @@ void RigidBodyVehicle::finalize_collisions(CollisionHistory& c) {
     if (!c.phase.group.rigid_bodies.contains(&rbp_)) {
         return;
     }
-    if (is_deactivated_avatar()) {
-        throw std::runtime_error("Attempt to finalize collisions of deactivated avatar");
+    if (is_deactivated()) {
+        throw std::runtime_error("Attempt to finalize collisions of deactivated rigid body");
     }
     for (auto& [tire_id, tire] : tires_) {
         if (tire.rb != nullptr) {
@@ -536,8 +536,8 @@ void RigidBodyVehicle::advance_time(
     if (!phase.group.rigid_bodies.contains(&rbp_)) {
         return;
     }
-    if (is_deactivated_avatar()) {
-        throw std::runtime_error("Attempt to move deactivated avatar");
+    if (is_deactivated()) {
+        throw std::runtime_error("Attempt to move deactivated rigid body");
     }
     auto time_step = PhysicsTimeStep{
         .dt_step = cfg.dt,
@@ -1098,7 +1098,7 @@ bool RigidBodyVehicle::node_shall_be_hidden(
     const ExternalRenderPass& external_render_pass) const
 {
     std::scoped_lock lock{ flags_mutex_ };
-    return is_deactivated_avatar();
+    return is_deactivated();
 }
 
 bool RigidBodyVehicle::feels_gravity() const {
@@ -1127,6 +1127,14 @@ bool RigidBodyVehicle::is_deactivated_avatar() const {
         return true;
     }
     return false;
+}
+
+bool RigidBodyVehicle::is_deactivated() const {
+    return is_deactivated_avatar() || is_waiting_for_initial_position();
+}
+
+bool RigidBodyVehicle::is_waiting_for_initial_position() const {
+    return any(flags_ & RigidBodyVehicleFlags::WAITING_FOR_INITIAL_POSITION);
 }
 
 bool RigidBodyVehicle::has_avatar_controller() const {

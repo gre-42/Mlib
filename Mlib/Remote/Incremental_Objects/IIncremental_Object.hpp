@@ -9,6 +9,7 @@ namespace Mlib {
 struct RemoteObjectId;
 class BinaryBitwiseWordsReader;
 class BinaryBitwiseWordsWriter;
+class ProxyObjectsCaches;
 class TransmissionHistoryReader;
 class TransmissionHistoryWriter;
 enum class KnownFields;
@@ -26,12 +27,15 @@ public:
         const RemoteObjectId& remote_object_id,
         ProxyTasks proxy_tasks,
         TransmittedFields transmitted_fields,
+        ProxyObjectsCaches& proxy_objects_caches,
         TransmissionHistoryReader& transmission_history_reader) = 0;
     virtual void write(
         BinaryBitwiseWordsWriter& writer,
+        RemoteSiteId receiver_site_id,
         const RemoteObjectId& remote_object_id,
         ProxyTasks proxy_tasks,
         KnownFields known_fields,
+        ProxyObjectsCaches& proxy_objects_caches,
         TransmissionHistoryWriter& transmission_history_writer) = 0;
 };
 

@@ -33,6 +33,7 @@ public:
     PauseStatus pause_status() const;
     void set_local_time(const TimeAndPause<std::chrono::steady_clock::time_point>& time);
     DanglingBaseClassRef<SceneLevelSelector> local_scene_level_selector() const;
+    LocalObjectId next_local_object_id() const;
     RemoteObjectId add_local_object(
         const DanglingBaseClassRef<IIncrementalObject>& object,
         RemoteObjectVisibility visibility);

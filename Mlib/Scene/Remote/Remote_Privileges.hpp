@@ -7,7 +7,8 @@ namespace Mlib {
 enum class PositionFlags: uint32_t {
     NONE = 0,
     IS_REMOTELY_ACTIVATED_AVATAR = 1 << 0,
-    POSITION_CONTAINS_JUMP = 1 << 1
+    POSITION_CONTAINS_JUMP = 1 << 1,
+    WAITING_FOR_INITIAL_POSITION = 1 << 2
 };
 
 inline bool any(PositionFlags a) {

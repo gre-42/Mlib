@@ -49,11 +49,11 @@ void Mlib::handle_line_triangle_intersection(const IntersectionScene& c)
     {
         throw std::runtime_error("Non-static rigid body \"" + c.o1.name() + "\" is not in the collision group (1)");
     }
-    if (c.o0.is_deactivated_avatar()) {
-        throw std::runtime_error("Attempt to collide deactivated avatar (0): \"" + c.o0.name() + '"');
+    if (c.o0.is_deactivated()) {
+        throw std::runtime_error("Attempt to collide deactivated rigid body (0): \"" + c.o0.name() + '"');
     }
-    if (c.o1.is_deactivated_avatar()) {
-        throw std::runtime_error("Attempt to collide deactivated avatar (1): \"" + c.o1.name() + '"');
+    if (c.o1.is_deactivated()) {
+        throw std::runtime_error("Attempt to collide deactivated rigid body (1): \"" + c.o1.name() + '"');
     }
     if ((c.i0 != nullptr) && any(c.mesh1_material & PhysicsMaterial::OBJ_BULLET_LINE_SEGMENT)) {
         throw std::runtime_error("Intersectable \"" + c.o0.name() + "\" unexpectedly collides with bullet line segment \"" + c.o1.name() + '"');

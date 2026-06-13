@@ -5,6 +5,7 @@
 #include <Mlib/Json/Base.hpp>
 #include <Mlib/Json/Json_View.hpp>
 #include <Mlib/Memory/Object_Pool.hpp>
+#include <Mlib/Misc/Masked_Set.hpp>
 #include <Mlib/Os/Io/Binary_Bitwise_Words_Reader.hpp>
 #include <Mlib/Os/Io/Binary_Bitwise_Words_Writer.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
@@ -20,10 +21,9 @@
 #include <Mlib/Scene/Load_Scene_Functions/Remote/Car_Parameters.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Remote/Vehicle_Parameters.hpp>
 #include <Mlib/Scene/Physics_Scene.hpp>
-#include <Mlib/Scene/Remote/Coordinate_Deserialization_Generic.hpp>
-#include <Mlib/Scene/Remote/Coordinate_Deserialization_Physics.hpp>
-#include <Mlib/Scene/Remote/Coordinate_Serialization_Generic.hpp>
-#include <Mlib/Scene/Remote/Coordinate_Serialization_Physics.hpp>
+#include <Mlib/Scene/Remote/Create_Cache_Tokens.hpp>
+#include <Mlib/Scene/Remote/Location_History/Vehicle_Location_History.hpp>
+#include <Mlib/Scene/Remote/Location_History/Vehicle_Location_Io.hpp>
 #include <Mlib/Scene/Remote/Remote_Privileges.hpp>
 #include <Mlib/Scene/Remote/Remote_Scene.hpp>
 #include <Mlib/Scene/Remote/Remote_Scene_Object_Priority.hpp>
@@ -63,11 +63,13 @@ inline TransmittedFields& operator |= (TransmittedFields& a, RigidBodyTransmitte
 RemoteRigidBodyVehicle::RemoteRigidBodyVehicle(
     IoVerbosity verbosity,
     RemoteSceneObjectType type,
+    const RemoteObjectId& remote_object_id,
     nlohmann::json initial,
     std::string node_suffix,
     const DanglingBaseClassRef<RigidBodyVehicle>& rb,
     const DanglingBaseClassRef<PhysicsScene>& physics_scene)
-    : type_{ type }
+    : proxy_object_cache_token_{ create_cache_object_token(physics_scene.get(), remote_object_id) }
+    , type_{ type }
     , initial_( std::move(initial) )
     , node_suffix_{ std::move(node_suffix) }
     , rb_{ rb.ptr() }
@@ -105,8 +107,10 @@ DanglingBaseClassPtr<RemoteRigidBodyVehicle> RemoteRigidBodyVehicle::try_create_
     RemoteSceneObjectType type,
     PhysicsScene& physics_scene,
     BinaryBitwiseWordsReader& reader,
+    RemoteSiteId sender_site_id,
     TransmittedFields transmitted_fields,
     const RemoteObjectId& remote_object_id,
+    ProxyObjectsCaches& proxy_objects_caches,
     IoVerbosity verbosity)
 {
     if (any(transmitted_fields & ~(
@@ -172,19 +176,32 @@ DanglingBaseClassPtr<RemoteRigidBodyVehicle> RemoteRigidBodyVehicle::try_create_
             throw std::runtime_error("RemoteRigidBodyVehicle: Unknown scene object type");
         }();
     }
-    auto position = deserialize_position(reader, "position");
-    auto v_com = deserialize_vs_8(reader, "v_com");
-    FixedArray<SceneDir, 3> rotation = uninitialized;
-    FixedArray<SceneDir, 3> w = uninitialized;
+    std::unique_ptr<ProxyObjectCacheEntry> cache;
+    auto position = fixed_zeros<ScenePos, 3>();
+    auto v_com = fixed_zeros<SceneDir, 3>();
+    auto rotation = fixed_zeros<SceneDir, 3>();
+    auto w = fixed_zeros<SceneDir, 3>();
     [&](){
         switch (type) {
         case RemoteSceneObjectType::RIGID_BODY_CAR:
-            rotation = deserialize_angles(reader, "rotation");
-            w = deserialize_ws_8(reader, "w");
+            {
+                auto vcache = std::make_unique<VehicleRemoteRigidBodyVehicleCache>();
+                auto location = read_vehicle_location(*vcache, reader);
+                if (location.has_value()) {
+                    throw std::runtime_error("Vehicle location unexpectedly has a value on ctor");
+                }
+                cache = std::move(vcache);
+            }
             return;
         case RemoteSceneObjectType::RIGID_BODY_AVATAR:
-            rotation = {0.f, deserialize_angle(reader, "avatar yaw"), 0.f};
-            w = {0.f, deserialize_w_8(reader, "w"), 0.f};
+            {
+                auto vcache = std::make_unique<AvatarRemoteRigidBodyVehicleCache>();
+                auto location = read_vehicle_location(*vcache, reader);
+                if (location.has_value()) {
+                    throw std::runtime_error("Avatar location unexpectedly has a value on ctor");
+                }
+                cache = std::move(vcache);
+            }
             return;
         case RemoteSceneObjectType::REMOTE_USERS:
         case RemoteSceneObjectType::PLAYER:
@@ -291,16 +308,18 @@ DanglingBaseClassPtr<RemoteRigidBodyVehicle> RemoteRigidBodyVehicle::try_create_
     auto rb = get_rigid_body_vehicle(pnode.get(), CURRENT_SOURCE_LOCATION);
     rb->rbp_.v_com_ = v_com;
     rb->rbp_.w_ = w;
-    rb->flags_ = flags;
+    rb->flags_ = flags | RigidBodyVehicleFlags::WAITING_FOR_INITIAL_POSITION;
     rb->remote_object_id_ = remote_object_id;
     if (owner_site_id.has_value()) {
         rb->owner_site_id_ = *owner_site_id;
     }
+    proxy_objects_caches.add(sender_site_id, remote_object_id, std::move(cache));
     return {
         global_object_pool.create<RemoteRigidBodyVehicle>(
             CURRENT_SOURCE_LOCATION,
             verbosity,
             type,
+            remote_object_id,
             std::move(initial),
             std::move(node_suffix),
             rb.set_loc(CURRENT_SOURCE_LOCATION),
@@ -322,6 +341,7 @@ void RemoteRigidBodyVehicle::read(
     const RemoteObjectId& remote_object_id,
     ProxyTasks proxy_tasks,
     TransmittedFields transmitted_fields,
+    ProxyObjectsCaches& proxy_objects_caches,
     TransmissionHistoryReader& transmission_history_reader)
 {
     if (rb_ == nullptr) {
@@ -381,19 +401,44 @@ void RemoteRigidBodyVehicle::read(
             throw std::runtime_error("RemoteRigidBodyVehicle: Unknown scene object type");
         }();
     }
-    auto position = deserialize_position(reader, "position");
-    auto v_com = deserialize_vs_8(reader, "v_com");
+    bool has_location;
+    FixedArray<ScenePos, 3> position = uninitialized;
+    FixedArray<SceneDir, 3> v_com = uninitialized;
     FixedArray<SceneDir, 3> rotation = uninitialized;
     FixedArray<SceneDir, 3> w = uninitialized;
     [&](){
         switch (type) {
         case RemoteSceneObjectType::RIGID_BODY_CAR:
-            rotation = deserialize_angles(reader, "rotation");
-            w = deserialize_ws_8(reader, "w");
+            {
+                auto vcache = proxy_objects_caches.try_get<VehicleRemoteRigidBodyVehicleCache>(sender_site_id, remote_object_id);
+                if (vcache == nullptr) {
+                    throw std::runtime_error("Could not get vehicle location cache");
+                }
+                auto location = read_vehicle_location(*vcache, reader);
+                if (location.has_value()) {
+                    position = location->T;
+                    v_com = location->v_com;
+                    rotation = location->r;
+                    w = location->w;
+                }
+                has_location = location.has_value();
+            }
             return;
         case RemoteSceneObjectType::RIGID_BODY_AVATAR:
-            rotation = {0.f, deserialize_angle(reader, "avatar yaw"), 0.f};
-            w = {0.f, deserialize_w_8(reader, "w"), 0.f};
+            {
+                auto vcache = proxy_objects_caches.try_get<AvatarRemoteRigidBodyVehicleCache>(sender_site_id, remote_object_id);
+                if (vcache == nullptr) {
+                    throw std::runtime_error("Could not get avatar location cache");
+                }
+                auto location = read_vehicle_location(*vcache, reader);
+                if (location.has_value()) {
+                    position = location->T;
+                    v_com = location->v_com;
+                    rotation = {0.f, location->r1, 0.f};
+                    w = {0.f, location->w1, 0.f};
+                }
+                has_location = location.has_value();
+            }
             return;
         case RemoteSceneObjectType::REMOTE_USERS:
         case RemoteSceneObjectType::PLAYER:
@@ -432,6 +477,9 @@ void RemoteRigidBodyVehicle::read(
             pf |= PositionFlags::IS_REMOTELY_ACTIVATED_AVATAR;
         }
     }
+    if (!has_location) {
+        pf |= PositionFlags::WAITING_FOR_INITIAL_POSITION;
+    }
     auto pp = privileges.position(pf);
     if (pp.invalidate_transformation_history) {
         rb_->scene_node_->set_absolute_pose(
@@ -439,22 +487,27 @@ void RemoteRigidBodyVehicle::read(
             rotation,
             1.f,
             SceneTime::initial(physics_scene_->dynamic_world_.get_time()));
+        // Notify child nodes with absolute movables (e.g. wheels)
+        rb_->scene_node_->clear_transformation_history();
+    }
+    if (!privileges.is_manager_local) {
+        masked_set(rb_->flags_, flags, ~RigidBodyVehicleFlags::WAITING_FOR_INITIAL_POSITION);
     }
     if (pp.update_position) {
         rb_->rbp_.set_pose(tait_bryan_angles_2_matrix(rotation), position);
         rb_->rbp_.v_com_ = v_com;
         rb_->rbp_.w_ = w;
-    }
-    if (!privileges.is_manager_local) {
-        rb_->flags_ = flags;
+        rb_->flags_ &= ~RigidBodyVehicleFlags::WAITING_FOR_INITIAL_POSITION;
     }
 }
 
 void RemoteRigidBodyVehicle::write(
     BinaryBitwiseWordsWriter& writer,
+    RemoteSiteId receiver_site_id,
     const RemoteObjectId& remote_object_id,
     ProxyTasks proxy_tasks,
     KnownFields known_fields,
+    ProxyObjectsCaches& proxy_objects_caches,
     TransmissionHistoryWriter& transmission_history_writer)
 {
     if (rb_ == nullptr) {
@@ -518,17 +571,31 @@ void RemoteRigidBodyVehicle::write(
             throw std::runtime_error("RemoteRigidBodyVehicle: Unknown scene object type");
         }();
     }
-    serialize_position(writer, rb_->rbp_.abs_position(), "position");
-    serialize_vs_8(writer, rb_->rbp_.v_com_, "v_com");
     [&](){
         switch (type_) {
         case RemoteSceneObjectType::RIGID_BODY_CAR:
-            serialize_angles(writer, matrix_2_tait_bryan_angles(rb_->rbp_.rotation_), "rotation");
-            serialize_ws_8(writer, rb_->rbp_.w_, "w");
+            {
+                auto& vcache = proxy_objects_caches.get_or_create<VehicleRemoteRigidBodyVehicleCache>(receiver_site_id, remote_object_id);
+                auto location = Vehicle::VehicleLocation{
+                    .T = rb_->rbp_.abs_position(),
+                    .r = matrix_2_tait_bryan_angles(rb_->rbp_.rotation_),
+                    .v_com = rb_->rbp_.v_com_,
+                    .w = rb_->rbp_.w_
+                };
+                write_vehicle_location(vcache, writer, location);
+            }
             return;
         case RemoteSceneObjectType::RIGID_BODY_AVATAR:
-            serialize_angle(writer, z_to_yaw(rb_->rbp_.rotation_.column(2)), "avatar yaw");
-            serialize_w_8(writer, rb_->rbp_.w_(1), "w");
+            {
+                auto& vcache = proxy_objects_caches.get_or_create<AvatarRemoteRigidBodyVehicleCache>(receiver_site_id, remote_object_id);
+                auto location = Avatar::VehicleLocation{
+                    .T = rb_->rbp_.abs_position(),
+                    .r1 = z_to_yaw(rb_->rbp_.rotation_.column(2)),
+                    .v_com = rb_->rbp_.v_com_,
+                    .w1 = rb_->rbp_.w_(1)
+                };
+                write_vehicle_location(vcache, writer, location);
+            }
             return;
         case RemoteSceneObjectType::REMOTE_USERS:
         case RemoteSceneObjectType::PLAYER:

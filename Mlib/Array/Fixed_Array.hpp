@@ -209,7 +209,7 @@ PRAGMA_GCC_DIAGNOSTIC_POP
     FixedArray<TDataResult, tshape0, tshape...> array_array_binop(const FixedArray<TDataB, tshape0, tshape...>& b, const TBinop &binop) const {
         FixedArray<TDataResult, tshape0, tshape...> r = uninitialized;
         const TData* sa = flat_begin();
-        const TData* sb = b.flat_begin();
+        const TDataB* sb = b.flat_begin();
         TDataResult* d = r.flat_begin();
         for (size_t i = 0; i < nelements(); ++i) {
             *d++ = binop(*sa++, *sb++);

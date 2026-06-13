@@ -98,6 +98,7 @@ void RemoteUsers::read(
     const RemoteObjectId& remote_object_id,
     ProxyTasks proxy_tasks,
     TransmittedFields transmitted_fields,
+    ProxyObjectsCaches& proxy_objects_caches,
     TransmissionHistoryReader& transmission_history_reader)
 {
     auto type = reader.read_binary<RemoteSceneObjectType>("scene object type");
@@ -189,9 +190,11 @@ void RemoteUsers::read_data(
 
 void RemoteUsers::write(
     BinaryBitwiseWordsWriter& writer,
+    RemoteSiteId receiver_site_id,
     const RemoteObjectId& remote_object_id,
     ProxyTasks proxy_tasks,
     KnownFields known_fields,
+    ProxyObjectsCaches& proxy_objects_caches,
     TransmissionHistoryWriter& transmission_history_writer)
 {
     auto transmitted_fields = TransmittedFields::NONE;

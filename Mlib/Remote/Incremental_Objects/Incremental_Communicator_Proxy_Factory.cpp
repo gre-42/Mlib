@@ -9,10 +9,12 @@ using namespace Mlib;
 IncrementalCommunicatorProxyFactory::IncrementalCommunicatorProxyFactory(
     const DanglingBaseClassRef<IIncrementalObjectFactory>& shared_object_factory,
     const DanglingBaseClassRef<IncrementalRemoteObjects>& objects,
+    const DanglingBaseClassRef<ProxyObjectsCaches>& proxy_objects_caches,
     IoVerbosity verbosity,
     ProxyTasks tasks)
     : shared_object_factory_{ shared_object_factory }
     , objects_{ objects }
+    , proxy_objects_caches_{ proxy_objects_caches }
     , verbosity_{ verbosity }
     , tasks_{ tasks }
     , object_pool_{ InObjectPoolDestructor::CLEAR }
@@ -28,6 +30,7 @@ DanglingBaseClassRef<ICommunicatorProxy> IncrementalCommunicatorProxyFactory::cr
             std::move(send_socket),
             shared_object_factory_,
             objects_,
+            proxy_objects_caches_,
             verbosity_,
             ProxyTasks::NONE,
             0xC0FEFACE),
@@ -44,6 +47,7 @@ DanglingBaseClassRef<ICommunicatorProxy> IncrementalCommunicatorProxyFactory::cr
             std::move(send_socket),
             shared_object_factory_,
             objects_,
+            proxy_objects_caches_,
             verbosity_,
             tasks_,
             home_site_id),

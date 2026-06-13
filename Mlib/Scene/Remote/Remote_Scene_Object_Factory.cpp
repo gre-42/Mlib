@@ -29,6 +29,7 @@ DanglingBaseClassPtr<IIncrementalObject> RemoteSceneObjectFactory::try_create_sh
     const RemoteObjectId& remote_object_id,
     ProxyTasks proxy_tasks,
     TransmittedFields transmitted_fields,
+    ProxyObjectsCaches& proxy_objects_caches,
     TransmissionHistoryReader& transmission_history_reader)
 {
     auto type = reader.read_binary<RemoteSceneObjectType>("scene object type");
@@ -45,8 +46,8 @@ DanglingBaseClassPtr<IIncrementalObject> RemoteSceneObjectFactory::try_create_sh
     case RemoteSceneObjectType::RIGID_BODY_CAR:
     case RemoteSceneObjectType::RIGID_BODY_AVATAR:
         return RemoteRigidBodyVehicle::try_create_from_stream(
-            type, physics_scene_.get(), reader,
-            transmitted_fields, remote_object_id, verbosity_);
+            type, physics_scene_.get(), reader, sender_site_id,
+            transmitted_fields, remote_object_id, proxy_objects_caches, verbosity_);
     case RemoteSceneObjectType::COUNTDOWN:
         return RemoteCountdown::try_create_from_stream(
             physics_scene_.get(), reader,
