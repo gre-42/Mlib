@@ -55,10 +55,18 @@ TLocation RemoteRigidBodyVehicleRemoteHistory<TAbsoluteLocation8, TDeltaLocation
     VersionType base_version, VersionType new_version, const TDeltaLocation& delta)
 {
     if (local_version == 0) {
-        throw std::runtime_error("Incremental location requires local version > 0");
+        throw std::runtime_error(
+            (std::stringstream() << "Incremental location requires local version > 0. " <<
+            "Local: " << (local_version + 0) <<
+            ", base: " << (base_version + 0) <<
+            ", new: " << (new_version + 0)).str());
     }
     if (new_version == 0) {
-        throw std::runtime_error("Incremental location requires new version > 0");
+        throw std::runtime_error(
+            (std::stringstream() << "Incremental location requires new version > 0. " <<
+            "Local: " << (local_version + 0) <<
+            ", base: " << (base_version + 0) <<
+            ", new: " << (new_version + 0)).str());
     }
     const auto& base = location_history[base_version - 1];
     auto& new_ = location_history[new_version - 1];
