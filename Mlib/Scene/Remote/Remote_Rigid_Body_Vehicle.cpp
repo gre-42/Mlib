@@ -11,6 +11,7 @@
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle_Flags.hpp>
 #include <Mlib/Remote/Incremental_Objects/Known_Fields.hpp>
+#include <Mlib/Remote/Incremental_Objects/Object_Lifetime_Status.hpp>
 #include <Mlib/Remote/Incremental_Objects/Proxy_Tasks.hpp>
 #include <Mlib/Remote/Incremental_Objects/Transmission_History.hpp>
 #include <Mlib/Remote/Incremental_Objects/Transmitted_Fields.hpp>
@@ -109,6 +110,7 @@ DanglingBaseClassPtr<RemoteRigidBodyVehicle> RemoteRigidBodyVehicle::try_create_
     BinaryBitwiseWordsReader& reader,
     RemoteSiteId sender_site_id,
     TransmittedFields transmitted_fields,
+    ObjectLifetimeStatus lifetime_status,
     const RemoteObjectId& remote_object_id,
     ProxyObjectsCaches& proxy_objects_caches,
     IoVerbosity verbosity)
@@ -186,7 +188,7 @@ DanglingBaseClassPtr<RemoteRigidBodyVehicle> RemoteRigidBodyVehicle::try_create_
         case RemoteSceneObjectType::RIGID_BODY_CAR:
             {
                 auto vcache = std::make_unique<VehicleRemoteRigidBodyVehicleCache>();
-                auto location = read_vehicle_location(*vcache, reader);
+                auto location = read_vehicle_location(*vcache, reader, lifetime_status);
                 if (location.has_value()) {
                     throw std::runtime_error("Vehicle location unexpectedly has a value on ctor");
                 }
@@ -196,7 +198,7 @@ DanglingBaseClassPtr<RemoteRigidBodyVehicle> RemoteRigidBodyVehicle::try_create_
         case RemoteSceneObjectType::RIGID_BODY_AVATAR:
             {
                 auto vcache = std::make_unique<AvatarRemoteRigidBodyVehicleCache>();
-                auto location = read_vehicle_location(*vcache, reader);
+                auto location = read_vehicle_location(*vcache, reader, lifetime_status);
                 if (location.has_value()) {
                     throw std::runtime_error("Avatar location unexpectedly has a value on ctor");
                 }
@@ -232,7 +234,8 @@ DanglingBaseClassPtr<RemoteRigidBodyVehicle> RemoteRigidBodyVehicle::try_create_
     auto local_site_id = physics_scene.remote_scene_->local_site_id();
     if (!any(transmitted_fields & RigidBodyTransmittedFields::INITIAL) ||
         !any(transmitted_fields & RigidBodyTransmittedFields::OWNERSHIP) ||
-        (remote_object_id.site_id == local_site_id))
+        (remote_object_id.site_id == local_site_id) ||
+        (lifetime_status == ObjectLifetimeStatus::DELETED))
     {
         return nullptr;
     }
@@ -414,7 +417,7 @@ void RemoteRigidBodyVehicle::read(
                 if (vcache == nullptr) {
                     throw std::runtime_error("Could not get vehicle location cache");
                 }
-                auto location = read_vehicle_location(*vcache, reader);
+                auto location = read_vehicle_location(*vcache, reader, ObjectLifetimeStatus::EXISTS);
                 if (location.has_value()) {
                     position = location->T;
                     v_com = location->v_com;
@@ -430,7 +433,7 @@ void RemoteRigidBodyVehicle::read(
                 if (vcache == nullptr) {
                     throw std::runtime_error("Could not get avatar location cache");
                 }
-                auto location = read_vehicle_location(*vcache, reader);
+                auto location = read_vehicle_location(*vcache, reader, ObjectLifetimeStatus::EXISTS);
                 if (location.has_value()) {
                     position = location->T;
                     v_com = location->v_com;

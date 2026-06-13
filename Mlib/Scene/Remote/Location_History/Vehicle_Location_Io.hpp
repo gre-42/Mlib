@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/Os/Io/Binary_Bitwise_Words_Reader.hpp>
 #include <Mlib/Os/Io/Binary_Bitwise_Words_Writer.hpp>
+#include <Mlib/Remote/Incremental_Objects/Object_Lifetime_Status.hpp>
 #include <optional>
 
 namespace Mlib {
@@ -8,7 +9,8 @@ namespace Mlib {
 template <class TRemoteRigidBodyVehicleCache>
 std::optional<typename TRemoteRigidBodyVehicleCache::Location> read_vehicle_location(
     TRemoteRigidBodyVehicleCache& cache,
-    BinaryBitwiseWordsReader& reader)
+    BinaryBitwiseWordsReader& reader,
+    ObjectLifetimeStatus object_lifetime_status)
 {
     using AbsoluteLocation8 = TRemoteRigidBodyVehicleCache::AbsoluteLocation8;
     using DeltaLocation = TRemoteRigidBodyVehicleCache::DeltaLocation;
@@ -22,9 +24,15 @@ std::optional<typename TRemoteRigidBodyVehicleCache::Location> read_vehicle_loca
         auto new_version = reader.read_binary<VersionType>("new_version");
         if (base_version == 0) {
             auto initial_location = reader.deserialize<AbsoluteLocation8>("initial_location");
+            if (object_lifetime_status == ObjectLifetimeStatus::DELETED) {
+                return std::nullopt;
+            }
             cache.remote.initialize8(new_version, initial_location);
         } else {
             auto delta = reader.deserialize<DeltaLocation>("delta");
+            if (object_lifetime_status == ObjectLifetimeStatus::DELETED) {
+                return std::nullopt;
+            }
             return cache.remote.get_absolute_location(base_version, new_version, delta);
         }
     }

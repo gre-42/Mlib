@@ -5,8 +5,9 @@
 
 namespace Mlib {
 
-enum class TransmittedFields: TransmittedFieldsType;
+enum class ObjectLifetimeStatus;
 enum class ProxyTasks;
+enum class TransmittedFields: TransmittedFieldsType;
 struct RemoteObjectId;
 class BinaryBitwiseWordsReader;
 class IIncrementalObject;
@@ -21,6 +22,7 @@ public:
         const RemoteObjectId& remote_object_id,
         ProxyTasks proxy_tasks,
         TransmittedFields transmitted_fields,
+        ObjectLifetimeStatus lifetime_status,
         ProxyObjectsCaches& proxy_objects_caches,
         TransmissionHistoryReader& transmission_history_reader) = 0;
 };

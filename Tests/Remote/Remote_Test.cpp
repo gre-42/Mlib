@@ -9,6 +9,7 @@
 #include <Mlib/Remote/Incremental_Objects/Incremental_Communicator_Proxy.hpp>
 #include <Mlib/Remote/Incremental_Objects/Incremental_Communicator_Proxy_Factory.hpp>
 #include <Mlib/Remote/Incremental_Objects/Incremental_Remote_Objects.hpp>
+#include <Mlib/Remote/Incremental_Objects/Object_Lifetime_Status.hpp>
 #include <Mlib/Remote/Incremental_Objects/Proxy_Tasks.hpp>
 #include <Mlib/Remote/Incremental_Objects/Transmission_History.hpp>
 #include <Mlib/Remote/Incremental_Objects/Transmitted_Fields.hpp>
@@ -146,9 +147,13 @@ public:
         const RemoteObjectId& id,
         ProxyTasks proxy_tasks,
         TransmittedFields transmitted_fields,
+        ObjectLifetimeStatus lifetime_status,
         ProxyObjectsCaches& proxy_objects_caches,
         TransmissionHistoryReader& transmission_history_reader) override
     {
+        if (lifetime_status == ObjectLifetimeStatus::DELETED) {
+            throw std::runtime_error("Reading deleted objects not supported");
+        }
         auto t = reader.read_binary<ObjectType>("object type");
         switch (t) {
         case ObjectType::INT32:

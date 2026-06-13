@@ -12,6 +12,7 @@ namespace Mlib {
 class PhysicsScene;
 class RigidBodyVehicle;
 enum class IoVerbosity;
+enum class ObjectLifetimeStatus;
 enum class RemoteSceneObjectType: RemoteSceneObjectUnderlyingType;
 
 class RemoteRigidBodyVehicle final: public IIncrementalObject {
@@ -31,6 +32,7 @@ public:
         BinaryBitwiseWordsReader& reader,
         RemoteSiteId sender_site_id,
         TransmittedFields transmitted_fields,
+        ObjectLifetimeStatus lifetime_status,
         const RemoteObjectId& remote_object_id,
         ProxyObjectsCaches& proxy_objects_caches,
         IoVerbosity verbosity);

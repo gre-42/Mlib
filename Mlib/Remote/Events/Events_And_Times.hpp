@@ -25,6 +25,9 @@ public:
     decltype(auto) end() const {
         return events_.end();
     }
+    bool contains_key(const TEvent& event) const {
+        return events_.find(event) != events_.end();
+    }
 private:
     std::map<TEvent, TTime> events_;
 };

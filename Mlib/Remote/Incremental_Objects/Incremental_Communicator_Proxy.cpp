@@ -6,6 +6,7 @@
 #include <Mlib/Remote/Incremental_Objects/IIncremental_Object.hpp>
 #include <Mlib/Remote/Incremental_Objects/IIncremental_Object_Factory.hpp>
 #include <Mlib/Remote/Incremental_Objects/Known_Fields.hpp>
+#include <Mlib/Remote/Incremental_Objects/Object_Lifetime_Status.hpp>
 #include <Mlib/Remote/Incremental_Objects/Proxy_Tasks.hpp>
 #include <Mlib/Remote/Incremental_Objects/Transmission_History.hpp>
 #include <Mlib/Remote/Incremental_Objects/Transmitted_Fields.hpp>
@@ -93,6 +94,7 @@ void IncrementalCommunicatorProxy::receive_from_home(std::istream& istr) {
         }
     }
     auto receive_local = [&](RemoteObjectVisibility visibility){
+        const auto& deleted_objects = objects_->deleted_objects();
         // linfo() << "Received " << object_count << " objects_";
         auto transmission_history_reader = TransmissionHistoryReader{*home_scene_level_, objects_->local_time()};
         while (true) {
@@ -108,13 +110,18 @@ void IncrementalCommunicatorProxy::receive_from_home(std::istream& istr) {
                 if (any(verbosity_ & IoVerbosity::METADATA)) {
                     linfo() << this << " read from home site " << (home_site_id_ + 0) << ", object " << i << " \"" << it->name() << '"';
                 }
-                it->read(reader, home_site_id_, i, tasks_, transmitted_fields, proxy_objects_caches_.get(), transmission_history_reader);
+                it->read(reader, home_site_id_, i, tasks_, transmitted_fields,
+                    proxy_objects_caches_.get(), transmission_history_reader);
             } else {
                 if (any(verbosity_ & IoVerbosity::METADATA)) {
                     linfo() << this << " create from home site " << (home_site_id_ + 0) << ", object " << i;
                 }
+                auto lifetime_status = deleted_objects.contains_key(i)
+                    ? ObjectLifetimeStatus::DELETED
+                    : ObjectLifetimeStatus::EXISTS;
                 auto o = shared_object_factory_->try_create_shared_object(
-                    reader, home_site_id_, i, tasks_, transmitted_fields, proxy_objects_caches_.get(), transmission_history_reader);
+                    reader, home_site_id_, i, tasks_, transmitted_fields, lifetime_status,
+                    proxy_objects_caches_.get(), transmission_history_reader);
                 if (o == nullptr) {
                     if (any(verbosity_ & IoVerbosity::METADATA)) {
                         linfo() << this << " cannot create object";
