@@ -1,10 +1,10 @@
 #pragma once
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Misc/Object.hpp>
-#include <Mlib/Scene_Config/Incremental_Scene_R.hpp>
-#include <Mlib/Scene_Config/Incremental_Scene_T.hpp>
-#include <Mlib/Scene_Config/Incremental_Scene_V.hpp>
-#include <Mlib/Scene_Config/Incremental_Scene_W.hpp>
+#include <Mlib/Physics/Incremental_Coordinates/Incremental_Scene_R.hpp>
+#include <Mlib/Physics/Incremental_Coordinates/Incremental_Scene_T.hpp>
+#include <Mlib/Physics/Incremental_Coordinates/Incremental_Scene_V.hpp>
+#include <Mlib/Physics/Incremental_Coordinates/Incremental_Scene_W.hpp>
 
 namespace Mlib::Vehicle {
 
@@ -58,7 +58,7 @@ struct DeltaVehicleLocation {
     }
 };
 
-DeltaVehicleLocation operator - (const AbsoluteVehicleLocation16& a, const AbsoluteVehicleLocation8& base);
+DeltaVehicleLocation minus_position(const AbsoluteVehicleLocation16& a, const AbsoluteVehicleLocation8& base, IncrementalConfig& c);
 AbsoluteVehicleLocation16 operator + (const AbsoluteVehicleLocation8& base, const DeltaVehicleLocation& b);
 
 }

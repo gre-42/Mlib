@@ -19,14 +19,14 @@ PositionPrivileges RemotePrivileges::position(PositionFlags flags) {
         if (is_manager_local) {
             return false;
         }
-        if (any(flags & PositionFlags::WAITING_FOR_INITIAL_POSITION)) {
+        if (any(flags & PositionFlags::POSITION_IS_INCOMPLETE)) {
             return false;
         }
         return any(flags & PositionFlags::POSITION_CONTAINS_JUMP) ||
                (flags == PositionFlags::IS_REMOTELY_ACTIVATED_AVATAR);
     }();
     result.update_position = [&](){
-        if (any(flags & PositionFlags::WAITING_FOR_INITIAL_POSITION)) {
+        if (any(flags & PositionFlags::POSITION_IS_INCOMPLETE)) {
             return false;
         }
         if (is_manager_local) {

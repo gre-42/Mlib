@@ -47,12 +47,12 @@ VehicleLocation AbsoluteVehicleLocation8::upsample() const {
     };
 }
 
-DeltaVehicleLocation Mlib::Vehicle::operator - (const AbsoluteVehicleLocation16& a, const AbsoluteVehicleLocation8& base) {
+DeltaVehicleLocation Mlib::Vehicle::minus_position(const AbsoluteVehicleLocation16& a, const AbsoluteVehicleLocation8& base, IncrementalConfig& c) {
     return DeltaVehicleLocation{
-        .T = a.T.template array_array_binop<DeltaSceneT16>(base.T, [](const auto& a, const auto &b){ return minus_position(a, b); }),
-        .r = a.r.template array_array_binop<DeltaSceneR8>(base.r, [](const auto& a, const auto &b){ return minus_angle(a, b); }),
-        .v_com = a.v_com.template array_array_binop<DeltaSceneV8>(base.v_com, [](const auto& a, const auto &b){ return minus_velocity(a, b); }),
-        .w = a.w.template array_array_binop<DeltaSceneW8>(base.w, [](const auto& a, const auto &b){ return minus_angular_velocity(a, b); })
+        .T = a.T.template array_array_binop<DeltaSceneT16>(base.T, [&c](const auto& a, const auto &b){ return minus_position(a, b, c); }),
+        .r = a.r.template array_array_binop<DeltaSceneR8>(base.r, [&c](const auto& a, const auto &b){ return minus_angle(a, b, c); }),
+        .v_com = a.v_com.template array_array_binop<DeltaSceneV8>(base.v_com, [&c](const auto& a, const auto &b){ return minus_velocity(a, b, c); }),
+        .w = a.w.template array_array_binop<DeltaSceneW8>(base.w, [&c](const auto& a, const auto &b){ return minus_angular_velocity(a, b, c); })
     };
 }
 

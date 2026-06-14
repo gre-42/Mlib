@@ -7,10 +7,44 @@
 namespace Mlib {
 
 template <class TRemoteRigidBodyVehicleCache>
+void read_vehicle_location_and_forget(
+    TRemoteRigidBodyVehicleCache& cache,
+    BinaryBitwiseWordsReader& reader)
+{
+    using AbsoluteLocation8 = TRemoteRigidBodyVehicleCache::AbsoluteLocation8;
+    using DeltaLocation = TRemoteRigidBodyVehicleCache::DeltaLocation;
+    // Local
+    {
+        reader.read_binary<VersionType>("local.remote_version");
+    }
+    // Remote
+    {
+        auto new_version = reader.read_binary<VersionType>("new_version");
+        if (new_version == 0) {
+            return;
+        }
+        auto base_version = reader.read_binary<VersionType>("base_version");
+        if (base_version == 0) {
+            reader.deserialize<AbsoluteLocation8>("initial_location");
+        } else {
+            reader.deserialize<DeltaLocation>("delta");
+        }
+    }
+}
+
+template <class TRemoteRigidBodyVehicleCache>
+void write_dummy_vehicle_location(
+    TRemoteRigidBodyVehicleCache& cache,
+    BinaryBitwiseWordsWriter& writer)
+{
+    writer.write_binary(cache.remote.local_version, "remote.local_version");
+    writer.write_binary(VersionType(0), "local.local_version = 0");
+}
+
+template <class TRemoteRigidBodyVehicleCache>
 std::optional<typename TRemoteRigidBodyVehicleCache::Location> read_vehicle_location(
     TRemoteRigidBodyVehicleCache& cache,
-    BinaryBitwiseWordsReader& reader,
-    ObjectLifetimeStatus object_lifetime_status)
+    BinaryBitwiseWordsReader& reader)
 {
     using AbsoluteLocation8 = TRemoteRigidBodyVehicleCache::AbsoluteLocation8;
     using DeltaLocation = TRemoteRigidBodyVehicleCache::DeltaLocation;
@@ -20,17 +54,17 @@ std::optional<typename TRemoteRigidBodyVehicleCache::Location> read_vehicle_loca
     }
     // Remote
     {
-        auto base_version = reader.read_binary<VersionType>("base_version");
         auto new_version = reader.read_binary<VersionType>("new_version");
+        if (new_version == 0) {
+            return std::nullopt;
+        }
+        auto base_version = reader.read_binary<VersionType>("base_version");
         if (base_version == 0) {
             auto initial_location = reader.deserialize<AbsoluteLocation8>("initial_location");
-            if (object_lifetime_status == ObjectLifetimeStatus::DELETED) {
-                return std::nullopt;
-            }
             cache.remote.initialize8(new_version, initial_location);
         } else {
             auto delta = reader.deserialize<DeltaLocation>("delta");
-            if (object_lifetime_status == ObjectLifetimeStatus::DELETED) {
+            if (cache.remote.local_version == 0) {
                 return std::nullopt;
             }
             return cache.remote.get_absolute_location(base_version, new_version, delta);
@@ -51,16 +85,22 @@ void write_vehicle_location(
     }
     // Remote
     {
-        if (cache.local.remote_version == 0) {
-            auto loc = cache.local.get_absolute8(location);
-            writer.write_binary(VersionType(0), "base version = 0");
-            writer.write_binary(cache.local.local_version, "local.local_version");
-            writer.serialize(loc, "local.get_absolute8");
-        } else {
+        if (cache.local.remote_version != 0) {
             auto loc = cache.local.get_delta8(location);
-            writer.write_binary(cache.local.remote_version, "base_version");
-            writer.write_binary(cache.local.local_version, "new_version");
-            writer.serialize(loc, "delta location");
+            if (loc.has_value()) {
+                writer.write_binary(cache.local.local_version, "new_version");
+                writer.write_binary(cache.local.remote_version, "base_version");
+                writer.serialize(*loc, "delta location");
+                return;
+            } else {
+                cache.local.remote_version = 0;
+            }
+        }
+        {
+            auto loc = cache.local.get_absolute8(location);
+            writer.write_binary(cache.local.local_version, "local.local_version");
+            writer.write_binary(VersionType(0), "base version = 0");
+            writer.serialize(loc, "local.get_absolute8");
         }
     }
 }

@@ -13,8 +13,6 @@
 #include <Mlib/Os/Os.hpp>
 #include <Mlib/Regex/Misc.hpp>
 #include <Mlib/Regex/Template_Regex.hpp>
-#include <Mlib/Scene_Config/Incremental_Scene_R.hpp>
-#include <Mlib/Scene_Config/Incremental_Scene_T.hpp>
 #include <Mlib/Scene_Config/Physics_Precision.hpp>
 #include <Mlib/Testing/Assert.hpp>
 #include <Mlib/Threads/Dispatcher.hpp>
@@ -91,45 +89,17 @@ void test_dangling_unique2() {
     }
 }
 
-void test_physics_precision() {
-    {
-        linfo() << "1w " << (CompressedSceneW8(0.5f * rps).count + 0);
-
-        auto td = CompressedSceneR8::from_float_safe(0.1234f);
-        auto tu = upsample_angle(td);
-        float a = 0.123f;
-        float b = 0.23456f;
-        auto ai = CompressedSceneR8::from_float_safe(a);
-        auto bi = CompressedSceneR16::from_float_safe(b);
-        auto sub = minus_angle(bi, ai);
-        auto ci = plus_angle(ai, sub);
-
-        linfo() << "--------";
-        linfo() << (float)td;
-        linfo() << (float)tu;
-        linfo() << (b - a);
-        linfo() << sub;
-        linfo() << (float)sub;
-        linfo() << b;
-        linfo() << ci;
-        linfo() << "########";
-    }
-    {
-        auto current = CompressedSceneT32{1276.46};
-        auto base = CompressedSceneT32{1248.};
-        linfo() << (current - base);
-        linfo() << (CompressedSceneT32)(CompressedSceneT16{28.46});
-        linfo() << DeltaSceneT16{28.46};
-    }
-    {
-        auto current = CompressedSceneT32{1276.46};
-        auto base = CompressedSceneT16{1248.};
-        auto delta = minus_position_safe(current, base);
-        auto recon = plus_position(base, delta);
-        linfo() << current;
-        linfo() << delta;
-        linfo() << recon;
-    }
+void test_log2() {
+    linfo() << "0.2 " << floor_log2(0.2) << " - " << ceil_log2(0.2);
+    linfo() << "0.4 " << floor_log2(0.4) << " - " << ceil_log2(0.4);
+    linfo() << "0.5 " << floor_log2(0.5) << " - " << ceil_log2(0.5);
+    linfo() << "0.6 " << floor_log2(0.6) << " - " << ceil_log2(0.6);
+    linfo() << "0.8 " << floor_log2(0.8) << " - " << ceil_log2(0.8);
+    linfo() << "1.0 " << floor_log2(1.0) << " - " << ceil_log2(1.0);
+    linfo() << "1.2 " << floor_log2(1.2) << " - " << ceil_log2(1.2);
+    linfo() << "2.0 " << floor_log2(2.0) << " - " << ceil_log2(2.0);
+    linfo() << "3.0 " << floor_log2(3.0) << " - " << ceil_log2(3.0);
+    linfo() << "20.0 " << floor_log2(20.0) << " - " << ceil_log2(20.0);
 }
 
 void test_template_regex() {
@@ -328,7 +298,7 @@ int main(int argc, const char** argv) {
     enable_floating_point_exceptions();
 
     try {
-        test_physics_precision();
+        test_log2();
         test_bitwise_io();
         test_chunked_array();
         test_thread_safe_list();

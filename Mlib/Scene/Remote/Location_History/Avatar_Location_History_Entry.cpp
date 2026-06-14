@@ -47,12 +47,12 @@ VehicleLocation AbsoluteVehicleLocation8::upsample() const {
     };
 }
 
-DeltaVehicleLocation Mlib::Avatar::operator - (const AbsoluteVehicleLocation16& a, const AbsoluteVehicleLocation8& base) {
+DeltaVehicleLocation Mlib::Avatar::minus_position(const AbsoluteVehicleLocation16& a, const AbsoluteVehicleLocation8& base, IncrementalConfig& c) {
     return DeltaVehicleLocation{
-        .T = a.T.template array_array_binop<DeltaSceneT16>(base.T, [](const auto& a, const auto &b){ return minus_position(a, b); }),
-        .r1 = minus_angle(a.r1, base.r1),
-        .v_com = a.v_com.template array_array_binop<DeltaSceneV8>(base.v_com, [](const auto& a, const auto &b){ return minus_velocity(a, b); }),
-        .w1 = minus_angular_velocity(a.w1, base.w1),
+        .T = a.T.template array_array_binop<DeltaSceneT16>(base.T, [&c](const auto& a, const auto &b){ return minus_position(a, b, c); }),
+        .r1 = minus_angle(a.r1, base.r1, c),
+        .v_com = a.v_com.template array_array_binop<DeltaSceneV8>(base.v_com, [&c](const auto& a, const auto &b){ return minus_velocity(a, b, c); }),
+        .w1 = minus_angular_velocity(a.w1, base.w1, c),
     };
 }
 

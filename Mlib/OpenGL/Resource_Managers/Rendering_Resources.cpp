@@ -18,8 +18,8 @@
 #include <Mlib/Images/To_From_Multichannel.hpp>
 #include <Mlib/Iterator/Enumerate.hpp>
 #include <Mlib/Map/Unordered_Map.hpp>
-#include <Mlib/Math/Int_Log2.hpp>
 #include <Mlib/Math/Is_Power_Of_Two.hpp>
+#include <Mlib/Math/Log2.hpp>
 #include <Mlib/Math/Math.hpp>
 #include <Mlib/Memory/Destruction_Guard.hpp>
 #include <Mlib/Memory/Integral_To_Float.hpp>

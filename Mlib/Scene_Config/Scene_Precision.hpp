@@ -2,23 +2,27 @@
 #include <Mlib/Hashing/Hash.hpp>
 #include <Mlib/Hashing/Std_Hash.hpp>
 #include <Mlib/Math/Fixed_Point_Number.hpp>
-#include <Mlib/Math/Int_Log2.hpp>
+#include <Mlib/Math/Log2.hpp>
 #include <Mlib/Physics/Units.hpp>
 
 namespace Mlib {
 
 template <std::integral T>
 constexpr int64_t right_shift(double max) {
-    return int_log2(std::numeric_limits<T>::max()) - int_log2(static_cast<int64_t>(max + 0.5));
+    return (int64_t)floor_log2(std::numeric_limits<T>::max() / max);
 }
 
 template <std::integral T, class TLarge>
 struct DeltaFixedPointNumber {
-    using value_type = FixedPointNumber<T, right_shift<T>((double)std::numeric_limits<TLarge>::min())>;
+    static const auto delta = right_shift<T>((double)std::numeric_limits<TLarge>::min());
+    using value_type = FixedPointNumber<T, delta>;
 };
 
 template <std::integral T, class TLarge>
 using DeltaFixedPointNumberT = DeltaFixedPointNumber<T, TLarge>::value_type;
+
+template <std::integral T, class TLarge>
+static const auto DELTA_RIGHT_SHIFT = DeltaFixedPointNumber<T, TLarge>::delta;
 
 using SceneDir = float;
 using ScenePos = double;

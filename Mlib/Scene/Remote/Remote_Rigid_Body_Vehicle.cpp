@@ -188,9 +188,10 @@ DanglingBaseClassPtr<RemoteRigidBodyVehicle> RemoteRigidBodyVehicle::try_create_
         case RemoteSceneObjectType::RIGID_BODY_CAR:
             {
                 auto vcache = std::make_unique<VehicleRemoteRigidBodyVehicleCache>();
-                auto location = read_vehicle_location(*vcache, reader, lifetime_status);
-                if (location.has_value()) {
-                    throw std::runtime_error("Vehicle location unexpectedly has a value on ctor");
+                if (lifetime_status == ObjectLifetimeStatus::DELETED) {
+                    read_vehicle_location_and_forget(*vcache, reader);
+                } else {
+                    read_vehicle_location(*vcache, reader);
                 }
                 cache = std::move(vcache);
             }
@@ -198,9 +199,10 @@ DanglingBaseClassPtr<RemoteRigidBodyVehicle> RemoteRigidBodyVehicle::try_create_
         case RemoteSceneObjectType::RIGID_BODY_AVATAR:
             {
                 auto vcache = std::make_unique<AvatarRemoteRigidBodyVehicleCache>();
-                auto location = read_vehicle_location(*vcache, reader, lifetime_status);
-                if (location.has_value()) {
-                    throw std::runtime_error("Avatar location unexpectedly has a value on ctor");
+                if (lifetime_status == ObjectLifetimeStatus::DELETED) {
+                    read_vehicle_location_and_forget(*vcache, reader);
+                } else {
+                    read_vehicle_location(*vcache, reader);
                 }
                 cache = std::move(vcache);
             }
@@ -417,7 +419,7 @@ void RemoteRigidBodyVehicle::read(
                 if (vcache == nullptr) {
                     throw std::runtime_error("Could not get vehicle location cache");
                 }
-                auto location = read_vehicle_location(*vcache, reader, ObjectLifetimeStatus::EXISTS);
+                auto location = read_vehicle_location(*vcache, reader);
                 if (location.has_value()) {
                     position = location->T;
                     v_com = location->v_com;
@@ -433,7 +435,7 @@ void RemoteRigidBodyVehicle::read(
                 if (vcache == nullptr) {
                     throw std::runtime_error("Could not get avatar location cache");
                 }
-                auto location = read_vehicle_location(*vcache, reader, ObjectLifetimeStatus::EXISTS);
+                auto location = read_vehicle_location(*vcache, reader);
                 if (location.has_value()) {
                     position = location->T;
                     v_com = location->v_com;
@@ -481,10 +483,11 @@ void RemoteRigidBodyVehicle::read(
         }
     }
     if (!has_location) {
-        pf |= PositionFlags::WAITING_FOR_INITIAL_POSITION;
+        pf |= PositionFlags::POSITION_IS_INCOMPLETE;
     }
     auto pp = privileges.position(pf);
     if (pp.invalidate_transformation_history) {
+        assert_true(has_location);
         rb_->scene_node_->set_absolute_pose(
             position,
             rotation,
@@ -497,6 +500,7 @@ void RemoteRigidBodyVehicle::read(
         masked_set(rb_->flags_, flags, ~RigidBodyVehicleFlags::WAITING_FOR_INITIAL_POSITION);
     }
     if (pp.update_position) {
+        assert_true(has_location);
         rb_->rbp_.set_pose(tait_bryan_angles_2_matrix(rotation), position);
         rb_->rbp_.v_com_ = v_com;
         rb_->rbp_.w_ = w;
@@ -579,25 +583,33 @@ void RemoteRigidBodyVehicle::write(
         case RemoteSceneObjectType::RIGID_BODY_CAR:
             {
                 auto& vcache = proxy_objects_caches.get_or_create<VehicleRemoteRigidBodyVehicleCache>(receiver_site_id, remote_object_id);
-                auto location = Vehicle::VehicleLocation{
-                    .T = rb_->rbp_.abs_position(),
-                    .r = matrix_2_tait_bryan_angles(rb_->rbp_.rotation_),
-                    .v_com = rb_->rbp_.v_com_,
-                    .w = rb_->rbp_.w_
-                };
-                write_vehicle_location(vcache, writer, location);
+                if (any(rb_->flags_ & RigidBodyVehicleFlags::WAITING_FOR_INITIAL_POSITION)) {
+                    write_dummy_vehicle_location(vcache, writer);
+                } else {
+                    auto location = Vehicle::VehicleLocation{
+                        .T = rb_->rbp_.abs_position(),
+                        .r = matrix_2_tait_bryan_angles(rb_->rbp_.rotation_),
+                        .v_com = rb_->rbp_.v_com_,
+                        .w = rb_->rbp_.w_
+                    };
+                    write_vehicle_location(vcache, writer, location);
+                }
             }
             return;
         case RemoteSceneObjectType::RIGID_BODY_AVATAR:
             {
                 auto& vcache = proxy_objects_caches.get_or_create<AvatarRemoteRigidBodyVehicleCache>(receiver_site_id, remote_object_id);
-                auto location = Avatar::VehicleLocation{
-                    .T = rb_->rbp_.abs_position(),
-                    .r1 = z_to_yaw(rb_->rbp_.rotation_.column(2)),
-                    .v_com = rb_->rbp_.v_com_,
-                    .w1 = rb_->rbp_.w_(1)
-                };
-                write_vehicle_location(vcache, writer, location);
+                if (any(rb_->flags_ & RigidBodyVehicleFlags::WAITING_FOR_INITIAL_POSITION)) {
+                    write_dummy_vehicle_location(vcache, writer);
+                } else {
+                    auto location = Avatar::VehicleLocation{
+                        .T = rb_->rbp_.abs_position(),
+                        .r1 = z_to_yaw(rb_->rbp_.rotation_.column(2)),
+                        .v_com = rb_->rbp_.v_com_,
+                        .w1 = rb_->rbp_.w_(1)
+                    };
+                    write_vehicle_location(vcache, writer, location);
+                }
             }
             return;
         case RemoteSceneObjectType::REMOTE_USERS:

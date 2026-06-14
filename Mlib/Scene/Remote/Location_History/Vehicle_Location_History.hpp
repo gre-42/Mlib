@@ -10,7 +10,7 @@ template <class TAbsoluteLocation8, class TDeltaLocation, class TLocation>
 class RemoteRigidBodyVehicleLocalHistory {
 public:
     TAbsoluteLocation8 get_absolute8(const TLocation& l);
-    TDeltaLocation get_delta8(const TLocation& l);
+    std::optional<TDeltaLocation> get_delta8(const TLocation& l);
     VersionType local_version = 0;
     VersionType remote_version = 0;
     std::vector<TAbsoluteLocation8> location_history =

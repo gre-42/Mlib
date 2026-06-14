@@ -17,18 +17,23 @@ TAbsoluteLocation8 RemoteRigidBodyVehicleLocalHistory<TAbsoluteLocation8, TDelta
 }
 
 template <class TAbsoluteLocation8, class TDeltaLocation, class TLocation>
-TDeltaLocation RemoteRigidBodyVehicleLocalHistory<TAbsoluteLocation8, TDeltaLocation, TLocation>::get_delta8(
+std::optional<TDeltaLocation> RemoteRigidBodyVehicleLocalHistory<TAbsoluteLocation8, TDeltaLocation, TLocation>::get_delta8(
     const TLocation& l)
 {
     if (remote_version == 0) {
         throw std::runtime_error("Incremental location requires remote version > 0");
     }
-    increase_local_version();
     const auto& base = location_history[remote_version - 1];
-    auto& new_ = location_history[local_version - 1];
     auto f = l.fixed_point();
+    auto c = IncrementalConfig::NONE;
+    auto diff = minus_position(f, base, c);
+    if (any(c & IncrementalConfig::OVERFLOW)) {
+        return std::nullopt;
+    }
+    increase_local_version();
+    auto& new_ = location_history[local_version - 1];
     new_ = f.downsample();
-    return f - base;
+    return diff;
 }
 
 template <class TAbsoluteLocation8, class TDeltaLocation, class TLocation>
@@ -54,16 +59,9 @@ template <class TAbsoluteLocation8, class TDeltaLocation, class TLocation>
 TLocation RemoteRigidBodyVehicleRemoteHistory<TAbsoluteLocation8, TDeltaLocation, TLocation>::get_absolute_location(
     VersionType base_version, VersionType new_version, const TDeltaLocation& delta)
 {
-    if (local_version == 0) {
+    if ((local_version == 0) || (base_version == 0) || (new_version == 0)) {
         throw std::runtime_error(
-            (std::stringstream() << "Incremental location requires local version > 0. " <<
-            "Local: " << (local_version + 0) <<
-            ", base: " << (base_version + 0) <<
-            ", new: " << (new_version + 0)).str());
-    }
-    if (new_version == 0) {
-        throw std::runtime_error(
-            (std::stringstream() << "Incremental location requires new version > 0. " <<
+            (std::stringstream() << "Incremental location requires versions > 0. " <<
             "Local: " << (local_version + 0) <<
             ", base: " << (base_version + 0) <<
             ", new: " << (new_version + 0)).str());
