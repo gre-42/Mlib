@@ -6,7 +6,7 @@ using namespace Mlib::Vehicle;
 AbsoluteVehicleLocation16 VehicleLocation::fixed_point() const {
     return AbsoluteVehicleLocation16{
         .T = T.casted<CompressedSceneT32>(),
-        .r = r.casted<CompressedSceneR16>(),
+        .r = r.template applied<CompressedSceneR16>([](float a){ return fixed_point_angle(a); }),
         .v_com = v_com.casted<CompressedSceneV16>(),
         .w = w.casted<CompressedSceneW16>(),
     };

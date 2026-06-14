@@ -6,7 +6,7 @@ using namespace Mlib::Avatar;
 AbsoluteVehicleLocation16 VehicleLocation::fixed_point() const {
     return AbsoluteVehicleLocation16{
         .T = T.casted<CompressedSceneT32>(),
-        .r1 = (CompressedSceneR16)r1,
+        .r1 = fixed_point_angle(r1),
         .v_com = v_com.casted<CompressedSceneV16>(),
         .w1 = (CompressedSceneW16)w1,
     };
@@ -33,7 +33,7 @@ AbsoluteVehicleLocation8 AbsoluteVehicleLocation16::downsample() const {
 AbsoluteVehicleLocation8 AbsoluteVehicleLocation8::nan() {
     return {
         fixed_full<CompressedSceneT16, 3>((CompressedSceneT16)4.3),
-        (CompressedSceneR8)4.3,
+        (CompressedSceneR8)3.4,
         fixed_full<CompressedSceneV8, 3>((CompressedSceneV8)4.3),
         (CompressedSceneW8)4.3,
     };
