@@ -878,6 +878,16 @@ void RigidBodyVehicle::park_vehicle() {
     }
 }
 
+void RigidBodyVehicle::unpark_vehicle() {
+    for (const auto& [n, _] : engines_) {
+        set_surface_power(n, EnginePowerIntent{
+            .state = EngineState::OFF,
+            .surface_power = 0.f,
+            .drive_relaxation = 0.f,
+            .parking_brake_pulled = 0.f});
+    }
+}
+
 float RigidBodyVehicle::get_tire_break_force(size_t id) const {
     return get_tire(id).brake_force;
 }
