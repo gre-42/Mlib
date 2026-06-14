@@ -285,9 +285,7 @@ void RemotePlayer::read(
                         player_->create_vehicle_externals(externals_mode);
                         player_->create_vehicle_internals({ seat });
                         player_->create_gun_externals();
-                        if (!privileges.is_owner_local) {
-                            rb->unpark_vehicle();
-                        }
+                        rb->unpark_vehicle();
                     }
                 }
             }

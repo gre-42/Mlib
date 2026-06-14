@@ -157,6 +157,7 @@ bool VehicleChanger::enter_vehicle(VehicleSpawner& a, VehicleSpawner& b, const S
     ap->create_vehicle_externals(a_em_old);
     ap->create_vehicle_internals(ap->internals_mode());
     ap->create_gun_externals();
+    ap->rigid_body()->unpark_vehicle();
     ap->single_waypoint().notify_spawn();
     if (!ap->rigid_body()->is_avatar()) {
         if (!ap->rigid_body()->passengers_.try_emplace(

@@ -32,7 +32,6 @@ struct RegisterJsonUserFunction {
             "create_gun_externals",
             [](const LoadSceneJsonUserFunctionArgs& args)
             {
-                args.arguments.validate(KnownArgs::options);
                 CreateGunExternals(args.physics_scene()).execute(args);
             });
     }
