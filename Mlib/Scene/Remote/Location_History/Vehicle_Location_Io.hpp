@@ -77,14 +77,21 @@ template <class TRemoteRigidBodyVehicleCache>
 void write_vehicle_location(
     TRemoteRigidBodyVehicleCache& cache,
     BinaryBitwiseWordsWriter& writer,
-    const typename TRemoteRigidBodyVehicleCache::Location& location)
+    const typename TRemoteRigidBodyVehicleCache::Location& location,
+    IoVerbosity verbosity)
 {
     // Local
     {
+        if (any(verbosity & IoVerbosity::METADATA)) {
+            linfo() << "remote.local_version " << (cache.remote.local_version + 0);
+        }
         writer.write_binary(cache.remote.local_version, "remote.local_version");
     }
     // Remote
     {
+        if (any(verbosity & IoVerbosity::METADATA)) {
+            linfo() << "local.remote_version " << (cache.local.remote_version + 0);
+        }
         if (cache.local.remote_version != 0) {
             auto loc = cache.local.get_delta8(location);
             if (loc.has_value()) {
@@ -92,8 +99,9 @@ void write_vehicle_location(
                 writer.write_binary(cache.local.remote_version, "base_version");
                 writer.serialize(*loc, "delta location");
                 return;
-            } else {
-                cache.local.remote_version = 0;
+            }
+            if (any(verbosity & IoVerbosity::METADATA)) {
+                linfo() << "overflow";
             }
         }
         {

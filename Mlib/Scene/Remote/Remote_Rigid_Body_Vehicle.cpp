@@ -486,6 +486,14 @@ void RemoteRigidBodyVehicle::read(
         pf |= PositionFlags::POSITION_IS_INCOMPLETE;
     }
     auto pp = privileges.position(pf);
+    if (any(verbosity_ & IoVerbosity::METADATA)) {
+        linfo() <<
+            "i " << (int)pp.invalidate_transformation_history <<
+            ", p " << (int)pp.update_position <<
+            ", lm " << (int)privileges.is_manager_local <<
+            ", lo " << (int)privileges.is_owner_local <<
+            ", so " << (int)privileges.is_owner_sender;
+    }
     if (pp.invalidate_transformation_history) {
         assert_true(has_location);
         rb_->scene_node_->set_absolute_pose(
@@ -592,7 +600,7 @@ void RemoteRigidBodyVehicle::write(
                         .v_com = rb_->rbp_.v_com_,
                         .w = rb_->rbp_.w_
                     };
-                    write_vehicle_location(vcache, writer, location);
+                    write_vehicle_location(vcache, writer, location, verbosity_);
                 }
             }
             return;
@@ -608,7 +616,7 @@ void RemoteRigidBodyVehicle::write(
                         .v_com = rb_->rbp_.v_com_,
                         .w1 = rb_->rbp_.w_(1)
                     };
-                    write_vehicle_location(vcache, writer, location);
+                    write_vehicle_location(vcache, writer, location, verbosity_);
                 }
             }
             return;

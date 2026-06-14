@@ -23,9 +23,9 @@ inline DeltaSceneT16 minus_position_unsafe(CompressedSceneT32 current, Compresse
 inline DeltaSceneT16 minus_position(CompressedSceneT32 current, CompressedSceneT16 base, IncrementalConfig& c) {
     auto delta = minus_position_unsafe(current, base);
     auto recon = plus_position(base, delta);
-    float diff = std::abs((float)(recon - current));
-    if (diff > 1e-1f * meters) {
+    if (recon != current) {
         if (any(c & IncrementalConfig::RAISE)) {
+            float diff = std::abs((float)(recon - current));
             throw std::runtime_error((std::stringstream() <<
                 "Could not compress position " << current <<
                 " with base " << base <<

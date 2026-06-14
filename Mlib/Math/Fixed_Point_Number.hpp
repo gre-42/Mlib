@@ -50,6 +50,9 @@ private:
         : count{ count }
     {}
 public:
+    template <std::integral TInt2>
+    using ReplacedInt = FixedPointNumber<TInt2, r_shift>;
+
     inline FixedPointNumber() {}
     inline constexpr FixedPointNumber(const FixedPointNumber& other)
         : count{ other.count }

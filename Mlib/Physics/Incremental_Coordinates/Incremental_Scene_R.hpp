@@ -39,7 +39,7 @@ inline DeltaSceneR8 minus_angle(CompressedSceneR16 current, CompressedSceneR8 ba
     if (diff < -M_PI) {
         diff += float(2. * M_PI);
     }
-    if (diff > 2.f * degrees) {
+    if (diff > 4.f * (float)std::numeric_limits<CompressedSceneR16>::min()) {
         if (any(c & IncrementalConfig::RAISE)) {
             throw std::runtime_error((std::stringstream() <<
                 "Could not compress angle " << current <<

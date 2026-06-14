@@ -23,9 +23,9 @@ inline DeltaSceneW8 minus_angular_velocity_unsafe(CompressedSceneW16 current, Co
 inline DeltaSceneW8 minus_angular_velocity(CompressedSceneW16 current, CompressedSceneW8 base, IncrementalConfig& c) {
     auto delta = minus_angular_velocity_unsafe(current, base);
     auto recon = plus_angular_velocity(base, delta);
-    float diff = std::abs((float)(recon - current));
-    if (diff > 1e-1f * rpm) {
+    if (recon != current) {
         if (any(c & IncrementalConfig::RAISE)) {
+            float diff = std::abs((float)(recon - current));
             throw std::runtime_error((std::stringstream() <<
                 "Could not compress angular velocity " << current <<
                 " with base " << base <<

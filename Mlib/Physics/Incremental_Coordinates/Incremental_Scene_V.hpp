@@ -23,9 +23,9 @@ inline DeltaSceneV8 minus_velocity_unsafe(CompressedSceneV16 current, Compressed
 inline DeltaSceneV8 minus_velocity(CompressedSceneV16 current, CompressedSceneV8 base, IncrementalConfig& c) {
     auto delta = minus_velocity_unsafe(current, base);
     auto recon = plus_velocity(base, delta);
-    float diff = std::abs((float)(recon - current));
-    if (diff > 2.f * kph) {
+    if (recon != current) {
         if (any(c & IncrementalConfig::RAISE)) {
+            float diff = std::abs((float)(recon - current));
             throw std::runtime_error((std::stringstream() <<
                 "Could not compress velocity " << current <<
                 " with base " << base <<
