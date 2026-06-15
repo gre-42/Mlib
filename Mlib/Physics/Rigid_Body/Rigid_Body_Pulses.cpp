@@ -100,6 +100,10 @@ FixedArray<ScenePos, 3> RigidBodyPulses::abs_position() const {
     return abs_com_ - dot1d(rotation_, com_).casted<ScenePos>();
 }
 
+ScenePos RigidBodyPulses::abs_position(size_t i) const {
+    return abs_position()(i);
+}
+
 TransformationMatrix<float, ScenePos, 3> RigidBodyPulses::abs_transformation() const {
     return TransformationMatrix<float, ScenePos, 3>{ rotation_, abs_position() };
 }

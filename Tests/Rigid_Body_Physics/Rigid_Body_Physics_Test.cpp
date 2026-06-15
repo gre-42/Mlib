@@ -174,7 +174,7 @@ void test_rigid_body_physics_rbi_multiple() {
         rbp.advance_time(h);
         // lerr() << rbp.abs_position() << " | " << rbp.v_ << " | " << pc.active(x) << " | " << pc.overlap(x) << " | " << pc.bias(x);
         xs.push_back(i);
-        // ys.push_back(rbp.abs_position()(1));
+        // ys.push_back(rbp.abs_position(1));
         ys.push_back(rbp.w_(2));
     }
     if (false) {

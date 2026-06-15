@@ -15,7 +15,7 @@ PlaneAsCarController::PlaneAsCarController(
     : RigidBodyVehicleController{ rb, SteeringType::CAR }
     , tire_angles_{ tire_angles }
 {
-    ascend_to(rb->rbp_.abs_position()(1));
+    ascend_to(rb->rbp_.abs_position(1));
 }
 
 PlaneAsCarController::~PlaneAsCarController() {

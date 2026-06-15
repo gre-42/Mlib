@@ -33,6 +33,7 @@ public:
 
     FixedArray<float, 3> abs_z() const;
     FixedArray<ScenePos, 3> abs_position() const;
+    ScenePos abs_position(size_t i) const;
     TransformationMatrix<float, ScenePos, 3> abs_transformation() const;
     const FixedArray<float, 3, 3>& abs_I() const;
     const FixedArray<float, 3, 3>& abs_I_inv() const;
