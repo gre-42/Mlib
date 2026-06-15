@@ -11,7 +11,7 @@ class ParticleResources;
 class ParticlesInstance;
 enum class ParticleType: uint32_t;
 
-class ParticleRenderer : public IParticleRenderer {
+class ParticleRenderer final: public IParticleRenderer {
 public:
     explicit ParticleRenderer(ParticleResources& resources, ParticleType particle_type);
     virtual ~ParticleRenderer() override;

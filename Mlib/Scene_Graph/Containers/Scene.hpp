@@ -44,6 +44,7 @@ template <class T>
 class VariableAndHash;
 enum class AnimationStateAlreadyExistsBehavior;
 class SceneTime;
+struct ListsOfBlended;
 
 class Scene: public virtual DanglingBaseClass {
     friend RootNodes;
@@ -59,6 +60,7 @@ public:
     ~Scene();
     void add_to_trash_can(std::unique_ptr<SceneNode>&& node);
     void add_to_trash_can(std::unique_ptr<DanglingBaseClass>&& obj);
+    void add_to_trash_can(std::unique_ptr<ListsOfBlended>&& lists_of_blended) const;
     size_t try_empty_the_trash_can();
     bool contains_node(const VariableAndHash<std::string>& name) const;
     void add_moving_root_node(
@@ -182,6 +184,8 @@ private:
     mutable std::atomic<std::uint32_t> ncleanups_required_;
     std::list<std::unique_ptr<DanglingBaseClass>> trash_can_obj_;
     std::list<std::unique_ptr<SceneNode>> trash_can_child_nodes_;
+    mutable FastMutex trash_can_blended_mutex_;
+    mutable std::list<std::unique_ptr<ListsOfBlended>> trash_can_blended_;
 };
 
 std::ostream& operator << (std::ostream& ostr, const Scene& scene);

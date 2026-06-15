@@ -3,7 +3,6 @@
 #include <Mlib/Hashing/Variable_And_Hash.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
 #include <Mlib/Memory/Dangling_Base_Class.hpp>
-#include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/Memory/Destruction_Functions.hpp>
 #include <Mlib/Physics/Interfaces/IAdvance_Time.hpp>
 #include <Mlib/Scene_Graph/Interfaces/INode_Setter.hpp>
@@ -42,7 +41,7 @@ private:
     DestructionFunctionsRemovalTokens removal_tokens_;
 };
 
-class LookAtMovable: public IAbsoluteMovable, public IAdvanceTime, public virtual DanglingBaseClass {
+class LookAtMovable final: public IAbsoluteMovable, public IAdvanceTime, public virtual DanglingBaseClass {
     friend LookAtMovableFollowerNodeSetter;
     friend LookAtMovableFollowedNodeSetter;
 public:

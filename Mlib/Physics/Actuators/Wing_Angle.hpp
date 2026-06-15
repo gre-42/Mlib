@@ -1,13 +1,12 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Memory/Dangling_Base_Class.hpp>
-#include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Interfaces/Scene_Node/IRelative_Movable.hpp>
 
 namespace Mlib {
 
-class WingAngle: public DestructionObserver<SceneNode&>, public IRelativeMovable, public virtual DanglingBaseClass {
+class WingAngle final: public DestructionObserver<SceneNode&>, public IRelativeMovable, public virtual DanglingBaseClass {
 public:
     explicit WingAngle(DanglingBaseClassPtr<SceneNode> node, float& angle, const FixedArray<float, 3>& rotation_axis);
     virtual ~WingAngle() override;

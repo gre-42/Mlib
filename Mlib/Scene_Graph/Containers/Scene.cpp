@@ -355,21 +355,35 @@ void Scene::add_to_trash_can(std::unique_ptr<DanglingBaseClass>&& obj) {
     trash_can_obj_.push_back(std::move(obj));
 }
 
+void Scene::add_to_trash_can(std::unique_ptr<ListsOfBlended>&& blended) const {
+    std::scoped_lock delete_lock{ trash_can_blended_mutex_ };
+    trash_can_blended_.push_back(std::move(blended));
+}
+
 size_t Scene::try_empty_the_trash_can() {
-    ThrowingLockGuard delete_lock{ delete_node_mutex };
-    for (auto it = trash_can_obj_.begin(); it != trash_can_obj_.end();) {
-        auto c = it++;
-        if ((*c)->nreferences() == 0) {
-            trash_can_obj_.erase(c);
-        }
+    {
+        std::scoped_lock delete_lock{ trash_can_blended_mutex_ };
+        clear_container_recursively(trash_can_blended_);
     }
-    for (auto it = trash_can_child_nodes_.begin(); it != trash_can_child_nodes_.end();) {
-        auto c = it++;
-        if ((*c)->nreferences() == 0) {
-            trash_can_child_nodes_.erase(c);
+    {
+        ThrowingLockGuard delete_lock{ delete_node_mutex };
+        for (auto it = trash_can_obj_.begin(); it != trash_can_obj_.end();) {
+            auto c = it++;
+            if ((*c)->nreferences() == 0) {
+                trash_can_obj_.erase(c);
+            }
         }
+        for (auto it = trash_can_child_nodes_.begin(); it != trash_can_child_nodes_.end();) {
+            auto c = it++;
+            if ((*c)->nreferences() == 0) {
+                trash_can_child_nodes_.erase(c);
+            }
+        }
+        return
+            trash_can_obj_.size() +
+            trash_can_child_nodes_.size() +
+            morn_.try_empty_the_trash_can();
     }
-    return trash_can_obj_.size() + trash_can_child_nodes_.size() + morn_.try_empty_the_trash_can();
 }
 
 void Scene::register_node(
@@ -489,7 +503,7 @@ void Scene::render(
     }
     std::list<std::pair<TransformationMatrix<float, ScenePos, 3>, std::shared_ptr<Light>>> lights;
     std::list<std::pair<TransformationMatrix<float, ScenePos, 3>, std::shared_ptr<Skidmark>>> skidmarks;
-    ListsOfBlended blended;
+    auto blended = std::make_unique<ListsOfBlended>();
     std::list<std::shared_ptr<const ColorStyle>> color_styles;
     {
         for (const auto& s : color_styles_.shared()) {
@@ -510,7 +524,7 @@ void Scene::render(
             }
             return *res;
         }();
-        node->render(vp, TransformationMatrix<float, ScenePos, 3>::identity(), iv, camera_node, nullptr, lights, skidmarks, blended, render_config, scene_graph_config, frame_id, nullptr, color_styles);
+        node->render(vp, TransformationMatrix<float, ScenePos, 3>::identity(), iv, camera_node, nullptr, lights, skidmarks, *blended, render_config, scene_graph_config, frame_id, nullptr, color_styles);
     } else if (frame_id.external_render_pass.pass == ExternalRenderPassType::LIGHTMAP_BLACK_MOVABLES) {
         NodeDanglingPtrs nodes{ CHUNK_SIZE };
         {
@@ -523,7 +537,7 @@ void Scene::render(
             });
         }
         for (const auto& node : nodes) {
-            node->render(vp, TransformationMatrix<float, ScenePos, 3>::identity(), iv, camera_node, {}, lights, skidmarks, blended, render_config, scene_graph_config, frame_id, nullptr, color_styles);
+            node->render(vp, TransformationMatrix<float, ScenePos, 3>::identity(), iv, camera_node, {}, lights, skidmarks, *blended, render_config, scene_graph_config, frame_id, nullptr, color_styles);
         }
     } else {
         if (!frame_id.external_render_pass.black_node_name->empty()) {
@@ -567,17 +581,17 @@ void Scene::render(
                 ? frame_id.external_render_pass.singular_node->parent()->absolute_model_matrix()
                 : TransformationMatrix<float, ScenePos, 3>::identity();
             auto parent_mvp = dot2d(vp, parent_m.affine());
-            frame_id.external_render_pass.singular_node->render(parent_mvp, parent_m, iv, camera_node, {}, lights, skidmarks, blended, render_config, scene_graph_config, frame_id, nullptr, color_styles);
+            frame_id.external_render_pass.singular_node->render(parent_mvp, parent_m, iv, camera_node, {}, lights, skidmarks, *blended, render_config, scene_graph_config, frame_id, nullptr, color_styles);
         } else {
             if (dynamic_lights_ != nullptr) {
                 dynamic_lights_->set_time(frame_id.external_render_pass.time);
             }
             LOG_INFO("Scene::render non-blended");
             for (const auto& node : local_root_nodes) {
-                node->render(vp, TransformationMatrix<float, ScenePos, 3>::identity(), iv, camera_node, dynamic_lights_, lights, skidmarks, blended, render_config, scene_graph_config, frame_id, nullptr, color_styles);
+                node->render(vp, TransformationMatrix<float, ScenePos, 3>::identity(), iv, camera_node, dynamic_lights_, lights, skidmarks, *blended, render_config, scene_graph_config, frame_id, nullptr, color_styles);
             }
             for (const auto& node : local_static_root_nodes) {
-                node->render(vp, TransformationMatrix<float, ScenePos, 3>::identity(), iv, nullptr, dynamic_lights_, lights, skidmarks, blended, render_config, scene_graph_config, frame_id, nullptr, color_styles);
+                node->render(vp, TransformationMatrix<float, ScenePos, 3>::identity(), iv, nullptr, dynamic_lights_, lights, skidmarks, *blended, render_config, scene_graph_config, frame_id, nullptr, color_styles);
             }
             {
                 NodeDanglingPtrs cached_imposter_nodes{ CHUNK_SIZE };
@@ -591,7 +605,7 @@ void Scene::render(
                     }
                 }
                 for (const auto& node : cached_imposter_nodes) {
-                    node->render(vp, TransformationMatrix<float, ScenePos, 3>::identity(), iv, camera_node, dynamic_lights_, lights, skidmarks, blended, render_config, scene_graph_config, frame_id, nullptr, color_styles);
+                    node->render(vp, TransformationMatrix<float, ScenePos, 3>::identity(), iv, camera_node, dynamic_lights_, lights, skidmarks, *blended, render_config, scene_graph_config, frame_id, nullptr, color_styles);
                 }
             }
             {
@@ -692,7 +706,7 @@ void Scene::render(
                 {
                     // AperiodicLagFinder lag_finder{ "blended early: ", std::chrono::milliseconds{5} };
                     LOG_INFO("Scene::render early blended");
-                    blended.early.render(
+                    blended->early.render(
                         dynamic_lights_,
                         iv,
                         lights,
@@ -846,7 +860,7 @@ void Scene::render(
     {
         // AperiodicLagFinder lag_finder{ "blended late: ", std::chrono::milliseconds{5} };
         LOG_INFO("Scene::render late blended");
-        blended.late.render(
+        blended->late.render(
             dynamic_lights_,
             iv,
             lights,
@@ -855,6 +869,7 @@ void Scene::render(
             render_config,
             { frame_id, InternalRenderPass::BLENDED_LATE });
     }
+    add_to_trash_can(std::move(blended));
 }
 
 void Scene::move(float dt, const SceneTime& time) {

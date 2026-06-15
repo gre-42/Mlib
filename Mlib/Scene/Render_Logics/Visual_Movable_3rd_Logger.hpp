@@ -1,7 +1,6 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Memory/Dangling_Base_Class.hpp>
-#include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/Memory/Destruction_Functions.hpp>
 #include <Mlib/Memory/Destruction_Observer.hpp>
 #include <Mlib/OpenGL/Render_Logic.hpp>
@@ -24,7 +23,7 @@ template <typename TData, size_t... tshape>
 class FixedArray;
 class ExpressionWatcher;
 
-class VisualMovable3rdLogger: public RenderLogic, public DestructionObserver<SceneNode&>, public IAdvanceTime {
+class VisualMovable3rdLogger final: public RenderLogic, public DestructionObserver<SceneNode&>, public IAdvanceTime {
 public:
     VisualMovable3rdLogger(
         RenderLogic& scene_logic,

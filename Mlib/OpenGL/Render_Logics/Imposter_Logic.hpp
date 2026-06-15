@@ -6,7 +6,6 @@
 #include <Mlib/Hashing/Variable_And_Hash.hpp>
 #include <Mlib/Memory/Cached_Make_Shared.hpp>
 #include <Mlib/Memory/Dangling_Base_Class.hpp>
-#include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/Memory/Destruction_Functions.hpp>
 #include <Mlib/OpenGL/Render_Logic.hpp>
 #include <Mlib/Scene_Graph/Interfaces/Scene_Node/INode_Hider.hpp>
@@ -49,7 +48,7 @@ public:
         const ExternalRenderPass& external_render_pass) const override;
 };
 
-class ImposterLogic: public RenderLogic {
+class ImposterLogic final: public RenderLogic {
     friend OriginalNodeHider;
     using ProjectedBbox = FixedArray<ScenePos, 8, 3>;
 public:

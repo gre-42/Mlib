@@ -1,7 +1,6 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Memory/Dangling_Base_Class.hpp>
-#include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/Memory/Destruction_Functions.hpp>
 #include <Mlib/Physics/Interfaces/IAdvance_Time.hpp>
 #include <Mlib/Scene/Render_Logics/Hud_Tracker.hpp>
@@ -20,7 +19,7 @@ enum class ResourceUpdateCycle;
 class RenderLogics;
 class ObjectPool;
 
-class HudOpponentTrackerLogic:
+class HudOpponentTrackerLogic final:
     #ifndef WITHOUT_GRAPHICS
     public RenderLogic,
     #else

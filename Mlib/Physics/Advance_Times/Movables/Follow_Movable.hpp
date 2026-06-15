@@ -2,7 +2,6 @@
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
 #include <Mlib/Memory/Dangling_Base_Class.hpp>
-#include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/Memory/Destruction_Functions.hpp>
 #include <Mlib/Physics/Interfaces/IAdvance_Time.hpp>
 #include <Mlib/Physics/Units.hpp>
@@ -43,7 +42,7 @@ private:
     DestructionFunctionsRemovalTokens removal_tokens_;
 };
 
-class FollowMovable: public IAbsoluteMovable, public IAdvanceTime, public virtual DanglingBaseClass {
+class FollowMovable final: public IAbsoluteMovable, public IAdvanceTime, public virtual DanglingBaseClass {
     friend FollowerMovableNodeSetter;
     friend FollowedMovableNodeSetter;
 public:

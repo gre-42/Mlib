@@ -2,7 +2,6 @@
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
 #include <Mlib/Memory/Dangling_Base_Class.hpp>
-#include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/Memory/Destruction_Functions.hpp>
 #include <Mlib/Memory/Event_Emitter.hpp>
 #include <Mlib/Physics/Interfaces/IAdvance_Time.hpp>
@@ -17,7 +16,7 @@ class DanglingRef;
 class SceneNode;
 class SelectedCameras;
 
-class KeepOffsetFromCamera: public INodeSetter, public IAbsoluteMovable, public IAdvanceTime, public virtual DanglingBaseClass {
+class KeepOffsetFromCamera final: public INodeSetter, public IAbsoluteMovable, public IAdvanceTime, public virtual DanglingBaseClass {
 public:
     KeepOffsetFromCamera(
         SelectedCameras& cameras,

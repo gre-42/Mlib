@@ -1,7 +1,6 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Memory/Dangling_Base_Class.hpp>
-#include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/Memory/Destruction_Observer.hpp>
 #include <Mlib/Physics/Interfaces/IAdvance_Time.hpp>
 #include <Mlib/Physics/Misc/Track_Writer_Gpx.hpp>
@@ -17,7 +16,7 @@ class RigidBodyVehicle;
 template <class TDir, class TPos, size_t n>
 class TransformationMatrix;
 
-class RigidBodyRecorderGpx: public DestructionObserver<SceneNode&>, public IAdvanceTime, public virtual DanglingBaseClass {
+class RigidBodyRecorderGpx final: public DestructionObserver<SceneNode&>, public IAdvanceTime, public virtual DanglingBaseClass {
 public:
     RigidBodyRecorderGpx(
         const std::string& filename,

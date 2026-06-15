@@ -1,7 +1,6 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Memory/Dangling_Base_Class.hpp>
-#include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/Memory/Destruction_Functions.hpp>
 #include <Mlib/OpenGL/Data_Display/Centered_Texture_Image_Logic.hpp>
 #include <Mlib/OpenGL/Render_Logic.hpp>
@@ -21,7 +20,7 @@ class Player;
 class ObjectPool;
 class FPath;
 
-class MinimapLogic:
+class MinimapLogic final:
     public RenderLogic,
     public IAdvanceTime
 {

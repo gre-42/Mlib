@@ -1,7 +1,6 @@
 #pragma once
 #include <Mlib/Macro_Executor/Focus_Filter.hpp>
 #include <Mlib/Memory/Dangling_Base_Class.hpp>
-#include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/Physics/Interfaces/IAdvance_Time.hpp>
 #include <Mlib/Physics/Misc/Pacenote_Reader.hpp>
 #include <Mlib/Threads/Recursive_Shared_Mutex.hpp>
@@ -24,7 +23,7 @@ class FixedArray;
 class ExpressionWatcher;
 
 #ifdef WITHOUT_GRAPHICS
-class CheckPointsPacenotes: public IAdvanceTime, public virtual DanglingBaseClass {
+class CheckPointsPacenotes final: public IAdvanceTime, public virtual DanglingBaseClass {
 public:
     CheckPointsPacenotes(
         const std::string& pacenotes_filename,

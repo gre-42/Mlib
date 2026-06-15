@@ -8,7 +8,6 @@
 #include <Mlib/Map/Verbose_Unordered_Map.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
 #include <Mlib/Memory/Dangling_Base_Class.hpp>
-#include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/Memory/Dangling_Map.hpp>
 #include <Mlib/Memory/Dangling_Set.hpp>
 #include <Mlib/Memory/Destruction_Functions.hpp>

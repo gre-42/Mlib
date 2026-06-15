@@ -3,7 +3,6 @@
 #include <Mlib/Hashing/Variable_And_Hash.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
 #include <Mlib/Memory/Dangling_Base_Class.hpp>
-#include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/Memory/Destruction_Observer.hpp>
 #include <Mlib/Physics/Advance_Times/Respawn_Config.hpp>
 #include <Mlib/Physics/Interfaces/IAdvance_Time.hpp>
@@ -46,7 +45,7 @@ struct TrafoAndMetersToStart {
     double meters_to_start;
 };
 
-class CheckPoints: public DestructionObserver<SceneNode&>, public IAdvanceTime, public virtual DanglingBaseClass {
+class CheckPoints final: public DestructionObserver<SceneNode&>, public IAdvanceTime, public virtual DanglingBaseClass {
 public:
     CheckPoints(
         std::unique_ptr<ITrackElementSequence>&& sequence,

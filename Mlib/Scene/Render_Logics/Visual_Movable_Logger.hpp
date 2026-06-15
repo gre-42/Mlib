@@ -1,7 +1,6 @@
 #pragma once
 #include <Mlib/Macro_Executor/Focus_Filter.hpp>
 #include <Mlib/Memory/Dangling_Base_Class.hpp>
-#include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/Memory/Destruction_Functions.hpp>
 #include <Mlib/Memory/Destruction_Observer.hpp>
 #include <Mlib/OpenGL/Render_Logic.hpp>
@@ -17,7 +16,7 @@ class RenderLogics;
 class Player;
 class ObjectPool;
 
-class VisualMovableLogger:
+class VisualMovableLogger final:
     public RenderLogic,
     public DestructionObserver<SceneNode&>,
     public IAdvanceTime
