@@ -20,6 +20,8 @@ MissileController::MissileController(
 
 MissileController::~MissileController() = default;
 
+void MissileController::calibrate() {}
+
 void MissileController::apply(float dt) {
     rb_->set_surface_power(engine_name_, EnginePowerIntent{
         .surface_power = rocket_engine_power_,

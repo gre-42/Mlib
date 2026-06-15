@@ -13,6 +13,7 @@ public:
         const std::vector<size_t>& right_tires,
         float delta_power);
     virtual ~TankController() override;
+    virtual void calibrate() override;
     virtual void apply() override;
 private:
     const std::vector<size_t> left_tires_;

@@ -286,6 +286,7 @@ void RemotePlayer::read(
                         player_->create_vehicle_internals({ seat });
                         player_->create_gun_externals();
                         rb->unpark_vehicle();
+                        rb->calibrate_controllers();
                     }
                 }
             }

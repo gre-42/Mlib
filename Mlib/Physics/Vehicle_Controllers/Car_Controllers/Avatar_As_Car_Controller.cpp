@@ -9,6 +9,8 @@
 
 using namespace Mlib;
 
+static const auto legs_name = VariableAndHash<std::string>{ "legs" };
+
 AvatarAsCarController::AvatarAsCarController(
     const DanglingBaseClassRef<RigidBodyVehicle>& rb,
     const DanglingBaseClassRef<YawPitchLookAtNodes>& ypln,
@@ -33,7 +35,7 @@ AvatarAsCarController::~AvatarAsCarController() {
     on_destroy.clear();
 }
 
-static const auto legs_name = VariableAndHash<std::string>{ "legs" };
+void AvatarAsCarController::calibrate() {}
 
 void AvatarAsCarController::apply() {
     rb_->set_surface_power(legs_name, EnginePowerIntent{.surface_power = surface_power_}); // NAN=break

@@ -8,6 +8,8 @@
 
 using namespace Mlib;
 
+static const auto legs_name = VariableAndHash<std::string>{ "legs" };
+
 AvatarAsAvatarController::AvatarAsAvatarController(
     const DanglingBaseClassRef<RigidBodyVehicle>& rb,
     const DanglingBaseClassRef<YawPitchLookAtNodes>& ypln)
@@ -26,10 +28,9 @@ AvatarAsAvatarController::AvatarAsAvatarController(
         CURRENT_SOURCE_LOCATION);
 }
 
-AvatarAsAvatarController::~AvatarAsAvatarController()
-{}
+AvatarAsAvatarController::~AvatarAsAvatarController() = default;
 
-static const auto legs_name = VariableAndHash<std::string>{ "legs" };
+void AvatarAsAvatarController::calibrate() {}
 
 void AvatarAsAvatarController::apply() {
     if ((any(abs(legs_z_) > float(1e-12))) && (drive_relaxation_ > 0.f)) {

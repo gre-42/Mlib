@@ -1147,6 +1147,21 @@ bool RigidBodyVehicle::is_waiting_for_initial_position() const {
     return any(flags_ & RigidBodyVehicleFlags::WAITING_FOR_INITIAL_POSITION);
 }
 
+void RigidBodyVehicle::calibrate_controllers() {
+    if (avatar_controller_ != nullptr) {
+        avatar_controller_->calibrate();
+    }
+    if (vehicle_controller_ != nullptr) {
+        vehicle_controller_->calibrate();
+    }
+    if (plane_controller_ != nullptr) {
+        plane_controller_->calibrate();
+    }
+    if (missile_controller_ != nullptr) {
+        missile_controller_->calibrate();
+    }
+}
+
 bool RigidBodyVehicle::has_avatar_controller() const {
     return avatar_controller_ != nullptr;
 }
@@ -1167,28 +1182,28 @@ DanglingBaseClassRef<RigidBodyAvatarController> RigidBodyVehicle::avatar_control
     if (avatar_controller_ == nullptr) {
         throw std::runtime_error("Rigid body \"" + name() + "\" has no avatar controller");
     }
-    return {*avatar_controller_, CURRENT_SOURCE_LOCATION};
+    return {*avatar_controller_, loc};
 }
 
 DanglingBaseClassRef<RigidBodyPlaneController> RigidBodyVehicle::plane_controller(SourceLocation loc) {
     if (plane_controller_ == nullptr) {
         throw std::runtime_error("Rigid body \"" + name() + "\" has no plane controller");
     }
-    return {*plane_controller_, CURRENT_SOURCE_LOCATION};
+    return {*plane_controller_, loc};
 }
 
 DanglingBaseClassRef<RigidBodyVehicleController> RigidBodyVehicle::vehicle_controller(SourceLocation loc) {
     if (vehicle_controller_ == nullptr) {
         throw std::runtime_error("Rigid body \"" + name() + "\" has no vehicle controller");
     }
-    return {*vehicle_controller_, CURRENT_SOURCE_LOCATION};
+    return {*vehicle_controller_, loc};
 }
 
 DanglingBaseClassRef<RigidBodyMissileController> RigidBodyVehicle::missile_controller(SourceLocation loc) {
     if (missile_controller_ == nullptr) {
         throw std::runtime_error("Rigid body \"" + name() + "\" has no missile controller");
     }
-    return {*missile_controller_, CURRENT_SOURCE_LOCATION};
+    return {*missile_controller_, loc};
 }
 
 void RigidBodyVehicle::deactivate_avatar() {

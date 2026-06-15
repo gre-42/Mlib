@@ -19,6 +19,7 @@ public:
         const PidController<double, double>& height_pid,
         VehicleDomain vehicle_domain);
     virtual ~HeliController() override;
+    virtual void calibrate() override;
     virtual void apply() override;
 private:
     PidController<double, double> height_pid_;

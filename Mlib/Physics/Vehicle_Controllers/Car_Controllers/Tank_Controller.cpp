@@ -9,6 +9,10 @@
 
 using namespace Mlib;
 
+static const auto main_name = VariableAndHash<std::string>{"main"};
+static const auto left_name = VariableAndHash<std::string>{"left"};
+static const auto right_name = VariableAndHash<std::string>{"right"};
+
 TankController::TankController(
     const DanglingBaseClassRef<RigidBodyVehicle>& rb,
     const std::vector<size_t>& left_tires,
@@ -24,9 +28,7 @@ TankController::~TankController() {
     on_destroy.clear();
 }
 
-static const auto main_name = VariableAndHash<std::string>{"main"};
-static const auto left_name = VariableAndHash<std::string>{"left"};
-static const auto right_name = VariableAndHash<std::string>{"right"};
+void TankController::calibrate() {}
 
 void TankController::apply() {
     if (std::isnan(surface_power_)) {

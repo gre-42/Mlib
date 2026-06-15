@@ -10,6 +10,14 @@
 
 using namespace Mlib;
 
+static const size_t PITCH = 0;
+static const size_t YAW = 1;
+static const size_t ROLL = 2;
+
+static const auto wheels_name = VariableAndHash<std::string>{"wheels"};
+static const auto main_rotor_name = VariableAndHash<std::string>{"main_rotor"};
+static const auto tail_rotor_name = VariableAndHash<std::string>{"tail_rotor"};
+
 HeliController::HeliController(
     const DanglingBaseClassRef<RigidBodyVehicle>& rb,
     std::map<size_t, float> tire_angles,
@@ -23,21 +31,15 @@ HeliController::HeliController(
     , main_rotor_id_{ main_rotor_id }
     , angle_multipliers_{ angle_multipliers }
     , vehicle_domain_{ vehicle_domain }
-{
-    ascend_to(rb->rbp_.abs_position(1));
-}
+{}
 
 HeliController::~HeliController() {
     on_destroy.clear();
 }
 
-static const size_t PITCH = 0;
-static const size_t YAW = 1;
-static const size_t ROLL = 2;
-
-static const auto wheels_name = VariableAndHash<std::string>{"wheels"};
-static const auto main_rotor_name = VariableAndHash<std::string>{"main_rotor"};
-static const auto tail_rotor_name = VariableAndHash<std::string>{"tail_rotor"};
+void HeliController::calibrate() {
+    ascend_to(rb_->rbp_.abs_position(1));
+}
 
 void HeliController::apply() {
     if (vehicle_domain_ == VehicleDomain::AIR) {

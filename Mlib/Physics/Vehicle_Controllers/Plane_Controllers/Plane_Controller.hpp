@@ -6,7 +6,7 @@
 
 namespace Mlib {
 
-class PlaneController: public RigidBodyPlaneController {
+class PlaneController final: public RigidBodyPlaneController {
 public:
     PlaneController(
         const DanglingBaseClassRef<RigidBodyVehicle>& rb,
@@ -19,6 +19,7 @@ public:
         std::vector<size_t> left_flap_wing_ids,
         std::vector<size_t> right_flap_wing_ids);
     virtual ~PlaneController() override;
+    virtual void calibrate() override;
     virtual void apply() override;
 private:
     std::vector<size_t> left_front_aileron_wing_ids_;

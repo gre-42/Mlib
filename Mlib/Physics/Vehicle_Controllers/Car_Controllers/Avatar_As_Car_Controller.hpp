@@ -15,6 +15,7 @@ public:
         const DanglingBaseClassRef<YawPitchLookAtNodes>& ypln,
         float steering_multiplier);
     virtual ~AvatarAsCarController() override;
+    virtual void calibrate() override;
     virtual void apply() override;
 private:
     float steering_multiplier_;

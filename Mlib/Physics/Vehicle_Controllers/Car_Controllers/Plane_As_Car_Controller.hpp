@@ -12,6 +12,7 @@ public:
         const DanglingBaseClassRef<RigidBodyVehicle>& rb,
         const std::map<size_t, float>& tire_angles);
     virtual ~PlaneAsCarController() override;
+    virtual void calibrate() override;
     virtual void apply() override;
 private:
     void apply_this();

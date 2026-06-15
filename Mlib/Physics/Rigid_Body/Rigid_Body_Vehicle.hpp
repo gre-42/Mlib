@@ -278,6 +278,8 @@ public:
     bool is_deactivated() const;
     bool is_waiting_for_initial_position() const;
 
+    void calibrate_controllers();
+
     bool has_avatar_controller() const;
     bool has_vehicle_controller() const;
     bool has_plane_controller() const;

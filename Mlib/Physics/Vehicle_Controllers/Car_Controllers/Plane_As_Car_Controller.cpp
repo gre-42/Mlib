@@ -9,6 +9,9 @@
 
 using namespace Mlib;
 
+static const auto wheels_name = VariableAndHash<std::string>{"wheels"};
+static const auto turbine_name = VariableAndHash<std::string>{"turbine"};
+
 PlaneAsCarController::PlaneAsCarController(
     const DanglingBaseClassRef<RigidBodyVehicle>& rb,
     const std::map<size_t, float>& tire_angles)
@@ -22,8 +25,7 @@ PlaneAsCarController::~PlaneAsCarController() {
     on_destroy.clear();
 }
 
-static const auto wheels_name = VariableAndHash<std::string>{"wheels"};
-static const auto turbine_name = VariableAndHash<std::string>{"turbine"};
+void PlaneAsCarController::calibrate() {}
 
 void PlaneAsCarController::apply_this() {
     auto forward = [this](){

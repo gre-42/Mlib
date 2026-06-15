@@ -19,8 +19,7 @@ RigidBodyPlaneController::RigidBodyPlaneController(
     , roll_relaxation_{ 0.f }
 {}
 
-RigidBodyPlaneController::~RigidBodyPlaneController()
-{}
+RigidBodyPlaneController::~RigidBodyPlaneController() = default;
 
 void RigidBodyPlaneController::brake(float amount, float relaxation) {
     if (relaxation >= throttle_relaxation_) {

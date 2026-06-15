@@ -15,7 +15,7 @@ struct MissileWingController {
     float max_angle;
 };
 
-class MissileController: public RigidBodyMissileController {
+class MissileController final: public RigidBodyMissileController {
 public:
     MissileController(
         const DanglingBaseClassRef<RigidBodyVehicle>& rb,
@@ -24,6 +24,7 @@ public:
         std::vector<MissileWingController> wing_controllers,
         VariableAndHash<std::string> engine_name);
     virtual ~MissileController() override;
+    virtual void calibrate() override;
     virtual void apply(float dt) override;
 private:
     float dt_ref_;

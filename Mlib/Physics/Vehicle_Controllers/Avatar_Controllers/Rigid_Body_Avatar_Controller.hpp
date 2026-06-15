@@ -12,6 +12,8 @@ class RigidBodyAvatarController: public virtual DanglingBaseClass {
 public:
     RigidBodyAvatarController();
     virtual ~RigidBodyAvatarController();
+    virtual void calibrate() = 0;
+    virtual void apply() = 0;
     void increment_legs_z(const FixedArray<float, 3>& dz);
     void walk(float surface_power, float relaxation);
     void stop();
@@ -20,7 +22,6 @@ public:
     void increment_yaw(float dyaw, float relaxation);
     void increment_pitch(float dpitch, float relaxation);
     void reset();
-    virtual void apply() = 0;
 protected:
     FixedArray<float, 3> legs_z_;
     float target_yaw_;

@@ -26,6 +26,7 @@ public:
     virtual void set_stearing_wheel_amount(float left_amount, float relaxation) override;
 
     // RigidBodyVehicleController
+    virtual void calibrate() override;
     virtual void apply() override;
 
     // IControllable

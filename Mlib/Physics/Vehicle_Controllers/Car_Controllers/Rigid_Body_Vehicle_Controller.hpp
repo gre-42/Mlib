@@ -15,6 +15,9 @@ public:
         const DanglingBaseClassRef<RigidBodyVehicle>& rb,
         SteeringType steering_type);
     virtual ~RigidBodyVehicleController();
+    virtual void calibrate() = 0;
+    virtual void apply();
+
     void step_on_brakes(float relaxation);
     void drive(float surface_power, float relaxation);
     void roll_tires();
@@ -29,7 +32,6 @@ public:
         float drive_relaxation,
         float steer_relaxation);
     void set_trailer(const DanglingBaseClassRef<RigidBodyVehicleController>& trailer);
-    virtual void apply();
     const SteeringType steering_type;
 protected:
     DanglingBaseClassRef<RigidBodyVehicle> rb_;

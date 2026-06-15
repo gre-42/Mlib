@@ -7,6 +7,8 @@
 
 using namespace Mlib;
 
+static const auto turbine_name = VariableAndHash<std::string>{ "turbine" };
+
 PlaneController::PlaneController(
     const DanglingBaseClassRef<RigidBodyVehicle>& rb,
     std::vector<size_t> left_front_aileron_wing_ids,
@@ -30,7 +32,7 @@ PlaneController::PlaneController(
 
 PlaneController::~PlaneController() = default;
 
-static const auto turbine_name = VariableAndHash<std::string>{ "turbine" };
+void PlaneController::calibrate() {}
 
 void PlaneController::apply() {
     rb_->set_surface_power(turbine_name, EnginePowerIntent{

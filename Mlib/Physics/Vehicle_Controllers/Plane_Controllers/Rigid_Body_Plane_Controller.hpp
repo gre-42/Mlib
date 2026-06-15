@@ -12,6 +12,8 @@ public:
         const DanglingBaseClassRef<RigidBodyVehicle>& rb,
         SteeringType steering_type);
     virtual ~RigidBodyPlaneController();
+    virtual void calibrate() = 0;
+    virtual void apply() = 0;
     void brake(float amount, float relaxation);
     void accelerate(float turbine_power, float relaxation);
     void pitch(float amount, float relaxation);
@@ -28,7 +30,6 @@ public:
         float pitch_relaxation,
         float yaw_relaxation,
         float roll_relaxation);
-    virtual void apply() = 0;
     const SteeringType steering_type;
 protected:
     DanglingBaseClassRef<RigidBodyVehicle> rb_;

@@ -10,6 +10,8 @@ class RigidBodyMissileController: public virtual DanglingBaseClass {
 public:
     explicit RigidBodyMissileController(const DanglingBaseClassRef<RigidBodyVehicle>& rb);
     virtual ~RigidBodyMissileController();
+    virtual void calibrate() = 0;
+    virtual void apply(float dt) = 0;
     void set_desired_direction(
         const FixedArray<float, 3>& dir,
         float relaxation);
@@ -18,7 +20,6 @@ public:
     void throttle_engine(
         float rocket_engine_power,
         float relaxation);
-    virtual void apply(float dt) = 0;
 protected:
     DanglingBaseClassRef<RigidBodyVehicle> rb_;
     float rocket_engine_power_;

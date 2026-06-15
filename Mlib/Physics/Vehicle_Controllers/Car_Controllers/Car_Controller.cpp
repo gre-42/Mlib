@@ -42,6 +42,8 @@ void CarController::set_stearing_wheel_amount(float left_amount, float relaxatio
     steer(left_amount * tire_angle_interp_(v), relaxation);
 }
 
+void CarController::calibrate() {}
+
 void CarController::apply() {
     if (applied_) {
         throw std::runtime_error("Car controller already applied");

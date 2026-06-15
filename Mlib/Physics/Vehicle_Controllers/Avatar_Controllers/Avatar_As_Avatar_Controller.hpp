@@ -9,12 +9,13 @@ namespace Mlib {
 
 class YawPitchLookAtNodes;
 
-class AvatarAsAvatarController: public RigidBodyAvatarController {
+class AvatarAsAvatarController final: public RigidBodyAvatarController {
 public:
     explicit AvatarAsAvatarController(
         const DanglingBaseClassRef<RigidBodyVehicle>& rb,
         const DanglingBaseClassRef<YawPitchLookAtNodes>& ypln);
     virtual ~AvatarAsAvatarController() override;
+    virtual void calibrate() override;
     virtual void apply() override;
 private:
     DanglingBaseClassRef<RigidBodyVehicle> rb_;
