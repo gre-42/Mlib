@@ -29,6 +29,9 @@ PositionPrivileges RemotePrivileges::position(PositionFlags flags) {
         if (any(flags & PositionFlags::POSITION_IS_INCOMPLETE)) {
             return false;
         }
+        if (any(flags & PositionFlags::IS_DEACTIVATED_AVATAR)) {
+            return false;
+        }
         if (is_manager_local) {
             return !any(flags & PositionFlags::POSITION_CONTAINS_JUMP) && is_owner_sender;
         } else {

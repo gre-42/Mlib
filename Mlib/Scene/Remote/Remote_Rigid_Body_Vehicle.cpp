@@ -477,6 +477,9 @@ void RemoteRigidBodyVehicle::read(
     if (sum(squared(rb_->rbp_.abs_position() - position)) > squared(REMOTE_INTERPOLATION_JUMP_DISTANCE)) {
         pf |= PositionFlags::POSITION_CONTAINS_JUMP;
     }
+    if (any(flags & RigidBodyVehicleFlags::IS_DEACTIVATED_AVATAR)) {
+        pf |= PositionFlags::IS_DEACTIVATED_AVATAR;
+    }
     if (!privileges.is_manager_local) {
         if (rb_->is_deactivated_avatar() && !any(flags & RigidBodyVehicleFlags::IS_DEACTIVATED_AVATAR)) {
             pf |= PositionFlags::IS_REMOTELY_ACTIVATED_AVATAR;
