@@ -90,7 +90,9 @@ private:
     DynamicLights& dynamic_lights_;
     RigidBodies& rigid_bodies_;
     AdvanceTimes& advance_times_;
+    #ifndef WITHOUT_GRAPHICS
     ITrailRenderer& trail_renderer_;
+    #endif
     const DynamicWorld& dynamic_world_;
     std::function<void(
         const AudioSourceState<ScenePos>& state,

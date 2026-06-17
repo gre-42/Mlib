@@ -54,7 +54,9 @@ BulletGenerator::BulletGenerator(
     , dynamic_lights_{ dynamic_lights }
     , rigid_bodies_{ rigid_bodies }
     , advance_times_{ advance_times }
+    #ifndef WITHOUT_GRAPHICS
     , trail_renderer_{ trail_renderer }
+    #endif
     , dynamic_world_{ dynamic_world }
     , generate_bullet_explosion_audio_{ std::move(generate_bullet_explosion_audio) }
     , generate_bullet_engine_audio_{ std::move(generate_bullet_engine_audio) }
@@ -80,9 +82,11 @@ void BulletGenerator::generate_bullet(
     };
 
     ITrailStorage* bullet_trace_storage = nullptr;
+    #ifndef WITHOUT_GRAPHICS
     if (!bullet_properties.trace_storage->empty()) {
         bullet_trace_storage = &trail_renderer_.get_storage(bullet_properties.trace_storage);
     }
+    #endif
     auto node = make_unique_scene_node(
         location.t,
         matrix_2_tait_bryan_angles(location.R),
