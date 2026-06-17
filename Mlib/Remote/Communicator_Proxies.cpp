@@ -3,6 +3,7 @@
 #include <Mlib/Os/Os.hpp>
 #include <Mlib/Remote/IReceive_Socket.hpp>
 #include <Mlib/Remote/ISend_Socket.hpp>
+#include <Mlib/Remote/Network_Transmission_Status.hpp>
 
 using namespace Mlib;
 
@@ -11,6 +12,7 @@ CommunicatorProxies::CommunicatorProxies(
     RemoteSiteId site_id)
     : communicator_proxy_factory_{ communicator_proxy_factory }
     , site_id_{ site_id }
+    , handshare_required_{ true }
 {}
 
 CommunicatorProxies::~CommunicatorProxies() = default;
@@ -58,10 +60,13 @@ void CommunicatorProxies::send(TransmissionType transmission_type) {
 }
 
 void CommunicatorProxies::receive() {
+    handshare_required_ = receive_sockets_.empty();
     for (auto& s : receive_sockets_) {
         while (true) {
             std::stringstream sstr;
-            auto responder = s->try_receive(sstr);
+            NetworkTransmissionStatus receive_status;
+            auto responder = s->try_receive(sstr, receive_status);
+            handshare_required_ |= (receive_status == NetworkTransmissionStatus::DISCONNECTED);
             if (responder == nullptr) {
                 break;
             }
@@ -85,6 +90,10 @@ void CommunicatorProxies::receive() {
             communicator_proxy->receive_from_home(sstr);
         }
     }
+}
+
+bool CommunicatorProxies::handshare_required() const {
+    return handshare_required_;
 }
 
 void CommunicatorProxies::print(std::ostream& ostr) const {

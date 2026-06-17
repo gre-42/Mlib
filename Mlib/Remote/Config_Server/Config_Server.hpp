@@ -28,7 +28,9 @@ public:
     ~ConfigServer();
     bool application_should_exit() const;
     // IReceiveSocket
-    virtual std::shared_ptr<ISendSocket> try_receive(std::ostream& ostr) override;
+    virtual std::shared_ptr<ISendSocket> try_receive(
+        std::ostream& ostr,
+        NetworkTransmissionStatus& transmission_status) override;
     // IRequestHandler
     virtual boost::beast::http::message_generator handle_request(
         boost::beast::http::request<boost::beast::http::string_body> req) override;

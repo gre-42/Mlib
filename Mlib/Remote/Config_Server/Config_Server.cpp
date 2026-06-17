@@ -6,6 +6,7 @@
 #include <Mlib/Remote/Config_Server/Request_Overrides.hpp>
 #include <Mlib/Remote/Datagram_Nodes/Datagram_Node_Factory.hpp>
 #include <Mlib/Remote/Datagram_Nodes/IDatagram_Node.hpp>
+#include <Mlib/Remote/Network_Transmission_Status.hpp>
 #include <Mlib/Remote/Remote_Socket.hpp>
 #include <Mlib/Remote/Sockets/Websocket.hpp>
 #include <Mlib/Strings/Base64.hpp>
@@ -224,7 +225,10 @@ bool ConfigServer::application_should_exit() const {
     return false;
 }
 
-std::shared_ptr<ISendSocket> ConfigServer::try_receive(std::ostream& ostr) {
+std::shared_ptr<ISendSocket> ConfigServer::try_receive(
+    std::ostream& ostr,
+    NetworkTransmissionStatus& transmission_status)
+{
     std::scoped_lock lock{receive_mutex_};
     if (!websocket_nodes_in_progress_.has_value()) {
         websocket_nodes_in_progress_.emplace();
@@ -236,12 +240,13 @@ std::shared_ptr<ISendSocket> ConfigServer::try_receive(std::ostream& ostr) {
     }
     while (!websocket_nodes_in_progress_->empty()) {
         auto node = websocket_nodes_in_progress_->begin();
-        auto socket = node->object()->try_receive(ostr);
+        auto socket = node->object()->try_receive(ostr, transmission_status);
         websocket_nodes_in_progress_->erase(node);
         if (socket != nullptr) {
             return socket;
         }
     }
     websocket_nodes_in_progress_.reset();
+    transmission_status = NetworkTransmissionStatus::SUCCESS;
     return nullptr;
 }

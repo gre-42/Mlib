@@ -2,9 +2,12 @@
 #include <Mlib/Memory/Integral_Cast.hpp>
 #include <Mlib/Os/Env.hpp>
 #include <Mlib/Os/Io/Binary.hpp>
+#include <Mlib/Remote/Network_Transmission_Status.hpp>
 #include <Mlib/Remote/Remote_Socket.hpp>
 #include <Mlib/Remote/Sockets/IDatagram_Socket.hpp>
 #include <Mlib/Threads/Termination_Manager.cpp>
+#include <Mlib/Threads/Thread_Affinity.hpp>
+#include <Mlib/Threads/Thread_Initializer.hpp>
 #include <mutex>
 #include <stdexcept>
 
@@ -20,6 +23,7 @@ void ThreadedDatagramNode::start_receive_thread(size_t max_stored_received_messa
         throw std::runtime_error("UDP receive-thread already started");
     }
     receive_thread_ = std::jthread{[&, max_stored_received_messages](){
+        ThreadInitializer ti{"ThreadedDatagramNode", ThreadAffinity::POOL};
         std::vector<std::byte> receive_buffer(1024 * 1024);
         while (!receive_thread_.get_stop_token().stop_requested() && !unhandled_exceptions_occured()) {
             try {
@@ -92,12 +96,25 @@ void ThreadedDatagramNode::send(std::istream& istr) {
     }
 }
 
-std::shared_ptr<ISendSocket> ThreadedDatagramNode::try_receive(std::ostream& ostr) {
+std::shared_ptr<ISendSocket> ThreadedDatagramNode::try_receive(
+    std::ostream& ostr,
+    NetworkTransmissionStatus& transmission_status)
+{
     std::scoped_lock lock{ message_mutex_ };
+    auto now = std::chrono::steady_clock::now();
     // linfo() << this << " contains " << messages_received_.size() << " messages";
     if (messages_received_.empty()) {
+        if ((last_received_time_ == std::chrono::steady_clock::time_point()) &&
+            ((now - last_received_time_) > std::chrono::seconds(5)))
+        {
+            transmission_status = NetworkTransmissionStatus::DISCONNECTED;
+        } else {
+            transmission_status = NetworkTransmissionStatus::SUCCESS;
+        }
         return nullptr;
     }
+    transmission_status = NetworkTransmissionStatus::SUCCESS;
+    last_received_time_ = now;
     std::list<ReceivedMessage> lmessage;
     lmessage.splice(lmessage.end(), messages_received_, messages_received_.begin());
     auto& message = lmessage.front();

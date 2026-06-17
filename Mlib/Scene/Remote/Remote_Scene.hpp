@@ -7,6 +7,7 @@
 #include <Mlib/Remote/Incremental_Objects/Incremental_Communicator_Proxy_Factory.hpp>
 #include <Mlib/Remote/Incremental_Objects/Incremental_Remote_Objects.hpp>
 #include <Mlib/Remote/Incremental_Objects/Proxy_Object_Cache.hpp>
+#include <Mlib/Remote/Remote_Params.hpp>
 #include <Mlib/Scene/Remote/Remote_Scene_Object_Factory.hpp>
 #include <chrono>
 #include <memory>
@@ -22,7 +23,6 @@ class PhysicsScene;
 class SceneLevelSelector;
 class IDatagramNode;
 class IReceiveSocket;
-struct RemoteParams;
 enum class IoVerbosity;
 struct RemoteConfig;
 
@@ -54,6 +54,7 @@ public:
         return { {proxy_objects_caches_, CURRENT_SOURCE_LOCATION}, object_id };
     }
 private:
+    RemoteParams remote_params_;
     IoVerbosity verbosity_;
     #ifndef __EMSCRIPTEN__
     boost::asio::io_context ctx_;

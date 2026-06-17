@@ -30,7 +30,9 @@ public:
     virtual void start_receive_thread(size_t max_stored_received_messages) override;
     virtual void bind() override;
     virtual void send(std::istream& istr) override;
-    virtual std::shared_ptr<ISendSocket> try_receive(std::ostream& ostr) override;
+    virtual std::shared_ptr<ISendSocket> try_receive(
+        std::ostream& ostr,
+        NetworkTransmissionStatus& transmission_status) override;
 private:
     RemoteSocket remote_socket_;
     int socket_handle_;

@@ -50,6 +50,7 @@ public:
     void add_receive_socket(const DanglingBaseClassRef<IReceiveSocket>& socket);
     void add_handshake_socket(std::shared_ptr<ISendSocket> socket);
     void send_and_receive(TransmissionType transmission_type);
+    bool handshare_required() const;
     void print(std::ostream& ostr) const;
 private:
     void send(TransmissionType transmission_type);
@@ -60,6 +61,7 @@ private:
     CommunicatorProxyMap multicast_communicator_proxies_;
     DanglingBaseClassRef<ICommunicatorProxyFactory> communicator_proxy_factory_;
     RemoteSiteId site_id_;
+    bool handshare_required_;
 };
 
 std::ostream& operator << (std::ostream& ostr, const CommunicatorProxies& distributed_system);

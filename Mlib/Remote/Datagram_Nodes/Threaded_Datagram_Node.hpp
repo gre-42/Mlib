@@ -2,6 +2,7 @@
 #include <Mlib/Remote/Datagram_Nodes/IDatagram_Node.hpp>
 #include <Mlib/Threads/Fast_Mutex.hpp>
 #include <Mlib/Threads/J_Thread.hpp>
+#include <chrono>
 #include <cstddef>
 #include <cstdint>
 #include <memory>
@@ -24,8 +25,11 @@ public:
     virtual void start_receive_thread(size_t max_stored_received_messages) override;
     virtual void bind() override;
     virtual void send(std::istream& istr) override;
-    virtual std::shared_ptr<ISendSocket> try_receive(std::ostream& ostr) override;
+    virtual std::shared_ptr<ISendSocket> try_receive(
+        std::ostream& ostr,
+        NetworkTransmissionStatus& transmission_status) override;
 private:
+    std::chrono::steady_clock::time_point last_received_time_;
     std::shared_ptr<IDatagramSocket> socket_;
     FastMutex message_mutex_;
     std::jthread receive_thread_;

@@ -5,6 +5,7 @@
 #include <Mlib/Remote/Incremental_Objects/Scene_Level.hpp>
 #include <Mlib/Remote/Remote_Params.hpp>
 #include <Mlib/Remote/Remote_Role.hpp>
+#include <Mlib/Scene/Remote/Network_Socket_Status.hpp>
 #include <Mlib/Scene/Remote/Remote_Config.hpp>
 #include <Mlib/Scene/Remote/Remote_Countdown.hpp>
 #include <Mlib/Scene/Remote/Remote_Users.hpp>
@@ -24,33 +25,34 @@ RemoteScene::RemoteScene(
     const DanglingBaseClassRef<SceneLevelSelector>& scene_level_selector,
     RemoteConfig& remote_config,
     IoVerbosity verbosity)
-    : verbosity_{ verbosity }
+    : remote_params_{ get_remote_params(remote_config) }
+    , verbosity_{ verbosity }
     #ifdef __EMSCRIPTEN__
-    , home_node_{ DatagramNodeFactory::create_web_transport(get_remote_params(remote_config).socket, get_remote_params(remote_config).cert_hash) }
+    , home_node_{ DatagramNodeFactory::create_web_transport(remote_params_.socket, remote_params_.cert_hash) }
     #else
     , ctx_{1}
-    , home_node_{ DatagramNodeFactory::create_udp(ctx_, get_remote_params(remote_config).socket) }
+    , home_node_{ DatagramNodeFactory::create_udp(ctx_, remote_params_.socket) }
     #endif
     , remote_scene_object_factory_{
         physics_scene,
         scene_level_selector,
         verbosity }
-    , objects_{ get_remote_params(remote_config).site_id, scene_level_selector }
+    , objects_{ remote_params_.site_id, scene_level_selector }
     , communicator_proxy_factory_{
         { remote_scene_object_factory_, CURRENT_SOURCE_LOCATION },
         { objects_, CURRENT_SOURCE_LOCATION },
         { proxy_objects_caches_, CURRENT_SOURCE_LOCATION },
         verbosity,
-        get_remote_params(remote_config).role == RemoteRole::SERVER
+        remote_params_.role == RemoteRole::SERVER
             ? ProxyTasks::SEND_LOCAL | ProxyTasks::SEND_REMOTE | ProxyTasks::SEND_OWNERSHIP
             : ProxyTasks::SEND_LOCAL | ProxyTasks::SEND_REMOTE | ProxyTasks::RELOAD_SCENE}
     , proxies_{
         { communicator_proxy_factory_, CURRENT_SOURCE_LOCATION },
-        get_remote_params(remote_config).site_id}
+        remote_params_.site_id}
 {
     home_node_->start_receive_thread(100);
     [&](){
-        switch (get_remote_params(remote_config).role) {
+        switch (remote_params_.role) {
         case RemoteRole::SERVER:
             home_node_->bind();
             proxies_.add_receive_socket({*home_node_, CURRENT_SOURCE_LOCATION});
@@ -66,14 +68,11 @@ RemoteScene::RemoteScene(
                 RemoteObjectVisibility::PRIVATE);
             return;
         case RemoteRole::CLIENT:
-            linfo() << "Sending handshake";
             proxies_.add_handshake_socket(home_node_);
             proxies_.add_receive_socket({*home_node_, CURRENT_SOURCE_LOCATION});
-            proxies_.send_and_receive(TransmissionType::HANDSHAKE);
-            linfo() << "Handshake sent";
             return;
         }
-        throw std::runtime_error("Unkown remote role: " + std::to_string((int)get_remote_params(remote_config).role));
+        throw std::runtime_error("Unkown remote role: " + std::to_string((int)remote_params_.role));
     }();
     objects_.add_local_object({
             global_object_pool.create<RemoteUsers>(
@@ -81,7 +80,7 @@ RemoteScene::RemoteScene(
                 verbosity,
                 physics_scene,
                 scene_level_selector,
-                get_remote_params(remote_config).site_id),
+                remote_params_.site_id),
             CURRENT_SOURCE_LOCATION},
         RemoteObjectVisibility::PUBLIC);
 }
@@ -93,6 +92,13 @@ RemoteScene::~RemoteScene() {
 void RemoteScene::send_and_receive(const TimeAndPause<std::chrono::steady_clock::time_point>& time) {
     objects_.set_local_time(time);
     objects_.forget_old_deleted_objects();
+    if ((remote_params_.role == RemoteRole::CLIENT) &&
+        proxies_.handshare_required())
+    {
+        linfo() << "Sending handshake";
+        proxies_.send_and_receive(TransmissionType::HANDSHAKE);
+        linfo() << "Handshake sent";
+    }
     proxies_.send_and_receive(TransmissionType::UNICAST);
 }
 

@@ -7,11 +7,14 @@
 namespace Mlib {
 
 class ISendSocket;
+enum class NetworkTransmissionStatus;
 
 class IReceiveSocket: public virtual DestructionNotifier, public virtual DanglingBaseClass {
 public:
     virtual ~IReceiveSocket() = default;
-    virtual std::shared_ptr<ISendSocket> try_receive(std::ostream& ostr) = 0;
+    virtual std::shared_ptr<ISendSocket> try_receive(
+        std::ostream& ostr,
+        NetworkTransmissionStatus& transmission_status) = 0;
 };
 
 }

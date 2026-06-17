@@ -2,6 +2,7 @@
 #include <Mlib/AGameHelper/Emscripten/AAnimation_Frame_Worker.hpp>
 #include <Mlib/Memory/Integral_Cast.hpp>
 #include <Mlib/Os/Io/Binary.hpp>
+#include <Mlib/Remote/Network_Transmission_Status.hpp>
 #include <Mlib/Remote/Remote_Socket.hpp>
 #include <emscripten/bind.h>
 #include <emscripten/em_js.h>
@@ -57,9 +58,28 @@ EM_JS(int, createWebTransportSocket,
         console.log("Not using cert hash");
     }
 
-    try {
+    if (globalThis.webTransportSockets === undefined) {
+        globalThis.webTransportSockets = {};
+        globalThis.webTransportHandles = {
+            handle: 0,
+            generate() { return this.handle++; }
+        };
+        globalThis.webTransportPermanent = {};
+    }
+    const handle = globalThis.webTransportHandles.generate();
+    globalThis.webTransportPermanent[handle] = {
+        packetQueue: [],
+        statusCodeResolved: false
+    };
+    function createWebTransport() {
         const transport = new globalThis["WebTransport"](serverUrl, options);
-        (async () => {
+        transport["_isClosed"] = false;
+        globalThis.webTransportSockets[handle] = transport;
+    }
+    async function connectTransport() {
+        try {
+            const transport = globalThis.webTransportSockets[handle];
+            const permanent = globalThis.webTransportPermanent[handle];
             try {
                 await transport.ready;
             } catch (e) {
@@ -68,11 +88,12 @@ EM_JS(int, createWebTransportSocket,
                 _resolve_promise(promise_ptr, Module["JsStatusCode"]["FAILURE"]["value"]);
                 return;
             }
-            transport["_packetQueue"] = [];
-            transport["_isClosed"] = false;
             console.log("WebTransport ready");
             console.error("Sending status code", Module["JsStatusCode"]["SUCCESS"]["value"]);
-            _resolve_promise(promise_ptr, Module["JsStatusCode"]["SUCCESS"]["value"]);
+            if (!permanent.statusCodeResolved) {
+                _resolve_promise(promise_ptr, Module["JsStatusCode"]["SUCCESS"]["value"]);
+                permanent.statusCodeResolved = true;
+            }
 
             // Background reader
             (async () => {
@@ -83,10 +104,10 @@ EM_JS(int, createWebTransportSocket,
                         if (done) {
                             break;
                         }
-                        transport["_packetQueue"].push(value);
-                        if (transport["_packetQueue"].length > maxStoredReceivedMessages) {
+                        permanent.packetQueue.push(value);
+                        if (permanent.packetQueue.length > maxStoredReceivedMessages) {
                             console.error(`Packet queue longer than ${maxStoredReceivedMessages}, removing oldest entry`);
-                            transport["_packetQueue"].shift();
+                            permanent.packetQueue.shift();
                         }
                     }
                 } catch (e) {
@@ -95,21 +116,21 @@ EM_JS(int, createWebTransportSocket,
                     transport["_isClosed"] = true;
                 }
             })();
-        })();
-        if (globalThis.webTransportSockets === undefined) {
-            globalThis.webTransportSockets = {};
-            globalThis.webTransportHandles = {
-                handle: 0,
-                generate() { return this.handle++; }
-            };
+            try {
+                await transport.closed;
+                console.log("Connection closed gracefully.");
+            } catch (error) {
+                console.error(`Connection lost due to error/timeout: ${error}`);
+                console.error("Attempting to reconnect in 5 seconds...");
+                setTimeout(() => {createWebTransport(); connectTransport()}, 5000);
+            }
+        } catch (err) {
+            console.error("WebTransport handshake failed:", err);
         }
-        const handle = globalThis.webTransportHandles.generate();
-        globalThis.webTransportSockets[handle] = transport;
-        return handle;
-    } catch (err) {
-        console.error("WebTransport handshake failed:", err);
-        return 0;
     }
+    createWebTransport();
+    connectTransport();
+    return handle;
 });
 
 EM_JS(void, closeWebTransportSocket, (int transportHandle), {
@@ -150,9 +171,10 @@ EM_JS(bool, sendUsingWebTransportSocket, (int transportHandle, const uint8_t* da
 
 EM_JS(int, tryReadFromWebTransportSocket, (int transportHandle, uint8_t* outBufferPtr, int maxCapacity), {
     const transport = globalThis.webTransportSockets[transportHandle];
+    const permanent = globalThis.webTransportPermanent[transportHandle];
     
     if (!transport) return -3;
-    if (transport["_packetQueue"].length === 0) {
+    if (permanent.packetQueue.length === 0) {
         if (transport["_isClosed"]) {
             return -1;
         } else {
@@ -160,7 +182,7 @@ EM_JS(int, tryReadFromWebTransportSocket, (int transportHandle, uint8_t* outBuff
         }
     }
 
-    const value = transport["_packetQueue"].shift();
+    const value = permanent.packetQueue.shift();
 
     const bytesToCopy = Math.min(value.length, maxCapacity);
 
@@ -220,7 +242,7 @@ void WebTransportDatagramNode::start_receive_thread(size_t max_stored_received_m
         auto status_code = done.get_future().get();
         linfo() << "Create: Received WebTransport status code " + std::to_string((int)status_code);
         if (status_code != JsStatusCode::SUCCESS) {
-            throw std::runtime_error("Could not start receive thread");
+            lwarn() << "Could not start receive thread on initial attempt, JS will however retry";
         }
     }
     // Note: Since createWebTransportSocket returns a Promise (via EM_VAL), 
@@ -262,7 +284,9 @@ void WebTransportDatagramNode::send(std::istream& istr) {
     }
 }
 
-std::shared_ptr<ISendSocket> WebTransportDatagramNode::try_receive(std::ostream& ostr)
+std::shared_ptr<ISendSocket> WebTransportDatagramNode::try_receive(
+    std::ostream& ostr,
+    NetworkTransmissionStatus& transmission_status)
 {
     if (socket_handle_ == -1) {
         throw std::runtime_error("WebTransportDatagramNode::try_receive on a null socket");
@@ -275,16 +299,25 @@ std::shared_ptr<ISendSocket> WebTransportDatagramNode::try_receive(std::ostream&
             (uint8_t*)receive_buffer.data(),
             integral_cast<int>(receive_buffer.size()));
     });
+    if (bytesReceived == -1) {
+        transmission_status = NetworkTransmissionStatus::DISCONNECTED;
+        linfo() << "WebTransport disconnect";
+        return nullptr;
+    }
     if (bytesReceived < 0) {
+        transmission_status = NetworkTransmissionStatus::ERROR;
         throw std::runtime_error("Error reading WebTransport data: " + std::to_string(bytesReceived));
     }
     if (bytesReceived == 0) {
+        transmission_status = NetworkTransmissionStatus::SUCCESS;
         return nullptr;
     }
     if (bytesReceived > receive_buffer.size()) {
+        transmission_status = NetworkTransmissionStatus::ERROR;
         throw std::runtime_error("Received more bytes than the buffer size");
     }
     receive_buffer.resize(integral_cast<size_t>(bytesReceived));
     write_iterable(ostr, receive_buffer, "WebTransport message");
+    transmission_status = NetworkTransmissionStatus::SUCCESS;
     return shared_from_this();
 }
