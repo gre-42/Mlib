@@ -504,15 +504,18 @@ void RemoteRigidBodyVehicle::read(
         // Notify child nodes with absolute movables (e.g. wheels)
         rb_->scene_node_->clear_transformation_history();
     }
-    if (!privileges.is_manager_local) {
-        masked_set(rb_->flags_, flags, ~RigidBodyVehicleFlags::WAITING_FOR_INITIAL_POSITION);
-    }
+    auto mask = ~RigidBodyVehicleFlags::WAITING_FOR_INITIAL_POSITION;
     if (pp.update_position) {
         assert_true(has_location);
         rb_->rbp_.set_pose(tait_bryan_angles_2_matrix(rotation), position);
         rb_->rbp_.v_com_ = v_com;
         rb_->rbp_.w_ = w;
         rb_->flags_ &= ~RigidBodyVehicleFlags::WAITING_FOR_INITIAL_POSITION;
+    } else if (rb_->is_deactivated_avatar()) {
+        mask &= ~RigidBodyVehicleFlags::IS_ANY_AVATAR;
+    }
+    if (!privileges.is_manager_local) {
+        masked_set(rb_->flags_, flags, mask);
     }
 }
 

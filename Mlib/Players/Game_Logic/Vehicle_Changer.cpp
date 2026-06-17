@@ -23,7 +23,9 @@ VehicleChanger::VehicleChanger(
     , delete_node_mutex_{ delete_node_mutex }
 {}
 
-bool VehicleChanger::change_vehicle(VehicleSpawner& s, const SceneTime& time) {
+bool VehicleChanger::change_vehicle(
+    VehicleSpawner& s, std::chrono::steady_clock::time_point time)
+{
     if (!s.has_player()) {
         return false;
     }
@@ -55,7 +57,7 @@ bool VehicleChanger::change_vehicle(VehicleSpawner& s, const SceneTime& time) {
     // }
 }
 
-void VehicleChanger::change_vehicles(const SceneTime& time) {
+void VehicleChanger::change_vehicles(std::chrono::steady_clock::time_point time) {
     ThrowingLockGuard delete_lock{delete_node_mutex_};
     for (const auto& [_, s] : vehicle_spawners_.spawners()) {
         change_vehicle(*s, time);
@@ -94,7 +96,11 @@ void VehicleChanger::swap_vehicles(Player& a, Player& b) {
     b.create_gun_externals();
 }
 
-bool VehicleChanger::enter_vehicle(VehicleSpawner& a, VehicleSpawner& b, const SceneTime& time) {
+bool VehicleChanger::enter_vehicle(
+    VehicleSpawner& a,
+    VehicleSpawner& b,
+    std::chrono::steady_clock::time_point time)
+{
     if (!a.has_player()) {
         throw std::runtime_error("Vehicle spawner has no player");
     }
@@ -145,7 +151,7 @@ bool VehicleChanger::enter_vehicle(VehicleSpawner& a, VehicleSpawner& b, const S
             b_new_trafo.t,
             matrix_2_tait_bryan_angles(b_new_trafo.R),
             1.f,
-            time);
+            SceneTime::initial(time));
         b_rb->activate_avatar();
         a_rb_old->park_vehicle();
     } else {

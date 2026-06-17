@@ -6,7 +6,6 @@
 #include <Mlib/Players/Game_Logic/Game_Logic_Config.hpp>
 #include <Mlib/Players/Game_Logic/Supply_Depots.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
-#include <Mlib/Scene_Graph/Elements/Scene_Time.hpp>
 #include <Mlib/Scene_Graph/Instances/Static_World.hpp>
 #include <iostream>
 
@@ -44,7 +43,7 @@ void GameLogic::advance_time(float dt, const StaticWorld& world) {
     vehicle_spawners_.advance_time(dt);
     team_deathmatch.handle_respawn();
     bystanders.handle_bystanders();
-    vehicle_changer.change_vehicles(SceneTime::standard(world.time));
+    vehicle_changer.change_vehicles(world.time);
     supply_depots_.handle_supply_depots(dt);
     if (getenv_default_bool("PRINT_PLAYERS_ACTIVE", false)) {
         linfo() << "Players active: " << players_.nactive();

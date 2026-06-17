@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Threads/Recursive_Shared_Mutex.hpp>
+#include <chrono>
 
 namespace Mlib {
 
@@ -16,11 +17,11 @@ public:
     VehicleChanger(
         VehicleSpawners& vehicle_spawners,
         SafeAtomicRecursiveSharedMutex& delete_node_mutex);
-    bool change_vehicle(VehicleSpawner& s, const SceneTime& time);
+    bool change_vehicle(VehicleSpawner& s, std::chrono::steady_clock::time_point time);
 private:
-    void change_vehicles(const SceneTime& time);
+    void change_vehicles(std::chrono::steady_clock::time_point time);
     void swap_vehicles(Player& a, Player& b);
-    bool enter_vehicle(VehicleSpawner& a, VehicleSpawner& b, const SceneTime& time);
+    bool enter_vehicle(VehicleSpawner& a, VehicleSpawner& b, std::chrono::steady_clock::time_point time);
     VehicleSpawners& vehicle_spawners_;
     SafeAtomicRecursiveSharedMutex& delete_node_mutex_;
 };
