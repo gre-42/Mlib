@@ -36,7 +36,7 @@ void InstantiateStatics::execute(const LoadSceneJsonUserFunctionArgs& args) {
             "none",                     // asset_id
             INFINITY,                   // mass
             fixed_ones<float, 3>(),     // size
-            fixed_ones<float, 3>());    // com
+            fixed_zeros<float, 3>());   // com
         rb->set_absolute_model_matrix(TransformationMatrix<float, ScenePos, 3>::identity());
         physics_engine.rigid_bodies_.add_rigid_body(*rb, {}, { cva }, {}, CollidableMode::COLLIDE);
         object_pool.add(global_object_pool.extract(std::move(rb)), CURRENT_SOURCE_LOCATION);
