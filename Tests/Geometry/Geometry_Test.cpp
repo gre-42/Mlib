@@ -21,7 +21,7 @@
 #include <Mlib/Geometry/Physics_Material.hpp>
 #include <Mlib/Geometry/Primitives/Bvh.hpp>
 #include <Mlib/Geometry/Primitives/Bvh_Grid.hpp>
-#include <Mlib/Geometry/Primitives/Distance/Distange_Polygon_Aabb.hpp>
+#include <Mlib/Geometry/Primitives/Distance/Distance_Polygon_Aabb.hpp>
 #include <Mlib/Geometry/Primitives/Frustum3.hpp>
 #include <Mlib/Geometry/Primitives/Intersect_Lines.hpp>
 #include <Mlib/Geometry/Primitives/Intersectors/Ray_Segment_3D_For_Aabb.hpp>

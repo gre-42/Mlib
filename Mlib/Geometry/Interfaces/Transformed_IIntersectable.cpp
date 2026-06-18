@@ -12,7 +12,7 @@ using namespace Mlib;
 
 TransformedIntersectable::TransformedIntersectable(
     std::shared_ptr<IIntersectable> child,
-    const TransformationMatrix<float, ScenePos, 3>& trafo)
+    const TransformationMatrix<SceneDir, ScenePos, 3>& trafo)
     : child_{ std::move(child) }
     , trafo_{ trafo }
 {}
@@ -83,7 +83,7 @@ bool TransformedIntersectable::touches(
     FixedArray<SceneDir, 3> c_normal = uninitialized;
     bool intersects = child_->touches(
         *o->child_,
-        (trafo_.inverted() * o->trafo_).template casted<float, ScenePos>(),
+        (trafo_.inverted() * o->trafo_).template casted<SceneDir, ScenePos>(),
         c_overlap,
         c_intersection_point,
         c_normal);
@@ -92,13 +92,13 @@ bool TransformedIntersectable::touches(
     }
     overlap = (ScenePos)c_overlap;
     intersection_point = trafo_.transform(c_intersection_point);
-    normal = trafo_.rotate(c_normal.template casted<float>());
+    normal = trafo_.rotate(c_normal.template casted<SceneDir>());
     return true;
 }
 
 bool TransformedIntersectable::touches(
     const IIntersectable& intersectable,
-    const TransformationMatrix<float, ScenePos, 3>& trafo,
+    const TransformationMatrix<SceneDir, ScenePos, 3>& trafo,
     ScenePos& overlap,
     FixedArray<ScenePos, 3>& intersection_point,
     FixedArray<SceneDir, 3>& normal) const
@@ -127,12 +127,12 @@ bool TransformedIntersectable::can_spawn_at(
     }
     return child_->can_spawn_at(
         *o->child_,
-        (trafo_.inverted() * o->trafo_).template casted<float, ScenePos>());
+        (trafo_.inverted() * o->trafo_).template casted<SceneDir, ScenePos>());
 }
 
 bool TransformedIntersectable::can_spawn_at(
     const IIntersectable& intersectable,
-    const TransformationMatrix<float, ScenePos, 3>& trafo) const
+    const TransformationMatrix<SceneDir, ScenePos, 3>& trafo) const
 {
     throw std::runtime_error("TransformedIIntersectable received additional transformation matrix (1)");
 }
@@ -145,7 +145,7 @@ bool TransformedIntersectable::touches_any_wo_ray_t(
     FixedArray<SceneDir, 3>& normal) const
 {
     auto tbs = o.bounding_sphere.itransformed(trafo_);
-    if (!aabb_intersects_sphere(child_->aabb().casted<ScenePos>(), tbs.template casted<ScenePos>())) {
+    if (!aabb_intersects_sphere(child_->aabb(), tbs)) {
         return false;
     }
     ScenePos c_overlap;
@@ -161,7 +161,7 @@ bool TransformedIntersectable::touches_any_wo_ray_t(
     }
     overlap = (ScenePos)c_overlap;
     intersection_point = trafo_.transform(c_intersection_point);
-    normal = trafo_.rotate(c_normal.template casted<float>());
+    normal = trafo_.rotate(c_normal.template casted<SceneDir>());
     return true;
 }
 
@@ -193,14 +193,14 @@ bool TransformedIntersectable::touches_any_with_ray_t(
     overlap = (ScenePos)c_overlap;
     ray_t = (ScenePos)c_ray_t;
     intersection_point = trafo_.transform(c_intersection_point);
-    normal = trafo_.rotate(c_normal.template casted<float>());
+    normal = trafo_.rotate(c_normal.template casted<SceneDir>());
     return true;
 }
 
 template <class TOther>
 bool TransformedIntersectable::can_spawn_at_any(const TOther& o) const {
     auto tbs = o.bounding_sphere.itransformed(trafo_);
-    if (!aabb_intersects_sphere(child_->aabb().casted<ScenePos>(), tbs.template casted<ScenePos>())) {
+    if (!aabb_intersects_sphere(child_->aabb(), tbs)) {
         return false;
     }
     return child_->can_spawn_at(o.transformed(trafo_.inverted()));

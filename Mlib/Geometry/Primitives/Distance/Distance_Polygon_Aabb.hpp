@@ -46,7 +46,11 @@ void distance_point_aabb(
     ClosestPoint<TDir, TPos>& closest_point)
 {
     // Point-volume
-    closest_point.update(point, aabb.closest_point(point));
+    try {
+        closest_point.update(point, aabb.closest_point(point));
+    } catch (const std::runtime_error& e) {
+        throw std::runtime_error("distance_point_aabb, point-volume failed: " + std::string(e.what()));
+    }
 }
 
 template <class TDir, class TPos>
@@ -61,7 +65,11 @@ void distance_interior_line_aabb(
         TPos ray_t;
         closest_point_to_line(corner, ray, ray_t, cp);
         if ((ray_t >= 0) && (ray_t <= ray.length)) {
-            closest_point.update(cp, corner);
+            try {
+                closest_point.update(cp, corner);
+            } catch (const std::runtime_error& e) {
+                throw std::runtime_error("distance_interior_line_aabb, line-point failed: " + std::string(e.what()));
+            }
         }
         return true;
     });
@@ -79,7 +87,11 @@ void distance_interior_line_aabb(
             return true;
         }
         if (distance_line_line(line, e1, p0, p1)) {
-            closest_point.update(p0, p1);
+            try {
+                closest_point.update(p0, p1);
+            } catch (const std::runtime_error& e) {
+                throw std::runtime_error("distance_interior_line_aabb, line-line failed: " + std::string(e.what()));
+            }
         }
         return true;
     });
@@ -91,9 +103,22 @@ void distance_line_aabb(
     const AxisAlignedBoundingBox<TPos, 3>& aabb,
     ClosestPoint<TDir, TPos>& closest_point)
 {
-    distance_point_aabb(ray.start, aabb, closest_point);
-    distance_point_aabb(ray.stop(), aabb, closest_point);
-    distance_interior_line_aabb(ray, aabb, closest_point);
+    try 
+    {
+        distance_point_aabb(ray.start, aabb, closest_point);
+    } catch (const std::runtime_error& e) {
+        throw std::runtime_error("distance_line_aabb, distance_point_aabb(ray.start, ...) failed: " + std::string(e.what()));
+    }
+    try {
+        distance_point_aabb(ray.stop(), aabb, closest_point);
+    } catch (const std::runtime_error& e) {
+        throw std::runtime_error("distance_line_aabb, distance_point_aabb(ray.stop, ...) failed: " + std::string(e.what()));
+    }
+    try {
+        distance_interior_line_aabb(ray, aabb, closest_point);
+    } catch (const std::runtime_error& e) {
+        throw std::runtime_error("distance_line_aabb, distance_interior_line_aabb failed: " + std::string(e.what()));
+    }
 }
 
 template <class TDir, class TPos, size_t tnvertices>
@@ -109,7 +134,11 @@ void distance_interior_polygon_aabb(
             auto proj = corner.template casted<I>();
             auto n = polygon.plane.normal.template casted<I>();
             proj -= n * (dot0d(n, proj) + (I)polygon.plane.intercept);
-            closest_point.update(proj.template casted<TPos>(), corner);
+            try {
+                closest_point.update(proj.template casted<TPos>(), corner);
+            } catch (const std::runtime_error& e) {
+                throw std::runtime_error("distance_interior_polygon_aabb, plane-point failed: " + std::string(e.what()));
+            }
         }
         return true;
     });
@@ -121,25 +150,29 @@ void distance_polygon_aabb(
     const AxisAlignedBoundingBox<ScenePos, 3>& aabb,
     ClosestPoint<SceneDir, ScenePos>& closest_point)
 {
-    // Point
-    for (const auto& p : polygon.corners.row_iterable()) {
-        distance_point_aabb(p.template casted<ScenePos>(), aabb, closest_point);
-    }
-    // Line
-    for (size_t i = 0; i < tnvertices; ++i) {
-        distance_interior_line_aabb(
-            RaySegment3D<SceneDir, ScenePos>{
-                polygon.corners[i].template casted<ScenePos>(),
-                polygon.corners[(i + 1) % tnvertices].template casted<ScenePos>()
-            },
+    try {
+        // Point
+        for (const auto& p : polygon.corners.row_iterable()) {
+            distance_point_aabb(p.template casted<ScenePos>(), aabb, closest_point);
+        }
+        // Line
+        for (size_t i = 0; i < tnvertices; ++i) {
+            distance_interior_line_aabb(
+                RaySegment3D<SceneDir, ScenePos>{
+                    polygon.corners[i].template casted<ScenePos>(),
+                    polygon.corners[(i + 1) % tnvertices].template casted<ScenePos>()
+                },
+                aabb.template casted<ScenePos>(),
+                closest_point);
+        }
+        // Plane
+        distance_interior_polygon_aabb(
+            polygon.polygon.template casted<SceneDir, ScenePos>(),
             aabb.template casted<ScenePos>(),
             closest_point);
+    } catch (const std::runtime_error& e) {
+        throw std::runtime_error("distance_polygon_aabb failed: " + std::string(e.what()));
     }
-    // Plane
-    distance_interior_polygon_aabb(
-        polygon.polygon.template casted<SceneDir, ScenePos>(),
-        aabb.template casted<ScenePos>(),
-        closest_point);
 }
 
 template <class TDir, class TPos>
@@ -149,22 +182,26 @@ void distance_aabb_aabb(
     const TransformationMatrix<TDir, TPos, 3>& trafo1,
     ClosestPoint<TDir, TPos>& closest_point)
 {
-    aabb1.for_each_corner([&](const FixedArray<TPos, 3>& corner1){
-        distance_point_aabb(trafo1.transform(corner1), aabb0, closest_point);
-        return true;
-    });
-    aabb1.for_each_edge([&](const auto& e){
-        auto te = trafo1.transform(e);
-        distance_line_aabb({te[0], te[1]}, aabb0, closest_point);
-        return true;
-    });
-    aabb1.template for_each_face<float>([&](const auto& p){
-        distance_interior_polygon_aabb(
-            p.transformed(trafo1),
-            aabb0,
-            closest_point);
-        return true;
-    });
+    try {
+        aabb1.for_each_corner([&](const FixedArray<TPos, 3>& corner1){
+            distance_point_aabb(trafo1.transform(corner1), aabb0, closest_point);
+            return true;
+        });
+        aabb1.for_each_edge([&](const auto& e){
+            auto te = trafo1.transform(e);
+            distance_line_aabb({te[0], te[1]}, aabb0, closest_point);
+            return true;
+        });
+        aabb1.template for_each_face<float>([&](const auto& p){
+            distance_interior_polygon_aabb(
+                p.transformed(trafo1),
+                aabb0,
+                closest_point);
+            return true;
+        });
+    } catch (const std::runtime_error& e) {
+        throw std::runtime_error("distance_aabb_aabb failed: " + std::string(e.what()));
+    }
 }
 
 }

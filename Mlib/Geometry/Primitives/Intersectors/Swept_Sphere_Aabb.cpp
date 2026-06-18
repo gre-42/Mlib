@@ -2,7 +2,7 @@
 #include <Mlib/Geometry/Primitives/Collision_Line.hpp>
 #include <Mlib/Geometry/Primitives/Collision_Polygon.hpp>
 #include <Mlib/Geometry/Primitives/Collision_Ridge.hpp>
-#include <Mlib/Geometry/Primitives/Distance/Distange_Polygon_Aabb.hpp>
+#include <Mlib/Geometry/Primitives/Distance/Distance_Polygon_Aabb.hpp>
 #include <Mlib/Geometry/Primitives/Intersectors/Aabb_Sphere_Intersection.hpp>
 #include <Mlib/Geometry/Primitives/Intersectors/Intersect_Polygon_Aabb.hpp>
 #include <Mlib/Math/Lerp.hpp>
@@ -18,8 +18,11 @@ SweptSphereAabb::SweptSphereAabb(
     , radius_{ radius }
     , bounding_sphere_{ FixedArray<CompressedScenePos, 2, 3>{ min, max } }
 {
-    if (any(aabb_small_.size() < (CompressedScenePos)1e-3f)) {
+    if (any(aabb_small_.size() < (CompressedScenePos)1e-2f)) {
         throw std::runtime_error("SweptSphereAabb: AABB too small for the given radius");
+    }
+    if (radius < (CompressedScenePos)1e-2f) {
+        throw std::runtime_error("SweptSphereAabb: Radius too small");
     }
 }
 

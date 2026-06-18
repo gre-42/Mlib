@@ -1,5 +1,6 @@
 #include "Set_Preferred_Car_Spawner.hpp"
 #include <Mlib/Geometry/Coordinates/Homogeneous.hpp>
+#include <Mlib/Geometry/Coordinates/To_Tait_Bryan_Angles.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Macro_Executor/Macro_Line_Executor.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
@@ -101,7 +102,7 @@ void SetPreferredCarSpawner::execute(const LoadSceneJsonUserFunctionArgs& args)
             auto rotation = matrix_2_tait_bryan_angles(g.spawn_point.R);
             nlohmann::json let{
                 {KnownLet::human_node_position, trafo.t / (ScenePos)meters},
-                {KnownLet::human_node_angle_y, std::atan2(z(0), z(2)) / degrees},
+                {KnownLet::human_node_angle_y, z_to_yaw(z) / degrees},
                 {KnownLet::car_node_position, trafo.t / (ScenePos)meters},
                 {KnownLet::car_node_angles, rotation / degrees},
                 // Velocity and angular velocity should be calculated dynamically from the parent of the
