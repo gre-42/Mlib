@@ -171,7 +171,9 @@ void distance_polygon_aabb(
             aabb.template casted<ScenePos>(),
             closest_point);
     } catch (const std::runtime_error& e) {
-        throw std::runtime_error("distance_polygon_aabb failed: " + std::string(e.what()));
+        throw std::runtime_error(
+            (std::stringstream() << "distance_polygon_aabb failed. Polygon: " <<
+            polygon.corners << ", AABB: " << aabb << ", message: " << e.what()).str());
     }
 }
 
@@ -200,7 +202,9 @@ void distance_aabb_aabb(
             return true;
         });
     } catch (const std::runtime_error& e) {
-        throw std::runtime_error("distance_aabb_aabb failed: " + std::string(e.what()));
+        throw std::runtime_error(
+            (std::stringstream() << "distance_polygon_aabb failed. Transformation1: " <<
+            trafo1 << ", AABB0: " << aabb0 << ", AABB1: " << aabb1 << ", message: " << e.what()).str());
     }
 }
 
