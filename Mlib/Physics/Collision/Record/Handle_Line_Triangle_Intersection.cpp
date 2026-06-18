@@ -3,6 +3,7 @@
 #include <Mlib/Geometry/Physics_Material.hpp>
 #include <Mlib/Geometry/Primitives/Intersectors/Intersection_Info.hpp>
 #include <Mlib/Geometry/Primitives/Intersectors/Polygon_Line_Intersector.hpp>
+#include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Misc/Pragma_Gcc.hpp>
 #include <Mlib/Physics/Collision/Grind_Info.hpp>
 #include <Mlib/Physics/Collision/Record/Collision_History.hpp>
@@ -113,9 +114,13 @@ void Mlib::handle_line_triangle_intersection(const IntersectionScene& c)
         }
     } catch (const std::runtime_error& e) {
         throw std::runtime_error(std::format(
-            "Error colliding objects \"{}\" and \"{}\", meshes \"{}\" and \"{}\": {}",
+            "Error colliding objects \"{}\" and \"{}\", coords [m] \"{}\" and \"{}\", angles [°] \"{}\" and \"{}\", meshes \"{}\" and \"{}\": {}",
             c.o0.name(),
             c.o1.name(),
+            (std::stringstream() << (c.o0.abs_com() / meters)).str(),
+            (std::stringstream() << (c.o1.abs_com() / meters)).str(),
+            (std::stringstream() << (matrix_2_tait_bryan_angles(c.o0.rbp_.rotation_) / degrees)).str(),
+            (std::stringstream() << (matrix_2_tait_bryan_angles(c.o1.rbp_.rotation_) / degrees)).str(),
             (c.mesh0 == nullptr) ? "<null>" : c.mesh0->name(),
             (c.mesh1 == nullptr) ? "<null>" : c.mesh1->name(),
             e.what()));
