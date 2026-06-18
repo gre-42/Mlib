@@ -66,19 +66,6 @@ DECLARE_ARGUMENT(aabb);
 DECLARE_ARGUMENT(sphere);
 }
 
-static void execute(const LoadSceneJsonUserFunctionArgs& args)
-{
-    RenderingContextStack::primary_scene_node_resources().add_modifier(
-        args.arguments.at<VariableAndHash<std::string>>(KnownArgs::resource),
-        [aabb = args.arguments.at<LoadableAabb3f>(KnownArgs::aabb),
-         sphere = args.arguments.at<LoadableBoundingSphere3f>(KnownArgs::sphere)]
-        (ISceneNodeResource& resource) {
-            for (auto& l : resource.get_rendering_arrays()) {
-                set_bounds(*l, aabb, sphere);
-            }
-        });
-}
-
 struct RegisterJsonUserFunction {
     RegisterJsonUserFunction() {
         LoadSceneFuncs::register_json_user_function(
@@ -86,7 +73,15 @@ struct RegisterJsonUserFunction {
             [](const LoadSceneJsonUserFunctionArgs& args)
             {
                 args.arguments.validate(KnownArgs::options);
-                execute(args);
+                RenderingContextStack::primary_scene_node_resources().add_modifier(
+                    args.arguments.at<VariableAndHash<std::string>>(KnownArgs::resource),
+                    [aabb = args.arguments.at<LoadableAabb3f>(KnownArgs::aabb),
+                    sphere = args.arguments.at<LoadableBoundingSphere3f>(KnownArgs::sphere)]
+                    (ISceneNodeResource& resource) {
+                        for (auto& l : resource.get_rendering_arrays()) {
+                            set_bounds(*l, aabb, sphere);
+                        }
+                    });
             });
     }
 } obj;
