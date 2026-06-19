@@ -416,7 +416,7 @@ std::vector<CollisionLineAabb<CompressedScenePos>> ColoredVertexArray<TPos>::tra
             .base = CollisionLineSphere{
                 .bounding_sphere = line.bounding_sphere().casted<CompressedScenePos>(),
                 .physics_material = meta.morphology.physics_material,
-                .line = line.vertices().template casted<CompressedScenePos>(),
+                .corners = line.vertices().template casted<CompressedScenePos>(),
                 .ray = line.template ray<SceneDir>().template casted<SceneDir, CompressedScenePos>()
             },
             .aabb = line.aabb().template casted<CompressedScenePos>()});
@@ -434,7 +434,7 @@ std::vector<CollisionLineSphere<CompressedScenePos>> ColoredVertexArray<TPos>::l
         res.push_back(CollisionLineSphere{
             .bounding_sphere = line.bounding_sphere().template casted<CompressedScenePos>(),
             .physics_material = meta.morphology.physics_material,
-            .line = line.vertices().template casted<CompressedScenePos>(),
+            .corners = line.vertices().template casted<CompressedScenePos>(),
             .ray = line.template ray<SceneDir>().template casted<SceneDir, CompressedScenePos>()});
     }
     return res;

@@ -92,17 +92,17 @@ void CreateRigidStatics::execute(const LoadSceneJsonUserFunctionArgs& args)
         object_pool.add(global_object_pool.extract(std::move(rb)), CURRENT_SOURCE_LOCATION);
     } catch (const TriangleException<double>& e) {
         if (auto filename = try_getenv("RIGID_BODY_TRIANGLE_FILENAME"); filename.has_value()) {
-            save_triangle_to_obj(*filename, {e.a, e.b, e.c});
+            save_polygon_to_obj(*filename, {e.a, e.b, e.c});
         }
         throw std::runtime_error(e.str("Error", scene_node_resources.get_geographic_mapping(VariableAndHash<std::string>{"world"})));
     } catch (const PolygonEdgeException<double, 3>& e) {
         if (auto filename = try_getenv("RIGID_BODY_TRIANGLE_FILENAME"); filename.has_value()) {
-            save_triangle_to_obj(*filename, e.poly);
+            save_polygon_to_obj(*filename, e.poly);
         }
         throw std::runtime_error(e.str("Error", scene_node_resources.get_geographic_mapping(VariableAndHash<std::string>{"world"})));
     } catch (const PolygonEdgeException<double, 4>& e) {
         if (auto filename = try_getenv("RIGID_BODY_TRIANGLE_FILENAME"); filename.has_value()) {
-            save_quad_to_obj(*filename, e.poly);
+            save_polygon_to_obj(*filename, e.poly);
         }
         throw std::runtime_error(e.str("Error", scene_node_resources.get_geographic_mapping(VariableAndHash<std::string>{"world"})));
     }

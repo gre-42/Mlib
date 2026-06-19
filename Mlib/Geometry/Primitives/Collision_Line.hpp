@@ -16,7 +16,7 @@ template <class TPosition>
 struct CollisionLineSphere {
     BoundingSphere<TPosition, 3> bounding_sphere;
     PhysicsMaterial physics_material;
-    FixedArray<TPosition, 2, 3> line;
+    FixedArray<TPosition, 2, 3> corners;
     RaySegment3D<SceneDir, TPosition> ray;
     CollisionLineSphere transformed(
         const TransformationMatrix<SceneDir, ScenePos, 3>& transformation_matrix) const
@@ -24,7 +24,7 @@ struct CollisionLineSphere {
         return {
             bounding_sphere.transformed(transformation_matrix),
             physics_material,
-            transformation_matrix.transform(line.template casted<ScenePos>()).template casted<TPosition>(),
+            transformation_matrix.transform(corners.template casted<ScenePos>()).template casted<TPosition>(),
             ray.transformed(transformation_matrix),
         };
     }
@@ -33,14 +33,14 @@ struct CollisionLineSphere {
         return {
             bounding_sphere.template casted<TPosition2>(),
             physics_material,
-            line.template casted<TPosition2>(),
+            corners.template casted<TPosition2>(),
             ray.template casted<SceneDir, TPosition2>()
         };
     }
     bool operator == (const CollisionLineSphere& other) const {
         return (bounding_sphere == other.bounding_sphere) &&
                (physics_material == other.physics_material) &&
-               all(line == other.line) &&
+               all(corners == other.corners) &&
                (ray == other.ray);
     }
 };
@@ -53,7 +53,7 @@ CollisionLineSphere<TPosition> operator + (
     return {
         clp.bounding_sphere + p,
         clp.physics_material,
-        FixedArray<TPosition, 2, 3>{ clp.line[0] + p, clp.line[1] + p },
+        FixedArray<TPosition, 2, 3>{ clp.corners[0] + p, clp.corners[1] + p },
         clp.ray + p
     };
 }

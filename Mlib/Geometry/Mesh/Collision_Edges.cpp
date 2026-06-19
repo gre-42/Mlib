@@ -7,14 +7,14 @@ using namespace Mlib;
 std::pair<OrderableFixedArray<CompressedScenePos, 3>, OrderableFixedArray<CompressedScenePos, 3>>
     OrderableEdgeSphere::key() const
 {
-    if (make_orderable(collision_line_sphere.line[0]) > make_orderable(collision_line_sphere.line[1])) {
+    if (make_orderable(collision_line_sphere.corners[0]) > make_orderable(collision_line_sphere.corners[1])) {
         return std::make_pair(
-            make_orderable(collision_line_sphere.line[0]),
-            make_orderable(collision_line_sphere.line[1]));
+            make_orderable(collision_line_sphere.corners[0]),
+            make_orderable(collision_line_sphere.corners[1]));
     } else {
         return std::make_pair(
-            make_orderable(collision_line_sphere.line[1]),
-            make_orderable(collision_line_sphere.line[0]));
+            make_orderable(collision_line_sphere.corners[1]),
+            make_orderable(collision_line_sphere.corners[0]));
     }
 }
 
@@ -45,7 +45,7 @@ void CollisionEdges::insert(
         .collision_line_sphere{
             .bounding_sphere{BoundingSphere<CompressedScenePos, 3>{FixedArray<CompressedScenePos, 2, 3>{a, b}}},
             .physics_material = physics_material,
-            .line{a, b},
+            .corners{a, b},
             .ray{a, b}} };
     edges_.insert(edge);
 }

@@ -203,7 +203,7 @@ void distance_aabb_aabb(
         });
     } catch (const std::runtime_error& e) {
         throw std::runtime_error(
-            (std::stringstream() << "distance_polygon_aabb failed. Transformation1: " <<
+            (std::stringstream() << "distance_aabb_aabb failed. Transformation1: " <<
             trafo1 << ", AABB0: " << aabb0 << ", AABB1: " << aabb1 << ", message: " << e.what()).str());
     }
 }

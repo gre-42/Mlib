@@ -4,40 +4,47 @@
 
 using namespace Mlib;
 
-void Mlib::save_triangle_to_obj(
+void Mlib::save_polygon_to_obj(
     const std::string& filename,
-    const FixedArray<double, 3, 3>& highlighted_triangle)
+    const FixedArray<double, 2, 3>& edge)
+{
+    throw std::runtime_error("\"save_polygon_to_obj\" not implemented for edges");
+}
+
+void Mlib::save_polygon_to_obj(
+    const std::string& filename,
+    const FixedArray<double, 3, 3>& triangle)
 {
     DefaultUnitialized<FixedArray<ColoredVertex<double>, 3>> ctri{
         ColoredVertex<double>{
-            highlighted_triangle[0],
+            triangle[0],
             Colors::RED},
         ColoredVertex<double>{
-            highlighted_triangle[1],
+            triangle[1],
             Colors::GREEN},
         ColoredVertex<double>{
-            highlighted_triangle[2],
+            triangle[2],
             Colors::BLUE}
     };
     save_obj(filename, IndexedFaceSet<float, double, size_t>{ std::vector{ ctri } }, nullptr);
 }
 
-void Mlib::save_quad_to_obj(
+void Mlib::save_polygon_to_obj(
     const std::string& filename,
-    const FixedArray<double, 4, 3>& highlighted_quad)
+    const FixedArray<double, 4, 3>& quad)
 {
     DefaultUnitialized<FixedArray<ColoredVertex<double>, 4>> cquad{
         ColoredVertex<double>{
-            highlighted_quad[0],
+            quad[0],
             Colors::RED},
         ColoredVertex<double>{
-            highlighted_quad[1],
+            quad[1],
             Colors::GREEN},
         ColoredVertex<double>{
-            highlighted_quad[2],
+            quad[2],
             Colors::BLUE},
         ColoredVertex<double>{
-            highlighted_quad[3],
+            quad[3],
             Colors::PURPLE}
     };
     save_obj(filename, IndexedFaceSet<float, double, size_t>{ {}, std::vector{ cquad } }, nullptr);

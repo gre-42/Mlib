@@ -1,10 +1,13 @@
 #include "Transformed_IIntersectable.hpp"
+#include <Mlib/Geometry/Mesh/Save_Polygon_To_Obj.hpp>
 #include <Mlib/Geometry/Primitives/Bounding_Sphere.hpp>
 #include <Mlib/Geometry/Primitives/Collision_Line.hpp>
 #include <Mlib/Geometry/Primitives/Collision_Polygon.hpp>
 #include <Mlib/Geometry/Primitives/Collision_Ridge.hpp>
 #include <Mlib/Geometry/Primitives/Intersectors/Aabb_Sphere_Intersection.hpp>
+#include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Misc/Pragma_Gcc.hpp>
+#include <Mlib/Os/Env.hpp>
 
 PRAGMA_GCC_O3_BEGIN
 
@@ -144,25 +147,36 @@ bool TransformedIntersectable::touches_any_wo_ray_t(
     FixedArray<ScenePos, 3>& intersection_point,
     FixedArray<SceneDir, 3>& normal) const
 {
-    auto tbs = o.bounding_sphere.itransformed(trafo_);
-    if (!aabb_intersects_sphere(child_->aabb(), tbs)) {
-        return false;
+    try {
+        auto tbs = o.bounding_sphere.itransformed(trafo_);
+        if (!aabb_intersects_sphere(child_->aabb(), tbs)) {
+            return false;
+        }
+        ScenePos c_overlap;
+        FixedArray<ScenePos, 3> c_intersection_point = uninitialized;
+        FixedArray<SceneDir, 3> c_normal = uninitialized;
+        bool touches = child_->touches(
+            o.transformed(trafo_.inverted()),
+            c_overlap,
+            c_intersection_point,
+            c_normal);
+        if (!touches) {
+            return false;
+        }
+        overlap = (ScenePos)c_overlap;
+        intersection_point = trafo_.transform(c_intersection_point);
+        normal = trafo_.rotate(c_normal.template casted<SceneDir>());
+        return true;
+    } catch (const std::runtime_error& e) {
+        if (auto e = try_getenv("POLYGON_FILENAME"); e.has_value()) {
+            save_polygon_to_obj(*e, o.transformed(trafo_.inverted()).corners.template casted<double>());
+        }
+        throw std::runtime_error((std::stringstream() <<
+            "touches_any_wo_ray_t: position [m]: " << (trafo_.t / meters) <<
+            ", rotation [°]: " << (matrix_2_tait_bryan_angles(trafo_.R) / degrees) <<
+            ": " << e.what() <<
+            "\nConsider setting the POLYGON_FILENAME environment variable").str());
     }
-    ScenePos c_overlap;
-    FixedArray<ScenePos, 3> c_intersection_point = uninitialized;
-    FixedArray<SceneDir, 3> c_normal = uninitialized;
-    bool touches = child_->touches(
-        o.transformed(trafo_.inverted()),
-        c_overlap,
-        c_intersection_point,
-        c_normal);
-    if (!touches) {
-        return false;
-    }
-    overlap = (ScenePos)c_overlap;
-    intersection_point = trafo_.transform(c_intersection_point);
-    normal = trafo_.rotate(c_normal.template casted<SceneDir>());
-    return true;
 }
 
 template <class TOther>
@@ -173,28 +187,39 @@ bool TransformedIntersectable::touches_any_with_ray_t(
     FixedArray<ScenePos, 3>& intersection_point,
     FixedArray<SceneDir, 3>& normal) const
 {
-    auto tbs = o.bounding_sphere.itransformed(trafo_);
-    if (!aabb_intersects_sphere(child_->aabb(), tbs)) {
-        return false;
+    try {
+        auto tbs = o.bounding_sphere.itransformed(trafo_);
+        if (!aabb_intersects_sphere(child_->aabb(), tbs)) {
+            return false;
+        }
+        ScenePos c_overlap;
+        ScenePos c_ray_t;
+        FixedArray<ScenePos, 3> c_intersection_point = uninitialized;
+        FixedArray<SceneDir, 3> c_normal = uninitialized;
+        bool touches = child_->touches(
+            o.transformed(trafo_.inverted()),
+            c_overlap,
+            c_ray_t,
+            c_intersection_point,
+            c_normal);
+        if (!touches) {
+            return false;
+        }
+        overlap = (ScenePos)c_overlap;
+        ray_t = (ScenePos)c_ray_t;
+        intersection_point = trafo_.transform(c_intersection_point);
+        normal = trafo_.rotate(c_normal.template casted<SceneDir>());
+        return true;
+    } catch (const std::runtime_error& e) {
+        if (auto e = try_getenv("POLYGON_FILENAME"); e.has_value()) {
+            save_polygon_to_obj(*e, o.transformed(trafo_.inverted()).corners.template casted<double>());
+        }
+        throw std::runtime_error((std::stringstream() <<
+            "touches_any_with_ray_t: position [m]: " << (trafo_.t / meters) <<
+            ", rotation [°]: " << (matrix_2_tait_bryan_angles(trafo_.R) / degrees) <<
+            ": " << e.what() <<
+            "\nConsider setting the POLYGON_FILENAME environment variable").str());
     }
-    ScenePos c_overlap;
-    ScenePos c_ray_t;
-    FixedArray<ScenePos, 3> c_intersection_point = uninitialized;
-    FixedArray<SceneDir, 3> c_normal = uninitialized;
-    bool touches = child_->touches(
-        o.transformed(trafo_.inverted()),
-        c_overlap,
-        c_ray_t,
-        c_intersection_point,
-        c_normal);
-    if (!touches) {
-        return false;
-    }
-    overlap = (ScenePos)c_overlap;
-    ray_t = (ScenePos)c_ray_t;
-    intersection_point = trafo_.transform(c_intersection_point);
-    normal = trafo_.rotate(c_normal.template casted<SceneDir>());
-    return true;
 }
 
 template <class TOther>

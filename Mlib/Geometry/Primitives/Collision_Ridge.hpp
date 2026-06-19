@@ -22,7 +22,7 @@ template <class TPosition>
 struct CollisionRidgeSphere {
     BoundingSphere<TPosition, 3> bounding_sphere;
     PhysicsMaterial physics_material;
-    FixedArray<TPosition, 2, 3> edge;
+    FixedArray<TPosition, 2, 3> corners;
     RaySegment3D<SceneDir, TPosition> ray;
     FixedArray<SceneDir, 3> normal;
     SceneDir min_cos;
@@ -37,7 +37,7 @@ struct CollisionRidgeSphere {
         return CollisionRidgeSphere<TPosition2>{
             .bounding_sphere = bounding_sphere.template casted<TPosition2>(),
             .physics_material = physics_material,
-            .edge = edge.template casted<TPosition2>(),
+            .corners = corners.template casted<TPosition2>(),
             .ray = ray.template casted<SceneDir, TPosition2>(),
             .normal = normal,
             .min_cos = min_cos
@@ -46,7 +46,7 @@ struct CollisionRidgeSphere {
     bool operator == (const CollisionRidgeSphere& other) const {
         return (bounding_sphere == other.bounding_sphere) &&
                (physics_material == other.physics_material) &&
-               all(edge == other.edge) &&
+               all(corners == other.corners) &&
                (ray == other.ray) &&
                all(normal == other.normal) &&
                (min_cos == other.min_cos);
@@ -61,7 +61,7 @@ CollisionRidgeSphere<TPosition> operator + (
     return {
         crs.bounding_sphere + p,
         crs.physics_material,
-        FixedArray<TPosition, 2, 3>{ crs.edge[0] + p,  crs.edge[1] + p },
+        FixedArray<TPosition, 2, 3>{ crs.corners[0] + p,  crs.corners[1] + p },
         crs.ray + p,
         crs.normal,
         crs.min_cos

@@ -325,7 +325,7 @@ void Mlib::handle_reflection(
             throw std::runtime_error("Lines require a collision partner with either normals or plane normals");
         }
         normal = N0->normal;
-        overlap = -(dot0d(c.l1->line[1].casted<ScenePos>(), normal.casted<ScenePos>()) + (ScenePos)N0->intercept);
+        overlap = -(dot0d(c.l1->corners[1].casted<ScenePos>(), normal.casted<ScenePos>()) + (ScenePos)N0->intercept);
         if (any(c.mesh0_material & PhysicsMaterial::ATTR_TWO_SIDED)) {
             if (overlap < 0) {
                 normal = -normal;

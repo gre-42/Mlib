@@ -91,7 +91,7 @@ bool SweptSphereAabb::touches(
     FixedArray<ScenePos, 3>& intersection_point,
     FixedArray<SceneDir, 3>& normal) const
 {
-    if (!aabb_large_.intersects(AxisAlignedBoundingBox<CompressedScenePos, 3>::from_points(r1.edge))) {
+    if (!aabb_large_.intersects(AxisAlignedBoundingBox<CompressedScenePos, 3>::from_points(r1.corners))) {
         return false;
     }
     ClosestPoint<SceneDir, ScenePos> closest_point;
@@ -113,7 +113,7 @@ bool SweptSphereAabb::touches(
     FixedArray<ScenePos, 3>& intersection_point,
     FixedArray<SceneDir, 3>& normal) const
 {
-    if (!aabb_large_.intersects(AxisAlignedBoundingBox<CompressedScenePos, 3>::from_points(l1.line))) {
+    if (!aabb_large_.intersects(AxisAlignedBoundingBox<CompressedScenePos, 3>::from_points(l1.corners))) {
         return false;
     }
     ray_t = NAN;

@@ -102,7 +102,7 @@ CollisionRidgeSphere<TPosition> CollisionRidgeSphere<TPosition>::transformed(con
     return CollisionRidgeSphere{
         bounding_sphere.template casted<ScenePos>().transformed(trafo).template casted<TPosition>(),
         physics_material,
-        trafo.transform(edge.template casted<ScenePos>()).template casted<TPosition>(),
+        trafo.transform(corners.template casted<ScenePos>()).template casted<TPosition>(),
         ray.template casted<SceneDir, ScenePos>().transformed(trafo).template casted<SceneDir, TPosition>(),
         trafo.rotate(normal),
         min_cos
