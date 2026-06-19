@@ -11,7 +11,9 @@ class TransformationMatrix;
 class IAbsoluteMovable: public virtual DanglingBaseClass {
 public:
     virtual ~IAbsoluteMovable() = default;
-    virtual void set_absolute_model_matrix(const TransformationMatrix<float, ScenePos, 3>& absolute_model_matrix) = 0;
+    virtual void set_absolute_model_matrix(
+        const TransformationMatrix<float, ScenePos, 3>& absolute_model_matrix,
+        const SourceLocation& loc) = 0;
     virtual TransformationMatrix<float, ScenePos, 3> get_new_absolute_model_matrix() const = 0;
 };
 

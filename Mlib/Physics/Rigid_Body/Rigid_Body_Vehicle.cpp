@@ -603,10 +603,14 @@ FixedArray<float, 3> RigidBodyVehicle::velocity_at_position(const FixedArray<Sce
     return rbp_.velocity_at_position(position);
 }
 
-void RigidBodyVehicle::set_absolute_model_matrix(const TransformationMatrix<float, ScenePos, 3>& absolute_model_matrix) {
+void RigidBodyVehicle::set_absolute_model_matrix(
+    const TransformationMatrix<float, ScenePos, 3>& absolute_model_matrix,
+    const SourceLocation& loc)
+{
     rbp_.set_pose(
         absolute_model_matrix.R,
-        absolute_model_matrix.t);
+        absolute_model_matrix.t,
+        loc);
 }
 
 TransformationMatrix<float, ScenePos, 3> RigidBodyVehicle::get_new_absolute_model_matrix() const {
@@ -696,7 +700,8 @@ void RigidBodyVehicle::verify_tire_angular_velocity(size_t id) const {
         if (std::abs((tire.angular_velocity / rpm) - (dot0d(tire.rb->rbp_.w_, abs_rotation_axis) / rpm)) > 0.1) {
             std::stringstream sstr;
             sstr <<
-                "Last update: " << tire.rb->rbp_.last_update_source_location_ <<
+                "Last location update: " << tire.rb->rbp_.last_location_update_source_location_ <<
+                "Last velocity update: " << tire.rb->rbp_.last_velocity_update_source_location_ <<
                 " vehicle: \"" << name() <<
                 "\": tire " << id <<
                 " scalar RPM: " << (tire.angular_velocity / rpm) <<
@@ -772,8 +777,8 @@ void RigidBodyVehicle::set_base_angular_velocity(
             }
             auto dL_vec = available_dL * abs_rotation_axis;
             auto dt = cfg.dt_substeps(phase);
-            base_rotor.rb->rbp_.integrate_delta_angular_momentum(dL_vec, 0.f, dt);
-            rbp_.integrate_delta_angular_momentum(dL_vec, 0.f, dt);
+            base_rotor.rb->rbp_.integrate_delta_angular_momentum(dL_vec, 0.f, dt, CURRENT_SOURCE_LOCATION);
+            rbp_.integrate_delta_angular_momentum(dL_vec, 0.f, dt, CURRENT_SOURCE_LOCATION);
             base_rotor.angular_velocity = dot0d(base_rotor.rb->rbp_.w_, abs_rotation_axis);
         } else {
             // Change angular velocity along the rotation axis, while preserving the remaining components.

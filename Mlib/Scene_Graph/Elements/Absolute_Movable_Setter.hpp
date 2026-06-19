@@ -34,7 +34,7 @@ public:
         if (node->absolute_movable_ != nullptr) {
             throw std::runtime_error("Absolute movable already set (0)");
         }
-        absolute_movable->set_absolute_model_matrix(node->absolute_model_matrix());
+        absolute_movable->set_absolute_model_matrix(node->absolute_model_matrix(), loc);
         // Initialize after check above so the absolute_movable unique_ptr is not
         // destroyed in case of an error.
         this->absolute_movable = std::move(absolute_movable);
@@ -54,7 +54,7 @@ public:
         if (node->absolute_movable_ != nullptr) {
             throw std::runtime_error("Absolute movable already set (1)");
         }
-        absolute_movable->set_absolute_model_matrix(node->absolute_model_matrix());
+        absolute_movable->set_absolute_model_matrix(node->absolute_model_matrix(), loc);
         // Initialize after check above so the absolute_movable unique_ptr is not
         // destroyed in case of an error.
         this->absolute_movable = std::move(absolute_movable);

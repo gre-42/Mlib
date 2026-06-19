@@ -144,7 +144,7 @@ bool VehicleChanger::enter_vehicle(
                 "Could not find passenger to be deleted. Vehicle: \"" + a_rb_old->name() +
                 "\". Passenger: \"" + a.get_primary_scene_vehicle()->rb()->name() + '"');
         }
-        b_rb->rbp_.set_pose(b_new_trafo.R, b_new_trafo.t);
+        b_rb->rbp_.set_pose(b_new_trafo.R, b_new_trafo.t, CURRENT_SOURCE_LOCATION);
         b_rb->rbp_.v_com_ = 0.f;
         b_rb->rbp_.w_ = 0.f;
         b.get_primary_scene_vehicle()->scene_node()->set_absolute_pose(

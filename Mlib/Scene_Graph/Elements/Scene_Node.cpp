@@ -941,7 +941,7 @@ void SceneNode::move(
             auto mr2 = relative_movable_->get_new_relative_model_matrix();
             set_relative_pose(mr2.t, matrix_2_tait_bryan_angles(mr2.R), 1.f, SceneTime::successor());
             v2 = relative_view_matrix() * v;
-            absolute_movable_->set_absolute_model_matrix(v2.inverted_scaled());
+            absolute_movable_->set_absolute_model_matrix(v2.inverted_scaled(), CURRENT_SOURCE_LOCATION);
         } else {
             if (absolute_movable_ != nullptr) {
                 auto m = absolute_movable_->get_new_absolute_model_matrix();
@@ -1902,7 +1902,7 @@ void SceneNode::clear_transformation_history(
     }
     auto m = parent_m * child_m;
     if (absolute_movable_ != nullptr) {
-        absolute_movable_->set_absolute_model_matrix(m);
+        absolute_movable_->set_absolute_model_matrix(m, CURRENT_SOURCE_LOCATION);
     }
     set_absolute_pose(m.t, matrix_2_tait_bryan_angles(m.R), scale_, SceneTime::initial());
     for (const auto& [_, c] : children_) {

@@ -33,7 +33,7 @@ void GravityEfp::increment_external_forces(
                 throw std::runtime_error("Attempt to integrate gravity of deactivated rigid body");
             }
             auto dt = cfg.dt_substeps(phase);
-            rb.rigid_body->rbp_.integrate_delta_v(world.gravity->vector * dt, dt);
+            rb.rigid_body->rbp_.integrate_delta_v(world.gravity->vector * dt, dt, CURRENT_SOURCE_LOCATION);
         }
     }
 }

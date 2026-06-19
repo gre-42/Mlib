@@ -25,7 +25,9 @@ public:
         const DanglingBaseClassRef<SceneNode>& follower_node);
     ~KeepOffsetFromCamera();
     virtual void advance_time(float dt, const StaticWorld& world) override;
-    virtual void set_absolute_model_matrix(const TransformationMatrix<float, ScenePos, 3>& absolute_model_matrix) override;
+    virtual void set_absolute_model_matrix(
+        const TransformationMatrix<float, ScenePos, 3>& absolute_model_matrix,
+        const SourceLocation& loc) override;
     virtual TransformationMatrix<float, ScenePos, 3> get_new_absolute_model_matrix() const override;
     virtual void set_scene_node(
         Scene& scene,

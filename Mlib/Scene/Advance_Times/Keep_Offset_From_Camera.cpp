@@ -25,7 +25,7 @@ KeepOffsetFromCamera::KeepOffsetFromCamera(
             if (follower_node_ == nullptr) {
                 return;
             }
-            set_absolute_model_matrix(follower_node_->absolute_model_matrix());
+            set_absolute_model_matrix(follower_node_->absolute_model_matrix(), CURRENT_SOURCE_LOCATION);
             advance_time(NAN);
             auto trafo = get_new_absolute_model_matrix();
             follower_node_->set_absolute_pose(
@@ -64,7 +64,10 @@ void KeepOffsetFromCamera::advance_time(float dt) {
     }
 }
 
-void KeepOffsetFromCamera::set_absolute_model_matrix(const TransformationMatrix<float, ScenePos, 3>& absolute_model_matrix) {
+void KeepOffsetFromCamera::set_absolute_model_matrix(
+    const TransformationMatrix<float, ScenePos, 3>& absolute_model_matrix,
+    const SourceLocation& loc)
+{
     transformation_matrix_ = absolute_model_matrix;
 }
 

@@ -59,7 +59,7 @@ void CreateRigidStatics::execute(const LoadSceneJsonUserFunctionArgs& args)
         fixed_zeros<float, 3>() * degrees,  // I_rotation
         PenetrationLimitsFactory::inf(),
         scene_node_resources.get_geographic_mapping(VariableAndHash<std::string>{"world"}));
-    rb->set_absolute_model_matrix(absolute_model_matrix);
+    rb->set_absolute_model_matrix(absolute_model_matrix, CURRENT_SOURCE_LOCATION);
 
     if (args.arguments.contains(KnownArgs::flags)) {
         rb->flags_ = rigid_body_vehicle_flags_from_string(args.arguments.at<std::string>(KnownArgs::flags));

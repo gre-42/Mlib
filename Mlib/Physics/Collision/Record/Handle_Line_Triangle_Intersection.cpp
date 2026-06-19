@@ -31,10 +31,10 @@ void Mlib::handle_line_triangle_intersection(const IntersectionScene& c)
         throw std::runtime_error("Collision of identical objects");
     }
     if (int(c.q0.has_value()) + int(c.t0.has_value()) + int(c.i0 != nullptr) != 1) {
-        throw std::runtime_error("handle_line_triangle_intersection: Not exactly one of q0/t0/i0 are set");
+        throw std::runtime_error("handle_line_triangle_intersection: Not exactly one of q0/t0/i0 is set");
     }
     if (int(c.l1.has_value()) + int(c.r1.has_value()) + int(c.i1 != nullptr) != 1) {
-        throw std::runtime_error("handle_line_triangle_intersection: Not exactly one of l1/r1/i1 are set");
+        throw std::runtime_error("handle_line_triangle_intersection: Not exactly one of l1/r1/i1 is set");
     }
     if (((c.history.phase.group.penetration_class == PenetrationClass::BULLET_LINE) ==
         any(c.mesh0_material & PhysicsMaterial::OBJ_BULLET_LINE_SEGMENT)) &&
@@ -114,13 +114,26 @@ void Mlib::handle_line_triangle_intersection(const IntersectionScene& c)
         }
     } catch (const std::runtime_error& e) {
         throw std::runtime_error(std::format(
-            "Error colliding objects \"{}\" and \"{}\", coords [m] \"{}\" and \"{}\", rotation [°] \"{}\" and \"{}\", meshes \"{}\" and \"{}\": {}",
+            "Error colliding objects \"{}\" and \"{}\", "
+            "coords [m] \"{}\" and \"{}\", "
+            "rotation [°] \"{}\" and \"{}\", "
+            "location update \"{}:{}\" and \"{}:{}\", "
+            "velocity update \"{}:{}\" and \"{}:{}\", "
+            "meshes \"{}\" and \"{}\": {}",
             c.o0.name(),
             c.o1.name(),
             (std::stringstream() << (c.o0.rbp_.abs_position() / meters)).str(),
             (std::stringstream() << (c.o1.rbp_.abs_position() / meters)).str(),
             (std::stringstream() << (matrix_2_tait_bryan_angles(c.o0.rbp_.rotation_) / degrees)).str(),
             (std::stringstream() << (matrix_2_tait_bryan_angles(c.o1.rbp_.rotation_) / degrees)).str(),
+            c.o0.rbp_.last_location_update_source_location_.file_name(),
+            c.o0.rbp_.last_location_update_source_location_.line(),
+            c.o1.rbp_.last_location_update_source_location_.file_name(),
+            c.o1.rbp_.last_location_update_source_location_.line(),
+            c.o0.rbp_.last_velocity_update_source_location_.file_name(),
+            c.o0.rbp_.last_velocity_update_source_location_.line(),
+            c.o1.rbp_.last_velocity_update_source_location_.file_name(),
+            c.o1.rbp_.last_velocity_update_source_location_.line(),
             (c.mesh0 == nullptr) ? "<null>" : c.mesh0->name(),
             (c.mesh1 == nullptr) ? "<null>" : c.mesh1->name(),
             e.what()));

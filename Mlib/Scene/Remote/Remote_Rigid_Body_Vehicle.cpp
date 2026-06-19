@@ -510,7 +510,7 @@ void RemoteRigidBodyVehicle::read(
     auto mask = ~RigidBodyVehicleFlags::WAITING_FOR_INITIAL_POSITION;
     if (pp.update_position) {
         assert_true(has_location);
-        rb_->rbp_.set_pose(tait_bryan_angles_2_matrix(rotation), position);
+        rb_->rbp_.set_pose(tait_bryan_angles_2_matrix(rotation), position, CURRENT_SOURCE_LOCATION);
         rb_->rbp_.v_com_ = v_com;
         rb_->rbp_.w_ = w;
         rb_->flags_ &= ~RigidBodyVehicleFlags::WAITING_FOR_INITIAL_POSITION;

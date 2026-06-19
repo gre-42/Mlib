@@ -64,7 +64,10 @@ RigidBodySinglePlayback::RigidBodySinglePlayback()
     : transformation_matrix_{ fixed_nans<float, 3, 3>(), fixed_nans<ScenePos, 3>() }
 {}
 
-void RigidBodySinglePlayback::set_absolute_model_matrix(const TransformationMatrix<float, ScenePos, 3>& absolute_model_matrix) {
+void RigidBodySinglePlayback::set_absolute_model_matrix(
+    const TransformationMatrix<float, ScenePos, 3>& absolute_model_matrix,
+    const SourceLocation& loc)
+{
     transformation_matrix_ = absolute_model_matrix;
 }
 

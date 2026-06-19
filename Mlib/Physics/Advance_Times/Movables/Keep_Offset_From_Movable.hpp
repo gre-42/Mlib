@@ -53,7 +53,9 @@ public:
         const FixedArray<float, 3>& offset);
     virtual ~KeepOffsetFromMovable() override;
     virtual void advance_time(float dt, const StaticWorld& world) override;
-    virtual void set_absolute_model_matrix(const TransformationMatrix<float, ScenePos, 3>& absolute_model_matrix) override;
+    virtual void set_absolute_model_matrix(
+        const TransformationMatrix<float, ScenePos, 3>& absolute_model_matrix,
+        const SourceLocation& loc) override;
     virtual TransformationMatrix<float, ScenePos, 3> get_new_absolute_model_matrix() const override;
     KeepOffsetFromMovableFollowerNodeSetter set_follower;
     KeepOffsetFromMovableFollowedNodeSetter set_followed;

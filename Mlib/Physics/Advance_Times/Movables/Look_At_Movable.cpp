@@ -48,7 +48,10 @@ void LookAtMovable::advance_time(float dt, const StaticWorld& world) {
     }
 }
 
-void LookAtMovable::set_absolute_model_matrix(const TransformationMatrix<float, ScenePos, 3>& absolute_model_matrix) {
+void LookAtMovable::set_absolute_model_matrix(
+    const TransformationMatrix<float, ScenePos, 3>& absolute_model_matrix,
+    const SourceLocation& loc)
+{
     transformation_matrix_ = absolute_model_matrix;
 }
 

@@ -43,9 +43,9 @@ public:
     FixedArray<float, 3> solve_abs_I(const FixedArray<float, 3>& x) const;
     FixedArray<float, 3> dot1d_abs_I(const FixedArray<float, 3>& x) const;
     FixedArray<ScenePos, 3> transform_to_world_coordinates(const FixedArray<float, 3>& v) const;
-    void set_pose(const FixedArray<float, 3, 3>& rotation, const FixedArray<ScenePos, 3>& position);
-    void integrate_delta_v(const FixedArray<float, 3>& dv, float dt);
-    void integrate_delta_angular_momentum(const FixedArray<float, 3>& dL, float extra_w, float dt);
+    void set_pose(const FixedArray<float, 3, 3>& rotation, const FixedArray<ScenePos, 3>& position, const SourceLocation& loc);
+    void integrate_delta_v(const FixedArray<float, 3>& dv, float dt, const SourceLocation& loc);
+    void integrate_delta_angular_momentum(const FixedArray<float, 3>& dL, float extra_w, float dt, const SourceLocation& loc);
     void integrate_impulse(const VectorAtPosition<float, ScenePos, 3>& J, float extra_w, float dt, const SourceLocation& loc);
     float energy() const;
     float effective_mass(const VectorAtPosition<float, ScenePos, 3>& vp) const;
@@ -62,7 +62,8 @@ public:
     FixedArray<ScenePos, 3> abs_com_;
     
     PenetrationLimitsFactory penetration_limits_;
-    SourceLocation last_update_source_location_;
+    SourceLocation last_location_update_source_location_;
+    SourceLocation last_velocity_update_source_location_;
 private:
     bool I_is_diagonal_;
     void update_abs_I_and_inv();

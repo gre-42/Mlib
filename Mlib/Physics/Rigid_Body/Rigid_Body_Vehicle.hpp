@@ -250,7 +250,9 @@ public:
     void get_rigid_pulses(std::unordered_set<RigidBodyPulses*>& rbps);
 
     // IAbsoluteMovable
-    virtual void set_absolute_model_matrix(const TransformationMatrix<float, ScenePos, 3>& absolute_model_matrix) override;
+    virtual void set_absolute_model_matrix(
+        const TransformationMatrix<float, ScenePos, 3>& absolute_model_matrix,
+        const SourceLocation& loc) override;
     virtual TransformationMatrix<float, ScenePos, 3> get_new_absolute_model_matrix() const override;
 
     // INodeSetter
