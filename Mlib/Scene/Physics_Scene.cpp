@@ -355,5 +355,6 @@ void PhysicsScene::instantiate_game_logic(std::function<void()> setup_new_round)
         vehicle_spawners_,
         players_,
         supply_depots_,
+        physics_engine_.config(),
         std::move(setup_new_round));
 }

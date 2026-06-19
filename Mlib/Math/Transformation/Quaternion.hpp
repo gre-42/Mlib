@@ -3,6 +3,7 @@
 #include <Mlib/Geometry/Fixed_Cross.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
+#include <Mlib/Math/Lerp.hpp>
 #include <Mlib/Misc/Pragma_Gcc.hpp>
 #include <cmath>
 #include <iostream>
@@ -302,7 +303,7 @@ public:
         const OffsetAndQuaternion& m0 = *this;
         const OffsetAndQuaternion& m1 = other;
         return OffsetAndQuaternion{
-            m0.t * TPos(1 - a0) + m1.t * TPos(a0),
+            lerp(m0.t, m1.t, TPos(a0)),
             m0.q.slerp(m1.q, TDir(a0))};
     }
     template <class Archive>

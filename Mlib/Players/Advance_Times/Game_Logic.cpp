@@ -19,6 +19,7 @@ GameLogic::GameLogic(
     VehicleSpawners& vehicle_spawners,
     Players& players,
     SupplyDepots& supply_depots,
+    const PhysicsEngineConfig& physics_engine_config,
     std::function<void()> setup_new_round)
     : spawner{ vehicle_spawners, players, cfg, scene }
     , supply_depots_waypoints_collection{ supply_depots, navigate }
@@ -28,6 +29,7 @@ GameLogic::GameLogic(
     , vehicle_spawners_{ vehicle_spawners }
     , players_{ players }
     , supply_depots_{ supply_depots }
+    , physics_engine_config_{ physics_engine_config }
 {
     advance_times.add_advance_time({ *this, CURRENT_SOURCE_LOCATION }, CURRENT_SOURCE_LOCATION);
 }
@@ -43,7 +45,7 @@ void GameLogic::advance_time(float dt, const StaticWorld& world) {
     vehicle_spawners_.advance_time(dt);
     team_deathmatch.handle_respawn();
     bystanders.handle_bystanders();
-    vehicle_changer.change_vehicles(world.time);
+    vehicle_changer.change_vehicles(physics_engine_config_, world.time);
     supply_depots_.handle_supply_depots(dt);
     if (getenv_default_bool("PRINT_PLAYERS_ACTIVE", false)) {
         linfo() << "Players active: " << players_.nactive();

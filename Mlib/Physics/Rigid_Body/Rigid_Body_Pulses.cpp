@@ -5,6 +5,8 @@
 #include <Mlib/Math/Fixed_Inverse.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
+#include <Mlib/Math/Lerp.hpp>
+#include <Mlib/Math/Transformation/Quaternion.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
 #include <Mlib/Physics/Physics_Engine/Penetration_Limits.hpp>
 #include <Mlib/Physics/Rotating_Frame.hpp>
@@ -119,12 +121,21 @@ FixedArray<float, 3> RigidBodyPulses::abs_z() const {
 }
 
 void RigidBodyPulses::set_pose(
-    const FixedArray<float, 3, 3>& rotation,
+    const FixedArray<SceneDir, 3, 3>& rotation,
     const FixedArray<ScenePos, 3>& position,
+    float relaxation,
     const SourceLocation& loc)
 {
-    rotation_ = rotation;
-    abs_com_ = dot1d(rotation_, com_).casted<ScenePos>() + position;
+    auto abs_com = dot1d(rotation, com_).casted<ScenePos>() + position;
+    if (relaxation == 1.f) {
+        rotation_ = rotation;
+        abs_com_ = abs_com;
+    } else {
+        auto q0 = Quaternion<SceneDir>{rotation_};
+        auto q1 = Quaternion<SceneDir>{rotation};
+        rotation_ = q0.slerp(q1, relaxation).to_rotation_matrix();
+        abs_com_= lerp(abs_com_, abs_com, (ScenePos)relaxation);
+    }
     if (!I_is_diagonal_) {
         update_abs_I_and_inv();
     }
@@ -160,7 +171,11 @@ void RigidBodyPulses::integrate_delta_v(
     float dt,
     const SourceLocation& loc)
 {
-    v_com_ += dv;
+    set_v_com(v_com_ + dv, dt, loc);
+}
+
+void RigidBodyPulses::set_v_com(const FixedArray<float, 3>& v_com, float dt, const SourceLocation& loc) {
+    v_com_ = v_com;
     auto vmax = penetration_limits_.vmax_translation(dt);
     if (vmax != INFINITY) {
         auto l = std::sqrt(sum(squared(v_com_)));
@@ -177,7 +192,11 @@ void RigidBodyPulses::integrate_delta_angular_momentum(
     float dt,
     const SourceLocation& loc)
 {
-    w_ += (1 + extra_w) * solve_abs_I(dL);
+    set_w(w_ + (1 + extra_w) * solve_abs_I(dL), dt, loc);
+}
+
+void RigidBodyPulses::set_w(const FixedArray<float, 3>& w, float dt, const SourceLocation& loc) {
+    w_ = w;
     float wmax = penetration_limits_.wmax(dt);
     if (wmax != INFINITY) {
         auto l = std::sqrt(sum(squared(w_)));

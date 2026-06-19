@@ -7,6 +7,7 @@
 #include <Mlib/Players/Scene_Vehicle/Externals_Mode.hpp>
 #include <Mlib/Players/Scene_Vehicle/Scene_Vehicle.hpp>
 #include <Mlib/Players/Scene_Vehicle/Vehicle_Spawner.hpp>
+#include <Mlib/Scene_Config/Physics_Engine_Config.hpp>
 #include <Mlib/Scene_Config/Scene_Precision.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Time.hpp>
@@ -24,7 +25,9 @@ VehicleChanger::VehicleChanger(
 {}
 
 bool VehicleChanger::change_vehicle(
-    VehicleSpawner& s, std::chrono::steady_clock::time_point time)
+    VehicleSpawner& s,
+    const PhysicsEngineConfig& cfg,
+    std::chrono::steady_clock::time_point time)
 {
     if (!s.has_player()) {
         return false;
@@ -45,7 +48,7 @@ bool VehicleChanger::change_vehicle(
         CURRENT_SOURCE_LOCATION);
     auto other_player = next_rb->drivers_.try_get(p->next_seat());
     if (other_player == nullptr) {
-        return enter_vehicle(s, *next_vehicle.get(), time);
+        return enter_vehicle(s, *next_vehicle.get(), cfg, time);
     }
     return false;
     // } else {
@@ -57,10 +60,13 @@ bool VehicleChanger::change_vehicle(
     // }
 }
 
-void VehicleChanger::change_vehicles(std::chrono::steady_clock::time_point time) {
+void VehicleChanger::change_vehicles(
+    const PhysicsEngineConfig& cfg,
+    std::chrono::steady_clock::time_point time)
+{
     ThrowingLockGuard delete_lock{delete_node_mutex_};
     for (const auto& [_, s] : vehicle_spawners_.spawners()) {
-        change_vehicle(*s, time);
+        change_vehicle(*s, cfg, time);
     }
 }
 
@@ -99,6 +105,7 @@ void VehicleChanger::swap_vehicles(Player& a, Player& b) {
 bool VehicleChanger::enter_vehicle(
     VehicleSpawner& a,
     VehicleSpawner& b,
+    const PhysicsEngineConfig& cfg,
     std::chrono::steady_clock::time_point time)
 {
     if (!a.has_player()) {
@@ -144,9 +151,9 @@ bool VehicleChanger::enter_vehicle(
                 "Could not find passenger to be deleted. Vehicle: \"" + a_rb_old->name() +
                 "\". Passenger: \"" + a.get_primary_scene_vehicle()->rb()->name() + '"');
         }
-        b_rb->rbp_.set_pose(b_new_trafo.R, b_new_trafo.t, CURRENT_SOURCE_LOCATION);
-        b_rb->rbp_.v_com_ = 0.f;
-        b_rb->rbp_.w_ = 0.f;
+        b_rb->rbp_.set_pose(b_new_trafo.R, b_new_trafo.t, 1.f, CURRENT_SOURCE_LOCATION);
+        b_rb->rbp_.set_v_com(fixed_zeros<float, 3>(), cfg.dt_min(), CURRENT_SOURCE_LOCATION);
+        b_rb->rbp_.set_w(fixed_zeros<float, 3>(), cfg.dt_min(), CURRENT_SOURCE_LOCATION);
         b.get_primary_scene_vehicle()->scene_node()->set_absolute_pose(
             b_new_trafo.t,
             matrix_2_tait_bryan_angles(b_new_trafo.R),

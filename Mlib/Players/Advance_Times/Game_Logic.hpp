@@ -29,6 +29,7 @@ public:
         VehicleSpawners& vehicle_spawners,
         Players& players,
         SupplyDepots& supply_depots,
+        const PhysicsEngineConfig& physics_engine_config,
         std::function<void()> setup_new_round);
     ~GameLogic();
     virtual void advance_time(float dt, const StaticWorld& world) override;
@@ -42,6 +43,7 @@ private:
     VehicleSpawners& vehicle_spawners_;
     Players& players_;
     SupplyDepots& supply_depots_;
+    const PhysicsEngineConfig& physics_engine_config_;
 };
 
 }

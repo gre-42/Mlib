@@ -215,8 +215,8 @@ void RigidBodyVehicle::integrate_force(
     if (damping != 0) {
         auto vn = n * dot0d(rbp_.v_com_, n);
         auto vt = rbp_.v_com_ - vn;
-        rbp_.v_com_ = (1 - damping) * vn + vt * (1 - friction);
-        rbp_.w_ *= 1 - damping;
+        rbp_.set_v_com((1 - damping) * vn + vt * (1 - friction), cfg.dt_substeps(phase), CURRENT_SOURCE_LOCATION);
+        rbp_.set_w(rbp_.w_ * (1 - damping), cfg.dt_substeps(phase), CURRENT_SOURCE_LOCATION);
     }
 }
 
@@ -245,7 +245,7 @@ void RigidBodyVehicle::collide_with_air(CollisionHistory& c)
         }
         set_rotor_angular_velocity(rotor_id, rotor->w, c.cfg, c.phase, P.power);
         if (rotor->rb != nullptr) {
-            rotor->rb->rbp_.w_ = rotor->angular_velocity * z3_from_3x3(rotor->rb->rbp_.rotation_);
+            rotor->rb->rbp_.set_w(rotor->angular_velocity * z3_from_3x3(rotor->rb->rbp_.rotation_), c.cfg.dt_substeps(c.phase), CURRENT_SOURCE_LOCATION);
             auto T0 = rbp_.abs_transformation();
             auto T1 = rotor->rb->rbp_.abs_transformation();
             c.contact_infos.push_back(std::make_unique<PointContactInfo2>(
@@ -610,6 +610,7 @@ void RigidBodyVehicle::set_absolute_model_matrix(
     rbp_.set_pose(
         absolute_model_matrix.R,
         absolute_model_matrix.t,
+        1.f,
         loc);
 }
 

@@ -198,7 +198,7 @@ void PhysicsEngine::burn_in(
                         if (o.rigid_body->is_waiting_for_initial_position()) {
                             throw std::runtime_error("Attempt to burn-in rigidy body waiting for its initial position");
                         }
-                        o.rigid_body->rbp_.w_ = 0;
+                        o.rigid_body->rbp_.set_w(fixed_zeros<float, 3>(), cfg_.dt_substeps(phase), CURRENT_SOURCE_LOCATION);
                     }
                 }
                 move_rigid_bodies(

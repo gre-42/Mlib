@@ -311,8 +311,8 @@ DanglingBaseClassPtr<RemoteRigidBodyVehicle> RemoteRigidBodyVehicle::try_create_
         throw std::runtime_error("RemoteRigidBodyVehicle: Unknown scene object type");
     }();
     auto rb = get_rigid_body_vehicle(pnode.get(), CURRENT_SOURCE_LOCATION);
-    rb->rbp_.v_com_ = v_com;
-    rb->rbp_.w_ = w;
+    rb->rbp_.set_v_com(v_com, physics_scene.physics_engine_.config().dt_min(), CURRENT_SOURCE_LOCATION);
+    rb->rbp_.set_w(w, physics_scene.physics_engine_.config().dt_min(), CURRENT_SOURCE_LOCATION);
     rb->flags_ = flags | RigidBodyVehicleFlags::WAITING_FOR_INITIAL_POSITION;
     rb->remote_object_id_ = remote_object_id;
     if (owner_site_id.has_value()) {
@@ -510,9 +510,12 @@ void RemoteRigidBodyVehicle::read(
     auto mask = ~RigidBodyVehicleFlags::WAITING_FOR_INITIAL_POSITION;
     if (pp.update_position) {
         assert_true(has_location);
-        rb_->rbp_.set_pose(tait_bryan_angles_2_matrix(rotation), position, CURRENT_SOURCE_LOCATION);
-        rb_->rbp_.v_com_ = v_com;
-        rb_->rbp_.w_ = w;
+        float relaxation = pp.invalidate_transformation_history
+            ? 1.f
+            : physics_scene_->physics_engine_.config().remote_location_relaxation;
+        rb_->rbp_.set_pose(tait_bryan_angles_2_matrix(rotation), position, relaxation, CURRENT_SOURCE_LOCATION);
+        rb_->rbp_.set_v_com(v_com, physics_scene_->physics_engine_.config().dt_min(), CURRENT_SOURCE_LOCATION);
+        rb_->rbp_.set_w(w, physics_scene_->physics_engine_.config().dt_min(), CURRENT_SOURCE_LOCATION);
         rb_->flags_ &= ~RigidBodyVehicleFlags::WAITING_FOR_INITIAL_POSITION;
     } else if (rb_->is_deactivated_avatar()) {
         mask &= ~RigidBodyVehicleFlags::IS_ANY_AVATAR;

@@ -22,6 +22,9 @@ struct PhysicsEngineConfig {
     inline float ncached_(size_t nsubsteps2) const {
         return dt_io / dt_substeps_(nsubsteps2);
     }
+    inline float dt_min() const {
+        return dt_substeps_(nsubsteps);
+    }
 
     float dt = 0.01667f * seconds;
     float dt_io = 0.01667f * seconds;
@@ -84,6 +87,9 @@ struct PhysicsEngineConfig {
 
     // Particles
     uint32_t max_interpolated_particles = 20;
+
+    // Remote
+    float remote_location_relaxation = 0.2f;
 };
 
 }
