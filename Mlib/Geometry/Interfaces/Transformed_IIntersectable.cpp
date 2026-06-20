@@ -5,6 +5,8 @@
 #include <Mlib/Geometry/Primitives/Collision_Polygon.hpp>
 #include <Mlib/Geometry/Primitives/Collision_Ridge.hpp>
 #include <Mlib/Geometry/Primitives/Intersectors/Aabb_Sphere_Intersection.hpp>
+#include <Mlib/Geometry/Primitives/Intersectors/Closest_Point_On_Intersection.hpp>
+#include <Mlib/Geometry/Primitives/Intersectors/Intersection_Status.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Misc/Pragma_Gcc.hpp>
 #include <Mlib/Os/Env.hpp>
@@ -34,48 +36,53 @@ std::shared_ptr<IIntersectable> TransformedIntersectable::sweep(
     throw std::runtime_error("TransformedIntersectable cannot sweep");
 }
 
-bool TransformedIntersectable::touches(
+IntersectionStatus TransformedIntersectable::touches(
     const CollisionPolygonSphere<CompressedScenePos, 4>& q,
     ScenePos& overlap,
     FixedArray<ScenePos, 3>& intersection_point,
-    FixedArray<SceneDir, 3>& normal) const
+    FixedArray<SceneDir, 3>& normal,
+    ClosestPointOnIntersection on_intersection) const
 {
-    return touches_any_wo_ray_t(q, overlap, intersection_point, normal);
+    return touches_any_wo_ray_t(q, overlap, intersection_point, normal, on_intersection);
 }
 
-bool TransformedIntersectable::touches(
+IntersectionStatus TransformedIntersectable::touches(
     const CollisionPolygonSphere<CompressedScenePos, 3>& t,
     ScenePos& overlap,
     FixedArray<ScenePos, 3>& intersection_point,
-    FixedArray<SceneDir, 3>& normal) const
+    FixedArray<SceneDir, 3>& normal,
+    ClosestPointOnIntersection on_intersection) const
 {
-    return touches_any_wo_ray_t(t, overlap, intersection_point, normal);
+    return touches_any_wo_ray_t(t, overlap, intersection_point, normal, on_intersection);
 }
 
-bool TransformedIntersectable::touches(
+IntersectionStatus TransformedIntersectable::touches(
     const CollisionRidgeSphere<CompressedScenePos>& r1,
     ScenePos& overlap,
     FixedArray<ScenePos, 3>& intersection_point,
-    FixedArray<SceneDir, 3>& normal) const
+    FixedArray<SceneDir, 3>& normal,
+    ClosestPointOnIntersection on_intersection) const
 {
-    return touches_any_wo_ray_t(r1, overlap, intersection_point, normal);
+    return touches_any_wo_ray_t(r1, overlap, intersection_point, normal, on_intersection);
 }
 
-bool TransformedIntersectable::touches(
+IntersectionStatus TransformedIntersectable::touches(
     const CollisionLineSphere<CompressedScenePos>& l1,
     ScenePos& overlap,
     ScenePos& ray_t,
     FixedArray<ScenePos, 3>& intersection_point,
-    FixedArray<SceneDir, 3>& normal) const
+    FixedArray<SceneDir, 3>& normal,
+    ClosestPointOnIntersection on_intersection) const
 {
-    return touches_any_with_ray_t(l1, overlap, ray_t, intersection_point, normal);
+    return touches_any_with_ray_t(l1, overlap, ray_t, intersection_point, normal, on_intersection);
 }
 
-bool TransformedIntersectable::touches(
+IntersectionStatus TransformedIntersectable::touches(
     const IIntersectable& intersectable,
     ScenePos& overlap,
     FixedArray<ScenePos, 3>& intersection_point,
-    FixedArray<SceneDir, 3>& normal) const
+    FixedArray<SceneDir, 3>& normal,
+    ClosestPointOnIntersection on_intersection) const
 {
     auto* o = dynamic_cast<const TransformedIntersectable*>(&intersectable);
     if (o == nullptr) {
@@ -84,27 +91,33 @@ bool TransformedIntersectable::touches(
     ScenePos c_overlap;
     FixedArray<ScenePos, 3> c_intersection_point = uninitialized;
     FixedArray<SceneDir, 3> c_normal = uninitialized;
-    bool intersects = child_->touches(
+    auto status = child_->touches(
         *o->child_,
         (trafo_.inverted() * o->trafo_).template casted<SceneDir, ScenePos>(),
         c_overlap,
         c_intersection_point,
-        c_normal);
-    if (!intersects) {
-        return false;
+        c_normal,
+        on_intersection);
+    switch (status) {
+    case IntersectionStatus::SEPARATE:
+    case IntersectionStatus::OVERLAP_TOO_LARGE:
+        return status;
+    case IntersectionStatus::COLLISION:
+        overlap = (ScenePos)c_overlap;
+        intersection_point = trafo_.transform(c_intersection_point);
+        normal = trafo_.rotate(c_normal.template casted<SceneDir>());
+        return status;
     }
-    overlap = (ScenePos)c_overlap;
-    intersection_point = trafo_.transform(c_intersection_point);
-    normal = trafo_.rotate(c_normal.template casted<SceneDir>());
-    return true;
+    throw std::runtime_error("Unknown intersection status");
 }
 
-bool TransformedIntersectable::touches(
+IntersectionStatus TransformedIntersectable::touches(
     const IIntersectable& intersectable,
     const TransformationMatrix<SceneDir, ScenePos, 3>& trafo,
     ScenePos& overlap,
     FixedArray<ScenePos, 3>& intersection_point,
-    FixedArray<SceneDir, 3>& normal) const
+    FixedArray<SceneDir, 3>& normal,
+    ClosestPointOnIntersection on_intersection) const
 {
     throw std::runtime_error("TransformedIIntersectable received additional transformation matrix (0)");
 }
@@ -141,32 +154,38 @@ bool TransformedIntersectable::can_spawn_at(
 }
 
 template <class TOther>
-bool TransformedIntersectable::touches_any_wo_ray_t(
+IntersectionStatus TransformedIntersectable::touches_any_wo_ray_t(
     const TOther& o,
     ScenePos& overlap,
     FixedArray<ScenePos, 3>& intersection_point,
-    FixedArray<SceneDir, 3>& normal) const
+    FixedArray<SceneDir, 3>& normal,
+    ClosestPointOnIntersection on_intersection) const
 {
     try {
         auto tbs = o.bounding_sphere.itransformed(trafo_);
         if (!aabb_intersects_sphere(child_->aabb(), tbs)) {
-            return false;
+            return IntersectionStatus::SEPARATE;
         }
         ScenePos c_overlap;
         FixedArray<ScenePos, 3> c_intersection_point = uninitialized;
         FixedArray<SceneDir, 3> c_normal = uninitialized;
-        bool touches = child_->touches(
+        auto status = child_->touches(
             o.transformed(trafo_.inverted()),
             c_overlap,
             c_intersection_point,
-            c_normal);
-        if (!touches) {
-            return false;
+            c_normal,
+            on_intersection);
+        switch (status) {
+        case IntersectionStatus::SEPARATE:
+        case IntersectionStatus::OVERLAP_TOO_LARGE:
+            return status;
+        case IntersectionStatus::COLLISION:
+            overlap = (ScenePos)c_overlap;
+            intersection_point = trafo_.transform(c_intersection_point);
+            normal = trafo_.rotate(c_normal.template casted<SceneDir>());
+            return status;
         }
-        overlap = (ScenePos)c_overlap;
-        intersection_point = trafo_.transform(c_intersection_point);
-        normal = trafo_.rotate(c_normal.template casted<SceneDir>());
-        return true;
+        throw std::runtime_error("Unknown intersection status");
     } catch (const std::runtime_error& e) {
         if (auto e = try_getenv("POLYGON_FILENAME"); e.has_value()) {
             save_polygon_to_obj(*e, o.transformed(trafo_.inverted()).corners.template casted<double>());
@@ -180,36 +199,42 @@ bool TransformedIntersectable::touches_any_wo_ray_t(
 }
 
 template <class TOther>
-bool TransformedIntersectable::touches_any_with_ray_t(
+IntersectionStatus TransformedIntersectable::touches_any_with_ray_t(
     const TOther& o,
     ScenePos& overlap,
     ScenePos& ray_t,
     FixedArray<ScenePos, 3>& intersection_point,
-    FixedArray<SceneDir, 3>& normal) const
+    FixedArray<SceneDir, 3>& normal,
+    ClosestPointOnIntersection on_intersection) const
 {
     try {
         auto tbs = o.bounding_sphere.itransformed(trafo_);
         if (!aabb_intersects_sphere(child_->aabb(), tbs)) {
-            return false;
+            return IntersectionStatus::SEPARATE;
         }
         ScenePos c_overlap;
         ScenePos c_ray_t;
         FixedArray<ScenePos, 3> c_intersection_point = uninitialized;
         FixedArray<SceneDir, 3> c_normal = uninitialized;
-        bool touches = child_->touches(
+        auto status = child_->touches(
             o.transformed(trafo_.inverted()),
             c_overlap,
             c_ray_t,
             c_intersection_point,
-            c_normal);
-        if (!touches) {
-            return false;
+            c_normal,
+            on_intersection);
+        switch (status) {
+        case IntersectionStatus::SEPARATE:
+        case IntersectionStatus::OVERLAP_TOO_LARGE:
+            return status;
+        case IntersectionStatus::COLLISION:
+            overlap = (ScenePos)c_overlap;
+            ray_t = (ScenePos)c_ray_t;
+            intersection_point = trafo_.transform(c_intersection_point);
+            normal = trafo_.rotate(c_normal.template casted<SceneDir>());
+            return status;
         }
-        overlap = (ScenePos)c_overlap;
-        ray_t = (ScenePos)c_ray_t;
-        intersection_point = trafo_.transform(c_intersection_point);
-        normal = trafo_.rotate(c_normal.template casted<SceneDir>());
-        return true;
+        throw std::runtime_error("Unknown intersection status");
     } catch (const std::runtime_error& e) {
         if (auto e = try_getenv("POLYGON_FILENAME"); e.has_value()) {
             save_polygon_to_obj(*e, o.transformed(trafo_.inverted()).corners.template casted<double>());

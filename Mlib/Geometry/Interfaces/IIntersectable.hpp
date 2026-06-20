@@ -19,6 +19,8 @@ template <typename ScenePos, size_t... tshape>
 class FixedArray;
 template <class TDir, class TPos, size_t n>
 class TransformationMatrix;
+enum class ClosestPointOnIntersection;
+enum class IntersectionStatus;
 
 class IIntersectable {
 public:
@@ -27,38 +29,44 @@ public:
     virtual AxisAlignedBoundingBox<CompressedScenePos, 3> aabb() const = 0;
     virtual std::shared_ptr<IIntersectable> sweep(
         const AxisAlignedBoundingBox<CompressedScenePos, 3>& aabb) const = 0;
-    virtual bool touches(
+    virtual IntersectionStatus touches(
         const CollisionPolygonSphere<CompressedScenePos, 4>& q,
         ScenePos& overlap,
         FixedArray<ScenePos, 3>& intersection_point,
-        FixedArray<SceneDir, 3>& normal) const = 0;
-    virtual bool touches(
+        FixedArray<SceneDir, 3>& normal,
+        ClosestPointOnIntersection on_intersection) const = 0;
+    virtual IntersectionStatus touches(
         const CollisionPolygonSphere<CompressedScenePos, 3>& t,
         ScenePos& overlap,
         FixedArray<ScenePos, 3>& intersection_point,
-        FixedArray<SceneDir, 3>& normal) const = 0;
-    virtual bool touches(
+        FixedArray<SceneDir, 3>& normal,
+        ClosestPointOnIntersection on_intersection) const = 0;
+    virtual IntersectionStatus touches(
         const CollisionRidgeSphere<CompressedScenePos>& r1,
         ScenePos& overlap,
         FixedArray<ScenePos, 3>& intersection_point,
-        FixedArray<SceneDir, 3>& normal) const = 0;
-    virtual bool touches(
+        FixedArray<SceneDir, 3>& normal,
+        ClosestPointOnIntersection on_intersection) const = 0;
+    virtual IntersectionStatus touches(
         const CollisionLineSphere<CompressedScenePos>& l1,
         ScenePos& overlap,
         ScenePos& ray_t,
         FixedArray<ScenePos, 3>& intersection_point,
-        FixedArray<SceneDir, 3>& normal) const = 0;
-    virtual bool touches(
+        FixedArray<SceneDir, 3>& normal,
+        ClosestPointOnIntersection on_intersection) const = 0;
+    virtual IntersectionStatus touches(
         const IIntersectable& intersectable,
         ScenePos& overlap,
         FixedArray<ScenePos, 3>& intersection_point,
-        FixedArray<SceneDir, 3>& normal) const = 0;
-    virtual bool touches(
+        FixedArray<SceneDir, 3>& normal,
+        ClosestPointOnIntersection on_intersection) const = 0;
+    virtual IntersectionStatus touches(
         const IIntersectable& intersectable,
         const TransformationMatrix<SceneDir, ScenePos, 3>& trafo,
         ScenePos& overlap,
         FixedArray<ScenePos, 3>& intersection_point,
-        FixedArray<SceneDir, 3>& normal) const = 0;
+        FixedArray<SceneDir, 3>& normal,
+        ClosestPointOnIntersection on_intersection) const = 0;
     virtual bool can_spawn_at(
         const CollisionPolygonSphere<CompressedScenePos, 3>& t) const = 0;
     virtual bool can_spawn_at(

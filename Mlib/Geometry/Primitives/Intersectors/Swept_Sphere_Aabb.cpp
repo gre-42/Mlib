@@ -5,6 +5,7 @@
 #include <Mlib/Geometry/Primitives/Distance/Distance_Polygon_Aabb.hpp>
 #include <Mlib/Geometry/Primitives/Intersectors/Aabb_Sphere_Intersection.hpp>
 #include <Mlib/Geometry/Primitives/Intersectors/Intersect_Polygon_Aabb.hpp>
+#include <Mlib/Geometry/Primitives/Intersectors/Intersection_Status.hpp>
 #include <Mlib/Math/Lerp.hpp>
 
 using namespace Mlib;
@@ -43,114 +44,135 @@ std::shared_ptr<IIntersectable> SweptSphereAabb::sweep(
         radius_);
 }
 
-bool SweptSphereAabb::touches(
+IntersectionStatus SweptSphereAabb::touches(
     const CollisionPolygonSphere<CompressedScenePos, 4>& q,
     ScenePos& overlap,
     FixedArray<ScenePos, 3>& intersection_point,
-    FixedArray<SceneDir, 3>& normal) const
+    FixedArray<SceneDir, 3>& normal,
+    ClosestPointOnIntersection on_intersection) const
 {
     if (!aabb_large_.intersects(AxisAlignedBoundingBox<CompressedScenePos, 3>::from_points(q.corners))) {
-        return false;
+        return IntersectionStatus::SEPARATE;
     }
-    ClosestPoint<SceneDir, ScenePos> closest_point;
-    distance_polygon_aabb(q, aabb_small_.casted<ScenePos>(), closest_point);
+    ClosestPoint<SceneDir, ScenePos> closest_point{ on_intersection };
+    auto status = distance_polygon_aabb(q, aabb_small_.casted<ScenePos>(), closest_point);
+    if (status == ClosestPointStatus::INTERSECT) {
+        return IntersectionStatus::OVERLAP_TOO_LARGE;
+    }
     if (closest_point.distance <= (ScenePos)radius_) {
         intersection_point = closest_point.closest_point0.casted<ScenePos>();
         normal = closest_point.normal;
         overlap = ScenePos(radius_) - closest_point.distance;
-        return true;
+        return IntersectionStatus::COLLISION;
     } else {
-        return false;
+        return IntersectionStatus::SEPARATE;
     }
 }
 
-bool SweptSphereAabb::touches(
+IntersectionStatus SweptSphereAabb::touches(
     const CollisionPolygonSphere<CompressedScenePos, 3>& t,
     ScenePos& overlap,
     FixedArray<ScenePos, 3>& intersection_point,
-    FixedArray<SceneDir, 3>& normal) const
+    FixedArray<SceneDir, 3>& normal,
+    ClosestPointOnIntersection on_intersection) const
 {
     if (!aabb_large_.intersects(AxisAlignedBoundingBox<CompressedScenePos, 3>::from_points(t.corners))) {
-        return false;
+        return IntersectionStatus::SEPARATE;
     }
-    ClosestPoint<SceneDir, ScenePos> closest_point;
-    distance_polygon_aabb(t, aabb_small_.casted<ScenePos>(), closest_point);
+    ClosestPoint<SceneDir, ScenePos> closest_point{ on_intersection };
+    auto status = distance_polygon_aabb(t, aabb_small_.casted<ScenePos>(), closest_point);
+    if (status == ClosestPointStatus::INTERSECT) {
+        return IntersectionStatus::OVERLAP_TOO_LARGE;
+    }
     if (closest_point.distance <= (ScenePos)radius_) {
         intersection_point = closest_point.closest_point0.casted<ScenePos>();
         normal = closest_point.normal;
         overlap = ScenePos(radius_) - closest_point.distance;
-        return true;
+        return IntersectionStatus::COLLISION;
     } else {
-        return false;
+        return IntersectionStatus::SEPARATE;
     }
 }
 
-bool SweptSphereAabb::touches(
+IntersectionStatus SweptSphereAabb::touches(
     const CollisionRidgeSphere<CompressedScenePos>& r1,
     ScenePos& overlap,
     FixedArray<ScenePos, 3>& intersection_point,
-    FixedArray<SceneDir, 3>& normal) const
+    FixedArray<SceneDir, 3>& normal,
+    ClosestPointOnIntersection on_intersection) const
 {
     if (!aabb_large_.intersects(AxisAlignedBoundingBox<CompressedScenePos, 3>::from_points(r1.corners))) {
-        return false;
+        return IntersectionStatus::SEPARATE;
     }
-    ClosestPoint<SceneDir, ScenePos> closest_point;
-    distance_line_aabb(r1.ray.casted<SceneDir, ScenePos>(), aabb_small_.casted<ScenePos>(), closest_point);
+    ClosestPoint<SceneDir, ScenePos> closest_point{ on_intersection };
+    auto status = distance_line_aabb(r1.ray.casted<SceneDir, ScenePos>(), aabb_small_.casted<ScenePos>(), closest_point);
+    if (status == ClosestPointStatus::INTERSECT) {
+        return IntersectionStatus::OVERLAP_TOO_LARGE;
+    }
     if (closest_point.distance <= (ScenePos)radius_) {
         intersection_point = closest_point.closest_point0.casted<ScenePos>();
         normal = closest_point.normal;
         overlap = ScenePos(radius_) - closest_point.distance;
-        return true;
+        return IntersectionStatus::COLLISION;
     } else {
-        return false;
+        return IntersectionStatus::SEPARATE;
     }
 }
 
-bool SweptSphereAabb::touches(
+IntersectionStatus SweptSphereAabb::touches(
     const CollisionLineSphere<CompressedScenePos>& l1,
     ScenePos& overlap,
     ScenePos& ray_t,
     FixedArray<ScenePos, 3>& intersection_point,
-    FixedArray<SceneDir, 3>& normal) const
+    FixedArray<SceneDir, 3>& normal,
+    ClosestPointOnIntersection on_intersection) const
 {
     if (!aabb_large_.intersects(AxisAlignedBoundingBox<CompressedScenePos, 3>::from_points(l1.corners))) {
-        return false;
+        return IntersectionStatus::SEPARATE;
     }
     ray_t = NAN;
-    ClosestPoint<SceneDir, ScenePos> closest_point;
-    distance_line_aabb(l1.ray.casted<SceneDir, ScenePos>(), aabb_small_.casted<ScenePos>(), closest_point);
+    ClosestPoint<SceneDir, ScenePos> closest_point{ on_intersection };
+    auto status = distance_line_aabb(l1.ray.casted<SceneDir, ScenePos>(), aabb_small_.casted<ScenePos>(), closest_point);
+    if (status == ClosestPointStatus::INTERSECT) {
+        return IntersectionStatus::OVERLAP_TOO_LARGE;
+    }
     if (closest_point.distance <= (ScenePos)radius_) {
         intersection_point = closest_point.closest_point0.casted<ScenePos>();
         normal = closest_point.normal;
         overlap = ScenePos(radius_) - closest_point.distance;
-        return true;
+        return IntersectionStatus::COLLISION;
     } else {
-        return false;
+        return IntersectionStatus::SEPARATE;
     }
 }
 
-bool SweptSphereAabb::touches(
+IntersectionStatus SweptSphereAabb::touches(
     const IIntersectable& intersectable,
     ScenePos& overlap,
     FixedArray<ScenePos, 3>& intersection_point,
-    FixedArray<SceneDir, 3>& normal) const
+    FixedArray<SceneDir, 3>& normal,
+    ClosestPointOnIntersection on_intersection) const
 {
     throw std::runtime_error("Sphere swept AABB called without transformation (0)");
 }
 
-bool SweptSphereAabb::touches(
+IntersectionStatus SweptSphereAabb::touches(
     const IIntersectable& intersectable,
     const TransformationMatrix<SceneDir, ScenePos, 3>& trafo,
     ScenePos& overlap,
     FixedArray<ScenePos, 3>& intersection_point,
-    FixedArray<SceneDir, 3>& normal) const
+    FixedArray<SceneDir, 3>& normal,
+    ClosestPointOnIntersection on_intersection) const
 {
     const auto* c = dynamic_cast<const SweptSphereAabb*>(&intersectable);
     if (c == nullptr) {
         throw std::runtime_error("SweptSphereAabb can only intersect objects of type SweptSphereAabb");
     }
-    ClosestPoint<SceneDir, ScenePos> closest_point;
-    distance_aabb_aabb(aabb_small_.casted<ScenePos>(), c->aabb_small_.casted<ScenePos>(), trafo, closest_point);
+    ClosestPoint<SceneDir, ScenePos> closest_point{ on_intersection };
+    auto status = distance_aabb_aabb(aabb_small_.casted<ScenePos>(), c->aabb_small_.casted<ScenePos>(), trafo, closest_point);
+    if (status == ClosestPointStatus::INTERSECT) {
+        return IntersectionStatus::OVERLAP_TOO_LARGE;
+    }
     auto sum_radius = radius_ + c->radius_;
     if (closest_point.distance <= (ScenePos)sum_radius) {
         intersection_point = lerp(
@@ -159,9 +181,9 @@ bool SweptSphereAabb::touches(
             (ScenePos)radius_ / (ScenePos)(sum_radius));
         normal = closest_point.normal;
         overlap = (ScenePos)sum_radius - closest_point.distance;
-        return true;
+        return IntersectionStatus::COLLISION;
     } else {
-        return false;
+        return IntersectionStatus::SEPARATE;
     }
 }
 

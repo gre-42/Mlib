@@ -33,6 +33,7 @@
 #include <Mlib/Physics/Physics_Engine/Physics_Time_Step.hpp>
 #include <Mlib/Physics/Rigid_Body/Actor_Task.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle_Flags.hpp>
+#include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle_Flags_Local.hpp>
 #include <Mlib/Physics/Rigid_Body/Vehicle_Domain.hpp>
 #include <Mlib/Physics/Rotating_Frame.hpp>
 #include <Mlib/Physics/Vehicle_Controllers/Avatar_Controllers/Rigid_Body_Avatar_Controller.hpp>
@@ -72,6 +73,7 @@ RigidBodyVehicle::RigidBodyVehicle(
     , engines_{ "Engine" }
     , delta_engines_{ "Delta engine" }
     , flags_{ RigidBodyVehicleFlags::NONE }
+    , flags_local_{ RigidBodyVehicleFlagsLocal::NONE }
 #ifdef COMPUTE_POWER
     , power_{ NAN }
     , energy_old_{ NAN }
@@ -137,6 +139,7 @@ void RigidBodyVehicle::reset_forces(const PhysicsPhase& phase) {
     if (!phase.group.rigid_bodies.contains(&rbp_)) {
         return;
     }
+    flags_local_ &= ~RigidBodyVehicleFlagsLocal::IS_IN_COLLISION_ERROR_STATE;
     if (is_deactivated()) {
         throw std::runtime_error("Attempt to reset forces of deactivated rigid body");
     }
@@ -1150,7 +1153,11 @@ bool RigidBodyVehicle::is_deactivated() const {
 }
 
 bool RigidBodyVehicle::is_waiting_for_initial_position() const {
-    return any(flags_ & RigidBodyVehicleFlags::WAITING_FOR_INITIAL_POSITION);
+    return any(flags_local_ & RigidBodyVehicleFlagsLocal::WAITING_FOR_INITIAL_POSITION);
+}
+
+bool RigidBodyVehicle::is_in_collision_error_state() const {
+    return any(flags_local_ & RigidBodyVehicleFlagsLocal::IS_IN_COLLISION_ERROR_STATE);
 }
 
 void RigidBodyVehicle::calibrate_controllers() {

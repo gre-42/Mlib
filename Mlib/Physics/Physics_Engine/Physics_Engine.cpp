@@ -135,7 +135,9 @@ void PhysicsEngine::move_rigid_bodies(
     const PhysicsPhase& phase)
 {
     for (const auto& rbm : rigid_bodies_.objects_) {
-        if (rbm.rigid_body->is_deactivated()) {
+        if (rbm.rigid_body->is_deactivated() ||
+            rbm.rigid_body->is_in_collision_error_state())
+        {
             continue;
         }
         auto& rb = rbm.rigid_body;
@@ -169,6 +171,9 @@ void PhysicsEngine::burn_in(
         }
         if (o.rigid_body->is_waiting_for_initial_position()) {
             throw std::runtime_error("Attempt to burn-in rigidy body waiting for its initial position");
+        }
+        if (o.rigid_body->is_in_collision_error_state()) {
+            throw std::runtime_error("Attempt to burn-in rigidy body that is in collision error");
         }
         for (auto& [_, e] : o.rigid_body->engines_) {
             e.set_surface_power(EnginePowerIntent{

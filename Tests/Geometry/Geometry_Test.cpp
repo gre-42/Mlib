@@ -615,9 +615,9 @@ void test_distance_polygon_aabb() {
         .polygon = poly.polygon().casted<SceneDir, P>(),
         .physics_material = PhysicsMaterial::NONE,
         .corners = poly.vertices().casted<P>()};
-    ClosestPoint<SceneDir, ScenePos> cp;
-    distance_polygon_aabb<4>(cps, aabb, cp);
-    linfo() << cp.closest_point0 << " - " << cp.closest_point1 << " - " << cp.normal << " - " << cp.distance;
+    ClosestPoint<SceneDir, ScenePos> cp{ ClosestPointOnIntersection::THROW };
+    auto status = distance_polygon_aabb<4>(cps, aabb, cp);
+    linfo() << cp.closest_point0 << " - " << cp.closest_point1 << " - " << cp.normal << " - " << cp.distance << " - " << (int)status;
 }
 
 void test_plane_shift() {

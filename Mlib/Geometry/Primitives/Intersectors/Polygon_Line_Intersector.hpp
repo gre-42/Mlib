@@ -4,6 +4,9 @@
 
 namespace Mlib {
 
+enum class ClosestPointOnIntersection;
+enum class IntersectionStatus;
+
 struct IntersectionInfo;
 template <class TPosition, size_t tnvertices>
 struct CollisionPolygonSphere;
@@ -16,57 +19,66 @@ class TransformationMatrix;
 class IIntersectable;
 
 // Quad - ridge
-bool intersect(
+IntersectionStatus intersect(
     const CollisionPolygonSphere<CompressedScenePos, 4>& q0,
     const CollisionRidgeSphere<CompressedScenePos>& r1,
-    IntersectionInfo& intersection_info);
+    IntersectionInfo& intersection_info,
+    ClosestPointOnIntersection on_intersection);
 
 // Triangle - ridge
-bool intersect(
+IntersectionStatus intersect(
     const CollisionPolygonSphere<CompressedScenePos, 3>& t0,
     const CollisionRidgeSphere<CompressedScenePos>& r1,
-    IntersectionInfo& intersection_info);
+    IntersectionInfo& intersection_info,
+    ClosestPointOnIntersection on_intersection);
 
 // Quad - line
-bool intersect(
+IntersectionStatus intersect(
     const CollisionPolygonSphere<CompressedScenePos, 4>& q0,
     const CollisionLineSphere<CompressedScenePos>& l1,
-    IntersectionInfo& intersection_info);
+    IntersectionInfo& intersection_info,
+    ClosestPointOnIntersection on_intersection);
 
 // Triangle - line
-bool intersect(
+IntersectionStatus intersect(
     const CollisionPolygonSphere<CompressedScenePos, 3>& t0,
     const CollisionLineSphere<CompressedScenePos>& l1,
-    IntersectionInfo& intersection_info);
+    IntersectionInfo& intersection_info,
+    ClosestPointOnIntersection on_intersection);
 
 // Quad - intersectable
-bool intersect(
+IntersectionStatus intersect(
     const CollisionPolygonSphere<CompressedScenePos, 4>& q0,
     const IIntersectable& i1,
-    IntersectionInfo& intersection_info);
+    IntersectionInfo& intersection_info,
+    ClosestPointOnIntersection on_intersection);
 
 // Triangle - intersectable
-bool intersect(
+IntersectionStatus intersect(
     const CollisionPolygonSphere<CompressedScenePos, 3>& t0,
     const IIntersectable& i1,
-    IntersectionInfo& intersection_info);
+    IntersectionInfo& intersection_info,
+    ClosestPointOnIntersection on_intersection);
 
 // Intersectable - ridge
-bool intersect(
+IntersectionStatus intersect(
     const IIntersectable& i0,
     const CollisionRidgeSphere<CompressedScenePos>& r1,
-    IntersectionInfo& intersection_info);
+    IntersectionInfo& intersection_info,
+    ClosestPointOnIntersection on_intersection);
 
 // Intersectable - line
-bool intersect(
+IntersectionStatus intersect(
     const IIntersectable& i0,
     const CollisionLineSphere<CompressedScenePos>& l1,
-    IntersectionInfo& intersection_info);
+    IntersectionInfo& intersection_info,
+    ClosestPointOnIntersection on_intersection);
 
 // Intersectable - intersectable
-bool intersect(
+IntersectionStatus intersect(
     const IIntersectable& i0,
     const IIntersectable& i1,
-    IntersectionInfo& intersection_info);
+    IntersectionInfo& intersection_info,
+    ClosestPointOnIntersection on_intersection);
 
 }

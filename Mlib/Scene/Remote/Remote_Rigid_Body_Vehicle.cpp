@@ -10,6 +10,7 @@
 #include <Mlib/Os/Io/Binary_Bitwise_Words_Writer.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle_Flags.hpp>
+#include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle_Flags_Local.hpp>
 #include <Mlib/Remote/Incremental_Objects/Known_Fields.hpp>
 #include <Mlib/Remote/Incremental_Objects/Object_Lifetime_Status.hpp>
 #include <Mlib/Remote/Incremental_Objects/Proxy_Tasks.hpp>
@@ -313,7 +314,8 @@ DanglingBaseClassPtr<RemoteRigidBodyVehicle> RemoteRigidBodyVehicle::try_create_
     auto rb = get_rigid_body_vehicle(pnode.get(), CURRENT_SOURCE_LOCATION);
     rb->rbp_.set_v_com(v_com, physics_scene.physics_engine_.config().dt_min(), CURRENT_SOURCE_LOCATION);
     rb->rbp_.set_w(w, physics_scene.physics_engine_.config().dt_min(), CURRENT_SOURCE_LOCATION);
-    rb->flags_ = flags | RigidBodyVehicleFlags::WAITING_FOR_INITIAL_POSITION;
+    rb->flags_ = flags;
+    rb->flags_local_ |= RigidBodyVehicleFlagsLocal::WAITING_FOR_INITIAL_POSITION;
     rb->remote_object_id_ = remote_object_id;
     if (owner_site_id.has_value()) {
         rb->owner_site_id_ = *owner_site_id;
@@ -507,7 +509,7 @@ void RemoteRigidBodyVehicle::read(
         // Notify child nodes with absolute movables (e.g. wheels)
         rb_->scene_node_->clear_transformation_history();
     }
-    auto mask = ~RigidBodyVehicleFlags::WAITING_FOR_INITIAL_POSITION;
+    auto mask = ~RigidBodyVehicleFlags::NONE;
     if (pp.update_position) {
         assert_true(has_location);
         float relaxation = pp.invalidate_transformation_history
@@ -516,7 +518,7 @@ void RemoteRigidBodyVehicle::read(
         rb_->rbp_.set_pose(tait_bryan_angles_2_matrix(rotation), position, relaxation, CURRENT_SOURCE_LOCATION);
         rb_->rbp_.set_v_com(v_com, physics_scene_->physics_engine_.config().dt_min(), CURRENT_SOURCE_LOCATION);
         rb_->rbp_.set_w(w, physics_scene_->physics_engine_.config().dt_min(), CURRENT_SOURCE_LOCATION);
-        rb_->flags_ &= ~RigidBodyVehicleFlags::WAITING_FOR_INITIAL_POSITION;
+        rb_->flags_local_ &= ~RigidBodyVehicleFlagsLocal::WAITING_FOR_INITIAL_POSITION;
     } else if (rb_->is_deactivated_avatar()) {
         mask &= ~RigidBodyVehicleFlags::IS_ANY_AVATAR;
     }
@@ -600,7 +602,7 @@ void RemoteRigidBodyVehicle::write(
         case RemoteSceneObjectType::RIGID_BODY_CAR:
             {
                 auto& vcache = proxy_objects_caches.get_or_create<VehicleRemoteRigidBodyVehicleCache>(receiver_site_id, remote_object_id);
-                if (any(rb_->flags_ & RigidBodyVehicleFlags::WAITING_FOR_INITIAL_POSITION)) {
+                if (any(rb_->flags_local_ & RigidBodyVehicleFlagsLocal::WAITING_FOR_INITIAL_POSITION)) {
                     write_dummy_vehicle_location(vcache, writer);
                 } else {
                     auto location = Vehicle::VehicleLocation{
@@ -616,7 +618,7 @@ void RemoteRigidBodyVehicle::write(
         case RemoteSceneObjectType::RIGID_BODY_AVATAR:
             {
                 auto& vcache = proxy_objects_caches.get_or_create<AvatarRemoteRigidBodyVehicleCache>(receiver_site_id, remote_object_id);
-                if (any(rb_->flags_ & RigidBodyVehicleFlags::WAITING_FOR_INITIAL_POSITION)) {
+                if (any(rb_->flags_local_ & RigidBodyVehicleFlagsLocal::WAITING_FOR_INITIAL_POSITION)) {
                     write_dummy_vehicle_location(vcache, writer);
                 } else {
                     auto location = Avatar::VehicleLocation{

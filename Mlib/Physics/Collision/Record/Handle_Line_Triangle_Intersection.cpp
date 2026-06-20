@@ -1,7 +1,9 @@
 #include "Handle_Line_Triangle_Intersection.hpp"
 #include <Mlib/Geometry/Mesh/IIntersectable_Mesh.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>
+#include <Mlib/Geometry/Primitives/Intersectors/Closest_Point_On_Intersection.hpp>
 #include <Mlib/Geometry/Primitives/Intersectors/Intersection_Info.hpp>
+#include <Mlib/Geometry/Primitives/Intersectors/Intersection_Status.hpp>
 #include <Mlib/Geometry/Primitives/Intersectors/Polygon_Line_Intersector.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Misc/Pragma_Gcc.hpp>
@@ -13,6 +15,7 @@
 #include <Mlib/Physics/Interfaces/Collision_Observer.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Phase.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
+#include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle_Flags_Local.hpp>
 #include <Mlib/Physics/Rigid_Body/Vehicle_Domain.hpp>
 #include <Mlib/Physics/Smoke_Generation/Contact_Smoke_Generator.hpp>
 #include <Mlib/Physics/Smoke_Generation/Surface_Contact_Info.hpp>
@@ -60,52 +63,35 @@ void Mlib::handle_line_triangle_intersection(const IntersectionScene& c)
         throw std::runtime_error("Intersectable \"" + c.o0.name() + "\" unexpectedly collides with bullet line segment \"" + c.o1.name() + '"');
     }
     IntersectionInfo iinfo;
+    IntersectionStatus istatus;
     try {
         if (c.q0.has_value()) {
             if (c.l1.has_value()) {
-                if (!intersect(*c.q0, *c.l1, iinfo)) {
-                    return;
-                }
+                istatus = intersect(*c.q0, *c.l1, iinfo, ClosestPointOnIntersection::SET_FLAG);
             } else if (c.r1.has_value()) {
-                if (!intersect(*c.q0, *c.r1, iinfo)) {
-                    return;
-                }
+                istatus = intersect(*c.q0, *c.r1, iinfo, ClosestPointOnIntersection::SET_FLAG);
             } else if (c.i1 != nullptr) {
-                if (!intersect(*c.q0, *c.i1, iinfo)) {
-                    return;
-                }
+                istatus = intersect(*c.q0, *c.i1, iinfo, ClosestPointOnIntersection::SET_FLAG);
             } else {
                 throw std::runtime_error("Unexpected intersection object (0)");
             }
         } else if (c.t0.has_value()) {
             if (c.l1.has_value()) {
-                if (!intersect(*c.t0, *c.l1, iinfo)) {
-                    return;
-                }
+                istatus = intersect(*c.t0, *c.l1, iinfo, ClosestPointOnIntersection::SET_FLAG);
             } else if (c.r1.has_value()) {
-                if (!intersect(*c.t0, *c.r1, iinfo)) {
-                    return;
-                }
+                istatus = intersect(*c.t0, *c.r1, iinfo, ClosestPointOnIntersection::SET_FLAG);
             } else if (c.i1 != nullptr) {
-                if (!intersect(*c.t0, *c.i1, iinfo)) {
-                    return;
-                }
+                istatus = intersect(*c.t0, *c.i1, iinfo, ClosestPointOnIntersection::SET_FLAG);
             } else {
                 throw std::runtime_error("Unexpected intersection object (1)");
             }
         } else if (c.i0 != nullptr) {
             if (c.l1.has_value()) {
-                if (!intersect(*c.i0, *c.l1, iinfo)) {
-                    return;
-                }
+                istatus = intersect(*c.i0, *c.l1, iinfo, ClosestPointOnIntersection::SET_FLAG);
             } else if (c.r1.has_value()) {
-                if (!intersect(*c.i0, *c.r1, iinfo)) {
-                    return;
-                }
+                istatus = intersect(*c.i0, *c.r1, iinfo, ClosestPointOnIntersection::SET_FLAG);
             } else if (c.i1 != nullptr) {
-                if (!intersect(*c.i0, *c.i1, iinfo)) {
-                    return;
-                }
+                istatus = intersect(*c.i0, *c.i1, iinfo, ClosestPointOnIntersection::SET_FLAG);
             } else {
                 throw std::runtime_error("Unexpected intersection object (2)");
             }
@@ -138,6 +124,20 @@ void Mlib::handle_line_triangle_intersection(const IntersectionScene& c)
             (c.mesh1 == nullptr) ? "<null>" : c.mesh1->name(),
             e.what()));
     }
+    switch (istatus) {
+    case IntersectionStatus::SEPARATE:
+        return;
+    case IntersectionStatus::COLLISION:
+        break;
+    case IntersectionStatus::OVERLAP_TOO_LARGE:
+        if (c.o0.rbp_.mass_ != INFINITY) {
+            c.o0.flags_local_ |= RigidBodyVehicleFlagsLocal::IS_IN_COLLISION_ERROR_STATE;
+        }
+        if (c.o1.rbp_.mass_ != INFINITY) {
+            c.o1.flags_local_ |= RigidBodyVehicleFlagsLocal::IS_IN_COLLISION_ERROR_STATE;
+        }
+        return;
+    };
     // if (iinfo->has_normal_and_overlap()) {
     //     for (double t = 0; t < 0.5; t += 0.1) {
     //         add_beacon(Beacon::create(iinfo->intersection_point() + t * iinfo->normal(), "beacon"));

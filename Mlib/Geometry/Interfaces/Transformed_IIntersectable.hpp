@@ -15,38 +15,44 @@ public:
     virtual AxisAlignedBoundingBox<CompressedScenePos, 3> aabb() const override;
     virtual std::shared_ptr<IIntersectable> sweep(
         const AxisAlignedBoundingBox<CompressedScenePos, 3>& aabb) const override;
-    virtual bool touches(
+    virtual IntersectionStatus touches(
         const CollisionPolygonSphere<CompressedScenePos, 4>& q,
         ScenePos& overlap,
         FixedArray<ScenePos, 3>& intersection_point,
-        FixedArray<SceneDir, 3>& normal) const override;
-    virtual bool touches(
+        FixedArray<SceneDir, 3>& normal,
+        ClosestPointOnIntersection on_intersection) const override;
+    virtual IntersectionStatus touches(
         const CollisionPolygonSphere<CompressedScenePos, 3>& t,
         ScenePos& overlap,
         FixedArray<ScenePos, 3>& intersection_point,
-        FixedArray<SceneDir, 3>& normal) const override;
-    virtual bool touches(
+        FixedArray<SceneDir, 3>& normal,
+        ClosestPointOnIntersection on_intersection) const override;
+    virtual IntersectionStatus touches(
         const CollisionRidgeSphere<CompressedScenePos>& r1,
         ScenePos& overlap,
         FixedArray<ScenePos, 3>& intersection_point,
-        FixedArray<SceneDir, 3>& normal) const override;
-    virtual bool touches(
+        FixedArray<SceneDir, 3>& normal,
+        ClosestPointOnIntersection on_intersection) const override;
+    virtual IntersectionStatus touches(
         const CollisionLineSphere<CompressedScenePos>& l1,
         ScenePos& overlap,
         ScenePos& ray_t,
         FixedArray<ScenePos, 3>& intersection_point,
-        FixedArray<SceneDir, 3>& normal) const override;
-    virtual bool touches(
+        FixedArray<SceneDir, 3>& normal,
+        ClosestPointOnIntersection on_intersection) const override;
+    virtual IntersectionStatus touches(
         const IIntersectable& intersectable,
         ScenePos& overlap,
         FixedArray<ScenePos, 3>& intersection_point,
-        FixedArray<SceneDir, 3>& normal) const override;
-    virtual bool touches(
+        FixedArray<SceneDir, 3>& normal,
+        ClosestPointOnIntersection on_intersection) const override;
+    virtual IntersectionStatus touches(
         const IIntersectable& intersectable,
         const TransformationMatrix<SceneDir, ScenePos, 3>& trafo,
         ScenePos& overlap,
         FixedArray<ScenePos, 3>& intersection_point,
-        FixedArray<SceneDir, 3>& normal) const override;
+        FixedArray<SceneDir, 3>& normal,
+        ClosestPointOnIntersection on_intersection) const override;
     virtual bool can_spawn_at(
         const CollisionPolygonSphere<CompressedScenePos, 3>& t) const override;
     virtual bool can_spawn_at(
@@ -58,18 +64,20 @@ public:
         const TransformationMatrix<SceneDir, ScenePos, 3>& trafo) const override;
 private:
     template <class TOther>
-    bool touches_any_wo_ray_t(
+    IntersectionStatus touches_any_wo_ray_t(
         const TOther& o,
         ScenePos& overlap,
         FixedArray<ScenePos, 3>& intersection_point,
-        FixedArray<SceneDir, 3>& normal) const;
+        FixedArray<SceneDir, 3>& normal,
+        ClosestPointOnIntersection on_intersection) const;
     template <class TOther>
-    bool touches_any_with_ray_t(
+    IntersectionStatus touches_any_with_ray_t(
         const TOther& o,
         ScenePos& overlap,
         ScenePos& ray_t,
         FixedArray<ScenePos, 3>& intersection_point,
-        FixedArray<SceneDir, 3>& normal) const;
+        FixedArray<SceneDir, 3>& normal,
+        ClosestPointOnIntersection on_intersection) const;
     template <class TOther>
     bool can_spawn_at_any(const TOther& o) const;
     std::shared_ptr<IIntersectable> child_;

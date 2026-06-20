@@ -59,6 +59,7 @@ class IContactInfo;
 class Wing;
 enum class VelocityClassification;
 enum class RigidBodyVehicleFlags: uint32_t;
+enum class RigidBodyVehicleFlagsLocal: uint32_t;
 enum class VehicleDomain;
 enum class ActorType;
 enum class ActorTask;
@@ -279,6 +280,7 @@ public:
     bool is_deactivated_avatar() const;
     bool is_deactivated() const;
     bool is_waiting_for_initial_position() const;
+    bool is_in_collision_error_state() const;
 
     void calibrate_controllers();
 
@@ -319,6 +321,7 @@ public:
     StringWithHashUnorderedMap<RigidBodyEngine> engines_;
     StringWithHashUnorderedMap<RigidBodyDeltaEngine> delta_engines_;
     RigidBodyVehicleFlags flags_;
+    RigidBodyVehicleFlagsLocal flags_local_;
     mutable FastMutex flags_mutex_;
     Inventory inventory_;
     // std::map<size_t, bool> tire_sliding_;
