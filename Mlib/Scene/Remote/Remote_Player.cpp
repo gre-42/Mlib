@@ -18,6 +18,7 @@
 #include <Mlib/Players/Scene_Vehicle/Vehicle_Seat.hpp>
 #include <Mlib/Players/User_Account/User_Account.hpp>
 #include <Mlib/Remote/Incremental_Objects/Known_Fields.hpp>
+#include <Mlib/Remote/Incremental_Objects/Object_Lifetime_Status.hpp>
 #include <Mlib/Remote/Incremental_Objects/Transmission_History.hpp>
 #include <Mlib/Remote/Incremental_Objects/Transmitted_Fields.hpp>
 #include <Mlib/Remote/Remote_Check.hpp>
@@ -84,6 +85,7 @@ DanglingBaseClassPtr<RemotePlayer> RemotePlayer::try_create_from_stream(
     PhysicsScene& physics_scene,
     BinaryBitwiseWordsReader& reader,
     TransmittedFields transmitted_fields,
+    ObjectLifetimeStatus lifetime_status,
     TransmissionHistoryReader& transmission_history_reader,
     IoVerbosity verbosity)
 {
@@ -156,6 +158,9 @@ DanglingBaseClassPtr<RemotePlayer> RemotePlayer::try_create_from_stream(
         !physics_scene.remote_sites_->contains_user(*full_user_name))
     {
         linfo() << "Not creating player for user \"" << **full_user_name << '"';
+        return nullptr;
+    }
+    if (lifetime_status == ObjectLifetimeStatus::DELETED) {
         return nullptr;
     }
     CreatePlayer{physics_scene, physics_scene.macro_line_executor_}.execute(JsonView{args}, PlayerCreator::REMOTE);

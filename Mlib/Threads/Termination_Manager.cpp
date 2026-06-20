@@ -1,4 +1,5 @@
 #include "Termination_Manager.hpp"
+#include <Mlib/Memory/Recursive_Deletion.hpp>
 #include <Mlib/Os/Os.hpp>
 #include <Mlib/Threads/Thread_Safe_Promise.hpp>
 #include <csignal>
@@ -25,15 +26,15 @@ void Mlib::add_unhandled_exception(std::exception_ptr ptr) {
     }
     {
         std::scoped_lock lock{exception_observers_cv_mutex};
-        for (auto& cv : exception_observers_cv) {
+        clear_set_recursively(exception_observers_cv, [](auto& cv){
             cv->notify_all();
-        }
+        });
     }
     {
         std::scoped_lock lock{exception_observers_promise_mutex};
-        for (auto& promise : exception_observers_promise) {
+        clear_set_recursively(exception_observers_promise, [](auto& promise){
             promise->set();
-        }
+        });
     }
 }
 

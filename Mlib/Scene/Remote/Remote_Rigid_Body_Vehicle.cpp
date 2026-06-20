@@ -476,8 +476,12 @@ void RemoteRigidBodyVehicle::read(
         *rb_->owner_site_id_,
         remote_object_id.site_id};
     auto pf = PositionFlags::NONE;
-    if (sum(squared(rb_->rbp_.abs_position() - position)) > squared(REMOTE_INTERPOLATION_JUMP_DISTANCE)) {
-        pf |= PositionFlags::POSITION_CONTAINS_JUMP;
+    if (has_location) {
+        if (sum(squared(rb_->rbp_.abs_position() - position)) > squared(REMOTE_INTERPOLATION_JUMP_DISTANCE)) {
+            pf |= PositionFlags::POSITION_CONTAINS_JUMP;
+        }
+    } else {
+        pf |= PositionFlags::POSITION_IS_INCOMPLETE;
     }
     if (any(flags & RigidBodyVehicleFlags::IS_DEACTIVATED_AVATAR)) {
         pf |= PositionFlags::IS_DEACTIVATED_AVATAR;
@@ -486,9 +490,6 @@ void RemoteRigidBodyVehicle::read(
         if (rb_->is_deactivated_avatar() && !any(flags & RigidBodyVehicleFlags::IS_DEACTIVATED_AVATAR)) {
             pf |= PositionFlags::IS_REMOTELY_ACTIVATED_AVATAR;
         }
-    }
-    if (!has_location) {
-        pf |= PositionFlags::POSITION_IS_INCOMPLETE;
     }
     auto pp = privileges.position(pf);
     if (any(verbosity_ & IoVerbosity::METADATA)) {

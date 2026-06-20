@@ -45,12 +45,9 @@ DanglingBaseClassPtr<IIncrementalObject> RemoteSceneObjectFactory::try_create_sh
             transmitted_fields, remote_object_id.site_id,
             proxy_tasks, transmission_history_reader, verbosity_);
     case RemoteSceneObjectType::PLAYER:
-        if (lifetime_status == ObjectLifetimeStatus::DELETED) {
-            throw std::runtime_error("PLAYER: Reading deleted objects not supported");
-        }
         return RemotePlayer::try_create_from_stream(
             physics_scene_.get(), reader, transmitted_fields,
-            transmission_history_reader, verbosity_);
+            lifetime_status, transmission_history_reader, verbosity_);
     case RemoteSceneObjectType::RIGID_BODY_CAR:
     case RemoteSceneObjectType::RIGID_BODY_AVATAR:
         return RemoteRigidBodyVehicle::try_create_from_stream(

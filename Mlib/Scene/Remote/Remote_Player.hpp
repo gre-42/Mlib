@@ -10,6 +10,7 @@ class PhysicsScene;
 class Player;
 class SceneVehicle;
 enum class IoVerbosity;
+enum class ObjectLifetimeStatus;
 
 class RemotePlayer final: public IIncrementalObject {
 public:
@@ -22,6 +23,7 @@ public:
         PhysicsScene& physics_scene,
         BinaryBitwiseWordsReader& reader,
         TransmittedFields transmitted_fields,
+        ObjectLifetimeStatus lifetime_status,
         TransmissionHistoryReader& transmission_history_reader,
         IoVerbosity verbosity);
     virtual std::string name() const override;
