@@ -9,7 +9,7 @@ public:
         std::list<TypedMesh<std::shared_ptr<IIntersectable>>>&& intersectables);
 
     // Misc
-    virtual void preload(const RenderableResourceFilter& filter) const override;
+    virtual void preload(const RenderableResourceFilter& filter) override;
 
     // Animation
     virtual std::shared_ptr<AnimatedColoredVertexArrays> get_arrays(const ColoredVertexArrayFilter& filter) const override;

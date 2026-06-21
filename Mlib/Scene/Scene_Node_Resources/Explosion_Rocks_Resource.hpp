@@ -28,7 +28,7 @@ public:
         const BulletPropertyDb& bullet_property_db,
         const ResourceCycle<ExplosionRockDescriptor>& descriptors,
         size_t nrocks);
-    virtual void preload(const RenderableResourceFilter& filter) const override;
+    virtual void preload(const RenderableResourceFilter& filter) override;
     virtual void instantiate_root_renderables(const RootInstantiationOptions& options) const override;
     virtual AggregateMode get_aggregate_mode() const override;
     virtual PhysicsMaterial get_physics_material() const override;

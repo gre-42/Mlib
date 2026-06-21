@@ -13,7 +13,7 @@ public:
         const std::string& filename,
         const BvhConfig& config);
     ~BvhFileResource();
-    virtual void preload(const RenderableResourceFilter& filter) const override;
+    virtual void preload(const RenderableResourceFilter& filter) override;
     virtual StringWithHashUnorderedMap<OffsetAndQuaternion<float, float>> get_relative_poses(float seconds) const override;
     virtual StringWithHashUnorderedMap<OffsetAndQuaternion<float, float>> get_absolute_poses(float seconds) const override;
     virtual float get_animation_duration() const override;

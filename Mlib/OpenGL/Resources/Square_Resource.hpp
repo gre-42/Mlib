@@ -18,7 +18,7 @@ public:
         const TransformationMatrix<float, float, 3>& transformation,
         const Material& material,
         const Morphology& morphology);
-    virtual void preload(const RenderableResourceFilter& filter) const override;
+    virtual void preload(const RenderableResourceFilter& filter) override;
     virtual void instantiate_child_renderable(const ChildInstantiationOptions& options) const override;
     virtual std::shared_ptr<AnimatedColoredVertexArrays> get_arrays(const ColoredVertexArrayFilter& filter) const override;
     virtual std::list<std::shared_ptr<AnimatedColoredVertexArrays>> get_rendering_arrays() const override;

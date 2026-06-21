@@ -21,7 +21,7 @@ Mhx2FileResource::Mhx2FileResource(
 
 Mhx2FileResource::~Mhx2FileResource() = default;
 
-void Mhx2FileResource::preload(const RenderableResourceFilter& filter) const {
+void Mhx2FileResource::preload(const RenderableResourceFilter& filter) {
     rva_->preload(filter);
 }
 

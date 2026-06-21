@@ -115,10 +115,8 @@ ColoredVertexArrayResource::ColoredVertexArrayResource(
     const std::list<std::shared_ptr<ColoredVertexArray<float>>>& striangles,
     const std::list<std::shared_ptr<ColoredVertexArray<CompressedScenePos>>>& dtriangles)
 : ColoredVertexArrayResource{
-    std::make_shared<AnimatedColoredVertexArrays>(), {}, {}}
+    std::make_shared<AnimatedColoredVertexArrays>(striangles, dtriangles), {}, {}}
 {
-    triangles_res_->scvas = striangles;
-    triangles_res_->dcvas = dtriangles;
 #ifdef DEBUG
     triangles_res_->check_consistency();
 #endif
@@ -161,13 +159,15 @@ ColoredVertexArrayResource::ColoredVertexArrayResource(
 
 ColoredVertexArrayResource::~ColoredVertexArrayResource() = default;
 
-void ColoredVertexArrayResource::preload(const RenderableResourceFilter& filter) const {
+void ColoredVertexArrayResource::preload(const RenderableResourceFilter& filter) {
     #ifndef WITHOUT_GRAPHICS
-    auto preload_meta = [&](const MeshMeta& meta) {
+    auto preload_meta = [&](MeshMeta& meta) {
         for (auto& t : meta.material.textures_color) {
+            rendering_resources_.resolve_aliases(t.texture_descriptor);
             rendering_resources_.preload(t.texture_descriptor);
         }
         for (auto& t : meta.material.textures_alpha) {
+            rendering_resources_.resolve_aliases(t.texture_descriptor);
             rendering_resources_.preload(t.texture_descriptor);
         }
     };
@@ -183,8 +183,8 @@ void ColoredVertexArrayResource::preload(const RenderableResourceFilter& filter)
         preload_cvas(triangles_res_->scvas);
         preload_cvas(triangles_res_->dcvas);
     }
-    for (const auto& a : gpu_vertex_arrays_) {
-        preload_meta(a->vertices()->mesh_meta());
+    for (auto& a : gpu_vertex_arrays_) {
+        a->vertices()->preload();
     }
     if (ContextQuery::is_initialized()) {
         if (triangles_res_ != nullptr) {

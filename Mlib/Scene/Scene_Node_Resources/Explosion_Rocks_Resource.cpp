@@ -56,7 +56,7 @@ ExplosionRocksResource::ExplosionRocksResource(
     , nrocks_{ nrocks }
 {}
 
-void ExplosionRocksResource::preload(const RenderableResourceFilter& filter) const {
+void ExplosionRocksResource::preload(const RenderableResourceFilter& filter) {
     for (const auto& d : descriptors_) {
         const auto& bullet = bullet_property_db_.get(d.bullet);
         scene_node_resources_.preload_single(bullet.renderable_resource_name, filter);

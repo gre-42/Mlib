@@ -72,7 +72,7 @@ SquareResource::SquareResource(
             UUVector<FixedArray<float, 4>>()));
 }
 
-void SquareResource::preload(const RenderableResourceFilter& filter) const {
+void SquareResource::preload(const RenderableResourceFilter& filter) {
     rva_->preload(filter);
 }
 

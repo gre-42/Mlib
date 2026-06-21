@@ -94,7 +94,7 @@ BinaryXResource::BinaryXResource(
 BinaryXResource::~BinaryXResource()
 {}
 
-void BinaryXResource::preload(const RenderableResourceFilter& filter) const {
+void BinaryXResource::preload(const RenderableResourceFilter& filter) {
     rva_0_->preload(filter);
     rva_90_->preload(filter);
 }

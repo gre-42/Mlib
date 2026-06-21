@@ -72,12 +72,9 @@ BlendMapReweightMode Mlib::blend_map_reweight_mode_from_string(std::string_view 
 
 size_t BlendMapTexture::modifiers_hash() const {
     return hash_combine(
-        texture_descriptor.color.filename.empty(),
-        texture_descriptor.specular.filename.empty(),
-        texture_descriptor.normal.filename.empty(),
-        texture_descriptor.color.color_mode,
-        texture_descriptor.specular.color_mode,
-        texture_descriptor.normal.color_mode,
+        texture_descriptor.color.hash.get(),
+        texture_descriptor.specular.hash.get(),
+        texture_descriptor.normal.hash.get(),
         min_height,
         max_height,
         distances,

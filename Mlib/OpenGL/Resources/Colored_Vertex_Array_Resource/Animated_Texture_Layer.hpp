@@ -47,6 +47,7 @@ public:
         size_t noperations,
         bool run_in_background,
         bool is_static) override;
+    virtual void preload() override;
     virtual const MeshMeta& mesh_meta() const override;
     virtual const ExtremalAxisAlignedBoundingBox<float, 3>& aabb() const override;
     virtual const ExtremalBoundingSphere<float, 3>& bounding_sphere() const override;

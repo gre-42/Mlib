@@ -54,6 +54,7 @@ DECLARE_ARGUMENT(wrap_mode_s);
 DECLARE_ARGUMENT(wrap_mode_t);
 DECLARE_ARGUMENT(rotate);
 DECLARE_ARGUMENT(add_colormap);
+DECLARE_ARGUMENT(add_aliases);
 }
 
 namespace {
@@ -159,13 +160,38 @@ struct RegisterJsonUserFunction {
             .wrap_modes = wrap_modes,
             .rotate = rotate}.compute_hash();
     }();
+    auto name = args.arguments.at<VariableAndHash<std::string>>(KnownArgs::name);
     if (args.arguments.at<bool>(KnownArgs::add_colormap, true)) {
-        RenderingContextStack::primary_rendering_resources().add_colormap(
-            args.arguments.at<VariableAndHash<std::string>>(KnownArgs::name),
-            color);
+        RenderingContextStack::primary_rendering_resources().add_colormap(name, color);
+    }
+    if (args.arguments.at<bool>(KnownArgs::add_aliases, true)) {
+        auto aliasify_path = [&](FPath& filename, const std::string& suffix){
+            if (filename.type() == PathType::LOCAL_PATH) {
+                auto alias = VariableAndHash{*name + suffix};
+                RenderingContextStack::primary_rendering_resources().add_alias(
+                    alias, filename);
+                filename = FPath::from_variable_and_hash(alias);
+            }
+        };
+        auto aliasify_colormap = [&](ColormapWithModifiers& cm, const std::string& suffix){
+            aliasify_path(cm.filename, suffix + ".Filename");
+            aliasify_path(cm.chrominance, suffix + ".Chrominance");
+            aliasify_path(cm.alpha, suffix + ".Alpha");
+            aliasify_path(cm.histogram, suffix + ".Histogram");
+            aliasify_path(cm.average, suffix + ".Average");
+            aliasify_path(cm.multiply, suffix + ".Multiply");
+            aliasify_path(cm.alpha_blend, suffix + ".Alpha_blend");
+        };
+        aliasify_colormap(color, ".Color");
+        aliasify_colormap(normal, ".Normal");
+        aliasify_colormap(specular, ".Specular");
+        // if (args.arguments.at<bool>(KnownArgs::add_colormap, true)) {
+        //     auto ref = VariableAndHash<std::string>{*name + ".ref"};
+        //     RenderingContextStack::primary_rendering_resources().add_colormap(ref, color);
+        // }
     }
     RenderingContextStack::primary_rendering_resources().add_texture_descriptor(
-        args.arguments.at<VariableAndHash<std::string>>(KnownArgs::name),
+        name,
         TextureDescriptor{
             .color = std::move(color),
             .specular = std::move(specular),

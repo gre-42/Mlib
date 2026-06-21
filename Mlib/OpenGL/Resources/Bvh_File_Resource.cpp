@@ -13,7 +13,7 @@ BvhFileResource::BvhFileResource(
 BvhFileResource::~BvhFileResource()
 {}
 
-void BvhFileResource::preload(const RenderableResourceFilter& filter) const {
+void BvhFileResource::preload(const RenderableResourceFilter& filter) {
     // Do nothing
 }
 

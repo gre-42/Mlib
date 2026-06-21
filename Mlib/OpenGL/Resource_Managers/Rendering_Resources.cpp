@@ -814,6 +814,9 @@ void RenderingResources::preload(const ColormapWithModifiers& color, TextureRole
                 add(preloaded_processed_texture_data_, color, std::move(data));
             }
         }
+        if ((color.filename.type() == PathType::VARIABLE) && aliases_.contains(color.filename.variable_and_hash())) {
+            throw std::runtime_error("Please resolve the aliases of texture \"" + color.filename.string() + "\" before preloading");
+        }
         append_render_allocator([this, color, role]() { get_texture(color, role, CallerType::PRELOAD)->load_gpu(); });
     }
 }
@@ -918,6 +921,9 @@ TextureTarget RenderingResources::texture_target(
 const ColormapWithModifiers& RenderingResources::colormap(const ColormapWithModifiers& name) const
 {
     if (name.filename.type() == PathType::VARIABLE) {
+        if (aliases_.contains(name.filename.variable_and_hash())) {
+            throw std::runtime_error("Please resolve the aliases of texture \"" + name.filename.string() + "\" before obtaining the colormap");
+        }
         return texture_descriptors_.get(name.filename.variable_and_hash()).color;
     }
     return name;
@@ -1291,7 +1297,7 @@ void RenderingResources::add_colormap(VariableAndHash<std::string> name, Colorma
 {
     LOG_FUNCTION("RenderingResources::add_texture_descriptor " + *name);
     if (descriptor.color_mode == ColorMode::UNDEFINED) {
-        throw std::runtime_error("Colormode undefined color texture: \"" + descriptor.filename.string() + '"');
+        throw std::runtime_error("Colormode undefined for texture: \"" + descriptor.filename.string() + '"');
     }
     std::scoped_lock lock{ mutex_ };
     if (getenv_default_bool("PRINT_TEXTURE_FILENAMES", false)) {
@@ -1337,6 +1343,45 @@ const ColormapWithModifiers& RenderingResources::get_colormap(const FPath& name)
         return *it;
     }
     return colormap_file_descriptors_.add(name.string_and_hash(), ColormapWithModifiers{name});
+}
+
+void RenderingResources::resolve_alias(ColormapWithModifiers& colormap) const {
+    auto changed = false;
+    auto resolve = [this](FPath& filename){
+        if ((filename.type() != PathType::VARIABLE) ||
+            manual_atlas_tile_descriptors_.contains(filename.variable_and_hash()) ||
+            cubemap_descriptors_.contains(filename.variable_and_hash()))
+        {
+            return false;
+        }
+        auto f = filename;
+        for (size_t i = 0; i < 10; ++i) {
+            f = aliases_.get(f.variable_and_hash());
+            if (f.type() != PathType::VARIABLE) {
+                linfo() << filename << " <- " << f;
+                filename = std::move(f);
+                return true;
+            }
+        }
+        throw std::runtime_error("Could not resolve alias \"" + filename.string() + "\" after 10 iterations");
+    };
+    changed |= resolve(colormap.filename);
+    changed |= resolve(colormap.chrominance);
+    changed |= resolve(colormap.alpha);
+    changed |= resolve(colormap.histogram);
+    changed |= resolve(colormap.average);
+    changed |= resolve(colormap.multiply);
+    changed |= resolve(colormap.alpha_blend);
+    if (changed) {
+        colormap.hash.reset();
+        colormap.compute_hash();
+    }
+}
+
+void RenderingResources::resolve_aliases(TextureDescriptor& descriptor) const {
+    resolve_alias(descriptor.color);
+    resolve_alias(descriptor.normal);
+    resolve_alias(descriptor.specular);
 }
 
 void RenderingResources::add_manual_texture_atlas(
@@ -1413,7 +1458,8 @@ std::vector<std::shared_ptr<StbInfo<uint8_t>>> RenderingResources::get_texture_a
             UnorderedMap<ColormapWithModifiers, std::shared_ptr<StbInfo<uint8_t>>> source_images;
             std::vector<AtlasTile> atlas_tiles;
             atlas_tiles.reserve(it->tiles.size());
-            for (const auto& [source, target] : it->tiles) {
+            for (auto& [source, target] : it->tiles) {
+                resolve_alias(source.name);
                 const auto* si = source_images.try_get(source.name);
                 if (si == nullptr) {
                     auto it = source_images.try_emplace(source.name, get_texture_data(source.name, TextureRole::COLOR_FROM_DB, flip_mode));
@@ -1728,7 +1774,7 @@ TextureWarnFlags RenderingResources::get_suppressed_warnings(const FPath& name) 
     return *res;
 }
 
-void RenderingResources::set_alias(VariableAndHash<std::string> alias, FPath name) {
+void RenderingResources::add_alias(VariableAndHash<std::string> alias, FPath name) {
     std::scoped_lock lock{ mutex_ };
     add(aliases_, std::move(alias), std::move(name));
 }
@@ -2133,6 +2179,9 @@ InitializedTexture RenderingResources::initialize_non_dds_texture(
                 } else {
                     return generate_texture_array(sis);
                 }
+            }
+            if (aliases_.contains(color.filename.variable_and_hash())) {
+                throw std::runtime_error("Please resolve the aliases of texture \"" + color.filename.string() + "\" before rendering");
             }
             throw std::runtime_error("Could not initialize texture \"" + color.filename.string() + '"');
         } else {

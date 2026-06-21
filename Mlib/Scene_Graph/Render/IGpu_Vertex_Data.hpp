@@ -48,6 +48,7 @@ public:
         size_t noperations,
         bool run_in_background,
         bool is_static) = 0;
+    virtual void preload() = 0;
     virtual const MeshMeta& mesh_meta() const = 0;
     virtual const ExtremalAxisAlignedBoundingBox<float, 3>& aabb() const = 0;
     virtual const ExtremalBoundingSphere<float, 3>& bounding_sphere() const = 0;

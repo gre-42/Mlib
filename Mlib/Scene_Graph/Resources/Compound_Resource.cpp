@@ -35,7 +35,7 @@ CompoundResource::CompoundResource(
 CompoundResource::~CompoundResource()
 {}
 
-void CompoundResource::preload(const RenderableResourceFilter& filter) const {
+void CompoundResource::preload(const RenderableResourceFilter& filter) {
     static THREAD_LOCAL(RecursionCounter) recursion_counter = RecursionCounter{};
     for (const auto& resource_name : resource_names_) {
         RecursionGuard rg{ recursion_counter };

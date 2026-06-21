@@ -70,6 +70,11 @@ public:
         return &it->second;
     }
 
+    mapped_type* try_get(const key_type& key) {
+        const auto& cthis = *this;
+        return const_cast<mapped_type*>(cthis.try_get(key));
+    }
+
     node_type extract(const key_type& key) {
         std::shared_lock lock{ mutex_ };
         auto res = elements_.extract(key);

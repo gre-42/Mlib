@@ -135,7 +135,7 @@ HeightMapResource::HeightMapResource(
 HeightMapResource::~HeightMapResource()
 {}
 
-void HeightMapResource::preload(const RenderableResourceFilter& filter) const {
+void HeightMapResource::preload(const RenderableResourceFilter& filter) {
     rva_->preload(filter);
 }
 

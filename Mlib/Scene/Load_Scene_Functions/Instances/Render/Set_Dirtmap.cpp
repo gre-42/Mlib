@@ -25,7 +25,7 @@ SetDirtmap::SetDirtmap(PhysicsScene& physics_scene)
 
 void SetDirtmap::execute(const LoadSceneJsonUserFunctionArgs& args) {
     args.arguments.validate(KnownArgs::options);
-    rendering_resources.set_alias(dirtmap_name, args.arguments.path_or_variable(KnownArgs::filename));
+    rendering_resources.add_alias(dirtmap_name, args.arguments.path_or_variable(KnownArgs::filename));
     rendering_resources.set_offset(dirtmap_name, args.arguments.at<float>(KnownArgs::offset));
     rendering_resources.set_discreteness(dirtmap_name, args.arguments.at<float>(KnownArgs::discreteness));
     rendering_resources.set_scale(dirtmap_name, args.arguments.at<float>(KnownArgs::scale));

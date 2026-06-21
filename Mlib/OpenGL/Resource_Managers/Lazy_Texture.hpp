@@ -10,7 +10,7 @@ enum class TextureRole;
 
 class LazyTexture: public ITextureHandle {
 public:
-	explicit LazyTexture(
+    explicit LazyTexture(
         const RenderingResources& rendering_resources,
         const ColormapWithModifiers& colormap,
         TextureRole role);
@@ -34,7 +34,7 @@ private:
     const ITextureHandle& texture() const;
     const RenderingResources& rendering_resources_;
     mutable std::shared_ptr<ITextureHandle> texture_;
-	ColormapWithModifiers colormap_;
+    ColormapWithModifiers colormap_;
     TextureRole role_;
     DeallocationToken deallocation_token_;
 };

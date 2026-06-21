@@ -191,6 +191,8 @@ public:
     const TextureDescriptor& get_texture_descriptor(const VariableAndHash<std::string>& name) const;
     const ColormapWithModifiers& get_colormap(const VariableAndHash<std::string>& name) const;
     const ColormapWithModifiers& get_colormap(const FPath& name) const;
+    void resolve_alias(ColormapWithModifiers& colormap) const;
+    void resolve_aliases(TextureDescriptor& descriptor) const;
     void add_manual_texture_atlas(VariableAndHash<std::string> name, const ManualTextureAtlasDescriptor& texture_atlas_descriptor);
     std::map<ColormapWithModifiers, ManualUvTile> generate_manual_texture_atlas(
         const VariableAndHash<std::string>& name,
@@ -216,7 +218,7 @@ public:
 
     void set_suppressed_warnings(FPath name, TextureWarnFlags warn_flags);
     TextureWarnFlags get_suppressed_warnings(const FPath& name) const;
-    void set_alias(VariableAndHash<std::string> alias, FPath name);
+    void add_alias(VariableAndHash<std::string> alias, FPath name);
     FPath get_alias(const VariableAndHash<std::string>& alias) const;
     bool contains_alias(const VariableAndHash<std::string>& alias) const;
     const FixedArray<ScenePos, 4, 4>& get_vp(const VariableAndHash<std::string>& name) const;

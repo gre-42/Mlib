@@ -28,7 +28,7 @@ public:
     UUVector<OffsetAndQuaternion<float, float>> vectorize_joint_poses(const StringWithHashUnorderedMap<OffsetAndQuaternion<float, float>>& poses) const;
 
     // ISceneNodeResource, Misc
-    virtual void preload(const RenderableResourceFilter& filter) const override;
+    virtual void preload(const RenderableResourceFilter& filter) override;
     virtual void instantiate_child_renderable(const ChildInstantiationOptions& options) const override;
     virtual AggregateMode get_aggregate_mode() const override;
 

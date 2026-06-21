@@ -43,19 +43,22 @@ HeterogeneousResource::~HeterogeneousResource()
 
 // ISceneNodeResource
 
-void HeterogeneousResource::preload(const RenderableResourceFilter& filter) const {
+void HeterogeneousResource::preload(const RenderableResourceFilter& filter) {
+    auto& res = RenderingContextStack::primary_rendering_resources();
     bri->preload(scene_node_resources_, filter);
     #ifndef WITHOUT_GRAPHICS
-    auto preload_textures = [&filter](const auto& cvas) {
+    auto preload_textures = [&filter, &res](const auto& cvas) {
         for (const auto& [i, cva] : enumerate(cvas)) {
             if (!filter.matches(i, *cva)) {
                 continue;
             }
-            for (const auto& tex : cva->meta.material.textures_color) {
-                RenderingContextStack::primary_rendering_resources().preload(tex.texture_descriptor);
+            for (auto& tex : cva->meta.material.textures_color) {
+                res.resolve_aliases(tex.texture_descriptor);
+                res.preload(tex.texture_descriptor);
             }
-            for (const auto& tex : cva->meta.material.textures_alpha) {
-                RenderingContextStack::primary_rendering_resources().preload(tex.texture_descriptor);
+            for (auto& tex : cva->meta.material.textures_alpha) {
+                res.resolve_aliases(tex.texture_descriptor);
+                res.preload(tex.texture_descriptor);
             }
         }
     };

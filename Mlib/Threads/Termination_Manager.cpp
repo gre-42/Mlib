@@ -97,9 +97,7 @@ TerminationNotificationGuardCv::TerminationNotificationGuardCv(std::condition_va
 
 TerminationNotificationGuardCv::~TerminationNotificationGuardCv() {
     std::scoped_lock lock{exception_observers_cv_mutex};
-    if (exception_observers_cv.erase(&cv_) != 1) {
-        verbose_abort("Could not find condition variable to be removed");
-    }
+    exception_observers_cv.erase(&cv_);
 }
 
 
@@ -115,7 +113,5 @@ TerminationNotificationGuardPromise::TerminationNotificationGuardPromise(
 
 TerminationNotificationGuardPromise::~TerminationNotificationGuardPromise() {
     std::scoped_lock lock{exception_observers_promise_mutex};
-    if (exception_observers_promise.erase(&promise_) != 1) {
-        verbose_abort("Could not find promise to be removed");
-    }
+    exception_observers_promise.erase(&promise_);
 }

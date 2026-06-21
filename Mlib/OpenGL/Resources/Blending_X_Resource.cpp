@@ -79,7 +79,7 @@ BlendingXResource::BlendingXResource(
 BlendingXResource::~BlendingXResource()
 {}
 
-void BlendingXResource::preload(const RenderableResourceFilter& filter) const {
+void BlendingXResource::preload(const RenderableResourceFilter& filter) {
     for (const auto& rva : rva_.flat_iterable()) {
         rva->preload(filter);
     }

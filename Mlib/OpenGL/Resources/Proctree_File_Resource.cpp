@@ -73,7 +73,7 @@ ProctreeFileResource::ProctreeFileResource(
 
 ProctreeFileResource::~ProctreeFileResource() = default;
 
-void ProctreeFileResource::preload(const RenderableResourceFilter& filter) const {
+void ProctreeFileResource::preload(const RenderableResourceFilter& filter) {
     rva_->preload(filter);
 }
 

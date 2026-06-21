@@ -39,6 +39,7 @@ public:
     virtual IArrayBuffer& uv1_buffer(size_t i) override;
     virtual IArrayBuffer& cweight_buffer(size_t i) override;
     virtual IArrayBuffer& alpha_buffer() override;
+    virtual void preload() override;
     virtual const MeshMeta& mesh_meta() const override;
     virtual const ExtremalAxisAlignedBoundingBox<float, 3>& aabb() const override;
     virtual const ExtremalBoundingSphere<float, 3>& bounding_sphere() const override;

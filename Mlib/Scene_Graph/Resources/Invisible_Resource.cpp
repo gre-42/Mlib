@@ -16,7 +16,7 @@ InvisibleResource::InvisibleResource(AggregateMode aggregate_mode)
 InvisibleResource::~InvisibleResource()
 {}
 
-void InvisibleResource::preload(const RenderableResourceFilter& filter) const {
+void InvisibleResource::preload(const RenderableResourceFilter& filter) {
 }
 
 void InvisibleResource::instantiate_child_renderable(const ChildInstantiationOptions& options) const

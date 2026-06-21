@@ -560,7 +560,7 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                                 .magnifying_interpolation_mode = InterpolationMode::LINEAR,
                                 .anisotropic_filtering_level = cfg.anisotropic_filtering_level},
                             .specular = {},
-                            .normal = ColormapWithModifiers{
+                            .normal = {
                                 .filename = material->txNormal->empty() ? FPath{} : FPath::from_variable_and_hash(material->txNormal),
                                 .color_mode = ColorMode::RGB,
                                 .mipmap_mode = MipmapMode::WITH_MIPMAPS,

@@ -34,6 +34,16 @@ public:
     size_t hash() const;
     template <class Archive>
     void serialize(Archive& archive) {
+        [&](){
+            switch (type_) {
+            case PathType::EMPTY:
+            case PathType::VARIABLE:
+                return;
+            case PathType::LOCAL_PATH:
+                throw std::runtime_error("Attempt to serialize a file path: \"" + string() + '"');
+            }
+            throw std::runtime_error("Unknown path type: \"" + *path_or_variable_ + '"');
+        }();
         archive(type_);
         archive(path_or_variable_);
     }

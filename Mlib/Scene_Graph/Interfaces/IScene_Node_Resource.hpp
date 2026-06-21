@@ -44,7 +44,7 @@ public:
     explicit ISceneNodeResource(std::string name);
     virtual ~ISceneNodeResource();
     // Misc
-    virtual void preload(const RenderableResourceFilter& filter) const;
+    virtual void preload(const RenderableResourceFilter& filter);
     virtual void instantiate_child_renderable(const ChildInstantiationOptions& options) const;
     virtual void instantiate_root_renderables(const RootInstantiationOptions& options) const;
     virtual TransformationMatrix<double, double, 3> get_geographic_mapping(const TransformationMatrix<double, double, 3>& absolute_model_matrix) const;

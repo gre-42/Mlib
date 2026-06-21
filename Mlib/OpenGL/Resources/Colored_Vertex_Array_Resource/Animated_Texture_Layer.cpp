@@ -3,8 +3,10 @@
 #include <Mlib/Geometry/Primitives/Extremal_Axis_Aligned_Bounding_Box.hpp>
 #include <Mlib/Geometry/Primitives/Extremal_Bounding_Sphere.hpp>
 #include <Mlib/Geometry/Primitives/Extremal_Bounding_Volume.hpp>
+#include <Mlib/OpenGL/Resource_Managers/Rendering_Resources.hpp>
 #include <Mlib/OpenGL/Resources/Colored_Vertex_Array_Resource/Trail_Sequence.hpp>
 #include <Mlib/Physics/Units.hpp>
+#include <Mlib/Resource_Context/Rendering_Context.hpp>
 #include <Mlib/Scene_Graph/Instances/Static_World.hpp>
 #include <mutex>
 
@@ -152,6 +154,18 @@ void AnimatedTextureLayerBuffers::delete_triangles_far_away_legacy(
     bool is_static)
 {
     throw std::runtime_error("AnimatedTextureLayerBuffers::delete_triangles_far_away not implemented");
+}
+
+void AnimatedTextureLayerBuffers::preload() {
+    auto& res = RenderingContextStack::primary_rendering_resources();
+    for (auto& tex : mesh_meta_.material.textures_color) {
+        res.resolve_aliases(tex.texture_descriptor);
+        res.preload(tex.texture_descriptor);
+    }
+    for (auto& tex : mesh_meta_.material.textures_alpha) {
+        res.resolve_aliases(tex.texture_descriptor);
+        res.preload(tex.texture_descriptor);
+    }
 }
 
 const MeshMeta& AnimatedTextureLayerBuffers::mesh_meta() const {

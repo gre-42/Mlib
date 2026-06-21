@@ -14,7 +14,7 @@ ISceneNodeResource::ISceneNodeResource(std::string name)
 
 ISceneNodeResource::~ISceneNodeResource() = default;
 
-void ISceneNodeResource::preload(const RenderableResourceFilter& filter) const {
+void ISceneNodeResource::preload(const RenderableResourceFilter& filter) {
     throw std::runtime_error(name_ + ": preload not implemented");
 }
 

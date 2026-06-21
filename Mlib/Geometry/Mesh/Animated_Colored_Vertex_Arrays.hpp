@@ -26,7 +26,9 @@ enum class RectangleTriangulationMode;
 enum class DelaunayErrorBehavior;
 
 struct AnimatedColoredVertexArrays {
-    AnimatedColoredVertexArrays();
+    AnimatedColoredVertexArrays(
+        std::list<std::shared_ptr<ColoredVertexArray<float>>> scvas = {},
+        std::list<std::shared_ptr<ColoredVertexArray<CompressedScenePos>>> dcvas = {});
     AnimatedColoredVertexArrays(
         const AnimatedColoredVertexArrays& other,
         const ColoredVertexArrayFilter& filter);

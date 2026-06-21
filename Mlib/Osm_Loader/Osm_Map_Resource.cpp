@@ -1951,7 +1951,7 @@ void OsmMapResource::save_bad_triangles_to_obj_file(const std::string& filename)
 OsmMapResource::~OsmMapResource()
 {}
 
-void OsmMapResource::preload(const RenderableResourceFilter& filter) const {
+void OsmMapResource::preload(const RenderableResourceFilter& filter) {
     hri_.preload(filter);
     #ifndef WITHOUT_GRAPHICS
     ColoredVertexArrayResource(buildings_).preload(filter);

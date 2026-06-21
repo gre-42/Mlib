@@ -8,8 +8,10 @@
 #include <Mlib/OpenGL/CHK.hpp>
 #include <Mlib/OpenGL/Instance_Handles/Buffer_Background_Copy.hpp>
 #include <Mlib/OpenGL/Instance_Handles/Vertex_Array.hpp>
+#include <Mlib/OpenGL/Resource_Managers/Rendering_Resources.hpp>
 #include <Mlib/OpenGL/Resources/Colored_Vertex_Array_Resource.hpp>
 #include <Mlib/OpenGL/Resources/Colored_Vertex_Array_Resource/Shader_Structs.hpp>
+#include <Mlib/Resource_Context/Rendering_Context.hpp>
 #include <Mlib/Scene_Graph/Render/Attribute_Index_Calculator.hpp>
 #include <Mlib/Stats/Mean.hpp>
 #include <Mlib/Testing/Assert.hpp>
@@ -372,6 +374,18 @@ void DistantTriangleHider::delete_triangles_far_away_legacy(
 #else
         CHK(glUnmapBuffer(GL_ARRAY_BUFFER));
 #endif
+    }
+}
+
+void DistantTriangleHider::preload() {
+    auto& res = RenderingContextStack::primary_rendering_resources();
+    for (auto& tex : cva_->meta.material.textures_color) {
+        res.resolve_aliases(tex.texture_descriptor);
+        res.preload(tex.texture_descriptor);
+    }
+    for (auto& tex : cva_->meta.material.textures_alpha) {
+        res.resolve_aliases(tex.texture_descriptor);
+        res.preload(tex.texture_descriptor);
     }
 }
 

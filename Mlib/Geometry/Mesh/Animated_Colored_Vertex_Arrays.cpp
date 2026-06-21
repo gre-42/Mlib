@@ -12,8 +12,12 @@
 
 using namespace Mlib;
 
-AnimatedColoredVertexArrays::AnimatedColoredVertexArrays()
+AnimatedColoredVertexArrays::AnimatedColoredVertexArrays(
+    std::list<std::shared_ptr<ColoredVertexArray<float>>> scvas,
+    std::list<std::shared_ptr<ColoredVertexArray<CompressedScenePos>>> dcvas)
     : bone_indices{ "Bone index" }
+    , scvas(std::move(scvas))
+    , dcvas(std::move(dcvas))
 {}
 
 AnimatedColoredVertexArrays::AnimatedColoredVertexArrays(

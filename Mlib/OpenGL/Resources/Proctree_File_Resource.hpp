@@ -15,7 +15,7 @@ public:
     ~ProctreeFileResource();
 
     // ISceneNodeResource, Misc
-    virtual void preload(const RenderableResourceFilter& filter) const override;
+    virtual void preload(const RenderableResourceFilter& filter) override;
     virtual void instantiate_child_renderable(const ChildInstantiationOptions& options) const override;
     virtual void instantiate_root_renderables(const RootInstantiationOptions& options) const override;
     virtual AggregateMode get_aggregate_mode() const override;
