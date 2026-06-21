@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/Hashing/Std_Hash.hpp>
 #include <Mlib/Hashing/Variable_And_Hash.hpp>
+#include <Mlib/Os/Io/Safe_Archiver.hpp>
 #include <Mlib/Strings/Utf8_Path.hpp>
 #include <compare>
 #include <iosfwd>
@@ -33,7 +34,8 @@ public:
     VariableAndHash<std::string> string_and_hash() const;
     size_t hash() const;
     template <class Archive>
-    void serialize(Archive& archive) {
+    void serialize(Archive& archiver) {
+        SafeArchiver archive{archiver};
         [&](){
             switch (type_) {
             case PathType::EMPTY:

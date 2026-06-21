@@ -2,6 +2,7 @@
 #include <Mlib/Geometry/Material/Blend_Distances.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>
 #include <Mlib/Math/Orderable_Fixed_Array.hpp>
+#include <Mlib/Os/Io/Safe_Archiver.hpp>
 #include <compare>
 
 namespace Mlib {
@@ -14,7 +15,8 @@ struct Morphology {
     float triangle_cluster_width = 0.f;
     std::partial_ordering operator <=> (const Morphology&) const = default;
     template <class Archive>
-    void serialize(Archive& archive) {
+    void serialize(Archive& archiver) {
+        SafeArchiver archive{archiver};
         archive(physics_material);
         archive(center_distances2);
         archive(max_triangle_distance);

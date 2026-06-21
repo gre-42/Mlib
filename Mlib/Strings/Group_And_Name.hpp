@@ -1,6 +1,9 @@
 #pragma once
 #include <Mlib/Hashing/Variable_And_Hash.hpp>
+#include <Mlib/Memory/Integral_Cast.hpp>
+#include <Mlib/Os/Io/Safe_Archiver.hpp>
 #include <cereal/access.hpp>
+#include <cstdint>
 #include <iosfwd>
 #include <stdexcept>
 #include <string>
@@ -27,7 +30,7 @@ public:
     {}
     GroupAndName(const std::string& group, const std::string& name)
         : full_name_{ group + name }
-        , group_length_{ group.length() }
+        , group_length_{ integral_cast<uint32_t>(group.length()) }
     {}
     inline const std::string& full_name() const {
         return *full_name_;
@@ -51,18 +54,20 @@ public:
         return { VariableAndHash<std::string>{full_name() + rhs}, group_length_ };
     }
     template <class Archive>
-    void serialize(Archive& archive) {
+    void serialize(Archive& archiver) {
+        SafeArchiver archive{archiver};
         archive(full_name_);
         archive(group_length_);
     }
     // From: https://github.com/USCiLab/cereal/issues/102
     template<typename Archive>
     static void load_and_construct(
-        Archive& archive,
+        Archive& archiver,
         cereal::construct<GroupAndName>& construct)
     {
+        SafeArchiver archive{archiver};
         std::string full_name;
-        size_t group_length;
+        uint32_t group_length;
 
         archive(full_name);
         archive(group_length);
@@ -70,7 +75,7 @@ public:
         construct(full_name, group_length);
     }
 private:
-    GroupAndName(VariableAndHash<std::string> full_name, size_t group_length)
+    GroupAndName(VariableAndHash<std::string> full_name, uint32_t group_length)
         : full_name_{ std::move(full_name) }
         , group_length_{ group_length }
     {
@@ -79,7 +84,7 @@ private:
         }
     }
     VariableAndHash<std::string> full_name_;
-    size_t group_length_;
+    uint32_t group_length_;
 };
 
 inline std::ostream& operator << (std::ostream& ostr, const GroupAndName& n) {

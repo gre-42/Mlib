@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/Hashing/Std_Hash.hpp>
 #include <Mlib/Math/Orderable_Fixed_Array.hpp>
+#include <Mlib/Os/Io/Safe_Archiver.hpp>
 #include <compare>
 #include <nlohmann/json_fwd.hpp>
 
@@ -11,7 +12,8 @@ struct FresnelReflectance {
     float max = 0.f;
     float exponent = 0.f;
     template <class Archive>
-    void serialize(Archive& archive) {
+    void serialize(Archive& archiver) {
+        SafeArchiver archive{archiver};
         archive(min);
         archive(max);
         archive(exponent);
@@ -23,7 +25,8 @@ struct FresnelAndAmbient {
     FresnelReflectance reflectance;
     OrderableFixedArray<float, 3> ambient{ 0.f, 0.f, 0.f };
     template <class Archive>
-    void serialize(Archive& archive) {
+    void serialize(Archive& archiver) {
+        SafeArchiver archive{archiver};
         archive(reflectance);
         archive(ambient);
     }

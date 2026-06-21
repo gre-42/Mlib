@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Os/Io/Safe_Archiver.hpp>
 #include <Mlib/Scene_Config/Scene_Precision.hpp>
 #include <list>
 #include <map>
@@ -43,7 +44,8 @@ public:
     const std::shared_ptr<TriangleList<CompressedScenePos>>& operator [] (EntityType road_type) const;
     const std::map<EntityType, std::shared_ptr<TriangleList<CompressedScenePos>>>& map() const;
     template <class Archive>
-    void serialize(Archive& archive) {
+    void serialize(Archive& archiver) {
+        SafeArchiver archive{archiver};
         archive(lst_);
     }
 private:

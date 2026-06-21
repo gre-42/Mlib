@@ -5,6 +5,7 @@
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Math/Lerp.hpp>
 #include <Mlib/Misc/Pragma_Gcc.hpp>
+#include <Mlib/Os/Io/Safe_Archiver.hpp>
 #include <cmath>
 #include <iostream>
 
@@ -247,7 +248,8 @@ public:
         return s * rhs.s + ::Mlib::dot0d(v, rhs.v);
     }
     template <class Archive>
-    void serialize(Archive& archive) {
+    void serialize(Archive& archiver) {
+        SafeArchiver archive{archiver};
         archive(v);
         archive(s);
     }
@@ -307,7 +309,8 @@ public:
             m0.q.slerp(m1.q, TDir(a0))};
     }
     template <class Archive>
-    void serialize(Archive& archive) {
+    void serialize(Archive& archiver) {
+        SafeArchiver archive{archiver};
         archive(t);
         archive(q);
     }

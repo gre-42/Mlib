@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/Initialization/Uninitialized.hpp>
 #include <Mlib/Math/Funpack.hpp>
+#include <Mlib/Os/Io/Safe_Archiver.hpp>
 #include <concepts>
 #include <ostream>
 #include <utility>
@@ -43,7 +44,8 @@ struct PointAndFlags {
         return *this;
     }
     template <class Archive>
-    void serialize(Archive& archive) {
+    void serialize(Archive& archiver) {
+        SafeArchiver archive{archiver};
         archive(position);
         archive(flags);
     }

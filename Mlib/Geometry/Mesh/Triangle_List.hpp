@@ -11,6 +11,7 @@
 #include <Mlib/Geometry/Rectangle_Triangulation_Mode.hpp>
 #include <Mlib/Geometry/Triangle_Tangent_Error_Behavior.hpp>
 #include <Mlib/Initialization/Default_Uninitialized_List.hpp>
+#include <Mlib/Os/Io/Safe_Archiver.hpp>
 #include <Mlib/Strings/Group_And_Name.hpp>
 #include <cereal/access.hpp>
 #include <cstdint>
@@ -183,7 +184,8 @@ public:
         float decay = 0.97f);
     std::shared_ptr<ColoredVertexArray<TPos>> triangle_array() const;
     template <class Archive>
-    void serialize(Archive& archive) {
+    void serialize(Archive& archiver) {
+        SafeArchiver archive{archiver};
         archive(meta);
         archive(quads);
         archive(triangles);
@@ -195,9 +197,10 @@ public:
     // From: https://github.com/USCiLab/cereal/issues/102
     template<typename Archive>
     static void load_and_construct(
-        Archive& archive,
+        Archive& archiver,
         cereal::construct<TriangleList>& construct)
     {
+        SafeArchiver archive{archiver};
         MeshMeta meta;
         UUList<FixedArray<ColoredVertex<TPos>, 4>> quads;
         UUList<FixedArray<ColoredVertex<TPos>, 3>> triangles;

@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
+#include <Mlib/Os/Io/Safe_Archiver.hpp>
 #include <Mlib/Scene_Graph/Interfaces/IScene_Node_Resource.hpp>
 #include <Mlib/Threads/Recursive_Shared_Mutex.hpp>
 #include <memory>
@@ -70,7 +71,8 @@ public:
 
     // Cereal
     template <class Archive>
-    void serialize(Archive& archive) {
+    void serialize(Archive& archiver) {
+        SafeArchiver archive{archiver};
         archive(bri);
         archive(acvas);
     }

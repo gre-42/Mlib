@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/Hashing/Variable_And_Hash.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
+#include <Mlib/Os/Io/Safe_Archiver.hpp>
 #include <Mlib/Scene_Config/Scene_Precision.hpp>
 #include <list>
 #include <map>
@@ -67,7 +68,8 @@ public:
         const SceneNodeResources& scene_node_resources) const;
 
     template <class Archive>
-    void serialize(Archive& archive) {
+    void serialize(Archive& archiver) {
+        SafeArchiver archive{archiver};
         archive(rotation_);
         archive(scale_);
         archive(object_resource_descriptors_);

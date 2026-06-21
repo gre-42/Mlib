@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
+#include <Mlib/Os/Io/Safe_Archiver.hpp>
 #include <Mlib/Physics/Misc/Inventory_Item.hpp>
 #include <Mlib/Scene_Config/Scene_Precision.hpp>
 #include <cstdint>
@@ -22,7 +23,8 @@ struct ObjectResourceDescriptor {
     std::unordered_map<InventoryItem, uint32_t> supplies;
     float supplies_cooldown;
     template <class Archive>
-    void serialize(Archive& archive) {
+    void serialize(Archive& archiver) {
+        SafeArchiver archive{archiver};
         archive(position);
         archive(yangle);
         archive(name);

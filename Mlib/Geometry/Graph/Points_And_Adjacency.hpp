@@ -2,6 +2,7 @@
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Array/Sparse_Array.hpp>
 #include <Mlib/Initialization/Default_Uninitialized_Vector.hpp>
+#include <Mlib/Os/Io/Safe_Archiver.hpp>
 
 namespace Mlib {
 
@@ -28,7 +29,8 @@ struct PointsAndAdjacency {
     ~PointsAndAdjacency() = default;
 
     template <class Archive>
-    void serialize(Archive& archive) {
+    void serialize(Archive& archiver) {
+        SafeArchiver archive{archiver};
         archive(points);
         archive(adjacency);
     }

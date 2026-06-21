@@ -1358,7 +1358,6 @@ void RenderingResources::resolve_alias(ColormapWithModifiers& colormap) const {
         for (size_t i = 0; i < 10; ++i) {
             f = aliases_.get(f.variable_and_hash());
             if (f.type() != PathType::VARIABLE) {
-                linfo() << filename << " <- " << f;
                 filename = std::move(f);
                 return true;
             }

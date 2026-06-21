@@ -6,6 +6,7 @@
 #include <Mlib/Hashing/Cached_Hash.hpp>
 #include <Mlib/Math/Orderable_Fixed_Array.hpp>
 #include <Mlib/Misc/FPath.hpp>
+#include <Mlib/Os/Io/Safe_Archiver.hpp>
 #include <iosfwd>
 #include <string>
 
@@ -56,7 +57,8 @@ struct ColormapWithModifiers {
     std::partial_ordering operator <=> (const ColormapWithModifiers& other) const;
     bool operator == (const ColormapWithModifiers& other) const;
     template <class Archive>
-    void serialize(Archive& archive) {
+    void serialize(Archive& archiver) {
+        SafeArchiver archive{archiver};
         archive(filename);
         archive(chrominance);
         archive(desaturate);

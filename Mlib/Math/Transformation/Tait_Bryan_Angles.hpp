@@ -2,6 +2,7 @@
 #include <Mlib/Initialization/Default_Uninitialized.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
+#include <Mlib/Os/Io/Safe_Archiver.hpp>
 
 namespace Mlib {
 
@@ -42,7 +43,8 @@ public:
     FixedArray<TPos, tsize> position;
 
     template <class Archive>
-    void serialize(Archive& archive) {
+    void serialize(Archive& archiver) {
+        SafeArchiver archive{archiver};
         archive(rotation);
         archive(position);
     }

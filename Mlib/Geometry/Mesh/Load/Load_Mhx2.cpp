@@ -12,6 +12,7 @@
 #include <Mlib/Map/String_With_Hash_Unordered_Map.hpp>
 #include <Mlib/Math/Fixed_Cholesky.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
+#include <Mlib/Memory/Integral_Cast.hpp>
 #include <Mlib/Os/Weakly_Canonical_Preserve_Symlinks.hpp>
 #include <Mlib/Strings/Utf8_Path.hpp>
 
@@ -124,7 +125,7 @@ std::shared_ptr<AnimatedColoredVertexArrays> Mlib::load_mhx2(
                 initial_absolute_transformation = assemble_homogeneous_4x4(R, t);
             }
             auto new_bone = std::unique_ptr<Bone>(new Bone{
-                .index = result->bone_indices.size(),
+                .index = integral_cast<uint32_t>(result->bone_indices.size()),
                 .initial_absolute_transformation = OffsetAndQuaternion<float, float>{initial_absolute_transformation}});
             auto new_bone_name = bone.at("name").get<VariableAndHash<std::string>>();
             bone_names.add(new_bone_name, new_bone.get());
@@ -250,7 +251,7 @@ std::shared_ptr<AnimatedColoredVertexArrays> Mlib::load_mhx2(
                 if (b.size() != 2) {
                     throw std::runtime_error("Invalid weight length");
                 }
-                size_t vertex_id = b[0].get<size_t>();
+                auto vertex_id = b[0].get<uint32_t>();
                 if (vertex_id >= vertex_bone_weights.size()) {
                     throw std::runtime_error("Vertex ID out of bounds");
                 }

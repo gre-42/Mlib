@@ -4,6 +4,7 @@
 #include <Mlib/Initialization/Default_Uninitialized_List.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
 #include <Mlib/OpenGL/Resources/Heterogeneous_Resource.hpp>
+#include <Mlib/Os/Io/Safe_Archiver.hpp>
 #include <Mlib/Scene_Graph/Interfaces/IScene_Node_Resource.hpp>
 #include <Mlib/Scene_Graph/Resources/Batch_Resource_Instantiator.hpp>
 #include <Mlib/Scene_Graph/Resources/Sampler/Triangle_Sampler/Terrain_Styles.hpp>
@@ -98,7 +99,8 @@ public:
         const ColoredVertexArrayFilter& filter) const override;
 
     template <class Archive>
-    void serialize(Archive& archive) {
+    void serialize(Archive& archiver) {
+        SafeArchiver archive{archiver};
         archive(hri_);
         archive(buildings_);
         archive(scale_);

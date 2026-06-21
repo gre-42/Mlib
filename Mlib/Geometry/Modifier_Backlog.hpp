@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Os/Io/Safe_Archiver.hpp>
 #include <compare>
 #include <string>
 
@@ -10,7 +11,8 @@ struct ModifierBacklog {
     bool add_foliage = false;
     std::strong_ordering operator <=> (const ModifierBacklog&) const = default;
     template <class Archive>
-    void serialize(Archive& archive) {
+    void serialize(Archive& archiver) {
+        SafeArchiver archive{archiver};
         archive(merge_textures);
         archive(convert_to_terrain);
         archive(add_foliage);

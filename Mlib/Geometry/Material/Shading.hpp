@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/Geometry/Material/Blend_Distances.hpp>
 #include <Mlib/Geometry/Material/Fresnel.hpp>
+#include <Mlib/Os/Io/Safe_Archiver.hpp>
 #include <compare>
 #include <nlohmann/json_fwd.hpp>
 
@@ -17,7 +18,8 @@ struct Shading {
     OrderableFixedArray<float, 2> fog_distances{ default_step_distances };
     OrderableFixedArray<float, 3> fog_ambient{ 1.f, 1.f, 1.f };
     template <class Archive>
-    void serialize(Archive& archive) {
+    void serialize(Archive& archiver) {
+        SafeArchiver archive{archiver};
         archive(emissive);
         archive(ambient);
         archive(diffuse);

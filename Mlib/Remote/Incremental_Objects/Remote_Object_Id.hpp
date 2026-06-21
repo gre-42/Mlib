@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/Hashing/Hash.hpp>
 #include <Mlib/Hashing/Std_Hash.hpp>
+#include <Mlib/Os/Io/Safe_Archiver.hpp>
 #include <Mlib/Scene_Config/Remote_Integers.hpp>
 #include <compare>
 #include <iosfwd>
@@ -12,7 +13,8 @@ struct RemoteObjectId {
     RemoteSiteId site_id;
     LocalObjectId object_id;
     template <class Archive>
-    void serialize(Archive& archive) {
+    void serialize(Archive& archiver) {
+        SafeArchiver archive{archiver};
         archive(site_id);
         archive(object_id);
     }

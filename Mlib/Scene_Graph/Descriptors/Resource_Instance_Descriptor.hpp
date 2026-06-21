@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
+#include <Mlib/Os/Io/Safe_Archiver.hpp>
 #include <Mlib/Scene_Config/Scene_Precision.hpp>
 #include <cstdint>
 #include <map>
@@ -15,7 +16,8 @@ struct ResourceInstanceDescriptor {
                         // the BillboardAtlasInstance::vertex_scale attribute.
     BillboardId billboard_id;
     template <class Archive>
-    void serialize(Archive& archive) {
+    void serialize(Archive& archiver) {
+        SafeArchiver archive{archiver};
         archive(position);
         archive(yangle);
         archive(scale);

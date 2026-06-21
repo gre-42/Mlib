@@ -2,6 +2,7 @@
 #include <Mlib/Geometry/Coordinates/Homogeneous.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Misc/Pragma_Gcc.hpp>
+#include <Mlib/Os/Io/Safe_Archiver.hpp>
 #include <cmath>
 #include <iosfwd>
 
@@ -145,7 +146,8 @@ public:
     }
 
     template <class Archive>
-    void serialize(Archive& archive) {
+    void serialize(Archive& archiver) {
+        SafeArchiver archive{archiver};
         archive(R);
         archive(t);
     }

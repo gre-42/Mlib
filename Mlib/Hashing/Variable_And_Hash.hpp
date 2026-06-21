@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/Hashing/Hash.hpp>
 #include <Mlib/Hashing/Std_Hash.hpp>
+#include <Mlib/Os/Io/Safe_Archiver.hpp>
 #include <compare>
 
 namespace Mlib {
@@ -63,9 +64,14 @@ public:
         return hash_;
     }
     template <class Archive>
-    void serialize(Archive& archive) {
-        archive(variable_);
-        archive(hash_);
+    void serialize(Archive& archiver) {
+        SafeArchiver archive{archiver};
+        if constexpr (Archive::is_saving::value) {
+            archive(variable_);
+        } else {
+            archive(variable_);
+            hash_ = hash_combine(variable_);
+        }
     }
 private:
     T variable_;

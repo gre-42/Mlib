@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array_Hash.hpp>
 #include <Mlib/Math/Orderable_Fixed_Array.hpp>
+#include <Mlib/Os/Io/Safe_Archiver.hpp>
 #include <Mlib/Stats/Min_Max.hpp>
 
 namespace Mlib {
@@ -32,7 +33,8 @@ public:
         return orderable() <=> rhs.orderable();
     }
     template <class Archive>
-    void serialize(Archive& archive) {
+    void serialize(Archive& archiver) {
+        SafeArchiver archive{archiver};
         archive(distances2_);
     }
 private:

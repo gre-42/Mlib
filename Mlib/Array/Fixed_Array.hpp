@@ -11,6 +11,7 @@
 #include <Mlib/Iterator/Pointer_Iterable.hpp>
 #include <Mlib/Math/Conju.hpp>
 #include <Mlib/Misc/Pragma_Gcc.hpp>
+#include <Mlib/Os/Io/Safe_Archiver.hpp>
 #include <array>
 #include <cassert>
 #include <concepts>
@@ -359,7 +360,8 @@ PRAGMA_GCC_DIAGNOSTIC_POP
         return casted<TResultData>();
     }
     template <class Archive>
-    void serialize(Archive& archive) {
+    void serialize(Archive& archiver) {
+        SafeArchiver archive{archiver};
         for (TData& v : flat_iterable()) {
             archive(v);
         }
@@ -427,7 +429,8 @@ public:
         return value_ < rhs.value_;
     }
     template <class Archive>
-    void serialize(Archive& archive) {
+    void serialize(Archive& archiver) {
+        SafeArchiver archive{archiver};
         archive(value_);
     }
 private:

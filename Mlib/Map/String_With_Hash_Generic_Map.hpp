@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Hashing/Variable_And_Hash.hpp>
+#include <Mlib/Os/Io/Safe_Archiver.hpp>
 #include <stdexcept>
 #include <string>
 #include <vector>
@@ -135,16 +136,18 @@ public:
     }
 
     // template <class Archive>
-    // void serialize(Archive& archive) {
+    // void serialize(Archive& archiver) {
+    //     SafeArchiver archive{archiver};
     //     archive(value_name_);
     //     archive(elements_);
     // }
     // 
     // template<typename Archive>
     // static void load_and_construct(
-    //     Archive& archive,
+    //     Archive& archiver,
     //     cereal::construct<StringWithHashGenericMap<TBaseMap>> &construct)
     // {
+    //     SafeArchiver archive{archiver};
     //     std::string value_name;
     //     archive(value_name);
     //     auto& obj = construct(value_name);

@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/Geometry/Material/Blend_Distances.hpp>
 #include <Mlib/Math/Orderable_Fixed_Array.hpp>
+#include <Mlib/Os/Io/Safe_Archiver.hpp>
 #include <Mlib/Scene_Config/Scene_Precision.hpp>
 #include <cstdint>
 
@@ -18,7 +19,8 @@ struct BillboardAtlasInstance {
     OrderableFixedArray<float, 4> alpha_distances = { default_linear_distances };
     std::partial_ordering operator <=> (const BillboardAtlasInstance&) const = default;
     template <class Archive>
-    void serialize(Archive& archive) {
+    void serialize(Archive& archiver) {
+        SafeArchiver archive{archiver};
         archive(uv_scale);
         archive(uv_offset);
         archive(texture_layer);

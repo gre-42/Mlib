@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/Math/Orderable_Fixed_Array.hpp>
 #include <Mlib/Misc/FPath.hpp>
+#include <Mlib/Os/Io/Safe_Archiver.hpp>
 #include <cstdint>
 #include <iosfwd>
 #include <string>
@@ -33,7 +34,8 @@ struct InteriorTextures {
     size_t size() const;
     const FPath& operator [](size_t index) const;
     template <class Archive>
-    void serialize(Archive& archive) {
+    void serialize(Archive& archiver) {
+        SafeArchiver archive{archiver};
         archive(facade_edge_size);
         archive(facade_inner_size);
         archive(interior_size);

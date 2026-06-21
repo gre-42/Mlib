@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Os/Io/Safe_Archiver.hpp>
 #include <Mlib/Scene_Graph/Resources/Sampler/Triangle_Sampler/Terrain_Style.hpp>
 
 namespace Mlib {
@@ -14,7 +15,8 @@ public:
     bool requires_renderer() const;
 
     template <class Archive>
-    void serialize(Archive& archive) {
+    void serialize(Archive& archiver) {
+        SafeArchiver archive{archiver};
         archive(street_mud_terrain_style);
         archive(path_mud_terrain_style);
         archive(near_grass_terrain_style);

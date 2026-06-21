@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Os/Io/Safe_Archiver.hpp>
 #include <Mlib/Scene_Config/Remote_Integers.hpp>
 #include <iosfwd>
 
@@ -6,7 +7,8 @@ namespace Mlib {
 
 struct Skills {
     template <class Archive>
-    void serialize(Archive& archive) {
+    void serialize(Archive& archiver) {
+        SafeArchiver archive{archiver};
         if (Archive::is_saving::value) {
             SkillsType packed =
                 ((SkillsType)can_drive << 0) |

@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Misc/Object.hpp>
+#include <Mlib/Os/Io/Safe_Archiver.hpp>
 #include <Mlib/Physics/Incremental_Coordinates/Incremental_Scene_R.hpp>
 #include <Mlib/Physics/Incremental_Coordinates/Incremental_Scene_T.hpp>
 #include <Mlib/Physics/Incremental_Coordinates/Incremental_Scene_V.hpp>
@@ -36,7 +37,8 @@ struct AbsoluteVehicleLocation8 {
     static AbsoluteVehicleLocation8 nan();
     VehicleLocation upsample() const;
     template <class Archive>
-    void serialize(Archive& archive) {
+    void serialize(Archive& archiver) {
+        SafeArchiver archive{archiver};
         archive(T);
         archive(r1);
         archive(v_com);
@@ -50,7 +52,8 @@ struct DeltaVehicleLocation {
     EFixedArray<DeltaSceneV8, 3> v_com;
     DeltaSceneW8 w1;
     template <class Archive>
-    void serialize(Archive& archive) {
+    void serialize(Archive& archiver) {
+        SafeArchiver archive{archiver};
         archive(T);
         archive(r1);
         archive(v_com);

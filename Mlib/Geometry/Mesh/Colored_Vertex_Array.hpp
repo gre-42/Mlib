@@ -6,6 +6,7 @@
 #include <Mlib/Geometry/Primitives/Primitive_Dimensions.hpp>
 #include <Mlib/Initialization/Default_Uninitialized_Vector.hpp>
 #include <Mlib/Misc/To_Underlying.hpp>
+#include <Mlib/Os/Io/Safe_Archiver.hpp>
 #include <Mlib/Scene_Config/Scene_Precision.hpp>
 #include <Mlib/Threads/Recursive_Shared_Mutex.hpp>
 #include <atomic>
@@ -146,7 +147,8 @@ public:
     std::string identifier() const;
     void print_stats(std::ostream& ostr) const;
     template <class Archive>
-    void serialize(Archive& archive) {
+    void serialize(Archive& archiver) {
+        SafeArchiver archive{archiver};
         archive(meta);
         archive(quads);
         archive(triangles);
@@ -162,9 +164,10 @@ public:
     // From: https://github.com/USCiLab/cereal/issues/102
     template<typename Archive>
     static void load_and_construct(
-        Archive& archive,
+        Archive& archiver,
         cereal::construct<ColoredVertexArray>& construct)
     {
+        SafeArchiver archive{archiver};
         MeshMeta meta;
         UUVector<FixedArray<ColoredVertex<TPos>, 4>> quads;
         UUVector<FixedArray<ColoredVertex<TPos>, 3>> triangles;

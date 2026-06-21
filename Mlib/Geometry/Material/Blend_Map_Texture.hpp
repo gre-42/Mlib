@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/Geometry/Material/Blend_Distances.hpp>
 #include <Mlib/Geometry/Material/Texture_Descriptor.hpp>
+#include <Mlib/Os/Io/Safe_Archiver.hpp>
 #include <cmath>
 #include <cstdint>
 #include <string_view>
@@ -104,7 +105,8 @@ struct BlendMapTexture {
     size_t modifiers_hash() const;
     std::partial_ordering operator <=> (const BlendMapTexture&) const = default;
     template <class Archive>
-    void serialize(Archive& archive) {
+    void serialize(Archive& archiver) {
+        SafeArchiver archive{archiver};
         archive(texture_descriptor);
         archive(min_height);
         archive(max_height);

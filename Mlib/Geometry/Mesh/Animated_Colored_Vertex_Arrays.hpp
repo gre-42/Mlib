@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/Initialization/Default_Uninitialized_Vector.hpp>
 #include <Mlib/Map/String_With_Hash_Unordered_Map.hpp>
+#include <Mlib/Os/Io/Safe_Archiver.hpp>
 #include <Mlib/Scene_Config/Scene_Precision.hpp>
 #include <cstddef>
 #include <cstdint>
@@ -34,7 +35,7 @@ struct AnimatedColoredVertexArrays {
         const ColoredVertexArrayFilter& filter);
     ~AnimatedColoredVertexArrays();
     std::shared_ptr<Bone> skeleton;
-    StringWithHashUnorderedMap<size_t> bone_indices;
+    StringWithHashUnorderedMap<uint32_t> bone_indices;
     std::list<std::shared_ptr<ColoredVertexArray<float>>> scvas;
     std::list<std::shared_ptr<ColoredVertexArray<CompressedScenePos>>> dcvas;
     void insert(const AnimatedColoredVertexArrays& other);
@@ -62,7 +63,8 @@ struct AnimatedColoredVertexArrays {
     void print_stats(std::ostream& ostr) const;
 
     template <class Archive>
-    void serialize(Archive& archive) {
+    void serialize(Archive& archiver) {
+        SafeArchiver archive{archiver};
         archive(skeleton);
         archive(bone_indices.elements());
         archive(scvas);

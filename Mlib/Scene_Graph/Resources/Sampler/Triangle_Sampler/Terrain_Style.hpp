@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Array/Array.hpp>
+#include <Mlib/Os/Io/Safe_Archiver.hpp>
 #include <Mlib/Scene_Config/Scene_Precision.hpp>
 #include <Mlib/Scene_Graph/Resources/Parsed_Resource_Name.hpp>
 #include <Mlib/Threads/Recursive_Shared_Mutex.hpp>
@@ -26,7 +27,8 @@ struct TerrainStyleConfig {
     SizeClassification size_classification = SizeClassification::SMALL;
     bool is_visible() const;
     template <class Archive>
-    void serialize(Archive& archive) {
+    void serialize(Archive& archiver) {
+        SafeArchiver archive{archiver};
         archive(near_resource_names_valley_regular);
         archive(near_resource_names_mountain_regular);
         archive(near_resource_names_valley_dirt);
@@ -55,7 +57,8 @@ public:
     ScenePos max_distance_to_camera(const SceneNodeResources& scene_node_resources) const;
     TerrainStyleDistancesToBdry distances_to_bdry() const;
     template <class Archive>
-    void serialize(Archive& archive) {
+    void serialize(Archive& archiver) {
+        SafeArchiver archive{archiver};
         archive(config);
     }
 private:

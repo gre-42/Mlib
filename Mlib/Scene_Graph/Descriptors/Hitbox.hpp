@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
+#include <Mlib/Os/Io/Safe_Archiver.hpp>
 #include <cstdint>
 #include <map>
 #include <string>
@@ -12,7 +13,8 @@ struct Hitbox {
     float scale = 1.f;  // Currently not used
     BillboardId billboard_id;
     template <class Archive>
-    void serialize(Archive& archive) {
+    void serialize(Archive& archiver) {
+        SafeArchiver archive{archiver};
         archive(position);
         archive(yangle);
         archive(scale);

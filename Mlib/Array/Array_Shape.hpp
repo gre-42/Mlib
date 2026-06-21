@@ -1,5 +1,6 @@
 #pragma once
 #include "Array_Forward.hpp"
+#include <Mlib/Os/Io/Safe_Archiver.hpp>
 #include <cassert>
 #include <cstdint>
 #include <iosfwd>
@@ -19,7 +20,8 @@ class ArrayShape {
     using iter_diff_type = std::vector<size_t>::iterator::difference_type;
 public:
     template <class Archive>
-    void serialize(Archive& archive) {
+    void serialize(Archive& archiver) {
+        SafeArchiver archive{archiver};
         archive(shape_);
     }
 

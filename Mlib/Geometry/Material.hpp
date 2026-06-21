@@ -14,6 +14,7 @@
 #include <Mlib/Geometry/Material/Transformation_Mode.hpp>
 #include <Mlib/Math/Orderable_Fixed_Array.hpp>
 #include <Mlib/Misc/FPath.hpp>
+#include <Mlib/Os/Io/Safe_Archiver.hpp>
 #include <Mlib/Scene_Config/Scene_Precision.hpp>
 #include <compare>
 #include <cstddef>
@@ -67,7 +68,7 @@ struct Material {
     AggregateMode aggregate_mode = AggregateMode::NONE;
     TransformationMode transformation_mode = TransformationMode::ALL;
     std::vector<BillboardAtlasInstance> billboard_atlas_instances;
-    size_t number_of_frames = 1;
+    uint32_t number_of_frames = 1;
     bool has_animated_textures = false;
     bool cull_faces = true;
     bool reorient_uv0 = false;
@@ -76,7 +77,7 @@ struct Material {
     bool reflect_only_y = false;
     float draw_distance_add = 500;
     float draw_distance_slop = 10;
-    size_t draw_distance_noperations = 0;
+    uint32_t draw_distance_noperations = 0;
     bool dynamically_lighted = false;
     Material& compute_color_mode();
     const BillboardAtlasInstance& billboard_atlas_instance(
@@ -95,7 +96,8 @@ struct Material {
     }
     std::partial_ordering operator <=> (const Material&) const = default;
     template <class Archive>
-    void serialize(Archive& archive) {
+    void serialize(Archive& archiver) {
+        SafeArchiver archive{archiver};
         archive(blend_mode);
         archive(continuous_blending_z_order);
         archive(depth_func);

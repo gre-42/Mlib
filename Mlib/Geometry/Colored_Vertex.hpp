@@ -6,6 +6,7 @@
 #include <Mlib/Math/Transformation/Quaternion.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
 #include <Mlib/Misc/Pragma_Gcc.hpp>
+#include <Mlib/Os/Io/Safe_Archiver.hpp>
 #include <Mlib/Stats/Clamped.hpp>
 #include <cstdint>
 #include <iosfwd>
@@ -200,8 +201,13 @@ struct ColoredVertex {
             tangent};
     }
     template <class Archive>
-    void serialize(Archive& archive) {
-        archive(position, color, uv, normal, tangent);
+    void serialize(Archive& archiver) {
+        SafeArchiver archive{archiver};
+        archive(position);
+        archive(color);
+        archive(uv);
+        archive(normal);
+        archive(tangent);
     }
 };
 

@@ -1,13 +1,15 @@
 #pragma once
 #include <Mlib/Initialization/Default_Uninitialized_Vector.hpp>
 #include <Mlib/Math/Transformation/Quaternion.hpp>
+#include <Mlib/Os/Io/Safe_Archiver.hpp>
+#include <cstdint>
 #include <memory>
 #include <vector>
 
 namespace Mlib {
 
 struct Bone {
-    size_t index;
+    uint32_t index;
     // The initial transformation is the transformation in the MHX2-file,
     // the bone transformation is from the BVH-file.
     OffsetAndQuaternion<float, float> initial_absolute_transformation = uninitialized;
@@ -16,7 +18,8 @@ struct Bone {
         const UUVector<OffsetAndQuaternion<float, float>>& transformations);
 
     template <class Archive>
-    void serialize(Archive& archive) {
+    void serialize(Archive& archiver) {
+        SafeArchiver archive{archiver};
         archive(index);
         archive(initial_absolute_transformation);
         archive(children);

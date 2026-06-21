@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Math/Round.hpp>
+#include <Mlib/Os/Io/Safe_Archiver.hpp>
 #include <cmath>
 #include <concepts>
 #include <cstdint>
@@ -134,7 +135,8 @@ public:
         ostr << (intermediate_float<TInt>)(*this);
     }
     template <class Archive>
-    void serialize(Archive& archive) {
+    void serialize(Archive& archiver) {
+        SafeArchiver archive{archiver};
         archive(count);
     }
     TInt count;

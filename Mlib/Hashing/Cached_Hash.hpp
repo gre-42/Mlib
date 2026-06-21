@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Os/Io/Safe_Archiver.hpp>
 #include <compare>
 #include <cstdint>
 #include <optional>
@@ -46,7 +47,8 @@ public:
         return std::strong_ordering::equal;
     }
     template <class Archive>
-    void serialize(Archive& archive) {
+    void serialize(Archive& archiver) {
+        SafeArchiver archive{archiver};
         archive(value_);
     }
 private:

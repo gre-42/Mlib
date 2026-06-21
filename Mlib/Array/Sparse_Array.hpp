@@ -1,6 +1,7 @@
 #pragma once
 #include "Array.hpp"
 #include "Array_Shape.hpp"
+#include <Mlib/Os/Io/Safe_Archiver.hpp>
 #include <map>
 #include <memory>
 #include <stdexcept>
@@ -169,7 +170,8 @@ public:
     }
 
     template <class Archive>
-    void serialize(Archive& archive) {
+    void serialize(Archive& archiver) {
+        SafeArchiver archive{archiver};
         archive(conjugated_transposed);
         archive(data_);
         archive(shape_);
