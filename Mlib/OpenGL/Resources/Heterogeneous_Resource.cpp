@@ -44,9 +44,9 @@ HeterogeneousResource::~HeterogeneousResource()
 // ISceneNodeResource
 
 void HeterogeneousResource::preload(const RenderableResourceFilter& filter) {
-    auto& res = RenderingContextStack::primary_rendering_resources();
     bri->preload(scene_node_resources_, filter);
     #ifndef WITHOUT_GRAPHICS
+    auto& res = RenderingContextStack::primary_rendering_resources();
     auto preload_textures = [&filter, &res](const auto& cvas) {
         for (const auto& [i, cva] : enumerate(cvas)) {
             if (!filter.matches(i, *cva)) {
