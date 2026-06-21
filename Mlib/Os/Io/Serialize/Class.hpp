@@ -11,6 +11,52 @@ namespace Mlib {
 class SerializationContextRead;
 class SerializationContextWrite;
 
+class WritingArchive {
+public:
+    WritingArchive(
+        BinaryBitwiseWordsWriter& writer,
+        SerializationContextWrite& ctx,
+        std::string_view message)
+        : writer_{writer}
+        , ctx_{ctx}
+        , message_{message}
+    {}
+    struct is_saving {
+        static const bool value = true;
+    };
+    void operator () (const auto& element) {
+        writer_.flush_partial(message_);
+        save(writer_, ctx_, element, message_);
+    }
+private:
+    BinaryBitwiseWordsWriter& writer_;
+    SerializationContextWrite& ctx_;
+    std::string_view message_;
+};
+
+class ReadingArchive {
+public:
+    inline ReadingArchive(
+        BinaryBitwiseWordsReader& reader,
+        SerializationContextRead& ctx,
+        std::string_view message)
+        : reader_{reader}
+        , ctx_{ctx}
+        , message_{message}
+    {}
+    struct is_saving {
+        static const bool value = false;
+    };
+    void operator () (auto& element) {
+        reader_.align_to_next_word();
+        element = load<std::remove_reference_t<decltype(element)>>(reader_, ctx_, message_);
+    }
+private:
+    BinaryBitwiseWordsReader& reader_;
+    SerializationContextRead& ctx_;
+    std::string_view message_;
+};
+
 template <typename T>
 class ConstructInplace {
 public:
@@ -58,7 +104,8 @@ void save(
     const T& value,
     std::string_view message)
 {
-    writer.serialize(value, ctx, message);
+    WritingArchive archive{writer, ctx, message};
+    const_cast<T&>(value).serialize(archive);
 }
 
 template <HasSerializeWithoutLoadAndConstructNoSharedPtr T>
@@ -67,7 +114,10 @@ T load(
     SerializationContextRead& ctx,
     std::string_view message)
 {
-    return reader.deserialize<T>(ctx, message);
+    ReadingArchive archive{reader, ctx, message};
+    T result;
+    result.serialize(archive);
+    return result;
 }
 
 template <HasLoadAndConstructNoSharedPtr T>
@@ -80,9 +130,9 @@ T load(
     ObjectBlob<T> buffer;
     ConstructInplace<T> construct{buffer};
     T::load_and_construct(archive, construct);
-    T resutl = std::move((T&)buffer);
+    T result = std::move((T&)buffer);
     ((T&)buffer).~T();
-    return resutl;
+    return result;
 }
 
 }

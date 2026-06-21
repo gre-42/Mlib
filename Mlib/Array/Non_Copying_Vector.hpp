@@ -1,15 +1,11 @@
 #pragma once
+#include <Mlib/Memory/Object_Blob.hpp>
 #include <cassert>
 #include <cstddef>
 #include <stdexcept>
 #include <utility>
 
 namespace Mlib {
-
-template <class T>
-struct alignas(T) ObjectBlob {
-    std::byte data[sizeof(T)];
-};
 
 /*
  * std::vector replacement to circumvent <bool> template specialization

@@ -8,27 +8,6 @@ namespace Mlib {
 class BinaryBitwiseWordsReader;
 class SerializationContextRead;
 
-class ReadingArchive {
-public:
-    inline ReadingArchive(
-        BinaryBitwiseWordsReader& reader,
-        SerializationContextRead& ctx,
-        std::string_view message)
-        : reader_{reader}
-        , ctx_{ctx}
-        , message_{message}
-    {}
-    struct is_saving {
-        static const bool value = false;
-    };
-    void operator () (auto& element);
-
-private:
-    BinaryBitwiseWordsReader& reader_;
-    SerializationContextRead& ctx_;
-    std::string_view message_;
-};
-
 class BinaryBitwiseWordsReader {
 public:
     BinaryBitwiseWordsReader(std::istream& istr, IoVerbosity verbosity)
@@ -74,14 +53,6 @@ public:
     bool read_bool_bit(std::string_view message) {
         return read_bits<uint8_t>(1, message) != 0;
     }
-    template <class TValue>
-    TValue deserialize(SerializationContextRead& ctx, std::string_view message) {
-        ReadingArchive archive{*this, ctx, message};
-        words_reader_.align_to_next_word();
-        TValue result;
-        result.serialize(archive);
-        return result;
-    }
     void align_to_next_word() {
         words_reader_.align_to_next_word();
     }
@@ -91,5 +62,3 @@ private:
 };
 
 }
-
-#include "Binary_Bitwise_Words_Reader.impl.hpp"

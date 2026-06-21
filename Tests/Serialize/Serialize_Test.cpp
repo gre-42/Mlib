@@ -1,5 +1,9 @@
 #include <Mlib/Misc/Floating_Point_Exceptions.hpp>
 #include <Mlib/Os/Io/Serialize/Serialize.hpp>
+#include <list>
+#include <map>
+#include <unordered_map>
+#include <vector>
 
 using namespace Mlib;
 
@@ -145,6 +149,40 @@ void test_serialize_struct3() {
     }
 }
 
+void test_serialize_map() {
+    using Map = std::map<std::string, std::vector<int>>;
+    std::stringstream sstr;
+    {
+        Map a{{"x", {42, 43}}, {"y", {44, 45}}};
+        BinaryBitwiseWordsWriter writer{sstr};
+        SerializationContextWrite ctx;
+        save(writer, ctx, a, "a");
+    }
+    {
+        BinaryBitwiseWordsReader reader{sstr, IoVerbosity::SILENT};
+        SerializationContextRead ctx;
+        auto b = load<Map>(reader, ctx, "a");
+        linfo() << "b: " << b.at("x").at(0) << " " << b.at("y").at(1);
+    }
+}
+
+void test_serialize_map2() {
+    using Map = std::unordered_map<std::string, std::set<int>>;
+    std::stringstream sstr;
+    {
+        Map a{{"x", {42, 43}}, {"y", {44, 45}}};
+        BinaryBitwiseWordsWriter writer{sstr};
+        SerializationContextWrite ctx;
+        save(writer, ctx, a, "a");
+    }
+    {
+        BinaryBitwiseWordsReader reader{sstr, IoVerbosity::SILENT};
+        SerializationContextRead ctx;
+        auto b = load<Map>(reader, ctx, "a");
+        linfo() << "b: " << (int)b.at("x").contains(42) << " " << (int)b.at("y").contains(45);
+    }
+}
+
 int main(int argc, const char** argv) {
     enable_floating_point_exceptions();
 
@@ -154,6 +192,8 @@ int main(int argc, const char** argv) {
         test_serialize_struct1();
         test_serialize_struct2();
         test_serialize_struct3();
+        test_serialize_map();
+        test_serialize_map2();
     } catch (const std::exception& e) {
         lerr() << "Test failed: " << e.what();
         return 1;
