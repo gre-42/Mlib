@@ -6,11 +6,16 @@
 namespace Mlib {
 
 class BinaryBitwiseWordsWriter;
+class SerializationContextWrite;
 
 class WritingArchive {
 public:
-    WritingArchive(BinaryBitwiseWordsWriter& writer, std::string_view message)
+    WritingArchive(
+        BinaryBitwiseWordsWriter& writer,
+        SerializationContextWrite& ctx,
+        std::string_view message)
         : writer_{writer}
+        , ctx_{ctx}
         , message_{message}
     {}
     struct is_saving {
@@ -20,6 +25,7 @@ public:
 
 private:
     BinaryBitwiseWordsWriter& writer_;
+    SerializationContextWrite& ctx_;
     std::string_view message_;
 };
 
@@ -52,8 +58,8 @@ public:
         write_bits((uint8_t)value, 1, message);
     }
     template <class T>
-    void serialize(const T& value, std::string_view message) {
-        WritingArchive archive{*this, message};
+    void serialize(const T& value, SerializationContextWrite& ctx, std::string_view message) {
+        WritingArchive archive{*this, ctx, message};
         words_writer_.flush_partial(message);
         const_cast<T&>(value).serialize(archive);
     }
@@ -65,8 +71,6 @@ private:
     BinaryWriter binary_writer_;
 };
 
-void WritingArchive::operator () (const auto& element) {
-    writer_.write_binary(element, message_);
 }
 
-}
+#include "Binary_Bitwise_Words_Writer.impl.hpp"

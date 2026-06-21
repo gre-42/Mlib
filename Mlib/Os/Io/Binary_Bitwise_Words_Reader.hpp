@@ -6,11 +6,16 @@
 namespace Mlib {
 
 class BinaryBitwiseWordsReader;
+class SerializationContextRead;
 
 class ReadingArchive {
 public:
-    inline ReadingArchive(BinaryBitwiseWordsReader& reader, std::string_view message)
+    inline ReadingArchive(
+        BinaryBitwiseWordsReader& reader,
+        SerializationContextRead& ctx,
+        std::string_view message)
         : reader_{reader}
+        , ctx_{ctx}
         , message_{message}
     {}
     struct is_saving {
@@ -20,6 +25,7 @@ public:
 
 private:
     BinaryBitwiseWordsReader& reader_;
+    SerializationContextRead& ctx_;
     std::string_view message_;
 };
 
@@ -69,8 +75,8 @@ public:
         return read_bits<uint8_t>(1, message) != 0;
     }
     template <class TValue>
-    TValue deserialize(std::string_view message) {
-        ReadingArchive archive{*this, message};
+    TValue deserialize(SerializationContextRead& ctx, std::string_view message) {
+        ReadingArchive archive{*this, ctx, message};
         words_reader_.align_to_next_word();
         TValue result;
         result.serialize(archive);
@@ -84,8 +90,6 @@ private:
     BinaryReader binary_reader_;
 };
 
-void ReadingArchive::operator () (auto& element) {
-    element = reader_.read_binary<std::remove_reference_t<decltype(element)>>(message_);
 }
 
-}
+#include "Binary_Bitwise_Words_Reader.impl.hpp"

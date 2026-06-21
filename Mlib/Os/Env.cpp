@@ -78,9 +78,13 @@ bool Mlib::getenv_default_bool(const char* n, bool deflt) {
     return Mlib::safe_stob(*v);
 }
 
-#if defined(__ANDROID__) || defined(__EMSCRIPTEN__)
+#if defined(__ANDROID__)
 Utf8Path Mlib::get_appdata_directory() {
     return "/";
+}
+#elif defined(__EMSCRIPTEN__)
+Utf8Path Mlib::get_appdata_directory() {
+    return "/appdata";
 }
 #else
 void Mlib::set_app_reldir(const Utf8Path& app_reldir) {

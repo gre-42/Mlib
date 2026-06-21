@@ -14,6 +14,7 @@ add_subdirectory(Remote)
 # add_subdirectory(Rigid_Body_Physics)
 add_subdirectory(Dff)
 add_subdirectory(Physics)
+add_subdirectory(Serialize)
 add_subdirectory(Signal)
 add_subdirectory(Stats)
 
