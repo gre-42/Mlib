@@ -25,7 +25,7 @@
 #include <filesystem>
 #include <stdexcept>
 
-static uint32_t CACHE_FILE_VERSION = 86;
+static uint32_t CACHE_FILE_VERSION = 87;
 
 namespace fs = std::filesystem;
 

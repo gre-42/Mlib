@@ -69,18 +69,25 @@ struct S3 {
     std::shared_ptr<S2> s2;
 };
 
+struct S4 {
+    template <class Archive>
+    void serialize(Archive& archive) {
+        archive(s);
+    }
+    std::unique_ptr<S> s;
+};
+
 void test_serialize_number() {
     std::stringstream sstr;
     {
         uint32_t a = 42;
-        BinaryBitwiseWordsWriter writer{sstr};
-        SerializationContextWrite ctx;
-        save(writer, ctx, a, "a");
+        BinaryBitwiseWordsWriter writer{sstr, nullptr};
+        save(writer, a, "a");
     }
     {
-        BinaryBitwiseWordsReader reader{sstr, IoVerbosity::SILENT};
-        SerializationContextRead ctx;
-        auto b = load<uint32_t>(reader, ctx, "a");
+        BinaryBitwiseWordsReader reader{sstr, nullptr, IoVerbosity::SILENT};
+        uint32_t b;
+        load(reader, b, "a");
         linfo() << "b: " << b;
     }
 }
@@ -89,14 +96,13 @@ void test_serialize_struct() {
     std::stringstream sstr;
     {
         S a{42, 43};
-        BinaryBitwiseWordsWriter writer{sstr};
-        SerializationContextWrite ctx;
-        save(writer, ctx, a, "a");
+        BinaryBitwiseWordsWriter writer{sstr, nullptr};
+        save(writer, a, "a");
     }
     {
-        BinaryBitwiseWordsReader reader{sstr, IoVerbosity::SILENT};
-        SerializationContextRead ctx;
-        auto b = load<S>(reader, ctx, "a");
+        BinaryBitwiseWordsReader reader{sstr, nullptr, IoVerbosity::SILENT};
+        S b;
+        load(reader, b, "a");
         linfo() << "b: " << b.x << " " << b.y;
     }
 }
@@ -105,14 +111,13 @@ void test_serialize_struct1() {
     std::stringstream sstr;
     {
         S1 a{42, 43};
-        BinaryBitwiseWordsWriter writer{sstr};
+        BinaryBitwiseWordsWriter writer{sstr, nullptr};
         SerializationContextWrite ctx;
-        save(writer, ctx, a, "a");
+        save(writer, a, "a");
     }
     {
-        BinaryBitwiseWordsReader reader{sstr, IoVerbosity::SILENT};
-        SerializationContextRead ctx;
-        auto b = load<S1>(reader, ctx, "a");
+        BinaryBitwiseWordsReader reader{sstr, nullptr, IoVerbosity::SILENT};
+        auto b = load<S1>(reader, "a");
         linfo() << "b: " << b.x << " " << b.y;
     }
 }
@@ -121,31 +126,68 @@ void test_serialize_struct2() {
     std::stringstream sstr;
     {
         auto a = std::make_shared<S2>(42, 43);
-        BinaryBitwiseWordsWriter writer{sstr};
         SerializationContextWrite ctx;
-        save(writer, ctx, a, "a");
+        BinaryBitwiseWordsWriter writer{sstr, &ctx};
+        save(writer, a, "a");
     }
     {
-        BinaryBitwiseWordsReader reader{sstr, IoVerbosity::SILENT};
         SerializationContextRead ctx;
-        auto b = load<std::shared_ptr<S2>>(reader, ctx, "a");
+        BinaryBitwiseWordsReader reader{sstr, &ctx, IoVerbosity::SILENT};
+        std::shared_ptr<S2> b;
+        load(reader, b, "a");
         linfo() << "b: " << b->x << " " << b->y;
     }
 }
 
 void test_serialize_struct3() {
-    std::stringstream sstr;
     {
-        S3 a{std::make_shared<S2>(42, 43)};
-        BinaryBitwiseWordsWriter writer{sstr};
-        SerializationContextWrite ctx;
-        save(writer, ctx, a, "a");
+        std::stringstream sstr;
+        {
+            S3 a{std::make_shared<S2>(42, 43)};
+            SerializationContextWrite ctx;
+            BinaryBitwiseWordsWriter writer{sstr, &ctx};
+            save(writer, a, "a");
+        }
+        {
+            SerializationContextRead ctx;
+            BinaryBitwiseWordsReader reader{sstr, &ctx, IoVerbosity::SILENT};
+            S3 b;
+            load(reader, b, "a");
+            linfo() << "b: " << b.s2->x << " " << b.s2->y;
+        }
     }
     {
-        BinaryBitwiseWordsReader reader{sstr, IoVerbosity::SILENT};
+        std::stringstream sstr;
+        {
+            S3 a{nullptr};
+            SerializationContextWrite ctx;
+            BinaryBitwiseWordsWriter writer{sstr, &ctx};
+            save(writer, a, "a");
+        }
+        {
+            SerializationContextRead ctx;
+            BinaryBitwiseWordsReader reader{sstr, &ctx, IoVerbosity::SILENT};
+            S3 b;
+            load(reader, b, "a");
+            linfo() << "b: " << b.s2.get();
+        }
+    }
+}
+
+void test_serialize_struct4() {
+    std::stringstream sstr;
+    {
+        S4 a{std::make_unique<S>(42, 43)};
+        SerializationContextWrite ctx;
+        BinaryBitwiseWordsWriter writer{sstr, &ctx};
+        save(writer, a, "a");
+    }
+    {
         SerializationContextRead ctx;
-        auto b = load<S3>(reader, ctx, "a");
-        linfo() << "b: " << b.s2->x << " " << b.s2->y;
+        BinaryBitwiseWordsReader reader{sstr, &ctx, IoVerbosity::SILENT};
+        S4 b{std::make_unique<S>()};
+        load(reader, b, "a");
+        linfo() << "b: " << b.s->x << " " << b.s->y;
     }
 }
 
@@ -154,14 +196,13 @@ void test_serialize_map() {
     std::stringstream sstr;
     {
         Map a{{"x", {42, 43}}, {"y", {44, 45}}};
-        BinaryBitwiseWordsWriter writer{sstr};
-        SerializationContextWrite ctx;
-        save(writer, ctx, a, "a");
+        BinaryBitwiseWordsWriter writer{sstr, nullptr};
+        save(writer, a, "a");
     }
     {
-        BinaryBitwiseWordsReader reader{sstr, IoVerbosity::SILENT};
-        SerializationContextRead ctx;
-        auto b = load<Map>(reader, ctx, "a");
+        BinaryBitwiseWordsReader reader{sstr, nullptr, IoVerbosity::SILENT};
+        Map b;
+        load(reader, b, "a");
         linfo() << "b: " << b.at("x").at(0) << " " << b.at("y").at(1);
     }
 }
@@ -171,15 +212,29 @@ void test_serialize_map2() {
     std::stringstream sstr;
     {
         Map a{{"x", {42, 43}}, {"y", {44, 45}}};
-        BinaryBitwiseWordsWriter writer{sstr};
-        SerializationContextWrite ctx;
-        save(writer, ctx, a, "a");
+        BinaryBitwiseWordsWriter writer{sstr, nullptr};
+        save(writer, a, "a");
     }
     {
-        BinaryBitwiseWordsReader reader{sstr, IoVerbosity::SILENT};
-        SerializationContextRead ctx;
-        auto b = load<Map>(reader, ctx, "a");
+        BinaryBitwiseWordsReader reader{sstr, nullptr, IoVerbosity::SILENT};
+        Map b;
+        load(reader, b, "a");
         linfo() << "b: " << (int)b.at("x").contains(42) << " " << (int)b.at("y").contains(45);
+    }
+}
+
+void test_duration() {
+    std::stringstream sstr;
+    {
+        std::chrono::steady_clock::duration a{123};
+        BinaryBitwiseWordsWriter writer{sstr, nullptr};
+        save(writer, a, "a");
+    }
+    {
+        BinaryBitwiseWordsReader reader{sstr, nullptr, IoVerbosity::SILENT};
+        std::chrono::steady_clock::duration b;
+        load(reader, b, "a");
+        linfo() << "b: " << (int)b.count();
     }
 }
 
@@ -192,8 +247,10 @@ int main(int argc, const char** argv) {
         test_serialize_struct1();
         test_serialize_struct2();
         test_serialize_struct3();
+        test_serialize_struct4();
         test_serialize_map();
         test_serialize_map2();
+        test_duration();
     } catch (const std::exception& e) {
         lerr() << "Test failed: " << e.what();
         return 1;

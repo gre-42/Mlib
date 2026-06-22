@@ -2,7 +2,7 @@
 #include <Mlib/Hashing/Variable_And_Hash.hpp>
 #include <Mlib/Memory/Integral_Cast.hpp>
 #include <Mlib/Os/Io/Safe_Archiver.hpp>
-#include <cereal/access.hpp>
+#include <Mlib/Os/Io/Serialize/Serialize.hpp>
 #include <cstdint>
 #include <iosfwd>
 #include <stdexcept>
@@ -56,23 +56,16 @@ public:
     template <class Archive>
     void serialize(Archive& archiver) {
         SafeArchiver archive{archiver};
-        archive(full_name_);
-        archive(group_length_);
-    }
-    // From: https://github.com/USCiLab/cereal/issues/102
-    template<typename Archive>
-    static void load_and_construct(
-        Archive& archiver,
-        cereal::construct<GroupAndName>& construct)
-    {
-        SafeArchiver archive{archiver};
-        std::string full_name;
-        uint32_t group_length;
-
-        archive(full_name);
-        archive(group_length);
-
-        construct(full_name, group_length);
+        if constexpr (Archive::is_saving::value) {
+            archive(full_name_);
+            archive(group_length_);
+        } else {
+            VariableAndHash<std::string> full_name;
+            uint32_t group_length;
+            archive(full_name);
+            archive(group_length);
+            *this = GroupAndName{std::move(full_name), group_length};
+        }
     }
 private:
     GroupAndName(VariableAndHash<std::string> full_name, uint32_t group_length)

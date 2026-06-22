@@ -31,11 +31,11 @@
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Math/Transformation/Bijection.hpp>
 #include <Mlib/Math/Transformation/Translation_Matrix.hpp>
-#include <Mlib/Misc/Cereal_Memory.hpp>
 #include <Mlib/Misc/Log.hpp>
 #include <Mlib/Navigation/Navigation_Mesh_Builder.hpp>
 #include <Mlib/OpenGL/Resources/Colored_Vertex_Array_Resource.hpp>
 #include <Mlib/Os/Env.hpp>
+#include <Mlib/Os/Io/Serialize/Serialize.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Add_Bridge_Piers.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Add_Grass_Inside_Triangles.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Add_Grass_on_Steiner_Points.hpp>
@@ -125,14 +125,6 @@
 #include <Mlib/Strings/String_View_To_Number.hpp>
 #include <Mlib/Strings/String_View_To_Scene_Pos.hpp>
 #include <Mlib/Threads/Thread_Top.hpp>
-#include <cereal/access.hpp>
-#include <cereal/archives/binary.hpp>
-#include <cereal/types/chrono.hpp>
-#include <cereal/types/list.hpp>
-#include <cereal/types/map.hpp>
-#include <cereal/types/optional.hpp>
-#include <cereal/types/string.hpp>
-#include <cereal/types/vector.hpp>
 #include <fstream>
 #include <mutex>
 #include <poly2tri/edge_exception.hpp>
@@ -1819,8 +1811,12 @@ OsmMapResource::OsmMapResource(
     if (ifstr->fail()) {
         throw std::runtime_error("Could not open input OSM-map binary file \"" + level_filename + '"');
     }
-    cereal::BinaryInputArchive iarchive(*ifstr);
-    iarchive(*this);
+    {
+        SerializationContextRead ctx;
+        BinaryBitwiseWordsReader reader{*ifstr, &ctx, IoVerbosity::SILENT};
+        ReadingArchive iarchive{reader, "osm map"};
+        iarchive(*this);
+    }
     if (ifstr->fail()) {
         throw std::runtime_error("Could not read from file \"" + level_filename + '"');
     }
@@ -1861,8 +1857,12 @@ void OsmMapResource::save_to_file(
     if (ofstr->fail()) {
         throw std::runtime_error("Could not open output OSM-map binary file \"" + filename + '"');
     }
-    cereal::BinaryOutputArchive oarchive(*ofstr);
-    oarchive(*this);
+    {
+        SerializationContextWrite ctx;
+        BinaryBitwiseWordsWriter writer{*ofstr, &ctx};
+        WritingArchive oarchive{writer, "osm map"};
+        oarchive(*this);
+    }
     ofstr->flush();
     if (ofstr->fail()) {
         throw std::runtime_error("Could not write to file \"" + filename + '"');

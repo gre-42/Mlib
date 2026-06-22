@@ -1,31 +1,29 @@
 #pragma once
 #include <Mlib/Os/Io/Binary_Bitwise_Words_Reader.hpp>
 #include <Mlib/Os/Io/Binary_Bitwise_Words_Writer.hpp>
-#include <Mlib/Type_Traits/Scalar.hpp>
+#include <Mlib/Type_Traits/Duration.hpp>
 #include <concepts>
 
 namespace Mlib {
 
-class SerializationContextRead;
-class SerializationContextWrite;
-
-template <Scalar T>
+template <ChronoDuration T>
 void save(
     BinaryBitwiseWordsWriter& writer,
-    SerializationContextWrite& ctx,
     const T& value,
     std::string_view message)
 {
-    writer.write_binary(value, message);
+    save(writer, value.count(), "duration");
 }
 
-template <Scalar T>
-T load(
+template <ChronoDuration T>
+void load(
     BinaryBitwiseWordsReader& reader,
-    SerializationContextRead& ctx,
+    T& result,
     std::string_view message)
 {
-    return reader.read_binary<T>(message);
+    typename T::rep count;
+    load(reader, count, "duration");
+    result = T{count};
 }
 
 }

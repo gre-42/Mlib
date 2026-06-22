@@ -107,7 +107,7 @@ public:
         archive(max_imposter_texture_size_);
         archive(water_animation_duration_);
         archive(spawn_points_);
-        archive(way_points_);
+        archive(way_points_.elements());
         archive(normalization_matrix_);
         archive(triangulation_normalization_matrix_);
         archive(tl_terrain_);

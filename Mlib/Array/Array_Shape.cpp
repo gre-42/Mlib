@@ -3,9 +3,9 @@
 
 using namespace Mlib;
 
-ArrayShape::ArrayShape() = default;
-ArrayShape::ArrayShape(const ArrayShape& shape) = default;
-ArrayShape::ArrayShape(ArrayShape&& shape) = default;
+ArrayShape::ArrayShape() {}
+ArrayShape::ArrayShape(const ArrayShape& shape): shape_{shape.shape_} {}
+ArrayShape::ArrayShape(ArrayShape&& shape): shape_{std::move(shape.shape_)} {}
 ArrayShape& ArrayShape::operator = (const ArrayShape& shape) {
     assert(shape.ndim() == ndim());
     for (size_t d = 0; d < ndim(); ++d) {

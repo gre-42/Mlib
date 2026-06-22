@@ -4,6 +4,21 @@
 
 using namespace Mlib;
 
+Bone::Bone()
+    : initial_absolute_transformation{uninitialized}
+{}
+
+Bone::Bone(
+    uint32_t index,
+    const OffsetAndQuaternion<float, float>& initial_absolute_transformation,
+    std::list<Bone> children)
+    : index{index}
+    , initial_absolute_transformation{initial_absolute_transformation}
+    , children(std::move(children))
+{}
+
+Bone::~Bone() = default;
+
 UUVector<OffsetAndQuaternion<float, float>> Bone::rebase_to_initial_absolute_transform(
     const UUVector<OffsetAndQuaternion<float, float>>& transformations)
 {
@@ -44,8 +59,8 @@ void Bone::rebase_to_initial_absolute_transform(
     const OffsetAndQuaternion<float, float>& m = initial_absolute_transformation;
     OffsetAndQuaternion<float, float> n = parent_transformation * transformations[index];
     result[index] = n * m.inverse();
-    for (const auto& c : children) {
-        c->rebase_to_initial_absolute_transform(
+    for (auto& c : children) {
+        c.rebase_to_initial_absolute_transform(
             transformations,
             n,
             result);

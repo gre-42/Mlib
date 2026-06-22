@@ -129,7 +129,7 @@ static void add_reference_bone(
             .renderable_resource_filter = RenderableResourceFilter{}});
     parent_node->add_child(VariableAndHash<std::string>{ "reference_bone" + std::to_string(b.index) }, std::move(bone_node));
     for (const auto& c : b.children) {
-        add_reference_bone(*c, parent_node, scene_node_resources);
+        add_reference_bone(c, parent_node, scene_node_resources);
     }
 }
 
@@ -162,7 +162,7 @@ static void add_bone_frame(
     auto parent = bone_node.ref(CURRENT_SOURCE_LOCATION);
     parent_node->add_child(VariableAndHash<std::string>{ "frame_bone" + std::to_string(b.index) }, std::move(bone_node));
     for (const auto& c : b.children) {
-        add_bone_frame(*c, frame, parent, scene_node_resources);
+        add_bone_frame(c, frame, parent, scene_node_resources);
     }
 }
 

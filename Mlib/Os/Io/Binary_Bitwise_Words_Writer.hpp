@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/Os/Io/Binary_Writer.hpp>
 #include <Mlib/Os/Io/Bitwise_Words_Writer.hpp>
+#include <Mlib/Os/Io/Serialize/Class_Fwd.hpp>
 #include <cstdint>
 
 namespace Mlib {
@@ -10,8 +11,11 @@ class SerializationContextWrite;
 
 class BinaryBitwiseWordsWriter {
 public:
-    inline explicit BinaryBitwiseWordsWriter(std::ostream& ostr)
-        : words_writer_{ ostr }
+    inline explicit BinaryBitwiseWordsWriter(
+        std::ostream& ostr,
+        SerializationContextWrite* ctx)
+        : ctx{ ctx }
+        , words_writer_{ ostr }
         , binary_writer_{ ostr }
     {}
     template <std::integral LengthType>
@@ -36,12 +40,19 @@ public:
     void write_bool_bit(bool value, std::string_view message) {
         write_bits((uint8_t)value, 1, message);
     }
+    template <class T>
+    void serialize(const T& value, std::string_view message) {
+        save(*this, value, message);
+    }
     inline void flush_partial(std::string_view message) {
         words_writer_.flush_partial(message);
     }
+    SerializationContextWrite* ctx;
 private:
     BitwiseWordsWriter<uint8_t> words_writer_;
     BinaryWriter binary_writer_;
 };
 
 }
+
+#include <Mlib/Os/Io/Serialize/Class.hpp>

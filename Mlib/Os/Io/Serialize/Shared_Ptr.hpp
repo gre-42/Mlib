@@ -8,6 +8,14 @@
 
 namespace Mlib {
 
+template <typename T, typename Archive = DefaultArchive>
+concept HasLoadShared = requires(
+    T& obj,
+    Archive& archive
+) {
+    obj.load_shared(archive);
+};
+
 template <typename T>
 class ConstructShared {
 public:
@@ -22,35 +30,44 @@ private:
 template <SharedPtr TSharedPtr>
 void save(
     BinaryBitwiseWordsWriter& writer,
-    SerializationContextWrite& ctx,
     const TSharedPtr& value,
     std::string_view message)
 {
-    auto [id, added] = ctx.add_or_get(value);
+    if (writer.ctx == nullptr) {
+        throw std::runtime_error("Attempt to write a shared_ptr without a context");
+    }
+    auto [id, added] = writer.ctx->add_or_get(value);
     writer.write_binary(id, message);
-    if (added) {
-        save(writer, ctx, *value, message);
+    if (added && (value != nullptr)) {
+        save(writer, *value, message);
     }
 }
 
 template <SharedPtr TSharedPtr>
-TSharedPtr load(
+void load(
     BinaryBitwiseWordsReader& reader,
-    SerializationContextRead& ctx,
+    TSharedPtr& result,
     std::string_view message)
 {
+    if (reader.ctx == nullptr) {
+        throw std::runtime_error("Attempt to load a shared_ptr without a context");
+    }
     using T = TSharedPtr::element_type;
     auto id = reader.read_binary<uint32_t>("shared ptr ID");
-    auto res = ctx.try_get<T>(id);
+    auto res = reader.ctx->try_get<T>(id);
     if (res.has_value()) {
-        return *res;
+        result = *res;
+        return;
     }
-    ReadingArchive archive{reader, ctx, message};
-    std::shared_ptr<T> result;
-    ConstructShared<T> construct{result};
-    T::load_and_construct(archive, construct);
-    ctx.add(result);
-    return result;
+    ReadingArchive archive{reader, message};
+    if constexpr (HasLoadAndConstruct<T>) {
+        ConstructShared<T> construct{result};
+        T::load_and_construct(archive, construct);
+    } else {
+        result = std::make_shared<T>();
+        load(reader, *result, message);
+    }
+    reader.ctx->add(result);
 }
 
 }

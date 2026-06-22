@@ -1,7 +1,6 @@
 #include "Incremental_Communicator_Proxy.hpp"
 #include <Mlib/Os/Io/Binary.hpp>
-#include <Mlib/Os/Io/Binary_Bitwise_Words_Reader.hpp>
-#include <Mlib/Os/Io/Binary_Bitwise_Words_Writer.hpp>
+#include <Mlib/Os/Io/Serialize/Serialize.hpp>
 #include <Mlib/Remote/ISend_Socket.hpp>
 #include <Mlib/Remote/Incremental_Objects/IIncremental_Object.hpp>
 #include <Mlib/Remote/Incremental_Objects/IIncremental_Object_Factory.hpp>
@@ -51,7 +50,7 @@ static bool is_loading(LocalSceneLevelLoadStatus status) {
 }
 
 void IncrementalCommunicatorProxy::receive_from_home(std::istream& istr) {
-    auto reader = BinaryBitwiseWordsReader{istr, verbosity_};
+    auto reader = BinaryBitwiseWordsReader{istr, nullptr, verbosity_};
     {
         auto scene_level_name = reader.read_string<StringLengthType>("scene level name");
         auto time_of_day = reader.read_string<StringLengthType>("time of day");
@@ -189,7 +188,7 @@ void IncrementalCommunicatorProxy::send_home(std::iostream& iostr) {
         update_object_to_send_completely_local(objects_->public_local_objects());
         update_object_to_send_completely_remote(objects_->public_remote_objects());
     }
-    auto writer = BinaryBitwiseWordsWriter{iostr};
+    auto writer = BinaryBitwiseWordsWriter{iostr, nullptr};
     switch (0) { case 0:
         {
             auto level_selector = objects_->local_scene_level_selector();

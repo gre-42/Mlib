@@ -5,12 +5,13 @@
 #include <Mlib/Geometry/Primitives/Extremal_Bounding_Sphere.hpp>
 #include <Mlib/Geometry/Primitives/Primitive_Dimensions.hpp>
 #include <Mlib/Initialization/Default_Uninitialized_Vector.hpp>
+#include <Mlib/Misc/Object.hpp>
 #include <Mlib/Misc/To_Underlying.hpp>
 #include <Mlib/Os/Io/Safe_Archiver.hpp>
+#include <Mlib/Os/Io/Serialize/Serialize.hpp>
 #include <Mlib/Scene_Config/Scene_Precision.hpp>
 #include <Mlib/Threads/Recursive_Shared_Mutex.hpp>
 #include <atomic>
-#include <cereal/access.hpp>
 #include <cstdint>
 #include <iosfwd>
 #include <memory>
@@ -39,7 +40,7 @@ enum class RectangleTriangulationMode;
 enum class DelaunayErrorBehavior;
 
 template <class TPos>
-class ColoredVertexArray {
+class ColoredVertexArray: public virtual Object {
     ColoredVertexArray() = delete;
     ColoredVertexArray(const ColoredVertexArray&) = delete;
     ColoredVertexArray& operator = (const ColoredVertexArray&) = delete;
@@ -162,10 +163,10 @@ public:
         archive(interiormap_uvmaps);
     }
     // From: https://github.com/USCiLab/cereal/issues/102
-    template<typename Archive>
+    template<typename Archive, typename Construct>
     static void load_and_construct(
         Archive& archiver,
-        cereal::construct<ColoredVertexArray>& construct)
+        Construct& construct)
     {
         SafeArchiver archive{archiver};
         MeshMeta meta;

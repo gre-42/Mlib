@@ -41,6 +41,9 @@ TriangleList<TPos>::TriangleList(
 {}
 
 template <class TPos>
+TriangleList<TPos>::~TriangleList() = default;
+
+template <class TPos>
 void TriangleList<TPos>::draw_triangle_with_normals(
     const FixedArray<TPos, 3>& p00,
     const FixedArray<TPos, 3>& p10,

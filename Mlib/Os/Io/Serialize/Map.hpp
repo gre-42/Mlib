@@ -4,6 +4,7 @@
 #include <Mlib/Os/Io/Binary_Bitwise_Words_Writer.hpp>
 #include <Mlib/Type_Traits/Any_Std_Map.hpp>
 #include <concepts>
+#include <sstream>
 
 namespace Mlib {
 
@@ -13,36 +14,36 @@ class SerializationContextWrite;
 template <AnyStdMap T>
 void save(
     BinaryBitwiseWordsWriter& writer,
-    SerializationContextWrite& ctx,
     const T& value,
     std::string_view message)
 {
-    save(writer, ctx, integral_cast<uint32_t>(value.size()), "map size");
+    save(writer, integral_cast<uint32_t>(value.size()), "map size");
     for (const auto& [k, v] : value) {
-        save(writer, ctx, k, "map key");
-        save(writer, ctx, v, "map value");
+        save(writer, k, "map key");
+        save(writer, v, "map value");
     }
 }
 
 template <AnyStdMap T>
-T load(
+void load(
     BinaryBitwiseWordsReader& reader,
-    SerializationContextRead& ctx,
+    T& result,
     std::string_view message)
 {
     auto size = reader.read_binary<uint32_t>("map size");
-    if (size > 10'000) {
-        throw std::runtime_error("Map size too large");
+    if (size > 100'000) {
+        throw std::runtime_error((std::stringstream() <<
+            "Map size too large: " << size << ", " << message).str());
     }
-    T result;
     for (uint32_t i = 0; i < size; ++i) {
-        auto key = load<typename T::key_type>(reader, ctx, "map key");
-        auto value = load<typename T::mapped_type>(reader, ctx, "map value");
+        typename T::key_type key;
+        typename T::mapped_type value;
+        load(reader, key, "map key");
+        load(reader, value, "map value");
         if (!result.try_emplace(key, std::move(value)).second) {
             throw std::runtime_error("Detected duplicate key");
         }
     }
-    return result;
 }
 
 }

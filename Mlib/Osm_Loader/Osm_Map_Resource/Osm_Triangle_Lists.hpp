@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Misc/Object.hpp>
 #include <Mlib/Os/Io/Safe_Archiver.hpp>
 #include <Mlib/Scene_Config/Scene_Precision.hpp>
 #include <list>
@@ -37,7 +38,7 @@ private:
 };
 
 template <class EntityType>
-class EntityTypeTriangleList {
+class EntityTypeTriangleList: public virtual Object {
 public:
     void insert(EntityType road_type, const std::shared_ptr<TriangleList<CompressedScenePos>>& lst);
     bool contains(EntityType road_type) const;

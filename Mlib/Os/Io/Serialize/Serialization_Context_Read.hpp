@@ -9,6 +9,10 @@ namespace Mlib {
 
 class SerializationContextRead {
 public:
+    SerializationContextRead() {
+        objects_.emplace(0, nullptr);
+    }
+    ~SerializationContextRead() = default;
     template <class T>
     inline std::optional<std::shared_ptr<T>> try_get(uint32_t index) {
         auto res = objects_.find(index);

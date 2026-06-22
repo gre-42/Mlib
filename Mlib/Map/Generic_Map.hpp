@@ -21,6 +21,10 @@ public:
         : TBaseMap(std::move(init))
     {}
 
+    TBaseMap& elements() {
+        return *this;
+    }
+
     bool contains(const key_type& key) const {
         const TBaseMap* m = this;
         return m->contains(key);

@@ -1,5 +1,6 @@
 #pragma once
 #include "Array_Forward.hpp"
+#include <Mlib/Misc/Object.hpp>
 #include <Mlib/Os/Io/Safe_Archiver.hpp>
 #include <cassert>
 #include <cstdint>
@@ -15,7 +16,7 @@ std::ostream &operator << (std::ostream &ostream, const ArrayShape &v);
 template <class TCallable>
 void foreach(const ArrayShape& begin, const ArrayShape& end, const TCallable& f);
 
-class ArrayShape {
+class ArrayShape: public virtual Object {
     std::vector<size_t> shape_;
     using iter_diff_type = std::vector<size_t>::iterator::difference_type;
 public:

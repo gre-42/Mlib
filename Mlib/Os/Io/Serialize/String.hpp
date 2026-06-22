@@ -13,7 +13,6 @@ class SerializationContextWrite;
 template <StdBasicString T>
 void save(
     BinaryBitwiseWordsWriter& writer,
-    SerializationContextWrite& ctx,
     const T& value,
     std::string_view message)
 {
@@ -21,12 +20,12 @@ void save(
 }
 
 template <StdBasicString T>
-T load(
+void load(
     BinaryBitwiseWordsReader& reader,
-    SerializationContextRead& ctx,
+    T& result,
     std::string_view message)
 {
-    return reader.read_string<uint32_t>(message);
+    result = reader.read_string<uint32_t>(message);
 }
 
 }

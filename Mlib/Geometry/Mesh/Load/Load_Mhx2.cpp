@@ -124,22 +124,25 @@ std::shared_ptr<AnimatedColoredVertexArrays> Mlib::load_mhx2(
                 auto R = fixed_identity_array<float, 3>();
                 initial_absolute_transformation = assemble_homogeneous_4x4(R, t);
             }
-            auto new_bone = std::unique_ptr<Bone>(new Bone{
-                .index = integral_cast<uint32_t>(result->bone_indices.size()),
-                .initial_absolute_transformation = OffsetAndQuaternion<float, float>{initial_absolute_transformation}});
-            auto new_bone_name = bone.at("name").get<VariableAndHash<std::string>>();
-            bone_names.add(new_bone_name, new_bone.get());
-            result->bone_indices.add(new_bone_name, new_bone->index);
-            if (parent != bone.end()) {
-                auto parent_name = parent.value().get<VariableAndHash<std::string>>();
-                auto& par = bone_names.get(parent_name);
-                par->children.push_back(std::move(new_bone));
-            } else {
-                if (result->skeleton != nullptr) {
-                    throw std::runtime_error("Found multiple root bones");
+            auto index = integral_cast<uint32_t>(result->bone_indices.size());
+            auto& new_bone = [&]() -> Bone& {
+                auto children = std::list<Bone>{};
+                auto initial_q = OffsetAndQuaternion<float, float>{initial_absolute_transformation};
+                if (parent != bone.end()) {
+                    auto parent_name = parent.value().get<VariableAndHash<std::string>>();
+                    auto& par = bone_names.get(parent_name);
+                    return par->children.emplace_back(index, initial_q, std::move(children));
+                } else {
+                    if (result->skeleton != nullptr) {
+                        throw std::runtime_error("Found multiple root bones");
+                    }
+                    result->skeleton = std::make_shared<Bone>(index, initial_q, std::move(children));
+                    return *result->skeleton;
                 }
-                result->skeleton = std::move(new_bone);
-            }
+            }();
+            auto new_bone_name = bone.at("name").get<VariableAndHash<std::string>>();
+            bone_names.add(new_bone_name, &new_bone);
+            result->bone_indices.add(new_bone_name, index);
         }
         if (result->skeleton == nullptr) {
             throw std::runtime_error("Could not find root node");

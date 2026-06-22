@@ -1,19 +1,25 @@
 #pragma once
 #include <Mlib/Initialization/Default_Uninitialized_Vector.hpp>
 #include <Mlib/Math/Transformation/Quaternion.hpp>
+#include <Mlib/Misc/Object.hpp>
 #include <Mlib/Os/Io/Safe_Archiver.hpp>
 #include <cstdint>
-#include <memory>
-#include <vector>
+#include <list>
 
 namespace Mlib {
 
-struct Bone {
+struct Bone: public virtual Object {
+    Bone();
+    Bone(
+        uint32_t index,
+        const OffsetAndQuaternion<float, float>& initial_absolute_transformation,
+        std::list<Bone> children);
+    ~Bone();
     uint32_t index;
     // The initial transformation is the transformation in the MHX2-file,
     // the bone transformation is from the BVH-file.
-    OffsetAndQuaternion<float, float> initial_absolute_transformation = uninitialized;
-    std::vector<std::unique_ptr<Bone>> children;
+    OffsetAndQuaternion<float, float> initial_absolute_transformation;
+    std::list<Bone> children;
     UUVector<OffsetAndQuaternion<float, float>> rebase_to_initial_absolute_transform(
         const UUVector<OffsetAndQuaternion<float, float>>& transformations);
 

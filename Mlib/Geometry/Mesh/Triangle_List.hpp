@@ -11,9 +11,10 @@
 #include <Mlib/Geometry/Rectangle_Triangulation_Mode.hpp>
 #include <Mlib/Geometry/Triangle_Tangent_Error_Behavior.hpp>
 #include <Mlib/Initialization/Default_Uninitialized_List.hpp>
+#include <Mlib/Misc/Object.hpp>
 #include <Mlib/Os/Io/Safe_Archiver.hpp>
+#include <Mlib/Os/Io/Serialize/Serialize.hpp>
 #include <Mlib/Strings/Group_And_Name.hpp>
-#include <cereal/access.hpp>
 #include <cstdint>
 #include <list>
 #include <memory>
@@ -32,7 +33,7 @@ template <class TPos>
 class VertexHeightBinding;
 
 template <class TPos>
-class TriangleList {
+class TriangleList: public virtual Object {
     TriangleList() = delete;
     TriangleList(const TriangleList&) = delete;
     TriangleList& operator = (const TriangleList&) = delete;
@@ -48,6 +49,7 @@ public:
         UUList<FixedArray<uint8_t, 3>>&& discrete_triangle_texture_layers = {},
         UUList<FixedArray<float, 3>>&& alpha = {},
         UUList<FixedArray<float, 4>>&& interiormap_uvmaps = {});
+    ~TriangleList();
     void draw_triangle_with_normals(
         const FixedArray<TPos, 3>& p00,
         const FixedArray<TPos, 3>& p10,
@@ -195,10 +197,10 @@ public:
         archive(interiormap_uvmaps);
     }
     // From: https://github.com/USCiLab/cereal/issues/102
-    template<typename Archive>
+    template<typename Archive, typename Construct>
     static void load_and_construct(
         Archive& archiver,
-        cereal::construct<TriangleList>& construct)
+        Construct& construct)
     {
         SafeArchiver archive{archiver};
         MeshMeta meta;

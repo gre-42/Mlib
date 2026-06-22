@@ -282,8 +282,8 @@ void test_thread_safe_list() {
 
 void test_bitwise_io() {
     std::stringstream sstr;
-    auto reader = BinaryBitwiseWordsReader{sstr, IoVerbosity::DATA | IoVerbosity::METADATA};
-    auto writer = BinaryBitwiseWordsWriter{sstr};
+    auto reader = BinaryBitwiseWordsReader{sstr, nullptr, IoVerbosity::DATA | IoVerbosity::METADATA};
+    auto writer = BinaryBitwiseWordsWriter{sstr, nullptr};
     writer.write_bits(uint32_t(3), 2, "write 3");
     writer.write_bits(uint32_t(0x40FEE123), 31, "write 0x40FEE123");
     writer.write_bool_bit(true, "write \"true\"");

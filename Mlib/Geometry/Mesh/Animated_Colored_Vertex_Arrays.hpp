@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/Initialization/Default_Uninitialized_Vector.hpp>
 #include <Mlib/Map/String_With_Hash_Unordered_Map.hpp>
+#include <Mlib/Misc/Object.hpp>
 #include <Mlib/Os/Io/Safe_Archiver.hpp>
 #include <Mlib/Scene_Config/Scene_Precision.hpp>
 #include <cstddef>
@@ -26,7 +27,12 @@ enum class SmoothnessTarget;
 enum class RectangleTriangulationMode;
 enum class DelaunayErrorBehavior;
 
-struct AnimatedColoredVertexArrays {
+struct AnimatedColoredVertexArrays: public virtual Object {
+    AnimatedColoredVertexArrays(
+        std::shared_ptr<Bone> skeleton,
+        StringWithHashUnorderedMap<uint32_t> bone_indices,
+        std::list<std::shared_ptr<ColoredVertexArray<float>>> scvas,
+        std::list<std::shared_ptr<ColoredVertexArray<CompressedScenePos>>> dcvas);
     AnimatedColoredVertexArrays(
         std::list<std::shared_ptr<ColoredVertexArray<float>>> scvas = {},
         std::list<std::shared_ptr<ColoredVertexArray<CompressedScenePos>>> dcvas = {});
@@ -69,6 +75,28 @@ struct AnimatedColoredVertexArrays {
         archive(bone_indices.elements());
         archive(scvas);
         archive(dcvas);
+    }
+    template<typename Archive, typename Construct>
+    static void load_and_construct(
+        Archive& archiver,
+        Construct& construct)
+    {
+        SafeArchiver archive{archiver};
+        std::shared_ptr<Bone> skeleton;
+        StringWithHashUnorderedMap<uint32_t> bone_indices{ "Bone index" };
+        std::list<std::shared_ptr<ColoredVertexArray<float>>> scvas;
+        std::list<std::shared_ptr<ColoredVertexArray<CompressedScenePos>>> dcvas;
+
+        archive(skeleton);
+        archive(bone_indices.elements());
+        archive(scvas);
+        archive(dcvas);
+
+        construct(
+            std::move(skeleton),
+            std::move(bone_indices),
+            std::move(scvas),
+            std::move(dcvas));
     }
 };
 

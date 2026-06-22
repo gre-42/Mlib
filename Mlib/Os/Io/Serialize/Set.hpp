@@ -13,34 +13,33 @@ class SerializationContextWrite;
 template <AnyStdSet T>
 void save(
     BinaryBitwiseWordsWriter& writer,
-    SerializationContextWrite& ctx,
     const T& value,
     std::string_view message)
 {
-    save(writer, ctx, integral_cast<uint32_t>(value.size()), "list size");
+    save(writer, integral_cast<uint32_t>(value.size()), "list size");
     for (const auto& v : value) {
-        save(writer, ctx, v, "list value");
+        save(writer, v, "list value");
     }
 }
 
 template <AnyStdSet T>
-T load(
+void load(
     BinaryBitwiseWordsReader& reader,
-    SerializationContextRead& ctx,
+    T& result,
     std::string_view message)
 {
-    auto size = load<uint32_t>(reader, ctx, "list size");
+    uint32_t size;
+    load(reader, size, "list size");
     if (size > 10'000) {
         throw std::runtime_error("List size too large");
     }
-    T result;
     for (uint32_t i = 0; i < size; ++i) {
-        auto value = load<typename T::value_type>(reader, ctx, "list value");
+        typename T::value_type value;
+        load(reader, value, "list value");
         if (!result.insert(std::move(value)).second) {
             throw std::runtime_error("Detected duplicate element");
         }
     }
-    return result;
 }
 
 }

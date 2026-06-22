@@ -13,6 +13,17 @@
 using namespace Mlib;
 
 AnimatedColoredVertexArrays::AnimatedColoredVertexArrays(
+    std::shared_ptr<Bone> skeleton,
+    StringWithHashUnorderedMap<uint32_t> bone_indices,
+    std::list<std::shared_ptr<ColoredVertexArray<float>>> scvas,
+    std::list<std::shared_ptr<ColoredVertexArray<CompressedScenePos>>> dcvas)
+    : skeleton{std::move(skeleton)}
+    , bone_indices{std::move(bone_indices)}
+    , scvas{std::move(scvas)}
+    , dcvas{std::move(dcvas)}
+{}
+
+AnimatedColoredVertexArrays::AnimatedColoredVertexArrays(
     std::list<std::shared_ptr<ColoredVertexArray<float>>> scvas,
     std::list<std::shared_ptr<ColoredVertexArray<CompressedScenePos>>> dcvas)
     : bone_indices{ "Bone index" }

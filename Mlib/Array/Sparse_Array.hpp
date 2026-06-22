@@ -1,6 +1,7 @@
 #pragma once
 #include "Array.hpp"
 #include "Array_Shape.hpp"
+#include <Mlib/Array/Object_Vector.hpp>
 #include <Mlib/Os/Io/Safe_Archiver.hpp>
 #include <map>
 #include <memory>
@@ -17,7 +18,7 @@ public:
 
     explicit SparseArrayCcs(const ArrayShape& shape) {
         assert(shape.ndim() == 2);
-        data_ = std::make_shared<std::vector<std::map<size_t, TData>>>(shape(1));
+        data_ = std::make_shared<ObjectVector<std::map<size_t, TData>>>(shape(1));
         shape_ = std::make_shared<ArrayShape>(shape);
     }
 
@@ -179,7 +180,7 @@ public:
 
     bool conjugated_transposed = false;
 private:
-    std::shared_ptr<std::vector<std::map<size_t, TData>>> data_;
+    std::shared_ptr<ObjectVector<std::map<size_t, TData>>> data_;
     std::shared_ptr<ArrayShape> shape_;
 
 };

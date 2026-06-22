@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/Os/Io/Binary_Reader.hpp>
 #include <Mlib/Os/Io/Bitwise_Words_Reader.hpp>
+#include <Mlib/Os/Io/Serialize/Class_Fwd.hpp>
 #include <cstdint>
 
 namespace Mlib {
@@ -10,8 +11,12 @@ class SerializationContextRead;
 
 class BinaryBitwiseWordsReader {
 public:
-    BinaryBitwiseWordsReader(std::istream& istr, IoVerbosity verbosity)
-        : words_reader_{istr, verbosity}
+    BinaryBitwiseWordsReader(
+        std::istream& istr,
+        SerializationContextRead* ctx,
+        IoVerbosity verbosity)
+        : ctx{ ctx }
+        , words_reader_{istr, verbosity}
         , binary_reader_{istr, verbosity}
     {}
     template <std::integral LengthType>
@@ -53,12 +58,21 @@ public:
     bool read_bool_bit(std::string_view message) {
         return read_bits<uint8_t>(1, message) != 0;
     }
+    template <class TValue>
+    TValue deserialize(std::string_view message) {
+        TValue result;
+        load(*this, result, message);
+        return result;
+    }
     void align_to_next_word() {
         words_reader_.align_to_next_word();
     }
+    SerializationContextRead* ctx;
 private:
     BitwiseWordsReader<uint8_t> words_reader_;
     BinaryReader binary_reader_;
 };
 
 }
+
+#include <Mlib/Os/Io/Serialize/Class.hpp>
