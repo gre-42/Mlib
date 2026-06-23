@@ -106,7 +106,7 @@ void Mlib::calculate_waypoint_adjacency(
         way_points.points[point_id] = WayPoint{ position, adjacency_id_offset.second };
         grounded_way_points.insert(point_id);
     }
-    way_points.adjacency = SparseArrayCcs<CompressedScenePos>{ArrayShape{
+    way_points.adjacency = SparseArrayCcs<CompressedScenePos, uint32_t>{ArrayShape{
         indices_terrain_wpts.size() + indices_street_wpts.size(),
         indices_terrain_wpts.size() + indices_street_wpts.size()}};
     

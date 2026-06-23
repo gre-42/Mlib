@@ -46,11 +46,13 @@ public:
     inline std::strong_ordering operator <=> (const CachedHash&) const {
         return std::strong_ordering::equal;
     }
-    template <class Archive>
-    void serialize(Archive& archiver) {
-        SafeArchiver archive{archiver};
-        archive(value_);
-    }
+    // Disabled, because std hashes are size_t, and therefore incompatible
+    // between 32 and 64 bit architectures.
+    // template <class Archive>
+    // void serialize(Archive& archiver) {
+    //     SafeArchiver archive{archiver};
+    //     archive(value_);
+    // }
 private:
     std::optional<size_t> value_;
 };

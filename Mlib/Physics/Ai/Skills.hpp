@@ -9,7 +9,7 @@ struct Skills {
     template <class Archive>
     void serialize(Archive& archiver) {
         SafeArchiver archive{archiver};
-        if (Archive::is_saving::value) {
+        if constexpr (Archive::is_saving::value) {
             SkillsType packed =
                 ((SkillsType)can_drive << 0) |
                 ((SkillsType)can_aim << 1) |

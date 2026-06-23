@@ -98,7 +98,13 @@ struct ColormapWithModifiers {
         archive(wrap_modes);
         archive(border_color);
         archive(rotate);
-        archive(hash);
+        // Disabled, because std hashes are size_t, and therefore incompatible
+        // between 32 and 64 bit architectures.
+        // archive(hash);
+        if constexpr (!Archive::is_saving::value) {
+            hash.reset();
+            compute_hash();
+        }
     }
 };
 

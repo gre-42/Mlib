@@ -3,8 +3,8 @@
 
 namespace Mlib {
 
-template <class TData, size_t tndim>
-FuzzySetOfPoints<TData, tndim>::FuzzySetOfPoints(
+template <class TData, class tindex, size_t tndim>
+FuzzySetOfPoints<TData, tindex, tndim>::FuzzySetOfPoints(
     const TData& merge_radius,
     const TData& error_radius)
     : bvh_{ fixed_full<TData, tndim>(merge_radius), 17 }
@@ -13,9 +13,9 @@ FuzzySetOfPoints<TData, tndim>::FuzzySetOfPoints(
     , error_radius_{ error_radius }
 {}
 
-template <class TData, size_t tndim>
-bool FuzzySetOfPoints<TData, tndim>::insert(const FixedArray<TData, tndim>& p, size_t& index) {
-    const std::pair<FixedArray<TData, tndim>, size_t>* neighbor;
+template <class TData, class tindex, size_t tndim>
+bool FuzzySetOfPoints<TData, tindex, tndim>::insert(const FixedArray<TData, tndim>& p, tindex& index) {
+    const std::pair<FixedArray<TData, tndim>, tindex>* neighbor;
     auto min_dist2 = bvh_.min_distance(
         p,
         merge_radius_,
@@ -30,13 +30,13 @@ bool FuzzySetOfPoints<TData, tndim>::insert(const FixedArray<TData, tndim>& p, s
         index = bvh_size_++;
         bvh_.insert(
             AxisAlignedBoundingBox<TData, tndim>::from_point(p),
-            std::pair<FixedArray<TData, tndim>, size_t>{ p, index });
+            std::pair<FixedArray<TData, tndim>, tindex>{ p, index });
         return true;
     }
 }
 
-template <class TData, size_t tndim>
-void FuzzySetOfPoints<TData, tndim>::optimize_search_time(std::ostream& ostr) const {
+template <class TData, class tindex, size_t tndim>
+void FuzzySetOfPoints<TData, tindex, tndim>::optimize_search_time(std::ostream& ostr) const {
     bvh_.optimize_search_time(BvhDataRadiusType::ZERO, ostr);
 }
 

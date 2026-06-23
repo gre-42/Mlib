@@ -17,7 +17,7 @@ void schur_complement_system(
     float beta);
 
 void schur_complement_jacobian_system(
-    const SparseArrayCcs<float>& J,
+    const SparseArrayCcs<float, size_t>& J,
     const Array<float>& residual,
     const Array<float>& x0,
     const Array<size_t> ids_k,

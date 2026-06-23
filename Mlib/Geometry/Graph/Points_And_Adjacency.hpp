@@ -3,6 +3,7 @@
 #include <Mlib/Array/Sparse_Array.hpp>
 #include <Mlib/Initialization/Default_Uninitialized_Vector.hpp>
 #include <Mlib/Os/Io/Safe_Archiver.hpp>
+#include <cstdint>
 
 namespace Mlib {
 
@@ -22,10 +23,10 @@ struct PointsAndAdjacency {
     using TData = typename TPoint::value_type;
     static const size_t tlength = TPoint::length();
     UVector<TPoint> points;
-    SparseArrayCcs<TData> adjacency;
+    SparseArrayCcs<TData, uint32_t> adjacency;
 
     PointsAndAdjacency() = default;
-    explicit PointsAndAdjacency(size_t npoints);
+    explicit PointsAndAdjacency(uint32_t npoints);
     ~PointsAndAdjacency() = default;
 
     template <class Archive>

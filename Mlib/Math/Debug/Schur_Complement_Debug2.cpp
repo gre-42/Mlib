@@ -35,7 +35,7 @@ void ::Mlib::Debug2::schur_complement_system(
 }
 
 void ::Mlib::Debug2::schur_complement_jacobian_system(
-    const SparseArrayCcs<float>& J,
+    const SparseArrayCcs<float, size_t>& J,
     const Array<float>& residual,
     // const Array<float>& x0,
     const Array<size_t> ids_k,
@@ -57,9 +57,9 @@ void ::Mlib::Debug2::schur_complement_jacobian_system(
     // Array<float> H_a = H.blocked(ids_a, ids_ab);
     // Array<float> H_b = H.blocked(ids_b, ids_ab);
 
-    SparseArrayCcs<float> Jg_k = J.columns(ids_k);
-    SparseArrayCcs<float> Jg_a = J.columns(ids_a);
-    SparseArrayCcs<float> Jg_b = J.columns(ids_b);
+    SparseArrayCcs<float, size_t> Jg_k = J.columns(ids_k);
+    SparseArrayCcs<float, size_t> Jg_a = J.columns(ids_a);
+    SparseArrayCcs<float, size_t> Jg_b = J.columns(ids_b);
     // This modification of the RHS emits the new x,
     // but we want dx. Note that there is a sign
     // bug along with these modifications (-x is returned, with r := y - f(x)).

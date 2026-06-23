@@ -9,20 +9,21 @@
 
 namespace Mlib {
 
-template <class TData>
+template <class TData, class tsize>
 class SparseArrayCcs {
 public:
-    typedef TData value_type;
+    using value_type = TData;
+    using Size = tsize;
 
     SparseArrayCcs() {}
 
     explicit SparseArrayCcs(const ArrayShape& shape) {
         assert(shape.ndim() == 2);
-        data_ = std::make_shared<ObjectVector<std::map<size_t, TData>>>(shape(1));
+        data_ = std::make_shared<ObjectVector<std::map<tsize, TData>>>(shape(1));
         shape_ = std::make_shared<ArrayShape>(shape);
     }
 
-    explicit SparseArrayCcs(size_t r, size_t c)
+    explicit SparseArrayCcs(tsize r, tsize c)
         : SparseArrayCcs{ArrayShape{r, c}}
     {}
 
@@ -30,8 +31,8 @@ public:
         : SparseArrayCcs{rhs.shape()}
     {
         assert(rhs.ndim() == 2);
-        for (size_t r = 0; r < rhs.shape(0); ++r) {
-            for (size_t c = 0; c < rhs.shape(1); ++c) {
+        for (tsize r = 0; r < rhs.shape(0); ++r) {
+            for (tsize c = 0; c < rhs.shape(1); ++c) {
                 if (rhs(r, c) != TData(0)) {
                     (*this)(r, c) = rhs(r, c);
                 }
@@ -48,7 +49,7 @@ public:
         *shape_ = shape;
     }
 
-    void resize(size_t r, size_t c) {
+    void resize(tsize r, tsize c) {
         resize(ArrayShape{r, c});
     }
 
@@ -63,11 +64,11 @@ public:
         return *shape_;
     }
 
-    size_t shape(size_t i) const {
+    tsize shape(tsize i) const {
         return shape()(i);
     }
 
-    size_t ndim() const {
+    tsize ndim() const {
         return shape().ndim();
     }
 
@@ -77,48 +78,48 @@ public:
         return result;
     }
 
-    std::vector<std::map<size_t, TData>>& columns() {
+    std::vector<std::map<tsize, TData>>& columns() {
         assert(data_ != nullptr);
         return *data_;
     }
 
-    std::map<size_t, TData>& column(size_t c) {
+    std::map<tsize, TData>& column(tsize c) {
         assert(c < columns().size());
         return columns()[c];
     }
 
-    TData& operator () (size_t r, size_t c) {
+    TData& operator () (tsize r, tsize c) {
         assert(r < shape(0));
         assert(c < shape(1));
         assert(!conjugated_transposed);
         return column(c)[r];
     }
 
-    const std::vector<std::map<size_t, TData>>& columns() const {
+    const std::vector<std::map<tsize, TData>>& columns() const {
         return const_cast<SparseArrayCcs*>(this)->columns();
     }
 
-    const std::map<size_t, TData>& column(size_t c) const {
+    const std::map<tsize, TData>& column(tsize c) const {
         return const_cast<SparseArrayCcs*>(this)->column(c);
     }
 
-    SparseArrayCcs columns(const Array<size_t>& column_ids) const {
-        SparseArrayCcs<float> res{ArrayShape{shape(0), column_ids.length()}};
-        for (size_t i = 0; i < column_ids.length(); ++i) {
+    SparseArrayCcs columns(const Array<tsize>& column_ids) const {
+        SparseArrayCcs<float, tsize> res{ArrayShape{shape(0), column_ids.length()}};
+        for (tsize i = 0; i < column_ids.length(); ++i) {
             res.column(i) = column(column_ids(i));
         }
         return res;
     }
 
-    const TData& operator () (size_t r, size_t c) const {
+    const TData& operator () (tsize r, tsize c) const {
         return (*const_cast<SparseArrayCcs*>(this))(r, c);
     }
 
     Array<TData> to_dense_array() const {
         assert(!conjugated_transposed);
         Array<TData> res{shape()};
-        for (size_t r = 0; r < shape(0); ++r) {
-            for (size_t c = 0; c < shape(1); ++c) {
+        for (tsize r = 0; r < shape(0); ++r) {
+            for (tsize c = 0; c < shape(1); ++c) {
                 res(r, c) = (*this)(r, c);
             }
         }
@@ -127,9 +128,9 @@ public:
 
     // Apply an operation to all defined (e.g. non-zero or finite, depending on the application) entries
     template <class TResultData = TData, class TOperation>
-    SparseArrayCcs<TResultData> applied_to_defined(const TOperation& op) const {
-        SparseArrayCcs<TResultData> result{shape()};
-        for (size_t c = 0; c < shape(1); ++c) {
+    SparseArrayCcs<TResultData, tsize> applied_to_defined(const TOperation& op) const {
+        SparseArrayCcs<TResultData, tsize> result{shape()};
+        for (tsize c = 0; c < shape(1); ++c) {
             for (const auto& [r, value] : column(c)) {
                 result(r, c) = op(value);
             }
@@ -140,7 +141,7 @@ public:
     // Apply an operation to all defined (e.g. non-zero or finite, depending on the application) entries
     template <class TOperation>
     void apply_to_defined(const TOperation& op) {
-        for (size_t c = 0; c < shape(1); ++c) {
+        for (tsize c = 0; c < shape(1); ++c) {
             for (auto& [_, value] : column(c)) {
                 op(value);
             }
@@ -148,11 +149,11 @@ public:
     }
 
     template <class TResultData>
-    SparseArrayCcs<TResultData> casted() const {
+    SparseArrayCcs<TResultData, tsize> casted() const {
         return applied_to_defined<TResultData>([](const TData& v){ return v; });
     }
 
-    SparseArrayCcs<bool> is_defined() const {
+    SparseArrayCcs<bool, tsize> is_defined() const {
         return applied_to_defined<bool>([](const TData& v){ return true; });
     }
 
@@ -173,33 +174,62 @@ public:
     template <class Archive>
     void serialize(Archive& archiver) {
         SafeArchiver archive{archiver};
-        archive(conjugated_transposed);
-        archive(data_);
-        archive(shape_);
+        if constexpr (Archive::is_saving::value) {
+            archive(conjugated_transposed);
+            archive(data_);
+            archive(shape_);
+        } else {
+            SparseArrayCcs tmp;
+            archive(tmp.conjugated_transposed);
+            archive(tmp.data_);
+            archive(tmp.shape_);
+            if (tmp.data_ == nullptr) {
+                throw std::runtime_error("Sparse array has no data");
+            }
+            if (tmp.shape_ == nullptr) {
+                throw std::runtime_error("Sparse array has no shape");
+            }
+            if (tmp.shape_->ndim() != 2) {
+                throw std::runtime_error("Loaded array does not have 2 dimensions");
+            }
+            if (tmp.shape(1) != tmp.data_->size()) {
+                throw std::runtime_error("Loaded array has inconsistent number of columns");
+            }
+            for (const auto& c : tmp.columns()) {
+                for (const auto& r : c) {
+                    if (r.first >= tmp.shape(0)) {
+                        throw std::runtime_error("Loaded array has inconsistent number of rows");
+                    }
+                }
+            }
+            conjugated_transposed = tmp.conjugated_transposed;
+            data_ = std::move(tmp.data_);
+            shape_ = std::move(tmp.shape_);
+        }
     }
 
     bool conjugated_transposed = false;
 private:
-    std::shared_ptr<ObjectVector<std::map<size_t, TData>>> data_;
+    std::shared_ptr<ObjectVector<std::map<tsize, TData>>> data_;
     std::shared_ptr<ArrayShape> shape_;
 
 };
 
-template <class TData>
-Array<TData> operator , (const SparseArrayCcs<TData>& a, const SparseArrayCcs<TData>& b) {
+template <class TData, class tsize>
+Array<TData> operator , (const SparseArrayCcs<TData, tsize>& a, const SparseArrayCcs<TData, tsize>& b) {
     throw std::runtime_error("Sparse: please use outer or dot");
 }
 
-template <class TData>
-Array<TData> dot2d(const SparseArrayCcs<TData>& a, const SparseArrayCcs<TData>& b) {
+template <class TData, class tsize>
+Array<TData> dot2d(const SparseArrayCcs<TData, tsize>& a, const SparseArrayCcs<TData, tsize>& b) {
     assert(a.conjugated_transposed);
     assert(!b.conjugated_transposed);
     assert(a.ndim() == 2);
     assert(b.ndim() == 2);
     assert(a.shape(0) == b.shape(0));
     Array<TData> result{ArrayShape{a.shape(1), b.shape(1)}};
-    for (size_t r = 0; r < result.shape(0); ++r) {
-        for (size_t c = 0; c < result.shape(1); ++c) {
+    for (tsize r = 0; r < result.shape(0); ++r) {
+        for (tsize c = 0; c < result.shape(1); ++c) {
             const auto& col_a = a.column(r);
             const auto& col_b = b.column(c);
             TData v = 0;
@@ -225,20 +255,20 @@ Array<TData> dot2d(const SparseArrayCcs<TData>& a, const SparseArrayCcs<TData>& 
     return result;
 }
 
-template <class TData>
-Array<TData> operator , (const SparseArrayCcs<TData>& a, const Array<TData>& b) {
+template <class TData, class tsize>
+Array<TData> operator , (const SparseArrayCcs<TData, tsize>& a, const Array<TData>& b) {
     throw std::runtime_error("Sparse: please use outer or dot");
 }
 
-template <class TData>
-Array<TData> dot2d(const SparseArrayCcs<TData>& a, const Array<TData>& b) {
+template <class TData, class tsize>
+Array<TData> dot2d(const SparseArrayCcs<TData, tsize>& a, const Array<TData>& b) {
     assert(a.conjugated_transposed);
     assert(a.ndim() == 2);
     assert(b.ndim() == 2);
     assert(a.shape(0) == b.shape(0));
     Array<TData> result{ArrayShape{a.shape(1), b.shape(1)}};
-    for (size_t r = 0; r < result.shape(0); ++r) {
-        for (size_t c = 0; c < result.shape(1); ++c) {
+    for (tsize r = 0; r < result.shape(0); ++r) {
+        for (tsize c = 0; c < result.shape(1); ++c) {
             const auto& col_a = a.column(r);
             TData v = 0;
             for (const auto& ea : col_a) {
@@ -250,15 +280,15 @@ Array<TData> dot2d(const SparseArrayCcs<TData>& a, const Array<TData>& b) {
     return result;
 }
 
-template <class TData>
-Array<TData> dot1d(const SparseArrayCcs<TData>& a, const Array<TData>& b) {
+template <class TData, class tsize>
+Array<TData> dot1d(const SparseArrayCcs<TData, tsize>& a, const Array<TData>& b) {
     assert(b.ndim() == 1);
     return dot2d(a, b.reshaped(ArrayShape{b.length(), 1})).flattened();
 }
 
-template <class TData>
-std::ostream& operator << (std::ostream& ostr, const SparseArrayCcs<TData>& ar) {
-    for (size_t c = 0; c < ar.shape(1); ++c) {
+template <class TData, class tsize>
+std::ostream& operator << (std::ostream& ostr, const SparseArrayCcs<TData, tsize>& ar) {
+    for (tsize c = 0; c < ar.shape(1); ++c) {
         ostr << "c " << c << ":";
         for (const auto& v : ar.column(c)) {
             ostr << " (" << v.first << ", " << v.second << ")";
@@ -268,25 +298,25 @@ std::ostream& operator << (std::ostream& ostr, const SparseArrayCcs<TData>& ar) 
     return ostr;
 }
 
-template <class TData, class TOther>
-SparseArrayCcs<TData>& operator *= (SparseArrayCcs<TData>& a, const TOther& b) {
+template <class TData, class TOther, class tsize>
+SparseArrayCcs<TData, tsize>& operator *= (SparseArrayCcs<TData, tsize>& a, const TOther& b) {
     a.apply_to_defined([&b](TData& x){ x *= b; });
     return a;
 }
 
-template <class TData, class TOther>
-SparseArrayCcs<TData>& operator /= (SparseArrayCcs<TData>& a, const TOther& b) {
+template <class TData, class TOther, class tsize>
+SparseArrayCcs<TData, tsize>& operator /= (SparseArrayCcs<TData, tsize>& a, const TOther& b) {
     a.apply_to_defined([&b](TData& x){ x /= b; });
     return a;
 }
 
-template <class TData, class TOther>
-SparseArrayCcs<TData> operator * (const SparseArrayCcs<TData>& a, const TOther& b) {
+template <class TData, class TOther, class tsize>
+SparseArrayCcs<TData, tsize> operator * (const SparseArrayCcs<TData, tsize>& a, const TOther& b) {
     return a.applied_to_defined([&b](const TData& x){ return x * b; });
 }
 
-template <class TData, class TOther>
-SparseArrayCcs<TData> operator / (const SparseArrayCcs<TData>& a, const TOther& b) {
+template <class TData, class TOther, class tsize>
+SparseArrayCcs<TData, tsize> operator / (const SparseArrayCcs<TData, tsize>& a, const TOther& b) {
     return a.applied_to_defined([&b](const TData& x){ return x / b; });
 }
 

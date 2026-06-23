@@ -23,10 +23,10 @@ public:
         words_writer_.flush_partial(message);
         binary_writer_.write_string<LengthType>(str, message);
     }
-    template <class T>
+    template <class T, bool allow_i64 = false>
     inline void write_binary(const T& v, std::string_view message) {
         words_writer_.flush_partial(message);
-        binary_writer_.write_binary(v, message);
+        binary_writer_.write_binary<T, allow_i64>(v, message);
     }
     template <class TIterable>
     void write_iterable(const TIterable& iterable, std::string_view message) {

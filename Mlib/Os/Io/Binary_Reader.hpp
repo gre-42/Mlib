@@ -15,9 +15,9 @@ public:
         auto len = Mlib::read_binary<LengthType>(istr_, message, verbosity_);
         return Mlib::read_string(istr_, len, message, verbosity_);
     }
-    template <class T>
+    template <class T, bool allow_i64 = false>
     T read_binary(std::string_view message) {
-        return Mlib::read_binary<T>(istr_, message, verbosity_);
+        return Mlib::read_binary<T, allow_i64>(istr_, message, verbosity_);
     }
     template <class TData>
     void read_vector(const std::span<TData>& vec, std::string_view message) {

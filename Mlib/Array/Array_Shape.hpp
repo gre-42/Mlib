@@ -1,5 +1,6 @@
 #pragma once
 #include "Array_Forward.hpp"
+#include <Mlib/Memory/Integral_Cast.hpp>
 #include <Mlib/Misc/Object.hpp>
 #include <Mlib/Os/Io/Safe_Archiver.hpp>
 #include <cassert>
@@ -23,7 +24,27 @@ public:
     template <class Archive>
     void serialize(Archive& archiver) {
         SafeArchiver archive{archiver};
-        archive(shape_);
+        if constexpr (Archive::is_saving::value) {
+            std::vector<uint32_t> shape;
+            shape.reserve(shape_.size());
+            for (auto s : shape_) {
+                shape.push_back(integral_cast<uint32_t>(s));
+            }
+            archive(shape);
+        } else {
+            std::vector<uint32_t> shape;
+            archive(shape);
+            shape_.clear();
+            shape_.reserve(shape.size());
+            for (auto s : shape) {
+                static const uint32_t MAX_SIZE = 100'000;
+                static_assert(std::numeric_limits<size_t>::max() / 2 > MAX_SIZE);
+                if (s > MAX_SIZE) {
+                    throw std::runtime_error("Shape dimension too large");
+                }
+                shape_.push_back(integral_cast<size_t>(s));
+            }
+        }
     }
 
     ArrayShape();

@@ -11,7 +11,7 @@
 namespace Mlib {
 
 template <class TPoint>
-PointsAndAdjacency<TPoint>::PointsAndAdjacency(size_t npoints)
+PointsAndAdjacency<TPoint>::PointsAndAdjacency(uint32_t npoints)
     : points(npoints)
     , adjacency(npoints, npoints)
 {}
@@ -48,13 +48,13 @@ void PointsAndAdjacency<TPoint>::subdivide(
     const TCalculateIntermediatePoints& calculate_intermediate_points,
     SubdivisionType subdivision_type)
 {
-    std::map<std::tuple<size_t, size_t, size_t>, size_t> new_point_ids;
+    std::map<std::tuple<uint32_t, uint32_t, uint32_t>, uint32_t> new_point_ids;
     std::list<TPoint> new_points;
-    std::map<size_t, std::map<size_t, TData>> new_columns;
+    std::map<uint32_t, std::map<uint32_t, TData>> new_columns;
     {
-        for (auto&& [c, col] : enumerate(adjacency.columns())) {
-            for (typename std::map<size_t, TData>::iterator row = col.begin(); row != col.end();) {
-                size_t r = row->first;
+        for (auto&& [c, col] : tenumerate<uint32_t>(adjacency.columns())) {
+            for (typename std::map<uint32_t, TData>::iterator row = col.begin(); row != col.end();) {
+                uint32_t r = row->first;
                 if (r == c) {
                     ++row;
                     continue;
@@ -67,14 +67,14 @@ void PointsAndAdjacency<TPoint>::subdivide(
                 }
                 if (!intermediate_points.empty()) {
                     col.erase(row++);
-                    size_t old_id = c;
+                    uint32_t old_id = c;
                     auto old_point = points.at(c);
-                    for (const auto& [i, pn] : enumerate(intermediate_points)) {
+                    for (const auto& [i, pn] : tenumerate<uint32_t>(intermediate_points)) {
                         auto key = (r < c) || (subdivision_type == SubdivisionType::ASYMMETRIC)
-                            ? std::tuple<size_t, size_t, size_t>{r, c, i}
-                            : std::tuple<size_t, size_t, size_t>{c, r, intermediate_points.size() - i - 1};
+                            ? std::tuple<uint32_t, uint32_t, uint32_t>{r, c, i}
+                            : std::tuple<uint32_t, uint32_t, uint32_t>{c, r, intermediate_points.size() - i - 1};
                         auto it = new_point_ids.insert({key, points.size() + new_points.size()});
-                        size_t new_id = it.first->second;
+                        uint32_t new_id = it.first->second;
                         assert_true(new_columns[old_id].insert({new_id, (TData)std::sqrt(sum(squared(pn - old_point)))}).second);
                         if (it.second) {
                             new_points.push_back(pn);
@@ -139,13 +139,13 @@ PointsAndAdjacency<TPoint> PointsAndAdjacency<TPoint>::merged_neighbors(
     const TData& error_radius,
     const TCombinePoints& combine_points) const
 {
-    std::vector<size_t> new_ids(points.size());
+    std::vector<uint32_t> new_ids(points.size());
     UVector<TPoint> result_points;
     result_points.reserve(points.size());
     {
-        FuzzySetOfPoints<TData, tlength> point_bvh{ merge_radius, error_radius };
+        FuzzySetOfPoints<TData, uint32_t, tlength> point_bvh{ merge_radius, error_radius };
         for (const auto& [i, p] : enumerate(points)) {
-            size_t neighbor_id;
+            uint32_t neighbor_id;
             if (point_bvh.insert(p, neighbor_id)) {
                 result_points.push_back(p);
             } else {
@@ -189,7 +189,7 @@ void PointsAndAdjacency<TPoint>::plot(Svg<TSize>& svg, float line_width) const {
     std::vector<TData> y_start;
     std::vector<TData> x_stop;
     std::vector<TData> y_stop;
-    for (size_t c = 0; c < adjacency.shape(1); ++c) {
+    for (uint32_t c = 0; c < adjacency.shape(1); ++c) {
         for (const auto& r : adjacency.column(c)) {
             if (r.first != c) {
                 x_start.push_back(points.at(c)(0));

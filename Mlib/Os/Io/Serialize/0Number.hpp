@@ -14,13 +14,13 @@ class BinaryBitwiseWordsWriter;
 template <class T>
 concept ScalarOrEnum = Scalar<T> || Enum<T>;
 
-template <ScalarOrEnum T>
+template <ScalarOrEnum T, bool allow_i64 = false>
 void save(
     BinaryBitwiseWordsWriter& writer,
     const T& value,
     std::string_view message);
 
-template <ScalarOrEnum T>
+template <ScalarOrEnum T, bool allow_i64 = false>
 void load(
     BinaryBitwiseWordsReader& reader,
     T& result,
@@ -33,22 +33,22 @@ void load(
 
 namespace Mlib {
 
-template <ScalarOrEnum T>
+template <ScalarOrEnum T, bool allow_i64>
 void save(
     BinaryBitwiseWordsWriter& writer,
     const T& value,
     std::string_view message)
 {
-    writer.write_binary(value, message);
+    writer.write_binary<T, allow_i64>(value, message);
 }
 
-template <ScalarOrEnum T>
+template <ScalarOrEnum T, bool allow_i64>
 void load(
     BinaryBitwiseWordsReader& reader,
     T& result,
     std::string_view message)
 {
-    result = reader.read_binary<T>(message);
+    result = reader.read_binary<T, allow_i64>(message);
 }
 
 }

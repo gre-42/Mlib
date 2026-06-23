@@ -5,6 +5,7 @@
 #include <Mlib/Math/Math.hpp>
 #include <Mlib/Math/Power_Iteration/Pinv.hpp>
 #include <Mlib/Misc/Floating_Point_Exceptions.hpp>
+#include <Mlib/Os/Io/Serialize/Serialize.hpp>
 #include <Mlib/Stats/Random_Arrays.hpp>
 #include <filesystem>
 
@@ -96,8 +97,8 @@ void test_sparse_array() {
         r1 = dot(a.H(), b);
     }
     {
-        SparseArrayCcs<float> a{ArrayShape{6, 5}};
-        SparseArrayCcs<float> b{ArrayShape{6, 4}};
+        SparseArrayCcs<float, size_t> a{ArrayShape{6, 5}};
+        SparseArrayCcs<float, size_t> b{ArrayShape{6, 4}};
 
         a(1, 3) = 1;
         b(1, 3) = 1;
@@ -105,7 +106,7 @@ void test_sparse_array() {
     }
     assert_allclose(r1, r2);
     {
-        SparseArrayCcs<float> a{ArrayShape{6, 5}};
+        SparseArrayCcs<float, size_t> a{ArrayShape{6, 5}};
         Array<float> b{ArrayShape{6, 4}};
         b = 0;
         a(1, 3) = 1;
@@ -114,7 +115,7 @@ void test_sparse_array() {
     }
     assert_allclose(r1, r3);
     {
-        SparseArrayCcs<float> a{ArrayShape{6, 5}};
+        SparseArrayCcs<float, size_t> a{ArrayShape{6, 5}};
         Array<float> ad = uniform_random_array<float>(a.shape(), 2);
         Array<float> b = uniform_random_array<float>(ArrayShape{6, 4}, 1);
         for (size_t r = 0; r < a.shape(0); ++r) {
@@ -125,6 +126,27 @@ void test_sparse_array() {
         assert_allclose(lstsq_chol(a, b).value(), lstsq_chol(ad, b).value());
         a.casted<double>();
         a.is_defined();
+    }
+    {
+        SparseArrayCcs<float, uint32_t> a{ArrayShape{6, 5}};
+        Array<float> ad = uniform_random_array<float>(a.shape(), 2);
+        for (uint32_t r = 0; r < a.shape(0); ++r) {
+            for (uint32_t c = 0; c < a.shape(1); ++c) {
+                a(r, c) = ad(r, c);
+            }
+        }
+        std::stringstream sstr;
+        {
+            SerializationContextWrite ctx;
+            BinaryBitwiseWordsWriter writer{sstr, &ctx};
+            writer.serialize(a, "sparse array");
+        }
+        {
+            SerializationContextRead ctx;
+            BinaryBitwiseWordsReader reader{sstr, &ctx, IoVerbosity::SILENT};
+            auto b = reader.deserialize<SparseArrayCcs<float, uint32_t>>("sparse array");
+            assert_allclose(a.to_dense_array(), b.to_dense_array());
+        }
     }
 }
 
@@ -224,7 +246,7 @@ void test_copy() {
 }
 
 void test_sparse_array2() {
-    SparseArrayCcs<float> a{ArrayShape{6, 5}};
+    SparseArrayCcs<float, size_t> a{ArrayShape{6, 5}};
 
     a(1, 3) = 1;
 

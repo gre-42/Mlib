@@ -36,8 +36,10 @@ inline bool any(IoVerbosity v) {
 void print_char(char c);
 void print_chars(std::span<char> span, std::string_view message = "");
 
-template <class T>
+template <class T, bool allow_i64 = false>
 T read_binary(std::istream& istr, std::string_view message, IoVerbosity verbosity) {
+    static_assert(allow_i64 || (!std::is_same_v<T, int64_t> && !std::is_same_v<T, uint64_t>),
+                  "64-bit integers are not allowed unless allow_i64 is true.");
     T result;
     istr.read(reinterpret_cast<char*>(&result), sizeof(result));
     if (istr.fail()) {
@@ -75,8 +77,10 @@ std::string read_string(std::istream& istr, size_t length, std::string_view mess
 
 void seek_relative_positive(std::istream& str, std::streamoff amount, IoVerbosity verbosity);
 
-template <class T>
+template <class T, bool allow_i64 = false>
 void write_binary(std::ostream& ostr, const T& value, std::string_view message) {
+    static_assert(allow_i64 || (!std::is_same_v<T, int64_t> && !std::is_same_v<T, uint64_t>),
+                  "64-bit integers are not allowed unless allow_i64 is true.");
     ostr.write((const char*)&value, sizeof(value));
     if (ostr.fail()) {
         throw std::runtime_error("Could not write " + std::string(message) + "to stream");

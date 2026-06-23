@@ -16,7 +16,7 @@ class ArrayAxisView;
 template <class TData>
 class Vector;
 
-template <class TData>
+template <class TData, class tsize>
 class SparseArrayCcs;
 
 template <typename TData, size_t... tshape>

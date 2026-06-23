@@ -120,7 +120,7 @@ void ::Mlib::marginalize(
 }
 
 void ::Mlib::marginalize_least_squares(
-    const SparseArrayCcs<float>& J,
+    const SparseArrayCcs<float, size_t>& J,
     const Array<float>& residual,
     const Array<float>& x0,
     const Array<size_t>& ids_k,

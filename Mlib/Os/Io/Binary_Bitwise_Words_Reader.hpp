@@ -24,10 +24,10 @@ public:
         words_reader_.align_to_next_word();
         return binary_reader_.read_string<LengthType>(message);
     }
-    template <class T>
+    template <class T, bool allow_i64 = false>
     T read_binary(std::string_view message) {
         words_reader_.align_to_next_word();
-        return binary_reader_.read_binary<T>(message);
+        return binary_reader_.read_binary<T, allow_i64>(message);
     }
     template <class TData>
     void read_vector(const std::span<TData>& vec, std::string_view message) {

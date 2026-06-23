@@ -1011,10 +1011,12 @@ void android_main(android_app* app)
     if (unhandled_exceptions_occured()) {
         std::stringstream sstr;
         print_unhandled_exceptions(sstr);
+#ifndef __EMSCRIPTEN__
         for (const auto substr : iterate_over_blocks_of_string(sstr.str(), 1000))
         {
             lerr() << "Unhandled exception(s): " << substr;
         }
+#endif
         AUi::ShowMessage("Error", sstr.str());
         std::this_thread::sleep_for(std::chrono::seconds(5));
         std::abort();
