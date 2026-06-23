@@ -5,6 +5,7 @@
 #include <Mlib/Os/Io/Binary_Bitwise_Words_Writer.hpp>
 #include <Mlib/Players/Containers/Remote_Sites.hpp>
 #include <Mlib/Remote/Incremental_Objects/Known_Fields.hpp>
+#include <Mlib/Remote/Incremental_Objects/Object_Lifetime_Status.hpp>
 #include <Mlib/Remote/Incremental_Objects/Proxy_Tasks.hpp>
 #include <Mlib/Remote/Incremental_Objects/Transmission_History.hpp>
 #include <Mlib/Remote/Incremental_Objects/Transmitted_Fields.hpp>
@@ -66,6 +67,7 @@ DanglingBaseClassPtr<RemoteUsers> RemoteUsers::try_create_from_stream(
     SceneLevelSelector& local_scene_level_selector,
     BinaryBitwiseWordsReader& reader,
     TransmittedFields transmitted_fields,
+    ObjectLifetimeStatus lifetime_status,
     RemoteSiteId site_id,
     ProxyTasks proxy_tasks,
     TransmissionHistoryReader& transmission_history_reader,
@@ -81,6 +83,9 @@ DanglingBaseClassPtr<RemoteUsers> RemoteUsers::try_create_from_stream(
         DanglingBaseClassRef<SceneLevelSelector>{local_scene_level_selector, CURRENT_SOURCE_LOCATION},
         site_id);
     res->read_data(reader, transmitted_fields, proxy_tasks, transmission_history_reader);
+    if (lifetime_status == ObjectLifetimeStatus::DELETED) {
+        return nullptr;
+    }
     return {res.release(), CURRENT_SOURCE_LOCATION};
 }
 

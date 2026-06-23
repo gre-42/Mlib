@@ -8,6 +8,7 @@ namespace Mlib {
 
 class SceneLevelSelector;
 class PhysicsScene;
+enum class ObjectLifetimeStatus;
 enum class IoVerbosity;
 
 class RemoteUsers final: public IIncrementalObject {
@@ -23,6 +24,7 @@ public:
         SceneLevelSelector& scene_level_selector,
         BinaryBitwiseWordsReader& reader,
         TransmittedFields transmitted_fields,
+        ObjectLifetimeStatus lifetime_status,
         RemoteSiteId site_id,
         ProxyTasks proxy_tasks,
         TransmissionHistoryReader& transmission_history_reader,

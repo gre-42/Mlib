@@ -37,12 +37,9 @@ DanglingBaseClassPtr<IIncrementalObject> RemoteSceneObjectFactory::try_create_sh
     auto type = reader.read_binary<RemoteSceneObjectType>("scene object type");
     switch (type) {
     case RemoteSceneObjectType::REMOTE_USERS:
-        if (lifetime_status == ObjectLifetimeStatus::DELETED) {
-            throw std::runtime_error("REMOTE_USERS: Reading deleted objects not supported");
-        }
         return RemoteUsers::try_create_from_stream(
             physics_scene_.get(), scene_level_selector_.get(), reader,
-            transmitted_fields, remote_object_id.site_id,
+            transmitted_fields, lifetime_status, remote_object_id.site_id,
             proxy_tasks, transmission_history_reader, verbosity_);
     case RemoteSceneObjectType::PLAYER:
         return RemotePlayer::try_create_from_stream(
