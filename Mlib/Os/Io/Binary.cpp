@@ -28,7 +28,8 @@ std::vector<std::byte> Mlib::read_all_vector(std::istream& istr, std::string_vie
 
 std::string Mlib::read_string(std::istream& istr, size_t length, std::string_view message, IoVerbosity verbosity) {
     if (length > 1'000) {
-        throw std::runtime_error("String too large: " + std::string(message));
+        throw std::runtime_error((std::stringstream() <<
+            "String too large: " << length << ", " << message).str());
     }
     std::string s(length, '?');
     read_vector(istr, s, message, verbosity);
