@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Memory/Destruction_Guards.hpp>
+#include <chrono>
 #include <emscripten/html5_webgl.h>
 #include <functional>
 #include <list>
@@ -30,6 +31,7 @@ public:
     void add_on_save_state(std::function<void()> func);
 private:
     static EM_BOOL key_callback(int event_type, const EmscriptenKeyboardEvent* e, void* user_data);
+    static EM_BOOL on_pointerlockchange(int eventType, const EmscriptenPointerlockChangeEvent *pointerlockChangeEvent, void *userData);
     static EM_BOOL on_click(int eventType, const EmscriptenMouseEvent *mouseEvent, void *userData);
     static EM_BOOL on_mouse_move(int eventType, const EmscriptenMouseEvent *mouseEvent, void *userData);
     static EM_BOOL on_mouse_down(int eventType, const EmscriptenMouseEvent *mouseEvent, void *userData);
@@ -42,6 +44,7 @@ private:
     CursorStates& scroll_wheel_states_;
     EMSCRIPTEN_WEBGL_CONTEXT_HANDLE ctx_;
     std::list<std::function<void()>> on_save_state_;
+    std::chrono::steady_clock::time_point last_pointerlock_time_;
 };
 
 }

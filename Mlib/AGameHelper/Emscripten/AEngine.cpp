@@ -64,6 +64,11 @@ AEngine::AEngine(
             }
             dgs_add([](){emscripten_set_keyup_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, nullptr, EM_FALSE, nullptr);});
             if (!input_config.show_mouse_cursor) {
+                // Pointerlock
+                if (emscripten_set_pointerlockchange_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, this, EM_FALSE, on_pointerlockchange) != EMSCRIPTEN_RESULT_SUCCESS) {
+                    throw std::runtime_error("Could not set emscripten pointerlock callback");
+                }
+                dgs_add([](){emscripten_set_pointerlockchange_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, nullptr, EM_FALSE, nullptr);});
                 // Mouse click
                 if (emscripten_set_click_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, this, EM_FALSE, on_click) != EMSCRIPTEN_RESULT_SUCCESS) {
                     throw std::runtime_error("Could not set emscripten click callback");
@@ -157,14 +162,14 @@ LayoutConstraintParameters AEngine::layout_parameters_y() const {
         .end_pixel = (float)height};
 }
 
-EM_BOOL AEngine::key_callback(int event_type, const EmscriptenKeyboardEvent* e, void* user_data) {
-    auto* engine = static_cast<AEngine*>(user_data);
+EM_BOOL AEngine::key_callback(int eventType, const EmscriptenKeyboardEvent* e, void* userData) {
+    auto& engine = *(AEngine*)userData;
     try {
         auto code = keys_map_i18n.get(VariableAndHash<std::string>{e->code});
         if ((code == DOM_VK_F11) || (code == DOM_VK_F12)) {
             return EM_FALSE;
         }
-        engine->button_states_.notify_key_event(code, event_type);
+        engine.button_states_.notify_key_event(code, eventType);
     } catch (...) {
         add_unhandled_exception(std::current_exception());
     }
@@ -175,15 +180,28 @@ void AEngine::add_on_save_state(std::function<void()> func) {
     on_save_state_.emplace_back(std::move(func));
 }
 
+EM_BOOL AEngine::on_pointerlockchange(int eventType, const EmscriptenPointerlockChangeEvent *pointerlockChangeEvent, void *userData) {
+    auto& engine = *(AEngine*)userData;
+    engine.last_pointerlock_time_ = std::chrono::steady_clock::now();
+    return EM_TRUE;
+}
+
 EM_BOOL AEngine::on_click(int eventType, const EmscriptenMouseEvent *mouseEvent, void *userData) {
-    try {
-        // This must be called inside a click or mousedown callback
-        bool deferUntilInEventHandler = true;
-        if (emscripten_request_pointerlock("#canvas", deferUntilInEventHandler) != EMSCRIPTEN_RESULT_SUCCESS) {
-            throw std::runtime_error("Could not request pointerlock");
+    auto& engine = *(AEngine*)userData;
+    auto now = std::chrono::steady_clock::now();
+    if ((engine.last_pointerlock_time_ == std::chrono::steady_clock::time_point()) ||
+        (now - engine.last_pointerlock_time_) > std::chrono::seconds(1))
+    {
+        engine.last_pointerlock_time_ = now;
+        try {
+            // This must be called inside a click or mousedown callback
+            bool deferUntilInEventHandler = true;
+            if (emscripten_request_pointerlock("#canvas", deferUntilInEventHandler) != EMSCRIPTEN_RESULT_SUCCESS) {
+                throw std::runtime_error("Could not request pointerlock");
+            }
+        } catch (...) {
+            add_unhandled_exception(std::current_exception());
         }
-    } catch (...) {
-        add_unhandled_exception(std::current_exception());
     }
     return EM_TRUE;
 }
@@ -192,9 +210,9 @@ EM_BOOL AEngine::on_mouse_move(int eventType, const EmscriptenMouseEvent *mouseE
     int dx = mouseEvent->movementX;
     int dy = mouseEvent->movementY;
 
-    auto* engine = (AEngine*)userData;
+    auto& engine = *(AEngine*)userData;
     try {
-        engine->cursor_states_.update_cursor(dx, dy);
+        engine.cursor_states_.update_cursor(dx, dy);
     } catch (...) {
         add_unhandled_exception(std::current_exception());
     }
@@ -202,9 +220,9 @@ EM_BOOL AEngine::on_mouse_move(int eventType, const EmscriptenMouseEvent *mouseE
 }
 
 EM_BOOL AEngine::on_mouse_down(int eventType, const EmscriptenMouseEvent *mouseEvent, void *userData) {
-    auto* engine = (AEngine*)userData;
+    auto& engine = *(AEngine*)userData;
     try {
-        engine->button_states_.notify_mouse_button_event(mouseEvent->button, KEY_PRESS);
+        engine.button_states_.notify_mouse_button_event(mouseEvent->button, KEY_PRESS);
     } catch (...) {
         add_unhandled_exception(std::current_exception());
     }
@@ -212,9 +230,9 @@ EM_BOOL AEngine::on_mouse_down(int eventType, const EmscriptenMouseEvent *mouseE
 }
 
 EM_BOOL AEngine::on_mouse_up(int eventType, const EmscriptenMouseEvent *mouseEvent, void *userData) {
-    auto* engine = (AEngine*)userData;
+    auto& engine = *(AEngine*)userData;
     try {
-        engine->button_states_.notify_mouse_button_event(mouseEvent->button, KEY_RELEASE);
+        engine.button_states_.notify_mouse_button_event(mouseEvent->button, KEY_RELEASE);
     } catch (...) {
         add_unhandled_exception(std::current_exception());
     }
@@ -225,9 +243,9 @@ EM_BOOL AEngine::on_wheel_scroll(int eventType, const EmscriptenWheelEvent *whee
     double dx = wheelEvent->deltaX;
     double dy = wheelEvent->deltaY;
 
-    auto* engine = (AEngine*)userData;
+    auto& engine = *(AEngine*)userData;
     try {
-        engine->scroll_wheel_states_.update_cursor(dx, dy);
+        engine.scroll_wheel_states_.update_cursor(dx, dy);
     } catch (...) {
         add_unhandled_exception(std::current_exception());
     }
