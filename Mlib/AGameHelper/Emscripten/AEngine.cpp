@@ -197,7 +197,7 @@ EM_BOOL AEngine::on_click(int eventType, const EmscriptenMouseEvent *mouseEvent,
             // This must be called inside a click or mousedown callback
             bool deferUntilInEventHandler = true;
             if (emscripten_request_pointerlock("#canvas", deferUntilInEventHandler) != EMSCRIPTEN_RESULT_SUCCESS) {
-                throw std::runtime_error("Could not request pointerlock");
+                lwarn() << "Could not request pointerlock";
             }
         } catch (...) {
             add_unhandled_exception(std::current_exception());
