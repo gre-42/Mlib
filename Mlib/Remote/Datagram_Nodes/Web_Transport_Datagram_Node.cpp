@@ -29,7 +29,7 @@ extern "C" EMSCRIPTEN_KEEPALIVE void resolve_promise(void* promise_ptr, int js_s
     prop->set_value(js_status_code);
 }
 
-// EM_JS functions need to be wrapped in a namespace or be global to ensure 
+// EM_JS functions need to be wrapped in a namespace or be global to ensure
 // they are correctly linked.
 EM_JS(int, createWebTransportSocket,
     (const char* serverUrlPtr, int maxStoredReceivedMessages, const uint8_t* certHash, int certHashLen,
@@ -37,7 +37,7 @@ EM_JS(int, createWebTransportSocket,
 {
     const serverUrl = UTF8ToString(serverUrlPtr);
     console.log(`Connecting to ${serverUrl}...`);
-    
+
     // NOTE: In production, configure valid hashes or allow self-signed for testing
     const options = {};
     if (certHash !== 0) {
@@ -95,19 +95,28 @@ EM_JS(int, createWebTransportSocket,
                 permanent.statusCodeResolved = true;
             }
 
+            let closedDueToTimeout = false;
             // Background reader
             (async () => {
                 try {
                     const reader = transport["datagrams"]["readable"].getReader();
                     while (true) {
-                        const { value, done } = await reader.read();
-                        if (done) {
-                            break;
-                        }
-                        permanent.packetQueue.push(value);
-                        if (permanent.packetQueue.length > maxStoredReceivedMessages) {
-                            console.error(`Packet queue longer than ${maxStoredReceivedMessages}, removing oldest entry`);
-                            permanent.packetQueue.shift();
+                        const timeoutId = setTimeout(() => {
+                            closedDueToTimeout = true;
+                            transport.close();
+                        }, 7000);
+                        try {
+                            const { value, done } = await reader.read();
+                            if (done) {
+                                break;
+                            }
+                            permanent.packetQueue.push(value);
+                            if (permanent.packetQueue.length > maxStoredReceivedMessages) {
+                                console.error(`Packet queue longer than ${maxStoredReceivedMessages}, removing oldest entry`);
+                                permanent.packetQueue.shift();
+                            }
+                        } finally {
+                            clearTimeout(timeoutId);
                         }
                     }
                 } catch (e) {
@@ -118,7 +127,12 @@ EM_JS(int, createWebTransportSocket,
             })();
             try {
                 await transport.closed;
-                console.log("Connection closed gracefully.");
+                if (closedDueToTimeout) {
+                    closedDueToTimeout = false;
+                    throw new Error("Connection closed due to timeout.");
+                } else {
+                    console.log("Connection closed gracefully.");
+                }
             } catch (error) {
                 console.error(`Connection lost due to error/timeout: ${error}`);
                 console.error("Attempting to reconnect in 5 seconds...");
@@ -146,7 +160,7 @@ EM_JS(void, closeWebTransportSocket, (int transportHandle), {
 EM_JS(bool, sendUsingWebTransportSocket, (int transportHandle, const uint8_t* dataPtr, int dataLength, void* promise_ptr), {
     // Grab raw bytes directly out of the Wasm memory heap
     const dataArray = HEAPU8.slice(dataPtr, dataPtr + dataLength);
-    
+
     try {
         const writer = globalThis.webTransportSockets[transportHandle]["datagrams"]["writable"].getWriter();
         (async () => {
@@ -172,7 +186,7 @@ EM_JS(bool, sendUsingWebTransportSocket, (int transportHandle, const uint8_t* da
 EM_JS(int, tryReadFromWebTransportSocket, (int transportHandle, uint8_t* outBufferPtr, int maxCapacity), {
     const transport = globalThis.webTransportSockets[transportHandle];
     const permanent = globalThis.webTransportPermanent[transportHandle];
-    
+
     if (!transport) return -3;
     if (permanent.packetQueue.length === 0) {
         if (transport["_isClosed"]) {
@@ -245,9 +259,6 @@ void WebTransportDatagramNode::start_receive_thread(size_t max_stored_received_m
             lwarn() << "Could not start receive thread on initial attempt, JS will however retry";
         }
     }
-    // Note: Since createWebTransportSocket returns a Promise (via EM_VAL), 
-    // you might need to handle the promise resolution before using it 
-    // in subsequent calls, depending on how `take_ownership` handles it.
 }
 
 void WebTransportDatagramNode::bind() {
