@@ -262,7 +262,7 @@ void RemotePlayer::read(
                     if (rb->scene_node_ == nullptr) {
                         throw std::runtime_error("Rigid body has no scene node");
                     }
-                    if (!rb->is_deactivated_avatar() && rb->drivers_.seat_is_free(seat)) {
+                    if (!rb->is_deactivated() && rb->drivers_.seat_is_free(seat)) {
                         vehicle_ = {
                             global_object_pool.create<SceneVehicle>(
                                 CURRENT_SOURCE_LOCATION,
