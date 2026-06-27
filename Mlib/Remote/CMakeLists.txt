@@ -37,7 +37,7 @@ else()
 endif()
 
 if (MINGW)
-    target_link_libraries(MlibRemote PUBLIC -lws2_32)
+    target_link_libraries(MlibRemote PUBLIC -lwsock32 -lws2_32)
 endif()
 
 if (ANDROID)
