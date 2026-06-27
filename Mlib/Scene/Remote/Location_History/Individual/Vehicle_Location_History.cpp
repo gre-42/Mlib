@@ -2,6 +2,7 @@
 #include <Mlib/Scene/Remote/Location_History/Vehicle_Location_History_Entry.hpp>
 
 using namespace Mlib;
+using namespace Mlib::Individual;
 
 // =========
 // | Local |
@@ -74,10 +75,10 @@ TLocation RemoteRigidBodyVehicleRemoteHistory<TAbsoluteLocation8, TDeltaLocation
     return f.floating_point();
 }
 
-template class Mlib::RemoteRigidBodyVehicleLocalHistory<Vehicle::AbsoluteVehicleLocation8, Vehicle::DeltaVehicleLocation, Vehicle::VehicleLocation>;
-template class Mlib::RemoteRigidBodyVehicleRemoteHistory<Vehicle::AbsoluteVehicleLocation8, Vehicle::DeltaVehicleLocation, Vehicle::VehicleLocation>;
-template struct Mlib::RemoteRigidBodyVehicleCache<Vehicle::AbsoluteVehicleLocation8, Vehicle::DeltaVehicleLocation, Vehicle::VehicleLocation>;
+template class Individual::RemoteRigidBodyVehicleLocalHistory<Vehicle::AbsoluteVehicleLocation8, Vehicle::DeltaVehicleLocation, Vehicle::VehicleLocation>;
+template class Individual::RemoteRigidBodyVehicleRemoteHistory<Vehicle::AbsoluteVehicleLocation8, Vehicle::DeltaVehicleLocation, Vehicle::VehicleLocation>;
+template struct Individual::RemoteRigidBodyVehicleCache<Vehicle::AbsoluteVehicleLocation8, Vehicle::DeltaVehicleLocation, Vehicle::VehicleLocation>;
 
-template class Mlib::RemoteRigidBodyVehicleLocalHistory<Avatar::AbsoluteVehicleLocation8, Avatar::DeltaVehicleLocation, Avatar::VehicleLocation>;
-template class Mlib::RemoteRigidBodyVehicleRemoteHistory<Avatar::AbsoluteVehicleLocation8, Avatar::DeltaVehicleLocation, Avatar::VehicleLocation>;
-template struct Mlib::RemoteRigidBodyVehicleCache<Avatar::AbsoluteVehicleLocation8, Avatar::DeltaVehicleLocation, Avatar::VehicleLocation>;
+template class Individual::RemoteRigidBodyVehicleLocalHistory<Avatar::AbsoluteVehicleLocation8, Avatar::DeltaVehicleLocation, Avatar::VehicleLocation>;
+template class Individual::RemoteRigidBodyVehicleRemoteHistory<Avatar::AbsoluteVehicleLocation8, Avatar::DeltaVehicleLocation, Avatar::VehicleLocation>;
+template struct Individual::RemoteRigidBodyVehicleCache<Avatar::AbsoluteVehicleLocation8, Avatar::DeltaVehicleLocation, Avatar::VehicleLocation>;

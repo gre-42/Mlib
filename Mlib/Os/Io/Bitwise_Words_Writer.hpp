@@ -36,7 +36,7 @@ public:
     void write_bits(TValue value, size_t nbits, std::string_view message) {
         if ((value & ~TValue((1 << nbits) - 1)) != 0) {
             throw std::runtime_error((std::stringstream() <<
-                "Value too large for " << nbits << " bits: 0x" << std::hex << value).str());
+                "Value too large for " << nbits << " bits: 0x" << std::hex << (value + 0)).str());
         }
         while (nbits > 0) {
             size_t available_bits = bits_per_word - active_word_.get_bit_index();

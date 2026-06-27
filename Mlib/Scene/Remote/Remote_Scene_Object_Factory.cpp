@@ -32,6 +32,7 @@ DanglingBaseClassPtr<IIncrementalObject> RemoteSceneObjectFactory::try_create_sh
     TransmittedFields transmitted_fields,
     ObjectLifetimeStatus lifetime_status,
     ProxyObjectsCaches& proxy_objects_caches,
+    const IncrementalVersionsRead& versions,
     TransmissionHistoryReader& transmission_history_reader)
 {
     auto type = reader.read_binary<RemoteSceneObjectType>("scene object type");
@@ -49,7 +50,7 @@ DanglingBaseClassPtr<IIncrementalObject> RemoteSceneObjectFactory::try_create_sh
     case RemoteSceneObjectType::RIGID_BODY_AVATAR:
         return RemoteRigidBodyVehicle::try_create_from_stream(
             type, physics_scene_.get(), reader, sender_site_id,
-            transmitted_fields, lifetime_status, remote_object_id, proxy_objects_caches, verbosity_);
+            transmitted_fields, lifetime_status, remote_object_id, proxy_objects_caches, versions, verbosity_);
     case RemoteSceneObjectType::COUNTDOWN:
         if (lifetime_status == ObjectLifetimeStatus::DELETED) {
             throw std::runtime_error("COUNTDOWN: Reading deleted objects not supported");

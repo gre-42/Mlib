@@ -4,6 +4,7 @@
 #include <Mlib/Remote/ISend_Socket.hpp>
 #include <Mlib/Remote/Incremental_Objects/IIncremental_Object.hpp>
 #include <Mlib/Remote/Incremental_Objects/IIncremental_Object_Factory.hpp>
+#include <Mlib/Remote/Incremental_Objects/Incremental_Versions.hpp>
 #include <Mlib/Remote/Incremental_Objects/Known_Fields.hpp>
 #include <Mlib/Remote/Incremental_Objects/Object_Lifetime_Status.hpp>
 #include <Mlib/Remote/Incremental_Objects/Proxy_Tasks.hpp>
@@ -73,6 +74,20 @@ void IncrementalCommunicatorProxy::receive_from_home(std::istream& istr) {
             return;
         }
     }
+    auto versions = reader.deserialize<IncrementalVersionsRead>("incremental versions");
+    if (versions.local_remote_version == 0) {
+        if (any(verbosity_ & IoVerbosity::METADATA)) {
+            linfo() << "Detected client restart" << versions;
+        }
+        socket_versions_.local.local_version = 0;
+        proxy_objects_caches_->remove_proxy(home_site_id_);
+    }
+    socket_versions_.local.remote_version = versions.local_remote_version;
+    socket_versions_.remote_version = versions.remote_new_version;
+    if (any(verbosity_ & IoVerbosity::METADATA)) {
+        linfo() << "receive versions " << versions;
+    }
+
     std::unordered_set<LocalObjectId> objects_known_and_owned_by_home;
     {
         auto ndeleted = reader.read_binary<NDeletedType>("#deleted");
@@ -110,7 +125,7 @@ void IncrementalCommunicatorProxy::receive_from_home(std::istream& istr) {
                     linfo() << this << " read from home site " << (home_site_id_ + 0) << ", object " << i << " \"" << it->name() << '"';
                 }
                 it->read(reader, home_site_id_, i, tasks_, transmitted_fields,
-                    proxy_objects_caches_.get(), transmission_history_reader);
+                    proxy_objects_caches_.get(), versions, transmission_history_reader);
             } else {
                 if (any(verbosity_ & IoVerbosity::METADATA)) {
                     linfo() << this << " create from home site " << (home_site_id_ + 0) << ", object " << i;
@@ -120,7 +135,7 @@ void IncrementalCommunicatorProxy::receive_from_home(std::istream& istr) {
                     : ObjectLifetimeStatus::EXISTS;
                 auto o = shared_object_factory_->try_create_shared_object(
                     reader, home_site_id_, i, tasks_, transmitted_fields, lifetime_status,
-                    proxy_objects_caches_.get(), transmission_history_reader);
+                    proxy_objects_caches_.get(), versions, transmission_history_reader);
                 if (o == nullptr) {
                     if (any(verbosity_ & IoVerbosity::METADATA)) {
                         linfo() << this << " cannot create object";
@@ -201,6 +216,16 @@ void IncrementalCommunicatorProxy::send_home(std::iostream& iostr) {
                 break;
             }
         }
+        socket_versions_.local.local_version = std::max(DatagramIndexType(1), ++socket_versions_.local.local_version);
+        auto versions = IncrementalVersionsWrite{
+            .remote_local_version = socket_versions_.remote_version,        // local_remote_version
+            .local_base_version = socket_versions_.local.remote_version,    // remote_base_version
+            .local_new_version = socket_versions_.local.local_version       // remote_new_version
+        };
+        writer.serialize(versions, "incremental versions");
+        if (any(verbosity_ & IoVerbosity::METADATA)) {
+            linfo() << "send versions " << versions;
+        }
         {
             const auto& deleted = objects_->deleted_objects();
             if (any(verbosity_ & IoVerbosity::METADATA)) {
@@ -247,7 +272,7 @@ void IncrementalCommunicatorProxy::send_home(std::iostream& iostr) {
                         linfo() << "Maybe send partial object to home site " << (home_site_id_ + 0) << ", " << i << " \"" << o->name() << '"';
                     }
                 }
-                o->write(writer, home_site_id_, j, tasks_, known_fields, proxy_objects_caches_.get(), transmission_history_writer);
+                o->write(writer, home_site_id_, j, tasks_, known_fields, proxy_objects_caches_.get(), versions, transmission_history_writer);
             }
             writer.write_binary(TransmittedFields::NONE, "transmitted fields EOF");
         };
@@ -290,7 +315,7 @@ void IncrementalCommunicatorProxy::send_home(std::iostream& iostr) {
                         linfo() << "Maybe send partial object to home site " << (home_site_id_ + 0) << ", " << i << " \"" << o->name() << '"';
                     }
                 }
-                o->write(writer, home_site_id_, i, tasks_, known_fields, proxy_objects_caches_.get(), transmission_history_writer);
+                o->write(writer, home_site_id_, i, tasks_, known_fields, proxy_objects_caches_.get(), versions, transmission_history_writer);
             }
             writer.write_binary(TransmittedFields::NONE, "transmitted fields EOF");
         } else {

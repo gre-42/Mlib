@@ -2,7 +2,7 @@
 #include <Mlib/Scene/Remote/Location_History/Avatar_Location_History_Entry.hpp>
 #include <Mlib/Scene/Remote/Location_History/Vehicle_Location_History_Entry.hpp>
 
-namespace Mlib {
+namespace Mlib::Individual {
 
 using VersionType = uint8_t;
 

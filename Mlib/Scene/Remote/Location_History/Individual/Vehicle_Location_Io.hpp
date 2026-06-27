@@ -4,7 +4,7 @@
 #include <Mlib/Remote/Incremental_Objects/Object_Lifetime_Status.hpp>
 #include <optional>
 
-namespace Mlib {
+namespace Mlib::Individual {
 
 template <class TRemoteRigidBodyVehicleCache>
 void read_vehicle_location_and_forget(

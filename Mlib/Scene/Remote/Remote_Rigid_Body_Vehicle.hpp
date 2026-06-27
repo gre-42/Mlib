@@ -35,6 +35,7 @@ public:
         ObjectLifetimeStatus lifetime_status,
         const RemoteObjectId& remote_object_id,
         ProxyObjectsCaches& proxy_objects_caches,
+        const IncrementalVersionsRead& versions,
         IoVerbosity verbosity);
     virtual std::string name() const override;
     virtual int32_t priority() const override;
@@ -45,6 +46,7 @@ public:
         ProxyTasks proxy_tasks,
         TransmittedFields transmitted_fields,
         ProxyObjectsCaches& proxy_objects_caches,
+        const IncrementalVersionsRead& versions,
         TransmissionHistoryReader& transmission_history_reader) override;
     virtual void write(
         BinaryBitwiseWordsWriter& writer,
@@ -53,6 +55,7 @@ public:
         ProxyTasks proxy_tasks,
         KnownFields known_fields,
         ProxyObjectsCaches& proxy_objects_caches,
+        const IncrementalVersionsWrite& versions,
         TransmissionHistoryWriter& transmission_history_writer) override;
 
     DanglingBaseClassRef<RigidBodyVehicle> rb();

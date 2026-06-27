@@ -35,6 +35,7 @@ public:
         ProxyTasks proxy_tasks,
         TransmittedFields transmitted_fields,
         ProxyObjectsCaches& proxy_objects_caches,
+        const IncrementalVersionsRead& versions,
         TransmissionHistoryReader& transmission_history_reader) override;
     virtual void write(
         BinaryBitwiseWordsWriter& writer,
@@ -43,6 +44,7 @@ public:
         ProxyTasks proxy_tasks,
         KnownFields known_fields,
         ProxyObjectsCaches& proxy_objects_caches,
+        const IncrementalVersionsWrite& versions,
         TransmissionHistoryWriter& transmission_history_writer) override;
 private:
     void reset_node();

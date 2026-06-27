@@ -3,6 +3,7 @@
 #include <Mlib/Remote/Communicator_Proxies.hpp>
 #include <Mlib/Remote/Incremental_Objects/Incremental_Cache_Proxy_Token.hpp>
 #include <Mlib/Remote/Incremental_Objects/Incremental_Remote_Objects.hpp>
+#include <Mlib/Remote/Incremental_Objects/Incremental_Versions.hpp>
 #include <Mlib/Remote/Incremental_Objects/Scene_Level.hpp>
 #include <Mlib/Scene_Config/Remote_Integers.hpp>
 #include <iosfwd>
@@ -43,6 +44,7 @@ private:
     ProxyTasks tasks_;
     RemoteSiteId home_site_id_;
     std::optional<LocalSceneLevel> home_scene_level_;
+    SocketVersions socket_versions_;
 };
 
 }

@@ -187,6 +187,7 @@ void RemotePlayer::read(
     ProxyTasks proxy_tasks,
     TransmittedFields transmitted_fields,
     ProxyObjectsCaches& proxy_objects_caches,
+    const IncrementalVersionsRead& versions,
     TransmissionHistoryReader& transmission_history_reader)
 {
     auto type = reader.read_binary<RemoteSceneObjectType>("scene object type");
@@ -357,6 +358,7 @@ void RemotePlayer::write(
     ProxyTasks proxy_tasks,
     KnownFields known_fields,
     ProxyObjectsCaches& proxy_objects_caches,
+    const IncrementalVersionsWrite& versions,
     TransmissionHistoryWriter& transmission_history_writer)
 {
     auto transmitted_fields = TransmittedFields::NONE;

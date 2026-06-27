@@ -3,6 +3,7 @@
 
 namespace Mlib {
 
+using DatagramIndexType = uint16_t;
 using TransmissionHistoryType = uint8_t;
 using TransmittedFieldsType = uint8_t;
 using RemoteSiteId = uint8_t;

@@ -12,6 +12,8 @@ class BinaryBitwiseWordsWriter;
 class ProxyObjectsCaches;
 class TransmissionHistoryReader;
 class TransmissionHistoryWriter;
+struct IncrementalVersionsRead;
+struct IncrementalVersionsWrite;
 enum class KnownFields;
 enum class TransmittedFields: TransmittedFieldsType;
 enum class ProxyTasks;
@@ -28,6 +30,7 @@ public:
         ProxyTasks proxy_tasks,
         TransmittedFields transmitted_fields,
         ProxyObjectsCaches& proxy_objects_caches,
+        const IncrementalVersionsRead& versions,
         TransmissionHistoryReader& transmission_history_reader) = 0;
     virtual void write(
         BinaryBitwiseWordsWriter& writer,
@@ -36,6 +39,7 @@ public:
         ProxyTasks proxy_tasks,
         KnownFields known_fields,
         ProxyObjectsCaches& proxy_objects_caches,
+        const IncrementalVersionsWrite& versions,
         TransmissionHistoryWriter& transmission_history_writer) = 0;
 };
 

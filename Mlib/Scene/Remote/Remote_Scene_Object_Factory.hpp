@@ -23,6 +23,7 @@ public:
         TransmittedFields transmitted_fields,
         ObjectLifetimeStatus lifetime_status,
         ProxyObjectsCaches& proxy_objects_caches,
+        const IncrementalVersionsRead& versions,
         TransmissionHistoryReader& transmission_history_reader) override;
 private:
     DanglingBaseClassRef<PhysicsScene> physics_scene_;

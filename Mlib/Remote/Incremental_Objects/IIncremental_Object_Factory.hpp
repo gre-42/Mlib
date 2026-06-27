@@ -8,6 +8,7 @@ namespace Mlib {
 enum class ObjectLifetimeStatus;
 enum class ProxyTasks;
 enum class TransmittedFields: TransmittedFieldsType;
+struct IncrementalVersionsRead;
 struct RemoteObjectId;
 class BinaryBitwiseWordsReader;
 class IIncrementalObject;
@@ -24,6 +25,7 @@ public:
         TransmittedFields transmitted_fields,
         ObjectLifetimeStatus lifetime_status,
         ProxyObjectsCaches& proxy_objects_caches,
+        const IncrementalVersionsRead& versions,
         TransmissionHistoryReader& transmission_history_reader) = 0;
 };
 
