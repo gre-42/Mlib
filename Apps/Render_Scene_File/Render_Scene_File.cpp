@@ -477,8 +477,8 @@ int main(int argc, char** argv) {
          "--record_track_basename",
          "--flavor",
          "--mesh",
-         "--animated_mesh"
-         "--audio"
+         "--animated_mesh",
+         "--audio",
          "--swap_interval",
          "--fullscreen_refresh_rate",
          "--nsamples_msaa",
