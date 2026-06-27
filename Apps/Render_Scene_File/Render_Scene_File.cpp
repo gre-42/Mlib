@@ -352,6 +352,7 @@ int main(int argc, char** argv) {
         "    [--animated_mesh <mhx2.gz>]\n"
         "    [--audio <mp3>]\n"
         "    [--devel_mode]\n"
+        "    [--compressed]\n"
         "    [--parking_brake_velocity <x>]\n"
         "    [--slow_velocity <x>]\n"
         "    [--stiction_coefficient <x>]\n"
@@ -450,6 +451,7 @@ int main(int argc, char** argv) {
          "--optimize_search_time",
          "--plot_triangle_bvh",
          "--devel_mode",
+         "--compressed",
          "--show_mouse_cursor",
          "--no_slip",
          "--no_avoid_burnout",
@@ -797,7 +799,7 @@ int main(int argc, char** argv) {
                 {"if_show_debug_wheels", args.has_named("--show_debug_wheels")},
                 {"if_show_global_log", args.has_named("--show_global_log")},
                 {"if_android", false},
-                {"if_compressed", false},
+                {"if_compressed", args.has_named("--compressed")},
                 #ifdef WITHOUT_AUDIO
                 {"if_audio", false},
                 #else

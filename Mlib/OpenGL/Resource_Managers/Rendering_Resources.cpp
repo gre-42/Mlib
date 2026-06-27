@@ -1349,8 +1349,7 @@ void RenderingResources::resolve_alias(ColormapWithModifiers& colormap) const {
     auto changed = false;
     auto resolve = [this](FPath& filename){
         if ((filename.type() != PathType::VARIABLE) ||
-            manual_atlas_tile_descriptors_.contains(filename.variable_and_hash()) ||
-            cubemap_descriptors_.contains(filename.variable_and_hash()))
+            colormap_variable_descriptors_.contains(filename.variable_and_hash()))
         {
             return false;
         }
