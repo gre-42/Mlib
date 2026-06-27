@@ -11,6 +11,8 @@
 #include <Mlib/Os/Android/JNIHelper.h>
 #endif
 
+#undef ERROR
+
 namespace Mlib {
 
 enum class FileStorageType {
