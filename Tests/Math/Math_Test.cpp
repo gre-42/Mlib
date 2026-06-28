@@ -9,6 +9,7 @@
 #include <Mlib/Math/Interpolate.hpp>
 #include <Mlib/Math/Inv.hpp>
 #include <Mlib/Math/Least_Common_Multiple.hpp>
+#include <Mlib/Math/Least_Squares/Rls.hpp>
 #include <Mlib/Math/Math.hpp>
 #include <Mlib/Math/Non_Zero_Ids.hpp>
 #include <Mlib/Math/Optimize/Cg.hpp>
@@ -524,6 +525,15 @@ void test_inv() {
     linfo() << "ip\n" << inv_preconditioned_cr(a).value();
 }
 
+void test_rls() {
+    using Data = float;
+    using Matrix = FixedArray<Data, 2, 2>;
+    using Vector = FixedArray<Data, 2>;
+    Rls<Matrix, Vector, Data> rls{fixed_zeros<Data, 2, 2>(), fixed_zeros<Data, 2>(), 0.9f};
+    rls.update(Vector{1.f, 4.2f}, 2.f);
+    linfo() << rls.b();
+}
+
 int main(int argc, const char** argv) {
     try {
         test_blocking_transposed();
@@ -567,6 +577,7 @@ int main(int argc, const char** argv) {
         test_fixed_sum();
         test_fixed_point();
         test_inv();
+        test_rls();
     } catch (const std::runtime_error& e) {
         lerr() << e.what();
         return 1;

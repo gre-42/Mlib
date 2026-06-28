@@ -4,10 +4,9 @@
 
 using namespace Mlib;
 
-MeasureFps::MeasureFps(double alpha, unsigned int print_interval)
-    : last_dt_{ NAN }
-    , mean_dt_{ 0 }
-    , mad_dt_{ 0 }
+MeasureFps::MeasureFps(double alpha, uint32_t print_interval)
+    : mean_dt_{ alpha }
+    , mad_dt_{ alpha }
     , alpha_{ alpha }
     , print_counter_{ 0 }
     , print_interval_{ print_interval }
@@ -19,8 +18,7 @@ void MeasureFps::tick() {
     auto current_time = std::chrono::steady_clock::now();
     if (last_time_ != std::chrono::steady_clock::time_point()) {
         auto dt = std::chrono::duration<double>(current_time - last_time_).count();
-        mean_dt_ = (1 - alpha_) * mean_dt_ + alpha_ * dt;
-        mad_dt_ = (1 - alpha_) * mad_dt_ + alpha_ * std::abs(mean_dt_ - dt);
+        mad_dt_(std::abs(mean_dt_(dt) - dt));
         if (print_interval_ != UINT_MAX) {
             print_counter_ = (print_counter_ + 1) % print_interval_;
             if (print_counter_ == 0) {
@@ -41,25 +39,25 @@ void MeasureFps::reset() {
 }
 
 double MeasureFps::mean_dt() const {
-    return mean_dt_;
+    return mean_dt_.xhat().value_or(NAN);
 }
 
-double MeasureFps::last_fps() const {
-    return 1 / last_dt_;
+double MeasureFps::mad_dt() const {
+    return mad_dt_.xhat().value_or(NAN);
 }
 
 double MeasureFps::mean_fps() const {
-    return 1 / mean_dt_;
+    return 1 / mean_dt_.xhat().value_or(NAN);
 }
 
 double MeasureFps::mad_fps() const {
-    return (max_fps() - min_fps()) / 2.;
+    return (max_fps() - min_fps()) / 2;
 }
 
 double MeasureFps::min_fps() const {
-    return 1.f / (mean_dt_ + mad_dt_);
+    return 1 / (mean_dt() + mad_dt());
 }
 
 double MeasureFps::max_fps() const {
-    return 1.f / (mean_dt_ - mad_dt_);
+    return 1 / (mean_dt() - mad_dt());
 }

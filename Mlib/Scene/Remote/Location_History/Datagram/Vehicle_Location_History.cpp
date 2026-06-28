@@ -16,7 +16,7 @@ TAbsoluteLocation8 RemoteRigidBodyVehicleLocalHistory<TAbsoluteLocation8, TDelta
         throw std::runtime_error("New datagram index is zero");
     }
     has_local_version = true;
-    auto& new_ = location_history[new_datagram_index - 1];
+    auto& new_ = location_history.at(new_datagram_index - 1);
     new_ = l.fixed_point().downsample();
     size = std::max(size, new_datagram_index);
     return new_;
@@ -39,7 +39,7 @@ std::optional<TDeltaLocation> RemoteRigidBodyVehicleLocalHistory<TAbsoluteLocati
     if (local_version == 0) {
         throw std::runtime_error("Incremental location requires local version > 0");
     }
-    const auto& base = location_history[base_version - 1];
+    const auto& base = location_history.at(base_version - 1);
     auto f = l.fixed_point();
     auto c = IncrementalConfig::NONE;
     auto diff = minus_position(f, base, c);
@@ -48,7 +48,7 @@ std::optional<TDeltaLocation> RemoteRigidBodyVehicleLocalHistory<TAbsoluteLocati
         return std::nullopt;
     }
     has_local_version = true;
-    auto& new_ = location_history[local_version - 1];
+    auto& new_ = location_history.at(local_version - 1);
     new_ = f.downsample();
     size = std::max(size, local_version);
     return diff;
@@ -64,7 +64,7 @@ void RemoteRigidBodyVehicleRemoteHistory<TAbsoluteLocation8, TDeltaLocation, TLo
     if (version == 0) {
         throw std::runtime_error("Absolute location requires version > 0");
     }
-    location_history[version - 1] = l8;
+    location_history.at(version - 1) = l8;
     size = std::max(size, version);
     has_local_version = true;
 }
@@ -85,8 +85,8 @@ TLocation RemoteRigidBodyVehicleRemoteHistory<TAbsoluteLocation8, TDeltaLocation
             "Base version exceeds history size (1). Base version " << (base_version + 0) <<
             ", size " << (size + 0)).str());
     }
-    const auto& base = location_history[base_version - 1];
-    auto& new_ = location_history[new_version - 1];
+    const auto& base = location_history.at(base_version - 1);
+    auto& new_ = location_history.at(new_version - 1);
     auto f = base + delta;
     new_ = f.downsample();
     size = std::max(size, new_version);

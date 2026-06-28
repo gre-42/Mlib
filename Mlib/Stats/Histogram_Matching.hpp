@@ -1,6 +1,6 @@
 #pragma once
 #include <Mlib/Iterator/Enumerate.hpp>
-#include <Mlib/Math/Ols.hpp>
+#include <Mlib/Math/Least_Squares/Ols.hpp>
 #include <Mlib/Stats/Cdf.hpp>
 #include <Mlib/Stats/Quantile.hpp>
 

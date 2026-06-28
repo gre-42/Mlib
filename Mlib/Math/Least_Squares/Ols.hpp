@@ -5,6 +5,7 @@
 
 namespace Mlib {
 
+// Ordinary least squares
 template <class TData>
 class Ols {
 public:

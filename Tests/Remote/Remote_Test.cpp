@@ -1,6 +1,9 @@
+#include <Mlib/Memory/Integral_To_Float.hpp>
 #include <Mlib/Memory/Object_Pool.hpp>
+#include <Mlib/Misc/Floating_Point_Exceptions.hpp>
 #include <Mlib/Os/Io/Binary_Bitwise_Words_Reader.hpp>
 #include <Mlib/Os/Io/Binary_Bitwise_Words_Writer.hpp>
+#include <Mlib/Remote/Bandwidth_Control/Bandwidth_Estimator.hpp>
 #include <Mlib/Remote/Communicator_Proxies.hpp>
 #include <Mlib/Remote/Datagram_Nodes/Datagram_Node_Factory.hpp>
 #include <Mlib/Remote/Datagram_Nodes/IDatagram_Node.hpp>
@@ -14,6 +17,8 @@
 #include <Mlib/Remote/Incremental_Objects/Transmission_History.hpp>
 #include <Mlib/Remote/Incremental_Objects/Transmitted_Fields.hpp>
 #include <Mlib/Remote/Remote_Socket.hpp>
+#include <Mlib/Stats/Random_Number_Generators.hpp>
+#include <Mlib/Threads/Realtime_Threads.hpp>
 #include <cstdint>
 
 using namespace Mlib;
@@ -249,8 +254,29 @@ void test_remote() {
     }
 }
 
+void test_bandwidth_estimator() {
+    UniformIntRandomNumberGenerator<uint32_t> package0_rng{0, 200, 900};
+    UniformIntRandomNumberGenerator<uint32_t> package1_rng{1, 200, 900};
+    UniformRandomNumberGenerator<float> ping_rng{0, 0.02f, 0.03f};
+    float T = 30 * 1e-3f;    // Ping / 2
+    float SPB = 1/1e6f;      // Seconds per byte
+    float H = 350.f;         // Header size
+    BandwidthEstimator be;
+    linfo() << be;
+    for (size_t i = 0; i < 30; ++i) {
+        auto p0 = integral_to_float<float>(package0_rng());
+        auto p1 = integral_to_float<float>(package1_rng());
+        be.update(p0, p1, 2 * T + (p0 + p1 + 2 * H) * SPB);
+        linfo() << "dt " << be.dt(p0 + p1) + 30e-3f;
+        linfo() << be;
+    }
+}
+
 int main(int argc, char** argv) {
+    enable_floating_point_exceptions();
+    reserve_realtime_threads(0);
     try {
+        test_bandwidth_estimator();
         test_remote();
     } catch (const std::runtime_error& e) {
         lerr() << e.what();

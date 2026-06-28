@@ -18,7 +18,7 @@ public:
     bool has_local_version = false;
     bool has_remote_version = false;
     std::vector<TAbsoluteLocation8> location_history =
-        std::vector<TAbsoluteLocation8>(std::numeric_limits<DatagramIndexType>::max() + 1, TAbsoluteLocation8::nan());
+        std::vector<TAbsoluteLocation8>(std::numeric_limits<DatagramIndexType>::max(), TAbsoluteLocation8::nan());
 private:
     DatagramIndexType size = 0;
 };

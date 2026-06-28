@@ -1,4 +1,4 @@
-#include <Mlib/Math/Ols.hpp>
+#include <Mlib/Math/Least_Squares/Ols.hpp>
 
 using namespace Mlib;
 

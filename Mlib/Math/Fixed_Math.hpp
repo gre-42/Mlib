@@ -238,14 +238,21 @@ constexpr TData dot0d(
 }
 
 template <class TData, size_t n>
-constexpr FixedArray<TData, n, n> fixed_identity_array() {
+constexpr FixedArray<TData, n, n> fixed_scaled_diagonal_array(const TData& value) {
     FixedArray<TData, n, n> result = uninitialized;
     for (size_t r = 0; r < n; ++r){
         for (size_t c = 0; c < n; ++c) {
-            result(r, c) = (r == c);
+            result(r, c) = (r == c)
+                ? value
+                : (TData)0;
         }
     }
     return result;
+}
+
+template <class TData, size_t n>
+constexpr FixedArray<TData, n, n> fixed_identity_array() {
+    return fixed_scaled_diagonal_array<TData, n>(1);
 }
 
 template <class TData, size_t... tsize>
