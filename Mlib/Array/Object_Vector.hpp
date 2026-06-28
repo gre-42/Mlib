@@ -13,6 +13,7 @@ public:
     // Not supported by MSVC: error C2468: constructor or destructor cannot be
     // 'constexpr' in a class or struct with virtual base classes
     // using BaseVector::BaseVector;
+    ObjectVector() {}
     explicit ObjectVector(std::size_t size): BaseVector(size) {}
     BaseVector& elements() {
         return *this;
