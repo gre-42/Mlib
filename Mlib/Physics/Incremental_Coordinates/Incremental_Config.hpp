@@ -1,5 +1,7 @@
 #pragma once
 
+#undef OVERFLOW
+
 namespace Mlib {
 
 enum class IncrementalConfig {
