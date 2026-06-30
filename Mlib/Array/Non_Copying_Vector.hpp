@@ -40,7 +40,7 @@ public:
         capacity_ = capacity;
     }
     template <class... Args>
-    inline T& emplace_back(Args... args) {
+    inline T& emplace_back(Args&&... args) {
         return *new(data_[size_++].data) T(std::forward<Args>(args)...);
     }
     inline const T& operator [] (size_t index) const {

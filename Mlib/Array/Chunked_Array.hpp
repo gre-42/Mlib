@@ -70,7 +70,7 @@ public:
     {}
     ~ChunkedArray() = default;
     template <class... Args>
-    inline value_type& emplace_back(Args... args) {
+    inline value_type& emplace_back(Args&&... args) {
         auto& last = (container_.empty() || (container_.back().size() == container_.back().capacity()))
             ? create_new_chunk()
             : container_.back();

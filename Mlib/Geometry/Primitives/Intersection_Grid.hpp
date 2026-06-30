@@ -79,7 +79,7 @@ public:
         }
     }
     template <class... Args>
-    void insert(const auto& aabb, const auto& entry, Args... args) {
+    void insert(const auto& aabb, const auto& entry, Args&&... args) {
         auto c_min = (funpack(aabb.min - boundary_.min - dilation_radius_)) / funpack(boundary_.size());
         auto c_max = (funpack(aabb.max - boundary_.min + dilation_radius_)) / funpack(boundary_.size());
         if (any(c_min < (TUnpackedPosition)0)) {
