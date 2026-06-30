@@ -205,42 +205,56 @@ LateJoinPlayerFactory::LateJoinPlayerFactory(
                     {"mute", false}
                 };
                 std::string spawner_name = player.at<std::string>(PlayerKeys::name);
-                DanglingBaseClassPtr<const UserInfo> u = nullptr;
-                if (*controller == "pc") {
-                    auto user = player.try_at(PlayerKeys::user);
-                    if (!user.has_value()) {
-                        throw std::runtime_error("\"pc\" controller requires \"user\"");
-                    }
-                    u = remote_sites.get_user_by_rank(JsonView{*user}.at<uint32_t>("rank")).ptr();
-                    let["full_user_name"] = u->full_name;
-                    spawner_name += '_' + u->full_name;
-                    if (u->type == UserType::LOCAL) {
-                        let["user_is_local"] = true;
-                        let["local_user_id"] = u->user_id;
-                    } else {
-                        let["user_is_local"] = false;
-                    }
-                } else if (*controller != "npc") {
-                    throw std::runtime_error("Unknown controller: \"" + *controller + "\". Known controllers: \"pc\", \"npc\"");
-                }
-                let["spawner_name"] = spawner_name;
-                let["player_name"] = spawner_name;
-
                 JsonMacroArguments locals{{
                     {ToplevelKeys::library, jv.at<std::string>(ToplevelKeys::library)},
                     {"vehicle_class", vars.database.at<std::string>("vehicle_class")},
                     {"controller", *controller}}};
-                nlohmann::json line{
-                    {
-                        MacroKeys::playback,
-                        "$library.create_player_and_$vehicle_class-_for_$controller"
+                auto create_player = [
+                    controller = *controller,
+                    user = player.try_at(PlayerKeys::user),
+                    mle0 = macro_line_executor,
+                    locals = std::move(locals),
+                    spawner_name,
+                    let,
+                    &remote_sites]() mutable -> std::optional<uint32_t>
+                {
+                    DanglingBaseClassPtr<const UserInfo> u = nullptr;
+                    if (controller == "pc") {
+                        if (!user.has_value()) {
+                            throw std::runtime_error("\"pc\" controller requires \"user\"");
+                        }
+                        auto rank = JsonView{*user}.at<uint32_t>("rank");
+                        u = remote_sites.try_get_user_by_rank(rank);
+                        if ((u == nullptr) || ((u->type == UserType::REMOTE) && (u->get_status() != UserStatus::LEVEL_LOADED))) {
+                            return rank;
+                        }
+                        let["full_user_name"] = u->full_name;
+                        spawner_name += '_' + u->full_name;
+                        if (u->type == UserType::LOCAL) {
+                            let["user_is_local"] = true;
+                            let["local_user_id"] = u->user_id;
+                        } else {
+                            let["user_is_local"] = false;
+                        }
+                    } else if (controller != "npc") {
+                        throw std::runtime_error("Unknown controller: \"" + controller + "\". Known controllers: \"pc\", \"npc\"");
                     }
-                };
-                auto mle = macro_line_executor.inserted_block_arguments(std::move(let));
-                if ((u != nullptr) && (u->type == UserType::REMOTE)) {
-                    create_rank_player_.try_emplace(u->random_rank, [mle, line, locals]()mutable{mle(line, &locals);});
-                } else {
+                    let["spawner_name"] = spawner_name;
+                    let["player_name"] = spawner_name;
+
+                    nlohmann::json line{
+                        {
+                            MacroKeys::playback,
+                            "$library.create_player_and_$vehicle_class-_for_$controller"
+                        }
+                    };
+                    auto mle = mle0.inserted_block_arguments(std::move(let));
                     mle(line, &locals);
+                    return std::nullopt;
+                };
+                auto deferred_rank = create_player();
+                if (deferred_rank.has_value()) {
+                    create_rank_player_.try_emplace(*deferred_rank, std::move(create_player));
                 }
             } else {
                 nlohmann::json let{

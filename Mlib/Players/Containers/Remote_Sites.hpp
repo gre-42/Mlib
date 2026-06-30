@@ -121,9 +121,12 @@ public:
     bool contains_user(const VariableAndHash<std::string>& full_name) const;
     DanglingBaseClassRef<const UserInfo> get_local_user(NUserCountType id) const;
     DanglingBaseClassRef<const UserInfo> get_user_by_rank(NUserCountType rank) const;
+    DanglingBaseClassPtr<const UserInfo> try_get_user_by_rank(NUserCountType rank) const;
+    size_t users_total() const;
     void print(std::ostream& ostr) const;
 
     NUserCountType compute_random_user_ranks();
+    NUserCountType compute_free_user_rank() const;
     void set_user_status(UserTypes types, UserStatus status);
 private:
     SiteInfo& get_site_info(RemoteSiteId site_id);
@@ -131,9 +134,9 @@ private:
     mutable SafeAtomicRecursiveSharedMutex mutex_;
     DanglingBaseClassRef<Users> local_users_;
     std::optional<RemoteParams> remote_params_;
+    DanglingValueUnorderedMap<VariableAndHash<std::string>, UserInfo> named_users_;
     SiteInfo local_site_;
     VerboseMap<RemoteSiteId, SiteInfo> remote_sites_;
-    DanglingValueUnorderedMap<VariableAndHash<std::string>, UserInfo> named_users_;
     std::function<void(const UserInfo& user)> on_user_loaded_level_;
     std::function<void()> on_all_users_loaded_level_;
     size_t users_total_;

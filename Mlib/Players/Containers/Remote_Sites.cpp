@@ -21,16 +21,24 @@ UserInfo::UserInfo(
     , name{ std::move(name) }
     , full_name{ std::move(full_name) }
     , type{ type }
-    , random_rank{ 0 }
+    , random_rank{ remote_sites->compute_free_user_rank() }
     , status_{ UserStatus::INITIAL }
     , remote_sites_{ remote_sites }
 {
+    if (remote_sites_->users_total_ != remote_sites_->named_users_.size()) {
+        verbose_abort((std::stringstream() << "Inconsistent user count in ctor: " <<
+            remote_sites_->users_total_ << " != " << remote_sites_->named_users_.size()).str());
+    }
     ++remote_sites_->users_total_;
 }
 
 UserInfo::~UserInfo() {
     --remote_sites_->users_total_;
     on_destroy.clear();
+    if (remote_sites_->users_total_ != remote_sites_->named_users_.size()) {
+        verbose_abort((std::stringstream() << "Inconsistent user count in dtor: " <<
+            remote_sites_->users_total_ << " != " << remote_sites_->named_users_.size()).str());
+    }
 }
 
 UserStatus UserInfo::get_status() const {
@@ -44,21 +52,24 @@ void UserInfo::set_status(UserStatus status) {
     {
         throw std::runtime_error("Unknown user status");
     }
-    if (status_ != UserStatus::LEVEL_LOADED) {
-        if (status == UserStatus::LEVEL_LOADED) {
+    auto old_status = status_.load();
+    status_ = status;
+    #define status DO_NOT_USE_ME
+    if (old_status != UserStatus::LEVEL_LOADED) {
+        if (status_ == UserStatus::LEVEL_LOADED) {
             ++remote_sites_->users_with_loaded_level_;
             remote_sites_->on_user_loaded_level.emit(*this);
-            if (remote_sites_->users_with_loaded_level_ == remote_sites_->users_total_) {
+            if (remote_sites_->users_with_loaded_level_ == remote_sites_->users_total()) {
                 remote_sites_->on_all_users_loaded_level.emit();
                 remote_sites_->on_all_users_loaded_level.clear();
             }
         }
     } else {
-        if (status != UserStatus::LEVEL_LOADED) {
+        if (status_ != UserStatus::LEVEL_LOADED) {
             --remote_sites_->users_with_loaded_level_;
         }
     }
-    status_ = status;
+    #undef status
 }
 
 std::ostream& Mlib::operator << (std::ostream& ostr, const UserInfo& user_info) {
@@ -87,6 +98,8 @@ RemoteSites::RemoteSites(
     : local_users_{ local_users }
     , remote_params_{ remote_params }
     , remote_sites_{ "Site", [](RemoteSiteId site_id){ return std::to_string(site_id); } }
+    , users_total_{ 0 }
+    , users_with_loaded_level_{ 0 }
 {}
 
 RemoteSites::~RemoteSites() = default;
@@ -289,6 +302,14 @@ void RemoteSites::print(std::ostream& ostr) const {
 }
 
 DanglingBaseClassRef<const UserInfo> RemoteSites::get_user_by_rank(NUserCountType rank) const {
+    auto result = try_get_user_by_rank(rank);
+    if (result == nullptr) {
+        throw std::runtime_error("Could not find user with rank " + std::to_string(rank));
+    }
+    return *result;
+}
+
+DanglingBaseClassPtr<const UserInfo> RemoteSites::try_get_user_by_rank(NUserCountType rank) const {
     DanglingBaseClassPtr<const UserInfo> result = nullptr;
     for_each_site_user([&](const UserInfo& user){
         if (user.random_rank == rank) {
@@ -297,10 +318,7 @@ DanglingBaseClassRef<const UserInfo> RemoteSites::get_user_by_rank(NUserCountTyp
         }
         return true;
     }, UserTypes::ALL);
-    if (result == nullptr) {
-        throw std::runtime_error("Could not find user with rank " + std::to_string(rank));
-    }
-    return *result;
+    return result;
 }
 
 SiteInfo& RemoteSites::get_site_info(RemoteSiteId site_id) {
@@ -321,6 +339,11 @@ void RemoteSites::assert_local_users_consistents() const {
     }
 }
 
+size_t RemoteSites::users_total() const {
+    assert_true(users_total_ == named_users_.size());
+    return named_users_.size();
+}
+
 NUserCountType RemoteSites::compute_random_user_ranks() {
     auto nusers = get_total_user_count(UserTypes::ALL);
     auto perm = arange<NUserCountType>(nusers);
@@ -338,6 +361,18 @@ NUserCountType RemoteSites::compute_random_user_ranks() {
             return true;
         }, UserTypes::ALL);
     return nusers;
+}
+
+NUserCountType RemoteSites::compute_free_user_rank() const {
+    for (NUserCountType i = 0; i < 200; ++i) {
+        bool is_free = for_each_site_user([&i](const UserInfo& user){
+            return (i != user.random_rank);
+        }, UserTypes::ALL);
+        if (is_free) {
+            return i;
+        }
+    }
+    throw std::runtime_error("Could not compute rank for user (tried 0 - 200)");
 }
 
 void RemoteSites::set_user_status(UserTypes types, UserStatus status) {
