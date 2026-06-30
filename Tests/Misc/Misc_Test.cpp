@@ -4,7 +4,9 @@
 #include <Mlib/Math/Math.hpp>
 #include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
+#include <Mlib/Memory/Dangling_Value_Unordered_Map.hpp>
 #include <Mlib/Memory/Destruction_Functions.hpp>
+#include <Mlib/Memory/Destruction_Notifier.hpp>
 #include <Mlib/Memory/Object_Pool.hpp>
 #include <Mlib/Memory/Resource_Ptr.hpp>
 #include <Mlib/Misc/Floating_Point_Exceptions.hpp>
@@ -294,10 +296,32 @@ void test_bitwise_io() {
     linfo() << "0x" << std::hex << (uint32_t)reader.read_bits<bool>(1, "test \"true\"");
 }
 
+struct S final: public virtual DanglingBaseClass, public virtual DestructionNotifier {
+    explicit S(DanglingValueUnorderedMap<int, S>& m): m{m} {}
+    ~S() {
+        linfo() << " a " << m.size();
+        on_destroy.clear();
+        linfo() << " b " << m.size();
+    }
+    DanglingValueUnorderedMap<int, S>& m;
+};
+
+void test_dangling_containers() {
+    DanglingValueUnorderedMap<int, S> m;
+    linfo() << m.size();
+    {
+        S s{m};
+        m.emplace(4, DanglingBaseClassRef<S>{s, CURRENT_SOURCE_LOCATION}, CURRENT_SOURCE_LOCATION);
+        linfo() << m.size();
+    }
+    linfo() << m.size();
+}
+
 int main(int argc, const char** argv) {
     enable_floating_point_exceptions();
 
     try {
+        test_dangling_containers();
         test_log2();
         test_bitwise_io();
         test_chunked_array();
