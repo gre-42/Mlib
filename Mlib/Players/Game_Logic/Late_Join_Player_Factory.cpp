@@ -210,14 +210,17 @@ LateJoinPlayerFactory::LateJoinPlayerFactory(
                     {"vehicle_class", vars.database.at<std::string>("vehicle_class")},
                     {"controller", *controller}}};
                 auto create_player = [
-                    controller = *controller,
+                    controller = std::move(*controller),
                     user = player.try_at(PlayerKeys::user),
                     mle0 = macro_line_executor,
-                    locals = std::move(locals),
-                    spawner_name,
-                    let,
-                    &remote_sites]() mutable -> std::optional<uint32_t>
+                    locals0 = std::move(locals),
+                    spawner_name0=std::move(spawner_name),
+                    let0=std::move(let),
+                    &remote_sites]() -> std::optional<uint32_t>
                 {
+                    auto locals = locals0;
+                    auto spawner_name = spawner_name0;
+                    auto let = let0;
                     DanglingBaseClassPtr<const UserInfo> u = nullptr;
                     if (controller == "pc") {
                         if (!user.has_value()) {
