@@ -17,15 +17,15 @@ void read_vehicle_location_and_forget(
     using DeltaLocation = TRemoteRigidBodyVehicleCache::DeltaLocation;
     // Local
     {
-        reader.read_bits<bool>(1, "local.has_remote_version");
+        reader.read_bool_bit("local.has_remote_version");
     }
     // Remote
     {
-        auto remote_has_new_version = reader.read_bits<bool>(1, "remote.has_new_version");
+        auto remote_has_new_version = reader.read_bool_bit("remote.has_new_version");
         if (!remote_has_new_version) {
             return;
         }
-        auto remote_has_base_version = reader.read_bits<bool>(1, "remote.has_base_version");
+        auto remote_has_base_version = reader.read_bool_bit("remote.has_base_version");
         if (!remote_has_base_version) {
             reader.deserialize<AbsoluteLocation8>("initial_location");
         } else {
@@ -43,8 +43,8 @@ void write_dummy_vehicle_location(
     if (any(verbosity & IoVerbosity::METADATA)) {
         linfo() << "remote.has_local_version " << int(cache.remote.has_local_version);
     }
-    writer.write_bits<uint8_t>(cache.remote.has_local_version, 1, "has_local_version");
-    writer.write_bits<uint8_t>(false, 1, "local.local_version nonzero");
+    writer.write_bool_bit(cache.remote.has_local_version, "has_local_version");
+    writer.write_bool_bit(false, "local.local_version nonzero");
 }
 
 template <class TRemoteRigidBodyVehicleCache>
@@ -57,15 +57,15 @@ std::optional<typename TRemoteRigidBodyVehicleCache::Location> read_vehicle_loca
     using DeltaLocation = TRemoteRigidBodyVehicleCache::DeltaLocation;
     // Local
     {
-        cache.local.has_remote_version = reader.read_bits<bool>(1, "local.has_remote_version");
+        cache.local.has_remote_version = reader.read_bool_bit("local.has_remote_version");
     }
     // Remote
     {
-        auto has_new_version = reader.read_bits<bool>(1, "has_new_version");
+        auto has_new_version = reader.read_bool_bit("has_new_version");
         if (!has_new_version) {
             return std::nullopt;
         }
-        auto has_base_version = reader.read_bits<bool>(1, "has_base_version");
+        auto has_base_version = reader.read_bool_bit("has_base_version");
         if (!has_base_version) {
             auto initial_location = reader.deserialize<AbsoluteLocation8>("initial_location");
             cache.remote.initialize8(versions.remote_new_version, initial_location);
@@ -93,7 +93,7 @@ void write_vehicle_location(
         if (any(verbosity & IoVerbosity::METADATA)) {
             linfo() << "remote.has_local_version " << int(cache.remote.has_local_version);
         }
-        writer.write_bits<uint8_t>(cache.remote.has_local_version, 1, "remote.has_local_version");
+        writer.write_bool_bit(cache.remote.has_local_version, "remote.has_local_version");
     }
     // Remote
     {
@@ -103,8 +103,8 @@ void write_vehicle_location(
         if (cache.local.has_remote_version) {
             auto loc = cache.local.get_delta8(location, versions.local_base_version, versions.local_new_version);
             if (loc.has_value()) {
-                writer.write_bits<uint8_t>(cache.local.has_local_version, 1, "local.has_new_version");
-                writer.write_bits<uint8_t>(cache.local.has_remote_version, 1, "local.remote_version (=base_version)");
+                writer.write_bool_bit(cache.local.has_local_version, "local.has_new_version");
+                writer.write_bool_bit(cache.local.has_remote_version, "local.remote_version (=base_version)");
                 writer.serialize(*loc, "delta location");
                 return;
             }
@@ -114,8 +114,8 @@ void write_vehicle_location(
         }
         {
             auto loc = cache.local.get_absolute8(location, versions.local_new_version);
-            writer.write_bits<uint8_t>(cache.local.has_local_version, 1, "local.local_version_nonzero");
-            writer.write_bits<uint8_t>(false, 1, "base version nonzero");
+            writer.write_bool_bit(cache.local.has_local_version, "local.local_version_nonzero");
+            writer.write_bool_bit(false, "base version nonzero");
             writer.serialize(loc, "local.get_absolute8");
         }
     }

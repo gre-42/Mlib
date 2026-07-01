@@ -293,7 +293,7 @@ void test_bitwise_io() {
     // reader.seek_relative_positive(10);
     linfo() << "0x" << std::hex << reader.read_bits<uint32_t>(2, "read 3");
     linfo() << "0x" << std::hex << reader.read_bits<uint32_t>(31, "read 0x40FEE123");
-    linfo() << "0x" << std::hex << (uint32_t)reader.read_bits<bool>(1, "test \"true\"");
+    linfo() << "0x" << std::hex << (uint32_t)reader.read_bool_bit("test \"true\"");
 }
 
 struct S final: public virtual DanglingBaseClass, public virtual DestructionNotifier {

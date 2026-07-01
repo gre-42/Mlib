@@ -62,10 +62,8 @@ RemotePlayer::RemotePlayer(
     const DanglingBaseClassRef<PhysicsScene>& physics_scene)
     : player_{ player }
     , physics_scene_{ physics_scene }
-    , vehicle_{ nullptr }
     , verbosity_{ verbosity }
     , player_on_destroy_{ player->on_destroy.deflt, CURRENT_SOURCE_LOCATION }
-    , vehicle_on_destroy_{ nullptr, CURRENT_SOURCE_LOCATION }
 {
     if (any(verbosity_ & IoVerbosity::METADATA)) {
         linfo() << "Create RemotePlayer";
@@ -252,7 +250,7 @@ void RemotePlayer::read(
             if (physics_scene_->remote_scene_ == nullptr) {
                 throw std::runtime_error("RemotePlayer: Remote scene is null");
             }
-            if (vehicle_ == nullptr) {
+            if (!player_->has_scene_vehicle()) {
                 auto ro = physics_scene_->remote_scene_->try_get(vehicle_object_id);
                 if (ro != nullptr) {
                     auto rbv = dynamic_cast<RemoteRigidBodyVehicle*>(ro.get());
@@ -264,16 +262,14 @@ void RemotePlayer::read(
                         throw std::runtime_error("Rigid body has no scene node");
                     }
                     if (!rb->is_deactivated() && rb->drivers_.seat_is_free(seat)) {
-                        vehicle_ = {
+                        reset_node();
+                        auto& vehicle =
                             global_object_pool.create<SceneVehicle>(
                                 CURRENT_SOURCE_LOCATION,
                                 rb->node_name_,
                                 *rb->scene_node_,
-                                rb.set_loc(CURRENT_SOURCE_LOCATION)),
-                            CURRENT_SOURCE_LOCATION};
-                        vehicle_on_destroy_.set(vehicle_->on_destroy.deflt, CURRENT_SOURCE_LOCATION);
-                        vehicle_on_destroy_.add([this](){ vehicle_ = nullptr; }, CURRENT_SOURCE_LOCATION);
-                        player_->set_scene_vehicle(*vehicle_.get(), seat);
+                                rb.set_loc(CURRENT_SOURCE_LOCATION));
+                        player_->set_scene_vehicle(vehicle, seat);
                         {
                             auto let = nlohmann::json::object({
                                 {"asset_id", rb->asset_id_},
@@ -284,7 +280,7 @@ void RemotePlayer::read(
                                 physics_scene_.get(),
                                 physics_scene_->macro_line_executor_.inserted_block_arguments(std::move(let))
                             }.execute_safe(
-                                *vehicle_.get(),
+                                vehicle,
                                 rb->asset_id_);
                         }
                         player_->create_vehicle_externals(externals_mode);
@@ -347,8 +343,6 @@ void RemotePlayer::read(
 
 void RemotePlayer::reset_node() {
     player_->reset_node();
-    vehicle_ = nullptr;
-    vehicle_on_destroy_.clear();
 }
 
 void RemotePlayer::write(

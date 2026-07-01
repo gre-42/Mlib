@@ -8,7 +8,6 @@ namespace Mlib {
 
 class PhysicsScene;
 class Player;
-class SceneVehicle;
 enum class IoVerbosity;
 enum class ObjectLifetimeStatus;
 
@@ -50,10 +49,8 @@ private:
     void reset_node();
     DanglingBaseClassRef<Player> player_;
     DanglingBaseClassRef<PhysicsScene> physics_scene_;
-    DanglingBaseClassPtr<SceneVehicle> vehicle_;
     IoVerbosity verbosity_;
     DestructionFunctionsRemovalTokens player_on_destroy_;
-    DestructionFunctionsRemovalTokens vehicle_on_destroy_;
 };
 
 }
