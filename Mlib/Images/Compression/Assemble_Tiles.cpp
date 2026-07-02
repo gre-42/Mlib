@@ -17,7 +17,6 @@
 #include <Mlib/Images/Transform/Resize.hpp>
 #include <Mlib/Iterator/Enumerate.hpp>
 #include <Mlib/Stats/Halton_Sequence.hpp>
-#include <Mlib/Time/Elapsed_Guard.hpp>
 
 using namespace Mlib;
 
@@ -92,7 +91,7 @@ Array<float> Mlib::assemble_tiles_compute_ols(
     }
     auto down = [&](){
         {
-            ElapsedGuard eg;
+            // ElapsedGuard eg;
             CachedCoefficientImage* coeffs = nullptr;
             if (fa.add && (coeff_cache != nullptr)) {
                 auto key = CoeffConfig{
