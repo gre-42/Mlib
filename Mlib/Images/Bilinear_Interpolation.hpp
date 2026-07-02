@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Math/Lerp.hpp>
 #include <Mlib/Math/Math.hpp>
 
 namespace Mlib {
@@ -8,9 +9,9 @@ class BilinearInterpolator {
 public:
     template <typename... TDimensions>
     TData operator () (const Array<TData>& im, TDimensions... dim) const {
-        TData v00 = ((1 - a0) * im(dim..., r0, c0) + a0 * im(dim..., r1, c0));
-        TData v01 = ((1 - a0) * im(dim..., r0, c1) + a0 * im(dim..., r1, c1));
-        return (1 - a1) * v00 + a1 * v01;
+        TData v00 = lerp(im(dim..., r0, c0), im(dim..., r1, c0), a0);
+        TData v01 = lerp(im(dim..., r0, c1), im(dim..., r1, c1), a0);
+        return lerp(v00, v01, a1);
     }
     size_t r0;
     size_t r1;

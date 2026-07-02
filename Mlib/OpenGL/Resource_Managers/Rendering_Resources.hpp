@@ -6,6 +6,7 @@
 #include <Mlib/Geometry/Material/Colormap_With_Modifiers_Hash.hpp>
 #include <Mlib/Geometry/Texture/Uv_Tile.hpp>
 #include <Mlib/Hashing/Variable_And_Hash.hpp>
+#include <Mlib/Images/Transform/Coefficient_Image_Cache.hpp>
 #include <Mlib/Map/Threadsafe_Map.hpp>
 #include <Mlib/Map/Threadsafe_String_With_Hash_Unordered_Map.hpp>
 #include <Mlib/Map/Threadsafe_Unordered_Map.hpp>
@@ -306,6 +307,7 @@ private:
     mutable BackgroundLoop preloader_background_loop_;
     DeallocationToken deallocation_token_;
     std::shared_ptr<int> lifetime_indicator_;
+    mutable CoefficientImageCache coefficient_image_cache_;
 };
 
 std::ostream& operator << (std::ostream& ostr, const RenderingResources& r);

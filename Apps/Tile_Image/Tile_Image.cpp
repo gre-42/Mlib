@@ -4,9 +4,11 @@
 #include <Mlib/Images/StbImage2.hpp>
 #include <Mlib/Images/StbImage3.hpp>
 #include <Mlib/Images/StbImage4.hpp>
+#include <Mlib/Images/Transform/Coefficient_Image.hpp>
 #include <Mlib/Io/Arg_Parser.hpp>
 #include <Mlib/Misc/Floating_Point_Exceptions.hpp>
 #include <Mlib/Os/Os.hpp>
+#include <Mlib/Threads/Termination_Manager.hpp>
 
 using namespace Mlib;
 
@@ -27,11 +29,13 @@ int main(int argc, char** argv) {
         "--alpha <value> "
         "--alpha_fac <value> "
         "--upsampling <value> "
+        "[--coeffs] "
         "[--add] "
         "[--ols] ";
     const ArgParser parser(
         help,
         {"--help",
+         "--coeffs",
          "--add",
          "--ols"},
         {"--json",
@@ -78,7 +82,14 @@ int main(int argc, char** argv) {
                 };
             }
         }();
-        auto down = assemble_tiles_compute_ols(fa);
+        Array<float> down;
+        if (args.has_named("--coeffs")) {
+            CoefficientImageCache coeffs;
+            assemble_tiles_compute_ols(fa, &coeffs);
+            down = assemble_tiles_compute_ols(fa, &coeffs);
+        } else {
+            down = assemble_tiles_compute_ols(fa, nullptr);
+        }
         switch (fa.channels - size_t(fa.add)) {
         case 1:
             StbImage1::from_float_grayscale(down).save_to_file(args.named_value("--destination"));
@@ -96,6 +107,9 @@ int main(int argc, char** argv) {
         throw std::runtime_error("Unexpected number of channels");
     } catch (const std::exception& e) {
         lerr() << e.what();
+        if (unhandled_exceptions_occured()) {
+            print_unhandled_exceptions();
+        }
         return 1;
     }
     return 0;

@@ -12,13 +12,19 @@
 #include <Mlib/Images/StbImage3.hpp>
 #include <Mlib/Images/StbImage4.hpp>
 #include <Mlib/Images/To_From_Multichannel.hpp>
+#include <Mlib/Images/Transform/Coefficient_Image.hpp>
+#include <Mlib/Images/Transform/Coefficient_Image_Cache.hpp>
 #include <Mlib/Images/Transform/Resize.hpp>
 #include <Mlib/Iterator/Enumerate.hpp>
 #include <Mlib/Stats/Halton_Sequence.hpp>
+#include <Mlib/Time/Elapsed_Guard.hpp>
 
 using namespace Mlib;
 
-Array<float> Mlib::assemble_tiles_compute_ols(FragmentAssembly& fa) {
+Array<float> Mlib::assemble_tiles_compute_ols(
+    FragmentAssembly& fa,
+    CoefficientImageCache* coeff_cache)
+{
     auto alpha_channel_mode = [&](){
         switch (fa.channels) {
         case 1:
@@ -84,23 +90,45 @@ Array<float> Mlib::assemble_tiles_compute_ols(FragmentAssembly& fa) {
             throw std::runtime_error("Unexpected number of channels");
         }
     }
-    {
-        float upsampled_stepsize = fa.stepsize * integral_to_float<float>(fa.upsampling);
-        float upsampled_randsize = fa.randsize * integral_to_float<float>(fa.upsampling);
-        HybridHaltonSequence<float> rng{42};
-        for (float x = 0; x < integral_to_float<float>(upsampled_width); x += upsampled_stepsize) {
-            for (float y = 0; y < integral_to_float<float>(upsampled_height); y += upsampled_stepsize) {
-                tile_image_canvas.add(
-                    fragment,
-                    x + (rng() - 0.5f) * upsampled_randsize,
-                    y + (rng() - 0.5f) * upsampled_randsize,
-                    rng() * 2.f * (float)M_PI);
+    auto down = [&](){
+        {
+            ElapsedGuard eg;
+            CachedCoefficientImage* coeffs = nullptr;
+            if (fa.add && (coeff_cache != nullptr)) {
+                auto key = CoeffConfig{
+                    {upsampled_height, upsampled_width},
+                    {fragment->shape(1), fragment->shape(2)}};
+                auto it = coeff_cache->find(key);
+                if (it == coeff_cache->end()) {
+                    auto res = coeff_cache->try_emplace(key, key.canvas_size, key.fragment_size);
+                    if (!res.second) {
+                        verbose_abort("Coefficient cache data race");
+                    }
+                    coeffs = &res.first->second;
+                } else {
+                    return it->second.assemble(fragment.row_range(0, fragment.shape(0) - 1));
+                }
+            }
+            float upsampled_stepsize = fa.stepsize * integral_to_float<float>(fa.upsampling);
+            float upsampled_randsize = fa.randsize * integral_to_float<float>(fa.upsampling);
+            HybridHaltonSequence<float> rng{42};
+            for (float x = 0; x < integral_to_float<float>(upsampled_width); x += upsampled_stepsize) {
+                for (float y = 0; y < integral_to_float<float>(upsampled_height); y += upsampled_stepsize) {
+                    tile_image_canvas.add(
+                        fragment,
+                        x + (rng() - 0.5f) * upsampled_randsize,
+                        y + (rng() - 0.5f) * upsampled_randsize,
+                        rng() * 2.f * (float)M_PI,
+                        (coeffs == nullptr)
+                            ? nullptr
+                            : coeffs);
+                }
             }
         }
-    }
-    auto down = (fa.upsampling == 1)
-        ? tile_image_canvas.canvas()
-        : compressed_multichannel_2d(tile_image_canvas.canvas(), fa.upsampling, FilterExtension::PERIODIC);
+        return (fa.upsampling == 1)
+            ? tile_image_canvas.canvas()
+            : compressed_multichannel_2d(tile_image_canvas.canvas(), fa.upsampling, FilterExtension::PERIODIC);
+    }();
     if (fa.ols.has_value()) {
         if (fa.ols->empty()) {
             fa.ols->reserve(down.shape(0));
@@ -125,9 +153,12 @@ Array<float> Mlib::assemble_tiles_compute_ols(FragmentAssembly& fa) {
     return to_singlechannel_2d(down);
 }
 
-Array<float> Mlib::assemble_tiles(const FragmentAssembly& fa) {
+Array<float> Mlib::assemble_tiles(
+    const FragmentAssembly& fa,
+    CoefficientImageCache* coeffs)
+{
     if (fa.ols.has_value() && fa.ols->empty()) {
         throw std::runtime_error("OLS coefficents missing");
     }
-    return assemble_tiles_compute_ols(const_cast<FragmentAssembly&>(fa));
+    return assemble_tiles_compute_ols(const_cast<FragmentAssembly&>(fa), coeffs);
 }

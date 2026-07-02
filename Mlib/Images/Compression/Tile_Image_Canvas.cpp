@@ -16,11 +16,17 @@ TileImageCanvas::TileImageCanvas(
     , alpha_channel_mode_{alpha_channel_mode}
 {}
 
-void TileImageCanvas::add(const Array<float>& image, float x, float y, float angle) {
+void TileImageCanvas::add(
+    const Array<float>& image,
+    float x,
+    float y,
+    float angle,
+    CachedCoefficientImage* coeffs)
+{
     auto trafo = TransformationMatrix<float, float, 2>{
         fixed_rotation_2d(angle),
         FixedArray<float, 2>{y, x}};
-    draw_transformed(image, canvas_, trafo, alpha_channel_mode_);
+    draw_transformed(image, canvas_, trafo, alpha_channel_mode_, coeffs);
 }
 
 Array<float> TileImageCanvas::canvas() const {

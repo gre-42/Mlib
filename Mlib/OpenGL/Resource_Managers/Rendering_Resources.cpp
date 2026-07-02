@@ -16,6 +16,8 @@
 #include <Mlib/Images/Normalize.hpp>
 #include <Mlib/Images/StbImage4.hpp>
 #include <Mlib/Images/To_From_Multichannel.hpp>
+#include <Mlib/Images/Transform/Coefficient_Image.hpp>
+#include <Mlib/Images/Transform/Coefficient_Image_Cache.hpp>
 #include <Mlib/Iterator/Enumerate.hpp>
 #include <Mlib/Map/Unordered_Map.hpp>
 #include <Mlib/Math/Is_Power_Of_Two.hpp>
@@ -167,12 +169,13 @@ static StbInfo<uint8_t> stb_load_texture(
     int nchannels,
     FlipMode flip_mode,
     TextureWarnFlags suppressed_warnings,
+    CoefficientImageCache& coefficient_image_cache,
     const FPath& chrominance = FPath{})
 {
     StbInfo<uint8_t> result;
     if (filename.string().ends_with(".tiles.json")) {
         auto fa = load_fragment_assembly(filename);
-        auto assembled = to_multichannel_2d(assemble_tiles(fa));
+        auto assembled = to_multichannel_2d(assemble_tiles(fa, &coefficient_image_cache));
         result = StbInfo<uint8_t>{
             integral_cast<int>(fa.size(0)),
             integral_cast<int>(fa.size(1)),
@@ -208,12 +211,16 @@ static StbInfo<uint8_t> stb_load_and_transform_texture(
     const RenderingResources& rendering_resources,
     const ColormapWithModifiers& color,
     FlipMode flip_mode,
-    TextureWarnFlags suppressed_warnings)
+    TextureWarnFlags suppressed_warnings,
+    CoefficientImageCache& coefficient_image_cache)
 {
     static THREAD_LOCAL(RecursionCounter) recursion_counter = RecursionCounter{};
     RecursionGuard rg{recursion_counter};
 
-    auto get_texture_data = [&rendering_resources, flip_mode, suppressed_warnings](const FPath& fpath, int nchannels){
+    auto get_texture_data =
+        [&rendering_resources, &coefficient_image_cache, flip_mode, suppressed_warnings]
+        (const FPath& fpath, int nchannels)
+    {
         if (fpath.type() == PathType::VARIABLE) {
             auto si1 = rendering_resources.get_texture_data(
                 rendering_resources.get_colormap(fpath),
@@ -225,7 +232,7 @@ static StbInfo<uint8_t> stb_load_and_transform_texture(
             return si1;
         } else {
             return std::make_shared<StbInfo<uint8_t>>(stb_load_texture(
-                fpath.local_path(), nchannels, flip_mode, suppressed_warnings));
+                fpath.local_path(), nchannels, flip_mode, suppressed_warnings, coefficient_image_cache));
         }
     };
 
@@ -290,12 +297,12 @@ static StbInfo<uint8_t> stb_load_and_transform_texture(
             throw std::runtime_error("Color mode not RGBA despite alpha texture: \"" + color.filename.string() + '"');
         }
         si0 = stb_load_texture(
-            color.filename.local_path(), (int)max(ColorMode::RGB), flip_mode, suppressed_warnings, color.chrominance);
+            color.filename.local_path(), (int)max(ColorMode::RGB), flip_mode, suppressed_warnings, coefficient_image_cache, color.chrominance);
         if (si0.nrChannels != 3) {
             throw std::runtime_error("#channels not 3: \"" + color.filename.string() + '"');
         }
         auto si_alpha = stb_load_texture(
-            color.alpha.local_path(), (int)max(ColorMode::GRAYSCALE), flip_mode, suppressed_warnings);
+            color.alpha.local_path(), (int)max(ColorMode::GRAYSCALE), flip_mode, suppressed_warnings, coefficient_image_cache);
         if (si_alpha.nrChannels != 1) {
             throw std::runtime_error("#channels not 1: \"" + color.alpha.string() + '"');
         }
@@ -311,7 +318,7 @@ static StbInfo<uint8_t> stb_load_and_transform_texture(
             si_alpha.height);
     } else {
         si0 = stb_load_texture(
-            color.filename.local_path(), (int)max(source_color_mode), flip_mode, suppressed_warnings, color.chrominance);
+            color.filename.local_path(), (int)max(source_color_mode), flip_mode, suppressed_warnings, coefficient_image_cache, color.chrominance);
     }
     if (color.saturate) {
         if (si0.nrChannels != 1) {
@@ -331,7 +338,7 @@ static StbInfo<uint8_t> stb_load_and_transform_texture(
     }
     if (!color.average.empty()) {
         auto si1 = stb_load_texture(
-            color.average.local_path(), (int)max(source_color_mode), flip_mode, suppressed_warnings);
+            color.average.local_path(), (int)max(source_color_mode), flip_mode, suppressed_warnings, coefficient_image_cache);
         stb_average(
             si0.data(),
             si1.data(),
@@ -346,7 +353,8 @@ static StbInfo<uint8_t> stb_load_and_transform_texture(
     }
     if (!color.histogram.empty()) {
         Array<unsigned char> image = stb_image_2_array(si0);
-        Array<unsigned char> ref = stb_image_2_array(stb_load_texture(color.histogram.local_path(), -3, FlipMode::NONE, suppressed_warnings));
+        Array<unsigned char> ref = stb_image_2_array(stb_load_texture(
+            color.histogram.local_path(), -3, FlipMode::NONE, suppressed_warnings, coefficient_image_cache));
         Array<unsigned char> m = match_rgba_histograms(image, ref).matched;
         assert_true(m.shape(0) == (size_t)si0.nrChannels);
         assert_true(m.shape(1) == (size_t)si0.height);
@@ -1528,7 +1536,7 @@ std::shared_ptr<StbInfo<uint8_t>> RenderingResources::get_texture_data(
     if (auto it = preloaded_raw_texture_data_.try_get(color); it != nullptr) {
         return to_shared(stb_load8(color.filename.string(), FlipMode::NONE, &it->data, IncorrectDatasizeBehavior::CONVERT));
     }
-    auto si = stb_load_and_transform_texture(*this, color, flip_mode, suppressed_warnings);
+    auto si = stb_load_and_transform_texture(*this, color, flip_mode, suppressed_warnings, coefficient_image_cache_);
     if (any(color.color_mode & ColorMode::RGB) &&
         (si.nrChannels == 4) &&
         getenv_default_bool("CHECK_OPACITY", false))

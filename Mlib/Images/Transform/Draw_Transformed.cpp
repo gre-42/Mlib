@@ -3,11 +3,13 @@
 #include <Mlib/Geometry/Primitives/Bounding_Sphere.hpp>
 #include <Mlib/Images/Alpha_Channel_Mode.hpp>
 #include <Mlib/Images/Bilinear_Interpolation.hpp>
+#include <Mlib/Images/Transform/Coefficient_Image.hpp>
 #include <Mlib/Math/Lerp.hpp>
 #include <Mlib/Math/Positive_Modulo.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
 #include <Mlib/Memory/Float_To_Integral.hpp>
 #include <Mlib/Memory/Integral_To_Float.hpp>
+#include <Mlib/Threads/Termination_Manager.hpp>
 #include <stdexcept>
 
 using namespace Mlib;
@@ -55,7 +57,8 @@ void Mlib::draw_transformed(
     const Array<float>& image,
     Array<float>& canvas,
     const TransformationMatrix<float, float, 2>& trafo,
-    AlphaChannelMode mode)
+    AlphaChannelMode mode,
+    CachedCoefficientImage* coeffs)
 {
     if (image.ndim() != 3) {
         throw std::runtime_error("Image to be drawn does not have 3 dimensions");
@@ -75,47 +78,71 @@ void Mlib::draw_transformed(
         H[h].ref() = image[h];
     }
     auto transformed_aabb = transformed_round_image.aabb();
+    auto r_lower = float_to_integral<int>(std::floor(transformed_aabb.min(0)));
+    auto r_upper = float_to_integral<int>(std::ceil(transformed_aabb.max(0)));
     #pragma omp parallel for
-    for (int r = float_to_integral<int>(std::floor(transformed_aabb.min(0))); r <= float_to_integral<int>(std::ceil(transformed_aabb.max(0))); ++r) {
-        float rf = integral_to_float<float>(r);
-        for (float cf = std::floor(transformed_aabb.min(1)); cf <= std::ceil(transformed_aabb.max(1)); ++cf) {
-            BilinearInterpolator<float> bi;
-            if (transformed_round_image(rf, cf, bi)) {
-                size_t r = integral_cast<size_t>(positive_modulo(float_to_integral<int>(rf), integral_cast<int>(canvas.shape(1))));
-                size_t c = integral_cast<size_t>(positive_modulo(float_to_integral<int>(cf), integral_cast<int>(canvas.shape(2))));
-                switch (mode) {
-                    case AlphaChannelMode::BLEND: {
-                        float alpha_c = canvas(canvas.shape(0) - 1, r, c);
-                        float alpha_i = bi(H[canvas.shape(0) - 1]);
-                        float A = alpha_c;
-                        float B = alpha_i;
-                        float C = A + B - A * B;
-                        canvas(canvas.shape(0) - 1, r, c) = C;
-                        // For all x: (1-a)*(1-b)*x = (1-c)*x
-                        // => (1-a)*(1-b) = (1-c)
-                        // => c = a + b - ab
-                        for (size_t h = 0; h < canvas.shape(0) - 1; ++h) {
-                            canvas(h, r, c) = lerp(canvas(h, r, c) * alpha_c, bi(H[h]), alpha_i) / std::max(C, 1e-6f);
-                        }
-                        continue;
-                    }
-                    case AlphaChannelMode::ADD: {
-                        auto alpha = bi(H[canvas.shape(0) - 1]);
-                        for (size_t h = 0; h < canvas.shape(0) - 1; ++h) {
-                            canvas(h, r, c) += alpha * bi(H[h]);
-                        }
-                        canvas(canvas.shape(0) - 1, r, c) += alpha;
-                        continue;
-                    }
-                    case AlphaChannelMode::OFF: {
-                        for (size_t h = 0; h < canvas.shape(0); ++h) {
-                            canvas(h, r, c) = bi(H[h]);
-                        }
-                        continue;
-                    }
-                }
-                throw std::runtime_error("Unknown blend mode");
-            }
+    for (int r = r_lower; r <= r_upper; ++r) {
+        if (unhandled_exceptions_occured()) {
+            continue;
         }
+        try {
+            float rf = integral_to_float<float>(r);
+            for (float cf = std::floor(transformed_aabb.min(1)); cf <= std::ceil(transformed_aabb.max(1)); ++cf) {
+                BilinearInterpolator<float> bi;
+                if (transformed_round_image(rf, cf, bi)) {
+                    size_t r = integral_cast<size_t>(positive_modulo(float_to_integral<int>(rf), integral_cast<int>(canvas.shape(1))));
+                    size_t c = integral_cast<size_t>(positive_modulo(float_to_integral<int>(cf), integral_cast<int>(canvas.shape(2))));
+                    switch (mode) {
+                        case AlphaChannelMode::BLEND: {
+                            float alpha_c = canvas(canvas.shape(0) - 1, r, c);
+                            float alpha_i = bi(H[canvas.shape(0) - 1]);
+                            float A = alpha_c;
+                            float B = alpha_i;
+                            float C = A + B - A * B;
+                            canvas(canvas.shape(0) - 1, r, c) = C;
+                            // For all x: (1-a)*(1-b)*x = (1-c)*x
+                            // => (1-a)*(1-b) = (1-c)
+                            // => c = a + b - ab
+                            for (size_t h = 0; h < canvas.shape(0) - 1; ++h) {
+                                canvas(h, r, c) = lerp(canvas(h, r, c) * alpha_c, bi(H[h]), alpha_i) / std::max(C, 1e-6f);
+                            }
+                            if (coeffs != nullptr) {
+                                throw std::runtime_error("Coeffs are not implemented for blending");
+                            }
+                            continue;
+                        }
+                        case AlphaChannelMode::ADD: {
+                            auto alpha = bi(H[canvas.shape(0) - 1]);
+                            for (size_t h = 0; h < canvas.shape(0) - 1; ++h) {
+                                canvas(h, r, c) += alpha * bi(H[h]);
+                            }
+                            canvas(canvas.shape(0) - 1, r, c) += alpha;
+                            if (coeffs != nullptr) {
+                                coeffs->add(r, c, {bi.r0, bi.c0, alpha * (1.f - bi.a0) * (1.f - bi.a1)});
+                                coeffs->add(r, c, {bi.r0, bi.c1, alpha * (1.f - bi.a0) * bi.a1});
+                                coeffs->add(r, c, {bi.r1, bi.c0, alpha * bi.a0 * (1.f - bi.a1)});
+                                coeffs->add(r, c, {bi.r1, bi.c1, alpha * bi.a0 * bi.a1});
+                            }
+                            continue;
+                        }
+                        case AlphaChannelMode::OFF: {
+                            for (size_t h = 0; h < canvas.shape(0); ++h) {
+                                canvas(h, r, c) = bi(H[h]);
+                            }
+                            if (coeffs != nullptr) {
+                                throw std::runtime_error("Coeffs are not implemented for alpha=off");
+                            }
+                            continue;
+                        }
+                    }
+                    throw std::runtime_error("Unknown blend mode");
+                }
+            }
+        } catch (...) {
+            add_unhandled_exception(std::current_exception());
+        }
+    }
+    if (unhandled_exceptions_occured()) {
+        throw std::runtime_error("Unhandled exception(s) in Mlib::draw_transformed");
     }
 }

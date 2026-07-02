@@ -353,7 +353,7 @@ void convert(
                 auto tmp = fa;
                 tmp.ols.emplace();
                 tmp.make_pathes_absolute(dest_path);
-                assemble_tiles_compute_ols(tmp);
+                assemble_tiles_compute_ols(tmp, nullptr);
                 fa.ols = tmp.ols;
             }
             save_fragment_assembly(dest_path, fa);

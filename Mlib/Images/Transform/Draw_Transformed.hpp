@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Images/Transform/Coefficient_Image_Cache.hpp>
 #include <cstddef>
 
 namespace Mlib {
@@ -13,6 +14,7 @@ void draw_transformed(
     const Array<float>& image,
     Array<float>& canvas,
     const TransformationMatrix<float, float, 2>& trafo,
-    AlphaChannelMode mode);
+    AlphaChannelMode mode,
+    CachedCoefficientImage* coeffs);
 
 }
