@@ -74,6 +74,7 @@ ifneq (,$(filter $(CMAKE_BUILD_TYPE),Debug RelWithDebInfo))
 else
     EM_LDFLAGS_COMMON := ${EM_LDFLAGS_COMMON} -sASSERTIONS=0
 endif
+SHARED := ON
 ifeq ($(EMSDK64),1)
     CFLAGS    += -sMEMORY64=1 ${EM_COMPILEFLAGS_COMMON}
     CXXFLAGS  += -sMEMORY64=1 ${EM_COMPILEFLAGS_COMMON} -fwasm-exceptions
@@ -82,6 +83,7 @@ ifeq ($(EMSDK64),1)
     DEPEND_PREFIX := E64
     CMAKE_CMD     := /emsdk/upstream/emscripten/emcmake
     CONTAINER     := mgame/emsdk
+    SHARED        := OFF
 endif
 ifeq ($(EMSDK32),1)
     CFLAGS    += -sMEMORY64=0 ${EM_COMPILEFLAGS_COMMON}
@@ -91,6 +93,7 @@ ifeq ($(EMSDK32),1)
     DEPEND_PREFIX := E32
     CMAKE_CMD     := /emsdk/upstream/emscripten/emcmake
     CONTAINER     := mgame/emsdk
+    SHARED        := OFF
 endif
 ifeq ($(PROF),1)
     CFLAGS    += --profiling
@@ -156,6 +159,6 @@ recastnavigation:
 		-DRECASTNAVIGATION_DEMO=OFF                 \
 		-DRECASTNAVIGATION_TESTS=OFF                \
 		-DRECASTNAVIGATION_EXAMPLES=OFF             \
-		-DBUILD_SHARED_LIBS=ON                      \
+		-DBUILD_SHARED_LIBS=$(SHARED)               \
 		-DCMAKE_BUILD_TYPE=$(CMAKE_BUILD_TYPE)
 	$(BUILD_CMD) cmake --build $(DEPEND_PREFIX)RecastBuild --verbose

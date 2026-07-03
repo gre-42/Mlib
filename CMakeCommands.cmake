@@ -546,7 +546,8 @@ macro(target_link_against_opengl target)
                 -sPROXY_TO_PTHREAD=1
                 -sOFFSCREENCANVAS_SUPPORT=1
                 -sAUDIO_WORKLET
-                -sWASM_WORKERS)
+                -sWASM_WORKERS
+                -sMAIN_MODULE=0)
     elseif (ANDROID)
         # Android NDK specific linking
         target_link_libraries(${target} PUBLIC GLESv3 EGL)
