@@ -310,6 +310,7 @@ int main(int argc, char** argv) {
         "    [--swap_interval <interval>]\n"
         "    [--nsamples_msaa <nsamples>]\n"
         "    [--lightmap_nsamples_msaa <nsamples>]\n"
+        "    [--imposter_nsamples_msaa <nsamples>]\n"
         "    [--min_sample_shading <rate>]\n"
         "    [--fxaa]\n"
         "    [--max_distance_black <distance>]\n"
@@ -485,6 +486,7 @@ int main(int argc, char** argv) {
          "--fullscreen_refresh_rate",
          "--nsamples_msaa",
          "--lightmap_nsamples_msaa",
+         "--imposter_nsamples_msaa",
          "--min_sample_shading",
          "--anisotropic_filtering_level",
          "--max_distance_black",
@@ -616,6 +618,7 @@ int main(int argc, char** argv) {
         RenderConfig render_config{
             .nsamples_msaa = safe_stoi(args.named_svalue("--nsamples_msaa", "2")),
             .lightmap_nsamples_msaa = safe_stoi(args.named_svalue("--lightmap_nsamples_msaa", "4")),
+            .imposter_nsamples_msaa = safe_stoi(args.named_svalue("--imposter_nsamples_msaa", "4")),
             .min_sample_shading = safe_stof(args.named_svalue("--min_sample_shading", "0")),
             .vfx = !args.has_named("--no_vfx"),
             .fxaa = args.has_named("--fxaa"),
@@ -814,6 +817,7 @@ int main(int argc, char** argv) {
                 {"mesh", args.named_svalue("--mesh", "obj")},
                 {"animated_mesh", args.named_svalue("--animated_mesh", "mhx2")},
                 {"audio", args.named_svalue("--audio", "wav")},
+                {"imposter_nsamples_msaa", safe_stoi(args.named_svalue("--imposter_nsamples_msaa", "1"))},
                 {"scene_lightmap_width", safe_stoi(args.named_svalue("--scene_lightmap_width", "2048"))},
                 {"scene_lightmap_height", safe_stoi(args.named_svalue("--scene_lightmap_height", "2048"))},
                 {"black_lightmap_width", safe_stoi(args.named_svalue("--black_lightmap_width", "1024"))},

@@ -349,6 +349,7 @@ void android_main(android_app* app)
         "    [--swap_interval <interval>]\n"
         "    [--nsamples_msaa <nsamples>]\n"
         "    [--lightmap_nsamples_msaa <nsamples>]\n"
+        "    [--imposter_nsamples_msaa <nsamples>]\n"
         "    [--min_sample_shading <rate>]\n"
         "    [--fxaa]\n"
         "    [--max_distance_black <distance>]\n"
@@ -478,6 +479,7 @@ void android_main(android_app* app)
          "--optimize_search_time",
          "--plot_triangle_bvh",
          "--devel_mode",
+         "--compressed",
          "--show_mouse_cursor",
          "--no_slip",
          "--no_avoid_burnout",
@@ -510,6 +512,7 @@ void android_main(android_app* app)
          "--fullscreen_refresh_rate",
          "--nsamples_msaa",
          "--lightmap_nsamples_msaa",
+         "--imposter_nsamples_msaa",
          "--min_sample_shading",
          "--anisotropic_filtering_level",
          "--max_distance_black",
@@ -617,6 +620,7 @@ void android_main(android_app* app)
         RenderConfig render_config{
             .nsamples_msaa = safe_stoi(args.named_svalue("--nsamples_msaa", "1")),
             .lightmap_nsamples_msaa = safe_stoi(args.named_svalue("--lightmap_nsamples_msaa", "1")),
+            .imposter_nsamples_msaa = safe_stoi(args.named_svalue("--imposter_nsamples_msaa", "1")),
             .min_sample_shading = safe_stof(args.named_svalue("--min_sample_shading", "0")),
             .vfx = args.has_named("--vfx"),
             .fxaa = args.has_named("--fxaa"),
@@ -763,21 +767,21 @@ void android_main(android_app* app)
                 {"if_devel", args.has_named("--devel_mode")},
                 {"if_show_debug_wheels", args.has_named("--show_debug_wheels")},
                 {"if_show_global_log", args.has_named("--show_global_log")},
+                #ifdef __ANDROID__
+                {"if_android", true},
+                #elifdef __EMSCRIPTEN__
+                {"if_android", false},
+                #else
+                #error Detected neither __ANDROID__ nor __EMSCRIPTEN__
+                #endif
+                {"if_compressed", args.has_named("--compressed")},
                 {"if_audio", true},
                 {"if_graphics", true},
-#ifdef __ANDROID__
-                {"if_android", true},
-                {"if_compressed", false},
-#elifdef __EMSCRIPTEN__
-                {"if_android", false},
-                {"if_compressed", false},
-#else
-#error Detected neither __ANDROID__ nor __EMSCRIPTEN__
-#endif
                 {"flavor", AUi::GetFlavor()},
                 {"mesh", args.named_value("--mesh", "obj")},
                 {"animated_mesh", args.named_value("--animated_mesh", "mhx2")},
                 {"audio", args.named_value("--audio", "wav")},
+                {"imposter_nsamples_msaa", safe_stoi(args.named_svalue("--imposter_nsamples_msaa", "1"))},
                 {"scene_lightmap_width", safe_stoi(args.named_svalue("--scene_lightmap_width", "2048"))},
                 {"scene_lightmap_height", safe_stoi(args.named_svalue("--scene_lightmap_height", "2048"))},
                 {"black_lightmap_width", safe_stoi(args.named_svalue("--black_lightmap_width", "1024"))},

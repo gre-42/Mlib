@@ -15,7 +15,7 @@ void RenderConfig::apply(ExternalRenderPassType external_render_pass_type) const
         }
         if (lightmap_nsamples_msaa != 1) {
 #if defined(__ANDROID__) || defined(__EMSCRIPTEN__)
-            throw std::runtime_error("MSAA not supported on Android and Emscripten");
+            throw std::runtime_error("MSAA not supported on Android and Emscripten (0)");
 #else
             CHK(glEnable(GL_MULTISAMPLE));
 #endif
@@ -47,7 +47,7 @@ void RenderConfig::apply(ExternalRenderPassType external_render_pass_type) const
         }
         if (nsamples_msaa != 1) {
 #if defined(__ANDROID__) || defined(__EMSCRIPTEN__)
-            throw std::runtime_error("MSAA not supported on Android and Emscripten");
+            throw std::runtime_error("MSAA not supported on Android and Emscripten (1)");
 #else
             CHK(glEnable(GL_MULTISAMPLE));
 #endif
