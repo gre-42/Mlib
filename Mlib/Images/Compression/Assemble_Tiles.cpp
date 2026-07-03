@@ -123,6 +123,9 @@ Array<float> Mlib::assemble_tiles_compute_ols(
                             : coeffs);
                 }
             }
+            if (coeffs != nullptr) {
+                coeffs->normalize();
+            }
         }
         return (fa.upsampling == 1)
             ? tile_image_canvas.canvas()

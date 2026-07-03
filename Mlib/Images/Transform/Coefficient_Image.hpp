@@ -57,6 +57,20 @@ public:
         }
         canvas_(r, c).add(coeff);
     }
+    void normalize() {
+        for (size_t r = 0; r < canvas_.shape(0); ++r) {
+            for (size_t c = 0; c < canvas_.shape(1); ++c) {
+                T alpha = 0;
+                auto& ce = canvas_(r, c);
+                for (size_t i = 0; i < ce.n; ++i) {
+                    alpha += ce.coeffs(i).coeff;
+                }
+                for (size_t i = 0; i < ce.n; ++i) {
+                    ce.coeffs(i).coeff /= std::max(alpha, (T)1e-6);
+                }
+            }
+        }
+    }
     Array<T> assemble(const Array<T>& fragment) {
         if (fragment.ndim() != 3) {
             throw std::runtime_error("Template image does not have 3 dimensions");
@@ -67,17 +81,12 @@ public:
         auto result = zeros<T>(ArrayShape{fragment.shape(0)}.concatenated(canvas_.shape()));
         for (size_t r = 0; r < canvas_.shape(0); ++r) {
             for (size_t c = 0; c < canvas_.shape(1); ++c) {
-                T alpha = 0;
                 auto& ce = canvas_(r, c);
                 for (size_t i = 0; i < ce.n; ++i) {
                     const auto& f = ce.coeffs(i);
-                    alpha += f.coeff;
                     for (size_t h = 0; h < fragment.shape(0); ++h) {
                         result(h, r, c) += fragment(h, f.r, f.c) * f.coeff;
                     }
-                }
-                for (size_t h = 0; h < fragment.shape(0); ++h) {
-                    result(h, r, c) /= std::max(alpha, (T)1e-6);
                 }
             }
         }

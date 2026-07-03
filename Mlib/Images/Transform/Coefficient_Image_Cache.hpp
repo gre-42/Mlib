@@ -15,7 +15,7 @@ struct CoeffConfig {
     std::strong_ordering operator <=> (const CoeffConfig&) const = default;
 };
 
-using CachedCoefficientImage = CoefficientImage<float, 10>;
+using CachedCoefficientImage = CoefficientImage<float, 4>;
 using CoefficientImageCache = std::map<CoeffConfig, CachedCoefficientImage>;
 
 }
