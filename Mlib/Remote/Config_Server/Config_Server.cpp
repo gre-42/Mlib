@@ -102,25 +102,7 @@ ConfigServer::ConfigServer(
         }
         linfo() << "Exit configuration server";
     }}
-{
-    cert_hash_ = []() -> std::string {
-        auto filename = try_getenv("CERT_HASH_FILENAME");
-        if (filename.has_value()) {
-            linfo() << "Reading CERT_HASH_FILENAME";
-            JsonObjectFile obj;
-            obj.load_from_file(*filename);
-            auto s = obj.at<std::string>("hash");
-            auto v = decode_base64(s);
-            if (v.size() != 32) {
-                throw std::runtime_error("Cert hash does not have 32 bytes");
-            }
-            linfo() << "CERT_HASH_FILENAME has been read";
-            return s;
-        }
-        linfo() << "CERT_HASH_FILENAME not set";
-        return "";
-    }();
-}
+{}
 
 ConfigServer::~ConfigServer() {
     http_thread_.get_stop_token().request_stop();

@@ -42,7 +42,6 @@ private:
     Utf8Path static_dir_;
     std::vector<std::shared_ptr<IHttpResponseGenerator>> response_generators_;
     std::shared_ptr<IHttpResponseGenerator> error_generator_;
-    std::string cert_hash_;
     mutable std::mutex mutex_;
     mutable FastMutex receive_mutex_;
     std::list<std::shared_ptr<IDatagramNode>> websocket_nodes_;
