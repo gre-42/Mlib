@@ -126,12 +126,15 @@ IHttpResponseGenerator::ResponseVariant IndexHttpResponseGenerator::reply_with_i
     } else {
         data["remote_ip"] = boost::urls::encode(remote_ip_, boost::urls::unreserved_chars);
     }
+    auto rsp = remote_secret_.empty()
+        ? ""
+        : "?remote_secret=" + remote_secret_;
     nlohmann::json lists = std::vector<nlohmann::json>(list_paths_.size());
     for (const auto& [i, path] : enumerate(list_paths_)) {
         lists[i] = nlohmann::json{
             {"title", path->mle.eval<std::string>(path->title)},
-            {"items_path", path->items_path},
-            {"selection_path", path->selection_path}};
+            {"items_path", path->items_path + rsp},
+            {"selection_path", path->selection_path + rsp}};
     }
     data["config"] = nlohmann::json{{"lists", std::move(lists)}};
     std::string body = env_.render_file(private_dir_ / "server" / "index.inja.html", data);
