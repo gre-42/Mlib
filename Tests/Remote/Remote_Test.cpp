@@ -181,10 +181,10 @@ private:
 
 void test_remote() {
     boost::asio::io_context ioc;
-    auto server = DatagramNodeFactory::create_udp(ioc, {"127.0.0.1", 1542});
+    auto server = DatagramNodeFactory::create_udp(ioc, {"", "127.0.0.1", 1542});
     server->bind();
     server->start_receive_thread(100);
-    auto client = DatagramNodeFactory::create_udp(ioc, {"127.0.0.1", 1542});
+    auto client = DatagramNodeFactory::create_udp(ioc, {"", "127.0.0.1", 1542});
     client->start_receive_thread(100);
 
     linfo() << "server: " << &server << ", client: " << &client;
