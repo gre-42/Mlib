@@ -18,7 +18,7 @@ ThreadedDatagramNode::ThreadedDatagramNode(
     : socket_{ std::move(socket) }
 {}
 
-void ThreadedDatagramNode::start_receive_thread(size_t max_stored_received_messages) {
+void ThreadedDatagramNode::start_receive_thread(uint32_t max_stored_received_messages) {
     if (receive_thread_.joinable()) {
         throw std::runtime_error("UDP receive-thread already started");
     }

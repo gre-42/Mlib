@@ -4,8 +4,9 @@ use std::sync::Arc;
 use anyhow::{Context, Result};
 use pretty_hex::PrettyHex;
 use tokio::net::UdpSocket;
-// Change Certificate to Identity here:
-use wtransport::{Endpoint, ServerConfig, Identity};
+use url::Url;
+use wtransport::{Endpoint, Identity, ServerConfig};
+use wtransport::endpoint::{IncomingSession, SessionRequest};
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -14,6 +15,7 @@ async fn main() -> Result<()> {
     let target_host = env::var("TARGET_UDP_HOST").unwrap_or_else(|_| "udp-backend".to_string());
     let target_port = env::var("TARGET_UDP_PORT").unwrap_or_else(|_| "5005".to_string());
     let target_addr_str = format!("{}:{}", target_host, target_port);
+    let remote_secret_opt = std::env::var("REMOTE_SECRET").ok();
     let verbosity: i32 = env::var("WT_VERBOSE")
         .expect("WT_VERBOSE environment variable is not set")
         .parse()
@@ -43,21 +45,54 @@ async fn main() -> Result<()> {
     loop {
         let incoming_session = server.accept().await;
         let target_backend = target_addr_str.clone();
+        let secret = remote_secret_opt.clone();
 
         tokio::spawn(async move {
-            if let Err(e) = handle_session(incoming_session, target_backend, verbosity).await {
+            if let Err(e) = handle_session(secret, incoming_session, target_backend, verbosity).await {
                 eprintln!("Session error: {:?}", e);
             }
         });
     }
 }
 
+async fn validate_remote_secret(
+    incoming_request: SessionRequest,
+    expected_remote_secret_opt: Option<String>
+) -> Result<SessionRequest, ()> {
+    if let Some(expected_remote_secret) = expected_remote_secret_opt {
+        let full_path = incoming_request.path();
+        let base_url = Url::parse("https://localhost").unwrap();
+        
+        let mut remote_secret_opt = None;
+        if let Ok(parsed_url) = base_url.join(full_path) {
+            if let Some((_key, value)) = parsed_url.query_pairs().find(|(k, _v)| k == "remote_secret") {
+                remote_secret_opt = Some(value.into_owned());
+            }
+        }
+        if let Some(remote_secret) = remote_secret_opt {
+            if remote_secret == *expected_remote_secret {
+                return Ok(incoming_request);
+            }
+        }
+        println!("Access Denied: Invalid server secret.");
+        return Err(());
+    }
+    Ok(incoming_request)
+}
+
 async fn handle_session(
-        incoming_session: wtransport::endpoint::IncomingSession, 
+        expected_remote_secret_opt: Option<String>,
+        incoming_session: IncomingSession, 
         target_backend: String,
         verbosity: i32) -> Result<()> {
     // Validate and accept the WebTransport handshake
-    let session_request = incoming_session.await?;
+    let session_request = match validate_remote_secret(
+        incoming_session.await?,
+        expected_remote_secret_opt
+    ).await {
+        Ok(req) => req,
+        Err(_) => return Ok(()), // Connection already rejected and closed internally
+    };
     let connection = session_request.accept().await?;
     println!("New WebTransport connection accepted from: {}", connection.remote_address());
 

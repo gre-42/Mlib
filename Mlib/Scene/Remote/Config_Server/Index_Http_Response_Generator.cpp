@@ -39,6 +39,8 @@ IndexHttpResponseGenerator::IndexHttpResponseGenerator(
         linfo() << "CERT_HASH_FILENAME not set";
         return "";
     }();
+    remote_secret_ = getenv_default("REMOTE_SECRET", "");
+    remote_ip_ = getenv_default("REMOTE_IP", "");
 
     env_.add_callback("escape_html", 1, [](inja::Arguments& args) {
         std::string raw_string = args.at(0)->get<std::string>();
@@ -113,6 +115,16 @@ IHttpResponseGenerator::ResponseVariant IndexHttpResponseGenerator::reply_with_i
         data["cert_hash"] = nullptr;
     } else {
         data["cert_hash"] = boost::urls::encode(cert_hash_, boost::urls::unreserved_chars);
+    }
+    if (remote_secret_.empty()) {
+        data["remote_secret"] = nullptr;
+    } else {
+        data["remote_secret"] = boost::urls::encode(remote_secret_, boost::urls::unreserved_chars);
+    }
+    if (remote_ip_.empty()) {
+        data["remote_ip"] = nullptr;
+    } else {
+        data["remote_ip"] = boost::urls::encode(remote_ip_, boost::urls::unreserved_chars);
     }
     nlohmann::json lists = std::vector<nlohmann::json>(list_paths_.size());
     for (const auto& [i, path] : enumerate(list_paths_)) {

@@ -437,16 +437,17 @@ void android_main(android_app* app)
         "    [--audio_frequency <value>]\n"
         "    [--audio_alpha <value>]\n"
         "    [--audio_distance_model <value>]\n"
-        "    [--user_count <n>]\n"
-        "    [--remote_site_id <id>]\n"
-        "    [--remote_role {server,client}]\n"
-        "    [--remote_ip <ip>]\n"
-        "    [--remote_port <port>]\n"
         "    [--tty_hider]\n"
         "    [--show_only <name>]\n"
         "    [--show_only_file <filename>]\n"
         "    [--show_hitbox]\n"
         "    [--show_massbox]\n"
+        "    [--user_count <n>]\n"
+        "    [--remote_secret <id>]\n"
+        "    [--remote_site_id <id>]\n"
+        "    [--remote_role {server,client}]\n"
+        "    [--remote_ip <ip>]\n"
+        "    [--remote_port <port>]\n"
         "    [--check_al_errors]\n"
         "    [--check_gl_errors]\n"
         "    [--print_gl_calls]\n"
@@ -563,6 +564,7 @@ void android_main(android_app* app)
          "--audio_alpha",
          "--audio_distance_model",
          "--user_count",
+         "--remote_secret",
          "--remote_site_id",
          "--remote_role",
          "--remote_ip",
@@ -708,6 +710,7 @@ void android_main(android_app* app)
                 safe_sto<RemoteSiteId>(args.named_svalue("--remote_site_id")),
                 remote_role_from_string(args.named_value("--remote_role")),
                 RemoteSocket{
+                    {},
                     args.named_value("--remote_ip"),
                     safe_sto<uint16_t>(args.named_svalue("--remote_port"))
                 });
@@ -721,6 +724,12 @@ void android_main(android_app* app)
                 } catch (const std::runtime_error& e) {
                     throw std::runtime_error("Could not decode Base64 \"" + *h + "\": " + e.what());
                 }
+            }
+            if (auto h = args.try_named_value("--remote_secret"); h != nullptr) {
+                if (h->size() < 8) {
+                    throw std::runtime_error("Remote secret must have at least 8 bytes");
+                }
+                remote_params->socket.remote_secret = *h;
             }
             #endif
         }

@@ -19,7 +19,7 @@ std::shared_ptr<IDatagramNode> DatagramNodeFactory::create_web_transport(
     const RemoteSocket& socket,
     std::vector<std::byte> cert_hash)
 {
-    return WebTransportDatagramNode::create(socket, std::move(cert_hash));
+    return WebTransportDatagramNode::create(socket, std::move(cert_hash), socket.remote_secret);
 }
 #else
 std::shared_ptr<IDatagramNode> DatagramNodeFactory::create_udp(

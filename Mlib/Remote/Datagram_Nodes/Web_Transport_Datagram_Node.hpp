@@ -22,12 +22,14 @@ public:
     explicit WebTransportDatagramNode(
         ConstructorKey,
         const RemoteSocket& socket,
-        std::vector<std::byte> cert_hash);
+        std::vector<std::byte> cert_hash,
+        std::string remote_secret);
     static std::shared_ptr<WebTransportDatagramNode> create(
         const RemoteSocket& socket,
-        std::vector<std::byte> cert_hash);
+        std::vector<std::byte> cert_hash,
+        std::string remote_secret);
     virtual ~WebTransportDatagramNode() override;
-    virtual void start_receive_thread(size_t max_stored_received_messages) override;
+    virtual void start_receive_thread(uint32_t max_stored_received_messages) override;
     virtual void bind() override;
     virtual void send(std::istream& istr) override;
     virtual std::shared_ptr<ISendSocket> try_receive(
@@ -37,6 +39,7 @@ private:
     RemoteSocket remote_socket_;
     int socket_handle_;
     std::vector<std::byte> cert_hash_;
+    std::string remote_secret_;
 };
 
 }

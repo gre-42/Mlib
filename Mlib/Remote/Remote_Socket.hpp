@@ -7,6 +7,7 @@
 namespace Mlib {
 
 struct RemoteSocket {
+    std::string remote_secret;
     std::string hostname;
     uint16_t port;
 };

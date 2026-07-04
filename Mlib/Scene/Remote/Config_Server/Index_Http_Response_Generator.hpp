@@ -59,6 +59,8 @@ private:
     Utf8Path private_dir_;
     mutable FastMutex mutex_;
     std::string cert_hash_;
+    std::string remote_secret_;
+    std::string remote_ip_;
     inja::Environment env_;
 };
 

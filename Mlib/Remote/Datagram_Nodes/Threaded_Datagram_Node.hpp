@@ -22,7 +22,7 @@ class ThreadedDatagramNode final: public IDatagramNode {
 public:
     explicit ThreadedDatagramNode(std::shared_ptr<IDatagramSocket> socket);
     virtual ~ThreadedDatagramNode() override;
-    virtual void start_receive_thread(size_t max_stored_received_messages) override;
+    virtual void start_receive_thread(uint32_t max_stored_received_messages) override;
     virtual void bind() override;
     virtual void send(std::istream& istr) override;
     virtual std::shared_ptr<ISendSocket> try_receive(

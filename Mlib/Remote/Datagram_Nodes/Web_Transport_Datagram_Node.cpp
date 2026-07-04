@@ -32,7 +32,9 @@ extern "C" EMSCRIPTEN_KEEPALIVE void resolve_promise(void* promise_ptr, int js_s
 // EM_JS functions need to be wrapped in a namespace or be global to ensure
 // they are correctly linked.
 EM_JS(int, createWebTransportSocket,
-    (const char* serverUrlPtr, int maxStoredReceivedMessages, const uint8_t* certHash, int certHashLen,
+    (const char* serverUrlPtr, int maxStoredReceivedMessages,
+     const uint8_t* certHash, int certHashLen,
+     const char* remoteSecretPtr,
      void* promise_ptr),
 {
     const serverUrl = UTF8ToString(serverUrlPtr);
@@ -57,6 +59,11 @@ EM_JS(int, createWebTransportSocket,
     } else {
         console.log("Not using cert hash");
     }
+    const queryList = [];
+    const remoteSecret = UTF8ToString(remoteSecretPtr);
+    if (remoteSecret.length > 0) {
+        queryList.push("remote_secret=" + remoteSecret);
+    }
 
     if (globalThis.webTransportSockets === undefined) {
         globalThis.webTransportSockets = {};
@@ -72,7 +79,10 @@ EM_JS(int, createWebTransportSocket,
         statusCodeResolved: false
     };
     function createWebTransport() {
-        const transport = new globalThis["WebTransport"](serverUrl, options);
+        const queryString = (queryList.length === 0)
+            ? ""
+            : ("?" + queryList.join("&"));
+        const transport = new globalThis["WebTransport"](serverUrl + queryString, options);
         transport["_isClosed"] = false;
         globalThis.webTransportSockets[handle] = transport;
     }
@@ -213,17 +223,20 @@ EM_JS(int, tryReadFromWebTransportSocket, (int transportHandle, uint8_t* outBuff
 WebTransportDatagramNode::WebTransportDatagramNode(
     ConstructorKey,
     const RemoteSocket& socket,
-    std::vector<std::byte> cert_hash)
+    std::vector<std::byte> cert_hash,
+    std::string remote_secret)
     : remote_socket_{socket}
     , socket_handle_{-1}
     , cert_hash_(std::move(cert_hash))
+    , remote_secret_(std::move(remote_secret))
 {}
 
 std::shared_ptr<WebTransportDatagramNode> WebTransportDatagramNode::create(
     const RemoteSocket& socket,
-    std::vector<std::byte> cert_hash)
+    std::vector<std::byte> cert_hash,
+    std::string remote_secret)
 {
-    return std::make_shared<WebTransportDatagramNode>(ConstructorKey{}, socket, std::move(cert_hash));
+    return std::make_shared<WebTransportDatagramNode>(ConstructorKey{}, socket, std::move(cert_hash), std::move(remote_secret));
 }
 
 WebTransportDatagramNode::~WebTransportDatagramNode() {
@@ -235,7 +248,7 @@ WebTransportDatagramNode::~WebTransportDatagramNode() {
     }
 }
 
-void WebTransportDatagramNode::start_receive_thread(size_t max_stored_received_messages) {
+void WebTransportDatagramNode::start_receive_thread(uint32_t max_stored_received_messages) {
     if (socket_handle_ != -1) {
         throw std::runtime_error("Receive thread already started");
     }
@@ -247,6 +260,7 @@ void WebTransportDatagramNode::start_receive_thread(size_t max_stored_received_m
             integral_cast<int>(max_stored_received_messages),
             cert_hash_.empty() ? nullptr : (const uint8_t*)cert_hash_.data(),
             cert_hash_.empty() ? 0 : integral_cast<int>(cert_hash_.size()),
+            remote_secret_.c_str(),
             &done);
     });
     if (socket_handle_ == -1) {
