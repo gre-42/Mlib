@@ -109,7 +109,11 @@ IHttpResponseGenerator::ResponseVariant IndexHttpResponseGenerator::reply_with_i
     RequestOverrides& request)
 {
     nlohmann::json data;
-    data["cert_hash"] = boost::urls::encode(cert_hash_, boost::urls::unreserved_chars);
+    if (cert_hash_.empty()) {
+        data["cert_hash"] = nullptr;
+    } else {
+        data["cert_hash"] = boost::urls::encode(cert_hash_, boost::urls::unreserved_chars);
+    }
     nlohmann::json lists = std::vector<nlohmann::json>(list_paths_.size());
     for (const auto& [i, path] : enumerate(list_paths_)) {
         lists[i] = nlohmann::json{
