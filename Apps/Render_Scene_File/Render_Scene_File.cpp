@@ -23,6 +23,7 @@
 #include <Mlib/Scene/Load_Scene.hpp>
 #include <Mlib/Scene/Physics_Scene.hpp>
 #include <Mlib/Scene/Physics_Scenes.hpp>
+#include <Mlib/Scene/Remote/Config_Server/Game_Http_Response_Generator.hpp>
 #include <Mlib/Scene/Remote/Config_Server/Index_Http_Response_Generator.hpp>
 #include <Mlib/Scene/Remote/Remote_Config.hpp>
 #include <Mlib/Scene/Remote/Remote_Verbosity.hpp>
@@ -717,9 +718,11 @@ int main(int argc, char** argv) {
         Utf8Path private_dir = "private";
         Utf8Path public_dir = "public";
         auto index_generator = std::make_shared<IndexHttpResponseGenerator>(private_dir);
+        auto game_generator = std::make_shared<GameHttpResponseGenerator>(private_dir);
         auto static_generator = std::make_shared<StaticHttpResponseGenerator>();
         auto response_generators = std::vector<std::shared_ptr<IHttpResponseGenerator>>{
             index_generator,
+            game_generator,
             static_generator
         };
         auto error_generator = static_generator;
