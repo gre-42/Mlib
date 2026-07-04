@@ -1008,16 +1008,20 @@ void android_main(android_app* app)
         //     TimeGuard::write_svg(std::this_thread::get_id(), "/tmp/events.svg");
         // }
     } catch (const CommandLineArgumentError& e) {
+#ifndef __EMSCRIPTEN__
         lerr() << "Command-line error: " << e.what();
-        AUi::ShowMessage("Error", e.what());
+#endif
+        AUi::ShowMessage("Command-line error", e.what());
         std::this_thread::sleep_for(std::chrono::seconds(5));
         std::abort();
     } catch (const std::runtime_error& e) {
+#ifndef __EMSCRIPTEN__
         for (const auto substr : iterate_over_blocks_of_string(e.what(), 1000))
         {
             lerr() << "Runtime error: " << substr;
         }
-        AUi::ShowMessage("Error", e.what());
+#endif
+        AUi::ShowMessage("Runtime error", e.what());
         std::this_thread::sleep_for(std::chrono::seconds(5));
         std::abort();
     }
@@ -1030,7 +1034,7 @@ void android_main(android_app* app)
             lerr() << "Unhandled exception(s): " << substr;
         }
 #endif
-        AUi::ShowMessage("Error", sstr.str());
+        AUi::ShowMessage("Unhandled exception(s)", sstr.str());
         std::this_thread::sleep_for(std::chrono::seconds(5));
         std::abort();
     }
