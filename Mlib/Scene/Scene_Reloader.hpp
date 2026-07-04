@@ -11,6 +11,7 @@ struct ReplacementParameterAndFilename;
 template <class T>
 class ThreadSafePromise;
 enum class RemoteRole;
+class Utf8Path;
 
 class SceneReloader {
 public:
@@ -22,7 +23,7 @@ public:
         std::function<std::string()> get_selected_level_id,
         std::function<std::string()> get_selected_time_of_day);
     ~SceneReloader();
-    void load_scene_by_filename(const std::string& filename);
+    void load_scene_by_filename(const Utf8Path& filename);
     void set_next_scene_by_manifest(const ReplacementParameterAndFilename& rpe);
     void reload_scene();
     void change_scene();

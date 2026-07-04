@@ -28,23 +28,23 @@ DECLARE_ARGUMENT(on_before_select);
 DECLARE_ARGUMENT(on_execute);
 }
 
-ReplacementParameterAndFilename ReplacementParameterAndFilename::from_json(const std::string& filename) {
+ReplacementParameterAndFilename ReplacementParameterAndFilename::from_json(const Utf8Path& filename) {
     try {
         nlohmann::json j;
         auto ifs_p = create_ifstream(filename);
         auto& ifs = *ifs_p;
         if (ifs.fail()) {
-            throw std::runtime_error("Could not open replacement parameter entry file \"" + filename + '"');
+            throw std::runtime_error("Could not open replacement parameter entry file \"" + filename.string() + '"');
         }
         ifs >> j;
         if (!ifs.eof() && ifs.fail()) {
-            throw std::runtime_error("Error reading from file: \"" + filename + '"');
+            throw std::runtime_error("Error reading from file: \"" + filename.string() + '"');
         }
         return ReplacementParameterAndFilename{
             .rp = j.get<ReplacementParameter>(),
             .filename = filename};
     } catch (const nlohmann::json::exception& e) {
-        throw std::runtime_error("Error loading file \"" + filename + "\": " + e.what());
+        throw std::runtime_error("Error loading file \"" + filename.string() + "\": " + e.what());
     }
 }
 

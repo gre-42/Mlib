@@ -25,7 +25,7 @@ SceneReloader::SceneReloader(
 
 SceneReloader::~SceneReloader() = default;
 
-void SceneReloader::load_scene_by_filename(const std::string& filename) {
+void SceneReloader::load_scene_by_filename(const Utf8Path& filename) {
     std::scoped_lock lock{mutex_};
     linfo() << "Set next_scene_filename (0) = \"" << filename << '"';
     next_scene_filename_ = filename;

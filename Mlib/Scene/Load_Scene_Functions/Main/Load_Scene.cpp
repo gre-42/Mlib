@@ -21,7 +21,7 @@ struct RegisterJsonUserFunction {
             [](const LoadSceneJsonUserFunctionArgs& args)
             {
                 args.arguments.validate(KnownArgs::options);
-                args.scene_reloader.load_scene_by_filename(args.arguments.at<std::string>(KnownArgs::filename));
+                args.scene_reloader.load_scene_by_filename(args.arguments.path(KnownArgs::filename));
             });
     }
 } obj;

@@ -2,6 +2,7 @@
 #include <Mlib/Macro_Executor/Boolean_Expression.hpp>
 #include <Mlib/Macro_Executor/Focus.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
+#include <Mlib/Strings/Utf8_Path.hpp>
 
 namespace Mlib {
 
@@ -28,9 +29,9 @@ struct ReplacementParameter {
 void from_json(const nlohmann::json& j, ReplacementParameter& rp);
 
 struct ReplacementParameterAndFilename {
-    static ReplacementParameterAndFilename from_json(const std::string& filename);
+    static ReplacementParameterAndFilename from_json(const Utf8Path& filename);
     ReplacementParameter rp;
-    std::string filename;
+    Utf8Path filename;
     bool operator < (const ReplacementParameterAndFilename& other) const;
 };
 
