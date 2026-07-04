@@ -725,6 +725,7 @@ int main(int argc, char** argv) {
         auto error_generator = static_generator;
         ConfigServer config_server{
             RemoteSocket{
+                "",
                 args.named_svalue("--http_ip"),
                 safe_sto<uint16_t>(args.named_svalue("--http_port"))
             },
@@ -740,7 +741,7 @@ int main(int argc, char** argv) {
             safe_sto<RemoteSiteId>(args.named_svalue("--remote_site_id")),
             RemoteRole::SERVER,
             RemoteSocket{
-                {},
+                "",
                 args.named_svalue("--udp_ip"),
                 safe_sto<uint16_t>(args.named_svalue("--udp_port"))
             });
@@ -751,7 +752,7 @@ int main(int argc, char** argv) {
                 safe_sto<RemoteSiteId>(args.named_svalue("--remote_site_id")),
                 remote_role_from_string(args.named_svalue("--remote_role")),
                 RemoteSocket{
-                    {},
+                    "",
                     args.named_svalue("--udp_ip"),
                     safe_sto<uint16_t>(args.named_svalue("--udp_port"))
                 });
