@@ -18,7 +18,7 @@ GameHttpResponseGenerator::GameHttpResponseGenerator(
     : private_dir_(std::move(private_dir))
 {
     remote_secret_ = getenv_default("REMOTE_SECRET", "");
-    responders_["/game"] = [this](auto& request){ return reply_with_index(request); };
+    responders_["/client/game"] = [this](auto& request){ return reply_with_index(request); };
 }
 
 GameHttpResponseGenerator::~GameHttpResponseGenerator() = default;
