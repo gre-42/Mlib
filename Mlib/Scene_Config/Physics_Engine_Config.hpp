@@ -67,7 +67,7 @@ struct PhysicsEngineConfig {
     float max_keep_normal = 1.f * meters;
     // float overlap_clipped = 0.01f * meters;
     float intersection_point_radius = 0.03f * meters;
-    float point_equality_beta = 0.15f;
+    float point_equality_beta = 0.45f;
     float plane_equality_beta = 0.15f;
     float plane_inequality_beta = 0.02f;
     size_t nsubsteps = 8;

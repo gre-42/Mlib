@@ -405,29 +405,31 @@ void RigidBodyVehicle::collide_with_air(CollisionHistory& c)
             //     }
             // }
         }
-        // Horizontal constraints
-        {
-            size_t npoints = 3;
-            for (size_t point_id = 0; point_id < npoints; ++point_id) {
-                float angle = (float)point_id / (float)npoints * 2 * (float)M_PI;
-                FixedArray<float, 3> p1r{ 0.f, std::sin(angle), std::cos(angle) };
-                auto p1 = T1.transform((tire.radius * p1r).casted<ScenePos>());
-                auto p0 = p1 - rod0 * dot0d(rod0, p1 - abs_vehicle_mount_0);
-                c.contact_infos.push_back(std::make_unique<PlaneContactInfo2>(
-                    rbp_,
-                    tire.rb->rbp_,
-                    BoundedPlaneEqualityConstraint{
-                        PlaneEqualityConstraint{
-                            .pec = PointEqualityConstraint{
-                                .p0 = p0,
-                                .p1 = p1,
-                                .beta = c.cfg.plane_equality_beta
-                            },
-                            .plane_normal = rod0f
-                        }
-                    }));
-            }
-        }
+        // // Horizontal constraints
+        // // These constraints seem to be covered by the vertical constraints,
+        // // and are therefore disabled.
+        // {
+        //     size_t npoints = 3;
+        //     for (size_t point_id = 0; point_id < npoints; ++point_id) {
+        //         float angle = (float)point_id / (float)npoints * 2 * (float)M_PI;
+        //         FixedArray<float, 3> p1r{ 0.f, std::sin(angle), std::cos(angle) };
+        //         auto p1 = T1.transform((tire.radius * p1r).casted<ScenePos>());
+        //         auto p0 = p1 - rod0 * dot0d(rod0, p1 - abs_vehicle_mount_0);
+        //         c.contact_infos.push_back(std::make_unique<PlaneContactInfo2>(
+        //             rbp_,
+        //             tire.rb->rbp_,
+        //             BoundedPlaneEqualityConstraint{
+        //                 PlaneEqualityConstraint{
+        //                     .pec = PointEqualityConstraint{
+        //                         .p0 = p0,
+        //                         .p1 = p1,
+        //                         .beta = c.cfg.plane_equality_beta
+        //                     },
+        //                     .plane_normal = rod0f
+        //                 }
+        //             }));
+        //     }
+        // }
         // Shock absorber constraint
         {
             auto ci = std::make_unique<ShockAbsorberContactInfo2>(
