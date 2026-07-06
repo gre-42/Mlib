@@ -48,6 +48,8 @@
 #include <chrono>
 #include <stdexcept>
 
+using namespace Mlib;
+
 enum class WheelVerticalConstraintType {
     SINGLE,
     PAIR
@@ -55,8 +57,7 @@ enum class WheelVerticalConstraintType {
 
 static const float WHEEL_RADIUS = 0.25f;
 static const auto WHEEL_VERTICAL_CONSTRAINT_TYPE = WheelVerticalConstraintType::PAIR;
-
-using namespace Mlib;
+// static const auto BEACON = VariableAndHash<std::string>{"beacon"};
 
 RigidBodyVehicle::RigidBodyVehicle(
     const RigidBodyPulses& rbp,
@@ -382,32 +383,34 @@ void RigidBodyVehicle::collide_with_air(CollisionHistory& c)
                         }));
                 }
             }
-            // // Horizontal constraints
-            // // This adds constraints that do not rotate, i.e. are fixed w.r.t. the vehicle.
-            // // The rotating horizontal constraints below provide better results.
-            // {
-            //     for (auto dy = -0.5; dy <= 0.5; dy += 1) {
-            //         auto p0 = p01 + abs_vertical_line * dy;
-            //         auto p1 = p0 - rod1 * dot0d(rod1, p0 - T1.t);
-            //         c.contact_infos.push_back(std::make_unique<PlaneContactInfo2>(
-            //             rbp_,
-            //             *tire.rbp,
-            //             BoundedPlaneEqualityConstraint{
-            //                 PlaneEqualityConstraint{
-            //                     .pec = PointEqualityConstraint{
-            //                         .p0 = p0,
-            //                         .p1 = p1,
-            //                         .beta = c.cfg.plane_equality_beta
-            //                     },
-            //                     .plane_normal = rod0f
-            //                 }
-            //             }));
-            //     }
-            // }
+            // Horizontal constraints
+            // This adds constraints that do not rotate, i.e. are fixed w.r.t. the vehicle.
+            {
+                for (auto dy = -0.5; dy <= 0.5; dy += 1) {
+                    auto p0 = p01 + abs_vertical_line * dy;
+                    auto p1 = p0 - rod1 * dot0d(rod1, p0 - T1.t);
+                    // if (c.beacons != nullptr) {
+                    //     c.beacons->push_back(Beacon::create(p0, BEACON));
+                    // }
+                    c.contact_infos.push_back(std::make_unique<PlaneContactInfo2>(
+                        rbp_,
+                        tire.rb->rbp_,
+                        BoundedPlaneEqualityConstraint{
+                            PlaneEqualityConstraint{
+                                .pec = PointEqualityConstraint{
+                                    .p0 = p0,
+                                    .p1 = p1,
+                                    .beta = c.cfg.plane_equality_beta
+                                },
+                                .plane_normal = rod0f
+                            }
+                        }));
+                }
+            }
         }
         // // Horizontal constraints
-        // // These constraints seem to be covered by the vertical constraints,
-        // // and are therefore disabled.
+        // // This adds constraints that rotate, i.e. are fixed w.r.t. the tire.
+        // // The non-rotating horizontal constraints above provide better results.
         // {
         //     size_t npoints = 3;
         //     for (size_t point_id = 0; point_id < npoints; ++point_id) {
@@ -415,6 +418,9 @@ void RigidBodyVehicle::collide_with_air(CollisionHistory& c)
         //         FixedArray<float, 3> p1r{ 0.f, std::sin(angle), std::cos(angle) };
         //         auto p1 = T1.transform((tire.radius * p1r).casted<ScenePos>());
         //         auto p0 = p1 - rod0 * dot0d(rod0, p1 - abs_vehicle_mount_0);
+        //         // if (c.beacons != nullptr) {
+        //         //     c.beacons->push_back(Beacon::create(p0, BEACON));
+        //         // }
         //         c.contact_infos.push_back(std::make_unique<PlaneContactInfo2>(
         //             rbp_,
         //             tire.rb->rbp_,
