@@ -121,3 +121,5 @@ if (OPENAL_FOUND)
         PUBLIC
             MlibAudio)
 endif()
+
+wrap_allocations(MlibScene)

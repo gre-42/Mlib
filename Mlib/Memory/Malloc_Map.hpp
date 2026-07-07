@@ -1,14 +1,16 @@
 #pragma once
+#include <string>
 
 namespace Mlib {
 
 #ifdef MALLOC_WRAPPING_ENABLED
 class MallocGuard {
 public:
-    explicit MallocGuard(const char* name);
+    explicit MallocGuard(std::string name);
     ~MallocGuard();
 private:
-    const char* parent_;
+    std::string name_;
+    const std::string* parent_;
 };
 
 void print_allocated();

@@ -1,6 +1,7 @@
 #include "Load_Scene.hpp"
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Macro_Executor/Macro_Line_Executor.hpp>
+#include <Mlib/Memory/Malloc_Map.hpp>
 #include <Mlib/Remote/Remote_Params.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Load_Scene_Funcs.hpp>
@@ -54,6 +55,10 @@ LoadScene::LoadScene(
         const JsonMacroArguments& arguments,
         JsonMacroArguments* local_json_macro_arguments)
     {
+        auto* func = try_get_json_user_function(name);
+        if (func == nullptr) {
+            return false;
+        }
         auto physics_scene = [&]() -> PhysicsScene& {
             return physics_scenes[context];
         };
@@ -99,10 +104,7 @@ LoadScene::LoadScene(
             .window_logic = window_logic,
             #endif
             .exit = exit};
-        auto* func = try_get_json_user_function(args.name);
-        if (func == nullptr) {
-            return false;
-        }
+        MALLOC_GUARD(malloc_guard, "LoadScene user function: \"" + args.name + '"');
         (*func)(args);
         return true;
     }}
@@ -149,6 +151,7 @@ LoadScene::LoadScene(
 LoadScene::~LoadScene() = default;
 
 void LoadScene::operator () () {
+    MALLOC_GUARD(malloc_guard, "LoadScene::operator()");
     macro_file_executor_(macro_line_executor_);
 }
 
