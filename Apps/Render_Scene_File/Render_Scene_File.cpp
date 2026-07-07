@@ -5,6 +5,7 @@
 #include <Mlib/Macro_Executor/Notifying_Json_Macro_Arguments.hpp>
 #include <Mlib/Macro_Executor/Translators.hpp>
 #include <Mlib/Memory/Destruction_Guard.hpp>
+#include <Mlib/Memory/Malloc_Map.hpp>
 #include <Mlib/Misc/Floating_Point_Exceptions.hpp>
 #include <Mlib/OpenGL/Resource_Managers/Particle_Resources.hpp>
 #include <Mlib/OpenGL/Resource_Managers/Trail_Resources.hpp>
@@ -1133,5 +1134,6 @@ int main(int argc, char** argv) {
         print_unhandled_exceptions();
         return 1;
     }
+    PRINT_ALLOCATED();
     return 0;
 }

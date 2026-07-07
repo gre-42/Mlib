@@ -27,3 +27,5 @@ if (BUILD_AUDIO)
         PUBLIC
             MlibAudio)
 endif()
+
+wrap_allocations(MlibPhysics)

@@ -33,3 +33,5 @@ target_link_libraries(MlibOsmLoader
 if (NOT EMSCRIPTEN)
     target_link_openmp(MlibOsmLoader)
 endif()
+
+wrap_allocations(MlibOsmLoader)

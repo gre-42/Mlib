@@ -13,6 +13,7 @@
 #include <Mlib/Geometry/Mesh/Cleanup/Modulo_Uv.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array_Filter.hpp>
+#include <Mlib/Memory/Malloc_Map.hpp>
 #include <Mlib/Geometry/Mesh/Modifiers/Cluster_Meshes.hpp>
 #include <Mlib/Geometry/Mesh/Modifiers/Position_And_Meshes.hpp>
 #include <Mlib/Geometry/Mesh/Plot.hpp>
@@ -157,6 +158,7 @@ OsmMapResource::OsmMapResource(
     , triangulation_normalization_matrix_{ uninitialized }
     , terrain_styles_{ config.triangle_sampler_resource_config }
 {
+    MALLOC_GUARD(malloc_guard, "OsmMapResource ctor, no cache");
     LOG_FUNCTION("OsmMapResource::OsmMapResource");
     NodesAndWays naws;
     OsmBounds osm_bounds{ config.scale };
@@ -1804,6 +1806,8 @@ OsmMapResource::OsmMapResource(
     , triangulation_normalization_matrix_{ uninitialized }
     , terrain_styles_{}
 {
+    MALLOC_GUARD(malloc_guard, "OsmMapResource ctor, with cache");
+
     FunctionGuard fg{ "OSM map resource" };
 
     fg.update("Load OSM resource from cache");
@@ -2008,6 +2012,7 @@ std::list<const UUList<FixedArray<ColoredVertex<CompressedScenePos>, 3>>*> OsmMa
 
 void OsmMapResource::instantiate_root_renderables(const RootInstantiationOptions& options) const
 {
+    MALLOC_GUARD(malloc_guard, "OsmMapResource::instantiate_root_renderables");
     {
         std::list<VariableAndHash<std::string>> instantiated_nodes;
         hri_.instantiate_root_renderables(RootInstantiationOptions{
