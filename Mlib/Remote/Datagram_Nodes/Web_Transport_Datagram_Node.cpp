@@ -13,6 +13,8 @@
 using namespace Mlib;
 using emscripten::EM_VAL;
 
+static const std::ptrdiff_t MAX_BYTES_TO_READ = 200;
+
 enum class JsStatusCode: int {
     SUCCESS = 0,
     FAILURE = 1
@@ -36,9 +38,10 @@ EM_JS(int, createWebTransportSocket,
     (const char* serverUrlPtr, int maxStoredReceivedMessages,
      const uint8_t* certHash, std::ptrdiff_t certHashLen,
      const char* remoteSecretPtr,
-     void* promise_ptr),
+     void* promise_ptr,
+     std::ptrdiff_t maxBytesToRead),
 {
-    const serverUrl = UTF8ToString(serverUrlPtr);
+    const serverUrl = UTF8ToString(serverUrlPtr, maxBytesToRead);
     console.log(`Connecting to ${serverUrl}...`);
 
     // NOTE: In production, configure valid hashes or allow self-signed for testing
@@ -61,7 +64,7 @@ EM_JS(int, createWebTransportSocket,
         console.log("Not using cert hash");
     }
     const queryList = [];
-    const remoteSecret = UTF8ToString(remoteSecretPtr);
+    const remoteSecret = UTF8ToString(remoteSecretPtr, maxBytesToRead);
     if (remoteSecret.length > 0) {
         queryList.push("remote_secret=" + remoteSecret);
     }
@@ -262,7 +265,8 @@ void WebTransportDatagramNode::start_receive_thread(uint32_t max_stored_received
             cert_hash_.empty() ? nullptr : (const uint8_t*)cert_hash_.data(),
             cert_hash_.empty() ? 0 : integral_cast<std::ptrdiff_t>(cert_hash_.size()),
             remote_secret_.c_str(),
-            &done);
+            &done,
+            MAX_BYTES_TO_READ);
     });
     if (socket_handle_ == -1) {
         throw std::runtime_error("Could not create WebTransport socket");
