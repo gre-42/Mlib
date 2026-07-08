@@ -18,6 +18,7 @@ public:
         std::function<void()> on_tick = std::function<void()>());
     ~SetFps();
     void tick(std::chrono::steady_clock::time_point completed_time);
+    void sleep();
     void execute_oldest_funcs();
     std::chrono::steady_clock::time_point completed_time() const;
     std::chrono::steady_clock::time_point simulated_time() const;

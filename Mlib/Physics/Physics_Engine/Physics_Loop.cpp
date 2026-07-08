@@ -46,9 +46,7 @@ PhysicsLoop::PhysicsLoop(
                         set_fps_.tick(simulated_time);
                     } else {
                         physics_iteration_({simulated_time, loading ? PauseStatus::LOADING : PauseStatus::PAUSED});
-                        if (!loading) {
-                            set_fps_.tick(std::chrono::steady_clock::time_point());
-                        }
+                        set_fps_.sleep();
                     }
                     // TimeGuard::print_groups(lraw());
                     // lag_finder.stop();

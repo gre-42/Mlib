@@ -46,6 +46,12 @@ void SetFps::tick(std::chrono::steady_clock::time_point completed_time)
     }
 }
 
+void SetFps::sleep() {
+    if (sleeper_ != nullptr) {
+        sleeper_->tick();
+    }
+}
+
 void SetFps::execute_oldest_funcs() {
     while (execute_oldest_func());
 }
