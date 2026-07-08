@@ -40,7 +40,7 @@ EM_JS(int, createWebTransportSocket,
      void* promise_ptr),
 {
     const utf8Decoder = new TextDecoder('utf-8');
-    const serverUrl = utf8Decoder.decode(HEAPU8.slice(serverUrlPtr, serverUrlPtr + serverUrlLen));
+    const serverUrl = utf8Decoder.decode(HEAPU8.slice(Number(serverUrlPtr), Number(serverUrlPtr) + Number(serverUrlLen)));
     console.log(`Connecting to ${serverUrl}...`);
 
     // NOTE: In production, configure valid hashes or allow self-signed for testing
@@ -54,7 +54,7 @@ EM_JS(int, createWebTransportSocket,
         options["serverCertificateHashes"] = [
             {
                 "algorithm": "sha-256",
-                "value": HEAPU8.slice(certHashPtr, certHashPtr + certHashLen)
+                "value": HEAPU8.slice(Number(certHashPtr), Number(certHashPtr) + Number(certHashLen))
             }
         ];
         // console.log(`Sending options: ${JSON.stringify(options)}`);
@@ -63,7 +63,7 @@ EM_JS(int, createWebTransportSocket,
         console.log("Not using cert hash");
     }
     const queryList = [];
-    const remoteSecret = utf8Decoder.decode(HEAPU8.slice(remoteSecretPtr, remoteSecretPtr + remoteSecretLen));
+    const remoteSecret = utf8Decoder.decode(HEAPU8.slice(Number(remoteSecretPtr), Number(remoteSecretPtr) + Number(remoteSecretLen)));
     if (remoteSecret.length > 0) {
         queryList.push("remote_secret=" + remoteSecret);
     }
@@ -172,7 +172,7 @@ EM_JS(void, closeWebTransportSocket, (int transportHandle), {
 // Marked as ASYNC because we await writer.write
 EM_JS(bool, sendUsingWebTransportSocket, (int transportHandle, const uint8_t* dataPtr, std::ptrdiff_t dataLength, void* promise_ptr), {
     // Grab raw bytes directly out of the Wasm memory heap
-    const dataArray = HEAPU8.slice(dataPtr, dataPtr + dataLength);
+    const dataArray = HEAPU8.slice(Number(dataPtr), Number(dataPtr) + Number(dataLength));
 
     try {
         const writer = globalThis.webTransportSockets[transportHandle]["datagrams"]["writable"].getWriter();
