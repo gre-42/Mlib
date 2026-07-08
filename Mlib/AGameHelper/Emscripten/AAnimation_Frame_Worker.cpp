@@ -113,12 +113,6 @@ void Mlib::execute_in_animation_frame_thread(
     }
 }
 
-#if __wasm64__
-#define EM_FUNC_SIG_VP EM_FUNC_SIG_VJ
-#else
-#define EM_FUNC_SIG_VP EM_FUNC_SIG_VI
-#endif
-
 void Mlib::execute_in_main_thread(const std::function<void()>& func) {
     if (emscripten_is_main_runtime_thread()) {
         throw std::runtime_error("execute_in_main_thread called from the main thread");
@@ -131,14 +125,14 @@ void Mlib::execute_in_main_thread(const std::function<void()>& func) {
 
     Payload payload{ func };
 
-    emscripten_sync_run_in_main_runtime_thread(EM_FUNC_SIG_VP, +[](void* arg) {
+    emscripten_sync_run_in_main_runtime_thread(EM_FUNC_SIG_VIP, +[](int unused, void* arg) {
         auto* p = static_cast<Payload*>(arg);
         try {
             p->f();
         } catch (...) {
             p->eptr = std::current_exception();
         }
-    }, &payload);
+    }, 42, &payload);
 
     if (payload.eptr) {
         std::rethrow_exception(payload.eptr);
