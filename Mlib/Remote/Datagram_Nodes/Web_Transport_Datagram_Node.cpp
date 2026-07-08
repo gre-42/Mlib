@@ -39,7 +39,8 @@ EM_JS(int, createWebTransportSocket,
      const char* remoteSecretPtr, std::ptrdiff_t remoteSecretLen,
      void* promise_ptr),
 {
-    const serverUrl = UTF8ToString(serverUrlPtr, serverUrlLen, true); // true = ignoreNul
+    const utf8Decoder = new TextDecoder('utf-8');
+    const serverUrl = utf8Decoder.decode(HEAPU8.slice(serverUrlPtr, serverUrlPtr + serverUrlLen));
     console.log(`Connecting to ${serverUrl}...`);
 
     // NOTE: In production, configure valid hashes or allow self-signed for testing
@@ -62,7 +63,7 @@ EM_JS(int, createWebTransportSocket,
         console.log("Not using cert hash");
     }
     const queryList = [];
-    const remoteSecret = UTF8ToString(remoteSecretPtr, remoteSecretLen, true); // true = ignoreNul
+    const remoteSecret = utf8Decoder.decode(HEAPU8.slice(remoteSecretPtr, remoteSecretPtr + remoteSecretLen));
     if (remoteSecret.length > 0) {
         queryList.push("remote_secret=" + remoteSecret);
     }
