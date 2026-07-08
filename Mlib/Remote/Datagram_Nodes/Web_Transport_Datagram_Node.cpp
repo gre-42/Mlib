@@ -34,7 +34,7 @@ extern "C" EMSCRIPTEN_KEEPALIVE void resolve_promise(void* promise_ptr, int js_s
 // they are correctly linked.
 EM_JS(int, createWebTransportSocket,
     (const char* serverUrlPtr, int maxStoredReceivedMessages,
-     const uint8_t* certHash, int certHashLen,
+     const uint8_t* certHash, std::ptrdiff_t certHashLen,
      const char* remoteSecretPtr,
      void* promise_ptr),
 {
@@ -260,7 +260,7 @@ void WebTransportDatagramNode::start_receive_thread(uint32_t max_stored_received
             url.c_str(),
             integral_cast<int>(max_stored_received_messages),
             cert_hash_.empty() ? nullptr : (const uint8_t*)cert_hash_.data(),
-            cert_hash_.empty() ? 0 : integral_cast<int>(cert_hash_.size()),
+            cert_hash_.empty() ? 0 : integral_cast<std::ptrdiff_t>(cert_hash_.size()),
             remote_secret_.c_str(),
             &done);
     });
