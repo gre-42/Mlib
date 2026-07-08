@@ -47,7 +47,7 @@ EM_JS(int, createWebTransportSocket,
     const options = {};
     if (certHashPtr !== 0) {
         console.log("Using cert hash");
-        if (certHashLen !== 32) {
+        if (Number(certHashLen) !== 32) {
             console.error("Certificate hash does not have 32 bytes");
             return 0;
         }
