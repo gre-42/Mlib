@@ -4,6 +4,7 @@
 #include <Mlib/Os/Io/Binary.hpp>
 #include <Mlib/Remote/Network_Transmission_Status.hpp>
 #include <Mlib/Remote/Remote_Socket.hpp>
+#include <cstddef>
 #include <emscripten/bind.h>
 #include <emscripten/em_js.h>
 #include <emscripten/val.h>
@@ -167,7 +168,7 @@ EM_JS(void, closeWebTransportSocket, (int transportHandle), {
 });
 
 // Marked as ASYNC because we await writer.write
-EM_JS(bool, sendUsingWebTransportSocket, (int transportHandle, const uint8_t* dataPtr, int dataLength, void* promise_ptr), {
+EM_JS(bool, sendUsingWebTransportSocket, (int transportHandle, const uint8_t* dataPtr, std::ptrdiff_t dataLength, void* promise_ptr), {
     // Grab raw bytes directly out of the Wasm memory heap
     const dataArray = HEAPU8.slice(dataPtr, dataPtr + dataLength);
 
@@ -294,7 +295,7 @@ void WebTransportDatagramNode::send(std::istream& istr) {
         success = sendUsingWebTransportSocket(
             socket_handle_,
             (const uint8_t*)data.data(),
-            integral_cast<int>(data.size()),
+            integral_cast<std::ptrdiff_t>(data.size()),
             &done);
     });
     if (!success) {
