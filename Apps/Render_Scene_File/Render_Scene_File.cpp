@@ -5,7 +5,6 @@
 #include <Mlib/Macro_Executor/Notifying_Json_Macro_Arguments.hpp>
 #include <Mlib/Macro_Executor/Translators.hpp>
 #include <Mlib/Memory/Destruction_Guard.hpp>
-#include <Mlib/Memory/Malloc_Map.hpp>
 #include <Mlib/Misc/Floating_Point_Exceptions.hpp>
 #include <Mlib/OpenGL/Resource_Managers/Particle_Resources.hpp>
 #include <Mlib/OpenGL/Resource_Managers/Trail_Resources.hpp>
@@ -35,6 +34,7 @@
 #include <Mlib/Strings/String_View_To_Number.hpp>
 #include <Mlib/Threads/Containers/Thread_Safe_String.hpp>
 #include <Mlib/Threads/J_Thread.hpp>
+#include <Mlib/Threads/Malloc_Map.hpp>
 #include <Mlib/Threads/Realtime_Threads.hpp>
 #include <Mlib/Threads/Termination_Manager.hpp>
 #include <Mlib/Threads/Thread_Affinity.hpp>
@@ -300,7 +300,6 @@ int main(int argc, char** argv) {
     convert_sigterm_to_exception();
     reserve_realtime_threads(0);
     ThreadInitializer ti{"Main", ThreadAffinity::POOL};
-    MALLOC_GUARD(malloc_guard, "Main");
 
     const char* help =
         "Usage: render_scene_file working_directory scene.scn.json\n"

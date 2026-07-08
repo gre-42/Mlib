@@ -12,12 +12,12 @@
 #include <Mlib/Math/Power_Of_Two_Divider.hpp>
 #include <Mlib/Memory/Destruction_Functions_Removeal_Tokens_Ref.hpp>
 #include <Mlib/Memory/Float_To_Integral.hpp>
-#include <Mlib/Memory/Malloc_Map.hpp>
 #include <Mlib/Physics/Collision/Collidable_Mode.hpp>
 #include <Mlib/Physics/Containers/Collision_Group.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Scene_Config/Physics_Engine_Config.hpp>
 #include <Mlib/Testing/Assert.hpp>
+#include <Mlib/Threads/Malloc_Map.hpp>
 #include <stdexcept>
 
 using namespace Mlib;

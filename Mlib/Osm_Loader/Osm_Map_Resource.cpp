@@ -31,7 +31,6 @@
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Math/Transformation/Bijection.hpp>
 #include <Mlib/Math/Transformation/Translation_Matrix.hpp>
-#include <Mlib/Memory/Malloc_Map.hpp>
 #include <Mlib/Misc/Log.hpp>
 #include <Mlib/Navigation/Navigation_Mesh_Builder.hpp>
 #include <Mlib/OpenGL/Resources/Colored_Vertex_Array_Resource.hpp>
@@ -125,6 +124,7 @@
 #include <Mlib/Scene_Graph/Way_Point_Sandbox.hpp>
 #include <Mlib/Strings/String_View_To_Number.hpp>
 #include <Mlib/Strings/String_View_To_Scene_Pos.hpp>
+#include <Mlib/Threads/Malloc_Map.hpp>
 #include <Mlib/Threads/Thread_Top.hpp>
 #include <fstream>
 #include <mutex>

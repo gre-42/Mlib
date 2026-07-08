@@ -7,6 +7,9 @@ using namespace Mlib;
 ThreadInitializer::ThreadInitializer(
     const std::string& name,
     ThreadAffinity affinity)
+    #ifdef MALLOC_WRAPPING_ENABLED
+    : malloc_guard_{ name }
+    #endif
 {
     set_thread_name(name);
     if (affinity == ThreadAffinity::DEDICATED) {

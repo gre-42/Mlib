@@ -422,9 +422,9 @@ macro(ddebug)
 endmacro()
 
 macro(wrap_allocations target)
-    target_link_options(${target} PRIVATE -Wl,--wrap=malloc
+    target_link_options(${target} PUBLIC -Wl,--wrap=malloc
         -Wl,--wrap=_Znwm -Wl,--wrap=_Znam -Wl,--wrap=_ZnwmSt11align_val_t)
-    target_compile_options(${target} PRIVATE -DMALLOC_WRAPPING_ENABLED)
+    target_compile_options(${target} PUBLIC -DMALLOC_WRAPPING_ENABLED)
 endmacro()
 
 macro(set_stack_size)

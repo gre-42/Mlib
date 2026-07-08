@@ -11,3 +11,5 @@ target_link_libraries(MlibThreads
     PUBLIC
         MlibOs
         MlibTime)
+
+wrap_allocations(MlibThreads)
