@@ -13,8 +13,6 @@
 using namespace Mlib;
 using emscripten::EM_VAL;
 
-static const std::ptrdiff_t MAX_BYTES_TO_READ = 200;
-
 enum class JsStatusCode: int {
     SUCCESS = 0,
     FAILURE = 1
@@ -35,18 +33,18 @@ extern "C" EMSCRIPTEN_KEEPALIVE void resolve_promise(void* promise_ptr, int js_s
 // EM_JS functions need to be wrapped in a namespace or be global to ensure
 // they are correctly linked.
 EM_JS(int, createWebTransportSocket,
-    (const char* serverUrlPtr, int maxStoredReceivedMessages,
-     const uint8_t* certHash, std::ptrdiff_t certHashLen,
-     const char* remoteSecretPtr,
-     void* promise_ptr,
-     std::ptrdiff_t maxBytesToRead),
+    (const char* serverUrlPtr, std::ptrdiff_t serverUrlLen,
+     int maxStoredReceivedMessages,
+     const uint8_t* certHashPtr, std::ptrdiff_t certHashLen,
+     const char* remoteSecretPtr, std::ptrdiff_t remoteSecretLen,
+     void* promise_ptr),
 {
-    const serverUrl = UTF8ToString(serverUrlPtr, maxBytesToRead);
+    const serverUrl = UTF8ToString(serverUrlPtr, serverUrlLen, true); // true = ignoreNul
     console.log(`Connecting to ${serverUrl}...`);
 
     // NOTE: In production, configure valid hashes or allow self-signed for testing
     const options = {};
-    if (certHash !== 0) {
+    if (certHashPtr !== 0) {
         console.log("Using cert hash");
         if (certHashLen !== 32) {
             console.error("Certificate hash does not have 32 bytes");
@@ -55,7 +53,7 @@ EM_JS(int, createWebTransportSocket,
         options["serverCertificateHashes"] = [
             {
                 "algorithm": "sha-256",
-                "value": HEAPU8.slice(certHash, certHash + certHashLen)
+                "value": HEAPU8.slice(certHashPtr, certHashPtr + certHashLen)
             }
         ];
         // console.log(`Sending options: ${JSON.stringify(options)}`);
@@ -64,7 +62,7 @@ EM_JS(int, createWebTransportSocket,
         console.log("Not using cert hash");
     }
     const queryList = [];
-    const remoteSecret = UTF8ToString(remoteSecretPtr, maxBytesToRead);
+    const remoteSecret = UTF8ToString(remoteSecretPtr, remoteSecretLen, true); // true = ignoreNul
     if (remoteSecret.length > 0) {
         queryList.push("remote_secret=" + remoteSecret);
     }
@@ -260,13 +258,12 @@ void WebTransportDatagramNode::start_receive_thread(uint32_t max_stored_received
     std::promise<JsStatusCode> done;
     execute_in_main_thread([&](){
         socket_handle_ = createWebTransportSocket(
-            url.c_str(),
+            url.data(), integral_cast<std::ptrdiff_t>(url.length()),
             integral_cast<int>(max_stored_received_messages),
             cert_hash_.empty() ? nullptr : (const uint8_t*)cert_hash_.data(),
             cert_hash_.empty() ? 0 : integral_cast<std::ptrdiff_t>(cert_hash_.size()),
-            remote_secret_.c_str(),
-            &done,
-            MAX_BYTES_TO_READ);
+            remote_secret_.data(), integral_cast<std::ptrdiff_t>(remote_secret_.length()),
+            &done);
     });
     if (socket_handle_ == -1) {
         throw std::runtime_error("Could not create WebTransport socket");
