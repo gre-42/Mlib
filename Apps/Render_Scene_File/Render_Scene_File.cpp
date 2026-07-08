@@ -300,6 +300,7 @@ int main(int argc, char** argv) {
     convert_sigterm_to_exception();
     reserve_realtime_threads(0);
     ThreadInitializer ti{"Main", ThreadAffinity::POOL};
+    MALLOC_GUARD(malloc_guard, "Main");
 
     const char* help =
         "Usage: render_scene_file working_directory scene.scn.json\n"

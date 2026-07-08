@@ -75,31 +75,41 @@ extern "C" {
 }
 
 void print_size(std::ostream& ostr, size_t s) {
-    if (s >= 1000'000'000) {
+    if (s >= 1'000'000'000) {
         ostr << (double(s) / 1e9) << " GB";
-    } else if (s >= 1000'000) {
-    ostr << (double(s) / 1e6) << " MB";
-    } else if (s >= 1000) {
+    } else if (s >= 1'000'000) {
+        ostr << (double(s) / 1e6) << " MB";
+    } else if (s >= 1'000) {
         ostr << (double(s) / 1e3) << " kB";
     } else {
         ostr << s << " B";
     }
 }
 
+struct SizePrinter {
+    size_t s;
+};
+
+std::ostream& operator << (std::ostream& ostr, const SizePrinter& p) {
+    print_size(ostr, p.s);
+    return ostr;
+}
+
 void Mlib::print_allocated() {
+    MallocGuard malloc_guard{""};
+    size_t sum = 0;
     linfo() << "Allocated begin";
     std::scoped_lock lock{allocated_mutex_};
     std::list<std::pair<size_t, std::string>> lst;
     for (const auto& [k, v] : allocated_) {
         lst.emplace_back(v, k);
+        sum += v;
     }
     lst.sort();
     for (const auto& [v, k] : lst) {
-        auto l = linfo();
-        l << k << ": ";
-        print_size(l, v);
+        linfo() << k << ": " << SizePrinter{v};
     }
-    linfo() << "Allocated end";
+    linfo() << "Allocated end (" << SizePrinter{sum} << ")";
 }
 
 #endif
