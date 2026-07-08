@@ -199,7 +199,6 @@ EM_JS(bool, sendUsingWebTransportSocket, (int transportHandle, const uint8_t* da
 EM_JS(int, tryReadFromWebTransportSocket, (int transportHandle, uint8_t* outBufferPtr, int maxCapacity), {
     const transport = globalThis.webTransportSockets[transportHandle];
     const permanent = globalThis.webTransportPermanent[transportHandle];
-
     if (!transport) return -3;
     if (permanent.packetQueue.length === 0) {
         if (transport["_isClosed"]) {
@@ -208,18 +207,12 @@ EM_JS(int, tryReadFromWebTransportSocket, (int transportHandle, uint8_t* outBuff
             return 0;
         }
     }
-
     const value = permanent.packetQueue.shift();
-
     const bytesToCopy = Math.min(value.length, maxCapacity);
-
     if (value.length > maxCapacity) {
         console.warn(`Packet truncated: ${value.length} > ${maxCapacity}`);
     }
-
-    // Direct, ultra-fast memory copy into C++ preallocated memory
-    HEAPU8.set(value.subarray(0, bytesToCopy), outBufferPtr);
-
+    HEAPU8.set(value.subarray(0, bytesToCopy), Number(outBufferPtr));
     return value.length; // Return original length to indicate size, even if truncated
 });
 
