@@ -129,9 +129,11 @@ static void nofly_key_callback(
     //     }
     // }
     if (user_object.button_states.key_down({.key = S("LEFT_CONTROL")})) {
+#if !defined(__ANDROID__) && !defined(__EMSCRIPTEN__)
         if (keys.w.keys_pressed()) {
             user_object.wire_frame = zapped(user_object.wire_frame);
         }
+#endif
         if (keys.d.keys_pressed()) {
             user_object.depth_test = zapped(user_object.depth_test);
         }
