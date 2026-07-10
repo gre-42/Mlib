@@ -11,6 +11,7 @@
 #include <Mlib/Regex/Regex_Select.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Load_Scene_Funcs.hpp>
+#include <Mlib/Strings/Join_Arguments.hpp>
 #include <fstream>
 #include <stdexcept>
 
@@ -18,7 +19,7 @@ using namespace Mlib;
 
 namespace ToplevelKeys {
 BEGIN_ARGUMENT_LIST;
-DECLARE_ARGUMENT(defaults);
+DECLARE_ARGUMENT(prototypes);
 DECLARE_ARGUMENT(players);
 DECLARE_ARGUMENT(teams);
 DECLARE_ARGUMENT(library);
@@ -27,6 +28,7 @@ DECLARE_ARGUMENT(library);
 namespace PlayerKeys {
 BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(required);
+DECLARE_ARGUMENT(inherits_from);
 DECLARE_ARGUMENT(name);
 DECLARE_ARGUMENT(team);
 DECLARE_ARGUMENT(skills);
@@ -143,10 +145,10 @@ LateJoinPlayerFactory::LateJoinPlayerFactory(
         }
         JsonView jv{ j };
         jv.validate(ToplevelKeys::options);
-        nlohmann::json defaults = jv.at(ToplevelKeys::defaults);
-        validate(defaults, PlayerKeys::options);
-        nlohmann::json default_skills = defaults.at(PlayerKeys::skills);
-        JsonView default_skillsv{ default_skills };
+        auto prototypes = jv.at<std::map<std::string, nlohmann::json>>(ToplevelKeys::prototypes);
+        for (const auto& [_, v] : prototypes) {
+            validate(v, PlayerKeys::options);
+        }
         for (const auto& [i, jplayer] : enumerate(jv.at(ToplevelKeys::players))) {
             JsonView player{jplayer};
             player.validate(PlayerKeys::options);
@@ -157,20 +159,31 @@ LateJoinPlayerFactory::LateJoinPlayerFactory(
                 }
             }
             linfo() << "Create user for slot " << i;
-            auto get = [&defaults, &player](std::string_view name){
-                if (player.contains(name)) {
-                    return player.at(name);
+            auto inherits_from = player.try_at<std::vector<std::string>>(PlayerKeys::inherits_from);
+            std::string spawner_name = player.at<std::string>(PlayerKeys::name);
+            auto get = [&inherits_from, &prototypes, &player, &spawner_name]<class... TKeys>(TKeys... path){
+                {
+                    auto res = player.try_resolve(path...);
+                    if (res.has_value()) {
+                        return *res;
+                    }
                 }
-                if (defaults.contains(name)) {
-                    return defaults.at(name);
+                if (inherits_from.has_value()) {
+                    for (const auto& i : *inherits_from) {
+                        auto pr = prototypes.find(i);
+                        if (pr == prototypes.end()) {
+                            throw std::runtime_error("Could not find prototype with name \"" + i + '"');
+                        }
+                        JsonView prv{pr->second};
+                        auto res = prv.try_resolve(path...);
+                        if (res.has_value()) {
+                            return *res;
+                        }
+                    }
                 }
-                throw std::runtime_error("Could not find key \"" + std::string{ name } + "\" in player or defaults");
-            };
-            auto get_skill = [&default_skillsv, &player](std::string_view source, std::string_view name){
-                auto player_skill = player.try_resolve(PlayerKeys::skills, source, name);
-                return player_skill.has_value()
-                    ? *player_skill
-                    : default_skillsv.resolve_j(source, name);
+                throw std::runtime_error(
+                    "Could not find key \"" + join_arguments("/", path...) +
+                    "\" in player or defaults. Player: \"" + spawner_name + '"');
             };
             auto team = player.at<std::string>(PlayerKeys::team);
             auto color = jv.resolve_t<UFixedArray<float, 3>>(ToplevelKeys::teams, team, TeamKeys::style, StyleKeys::color);
@@ -189,22 +202,21 @@ LateJoinPlayerFactory::LateJoinPlayerFactory(
                     {"if_human_style", true},
                     {"if_car_body_renderable_style", true},
                     {"color", color},
-                    {"user_drive", get_skill(SourceKeys::user, SkillsKeys::can_drive)},
-                    {"user_aim", get_skill(SourceKeys::user, SkillsKeys::can_aim)},
-                    {"user_shoot", get_skill(SourceKeys::user, SkillsKeys::can_shoot)},
-                    {"ai_drive", get_skill(SourceKeys::ai, SkillsKeys::can_drive)},
-                    {"ai_aim", get_skill(SourceKeys::ai, SkillsKeys::can_aim)},
-                    {"ai_shoot", get_skill(SourceKeys::ai, SkillsKeys::can_shoot)},
-                    {"ai_select_opponent", get_skill(SourceKeys::ai, SkillsKeys::can_select_opponent)},
-                    {"ai_select_weapon", get_skill(SourceKeys::ai, SkillsKeys::can_select_weapon)},
-                    {"velocity_error_std", get_skill(SourceKeys::ai, SkillsKeys::velocity_error_std)},
-                    {"yaw_error_std", get_skill(SourceKeys::ai, SkillsKeys::yaw_error_std)},
-                    {"pitch_error_std", get_skill(SourceKeys::ai, SkillsKeys::pitch_error_std)},
-                    {"error_alpha", get_skill(SourceKeys::ai, SkillsKeys::error_alpha)},
-                    {"respawn_cooldown_time", get_skill(SourceKeys::ai, SkillsKeys::respawn_cooldown_time)},
+                    {"user_drive", get(PlayerKeys::skills, SourceKeys::user, SkillsKeys::can_drive)},
+                    {"user_aim", get(PlayerKeys::skills, SourceKeys::user, SkillsKeys::can_aim)},
+                    {"user_shoot", get(PlayerKeys::skills, SourceKeys::user, SkillsKeys::can_shoot)},
+                    {"ai_drive", get(PlayerKeys::skills, SourceKeys::ai, SkillsKeys::can_drive)},
+                    {"ai_aim", get(PlayerKeys::skills, SourceKeys::ai, SkillsKeys::can_aim)},
+                    {"ai_shoot", get(PlayerKeys::skills, SourceKeys::ai, SkillsKeys::can_shoot)},
+                    {"ai_select_opponent", get(PlayerKeys::skills, SourceKeys::ai, SkillsKeys::can_select_opponent)},
+                    {"ai_select_weapon", get(PlayerKeys::skills, SourceKeys::ai, SkillsKeys::can_select_weapon)},
+                    {"velocity_error_std", get(PlayerKeys::skills, SourceKeys::ai, SkillsKeys::velocity_error_std)},
+                    {"yaw_error_std", get(PlayerKeys::skills, SourceKeys::ai, SkillsKeys::yaw_error_std)},
+                    {"pitch_error_std", get(PlayerKeys::skills, SourceKeys::ai, SkillsKeys::pitch_error_std)},
+                    {"error_alpha", get(PlayerKeys::skills, SourceKeys::ai, SkillsKeys::error_alpha)},
+                    {"respawn_cooldown_time", get(PlayerKeys::skills, SourceKeys::ai, SkillsKeys::respawn_cooldown_time)},
                     {"mute", false}
                 };
-                std::string spawner_name = player.at<std::string>(PlayerKeys::name);
                 JsonMacroArguments locals{{
                     {ToplevelKeys::library, jv.at<std::string>(ToplevelKeys::library)},
                     {"vehicle_class", vars.database.at<std::string>("vehicle_class")},
@@ -261,18 +273,18 @@ LateJoinPlayerFactory::LateJoinPlayerFactory(
                 }
             } else {
                 nlohmann::json let{
-                    {"spawner_name", player.at<std::string>(PlayerKeys::name)},
+                    {"spawner_name", spawner_name},
                     {"asset_id", vehicle_name},
                     {"spawn_group", spawn_group},
                     {"team", team},
                     {"if_human_style", true},
                     {"if_car_body_renderable_style", true},
                     {"color", color},
-                    {"velocity_error_std", get_skill(SourceKeys::ai, SkillsKeys::velocity_error_std)},
-                    {"yaw_error_std", get_skill(SourceKeys::ai, SkillsKeys::yaw_error_std)},
-                    {"pitch_error_std", get_skill(SourceKeys::ai, SkillsKeys::pitch_error_std)},
-                    {"error_alpha", get_skill(SourceKeys::ai, SkillsKeys::error_alpha)},
-                    {"respawn_cooldown_time", get_skill(SourceKeys::ai, SkillsKeys::respawn_cooldown_time)},
+                    {"velocity_error_std", get(PlayerKeys::skills, SourceKeys::ai, SkillsKeys::velocity_error_std)},
+                    {"yaw_error_std", get(PlayerKeys::skills, SourceKeys::ai, SkillsKeys::yaw_error_std)},
+                    {"pitch_error_std", get(PlayerKeys::skills, SourceKeys::ai, SkillsKeys::pitch_error_std)},
+                    {"error_alpha", get(PlayerKeys::skills, SourceKeys::ai, SkillsKeys::error_alpha)},
+                    {"respawn_cooldown_time", get(PlayerKeys::skills, SourceKeys::ai, SkillsKeys::respawn_cooldown_time)},
                     {"mute", false}
                 };
                 JsonMacroArguments locals{{
