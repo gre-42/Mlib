@@ -82,10 +82,9 @@ DECLARE_ARGUMENT(group);
 DECLARE_ARGUMENT(vehicle);
 }
 
-namespace UserKeys {
+namespace PlayerUserKeys {
 BEGIN_ARGUMENT_LIST;
-DECLARE_ARGUMENT(id);
-DECLARE_ARGUMENT(name);
+DECLARE_ARGUMENT(rank);
 }
 
 LateJoinPlayerFactory::LateJoinPlayerFactory(
@@ -238,7 +237,7 @@ LateJoinPlayerFactory::LateJoinPlayerFactory(
                         if (!user.has_value()) {
                             throw std::runtime_error("\"pc\" controller requires \"user\"");
                         }
-                        auto rank = JsonView{*user}.at<uint32_t>("rank");
+                        auto rank = JsonView{*user}.at<uint32_t>(PlayerUserKeys::rank);
                         u = remote_sites.try_get_user_by_rank(rank);
                         if ((u == nullptr) || ((u->type == UserType::REMOTE) && (u->get_status() != UserStatus::LEVEL_LOADED))) {
                             return rank;
@@ -269,7 +268,9 @@ LateJoinPlayerFactory::LateJoinPlayerFactory(
                 };
                 auto deferred_rank = create_player();
                 if (deferred_rank.has_value()) {
-                    create_rank_player_.try_emplace(*deferred_rank, std::move(create_player));
+                    if (!create_rank_player_.try_emplace(*deferred_rank, std::move(create_player)).second) {
+                        throw std::runtime_error("Player with rank \"" + std::to_string(*deferred_rank) + "\" already exists");
+                    }
                 }
             } else {
                 nlohmann::json let{
