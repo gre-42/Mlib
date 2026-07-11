@@ -117,10 +117,16 @@ std::shared_ptr<AudioBuffer> AudioBuffer::from_mp3(
     if (dec.info.channels != 1) {
         throw std::runtime_error("mp3 file does not have 1 channel: \"" + filename.string() + '"');
     }
+    if (dec.samples > 50'000'000) {
+        throw std::runtime_error("mp3 file requires more than 100MB after decoding: \"" + filename.string() + '"');
+    }
     // Allocate memory for decoded samples
     std::vector<int16_t> pcm_data(dec.samples);
     {
         size_t read_samples = mp3dec_ex_read(&dec, pcm_data.data(), dec.samples);
+        if (read_samples > dec.samples) {
+            throw std::runtime_error("mp3 file has more samples than expected after decoding: \"" + filename.string() + '"');
+        }
         pcm_data.resize(read_samples);
     }
     if (lowpass.has_value()) {
