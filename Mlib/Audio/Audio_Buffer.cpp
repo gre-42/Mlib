@@ -148,8 +148,8 @@ std::shared_ptr<AudioBuffer> AudioBuffer::from_mp3(
             throw std::runtime_error("Unexpected device frequency: \"" + filename.string() + '"');
         }
         auto pcm_data_float = clipped(
-            -1.f + 2.f * resample_1d(
-                normalized_integral<float>(pcm_data),
+            resample_1d(
+                normalized_integral<float>(pcm_data, -1.f, 1.f),
                 1.f / integral_to_float<float>(dec.info.hz),
                 1.f / integral_to_float<float>(device_frequency)),
             -1.f, 1.f);

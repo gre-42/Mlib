@@ -8,11 +8,16 @@
 namespace Mlib {
 
 template <std::floating_point TDest, std::integral TInt>
-Array<TDest> normalized_integral(const Array<TInt>& a) {
+Array<TDest> normalized_integral(
+    const Array<TInt>& a,
+    const TDest& dlow = 0, const TDest& dhigh = 1)
+{
     auto tmp = normalized_and_clipped(
         a.template casted<double>(),
         integral_to_float<double>(std::numeric_limits<TInt>::min()),
-        integral_to_float<double>(std::numeric_limits<TInt>::max()));
+        integral_to_float<double>(std::numeric_limits<TInt>::max()),
+        (double)dlow,
+        (double)dhigh);
     if constexpr (std::is_same_v<TDest, double>) {
         return tmp;
     } else {

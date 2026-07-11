@@ -29,16 +29,25 @@ Array<TData> clipped(const Array<TData>& a, const TData& low, const TData& high)
 }
 
 template <class TData>
-void normalize_and_clip(Array<TData>& a, const TData& low, const TData& high) {
+void normalize_and_clip(
+    Array<TData>& a,
+    const TData& low, const TData& high,
+    const TData& dlow = 0, const TData& dhigh = 1)
+{
     a -= low;
-    a /= (high - low);
-    clip<TData>(a, 0, 1);
+    a *= (dhigh - dlow) / (high - low);
+    a += dlow;
+    clip<TData>(a, dlow, dhigh);
 }
 
 template <class TData>
-Array<TData> normalized_and_clipped(const Array<TData>& a, const TData& low, const TData& high) {
+Array<TData> normalized_and_clipped(
+    const Array<TData>& a,
+    const TData& low, const TData& high,
+    const TData& dlow = 0, const TData& dhigh = 1)
+{
     Array<TData> result = a.copy();
-    normalize_and_clip(result, low, high);
+    normalize_and_clip(result, low, high, dlow, dhigh);
     return result;
 }
 
