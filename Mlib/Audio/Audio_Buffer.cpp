@@ -119,14 +119,17 @@ std::shared_ptr<AudioBuffer> AudioBuffer::from_mp3(
     }
     // Allocate memory for decoded samples
     std::vector<int16_t> pcm_data(dec.samples);
-    size_t read_samples = mp3dec_ex_read(&dec, pcm_data.data(), dec.samples);
+    {
+        size_t read_samples = mp3dec_ex_read(&dec, pcm_data.data(), dec.samples);
+        pcm_data.resize(read_samples);
+    }
     if (lowpass.has_value()) {
         BiquadFilter::process(std::span{pcm_data}, 5000.f, integral_to_float<float>(dec.info.hz), lowpass->gain, lowpass->gain_hf);
     }
     ALuint buffer;
     AL_CHK(alGenBuffers(1, &buffer));
     auto result = std::make_shared<AudioBuffer>(buffer);
-    AL_CHK(alBufferData(buffer, AL_FORMAT_MONO16, pcm_data.data(), integral_cast<ALsizei>(read_samples * sizeof(int16_t)), dec.info.hz));
+    AL_CHK(alBufferData(buffer, AL_FORMAT_MONO16, pcm_data.data(), integral_cast<ALsizei>(pcm_data.size() * sizeof(int16_t)), dec.info.hz));
     return result;
 }
 
