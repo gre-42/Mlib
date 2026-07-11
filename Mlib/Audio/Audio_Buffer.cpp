@@ -9,6 +9,7 @@
 #include <Mlib/Os/Os.hpp>
 #include <Mlib/Signal/Biquad_Filter.hpp>
 #include <Mlib/Signal/Resample_1D.hpp>
+#include <Mlib/Stats/Mean.hpp>
 #include <minimp3/minimp3_ex.h>
 #include <mutex>
 #include <stdexcept>
@@ -153,10 +154,17 @@ std::shared_ptr<AudioBuffer> AudioBuffer::from_mp3(
                 1.f / integral_to_float<float>(dec.info.hz),
                 1.f / integral_to_float<float>(device_frequency)),
             -1.f, 1.f);
-        // This is necessary even for mono sound for some reason,
-        // otherwise there is a 50% chance the sound does not play.
-        if (pcm_data_float.length() % 2 != 0) {
-            pcm_data_float.reshape(pcm_data_float.length() - 1);
+        if (!all(isfinite(pcm_data_float))) {
+            throw std::runtime_error("Audio data contains NaN of infinity: \""  + filename.string() + '"');
+        }
+        if (!all(abs(pcm_data_float) <= 1.f)) {
+            throw std::runtime_error("Audio data out of bounds: \""  + filename.string() + '"');
+        }
+        if (pcm_data_float.length() < 1'000) {
+            throw std::runtime_error("Audio buffer has less than 1k samples: \""  + filename.string() + '"');
+        }
+        if (mean(pcm_data_float) > 1e-2) {
+            throw std::runtime_error("Audio data has nonzero mean: \""  + filename.string() + '"');
         }
         ALuint buffer;
         AL_CHK(alGenBuffers(1, &buffer));
