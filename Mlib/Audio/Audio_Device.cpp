@@ -8,7 +8,12 @@
 
 using namespace Mlib;
 
+ALCdevice *AudioDevice::device_ = nullptr;
+
 AudioDevice::AudioDevice() {
+    if (device_ != nullptr) {
+        throw std::runtime_error("Audio device already opened");
+    }
     // select the "preferred device"
     device_ = alcOpenDevice(nullptr);
     if (device_ == nullptr) {
@@ -20,9 +25,13 @@ AudioDevice::~AudioDevice() {
     if (!alcCloseDevice(device_)) {
         verbose_abort("Could not close audio device");
     }
+    device_ = nullptr;
 }
 
-unsigned int AudioDevice::get_frequency() const {
+unsigned int AudioDevice::get_frequency() {
+    if (device_ == nullptr) {
+        throw std::runtime_error("Audio device not initialized");
+    }
     ALCint rate;
     alcGetIntegerv(device_, ALC_FREQUENCY, 1, &rate);
     ALCenum error = alcGetError(device_);
@@ -32,7 +41,10 @@ unsigned int AudioDevice::get_frequency() const {
     return integral_cast<unsigned int>(rate);
 }
 
-std::string AudioDevice::get_name() const {
+std::string AudioDevice::get_name() {
+    if (device_ == nullptr) {
+        throw std::runtime_error("Audio device not initialized");
+    }
     const auto* name = alcGetString(device_, ALC_DEVICE_SPECIFIER);
     ALCenum error = alcGetError(device_);
     if (error != ALC_NO_ERROR) {
@@ -45,7 +57,10 @@ std::string AudioDevice::get_name() const {
 }
 
 #ifndef USE_PCM_FILTERS
-unsigned int AudioDevice::get_max_auxiliary_sends() const {
+unsigned int AudioDevice::get_max_auxiliary_sends() {
+    if (device_ == nullptr) {
+        throw std::runtime_error("Audio device not initialized");
+    }
     ALCint max_auxiliary_sends = 0;
     alcGetIntegerv(device_, ALC_MAX_AUXILIARY_SENDS, 1, &max_auxiliary_sends);
     if (ALCenum error = alcGetError(device_); error != ALC_NO_ERROR) {

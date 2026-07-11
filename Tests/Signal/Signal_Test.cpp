@@ -1,10 +1,26 @@
+#include <Mlib/Images/Normalize_Integral.hpp>
 #include <Mlib/Images/Svg.hpp>
 #include <Mlib/Memory/Integral_To_Float.hpp>
 #include <Mlib/Misc/Floating_Point_Exceptions.hpp>
 #include <Mlib/Os/Os.hpp>
 #include <Mlib/Signal/Pid_Controller.hpp>
+#include <Mlib/Signal/Resample_1D.hpp>
 
 using namespace Mlib;
+
+void test_resample_1d() {
+    linfo() << resample_1d(Array<float>{2.f, 4.f, 6.f}, 30.f, 15.f);
+    linfo() << resample_1d(Array<float>{2.f, 4.f, 6.f, 8.f}, 30.f, 15.f);
+    linfo() << resample_1d(Array<float>{2.f, 4.f, 6.f, 8.f}, 15.f, 30.f);
+    linfo() << resample_1d(Array<float>{2.f}, 15.f, 30.f);
+}
+
+void test_normalize_integral() {
+    linfo() << normalized_integral<float>(Array<uint16_t>{1, 2, (uint16_t)(0.5f * UINT16_MAX), 4});
+    linfo() << normalized_integral<double>(Array<uint16_t>{1, 2, (uint16_t)(0.5 * UINT16_MAX), 4});
+    linfo() << denormalized_integral<uint16_t>(Array<float>{0.f, 0.4f, 0.5f, 0.6f});
+    linfo() << denormalized_integral<uint16_t>(Array<double>{0., 0.4, 0.5, 0.6});
+}
 
 struct Pms {
     float x = 2.f;
@@ -67,6 +83,8 @@ int main(int argc, char** argv) {
     enable_floating_point_exceptions();
 
     try {
+        test_resample_1d();
+        test_normalize_integral();
         test_pid();
     } catch (const std::runtime_error& e) {
         lerr() << e.what();

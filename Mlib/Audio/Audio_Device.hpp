@@ -15,14 +15,14 @@ public:
     explicit AudioDevice();
     ~AudioDevice();
 
-    unsigned int get_frequency() const;
-    std::string get_name() const;
+    static unsigned int get_frequency();
+    static  std::string get_name();
 #ifndef USE_PCM_FILTERS
-    unsigned int get_max_auxiliary_sends() const;
+    static unsigned int get_max_auxiliary_sends();
 #endif
 
 private:
-    ALCdevice *device_;
+    static ALCdevice *device_;
 };
 
 }

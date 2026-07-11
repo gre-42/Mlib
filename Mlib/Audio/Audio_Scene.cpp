@@ -142,7 +142,22 @@ void AudioScene::flush_sources() {
                 AL_CHK(alSourcef(s->source_, AL_MAX_DISTANCE, assert_range(s->distance_clamping_->max, 0.f, INFINITY, "Maximum distance")));
                 s->distance_clamping_.reset();
             }
+            if (s->position_.has_value()) {
+                AL_CHK(alSourcefv(s->source_, AL_POSITION, assert_finite(s->position_->position / meters, "Position").flat_begin()));
+                AL_CHK(alSourcefv(s->source_, AL_VELOCITY, assert_finite(s->position_->velocity / (meters / seconds), "Velocity").flat_begin()));
+                s->position_requirement_ = PositionRequirement::POSITION_NOT_REQUIRED;
+            }
+            if (s->position_requirement_ != PositionRequirement::WAITING_FOR_POSITION) {
+                if (!s->muted_) {
+                    AL_CHK(alSourcef(s->source_, AL_GAIN, assert_range(s->gain_, 0.f, 10.f, "Gain")));
+                } else {
+                    AL_CHK(alSourcef(s->source_, AL_GAIN, 0.f));
+                }
+            }
             if (s->pending_command_.has_value()) {
+                if (s->position_requirement_ == PositionRequirement::WAITING_FOR_POSITION) {
+                    throw std::runtime_error("Attempt to play/stop/pause audio while waiting for position");
+                }
                 switch (*s->pending_command_) {
                     case AL_PLAYING:
                         AL_CHK(alSourcePlay(s->source_));
@@ -167,18 +182,6 @@ void AudioScene::flush_sources() {
                     break;
                 default:
                     throw std::runtime_error("Unknown AL source state: " + std::to_string(s->last_source_state_));
-            }
-            if (s->position_.has_value()) {
-                AL_CHK(alSourcefv(s->source_, AL_POSITION, assert_finite(s->position_->position / meters, "Position").flat_begin()));
-                AL_CHK(alSourcefv(s->source_, AL_VELOCITY, assert_finite(s->position_->velocity / (meters / seconds), "Velocity").flat_begin()));
-                s->position_requirement_ = PositionRequirement::POSITION_NOT_REQUIRED;
-            }
-            if (s->position_requirement_ != PositionRequirement::WAITING_FOR_POSITION) {
-                if (!s->muted_) {
-                    AL_CHK(alSourcef(s->source_, AL_GAIN, assert_range(s->gain_, 0.f, 10.f, "Pitch")));
-                } else {
-                    AL_CHK(alSourcef(s->source_, AL_GAIN, 0.f));
-                }
             }
         }
     });

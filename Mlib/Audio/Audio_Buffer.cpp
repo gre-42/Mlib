@@ -1,15 +1,21 @@
 #include "Audio_Buffer.hpp"
+#include <Mlib/Audio/Audio_Device.hpp>
 #include <Mlib/Audio/CHK.hpp>
 #include <Mlib/Audio/Io/Wav_Io.hpp>
+#include <Mlib/Images/Normalize_Integral.hpp>
 #include <Mlib/Memory/Destruction_Guard.hpp>
 #include <Mlib/Memory/Integral_Cast.hpp>
 #include <Mlib/Memory/Integral_To_Float.hpp>
 #include <Mlib/Os/Os.hpp>
 #include <Mlib/Signal/Biquad_Filter.hpp>
+#include <Mlib/Signal/Resample_1D.hpp>
 #include <minimp3/minimp3_ex.h>
 #include <mutex>
 #include <stdexcept>
 #include <vector>
+#ifdef __EMSCRIPTEN__
+#include <AL/alext.h>
+#endif
 
 using namespace Mlib;
 
@@ -121,22 +127,57 @@ std::shared_ptr<AudioBuffer> AudioBuffer::from_mp3(
         throw std::runtime_error("mp3 file requires more than 100MB after decoding: \"" + filename.string() + '"');
     }
     // Allocate memory for decoded samples
-    std::vector<int16_t> pcm_data(dec.samples);
+    Array<int16_t> pcm_data(ArrayShape{dec.samples});
     {
-        size_t read_samples = mp3dec_ex_read(&dec, pcm_data.data(), dec.samples);
+        size_t read_samples = mp3dec_ex_read(&dec, pcm_data.flat_begin(), dec.samples);
         if (read_samples > dec.samples) {
             throw std::runtime_error("mp3 file has more samples than expected after decoding: \"" + filename.string() + '"');
         }
-        pcm_data.resize(read_samples);
+        pcm_data.reshape(read_samples);
     }
     if (lowpass.has_value()) {
-        BiquadFilter::process(std::span{pcm_data}, 5000.f, integral_to_float<float>(dec.info.hz), lowpass->gain, lowpass->gain_hf);
+        BiquadFilter::process(std::span{pcm_data.flat_begin(), pcm_data.length()}, 5000.f, integral_to_float<float>(dec.info.hz), lowpass->gain, lowpass->gain_hf);
     }
-    ALuint buffer;
-    AL_CHK(alGenBuffers(1, &buffer));
-    auto result = std::make_shared<AudioBuffer>(buffer);
-    AL_CHK(alBufferData(buffer, AL_FORMAT_MONO16, pcm_data.data(), integral_cast<ALsizei>(pcm_data.size() * sizeof(int16_t)), dec.info.hz));
-    return result;
+    #ifdef __EMSCRIPTEN__
+    {
+        if ((dec.info.hz < 8'000) || (dec.info.hz > 48'000)) {
+            throw std::runtime_error("Unexpected sampling rate: \"" + filename.string() + '"');
+        }
+        auto device_frequency = AudioDevice::get_frequency();
+        if ((device_frequency < 8'000) || (device_frequency > 48'000)) {
+            throw std::runtime_error("Unexpected device frequency: \"" + filename.string() + '"');
+        }
+        auto pcm_data_float = clipped(
+            -1.f + 2.f * resample_1d(
+                normalized_integral<float>(pcm_data),
+                1.f / integral_to_float<float>(dec.info.hz),
+                1.f / integral_to_float<float>(device_frequency)),
+            -1.f, 1.f);
+        // This is necessary even for mono sound for some reason,
+        // otherwise there is a 50% chance the sound does not play.
+        if (pcm_data_float.length() % 2 != 0) {
+            pcm_data_float.reshape(pcm_data_float.length() - 1);
+        }
+        ALuint buffer;
+        AL_CHK(alGenBuffers(1, &buffer));
+        auto result = std::make_shared<AudioBuffer>(buffer);
+        AL_CHK(alBufferData(buffer, AL_FORMAT_MONO_FLOAT32, pcm_data_float.flat_begin(),
+            integral_cast<ALsizei>(pcm_data_float.length() * sizeof(float)), integral_cast<int>(device_frequency)));
+        // linfo() << filename.string() <<
+        //     " | Samples: " << pcm_data_float.length() <<
+        //     " | HZ: " << device_frequency <<
+        //     " | Total Bytes: " << (pcm_data_float.length() * sizeof(float));
+        return result;
+    }
+    #else
+    {
+        ALuint buffer;
+        AL_CHK(alGenBuffers(1, &buffer));
+        auto result = std::make_shared<AudioBuffer>(buffer);
+        AL_CHK(alBufferData(buffer, AL_FORMAT_MONO16, pcm_data.flat_begin(), integral_cast<ALsizei>(pcm_data.length() * sizeof(int16_t)), dec.info.hz));
+        return result;
+    }
+    #endif
 }
 
 std::shared_ptr<AudioBuffer> AudioBuffer::from_file(
