@@ -28,7 +28,7 @@ public:
         }
         if constexpr (!std::is_trivially_constructible_v<UData>) {
             for (size_t i = 0; i < size_; ++i) {
-                ::new ((void*)(&data_[i])) UData();
+                ::new (data_ + i) UData();
             }
         }
     }

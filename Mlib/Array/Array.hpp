@@ -869,6 +869,9 @@ public:
         return result;
     }
     Array aligned(size_t alignment) const {
+        if ((data_ == nullptr) || (shape_ == nullptr)) {
+            throw std::runtime_error("Attempt to align an uninitialized array");
+        }
         auto result = Array(std::make_shared<Vector<TData>>(data_->size(), alignment, uninitialized), *shape_);
         result = *this;
         return result;
