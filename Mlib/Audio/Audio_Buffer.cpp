@@ -167,12 +167,6 @@ std::shared_ptr<AudioBuffer> AudioBuffer::from_mp3(
             throw std::runtime_error((std::stringstream() << "Audio data has nonzero mean (" <<
                 m << "): \"" << filename.string() << '"').str());
         }
-        // This is necessary even for mono sound for some reason,
-        // otherwise there is a 50% chance the sound does not play.
-        if (pcm_data_float.length() % 128 != 0) {
-            linfo() << "Truncating \""  << filename.string() << "\" to a multiple of 128 samples";
-            pcm_data_float.reshape(pcm_data_float.length() & ~127u);
-        }
         ALuint buffer;
         AL_CHK(alGenBuffers(1, &buffer));
         auto result = std::make_shared<AudioBuffer>(buffer);
