@@ -12,4 +12,4 @@ target_link_libraries(MlibThreads
         MlibOs
         MlibTime)
 
-wrap_allocations(MlibThreads)
+# wrap_allocations(MlibThreads)

@@ -27,14 +27,14 @@ SceneReloader::~SceneReloader() = default;
 
 void SceneReloader::load_scene_by_filename(const Utf8Path& filename) {
     std::scoped_lock lock{mutex_};
-    linfo() << "Set next_scene_filename (0) = \"" << filename << '"';
+    linfo() << "Set next_scene_filename (0) = \"" << filename.string() << '"';
     next_scene_filename_ = filename;
     reload_requested_.set();
 }
 
 void SceneReloader::set_next_scene_by_manifest(const ReplacementParameterAndFilename& rpe) {
     std::scoped_lock lock{mutex_};
-    linfo() << "Set next_scene_filename (1) = \"" << rpe.filename << '"';
+    linfo() << "Set next_scene_filename (1) = \"" << rpe.filename.string() << '"';
     next_scene_filename_ = rpe.filename;
 }
 

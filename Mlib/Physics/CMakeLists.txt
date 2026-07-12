@@ -28,4 +28,4 @@ if (BUILD_AUDIO)
             MlibAudio)
 endif()
 
-wrap_allocations(MlibPhysics)
+# wrap_allocations(MlibPhysics)

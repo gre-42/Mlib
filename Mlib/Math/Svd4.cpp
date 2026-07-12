@@ -257,8 +257,8 @@ void Mlib::svd4(const Array<double>& a, Array<double>& u, Array<double>& s, Arra
     assert(a.shape(0) >= a.shape(1));
     assert(a.ndim() == 2);
     s.resize(std::min(a.shape(0), a.shape(1)));
-    u.resize[a.shape(0)](std::max(a.shape(0), a.shape(1)));  // ECON: ncols = s.length()
-    Array<double> v(ArrayShape{a.shape(1), a.shape(1)});  // ECON: nrows = s.length()
+    u.resize(a.shape(0), std::max(a.shape(0), a.shape(1)));     // ECON: ncols = s.length()
+    Array<double> v(ArrayShape{a.shape(1), a.shape(1)});        // ECON: nrows = s.length()
 
     int retval = svd_hac((int)a.shape(0), (int)a.shape(1), true, true, 1e-12, 1e-12, a, s, u, v);
     if (retval != 0) {

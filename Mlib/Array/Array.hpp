@@ -872,7 +872,7 @@ public:
         if ((data_ == nullptr) || (shape_ == nullptr)) {
             throw std::runtime_error("Attempt to align an uninitialized array");
         }
-        Array result(std::make_shared<Vector<TData>>(data_->size(), alignment, uninitialized), *shape_);
+        Array result(std::make_shared<Vector<TData>>(nelements(), alignment, uninitialized), *shape_);
         result = *this;
         return result;
     }

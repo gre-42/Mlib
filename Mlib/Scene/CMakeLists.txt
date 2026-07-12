@@ -122,4 +122,4 @@ if (OPENAL_FOUND)
             MlibAudio)
 endif()
 
-wrap_allocations(MlibScene)
+# wrap_allocations(MlibScene)

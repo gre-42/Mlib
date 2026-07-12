@@ -6,4 +6,4 @@ target_include_directories(render_scene_file PRIVATE ${Mlib_INCLUDE_DIR} ${glfw3
 
 target_link_libraries(render_scene_file PRIVATE MlibScene)
 
-wrap_allocations(render_scene_file)
+# wrap_allocations(render_scene_file)

@@ -127,7 +127,7 @@ std::shared_ptr<AudioBuffer> AudioBuffer::from_mp3(
     if (dec.samples > 50'000'000) {
         throw std::runtime_error("mp3 file requires more than 100MB after decoding: \"" + filename.string() + '"');
     }
-    Array<int16_t> pcm_data(ArrayShape{dec.samples});
+    Array<int16_t> pcm_data(ArrayShape{integral_cast<size_t>(dec.samples)});
     {
         size_t read_samples = mp3dec_ex_read(&dec, pcm_data.flat_begin(), dec.samples);
         if (read_samples > dec.samples) {
@@ -152,7 +152,7 @@ std::shared_ptr<AudioBuffer> AudioBuffer::from_mp3(
                 normalized_integral<float>(pcm_data, -1.f, 1.f),
                 1.f / integral_to_float<float>(dec.info.hz),
                 1.f / integral_to_float<float>(device_frequency)),
-            -1.f, 1.f).aligned(128);
+            -1.f, 1.f);
         if (!all(isfinite(pcm_data_float))) {
             throw std::runtime_error("Audio data contains NaN of infinity: \""  + filename.string() + '"');
         }
@@ -181,10 +181,6 @@ std::shared_ptr<AudioBuffer> AudioBuffer::from_mp3(
                 throw std::runtime_error((std::stringstream() << "Audio is too loud (dBFS=" <<
                 dBFS << "): \"" << filename.string() << '"').str());
             }
-        }
-        if (pcm_data_float.length() % 128 != 0) {
-            linfo() << "Truncating \""  << filename.string() << "\" to a multiple of 128 samples";
-            pcm_data_float.reshape(pcm_data_float.length() & ~127u);
         }
         ALuint buffer;
         AL_CHK(alGenBuffers(1, &buffer));
