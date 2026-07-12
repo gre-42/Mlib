@@ -169,8 +169,8 @@ std::shared_ptr<AudioBuffer> AudioBuffer::from_mp3(
         }
         {
             const auto SILENCE_THRESHOLD_DBFS = -60.f;
-            const auto LOUDNESS_THRESHOLD_DBFS = -6.f;
-            const auto MIN_MEAN_SQUARE = std::pow(10.f, SILENCE_THRESHOLD_DBFS / 10.f);     // 1e-6
+            const auto LOUDNESS_THRESHOLD_DBFS = -5.f;
+            const auto MIN_MEAN_SQUARE = std::pow(10.f, SILENCE_THRESHOLD_DBFS / 10.f);     // 1e-5
             const auto MAX_MEAN_SQUARE = std::pow(10.f, LOUDNESS_THRESHOLD_DBFS / 10.f);    // ~0.2511
 
             auto mean_square = mean(squared(pcm_data_float));
