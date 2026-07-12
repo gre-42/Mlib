@@ -169,9 +169,9 @@ std::shared_ptr<AudioBuffer> AudioBuffer::from_mp3(
         }
         // This is necessary even for mono sound for some reason,
         // otherwise there is a 50% chance the sound does not play.
-        if (pcm_data_float.length() % 4 != 0) {
-            linfo() << "Truncating \""  << filename.string() << "\" to a multiple of 128 bits";
-            pcm_data_float.reshape(pcm_data_float.length() & ~3u);
+        if (pcm_data_float.length() % 128 != 0) {
+            linfo() << "Truncating \""  << filename.string() << "\" to a multiple of 128 samples";
+            pcm_data_float.reshape(pcm_data_float.length() & ~127u);
         }
         ALuint buffer;
         AL_CHK(alGenBuffers(1, &buffer));
