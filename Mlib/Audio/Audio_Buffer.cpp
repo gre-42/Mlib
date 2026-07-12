@@ -167,6 +167,17 @@ std::shared_ptr<AudioBuffer> AudioBuffer::from_mp3(
             throw std::runtime_error((std::stringstream() << "Audio data has nonzero mean (" <<
                 m << "): \"" << filename.string() << '"').str());
         }
+        {
+            auto mean_square = mean(squared(pcm_data_float));
+            if (mean_square < 1e-3) {
+                throw std::runtime_error("Audio is too silent: \""  + filename.string() + '"');
+            }
+            auto dBFS = 10.f * std::log10(mean_square);
+            if (dBFS > -6.f) {
+                throw std::runtime_error((std::stringstream() << "Audio is too loud (dBFS=" <<
+                dBFS << "): \"" << filename.string() << '"').str());
+            }
+        }
         ALuint buffer;
         AL_CHK(alGenBuffers(1, &buffer));
         auto result = std::make_shared<AudioBuffer>(buffer);
