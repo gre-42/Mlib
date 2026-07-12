@@ -203,7 +203,8 @@ EM_BOOL AEngine::on_click(int eventType, const EmscriptenMouseEvent *mouseEvent,
             add_unhandled_exception(std::current_exception());
         }
     }
-    return EM_TRUE;
+    // Return "false" to let Emscripten handle the on_click event and resume audio.
+    return EM_FALSE;
 }
 
 EM_BOOL AEngine::on_mouse_move(int eventType, const EmscriptenMouseEvent *mouseEvent, void *userData) {
