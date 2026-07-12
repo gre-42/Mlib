@@ -469,7 +469,7 @@ FixedArray<TData, tshape0, tshape...>::FixedArray(const ArrayShape& shape)
 template <typename TData, size_t tshape0, size_t... tshape>
 ArrayShape FixedArray<TData, tshape0, tshape...>::to_array_shape() const {
     static_assert(ndim() == 1);
-    ArrayShape result(nelements());
+    ArrayShape result(nelements(), from_ndim);
     std::copy(flat_begin(), flat_end(), result.begin());
     return result;
 }

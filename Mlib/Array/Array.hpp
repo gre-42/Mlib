@@ -781,7 +781,7 @@ public:
     }
     Array cropped(const ArrayShape& begin, const ArrayShape& end) const {
         Array result{end - begin};
-        ArrayShape index0 = ArrayShape(ndim());
+        ArrayShape index0 = ArrayShape(ndim(), from_ndim);
         result.shape().foreach([&](const auto& index){
             index0 = index;
             index0 += begin;
@@ -872,7 +872,7 @@ public:
         if ((data_ == nullptr) || (shape_ == nullptr)) {
             throw std::runtime_error("Attempt to align an uninitialized array");
         }
-        auto result = Array(std::make_shared<Vector<TData>>(data_->size(), alignment, uninitialized), *shape_);
+        Array result(std::make_shared<Vector<TData>>(data_->size(), alignment, uninitialized), *shape_);
         result = *this;
         return result;
     }
@@ -1078,7 +1078,7 @@ public:
         if (ifs.fail()) {
             throw std::runtime_error("Could not read ndim from file \"" + filename.string() + '"');
         }
-        ArrayShape s(ndim);
+        ArrayShape s(ndim, from_ndim);
         for (size_t i = 0; i < ndim; ++i) {
             ifs >> s(i);
         }
@@ -1117,7 +1117,7 @@ public:
     }
     ArrayShape to_shape() const {
         assert(ndim() == 1);
-        ArrayShape result(length());
+        ArrayShape result(length(), from_ndim);
         for (size_t d = 0; d < length(); ++d) {
             result(d) = (*this)(d);
         }
@@ -1167,13 +1167,13 @@ public:
     void do_resize(const ArrayShape& shape) {
         assert(offset_ == 0);
         data_ = std::make_shared<Vector<TData>>(shape.nelements(), 0, uninitialized);
-        shape_ = std::make_shared<ArrayShape>(shape.ndim());
+        shape_ = std::make_shared<ArrayShape>(shape.ndim(), from_ndim);
         *shape_ = shape;
         // offset_ = 0;
         // fill_with_invalid_value(*this);
     }
     void do_reshape(const ArrayShape& shape) {
-        shape_ = std::make_shared<ArrayShape>(shape.ndim());
+        shape_ = std::make_shared<ArrayShape>(shape.ndim(), from_ndim);
         *shape_ = shape;
     }
     template <class TResultData=TData, class TOperation>

@@ -17,6 +17,8 @@ std::ostream &operator << (std::ostream &ostream, const ArrayShape &v);
 template <class TCallable>
 void foreach(const ArrayShape& begin, const ArrayShape& end, const TCallable& f);
 
+static struct FromNdim{} from_ndim;
+
 class ArrayShape: public virtual Object {
     std::vector<size_t> shape_;
     using iter_diff_type = std::vector<size_t>::iterator::difference_type;
@@ -52,7 +54,7 @@ public:
     ArrayShape(ArrayShape&& shape);
     ArrayShape& operator = (const ArrayShape& shape);
     explicit ArrayShape(std::initializer_list<size_t> shape);
-    explicit ArrayShape(size_t ndim);
+    explicit ArrayShape(size_t ndim, FromNdim);
     ArrayShape& operator = (size_t value);
     void append(size_t size);
     ArrayShape appended(size_t size) const;
@@ -79,7 +81,7 @@ public:
     size_t length() const;
     template <class TCallable>
     void foreach(const TCallable& f) const {
-        ArrayShape begin(ndim());
+        ArrayShape begin(ndim(), from_ndim);
         begin = 0;
         Mlib::foreach(begin, *this, f);
     }
@@ -89,7 +91,7 @@ public:
         const TCallable& f) const
     {
         assert(axis < ndim());
-        ArrayShape shape(ndim());
+        ArrayShape shape(ndim(), from_ndim);
         shape = *this;
         shape(axis) = 1;
         shape.foreach([&](const ArrayShape& index0){
@@ -105,7 +107,7 @@ template <class TCallable>
 void foreach(const ArrayShape& begin, const ArrayShape& end, const TCallable& f)
 {
     assert(begin.ndim() == end.ndim());
-    ArrayShape index(begin.ndim());
+    ArrayShape index(begin.ndim(), from_ndim);
     switch (begin.ndim()) {
     case 0:
         f(index);
@@ -158,7 +160,7 @@ inline void arrayshape_arrayshape_apply(ArrayShape& a, const ArrayShape& b, cons
 template <class TBinop>
 inline ArrayShape arrayshape_arrayshape_applied(const ArrayShape& a, const ArrayShape& b, const TBinop& binop) {
     assert(a.ndim() == b.ndim());
-    ArrayShape result(a.ndim());
+    ArrayShape result(a.ndim(), from_ndim);
     for (size_t i = 0; i < a.ndim(); i++) {
         result(i) = binop(a(i), b(i));
     }
@@ -167,7 +169,7 @@ inline ArrayShape arrayshape_arrayshape_applied(const ArrayShape& a, const Array
 
 template <class TOperation>
 inline ArrayShape arrayshape_applied(const ArrayShape& a, const TOperation& operation) {
-    ArrayShape result(a.ndim());
+    ArrayShape result(a.ndim(), from_ndim);
     for (size_t i = 0; i < a.ndim(); i++) {
         result(i) = operation(a(i));
     }

@@ -19,8 +19,8 @@ ArrayShape::ArrayShape(std::initializer_list<size_t> shape) {
         append(s);
     }
 }
-ArrayShape::ArrayShape(size_t ndim):
-    shape_(ndim)
+ArrayShape::ArrayShape(size_t ndim, FromNdim)
+    : shape_(ndim)
 {}
 ArrayShape& ArrayShape::operator = (size_t value) {
     for (size_t d = 0; d < ndim(); ++d) {
