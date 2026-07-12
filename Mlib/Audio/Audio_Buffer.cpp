@@ -169,8 +169,8 @@ std::shared_ptr<AudioBuffer> AudioBuffer::from_mp3(
         }
         // This is necessary even for mono sound for some reason,
         // otherwise there is a 50% chance the sound does not play.
-        if (pcm_data_float.length() % 2 != 0) {
-            pcm_data_float.reshape(pcm_data_float.length() - 1);
+        if (pcm_data_float.length() % 4 != 0) {
+            pcm_data_float.reshape(pcm_data_float.length() & ~3u);
         }
         ALuint buffer;
         AL_CHK(alGenBuffers(1, &buffer));
