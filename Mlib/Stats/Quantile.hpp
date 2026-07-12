@@ -18,7 +18,10 @@ public:
     }
     template <class TDataQ>
     const TDataX& operator () (const TDataQ& q) const {
-        auto findex = std::floor(q * TDataQ(sx_.length() - 1));
+        if (q == 1) {
+            return sx_(sx_.length() - 1);
+        }
+        auto findex = std::floor(q * TDataQ(sx_.length()));
         if (findex < 0) {
             throw std::runtime_error("Quantile too low");
         }

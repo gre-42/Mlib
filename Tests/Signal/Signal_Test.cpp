@@ -16,10 +16,10 @@ void test_resample_1d() {
 }
 
 void test_normalize_integral() {
-    linfo() << normalized_integral<float>(Array<uint16_t>{1, 2, (uint16_t)(0.5f * UINT16_MAX), 4});
-    linfo() << normalized_integral<double>(Array<uint16_t>{1, 2, (uint16_t)(0.5 * UINT16_MAX), 4});
-    linfo() << denormalized_integral<uint16_t>(Array<float>{0.f, 0.4f, 0.5f, 0.6f});
-    linfo() << denormalized_integral<uint16_t>(Array<double>{0., 0.4, 0.5, 0.6});
+    linfo() << normalized_integral<float>(Array<int16_t>{1, 2, (int16_t)(0.5f * INT16_MAX), 4, INT16_MIN, INT16_MAX}, -1.f, 1.f);
+    linfo() << normalized_integral<double>(Array<int16_t>{1, 2, (int16_t)(0.5 * INT16_MAX), 4, INT16_MIN, INT16_MAX}, -1.f, 1.f);
+    linfo() << denormalized_integral<int16_t>(Array<float>{-0.9f, 0.f, 0.4f, 0.5f, 0.6f}, -1.f, 1.f);
+    linfo() << denormalized_integral<int16_t>(Array<double>{-0.9, 0., 0.4, 0.5, 0.6}, -1., 1.);
 }
 
 struct Pms {

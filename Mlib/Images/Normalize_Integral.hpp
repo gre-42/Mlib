@@ -26,13 +26,16 @@ Array<TDest> normalized_integral(
 }
 
 template <std::integral TDest, std::floating_point TFloat>
-Array<TDest> denormalized_integral(const Array<TFloat>& a) {
+Array<TDest> denormalized_integral(
+    const Array<TFloat>& a,
+    const TFloat& slow = 0, const TFloat& shigh = 1)
+{
     auto min = integral_to_float<double>(std::numeric_limits<TDest>::min());
     auto max = integral_to_float<double>(std::numeric_limits<TDest>::max());
     if constexpr (std::is_same_v<TDest, double>) {
-        return ::Mlib::round(clipped(lerp_array(min, max, a), min, max)).template casted<TDest>();
+        return ::Mlib::round(normalized_and_clipped(a, slow, shigh, min, max)).template casted<TDest>();
     } else {
-        return ::Mlib::round(clipped(lerp_array(min, max, a.template casted<double>()), min, max)).template casted<TDest>();
+        return ::Mlib::round(normalized_and_clipped(a.template casted<double>(), (double)slow, (double)shigh, min, max)).template casted<TDest>();
     }
 }
 

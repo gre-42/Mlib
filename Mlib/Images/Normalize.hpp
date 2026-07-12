@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Math/Lerp_Array.hpp>
 #include <Mlib/Math/Math.hpp>
 #include <Mlib/Stats/Min_Max.hpp>
 #include <algorithm>
@@ -34,9 +35,7 @@ void normalize_and_clip(
     const TData& low, const TData& high,
     const TData& dlow = 0, const TData& dhigh = 1)
 {
-    a -= low;
-    a *= (dhigh - dlow) / (high - low);
-    a += dlow;
+    lerp_array(dlow, dhigh, a, low, high);
     clip<TData>(a, dlow, dhigh);
 }
 

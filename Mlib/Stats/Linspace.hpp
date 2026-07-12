@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Math/Lerp.hpp>
 #include <Mlib/Math/Math.hpp>
 #include <Mlib/Misc/Pragma_Gcc.hpp>
 
@@ -27,9 +28,10 @@ public:
         if (count_ == 1) {
             return (from_ + to_) / TData(2);
         }
+        auto fac = 1 / TData(count_ - 1);
 PRAGMA_GCC_DIAGNOSTIC_PUSH
 PRAGMA_GCC_DIAGNOSTIC_IGNORED(-Wmaybe-uninitialized)
-        return (from_ * TData(count_ - i - 1) + to_ * TData(i)) / TData(count_ - 1);
+        return lerp(from_, to_, TData(i) * fac);
 PRAGMA_GCC_DIAGNOSTIC_POP
     }
     size_t length() const {
@@ -88,8 +90,9 @@ Array<TData> linspace(const TData& from, const TData& to, size_t count) {
     if (count == 1) {
         result = (from + to) / 2;
     } else {
+        auto fac = 1 / TData(count - 1);
         for (size_t i = 0; i < count; ++i) {
-            result(i) = (from * TData(count - i - 1) + to * TData(i)) / TData(count - 1);
+            result(i) = lerp(from, to, TData(i) * fac);
         }
     }
     return result;

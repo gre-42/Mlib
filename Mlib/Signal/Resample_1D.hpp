@@ -23,7 +23,7 @@ Array<TData> resample_1d(
         0,
         y1,
         float_to_integral<size_t>(std::round(y1 * source_dt / dest_dt + 1)));
-    return interpolate(a, y);
+    return interpolate(a, y, OutOfRangeBehavior2::THROW);
 }
 
 }

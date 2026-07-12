@@ -280,12 +280,12 @@ void test_interpolate() {
     assert_allclose(
         interpolate(
             Array<float>{0.f, 1.f, 2.f},
-            Array<float>{10.f, 10.4f, 10.6f}),
+            Array<float>{10.f, 10.4f, 10.6f}, OutOfRangeBehavior2::THROW),
         Array<float>{10.f, 10.4f, 10.6f});
     assert_allclose(
         interpolate(
             Array<float>{-0.1f, 0.5f, 2.1f},
-            Array<float>{10.f, 10.4f, 10.6f}),
+            Array<float>{10.f, 10.4f, 10.6f}, OutOfRangeBehavior2::THROW),
         Array<float>{NAN, 10.2f, NAN});
 }
 

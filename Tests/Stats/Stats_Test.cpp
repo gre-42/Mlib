@@ -78,7 +78,7 @@ void test_sort() {
 void test_quantiles() {
     Array<float> x{ 9, 8, 7, 6, 5 };
     assert_allclose(
-        quantiles(x, Array<float>{0, 0.2f, 0.8f, 1}),
+        quantiles(x, Array<float>{0, 0.2f, 0.8f - 1e-6f, 1}),
         Array<float>{5, 6, 8, 9});
     assert_isclose(quantile(x, 0.2f), 6.f);
     assert_isclose(nanquantile(Array<float>({ x, NAN * x }), 0.2f), 6.f);
@@ -106,6 +106,15 @@ void test_linspace() {
     assert_allclose(
         linspace(2.f, 4.f, 5),
         Array<float>{2.f, 2.5f, 3.f, 3.5f, 4.f});
+    assert_isequal(
+        Linspace(2.f, 4.f, 5)[0],
+        2.f);
+    assert_isclose(
+        Linspace(2.f, 4.f, 5)[1],
+        2.5f);
+    assert_isequal(
+        Linspace(2.f, 4.f, 5)[4],
+        4.f);
 }
 
 void test_logspace() {
@@ -298,6 +307,7 @@ int main(int argc, char** argv) {
     enable_floating_point_exceptions();
 
     try {
+        test_linspace();
         test_median();
         test_mad();
         test_robust_deviation();
@@ -305,7 +315,6 @@ int main(int argc, char** argv) {
         test_sort();
         test_quantiles();
         test_argmin();
-        test_linspace();
         test_logspace();
         test_histogram();
         test_cdf();

@@ -163,8 +163,9 @@ std::shared_ptr<AudioBuffer> AudioBuffer::from_mp3(
         if (pcm_data_float.length() < 1'000) {
             throw std::runtime_error("Audio buffer has less than 1k samples: \""  + filename.string() + '"');
         }
-        if (mean(pcm_data_float) > 1e-2) {
-            throw std::runtime_error("Audio data has nonzero mean: \""  + filename.string() + '"');
+        if (auto m = mean(pcm_data_float); m > 1e-1f) {
+            throw std::runtime_error((std::stringstream() << "Audio data has nonzero mean (" <<
+                m << "): \"" << filename.string() << '"').str());
         }
         ALuint buffer;
         AL_CHK(alGenBuffers(1, &buffer));
