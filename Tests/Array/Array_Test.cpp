@@ -279,6 +279,12 @@ void test_fixed_history() {
     linfo() << max(h);
 }
 
+void test_aligned_alloc() {
+    Vector<float> avec{512, 128, uninitialized};
+    auto a = Array<float>(std::make_shared<Vector<float>>(512, 128, uninitialized), ArrayShape{512});
+    auto b = a.aligned(256);
+}
+
 int main(int argc, char **argv) {
     enable_floating_point_exceptions();
     try {
@@ -301,6 +307,7 @@ int main(int argc, char **argv) {
         test_semi_fix();
         test_fixed_array_of_string();
         test_fixed_history();
+        test_aligned_alloc();
     } catch (const std::runtime_error& e) {
         lerr() << "Exception: " << e.what();
         return 1;

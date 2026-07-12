@@ -153,7 +153,7 @@ std::shared_ptr<AudioBuffer> AudioBuffer::from_mp3(
                 normalized_integral<float>(pcm_data, -1.f, 1.f),
                 1.f / integral_to_float<float>(dec.info.hz),
                 1.f / integral_to_float<float>(device_frequency)),
-            -1.f, 1.f);
+            -1.f, 1.f).aligned(128);
         if (!all(isfinite(pcm_data_float))) {
             throw std::runtime_error("Audio data contains NaN of infinity: \""  + filename.string() + '"');
         }
@@ -182,6 +182,10 @@ std::shared_ptr<AudioBuffer> AudioBuffer::from_mp3(
                 throw std::runtime_error((std::stringstream() << "Audio is too loud (dBFS=" <<
                 dBFS << "): \"" << filename.string() << '"').str());
             }
+        }
+        if (pcm_data_float.length() % 128 != 0) {
+            linfo() << "Truncating \""  << filename.string() << "\" to a multiple of 128 samples";
+            pcm_data_float.reshape(pcm_data_float.length() & ~127u);
         }
         ALuint buffer;
         AL_CHK(alGenBuffers(1, &buffer));

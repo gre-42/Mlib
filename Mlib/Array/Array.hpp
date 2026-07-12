@@ -222,6 +222,15 @@ public:
     Array()
         : Array(uninitialized)
     {}
+    Array(
+        std::shared_ptr<Vector<TData>> data,
+        const ArrayShape& shape)
+        : data_{ std::move(data) }
+        , shape_{ std::make_shared<ArrayShape>(shape) }
+        , offset_{ 0 }
+        , resize{ [this](const ArrayShape& shape) { do_resize(shape); } }
+        , reshape{ [this](const ArrayShape& shape) { do_reshape(shape); } }
+    {}
     Array(const Array& rhs)
         : data_{ rhs.data_ }
         , shape_{ rhs.shape_ }
@@ -859,6 +868,11 @@ public:
         result = *this;
         return result;
     }
+    Array aligned(size_t alignment) const {
+        auto result = Array(std::make_shared<Vector<TData>>(data_->size(), alignment, uninitialized), *shape_);
+        result = *this;
+        return result;
+    }
     template <class TNewData>
     Array<TNewData> casted() const {
         Array<TNewData> result;
@@ -1149,7 +1163,7 @@ public:
     }
     void do_resize(const ArrayShape& shape) {
         assert(offset_ == 0);
-        data_ = std::make_shared<Vector<TData>>(shape.nelements(), uninitialized);
+        data_ = std::make_shared<Vector<TData>>(shape.nelements(), 0, uninitialized);
         shape_ = std::make_shared<ArrayShape>(shape.ndim());
         *shape_ = shape;
         // offset_ = 0;
