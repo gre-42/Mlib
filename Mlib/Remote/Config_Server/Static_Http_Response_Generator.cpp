@@ -19,25 +19,22 @@ IHttpResponseGenerator::ResponseVariant StaticHttpResponseGenerator::reply(
 {
     auto extension = request.public_path.extension();
     
-    // static const bleibt bestehen
     static const std::map<std::string, std::string> mime_types = {
-        {".html", "text/html"},
-        {".js", "text/javascript"},
         {".data", "application/octet-stream"},
+        {".js", "text/javascript"},
+        {".html", "text/html"},
+        {".png", "image/png"},
         {".wasm", "application/wasm"},
     };
     
-    auto mime_type = mime_types.find(extension.string()); // .string() stellt plattformübergreifende Kompatibilität sicher
+    auto mime_type = mime_types.find(extension.string());
     if (mime_type == mime_types.end()) {
         return http::status::not_implemented;
     }
     
-    // Verwende den korrekten Typ direkt
     beast::http::file_body::value_type body;
     beast::error_code ec;
     
-    // Hinweis: Bleibt synchron, ist aber durch RAII sicher, da das Senden selbst 
-    // danach durch das Verschieben in den message_generator asynchron von Beast abgewickelt wird.
     body.open(request.public_path.string().c_str(), beast::file_mode::scan, ec);
     if (ec.failed()) {
         lerr() << "Could not open file \"" << request.public_path.string() << '"';
