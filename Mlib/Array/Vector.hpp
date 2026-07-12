@@ -25,7 +25,7 @@ public:
         }
 #ifdef __EMSCRIPTEN__
         // Avoid infinite loop when replacing "new", by calling the low-level allocator
-        if (int result = posix_memalign(&data_, alignment, size); result != 0) {
+        if (int result = posix_memalign((void**)&data_, alignment_, size * sizeof(UData)); result != 0) {
             data_ = nullptr;
         }
 #else
