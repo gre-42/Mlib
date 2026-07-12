@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Initialization/Default_Uninitialized.hpp>
+#include <cstdlib>
 
 namespace Mlib {
 
@@ -22,7 +23,14 @@ public:
         if ((size_ * sizeof(UData)) % alignment_ != 0) {
             throw std::runtime_error("Vector size in bytes is not a multiple of the alignment");
         }
+#ifdef __EMSCRIPTEN__
+        // Avoid infinite loop when replacing "new", by calling the low-level allocator
+        if (int result = posix_memalign(&data_, alignment, size); result != 0) {
+            data_ = nullptr;
+        }
+#else
         data_ = (UData*)std::aligned_alloc(alignment_, size * sizeof(UData));
+#endif
         if (data_ == nullptr) {
             throw std::bad_alloc();
         }
