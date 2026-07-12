@@ -168,12 +168,17 @@ std::shared_ptr<AudioBuffer> AudioBuffer::from_mp3(
                 m << "): \"" << filename.string() << '"').str());
         }
         {
+            constexpr float SILENCE_THRESHOLD_DBFS = -60.f;
+            constexpr float LOUDNESS_THRESHOLD_DBFS = -6.f;
+            constexpr float MIN_MEAN_SQUARE = std::pow(10.f, SILENCE_THRESHOLD_DBFS / 10.f); // 1e-6
+            constexpr float MAX_MEAN_SQUARE = std::pow(10.f, LOUDNESS_THRESHOLD_DBFS / 10.f);  // ~0.2511
+
             auto mean_square = mean(squared(pcm_data_float));
-            if (mean_square < 1e-3) {
+            if (mean_square < MIN_MEAN_SQUARE) {
                 throw std::runtime_error("Audio is too silent: \""  + filename.string() + '"');
             }
-            auto dBFS = 10.f * std::log10(mean_square);
-            if (dBFS > -6.f) {
+            if (mean_square > MAX_MEAN_SQUARE) {
+                auto dBFS = 10.f * std::log10(mean_square);
                 throw std::runtime_error((std::stringstream() << "Audio is too loud (dBFS=" <<
                 dBFS << "): \"" << filename.string() << '"').str());
             }
