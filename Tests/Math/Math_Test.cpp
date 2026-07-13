@@ -135,7 +135,7 @@ void test_det_3x3() {
 
 void test_identity() {
     Array<float> a;
-    a.resize[5](4);
+    a.resize(5, 4);
     identity_array(a);
     assert(a(0, 0) == 1);
     assert(a(1, 1) == 1);
@@ -154,8 +154,8 @@ void test_lstsq() {
 void test_lstsq_complex() {
     Array<std::complex<float>> ar;
     Array<std::complex<float>> ai;
-    ar.resize[5](3);
-    ai.resize[5](3);
+    ar.resize(5, 3);
+    ai.resize(5, 3);
     randomize_array(ar, 1);
     randomize_array(ai, 2);
     Array<std::complex<float>> a = ar + std::complex<float>(0, 1) * ai;

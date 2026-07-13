@@ -12,7 +12,7 @@ void svd_u_j(
     Array<TData>& vT)
 {
     assert(a.ndim() == 2);
-    uT.resize[a.shape(0)](a.shape(0));
+    uT.resize(a.shape(0), a.shape(0));
     s.resize(uT.shape(0));
     // A=USV'
     // AA'=US²U'
