@@ -45,6 +45,10 @@ ifeq ($(UBSAN),1)
     LDFLAGS   += -fsanitize=undefined
     BUILD_DIR := B$(BUILD_DIR)
 endif
+ifeq ($(ESAN),1)
+    LDFLAGS   += -sSAFE_HEAP=1 -sASSERTIONS=2
+    BUILD_DIR := S$(BUILD_DIR)
+endif
 ifeq ($(HEADLESS),1)
     CMAKE_OPTIONS := $(CMAKE_OPTIONS) -D BUILD_AUDIO=OFF -D BUILD_GRAPHICS=OFF -D BUILD_ICU=OFF
     BUILD_DIR     := H$(BUILD_DIR)

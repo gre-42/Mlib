@@ -233,7 +233,7 @@ public:
     {}
     Array(const Array& rhs)
         : data_{ rhs.data_ }
-        , shape_{ rhs.shape_ }
+        , shape_{ rhs.shape_ }  // Reusing the shared_ptr is OK, because "resize" and "reshape" create new shapes.
         , offset_{ rhs.offset_ }
         , resize{ [this](const ArrayShape& shape) { do_resize(shape); } }
         , reshape{ [this](const ArrayShape& shape) { do_reshape(shape); } }

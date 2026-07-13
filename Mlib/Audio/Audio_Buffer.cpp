@@ -12,6 +12,7 @@
 #include <Mlib/Stats/Mean.hpp>
 #include <minimp3/minimp3_ex.h>
 #include <mutex>
+#include <sstream>
 #include <stdexcept>
 #include <vector>
 #ifdef __EMSCRIPTEN__
@@ -19,6 +20,13 @@
 #endif
 
 using namespace Mlib;
+
+#ifdef __EMSCRIPTEN__
+// Emscripten's OpenAL implementation cannot cross the 2GB boundary =>
+// allocate a buffer during program start.
+static Array<float> buffer_below_2GB{ArrayShape{44'100 * 10}}; // Enough for 10 seconds of audio.
+static std::mutex buffer_mutex;
+#endif
 
 AudioBuffer::AudioBuffer(ALuint handle)
     : handle_{ handle }
@@ -185,8 +193,20 @@ std::shared_ptr<AudioBuffer> AudioBuffer::from_mp3(
         ALuint buffer;
         AL_CHK(alGenBuffers(1, &buffer));
         auto result = std::make_shared<AudioBuffer>(buffer);
-        AL_CHK(alBufferData(buffer, AL_FORMAT_MONO_FLOAT32, pcm_data_float.flat_begin(),
-            integral_cast<ALsizei>(pcm_data_float.length() * sizeof(float)), integral_cast<int>(device_frequency)));
+        if (buffer_below_2GB.length() < pcm_data_float.length()) {
+            throw std::runtime_error((std::stringstream() <<
+                "Temporary audio buffer too small, required: " << pcm_data_float.length() <<
+                ", available: " << buffer_below_2GB.length() <<
+                ", filename: \"" << filename.string() + '"').str());
+        }
+        {
+            std::scoped_lock lock{buffer_mutex};
+            auto tmp = buffer_below_2GB;
+            tmp.reshape(pcm_data_float.length());
+            tmp = pcm_data_float;
+            AL_CHK(alBufferData(buffer, AL_FORMAT_MONO_FLOAT32, tmp.flat_begin(),
+                integral_cast<ALsizei>(tmp.length() * sizeof(float)), integral_cast<int>(device_frequency)));
+        }
         // linfo() << filename.string() <<
         //     " | Samples: " << pcm_data_float.length() <<
         //     " | HZ: " << device_frequency <<
