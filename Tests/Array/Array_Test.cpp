@@ -42,7 +42,7 @@ void test_data() {
     t(2) = data;
     assert_isclose<float>(t(2).v, 5);
 
-    t.resize[5][5](3);
+    t.resize(5, 5, 3);
     assert_isequal<size_t>(t.ndim(), 3);
     t[3](3, 2) = data;
     assert_isequal<size_t>(t.ndim(), 3);

@@ -47,6 +47,13 @@ public:
         // (*this)();
         resize_(ArrayShape{size0, size1});
     }
+    void operator () (size_t size0, size_t size1, size_t size2) {
+        // (*this)[size0];
+        // (*this)[size1];
+        // (*this)[size2];
+        // (*this)();
+        resize_(ArrayShape{size0, size1, size2});
+    }
     void operator () (const ArrayShape& shape) {
         // (*this)[shape];
         // (*this)();
