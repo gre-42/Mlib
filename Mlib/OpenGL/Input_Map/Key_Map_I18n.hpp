@@ -119,6 +119,10 @@ static const StringWithHashUnorderedMap<int> keys_map_i18n = []()
     add("ControlRight",   DOM_PK_CONTROL_RIGHT);
     add("AltRight",       DOM_PK_ALT_RIGHT);
     add("ContextMenu",    DOM_PK_CONTEXT_MENU);
+
+    /* Meta */
+    add("MetaLeft",       DOM_VK_META);
+    add("MetaRight",      DOM_VK_META);
     return result;
 }();
 
