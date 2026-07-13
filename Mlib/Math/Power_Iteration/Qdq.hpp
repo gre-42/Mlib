@@ -15,7 +15,7 @@ void qdq(
 {
     assert(a.ndim() == 2);
     assert(a.shape(0) == a.shape(1));
-    q.resize[a.shape(0)](a.shape(0));
+    q.resize(a.shape(0), a.shape(0));
     s.resize(q.shape(0));
     for (size_t i=0; i<a.shape(0); i++) {
         power_iteration(a, q, s(i), i, seed);
