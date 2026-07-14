@@ -129,13 +129,13 @@ public:
         min = (Bound)minimum(min, point);
         max = (Bound)maximum(max, point);
     }
-    template <class TDir, class TPos>
-    AxisAlignedBoundingBox<TPos, tndim> transformed(
-        const TransformationMatrix<TDir, TPos, tndim>& transformation_matrix) const
+    template <class TTDir, class TTPos>
+    AxisAlignedBoundingBox<TData, tndim> transformed(
+        const TransformationMatrix<TTDir, TTPos, tndim>& transformation_matrix) const
     {
         auto result = empty();
         for_each_corner([&](const FixedArray<TData, tndim>& corner){
-            result.extend(transformation_matrix.transform(corner));
+            result.extend(transformation_matrix.transform(corner).template casted<TPos>());
             return true;
         });
         return result;

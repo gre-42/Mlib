@@ -1695,11 +1695,11 @@ void SceneNode::set_absolute_pose(
     }
 }
 
-ExtremalAxisAlignedBoundingBox<ScenePos, 3> SceneNode::relative_aabb() const {
+ExtremalAxisAlignedBoundingBox<CompressedScenePos, 3> SceneNode::relative_aabb() const {
     std::shared_lock lock{ mutex_ };
-    ExtremalAxisAlignedBoundingBox<ScenePos, 3> result = ExtremalBoundingVolume::EMPTY;
+    ExtremalAxisAlignedBoundingBox<CompressedScenePos, 3> result = ExtremalBoundingVolume::EMPTY;
     for (const auto& [_, r] : renderables_) {
-        result.extend((*r)->aabb().casted<ScenePos>());
+        result.extend((*r)->aabb());
     }
     for (const auto& [_, c] : children_) {
         auto cb = c.scene_node->relative_aabb();
@@ -1713,11 +1713,11 @@ ExtremalAxisAlignedBoundingBox<ScenePos, 3> SceneNode::relative_aabb() const {
     return result;
 }
 
-ExtremalBoundingSphere<ScenePos, 3> SceneNode::relative_bounding_sphere() const {
+ExtremalBoundingSphere<CompressedScenePos, 3> SceneNode::relative_bounding_sphere() const {
     std::shared_lock lock{ mutex_ };
-    ExtremalBoundingSphere<ScenePos, 3> result = ExtremalBoundingVolume::EMPTY;
+    ExtremalBoundingSphere<CompressedScenePos, 3> result = ExtremalBoundingVolume::EMPTY;
     for (const auto& [_, r] : renderables_) {
-        result.extend((*r)->bounding_sphere().casted<ScenePos>());
+        result.extend((*r)->bounding_sphere());
     }
     for (const auto& [_, c] : children_) {
         auto cb = c.scene_node->relative_bounding_sphere();

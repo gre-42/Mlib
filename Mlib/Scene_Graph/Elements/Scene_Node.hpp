@@ -338,8 +338,8 @@ public:
     FixedArray<float, 3> velocity(
         std::chrono::steady_clock::time_point time,
         std::chrono::steady_clock::duration dt) const;
-    ExtremalAxisAlignedBoundingBox<ScenePos, 3> relative_aabb() const;
-    ExtremalBoundingSphere<ScenePos, 3> relative_bounding_sphere() const;
+    ExtremalAxisAlignedBoundingBox<CompressedScenePos, 3> relative_aabb() const;
+    ExtremalBoundingSphere<CompressedScenePos, 3> relative_bounding_sphere() const;
     ScenePos max_center_distance2(BillboardId billboard_id) const;
     void print(std::ostream& ostr, size_t recursion_depth = 0) const;
     bool has_color_style(const VariableAndHash<std::string>& name) const;

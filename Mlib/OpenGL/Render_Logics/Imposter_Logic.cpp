@@ -121,7 +121,7 @@ ImposterLogic::ImposterLogic(
     if (aabb.empty() || aabb.full()) {
         throw std::runtime_error("Cannot compute AABB of \"" + debug_prefix_ + '"');
     }
-    obj_relative_aabb_ = aabb.data();
+    obj_relative_aabb_ = aabb.casted<ScenePos>().data();
     orig_node_->insert_node_hider(
         { renderable_scene, CURRENT_SOURCE_LOCATION },
         { orig_hider, CURRENT_SOURCE_LOCATION });

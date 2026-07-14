@@ -94,7 +94,7 @@ void HudOpponentZoomLogic::render_with_setup(
     auto la = gl_lookat_bounding_sphere(
         fov_,
         observer_node->absolute_model_matrix(),
-        abs_sphere);
+        abs_sphere.casted<ScenePos>());
     if (!la.has_value()) {
         return;
     }

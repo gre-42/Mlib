@@ -1100,7 +1100,7 @@ int main(int argc, char** argv) {
             auto la = gl_lookat_aabb(
                 scene.get_node(VariableAndHash<std::string>{"follower_camera_0"}, CURRENT_SOURCE_LOCATION)->position(),
                 scene.get_node(VariableAndHash<std::string>{"obj"}, CURRENT_SOURCE_LOCATION)->absolute_model_matrix(),
-                aabb.data());
+                aabb.casted<ScenePos>().data());
             if (!la.has_value()) {
                 throw std::runtime_error("Could not compute frustum, camera might be inside the object's AABB");
             }
