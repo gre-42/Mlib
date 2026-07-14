@@ -30,7 +30,7 @@ static const StringWithHashUnorderedMap<int> keys_map = []()
     add("8", DOM_PK_8);
     add("9", DOM_PK_9);
     add("SEMICOLON", DOM_PK_SEMICOLON);  /* ; */
-    add("EQUAL", DOM_PK_EQUALS);  /* = */
+    add("EQUAL", DOM_PK_EQUAL);  /* = */
     add("A", DOM_PK_A);
     add("B", DOM_PK_B);
     add("C", DOM_PK_C);
@@ -93,16 +93,16 @@ static const StringWithHashUnorderedMap<int> keys_map = []()
     add("F10", DOM_PK_F10);
     add("F11", DOM_PK_F11);
     add("F12", DOM_PK_F12);
-    add("KP_0", DOM_PK_NUMPAD0);
-    add("KP_1", DOM_PK_NUMPAD1);
-    add("KP_2", DOM_PK_NUMPAD2);
-    add("KP_3", DOM_PK_NUMPAD3);
-    add("KP_4", DOM_PK_NUMPAD4);
-    add("KP_5", DOM_PK_NUMPAD5);
-    add("KP_6", DOM_PK_NUMPAD6);
-    add("KP_7", DOM_PK_NUMPAD7);
-    add("KP_8", DOM_PK_NUMPAD8);
-    add("KP_9", DOM_PK_NUMPAD9);
+    add("KP_0", DOM_PK_NUMPAD_0);
+    add("KP_1", DOM_PK_NUMPAD_1);
+    add("KP_2", DOM_PK_NUMPAD_2);
+    add("KP_3", DOM_PK_NUMPAD_3);
+    add("KP_4", DOM_PK_NUMPAD_4);
+    add("KP_5", DOM_PK_NUMPAD_5);
+    add("KP_6", DOM_PK_NUMPAD_6);
+    add("KP_7", DOM_PK_NUMPAD_7);
+    add("KP_8", DOM_PK_NUMPAD_8);
+    add("KP_9", DOM_PK_NUMPAD_9);
     add("KP_DIVIDE", DOM_PK_NUMPAD_DIVIDE);
     add("KP_MULTIPLY", DOM_PK_NUMPAD_MULTIPLY);
     add("KP_SUBTRACT", DOM_PK_NUMPAD_SUBTRACT);
