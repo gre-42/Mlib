@@ -136,12 +136,6 @@ ColoredVertexArrayResource::ColoredVertexArrayResource(
         std::list<std::shared_ptr<ColoredVertexArray<CompressedScenePos>>>{dtriangles}}
 {}
 
-// From: https://stackoverflow.com/questions/26379311/calling-initializer-list-constructor-via-make-unique-make-shared
-template<typename T>
-static std::initializer_list<T> make_init_list(std::initializer_list<T>&& l) {
-    return l;
-}
-
 ColoredVertexArrayResource::ColoredVertexArrayResource(
     const std::shared_ptr<AnimatedColoredVertexArrays>& triangles)
     : ColoredVertexArrayResource{ triangles, {}, {} }
