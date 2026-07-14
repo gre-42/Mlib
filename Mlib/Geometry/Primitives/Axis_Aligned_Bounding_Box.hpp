@@ -135,7 +135,7 @@ public:
     {
         auto result = empty();
         for_each_corner([&](const FixedArray<TData, tndim>& corner){
-            result.extend(transformation_matrix.transform(corner).template casted<TPos>());
+            result.extend(transformation_matrix.transform(corner).template casted<TData>());
             return true;
         });
         return result;
