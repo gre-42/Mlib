@@ -8,7 +8,7 @@ namespace Mlib {
 // See also the comment from Dr. Timofey Prodanov,
 // Dec 21, 2020 at 10:51
 template <class X>
-static X sigmoid(X x)
+X sigmoid(X x)
 {
     auto c1 = scalar_type_t<X>(1);
     auto a = squared(c1 / x - c1);
@@ -19,7 +19,7 @@ static X sigmoid(X x)
 // See also the comment from Dr. Timofey Prodanov,
 // Dec 21, 2020 at 10:51
 template <class X, class K>
-static X sigmoid(const X& x, const K& k)
+X sigmoid(const X& x, const K& k)
 {
     auto c1 = scalar_type_t<X>(1);
     auto a = pow(c1 / x - c1, k);
@@ -28,7 +28,7 @@ static X sigmoid(const X& x, const K& k)
 
 // From: https://math.stackexchange.com/a/4798714/233679
 template <class X, class T, class K>
-static X sigmoid(const X& x, const T& t, const K& k)
+X sigmoid(const X& x, const T& t, const K& k)
 {
     auto c1 = scalar_type_t<X>(1);
     auto a = pow(pow(x, std::log((T)2) / std::log(t)) - c1, k);
