@@ -341,7 +341,7 @@ std::shared_ptr<ISendSocket> WebTransportDatagramNode::try_receive(
             (uint8_t*)receive_buffer.data(),
             integral_cast<int>(receive_buffer.size()));
     });
-    if (bytesReceived == -1) {
+    if ((bytesReceived == -1) || (bytesReceived == -3)){
         transmission_status = NetworkTransmissionStatus::DISCONNECTED;
         linfo() << "WebTransport disconnect";
         return nullptr;
