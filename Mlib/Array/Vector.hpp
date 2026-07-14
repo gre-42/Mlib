@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Initialization/Default_Uninitialized.hpp>
+#include <Mlib/Memory/Aligned_Alloc.hpp>
 #include <cstdlib>
 #include <sstream>
 
@@ -37,7 +38,7 @@ public:
                 data_ = nullptr;
             }
 #else
-            data_ = (UData*)std::aligned_alloc(alignment, size * sizeof(UData));
+            data_ = (UData*)::Mlib::aligned_alloc(alignment, size * sizeof(UData));
 #endif
             if (data_ == nullptr) {
                 throw std::runtime_error((std::stringstream() << "Memory allocation failed. " <<
@@ -58,7 +59,7 @@ public:
                 data_[i].~UData();
             }
         }
-        std::free(data_);
+        ::Mlib::aligned_free(data_);
     }
     inline const TData& operator [] (size_t index) const {
         assert(index < size_);
