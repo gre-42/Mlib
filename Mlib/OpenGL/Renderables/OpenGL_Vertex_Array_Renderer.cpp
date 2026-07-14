@@ -236,7 +236,7 @@ static GenShaderText vertex_shader_text_gen{[](
     };
     std::stringstream sstr;
     sstr << std::scientific;
-    sstr << SHADER_VER;
+    sstr << SHADER_VER << SHADER_FIXES;
     sstr << "uniform mat4 MVP;" << std::endl;
     if (has_flat) {
         sstr << "uniform mat3 lookat;" << std::endl;

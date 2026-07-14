@@ -26,7 +26,7 @@ void OffsetRenderer::apply_offset(
 {
     if (!rp_.allocated()) {
         std::stringstream vs;
-        vs << SHADER_VER;
+        vs << SHADER_VER << SHADER_FIXES;
         vs << "layout (location = 0) in vec2 aPos;" << std::endl;
         vs << "layout (location = 1) in vec2 aTexCoords;" << std::endl;
         vs << std::endl;
