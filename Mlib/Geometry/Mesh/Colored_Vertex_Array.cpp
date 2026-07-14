@@ -411,15 +411,15 @@ std::vector<CollisionLineAabb<CompressedScenePos>> ColoredVertexArray<TPos>::tra
     std::vector<CollisionLineAabb<CompressedScenePos>> res;
     res.reserve(lines.size());
     for (const auto& l : lines) {
-        Line3D<ScenePos> line{ l, tm };
+        Line3D<CompressedScenePos> line{ l, tm };
         res.push_back(CollisionLineAabb{
             .base = CollisionLineSphere{
-                .bounding_sphere = line.bounding_sphere().casted<CompressedScenePos>(),
+                .bounding_sphere = line.bounding_sphere(),
                 .physics_material = meta.morphology.physics_material,
-                .corners = line.vertices().template casted<CompressedScenePos>(),
+                .corners = line.vertices(),
                 .ray = line.template ray<SceneDir>().template casted<SceneDir, CompressedScenePos>()
             },
-            .aabb = line.aabb().template casted<CompressedScenePos>()});
+            .aabb = line.aabb()});
     }
     return res;
 }
@@ -430,11 +430,11 @@ std::vector<CollisionLineSphere<CompressedScenePos>> ColoredVertexArray<TPos>::l
     std::vector<CollisionLineSphere<CompressedScenePos>> res;
     res.reserve(lines.size());
     for (const auto& l : lines) {
-        Line3D<ScenePos> line{ l };
+        Line3D<CompressedScenePos> line{ l };
         res.push_back(CollisionLineSphere{
-            .bounding_sphere = line.bounding_sphere().template casted<CompressedScenePos>(),
+            .bounding_sphere = line.bounding_sphere(),
             .physics_material = meta.morphology.physics_material,
-            .corners = line.vertices().template casted<CompressedScenePos>(),
+            .corners = line.vertices(),
             .ray = line.template ray<SceneDir>().template casted<SceneDir, CompressedScenePos>()});
     }
     return res;
