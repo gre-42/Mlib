@@ -6,123 +6,172 @@
 
 namespace Mlib {
 
+// From: https://github.com/emscripten-core/emscripten/blob/main/system/lib/html5/dom_pk_codes.c
+//       https://github.com/emscripten-core/emscripten/blob/main/tools/maint/create_dom_pk_codes.py
+// grep '(0x' create_dom_pk_codes.py | sed "s/, 'duplicate'//g" | grep -v '#' | awk '{print "add(" $2 $3}' | sed -E "s/'(DOM_.*)'\),/ \1);/g" | sed "s/'/\"/g"
 static const StringWithHashUnorderedMap<int> keys_map_i18n = []()
 {
     StringWithHashUnorderedMap<int> result{"Native emscripten key map"};
     auto add = [&result](std::string name, int code){
         result.add(VariableAndHash{name}, code);
     };
-    /* Printable keys */
-    add("Space",          DOM_VK_SPACE);
-    add("Quote",          DOM_PK_QUOTE);            /* ' */
-    add("Comma",          DOM_VK_COMMA);            /* , */
-    add("Minus",          DOM_PK_MINUS);            /* - */
-    add("Period",         DOM_VK_PERIOD);           /* . */
-    add("Slash",          DOM_VK_SLASH);            /* / */
-    add("Digit0",         DOM_VK_0);
-    add("Digit1",         DOM_VK_1);
-    add("Digit2",         DOM_VK_2);
-    add("Digit3",         DOM_VK_3);
-    add("Digit4",         DOM_VK_4);
-    add("Digit5",         DOM_VK_5);
-    add("Digit6",         DOM_VK_6);
-    add("Digit7",         DOM_VK_7);
-    add("Digit8",         DOM_VK_8);
-    add("Digit9",         DOM_VK_9);
-    add("Semicolon",      DOM_VK_SEMICOLON);        /* ; */
-    add("Equal",          DOM_VK_EQUALS);           /* = */
-    add("KeyA",           DOM_VK_A);
-    add("KeyB",           DOM_VK_B);
-    add("KeyC",           DOM_VK_C);
-    add("KeyD",           DOM_VK_D);
-    add("KeyE",           DOM_VK_E);
-    add("KeyF",           DOM_VK_F);
-    add("KeyG",           DOM_VK_G);
-    add("KeyH",           DOM_VK_H);
-    add("KeyI",           DOM_VK_I);
-    add("KeyJ",           DOM_VK_J);
-    add("KeyK",           DOM_VK_K);
-    add("KeyL",           DOM_VK_L);
-    add("KeyM",           DOM_VK_M);
-    add("KeyN",           DOM_VK_N);
-    add("KeyO",           DOM_VK_O);
-    add("KeyP",           DOM_VK_P);
-    add("KeyQ",           DOM_VK_Q);
-    add("KeyR",           DOM_VK_R);
-    add("KeyS",           DOM_VK_S);
-    add("KeyT",           DOM_VK_T);
-    add("KeyU",           DOM_VK_U);
-    add("KeyV",           DOM_VK_V);
-    add("KeyW",           DOM_VK_W);
-    add("KeyX",           DOM_VK_X);
-    add("KeyY",           DOM_VK_Y);
-    add("KeyZ",           DOM_VK_Z);
-    add("BracketLeft",    DOM_PK_BRACKET_LEFT);     /* [ */
-    add("Backslash",      DOM_PK_BACKSLASH);        /* \ */
-    add("BracketRight",   DOM_PK_BRACKET_RIGHT);    /* ] */
-
-    /* Function keys */
-    add("Escape",         DOM_VK_ESCAPE);
-    add("Enter",          DOM_VK_ENTER);
-    add("Tab",            DOM_VK_TAB);
-    add("Backspace",      DOM_PK_BACKSPACE);
-    add("Insert",         DOM_VK_INSERT);
-    add("Delete",         DOM_PK_DELETE);
-    add("ArrowRight",     DOM_PK_ARROW_RIGHT);
-    add("ArrowLeft",      DOM_PK_ARROW_LEFT);
-    add("ArrowDown",      DOM_PK_ARROW_DOWN);
-    add("ArrowUp",        DOM_PK_ARROW_UP);
-    add("PageUp",         DOM_VK_PAGE_UP);
-    add("PageDown",       DOM_VK_PAGE_DOWN);
-    add("Home",           DOM_VK_HOME);
-    add("End",            DOM_PK_END);
-    add("CapsLock",       DOM_VK_CAPS_LOCK);
-    add("ScrollLock",     DOM_VK_SCROLL_LOCK);
-    add("NumLock",        DOM_VK_NUM_LOCK);
-    add("PrintScreen",    DOM_PK_PRINT_SCREEN);
-    add("Pause",          DOM_PK_PAUSE);
-    add("F1",             DOM_VK_F1);
-    add("F2",             DOM_VK_F2);
-    add("F3",             DOM_VK_F3);
-    add("F4",             DOM_VK_F4);
-    add("F5",             DOM_VK_F5);
-    add("F6",             DOM_VK_F6);
-    add("F7",             DOM_VK_F7);
-    add("F8",             DOM_VK_F8);
-    add("F9",             DOM_VK_F9);
-    add("F10",            DOM_VK_F10);
-    add("F11",            DOM_VK_F11);
-    add("F12",            DOM_VK_F12);
-
-    /* Numpad keys */
-    add("Numpad0",        DOM_VK_NUMPAD0);
-    add("Numpad1",        DOM_VK_NUMPAD1);
-    add("Numpad2",        DOM_VK_NUMPAD2);
-    add("Numpad3",        DOM_VK_NUMPAD3);
-    add("Numpad4",        DOM_VK_NUMPAD4);
-    add("Numpad5",        DOM_VK_NUMPAD5);
-    add("Numpad6",        DOM_VK_NUMPAD6);
-    add("Numpad7",        DOM_VK_NUMPAD7);
-    add("Numpad8",        DOM_VK_NUMPAD8);
-    add("Numpad9",        DOM_VK_NUMPAD9);
-    add("NumpadDivide",   DOM_PK_NUMPAD_DIVIDE);
+    add("Unidentified", DOM_PK_UNKNOWN);
+    add("Escape", DOM_PK_ESCAPE);
+    add("Digit0", DOM_PK_0);
+    add("Digit1", DOM_PK_1);
+    add("Digit2", DOM_PK_2);
+    add("Digit3", DOM_PK_3);
+    add("Digit4", DOM_PK_4);
+    add("Digit5", DOM_PK_5);
+    add("Digit6", DOM_PK_6);
+    add("Digit7", DOM_PK_7);
+    add("Digit8", DOM_PK_8);
+    add("Digit9", DOM_PK_9);
+    add("Minus", DOM_PK_MINUS);
+    add("Equal", DOM_PK_EQUAL);
+    add("Backspace", DOM_PK_BACKSPACE);
+    add("Tab", DOM_PK_TAB);
+    add("KeyQ", DOM_PK_Q);
+    add("KeyW", DOM_PK_W);
+    add("KeyE", DOM_PK_E);
+    add("KeyR", DOM_PK_R);
+    add("KeyT", DOM_PK_T);
+    add("KeyY", DOM_PK_Y);
+    add("KeyU", DOM_PK_U);
+    add("KeyI", DOM_PK_I);
+    add("KeyO", DOM_PK_O);
+    add("KeyP", DOM_PK_P);
+    add("BracketLeft", DOM_PK_BRACKET_LEFT);
+    add("BracketRight", DOM_PK_BRACKET_RIGHT);
+    add("Enter", DOM_PK_ENTER);
+    add("ControlLeft", DOM_PK_CONTROL_LEFT);
+    add("KeyA", DOM_PK_A);
+    add("KeyS", DOM_PK_S);
+    add("KeyD", DOM_PK_D);
+    add("KeyF", DOM_PK_F);
+    add("KeyG", DOM_PK_G);
+    add("KeyH", DOM_PK_H);
+    add("KeyJ", DOM_PK_J);
+    add("KeyK", DOM_PK_K);
+    add("KeyL", DOM_PK_L);
+    add("Semicolon", DOM_PK_SEMICOLON);
+    add("Quote", DOM_PK_QUOTE);
+    add("Backquote", DOM_PK_BACKQUOTE);
+    add("ShiftLeft", DOM_PK_SHIFT_LEFT);
+    add("Backslash", DOM_PK_BACKSLASH);
+    add("KeyZ", DOM_PK_Z);
+    add("KeyX", DOM_PK_X);
+    add("KeyC", DOM_PK_C);
+    add("KeyV", DOM_PK_V);
+    add("KeyB", DOM_PK_B);
+    add("KeyN", DOM_PK_N);
+    add("KeyM", DOM_PK_M);
+    add("Comma", DOM_PK_COMMA);
+    add("Period", DOM_PK_PERIOD);
+    add("Slash", DOM_PK_SLASH);
+    add("ShiftRight", DOM_PK_SHIFT_RIGHT);
     add("NumpadMultiply", DOM_PK_NUMPAD_MULTIPLY);
+    add("AltLeft", DOM_PK_ALT_LEFT);
+    add("Space", DOM_PK_SPACE);
+    add("CapsLock", DOM_PK_CAPS_LOCK);
+    add("F1", DOM_PK_F1);
+    add("F2", DOM_PK_F2);
+    add("F3", DOM_PK_F3);
+    add("F4", DOM_PK_F4);
+    add("F5", DOM_PK_F5);
+    add("F6", DOM_PK_F6);
+    add("F7", DOM_PK_F7);
+    add("F8", DOM_PK_F8);
+    add("F9", DOM_PK_F9);
+    add("F10", DOM_PK_F10);
+    add("Pause", DOM_PK_PAUSE);
+    add("ScrollLock", DOM_PK_SCROLL_LOCK);
+    add("Numpad7", DOM_PK_NUMPAD_7);
+    add("Numpad8", DOM_PK_NUMPAD_8);
+    add("Numpad9", DOM_PK_NUMPAD_9);
     add("NumpadSubtract", DOM_PK_NUMPAD_SUBTRACT);
-    add("NumpadAdd",      DOM_PK_NUMPAD_ADD);
-    add("NumpadEnter",    DOM_PK_NUMPAD_ENTER);
-
-    /* Modifiers */
-    add("ShiftLeft",      DOM_PK_SHIFT_LEFT);
-    add("ControlLeft",    DOM_PK_CONTROL_LEFT);
-    add("AltLeft",        DOM_PK_ALT_LEFT);
-    add("ShiftRight",     DOM_PK_SHIFT_RIGHT);
-    add("ControlRight",   DOM_PK_CONTROL_RIGHT);
-    add("AltRight",       DOM_PK_ALT_RIGHT);
-    add("ContextMenu",    DOM_PK_CONTEXT_MENU);
-
-    /* Meta */
-    add("MetaLeft",       DOM_VK_META);
-    add("MetaRight",      DOM_VK_META);
+    add("Numpad4", DOM_PK_NUMPAD_4);
+    add("Numpad5", DOM_PK_NUMPAD_5);
+    add("Numpad6", DOM_PK_NUMPAD_6);
+    add("NumpadAdd", DOM_PK_NUMPAD_ADD);
+    add("Numpad1", DOM_PK_NUMPAD_1);
+    add("Numpad2", DOM_PK_NUMPAD_2);
+    add("Numpad3", DOM_PK_NUMPAD_3);
+    add("Numpad0", DOM_PK_NUMPAD_0);
+    add("NumpadDecimal", DOM_PK_NUMPAD_DECIMAL);
+    add("PrintScreen", DOM_PK_PRINT_SCREEN);
+    add("IntlBackslash", DOM_PK_INTL_BACKSLASH);
+    add("F11", DOM_PK_F11);
+    add("F12", DOM_PK_F12);
+    add("NumpadEqual", DOM_PK_NUMPAD_EQUAL);
+    add("F13", DOM_PK_F13);
+    add("F14", DOM_PK_F14);
+    add("F15", DOM_PK_F15);
+    add("F16", DOM_PK_F16);
+    add("F17", DOM_PK_F17);
+    add("F18", DOM_PK_F18);
+    add("F19", DOM_PK_F19);
+    add("F20", DOM_PK_F20);
+    add("F21", DOM_PK_F21);
+    add("F22", DOM_PK_F22);
+    add("F23", DOM_PK_F23);
+    add("KanaMode", DOM_PK_KANA_MODE);
+    add("Lang2", DOM_PK_LANG_2);
+    add("Lang1", DOM_PK_LANG_1);
+    add("IntlRo", DOM_PK_INTL_RO);
+    add("F24", DOM_PK_F24);
+    add("Convert", DOM_PK_CONVERT);
+    add("NonConvert", DOM_PK_NON_CONVERT);
+    add("IntlYen", DOM_PK_INTL_YEN);
+    add("NumpadComma", DOM_PK_NUMPAD_COMMA);
+    add("Paste", DOM_PK_PASTE);
+    add("MediaTrackPrevious", DOM_PK_MEDIA_TRACK_PREVIOUS);
+    add("Cut", DOM_PK_CUT);
+    add("Copy", DOM_PK_COPY);
+    add("MediaTrackNext", DOM_PK_MEDIA_TRACK_NEXT);
+    add("NumpadEnter", DOM_PK_NUMPAD_ENTER);
+    add("ControlRight", DOM_PK_CONTROL_RIGHT);
+    add("AudioVolumeMute", DOM_PK_AUDIO_VOLUME_MUTE);
+    add("VolumeMute", DOM_PK_AUDIO_VOLUME_MUTE);
+    add("LaunchApp2", DOM_PK_LAUNCH_APP_2);
+    add("MediaPlayPause", DOM_PK_MEDIA_PLAY_PAUSE);
+    add("MediaStop", DOM_PK_MEDIA_STOP);
+    add("Eject", DOM_PK_EJECT);
+    add("AudioVolumeDown", DOM_PK_AUDIO_VOLUME_DOWN);
+    add("VolumeDown", DOM_PK_AUDIO_VOLUME_DOWN);
+    add("AudioVolumeUp", DOM_PK_AUDIO_VOLUME_UP);
+    add("VolumeUp", DOM_PK_AUDIO_VOLUME_UP);
+    add("BrowserHome", DOM_PK_BROWSER_HOME);
+    add("NumpadDivide", DOM_PK_NUMPAD_DIVIDE);
+    add("AltRight", DOM_PK_ALT_RIGHT);
+    add("Help", DOM_PK_HELP);
+    add("NumLock", DOM_PK_NUM_LOCK);
+    add("Home", DOM_PK_HOME);
+    add("ArrowUp", DOM_PK_ARROW_UP);
+    add("PageUp", DOM_PK_PAGE_UP);
+    add("ArrowLeft", DOM_PK_ARROW_LEFT);
+    add("ArrowRight", DOM_PK_ARROW_RIGHT);
+    add("End", DOM_PK_END);
+    add("ArrowDown", DOM_PK_ARROW_DOWN);
+    add("PageDown", DOM_PK_PAGE_DOWN);
+    add("Insert", DOM_PK_INSERT);
+    add("Delete", DOM_PK_DELETE);
+    add("MetaLeft", DOM_PK_META_LEFT);
+    add("OSLeft", DOM_PK_OS_LEFT);
+    add("MetaRight", DOM_PK_META_RIGHT);
+    add("OSRight", DOM_PK_OS_RIGHT);
+    add("ContextMenu", DOM_PK_CONTEXT_MENU);
+    add("Power", DOM_PK_POWER);
+    add("BrowserSearch", DOM_PK_BROWSER_SEARCH);
+    add("BrowserFavorites", DOM_PK_BROWSER_FAVORITES);
+    add("BrowserRefresh", DOM_PK_BROWSER_REFRESH);
+    add("BrowserStop", DOM_PK_BROWSER_STOP);
+    add("BrowserForward", DOM_PK_BROWSER_FORWARD);
+    add("BrowserBack", DOM_PK_BROWSER_BACK);
+    add("LaunchApp1", DOM_PK_LAUNCH_APP_1);
+    add("LaunchMail", DOM_PK_LAUNCH_MAIL);
+    add("LaunchMediaPlayer", DOM_PK_LAUNCH_MEDIA_PLAYER);
+    add("MediaSelect", DOM_PK_MEDIA_SELECT);
     return result;
 }();
 
