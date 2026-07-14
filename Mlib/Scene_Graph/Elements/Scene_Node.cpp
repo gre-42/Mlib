@@ -1698,9 +1698,6 @@ void SceneNode::set_absolute_pose(
 ExtremalAxisAlignedBoundingBox<ScenePos, 3> SceneNode::relative_aabb() const {
     std::shared_lock lock{ mutex_ };
     ExtremalAxisAlignedBoundingBox<ScenePos, 3> result = ExtremalBoundingVolume::EMPTY;
-    if (!renderables_.empty()) {
-        result = ExtremalBoundingVolume::EMPTY;
-    }
     for (const auto& [_, r] : renderables_) {
         result.extend((*r)->aabb().casted<ScenePos>());
     }
