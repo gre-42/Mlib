@@ -27,7 +27,7 @@ BoundingSphere<CompressedScenePos, 3> TransformedIntersectable::bounding_sphere(
 }
 
 AxisAlignedBoundingBox<CompressedScenePos, 3> TransformedIntersectable::aabb() const {
-    return child_->aabb().template casted<ScenePos>().transformed(trafo_).casted<CompressedScenePos>();
+    return child_->aabb().transformed(trafo_);
 }
 
 std::shared_ptr<IIntersectable> TransformedIntersectable::sweep(
