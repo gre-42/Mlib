@@ -9,7 +9,7 @@ float z_to_yaw(const FixedArray<TData, 3>& z) {
 }
 
 template <class TData>
-static float z_to_pitch(const FixedArray<TData, 3>& z) {
+float z_to_pitch(const FixedArray<TData, 3>& z) {
     return (float)std::atan2(-z(1), std::sqrt(squared(z(2)) + squared(z(0))));
 }
 
