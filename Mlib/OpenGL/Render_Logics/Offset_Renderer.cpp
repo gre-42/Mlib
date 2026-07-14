@@ -45,7 +45,7 @@ void OffsetRenderer::apply_offset(
                 throw std::runtime_error("OffsetRenderer: Number of dimensions out of bounds");
             }
             const char* coords = "rgba";
-            fs << SHADER_VER << FRAGMENT_PRECISION;
+            fs << SHADER_VER << SHADER_FIXES << FRAGMENT_PRECISION;
             if (ndim_ == 1) {
                 fs << "out float result;" << std::endl;
             } else {

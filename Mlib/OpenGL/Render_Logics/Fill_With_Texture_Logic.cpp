@@ -38,7 +38,7 @@ std::string fragment_shader_text_layer(
     std::optional<FixedArray<float, 4>>& uniform_border_color)
 {
     std::stringstream sstr;
-    sstr << SHADER_VER << FRAGMENT_PRECISION;
+    sstr << SHADER_VER << SHADER_FIXES << FRAGMENT_PRECISION;
     sstr << "in vec2 TexCoords;\n";
     sstr << "out vec4 color;\n";
     sstr << "\n";
@@ -65,7 +65,7 @@ std::string fragment_shader_text_layer(
 std::string fragment_shader_text_border(std::optional<FixedArray<float, 4>>& uniform_border_color)
 {
     std::stringstream sstr;
-    sstr << SHADER_VER << FRAGMENT_PRECISION;
+    sstr << SHADER_VER << SHADER_FIXES << FRAGMENT_PRECISION;
     sstr << "in vec2 TexCoords;\n";
     sstr << "out vec4 color;\n";
     sstr << "\n";

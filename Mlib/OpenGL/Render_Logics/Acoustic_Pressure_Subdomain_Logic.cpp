@@ -214,7 +214,7 @@ void AcousticPressureSubdomainLogic::initialize_fields() {
         auto& rp = wind_render_program_;
         if (!rp.allocated()) {
             std::stringstream fs;
-            fs << SHADER_VER << FRAGMENT_PRECISION;
+            fs << SHADER_VER << SHADER_FIXES << FRAGMENT_PRECISION;
             fs << "out float wind_amplitude;" << std::endl;
             fs << "in vec2 TexCoords;" << std::endl;
             fs << "uniform sampler2D wind_texture;" << std::endl;
@@ -266,7 +266,7 @@ void AcousticPressureSubdomainLogic::collide_and_stream() {
         
         std::stringstream fs;
         fs << std::fixed;
-        fs << SHADER_VER << FRAGMENT_PRECISION;
+        fs << SHADER_VER << SHADER_FIXES << FRAGMENT_PRECISION;
         fs << "out float p_2;" << std::endl;
         fs << "in vec2 TexCoords0;" << std::endl;
         for (int dim = 0; dim < 2; ++dim) {
@@ -373,7 +373,7 @@ void AcousticPressureSubdomainLogic::calculate_skidmark_field() {
     if (!rp.allocated()) {
         std::stringstream fs;
         fs << std::fixed;
-        fs << SHADER_VER << FRAGMENT_PRECISION;
+        fs << SHADER_VER << SHADER_FIXES << FRAGMENT_PRECISION;
         fs << "out vec3 skidmark_field;" << std::endl;
         fs << "in vec2 TexCoords;" << std::endl;
         fs << "uniform float skidmark_strength;" << std::endl;

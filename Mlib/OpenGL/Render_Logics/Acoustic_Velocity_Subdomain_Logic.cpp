@@ -205,7 +205,7 @@ void AcousticVelocitySubdomainLogic::collide_and_stream() {
         
         std::stringstream fs;
         fs << std::fixed;
-        fs << SHADER_VER << FRAGMENT_PRECISION;
+        fs << SHADER_VER << SHADER_FIXES << FRAGMENT_PRECISION;
         fs << "out vec2 u_2;" << std::endl;
         fs << "in vec2 TexCoords0;" << std::endl;
         for (int dim = 0; dim < 2; ++dim) {
@@ -307,7 +307,7 @@ void AcousticVelocitySubdomainLogic::calculate_skidmark_field() {
 
         std::stringstream fs;
         fs << std::fixed;
-        fs << SHADER_VER << FRAGMENT_PRECISION;
+        fs << SHADER_VER << SHADER_FIXES << FRAGMENT_PRECISION;
         fs << "out vec3 skidmark_field;" << std::endl;
         fs << "in vec2 TexCoords00;" << std::endl;
         fs << "in vec2 TexCoords01;" << std::endl;

@@ -769,7 +769,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     };
     std::stringstream sstr;
     sstr << std::scientific;
-    sstr << SHADER_VER << FRAGMENT_PRECISION;
+    sstr << SHADER_VER << SHADER_FIXES << FRAGMENT_PRECISION;
     sstr << "in vec3 color;" << std::endl;
     if (has_dynamic_emissive) {
         sstr << "uniform vec3 dynamic_emissive;" << std::endl;

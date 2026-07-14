@@ -23,7 +23,7 @@ using namespace Mlib;
 static GenShaderText threshold_fragment_shader_text{[]()
 {
     std::stringstream sstr;
-    sstr << SHADER_VER << FRAGMENT_PRECISION;
+    sstr << SHADER_VER << SHADER_FIXES << FRAGMENT_PRECISION;
     sstr << "out vec4 FragColor;" << std::endl;
     sstr << std::endl;
     sstr << "in vec2 TexCoords;" << std::endl;
@@ -42,7 +42,7 @@ static GenShaderText threshold_fragment_shader_text{[]()
 static GenShaderText blend_fragment_shader_text{[]()
 {
     std::stringstream sstr;
-    sstr << SHADER_VER << FRAGMENT_PRECISION;
+    sstr << SHADER_VER << SHADER_FIXES << FRAGMENT_PRECISION;
     sstr << "out vec4 FragColor;" << std::endl;
     sstr << std::endl;
     sstr << "in vec2 TexCoords;" << std::endl;

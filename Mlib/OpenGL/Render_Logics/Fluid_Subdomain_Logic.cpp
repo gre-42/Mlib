@@ -226,7 +226,7 @@ void FluidSubdomainLogic::calculate_macroscopic_variables() {
     auto& rp = macroscopic_render_program_;
     if (!rp.allocated()) {
         std::stringstream fs;
-        fs << SHADER_VER << FRAGMENT_PRECISION;
+        fs << SHADER_VER << SHADER_FIXES << FRAGMENT_PRECISION;
         fs << "out vec3 density_and_velocity_field;" << std::endl;
         fs << "in vec2 TexCoords;" << std::endl;
         fs << "uniform vec2 inner_directional_velocity;" << std::endl;
@@ -309,7 +309,7 @@ void FluidSubdomainLogic::collide() {
             const auto& dirs = FluidDomainLbmModel::discrete_velocity_directions[v];
             const auto& weight = FluidDomainLbmModel::weights[v];
             std::stringstream sstr;
-            sstr << SHADER_VER << FRAGMENT_PRECISION;
+            sstr << SHADER_VER << SHADER_FIXES << FRAGMENT_PRECISION;
             sstr << "out float temp_momentum_magnitude_field;" << std::endl;
             sstr << "in vec2 TexCoords;" << std::endl;
             sstr << "uniform sampler2D density_and_velocity_field;" << std::endl;
@@ -399,7 +399,7 @@ void FluidSubdomainLogic::stream() {
             vs << "}" << std::endl;
 
             std::stringstream fs;
-            fs << SHADER_VER << FRAGMENT_PRECISION;
+            fs << SHADER_VER << SHADER_FIXES << FRAGMENT_PRECISION;
             fs << "out float good_momentum_magnitude_field;" << std::endl;
             fs << "in vec2 TexCoords0;" << std::endl;
             fs << "in vec2 TexCoords1;" << std::endl;
@@ -442,7 +442,7 @@ void FluidSubdomainLogic::calculate_skidmark_field() {
     auto& rp = skidmark_render_program_;
     if (!rp.allocated()) {
         std::stringstream sstr;
-        sstr << SHADER_VER << FRAGMENT_PRECISION;
+        sstr << SHADER_VER << SHADER_FIXES << FRAGMENT_PRECISION;
         sstr << "out vec3 skidmark_field;" << std::endl;
         sstr << "in vec2 TexCoords;" << std::endl;
         sstr << "uniform float min_density;" << std::endl;

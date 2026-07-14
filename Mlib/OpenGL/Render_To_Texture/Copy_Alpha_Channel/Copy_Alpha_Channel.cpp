@@ -16,7 +16,7 @@ static GenShaderText filter_fragment_shader_text{[]()
     {
         std::stringstream sstr;
         sstr << std::scientific;
-        sstr << SHADER_VER << FRAGMENT_PRECISION;
+        sstr << SHADER_VER << SHADER_FIXES << FRAGMENT_PRECISION;
         sstr << "out float FragColor;" << std::endl;
         sstr << std::endl;
         sstr << "in vec2 TexCoords;" << std::endl;
