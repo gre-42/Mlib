@@ -59,16 +59,16 @@ template Line3D<float>::Line3D(const FixedArray<ColoredVertex<float>, 2>& vertic
 template Line3D<ScenePos>::Line3D(const FixedArray<ColoredVertex<float>, 2>& vertices);
 template Line3D<ScenePos>::Line3D(const FixedArray<ColoredVertex<CompressedScenePos>, 2>& vertices);
 
-template Line3D<ScenePos>::Line3D(
+template Line3D<CompressedScenePos>::Line3D(
     const FixedArray<ColoredVertex<float>, 2>& vertices,
     const TransformationMatrix<float, ScenePos, 3>& transformation);
-template Line3D<ScenePos>::Line3D(
+template Line3D<CompressedScenePos>::Line3D(
     const FixedArray<ColoredVertex<CompressedScenePos>, 2>& vertices,
     const TransformationMatrix<float, ScenePos, 3>& transformation);
 template Line3D<float>::Line3D(
     const FixedArray<ColoredVertex<float>, 2>& vertices,
     const TransformationMatrix<float, float, 3>& transformation);
 
-template RaySegment3D<float, ScenePos> Line3D<ScenePos>::ray() const;
+template RaySegment3D<float, CompressedScenePos> Line3D<CompressedScenePos>::ray() const;
 
 }
