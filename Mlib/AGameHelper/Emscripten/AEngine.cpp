@@ -166,7 +166,7 @@ EM_BOOL AEngine::key_callback(int eventType, const EmscriptenKeyboardEvent* e, v
     auto& engine = *(AEngine*)userData;
     try {
         auto code = keys_map_i18n.get(VariableAndHash<std::string>{e->code});
-        if ((code == DOM_VK_F11) || (code == DOM_VK_F12)) {
+        if ((code == DOM_PK_F11) || (code == DOM_PK_F12)) {
             return EM_FALSE;
         }
         engine.button_states_.notify_key_event(code, eventType);
