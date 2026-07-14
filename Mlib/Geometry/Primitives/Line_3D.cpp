@@ -24,8 +24,8 @@ Line3D<TPos>::Line3D(
     const FixedArray<ColoredVertex<TPos2>, 2>& vertices,
     const TransformationMatrix<float, TPosTransform, 3>& transformation)
     : vertices_{
-        transformation.transform(vertices(0).position.template casted<TPosTransform>()),
-        transformation.transform(vertices(1).position.template casted<TPosTransform>())}
+        transformation.transform(vertices(0).position.template casted<TPosTransform>()).template casted<TPos>(),
+        transformation.transform(vertices(1).position.template casted<TPosTransform>()).template casted<TPos>()}
 {}
 
 template <class TPos>
