@@ -1,21 +1,29 @@
 #include "Generic_Post_Processing_Logic.hpp"
 #include <Mlib/OpenGL/CHK.hpp>
+#include <Mlib/OpenGL/Gen_Shader_Text.hpp>
 #include <Mlib/OpenGL/Shader_Version_3_0.hpp>
+#include <sstream>
 
 using namespace Mlib;
 
-const char* GenericPostProcessingLogic::simple_vertex_shader_text_ =
-SHADER_VER
-"layout (location = 0) in vec2 aPos;\n"
-"layout (location = 1) in vec2 aTexCoords;\n"
-"\n"
-"out vec2 TexCoords;\n"
-"\n"
-"void main()\n"
-"{\n"
-"    TexCoords = aTexCoords;\n"
-"    gl_Position = vec4(aPos.x, aPos.y, 0.0, 1.0);\n"
-"}";
+const char* GenericPostProcessingLogic::simple_vertex_shader_text() {
+    static GenShaderText result = [](){
+        std::stringstream sstr;
+        sstr << vertex_shader_preamble();
+        sstr << "layout (location = 0) in vec2 aPos;\n";
+        sstr << "layout (location = 1) in vec2 aTexCoords;\n";
+        sstr << "\n";
+        sstr << "out vec2 TexCoords;\n";
+        sstr << "\n";
+        sstr << "void main()\n";
+        sstr << "{\n";
+        sstr << "    TexCoords = aTexCoords;\n";
+        sstr << "    gl_Position = vec4(aPos.x, aPos.y, 0.0, 1.0);\n";
+        sstr << "}";
+        return sstr.str();
+    };
+    return result();
+}
 
 GenericPostProcessingLogic::GenericPostProcessingLogic(const float* quad_vertices)
     : quad_vertices_ { quad_vertices }

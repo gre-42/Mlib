@@ -20,10 +20,10 @@
 
 using namespace Mlib;
 
-static GenShaderText threshold_fragment_shader_text{[]()
+static GenShaderText threshold_fragment_shader_text = []()
 {
     std::stringstream sstr;
-    sstr << SHADER_VER << SHADER_FIXES << FRAGMENT_PRECISION;
+    sstr << fragment_shader_preamble();
     sstr << "out vec4 FragColor;" << std::endl;
     sstr << std::endl;
     sstr << "in vec2 TexCoords;" << std::endl;
@@ -37,12 +37,11 @@ static GenShaderText threshold_fragment_shader_text{[]()
     sstr << "    FragColor = vec4(max(vec3(0, 0, 0), color.rgb - brightness_threshold), 1.0);" << std::endl;
     sstr << "}" << std::endl;
     return sstr.str();
-}};
+};
 
-static GenShaderText blend_fragment_shader_text{[]()
-{
+static GenShaderText blend_fragment_shader_text = [](){
     std::stringstream sstr;
-    sstr << SHADER_VER << SHADER_FIXES << FRAGMENT_PRECISION;
+    sstr << fragment_shader_preamble();
     sstr << "out vec4 FragColor;" << std::endl;
     sstr << std::endl;
     sstr << "in vec2 TexCoords;" << std::endl;
@@ -57,7 +56,7 @@ static GenShaderText blend_fragment_shader_text{[]()
     sstr << "    FragColor = vec4(screen_color + bloom_color, 1.0);" << std::endl;
     sstr << "}" << std::endl;
     return sstr.str();
-}};
+};
 
 BloomLogic::BloomLogic(
     RenderLogic& child_logic,
@@ -111,12 +110,12 @@ bool BloomLogic::render_optional_setup(
         assert_true(render_config.nsamples_msaa > 0);
 
         if (!rp_threshold_.allocated()) {
-            rp_threshold_.allocate(simple_vertex_shader_text_, threshold_fragment_shader_text());
+            rp_threshold_.allocate(simple_vertex_shader_text(), threshold_fragment_shader_text());
             rp_threshold_.screen_texture_color_location = rp_threshold_.get_uniform_location("screen_texture_color");
             rp_threshold_.brightness_threshold_location = rp_threshold_.get_uniform_location("brightness_threshold");
         }
         if (!rp_blend_.allocated()) {
-            rp_blend_.allocate(simple_vertex_shader_text_, blend_fragment_shader_text());
+            rp_blend_.allocate(simple_vertex_shader_text(), blend_fragment_shader_text());
             rp_blend_.screen_texture_color_location = rp_blend_.get_uniform_location("screen_texture_color");
             rp_blend_.bloom_texture_color_location = rp_blend_.get_uniform_location("bloom_texture_color");
         }

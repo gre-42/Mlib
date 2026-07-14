@@ -6,6 +6,7 @@
 #include <Mlib/Misc/Log.hpp>
 #include <Mlib/OpenGL/CHK.hpp>
 #include <Mlib/OpenGL/Clear_Wrapper.hpp>
+#include <Mlib/OpenGL/Gen_Shader_Text.hpp>
 #include <Mlib/OpenGL/Instance_Handles/Render_Guards.hpp>
 #include <Mlib/OpenGL/Render_Logics/Clear_Mode.hpp>
 #include <Mlib/OpenGL/Render_Logics/Resource_Update_Cycle.hpp>
@@ -21,24 +22,27 @@ FillWithTextureRenderProgram::FillWithTextureRenderProgram() = default;
 
 FillWithTextureRenderProgram::~FillWithTextureRenderProgram() = default;
 
-static const char* fragment_shader_text =
-SHADER_VER FRAGMENT_PRECISION
-"in vec2 TexCoords;\n"
-"out vec4 color;\n"
-"\n"
-"uniform sampler2D texture1;\n"
-"\n"
-"void main()\n"
-"{\n"
-"    color = texture(texture1, TexCoords).rgba;\n"
-"}";
+static GenShaderText fragment_shader_text = [](){
+    std::stringstream sstr;
+    sstr << fragment_shader_preamble();
+    sstr << "in vec2 TexCoords;\n";
+    sstr << "out vec4 color;\n";
+    sstr << "\n";
+    sstr << "uniform sampler2D texture1;\n";
+    sstr << "\n";
+    sstr << "void main()\n";
+    sstr << "{\n";
+    sstr << "    color = texture(texture1, TexCoords).rgba;\n";
+    sstr << "}";
+    return sstr.str();
+};
 
 std::string fragment_shader_text_layer(
     size_t layer,
     std::optional<FixedArray<float, 4>>& uniform_border_color)
 {
     std::stringstream sstr;
-    sstr << SHADER_VER << SHADER_FIXES << FRAGMENT_PRECISION;
+    sstr << fragment_shader_preamble();
     sstr << "in vec2 TexCoords;\n";
     sstr << "out vec4 color;\n";
     sstr << "\n";
@@ -65,7 +69,7 @@ std::string fragment_shader_text_layer(
 std::string fragment_shader_text_border(std::optional<FixedArray<float, 4>>& uniform_border_color)
 {
     std::stringstream sstr;
-    sstr << SHADER_VER << SHADER_FIXES << FRAGMENT_PRECISION;
+    sstr << fragment_shader_preamble();
     sstr << "in vec2 TexCoords;\n";
     sstr << "out vec4 color;\n";
     sstr << "\n";
@@ -113,11 +117,11 @@ void FillWithTextureLogic::set_image_resource_name(std::shared_ptr<ITextureHandl
 void FillWithTextureLogic::ensure_allocated() {
     if (!rp_.allocated()) {
         if (!layer_.has_value() && !uniform_border_color_.has_value()) {
-            rp_.allocate(simple_vertex_shader_text_, fragment_shader_text);
+            rp_.allocate(simple_vertex_shader_text(), fragment_shader_text());
         } else if (layer_.has_value()) {
-            rp_.allocate(simple_vertex_shader_text_, fragment_shader_text_layer(*layer_, uniform_border_color_).c_str());
+            rp_.allocate(simple_vertex_shader_text(), fragment_shader_text_layer(*layer_, uniform_border_color_).c_str());
         } else {
-            rp_.allocate(simple_vertex_shader_text_, fragment_shader_text_border(uniform_border_color_).c_str());
+            rp_.allocate(simple_vertex_shader_text(), fragment_shader_text_border(uniform_border_color_).c_str());
         }
         rp_.texture_location = rp_.get_uniform_location("texture1");
     }

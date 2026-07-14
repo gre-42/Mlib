@@ -1,46 +1,60 @@
 #include "Clear_Logic.hpp"
 #include <Mlib/OpenGL/CHK.hpp>
+#include <Mlib/OpenGL/Gen_Shader_Text.hpp>
 #include <Mlib/OpenGL/Instance_Handles/Render_Guards.hpp>
 #include <Mlib/OpenGL/Shader_Version_3_0.hpp>
+#include <sstream>
 
 using namespace Mlib;
 
-static const char* plain_vertex_shader_text =
-SHADER_VER
-"layout (location = 0) in vec2 aPos;\n"
-"\n"
-"void main()\n"
-"{\n"
-"    gl_Position = vec4(aPos.x, aPos.y, 0.0, 1.0);\n"
-"}\n";
+static GenShaderText plain_vertex_shader_text = [](){
+    std::stringstream sstr;
+    sstr << vertex_shader_preamble();
+    sstr << "layout (location = 0) in vec2 aPos;\n";
+    sstr << "\n";
+    sstr << "void main()\n";
+    sstr << "{\n";
+    sstr << "    gl_Position = vec4(aPos.x, aPos.y, 0.0, 1.0);\n";
+    sstr << "}\n";
+    return sstr.str();
+};
 
-static const char* clear_color_only_fragment_shader_text =
-SHADER_VER FRAGMENT_PRECISION
-"out vec4 fragColor;\n"
-"\n"
-"uniform vec4 clearColor;\n"
-"\n"
-"void main() {\n"
-"    fragColor = clearColor;\n"
-"}\n";
+static GenShaderText clear_color_only_fragment_shader_text = [](){
+    std::stringstream sstr;
+    sstr << fragment_shader_preamble();
+    sstr << "out vec4 fragColor;\n";
+    sstr << "\n";
+    sstr << "uniform vec4 clearColor;\n";
+    sstr << "\n";
+    sstr << "void main() {\n";
+    sstr << "    fragColor = clearColor;\n";
+    sstr << "}\n";
+    return sstr.str();
+};
 
-static const char* clear_depth_only_fragment_shader_text =
-SHADER_VER FRAGMENT_PRECISION
-"\n"
-"void main() {\n"
-"    gl_FragDepth = 1.0;\n"
-"}\n";
+static GenShaderText clear_depth_only_fragment_shader_text = [](){
+    std::stringstream sstr;
+    sstr << fragment_shader_preamble();
+    sstr << "\n";
+    sstr << "void main() {\n";
+    sstr << "    gl_FragDepth = 1.0;\n";
+    sstr << "}\n";
+    return sstr.str();
+};
 
-static const char* clear_color_and_depth_fragment_shader_text =
-SHADER_VER FRAGMENT_PRECISION
-"out vec4 fragColor;\n"
-"\n"
-"uniform vec4 clearColor;\n"
-"\n"
-"void main() {\n"
-"    fragColor = clearColor;\n"
-"    gl_FragDepth = 1.0;\n"
-"}\n";
+static GenShaderText clear_color_and_depth_fragment_shader_text = [](){
+    std::stringstream sstr;
+    sstr << fragment_shader_preamble();
+    sstr << "out vec4 fragColor;\n";
+    sstr << "\n";
+    sstr << "uniform vec4 clearColor;\n";
+    sstr << "\n";
+    sstr << "void main() {\n";
+    sstr << "    fragColor = clearColor;\n";
+    sstr << "    gl_FragDepth = 1.0;\n";
+    sstr << "}\n";
+    return sstr.str();
+};
 
 // vertex attributes for a quad that fills the entire screen in Normalized Device Coordinates.
 static const float quad_vertices[] = {
@@ -75,7 +89,7 @@ void ClearLogic::clear_color(const FixedArray<float, 4>& color) {
     std::scoped_lock lock{ mutex_ };
     ensure_va_initialized();
     if (!rp_color_only_.allocated()) {
-        rp_color_only_.allocate(plain_vertex_shader_text, clear_color_only_fragment_shader_text);
+        rp_color_only_.allocate(plain_vertex_shader_text(), clear_color_only_fragment_shader_text());
         rp_color_only_.clear_color_location = rp_color_only_.get_uniform_location("clearColor");
     }
     rp_color_only_.use();
@@ -90,7 +104,7 @@ void ClearLogic::clear_depth() {
     std::scoped_lock lock{ mutex_ };
     ensure_va_initialized();
     if (!rp_depth_only_.allocated()) {
-        rp_depth_only_.allocate(plain_vertex_shader_text, clear_depth_only_fragment_shader_text);
+        rp_depth_only_.allocate(plain_vertex_shader_text(), clear_depth_only_fragment_shader_text());
     }
     CHK(glDepthFunc(GL_ALWAYS));
     // From: https://forum.babylonjs.com/t/modifying-the-depth-buffer-during-the-post-processing-pipeline/24832
@@ -114,7 +128,7 @@ void ClearLogic::clear_color_and_depth(const FixedArray<float, 4>& color) {
     std::scoped_lock lock{ mutex_ };
     ensure_va_initialized();
     if (!rp_color_and_depth_.allocated()) {
-        rp_color_and_depth_.allocate(plain_vertex_shader_text, clear_color_and_depth_fragment_shader_text);
+        rp_color_and_depth_.allocate(plain_vertex_shader_text(), clear_color_and_depth_fragment_shader_text());
         rp_color_and_depth_.clear_color_location = rp_color_and_depth_.get_uniform_location("clearColor");
     }
     CHK(glDepthFunc(GL_ALWAYS));

@@ -24,7 +24,7 @@ using namespace Mlib;
 /**
  * https://stackoverflow.com/questions/6408851/draw-the-depth-value-in-opengl-using-shaders/6409229#6409229
  */
-static GenShaderText fragment_shader_text{[](
+static GenShaderText fragment_shader_text = [](
     bool low_pass,
     bool high_pass,
     bool depth_fog,
@@ -34,7 +34,7 @@ static GenShaderText fragment_shader_text{[](
         throw std::runtime_error("Only one of low_pass and high_pass can be specified");
     }
     std::stringstream sstr;
-    sstr << SHADER_VER << SHADER_FIXES << FRAGMENT_PRECISION;
+    sstr << fragment_shader_preamble();
     sstr << "out vec4 FragColor;" << std::endl;
     sstr << std::endl;
     sstr << "in vec2 TexCoords;" << std::endl;
@@ -130,7 +130,7 @@ static GenShaderText fragment_shader_text{[](
     sstr << "    FragColor = vec4(col, 1.0);" << std::endl;
     sstr << "}" << std::endl;
     return sstr.str();
-}};
+};
 
 PostProcessingLogic::PostProcessingLogic(
     RenderLogic& child_logic,
@@ -154,7 +154,7 @@ PostProcessingLogic::~PostProcessingLogic() {
 
 void PostProcessingLogic::ensure_initialized() {
     if (!initialized_) {
-        rp_.allocate(simple_vertex_shader_text_, fragment_shader_text(low_pass_, high_pass_, depth_fog_, soft_light_texture_ != nullptr));
+        rp_.allocate(simple_vertex_shader_text(), fragment_shader_text(low_pass_, high_pass_, depth_fog_, soft_light_texture_ != nullptr));
 
         // https://www.khronos.org/opengl/wiki/Example/Texture_Shader_Binding
         rp_.screen_texture_color_location = rp_.get_uniform_location("screenTextureColor");

@@ -26,7 +26,7 @@ void OffsetRenderer::apply_offset(
 {
     if (!rp_.allocated()) {
         std::stringstream vs;
-        vs << SHADER_VER << SHADER_FIXES;
+        vs << vertex_shader_preamble();
         vs << "layout (location = 0) in vec2 aPos;" << std::endl;
         vs << "layout (location = 1) in vec2 aTexCoords;" << std::endl;
         vs << std::endl;
@@ -45,7 +45,7 @@ void OffsetRenderer::apply_offset(
                 throw std::runtime_error("OffsetRenderer: Number of dimensions out of bounds");
             }
             const char* coords = "rgba";
-            fs << SHADER_VER << SHADER_FIXES << FRAGMENT_PRECISION;
+            fs << fragment_shader_preamble();
             if (ndim_ == 1) {
                 fs << "out float result;" << std::endl;
             } else {

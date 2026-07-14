@@ -214,14 +214,14 @@ void AcousticPressureSubdomainLogic::initialize_fields() {
         auto& rp = wind_render_program_;
         if (!rp.allocated()) {
             std::stringstream fs;
-            fs << SHADER_VER << SHADER_FIXES << FRAGMENT_PRECISION;
+            fs << fragment_shader_preamble();
             fs << "out float wind_amplitude;" << std::endl;
             fs << "in vec2 TexCoords;" << std::endl;
             fs << "uniform sampler2D wind_texture;" << std::endl;
             fs << "void main() {" << std::endl;
             fs << "    wind_amplitude = texture(wind_texture, TexCoords).r;" << std::endl;
             fs << "}" << std::endl;
-            rp.allocate(simple_vertex_shader_text_, fs.str().c_str());
+            rp.allocate(simple_vertex_shader_text(), fs.str().c_str());
             rp.wind_texture = rp.get_uniform_location("wind_texture");
         }
         rp.use();
@@ -266,7 +266,7 @@ void AcousticPressureSubdomainLogic::collide_and_stream() {
         
         std::stringstream fs;
         fs << std::fixed;
-        fs << SHADER_VER << SHADER_FIXES << FRAGMENT_PRECISION;
+        fs << fragment_shader_preamble();
         fs << "out float p_2;" << std::endl;
         fs << "in vec2 TexCoords0;" << std::endl;
         for (int dim = 0; dim < 2; ++dim) {
@@ -373,7 +373,7 @@ void AcousticPressureSubdomainLogic::calculate_skidmark_field() {
     if (!rp.allocated()) {
         std::stringstream fs;
         fs << std::fixed;
-        fs << SHADER_VER << SHADER_FIXES << FRAGMENT_PRECISION;
+        fs << fragment_shader_preamble();
         fs << "out vec3 skidmark_field;" << std::endl;
         fs << "in vec2 TexCoords;" << std::endl;
         fs << "uniform float skidmark_strength;" << std::endl;
@@ -386,7 +386,7 @@ void AcousticPressureSubdomainLogic::calculate_skidmark_field() {
         fs << "}" << std::endl;
         // linfo() << "--------- calculate_skidmark_field -----------";
         // lraw() << fs.str();
-        rp.allocate(simple_vertex_shader_text_, fs.str().c_str());
+        rp.allocate(simple_vertex_shader_text(), fs.str().c_str());
         rp.skidmark_strength = rp.get_uniform_location("skidmark_strength");
         rp.pressure_field = rp.get_uniform_location("pressure_field");
     }

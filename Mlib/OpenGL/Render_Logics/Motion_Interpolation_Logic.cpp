@@ -22,10 +22,9 @@ using namespace Mlib;
 /**
  * https://stackoverflow.com/questions/6408851/draw-the-depth-value-in-opengl-using-shaders/6409229#6409229
  */
-static GenShaderText fragment_shader_text{[](bool interpolate)
-{
+static GenShaderText fragment_shader_text = [](bool interpolate){
     std::stringstream sstr;
-    sstr << SHADER_VER << SHADER_FIXES << FRAGMENT_PRECISION;
+    sstr << fragment_shader_preamble();
     sstr << "out vec4 FragColor;" << std::endl;
     sstr << std::endl;
     sstr << "in vec2 TexCoords;" << std::endl;
@@ -44,12 +43,11 @@ static GenShaderText fragment_shader_text{[](bool interpolate)
     sstr << "    FragColor = vec4(col, 1.0);" << std::endl;
     sstr << "}" << std::endl;
     return sstr.str();
-}};
+};
 
-static GenShaderText optical_flow_diff_fragment_shader_text{[]()
-{
+static GenShaderText optical_flow_diff_fragment_shader_text = [](){
     std::stringstream sstr;
-    sstr << SHADER_VER << SHADER_FIXES << FRAGMENT_PRECISION;
+    sstr << fragment_shader_preamble();
     sstr << "out vec4 FragColor;" << std::endl;
     sstr << std::endl;
     sstr << "in vec2 TexCoords;" << std::endl;
@@ -88,12 +86,11 @@ static GenShaderText optical_flow_diff_fragment_shader_text{[]()
     sstr << "    FragColor = vec4(pow(Ix, 2), pow(Iy, 2), Ix * Itf, Iy * Itf);" << std::endl;
     sstr << "}" << std::endl;
     return sstr.str();
-}};
+};
 
-static GenShaderText optical_flow_diff1_fragment_shader_text{[]()
-{
+static GenShaderText optical_flow_diff1_fragment_shader_text = [](){
     std::stringstream sstr;
-    sstr << SHADER_VER << SHADER_FIXES << FRAGMENT_PRECISION;
+    sstr << fragment_shader_preamble();
     sstr << "out vec4 FragColor;" << std::endl;
     sstr << std::endl;
     sstr << "in vec2 TexCoords;" << std::endl;
@@ -124,12 +121,11 @@ static GenShaderText optical_flow_diff1_fragment_shader_text{[]()
     sstr << "    FragColor = vec4(pow(Ix, 2), pow(Iy, 2), Ix * Itf, Iy * Itf);" << std::endl;
     sstr << "}" << std::endl;
     return sstr.str();
-}};
+};
 
-static GenShaderText optical_flow_fragment_shader_text{[]()
-{
+static GenShaderText optical_flow_fragment_shader_text = [](){
     std::stringstream sstr;
-    sstr << SHADER_VER << SHADER_FIXES << FRAGMENT_PRECISION;
+    sstr << fragment_shader_preamble();
     sstr << "out vec4 FragColor;" << std::endl;
     sstr << std::endl;
     sstr << "in vec2 TexCoords;" << std::endl;
@@ -158,12 +154,11 @@ static GenShaderText optical_flow_fragment_shader_text{[]()
     sstr << "    FragColor = vec4(flow, 0, 1);" << std::endl;
     sstr << "}" << std::endl;
     return sstr.str();
-}};
+};
 
-static GenShaderText optical_flow_apply_fragment_shader_text{[]()
-{
+static GenShaderText optical_flow_apply_fragment_shader_text = [](){
     std::stringstream sstr;
-    sstr << SHADER_VER << SHADER_FIXES << FRAGMENT_PRECISION;
+    sstr << fragment_shader_preamble();
     sstr << "out vec4 FragColor;" << std::endl;
     sstr << std::endl;
     sstr << "in vec2 TexCoords;" << std::endl;
@@ -181,7 +176,7 @@ static GenShaderText optical_flow_apply_fragment_shader_text{[]()
     //sstr << "    FragColor = vec4(flow.x, flow.y, 0.0, 1.0);" << std::endl;
     sstr << "}" << std::endl;
     return sstr.str();
-}};
+};
 
 MotionInterpolationLogic::MotionInterpolationLogic(RenderLogic& child_logic, InterpolationType interpolation_type)
     : initialized_{ false }
@@ -197,7 +192,7 @@ void MotionInterpolationLogic::ensure_initialized() {
     if (!initialized_) {
         // shader configuration
         // --------------------
-        rp_no_interpolate_.allocate(simple_vertex_shader_text_, fragment_shader_text(/* interpolate = */false));
+        rp_no_interpolate_.allocate(simple_vertex_shader_text(), fragment_shader_text(/* interpolate = */false));
         // https://www.khronos.org/opengl/wiki/Example/Texture_Shader_Binding
         rp_no_interpolate_.screen_texture_color0_location = rp_no_interpolate_.get_uniform_location("screenTextureColor0");
         rp_no_interpolate_.screen_texture_color1_location = 0;
@@ -206,7 +201,7 @@ void MotionInterpolationLogic::ensure_initialized() {
         rp_no_interpolate_.width_location = 0;
         rp_no_interpolate_.height_location = 0;
         if (interpolation_type_ == InterpolationType::MEAN) {
-            rp_interpolate_mean_.allocate(simple_vertex_shader_text_, fragment_shader_text(/* interpolate = */true));
+            rp_interpolate_mean_.allocate(simple_vertex_shader_text(), fragment_shader_text(/* interpolate = */true));
             rp_interpolate_mean_.screen_texture_color0_location = rp_interpolate_mean_.get_uniform_location("screenTextureColor0");
             rp_interpolate_mean_.screen_texture_color1_location = rp_interpolate_mean_.get_uniform_location("screenTextureColor1");
             rp_interpolate_mean_.screen_texture_of_diff_location = 0;
@@ -215,7 +210,7 @@ void MotionInterpolationLogic::ensure_initialized() {
             rp_interpolate_mean_.height_location = 0;
         }
         if (interpolation_type_ == InterpolationType::OPTICAL_FLOW) {
-            rp_interpolate_of_diff_.allocate(simple_vertex_shader_text_, optical_flow_diff1_fragment_shader_text());
+            rp_interpolate_of_diff_.allocate(simple_vertex_shader_text(), optical_flow_diff1_fragment_shader_text());
             rp_interpolate_of_diff_.screen_texture_color0_location = rp_interpolate_of_diff_.get_uniform_location("screenTextureColor0");
             rp_interpolate_of_diff_.screen_texture_color1_location = rp_interpolate_of_diff_.get_uniform_location("screenTextureColor1");
             rp_interpolate_of_diff_.screen_texture_of_diff_location = 0;
@@ -223,7 +218,7 @@ void MotionInterpolationLogic::ensure_initialized() {
             rp_interpolate_of_diff_.width_location = rp_interpolate_of_diff_.get_uniform_location("width");
             rp_interpolate_of_diff_.height_location = rp_interpolate_of_diff_.get_uniform_location("height");
 
-            rp_interpolate_of_finalize_.allocate(simple_vertex_shader_text_, optical_flow_fragment_shader_text());
+            rp_interpolate_of_finalize_.allocate(simple_vertex_shader_text(), optical_flow_fragment_shader_text());
             rp_interpolate_of_finalize_.screen_texture_color0_location = 0;
             rp_interpolate_of_finalize_.screen_texture_color1_location = 0;
             rp_interpolate_of_finalize_.screen_texture_of_diff_location = rp_interpolate_of_finalize_.get_uniform_location("screenTextureDiff");
@@ -231,7 +226,7 @@ void MotionInterpolationLogic::ensure_initialized() {
             rp_interpolate_of_finalize_.width_location = 0;
             rp_interpolate_of_finalize_.height_location = 0;
 
-            rp_interpolate_of_apply_.allocate(simple_vertex_shader_text_, optical_flow_apply_fragment_shader_text());
+            rp_interpolate_of_apply_.allocate(simple_vertex_shader_text(), optical_flow_apply_fragment_shader_text());
             rp_interpolate_of_apply_.screen_texture_color0_location = rp_interpolate_of_apply_.get_uniform_location("screenTextureColor0");
             rp_interpolate_of_apply_.screen_texture_color1_location = rp_interpolate_of_apply_.get_uniform_location("screenTextureColor1");
             rp_interpolate_of_apply_.screen_texture_of_diff_location = 0;

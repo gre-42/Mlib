@@ -20,10 +20,9 @@
 
 using namespace Mlib;
 
-static GenShaderText modulate_fragment_shader_text{[]()
-{
+static GenShaderText modulate_fragment_shader_text = [](){
     std::stringstream sstr;
-    sstr << SHADER_VER << SHADER_FIXES << FRAGMENT_PRECISION;
+    sstr << fragment_shader_preamble();
     sstr << "out vec4 FragColor;" << std::endl;
     sstr << std::endl;
     sstr << "in vec2 TexCoords;" << std::endl;
@@ -39,12 +38,11 @@ static GenShaderText modulate_fragment_shader_text{[]()
     sstr << "    FragColor = vec4(pow(bg_rgb, intensities) * (1.0 - fg_a), 1.0);" << std::endl;
     sstr << "}" << std::endl;
     return sstr.str();
-}};
+};
 
-static GenShaderText blend_fragment_shader_text{[]()
-{
+static GenShaderText blend_fragment_shader_text = [](){
     std::stringstream sstr;
-    sstr << SHADER_VER << SHADER_FIXES << FRAGMENT_PRECISION;
+    sstr << fragment_shader_preamble();
     sstr << "out vec4 FragColor;" << std::endl;
     sstr << std::endl;
     sstr << "in vec2 TexCoords;" << std::endl;
@@ -64,7 +62,7 @@ static GenShaderText blend_fragment_shader_text{[]()
     // sstr << "    FragColor.rgb = FragColor.rgb * 0.01 + lo;" << std::endl;
     sstr << "}" << std::endl;
     return sstr.str();
-}};
+};
 
 SkyBloomLogic::SkyBloomLogic(
     RenderLogic& child_logic,
@@ -126,13 +124,13 @@ bool SkyBloomLogic::render_optional_setup(
         assert_true(render_config.nsamples_msaa > 0);
 
         if (!rp_modulate_.allocated()) {
-            rp_modulate_.allocate(simple_vertex_shader_text_, modulate_fragment_shader_text());
+            rp_modulate_.allocate(simple_vertex_shader_text(), modulate_fragment_shader_text());
             rp_modulate_.foreground_texture_location = rp_modulate_.get_uniform_location("foreground");
             rp_modulate_.background_texture_location = rp_modulate_.get_uniform_location("background");
             rp_modulate_.intensities_location = rp_modulate_.get_uniform_location("intensities");
         }
         if (!rp_blend_.allocated()) {
-            rp_blend_.allocate(simple_vertex_shader_text_, blend_fragment_shader_text());
+            rp_blend_.allocate(simple_vertex_shader_text(), blend_fragment_shader_text());
             rp_blend_.foreground_texture_location = rp_blend_.get_uniform_location("foreground");
             rp_blend_.background_texture_location = rp_blend_.get_uniform_location("background");
             rp_blend_.bloom_texture_color_location = rp_blend_.get_uniform_location("bloom");

@@ -226,7 +226,7 @@ void FluidSubdomainLogic::calculate_macroscopic_variables() {
     auto& rp = macroscopic_render_program_;
     if (!rp.allocated()) {
         std::stringstream fs;
-        fs << SHADER_VER << SHADER_FIXES << FRAGMENT_PRECISION;
+        fs << fragment_shader_preamble();
         fs << "out vec3 density_and_velocity_field;" << std::endl;
         fs << "in vec2 TexCoords;" << std::endl;
         fs << "uniform vec2 inner_directional_velocity;" << std::endl;
@@ -263,7 +263,7 @@ void FluidSubdomainLogic::calculate_macroscopic_variables() {
         fs << "}" << std::endl;
         // linfo() << "--------- calculate_macroscopic_variables -----------";
         // lraw() << fs.str();
-        rp.allocate(simple_vertex_shader_text_, fs.str().c_str());
+        rp.allocate(simple_vertex_shader_text(), fs.str().c_str());
         rp.inner_directional_velocity = rp.get_uniform_location("inner_directional_velocity");
         rp.inner_radial_velocity = rp.get_uniform_location("inner_radial_velocity");
         rp.inner_min = rp.get_uniform_location("inner_min");
@@ -309,7 +309,7 @@ void FluidSubdomainLogic::collide() {
             const auto& dirs = FluidDomainLbmModel::discrete_velocity_directions[v];
             const auto& weight = FluidDomainLbmModel::weights[v];
             std::stringstream sstr;
-            sstr << SHADER_VER << SHADER_FIXES << FRAGMENT_PRECISION;
+            sstr << fragment_shader_preamble();
             sstr << "out float temp_momentum_magnitude_field;" << std::endl;
             sstr << "in vec2 TexCoords;" << std::endl;
             sstr << "uniform sampler2D density_and_velocity_field;" << std::endl;
@@ -342,7 +342,7 @@ void FluidSubdomainLogic::collide() {
             sstr << "}" << std::endl;
             // linfo() << "--------- collide " << v << " -----------";
             // lraw() << sstr.str();
-            rp.allocate(simple_vertex_shader_text_, sstr.str().c_str());
+            rp.allocate(simple_vertex_shader_text(), sstr.str().c_str());
             rp.density_and_velocity_field = rp.get_uniform_location("density_and_velocity_field");
             rp.good_momentum_magnitude_field = rp.get_uniform_location("good_momentum_magnitude_field");
             rp.speed_of_sound2 = rp.get_uniform_location("speed_of_sound2");
@@ -383,7 +383,7 @@ void FluidSubdomainLogic::stream() {
             const auto& dir = dirs[v];
 
             std::stringstream vs;
-            vs << SHADER_VER << SHADER_FIXES;
+            vs << vertex_shader_preamble();
             vs << "layout (location = 0) in vec2 aPos;" << std::endl;
             vs << "layout (location = 1) in vec2 aTexCoords;" << std::endl;
             vs << std::endl;
@@ -399,7 +399,7 @@ void FluidSubdomainLogic::stream() {
             vs << "}" << std::endl;
 
             std::stringstream fs;
-            fs << SHADER_VER << SHADER_FIXES << FRAGMENT_PRECISION;
+            fs << fragment_shader_preamble();
             fs << "out float good_momentum_magnitude_field;" << std::endl;
             fs << "in vec2 TexCoords0;" << std::endl;
             fs << "in vec2 TexCoords1;" << std::endl;
@@ -442,7 +442,7 @@ void FluidSubdomainLogic::calculate_skidmark_field() {
     auto& rp = skidmark_render_program_;
     if (!rp.allocated()) {
         std::stringstream sstr;
-        sstr << SHADER_VER << SHADER_FIXES << FRAGMENT_PRECISION;
+        sstr << fragment_shader_preamble();
         sstr << "out vec3 skidmark_field;" << std::endl;
         sstr << "in vec2 TexCoords;" << std::endl;
         sstr << "uniform float min_density;" << std::endl;
@@ -456,7 +456,7 @@ void FluidSubdomainLogic::calculate_skidmark_field() {
         sstr << "}" << std::endl;
         // linfo() << "--------- calculate_skidmark_field -----------";
         // lraw() << sstr.str();
-        rp.allocate(simple_vertex_shader_text_, sstr.str().c_str());
+        rp.allocate(simple_vertex_shader_text(), sstr.str().c_str());
         rp.visual_density.min = rp.get_uniform_location("min_density");
         rp.visual_density.max = rp.get_uniform_location("max_density");
         rp.density_and_velocity_field = rp.get_uniform_location("density_and_velocity_field");

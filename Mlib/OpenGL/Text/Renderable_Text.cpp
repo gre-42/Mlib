@@ -8,6 +8,7 @@
 #include <Mlib/Misc/Floating_Point_Exceptions.hpp>
 #include <Mlib/OpenGL/CHK.hpp>
 #include <Mlib/OpenGL/Deallocate/Render_Deallocator.hpp>
+#include <Mlib/OpenGL/Gen_Shader_Text.hpp>
 #include <Mlib/OpenGL/Instance_Handles/Render_Guards.hpp>
 #include <Mlib/OpenGL/Instance_Handles/Render_Program.hpp>
 #include <Mlib/OpenGL/Resource_Managers/Rendering_Resources.hpp>
@@ -21,35 +22,42 @@
 #include <Mlib/Os/Os.hpp>
 #include <Mlib/Resource_Context/Rendering_Context.hpp>
 #include <Mlib/Strings/Encoding.hpp>
+#include <sstream>
 #include <stb/stb_truetype.h>
 
 using namespace Mlib;
 
-static const char* vertex_shader_text =
-SHADER_VER
-"layout (location = 0) in vec4 vertex; // <vec2 pos, vec2 tex>\n"
-"out vec2 TexCoords;\n"
-"\n"
-"uniform mat4 projection;\n"
-"\n"
-"void main()\n"
-"{\n"
-"    gl_Position = projection * vec4(vertex.xy, 0.0, 1.0);\n"
-"    TexCoords = vertex.zw;\n"
-"}";
+static GenShaderText vertex_shader_text = [](){
+    std::stringstream sstr;
+    sstr << vertex_shader_preamble();
+    sstr << "layout (location = 0) in vec4 vertex; // <vec2 pos, vec2 tex>\n";
+    sstr << "out vec2 TexCoords;\n";
+    sstr << "\n";
+    sstr << "uniform mat4 projection;\n";
+    sstr << "\n";
+    sstr << "void main()\n";
+    sstr << "{\n";
+    sstr << "    gl_Position = projection * vec4(vertex.xy, 0.0, 1.0);\n";
+    sstr << "    TexCoords = vertex.zw;\n";
+    sstr << "}";
+    return sstr.str();
+};
 
-static const char* fragment_shader_text =
-SHADER_VER FRAGMENT_PRECISION
-"in vec2 TexCoords;\n"
-"out vec4 color;\n"
-"\n"
-"uniform vec3 color3;\n"
-"uniform sampler2D texture1;\n"
-"\n"
-"void main()\n"
-"{\n"
-"    color = vec4(color3, texture(texture1, TexCoords).r);\n"
-"}";
+static GenShaderText fragment_shader_text = [](){
+    std::stringstream sstr;
+    sstr << fragment_shader_preamble();
+    sstr << "in vec2 TexCoords;\n";
+    sstr << "out vec4 color;\n";
+    sstr << "\n";
+    sstr << "uniform vec3 color3;\n";
+    sstr << "uniform sampler2D texture1;\n";
+    sstr << "\n";
+    sstr << "void main()\n";
+    sstr << "{\n";
+    sstr << "    color = vec4(color3, texture(texture1, TexCoords).r);\n";
+    sstr << "}";
+    return sstr.str();
+};
 
 TextResource::TextResource(
     VariableAndHash<std::string> charset,
@@ -94,7 +102,7 @@ void TextResource::ensure_initialized(float font_height) const
     }
     if (!rp_.allocated()) {
         vdata_.reserve(max_nchars_);
-        rp_.allocate(vertex_shader_text, fragment_shader_text);
+        rp_.allocate(vertex_shader_text(), fragment_shader_text());
         rp_.color_location = rp_.get_uniform_location("color3");
         rp_.texture_location = rp_.get_uniform_location("texture1");
         rp_.projection_location = rp_.get_uniform_location("projection");

@@ -10,7 +10,7 @@ public:
     explicit GenericPostProcessingLogic(const float* quad_vertices = standard_quad_vertices);
     ~GenericPostProcessingLogic();
 protected:
-    static const char* simple_vertex_shader_text_;
+    static const char* simple_vertex_shader_text();
     BufferForegroundCopy vertices_;
     VertexArray& va();
 private:

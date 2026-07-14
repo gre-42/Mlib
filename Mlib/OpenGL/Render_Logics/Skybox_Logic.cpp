@@ -5,45 +5,53 @@
 #include <Mlib/Geometry/Texture/ITexture_Handle.hpp>
 #include <Mlib/Misc/Log.hpp>
 #include <Mlib/OpenGL/CHK.hpp>
+#include <Mlib/OpenGL/Gen_Shader_Text.hpp>
 #include <Mlib/OpenGL/Render_Setup.hpp>
 #include <Mlib/OpenGL/Resource_Managers/Rendering_Resources.hpp>
 #include <Mlib/OpenGL/Shader_Version_3_0.hpp>
 #include <Mlib/Resource_Context/Rendering_Context.hpp>
 #include <Mlib/Scene_Graph/Rendered_Scene_Descriptor.hpp>
+#include <sstream>
 #include <stdexcept>
 
 using namespace Mlib;
 
-static const char* vertex_shader_text =
-    SHADER_VER
-    "layout (location = 0) in vec3 aPos;\n"
-    "\n"
-    "out vec3 TexCoords;\n"
-    "\n"
-    "uniform mat4 vp;\n"
-    "\n"
-    "void main()\n"
-    "{\n"
-    // "    TexCoords = aPos;\n"
-    // Modification proposed in https://learnopengl.com/Advanced-OpenGL/Cubemaps#comment-5197766106
-    // This works in combination with not flipping the y-coordinate when loading the texture.
-    "    TexCoords = vec3(aPos.xy, -aPos.z);\n"
-    "    vec4 pos = vp * vec4(aPos, 1.0);\n"
-    "    gl_Position = pos.xyzz;\n"
-    "}";
+static GenShaderText vertex_shader_text = [](){
+    std::stringstream sstr;
+    sstr << vertex_shader_preamble();
+    sstr << "layout (location = 0) in vec3 aPos;\n";
+    sstr << "\n";
+    sstr << "out vec3 TexCoords;\n";
+    sstr << "\n";
+    sstr << "uniform mat4 vp;\n";
+    sstr << "\n";
+    sstr << "void main()\n";
+    sstr << "{\n";
+    // "    TexCoords = aPos;\n";
+    // Modification proposed in https://learnopengl.com/Advanced-OpenGL/Cubemaps#comment-5197766106;
+    // This works in combination with not flipping the y-coordinate when loading the texture.;
+    sstr << "    TexCoords = vec3(aPos.xy, -aPos.z);\n";
+    sstr << "    vec4 pos = vp * vec4(aPos, 1.0);\n";
+    sstr << "    gl_Position = pos.xyzz;\n";
+    sstr << "}";
+    return sstr.str();
+};
 
-static const char* fragment_shader_text =
-    SHADER_VER     FRAGMENT_PRECISION
-    "out vec4 FragColor;\n"
-    "\n"
-    "in vec3 TexCoords;\n"
-    "\n"
-    "uniform samplerCube skybox;\n"
-    "\n"
-    "void main()\n"
-    "{\n"
-    "    FragColor = vec4(texture(skybox, TexCoords).rgb, 0.0);\n"
-    "}";
+static GenShaderText fragment_shader_text = [](){
+    std::stringstream sstr;
+    sstr << fragment_shader_preamble();
+    sstr << "out vec4 FragColor;\n";
+    sstr << "\n";
+    sstr << "in vec3 TexCoords;\n";
+    sstr << "\n";
+    sstr << "uniform samplerCube skybox;\n";
+    sstr << "\n";
+    sstr << "void main()\n";
+    sstr << "{\n";
+    sstr << "    FragColor = vec4(texture(skybox, TexCoords).rgb, 0.0);\n";
+    sstr << "}";
+    return sstr.str();
+};
 
 float skybox_vertices[] = {
     // positions          
@@ -124,7 +132,7 @@ void SkyboxLogic::render_with_setup(
     }
     // TimeGuard time_guard{"SkyboxLogic::render", "SkyboxLogic::render"};
     if (!rp_.allocated()) {
-        rp_.allocate(vertex_shader_text, fragment_shader_text);
+        rp_.allocate(vertex_shader_text(), fragment_shader_text());
         rp_.skybox_location = rp_.get_uniform_location("skybox");
         rp_.vp_location = rp_.get_uniform_location("vp");
 

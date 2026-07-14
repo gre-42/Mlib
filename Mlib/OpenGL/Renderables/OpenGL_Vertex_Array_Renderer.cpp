@@ -149,7 +149,7 @@ enum class ReductionTarget {
     ALPHA
 };
 
-static GenShaderText vertex_shader_text_gen{[](
+static GenShaderText vertex_shader_text_gen = [](
     const NotSortedArray<std::vector<std::pair<TransformationMatrix<float, ScenePos, 3>, std::shared_ptr<Light>>>>& lights,
     const NotSortedArray<std::vector<std::pair<TransformationMatrix<float, ScenePos, 3>, std::shared_ptr<Skidmark>>>>& skidmarks,
     const NotSortedArray<std::vector<BlendMapTextureAndId>>& textures_color,
@@ -236,7 +236,7 @@ static GenShaderText vertex_shader_text_gen{[](
     };
     std::stringstream sstr;
     sstr << std::scientific;
-    sstr << SHADER_VER << SHADER_FIXES;
+    sstr << vertex_shader_preamble();
     sstr << "uniform mat4 MVP;" << std::endl;
     if (has_flat) {
         sstr << "uniform mat3 lookat;" << std::endl;
@@ -579,7 +579,7 @@ static GenShaderText vertex_shader_text_gen{[](
         }
     }
     return sstr.str();
-}};
+};
 
 static void bisect_texture_layer(
     std::ostream& sstr,
@@ -616,7 +616,7 @@ static void bisect_texture_layer(
     }
 }
 
-static GenShaderText fragment_shader_text_textured_rgb_gen{[](
+static GenShaderText fragment_shader_text_textured_rgb_gen = [](
     const NotSortedArray<std::vector<std::pair<TransformationMatrix<float, ScenePos, 3>, std::shared_ptr<Light>>>>& lights,
     const NotSortedArray<std::vector<std::pair<TransformationMatrix<float, ScenePos, 3>, std::shared_ptr<Skidmark>>>>& skidmarks,
     const NotSortedArray<std::vector<BlendMapTextureAndId>>& textures_color,
@@ -769,7 +769,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     };
     std::stringstream sstr;
     sstr << std::scientific;
-    sstr << SHADER_VER << SHADER_FIXES << FRAGMENT_PRECISION;
+    sstr << fragment_shader_preamble();
     sstr << "in vec3 color;" << std::endl;
     if (has_dynamic_emissive) {
         sstr << "uniform vec3 dynamic_emissive;" << std::endl;
@@ -1810,7 +1810,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         }
     }
     return sstr.str();
-}};
+};
 
 OpenGLVertexArrayRenderer::OpenGLVertexArrayRenderer(
     RenderingResources& primary_rendering_resources,

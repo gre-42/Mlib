@@ -39,6 +39,7 @@
 #include <Mlib/OpenGL/Renderables/OpenGL_Vertex_Array_Renderer.hpp>
 #include <Mlib/OpenGL/Resource_Managers/Particle_Resources.hpp>
 #include <Mlib/OpenGL/Resource_Managers/Trail_Resources.hpp>
+#include <Mlib/OpenGL/Shader_Version_3_0.hpp>
 #include <Mlib/OpenGL/Text/Charsets.hpp>
 #include <Mlib/OpenGL/Ui/Button_States.hpp>
 #include <Mlib/OpenGL/Ui/Cursor_States.hpp>
@@ -453,6 +454,7 @@ void android_main(android_app* app)
         "    [--print_gl_calls]\n"
         "    [--print_rendered_materials]\n"
         "    [--rgba_debug_image <name>]\n"
+        "    [--shader_platform <name>]\n"
         #ifdef __EMSCRIPTEN__
         "    [--ver <dummy>]\n"
         #endif
@@ -576,7 +578,8 @@ void android_main(android_app* app)
          "--bloom_intensities",
          "--show_only",
          "--show_only_file",
-         "--rgba_debug_image"});
+         "--rgba_debug_image",
+         "--shader_platform"});
     try {
 #ifdef __EMSCRIPTEN__
         const auto args = parser.parsed(argc, argv);
@@ -618,6 +621,9 @@ void android_main(android_app* app)
         AudioScene::set_default_alpha(safe_stof(args.named_svalue("--audio_alpha", "0.1")));
         AudioScene::set_distance_model(audio_distance_model_from_string(args.named_value("--audio_distance_model", "inverse_distance_clamped")));
 
+        if (auto p = args.try_named_value("--shader_platform"); p != nullptr) {
+            set_shader_platform(shader_platform_from_string(*p));
+        }
         std::atomic_size_t num_renderings;
         RenderConfig render_config{
             .nsamples_msaa = safe_stoi(args.named_svalue("--nsamples_msaa", "1")),
