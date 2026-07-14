@@ -1065,7 +1065,11 @@ static GenShaderText fragment_shader_text_textured_rgb_gen = [](
         sstr << "    rel_view_pos.y = interior_uvmap_fs.z + interior_uvmap_fs.w * rel_view_pos.y;" << std::endl;
         sstr << "    rel_frag_pos.y = interior_uvmap_fs.z + interior_uvmap_fs.w * rel_frag_pos.y;" << std::endl;
         sstr << "    vec3 rel_view_dir = vec3(rel_frag_pos, 0) - rel_view_pos;" << std::endl;
+        #if defined(__ANDROID__) || defined(__EMSCRIPTEN__)
+        sstr << "    float best_alpha = 1e38;" << std::endl;
+        #else
         sstr << "    float best_alpha = 1.0 / 0.0;" << std::endl;
+        #endif
         sstr << "    int best_axis;" << std::endl;
         sstr << "    bool best_sign;" << std::endl;
         sstr << "    vec2 best_uv;" << std::endl;
