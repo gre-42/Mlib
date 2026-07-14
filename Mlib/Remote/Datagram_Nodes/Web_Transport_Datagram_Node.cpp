@@ -78,8 +78,7 @@ EM_JS(int, createWebTransportSocket,
     }
     const handle = globalThis.webTransportHandles.generate();
     globalThis.webTransportPermanent[handle] = {
-        packetQueue: [],
-        statusCodeResolved: false
+        packetQueue: []
     };
     function createWebTransport() {
         const queryString = (queryList.length === 0)
@@ -97,16 +96,10 @@ EM_JS(int, createWebTransportSocket,
                 await socket.ready;
             } catch (e) {
                 console.error("Reader error:", e);
-                console.error("Sending status code", Module["JsStatusCode"]["FAILURE"]["value"]);
-                _resolve_promise(promise_ptr, Module["JsStatusCode"]["FAILURE"]["value"]);
                 return;
             }
             console.log("WebTransport ready");
-            console.error("Sending status code", Module["JsStatusCode"]["SUCCESS"]["value"]);
-            if (!permanent.statusCodeResolved) {
-                _resolve_promise(promise_ptr, Module["JsStatusCode"]["SUCCESS"]["value"]);
-                permanent.statusCodeResolved = true;
-            }
+            // _resolve_promise(promise_ptr, Module["JsStatusCode"]["SUCCESS"]["value"]);
 
             let closedDueToTimeout = false;
             // Background reader
