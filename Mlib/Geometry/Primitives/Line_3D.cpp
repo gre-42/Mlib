@@ -53,11 +53,11 @@ AxisAlignedBoundingBox<TPos, 3> Line3D<TPos>::aabb() const {
 namespace Mlib {
 
 template class Line3D<float>;
-template class Line3D<ScenePos>;
+template class Line3D<CompressedScenePos>;
 
 template Line3D<float>::Line3D(const FixedArray<ColoredVertex<float>, 2>& vertices);
-template Line3D<ScenePos>::Line3D(const FixedArray<ColoredVertex<float>, 2>& vertices);
-template Line3D<ScenePos>::Line3D(const FixedArray<ColoredVertex<CompressedScenePos>, 2>& vertices);
+template Line3D<CompressedScenePos>::Line3D(const FixedArray<ColoredVertex<float>, 2>& vertices);
+template Line3D<CompressedScenePos>::Line3D(const FixedArray<ColoredVertex<CompressedScenePos>, 2>& vertices);
 
 template Line3D<CompressedScenePos>::Line3D(
     const FixedArray<ColoredVertex<float>, 2>& vertices,
