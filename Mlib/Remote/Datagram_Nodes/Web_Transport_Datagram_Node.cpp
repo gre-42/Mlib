@@ -36,8 +36,7 @@ EM_JS(int, createWebTransportSocket,
     (const char* serverUrlPtr, std::ptrdiff_t serverUrlLen,
      int maxStoredReceivedMessages,
      const uint8_t* certHashPtr, std::ptrdiff_t certHashLen,
-     const char* remoteSecretPtr, std::ptrdiff_t remoteSecretLen,
-     void* promise_ptr),
+     const char* remoteSecretPtr, std::ptrdiff_t remoteSecretLen),
 {
     const utf8Decoder = new TextDecoder('utf-8');
     const serverUrl = utf8Decoder.decode(HEAPU8.slice(Number(serverUrlPtr), Number(serverUrlPtr) + Number(serverUrlLen)));
@@ -49,7 +48,7 @@ EM_JS(int, createWebTransportSocket,
         console.log("Using cert hash");
         if (Number(certHashLen) !== 32) {
             console.error("Certificate hash does not have 32 bytes");
-            return 0;
+            return -1;
         }
         options["serverCertificateHashes"] = [
             {
@@ -99,7 +98,6 @@ EM_JS(int, createWebTransportSocket,
                 return;
             }
             console.log("WebTransport ready");
-            // _resolve_promise(promise_ptr, Module["JsStatusCode"]["SUCCESS"]["value"]);
 
             let closedDueToTimeout = false;
             // Background reader
@@ -263,25 +261,16 @@ void WebTransportDatagramNode::start_receive_thread(uint32_t max_stored_received
         throw std::runtime_error("Receive thread already started");
     }
     std::string url = "https://" + remote_socket_.hostname + ':' + std::to_string(remote_socket_.port);
-    std::promise<JsStatusCode> done;
     execute_in_main_thread([&](){
         socket_handle_ = createWebTransportSocket(
             url.data(), integral_cast<std::ptrdiff_t>(url.length()),
             integral_cast<int>(max_stored_received_messages),
             cert_hash_.empty() ? nullptr : (const uint8_t*)cert_hash_.data(),
             cert_hash_.empty() ? 0 : integral_cast<std::ptrdiff_t>(cert_hash_.size()),
-            remote_secret_.data(), integral_cast<std::ptrdiff_t>(remote_secret_.length()),
-            &done);
+            remote_secret_.data(), integral_cast<std::ptrdiff_t>(remote_secret_.length()));
     });
     if (socket_handle_ == -1) {
         throw std::runtime_error("Could not create WebTransport socket");
-    } else {
-        linfo() << "Create: Waiting for WebTransport status code";
-        auto status_code = done.get_future().get();
-        linfo() << "Create: Received WebTransport status code " + std::to_string((int)status_code);
-        if (status_code != JsStatusCode::SUCCESS) {
-            lwarn() << "Could not start receive thread on initial attempt, JS will however retry";
-        }
     }
 }
 
