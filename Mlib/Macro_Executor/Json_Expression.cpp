@@ -30,20 +30,6 @@ struct FalseJsonEval {
     static const bool value = false;
 };
 
-template <class T>
-static T get(
-    const std::string& var,
-    const JsonView& globals,
-    const JsonView& locals)
-{
-    auto g = globals.try_at<T>(var);
-    if (g.has_value()) {
-        return g.value();
-    } else {
-        return locals.at<T>(var);
-    }
-}
-
 static const nlohmann::json& at(
     const std::string_view& s,
     const nlohmann::json& globals,
