@@ -85,16 +85,16 @@ EM_JS(int, createWebTransportSocket,
         const queryString = (queryList.length === 0)
             ? ""
             : ("?" + queryList.join("&"));
-        const transport = new globalThis["WebTransport"](serverUrl + queryString, options);
-        transport["_isClosed"] = false;
-        globalThis.webTransportSockets[handle] = transport;
+        const socket = new globalThis["WebTransport"](serverUrl + queryString, options);
+        socket["_isClosed"] = false;
+        globalThis.webTransportSockets[handle] = socket;
     }
     async function connectTransport() {
         try {
-            const transport = globalThis.webTransportSockets[handle];
+            const socket = globalThis.webTransportSockets[handle];
             const permanent = globalThis.webTransportPermanent[handle];
             try {
-                await transport.ready;
+                await socket.ready;
             } catch (e) {
                 console.error("Reader error:", e);
                 console.error("Sending status code", Module["JsStatusCode"]["FAILURE"]["value"]);
@@ -111,12 +111,16 @@ EM_JS(int, createWebTransportSocket,
             let closedDueToTimeout = false;
             // Background reader
             (async () => {
+                let reader = null;
                 try {
-                    const reader = transport["datagrams"]["readable"].getReader();
+                    reader = socket["datagrams"]["readable"].getReader();
                     while (true) {
                         const timeoutId = setTimeout(() => {
                             closedDueToTimeout = true;
-                            transport.close();
+                            if (reader) {
+                                reader.cancel().catch(() => {});
+                            }
+                            socket.close();
                         }, 7000);
                         try {
                             const { value, done } = await reader.read();
@@ -135,11 +139,14 @@ EM_JS(int, createWebTransportSocket,
                 } catch (e) {
                     console.error("Reader error:", e);
                 } finally {
-                    transport["_isClosed"] = true;
+                    if (reader) {
+                        reader.releaseLock();
+                    }
+                    socket["_isClosed"] = true;
                 }
             })();
             try {
-                await transport.closed;
+                await socket.closed;
                 if (closedDueToTimeout) {
                     closedDueToTimeout = false;
                     throw new Error("Connection closed due to timeout.");
@@ -148,8 +155,12 @@ EM_JS(int, createWebTransportSocket,
                 }
             } catch (error) {
                 console.error(`Connection lost due to error/timeout: ${error}`);
+                globalThis.webTransportSockets[handle] = null; 
                 console.error("Attempting to reconnect in 5 seconds...");
-                setTimeout(() => {createWebTransport(); connectTransport()}, 5000);
+                setTimeout(() => {
+                    createWebTransport(); 
+                    connectTransport();
+                }, 5000);
             }
         } catch (err) {
             console.error("WebTransport handshake failed:", err);
@@ -162,8 +173,13 @@ EM_JS(int, createWebTransportSocket,
 
 EM_JS(void, closeWebTransportSocket, (int transportHandle), {
     try {
-        globalThis.webTransportSockets[transportHandle].close();
-        console.log("WebTransport socket closed.");
+        const socket = globalThis.webTransportSockets[transportHandle];
+        if (socket !== null) {
+            socket.close();
+            console.log("WebTransport socket closed.");
+        } else {
+            console.log("WebTransport socket is null.");
+        }
     } catch (error) {
         console.error("Could not close WebTransport socket:", error);
     }
@@ -175,9 +191,12 @@ EM_JS(bool, sendUsingWebTransportSocket, (int transportHandle, const uint8_t* da
     const dataArray = HEAPU8.slice(Number(dataPtr), Number(dataPtr) + Number(dataLength));
 
     try {
-        const writer = globalThis.webTransportSockets[transportHandle]["datagrams"]["writable"].getWriter();
+        const socket = globalThis.webTransportSockets[transportHandle];
+        if (socket === null) {
+            return false;
+        }
+        const writer = socket["datagrams"]["writable"].getWriter();
         (async () => {
-            // writer.write() returns a Promise, we await it
             try {
                 await writer.write(dataArray);
             } catch (error) {
@@ -197,11 +216,13 @@ EM_JS(bool, sendUsingWebTransportSocket, (int transportHandle, const uint8_t* da
 });
 
 EM_JS(int, tryReadFromWebTransportSocket, (int transportHandle, uint8_t* outBufferPtr, int maxCapacity), {
-    const transport = globalThis.webTransportSockets[transportHandle];
+    const socket = globalThis.webTransportSockets[transportHandle];
+    if (socket === null) {
+        return -3;
+    }
     const permanent = globalThis.webTransportPermanent[transportHandle];
-    if (!transport) return -3;
     if (permanent.packetQueue.length === 0) {
-        if (transport["_isClosed"]) {
+        if (socket["_isClosed"]) {
             return -1;
         } else {
             return 0;
