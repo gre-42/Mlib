@@ -446,7 +446,7 @@ endmacro()
 
 macro(enable_strict_linkage)
     # Enforce strict dependency checking globally for Clang/GCC/AppleClang
-    if((CMAKE_CXX_COMPILER_ID MATCHES "Clang|GNU|AppleClang") AND NOT EMSCRIPTEN)
+    if((CMAKE_CXX_COMPILER_ID MATCHES "Clang|GNU|AppleClang") AND (NOT EMSCRIPTEN) AND (NOT ALLOW_UNDEFINED_SYMBOLS))
         # For Linux/Unix linkers (ld, lld)
         add_link_options("-Wl,--no-undefined")
 

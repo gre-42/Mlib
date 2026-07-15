@@ -30,6 +30,7 @@ ifeq ($(ASAN),1)
     CXXFLAGS  += -fsanitize=address
     LDFLAGS   += -fsanitize=address
     BUILD_DIR := A$(BUILD_DIR)
+    CMAKE_OPTIONS += -D ALLOW_UNDEFINED_SYMBOLS=1
 endif
 # TSAN
 ifeq ($(TSAN),1)
@@ -50,12 +51,12 @@ ifeq ($(ESAN),1)
     BUILD_DIR := S$(BUILD_DIR)
 endif
 ifeq ($(HEADLESS),1)
-    CMAKE_OPTIONS := $(CMAKE_OPTIONS) -D BUILD_AUDIO=OFF -D BUILD_GRAPHICS=OFF -D BUILD_ICU=OFF
+    CMAKE_OPTIONS += -D BUILD_AUDIO=OFF -D BUILD_GRAPHICS=OFF -D BUILD_ICU=OFF
     BUILD_DIR     := H$(BUILD_DIR)
 endif
 ifeq ($(LAME),1)
-    CMAKE_OPTIONS := $(CMAKE_OPTIONS) -D WITH_LAME=ON
-    BUILD_DIR     := A$(BUILD_DIR)
+    CMAKE_OPTIONS += -D WITH_LAME=ON
+    BUILD_DIR     := C$(BUILD_DIR)
 endif
 # CLANG
 ifeq ($(CLANG),1)

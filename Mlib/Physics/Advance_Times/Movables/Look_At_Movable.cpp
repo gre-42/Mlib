@@ -61,6 +61,7 @@ TransformationMatrix<float, ScenePos, 3> LookAtMovable::get_new_absolute_model_m
 
 void LookAtMovable::notify_destroyed(SceneNode& destroyed_object) {
     ThrowingLockGuard lock{scene_.delete_node_mutex};
+    bool this_destroyed = false;
     if (&destroyed_object == followed_node_.get()) {
         followed_ = nullptr;
         followed_node_ = nullptr;
@@ -68,9 +69,10 @@ void LookAtMovable::notify_destroyed(SceneNode& destroyed_object) {
             (follower_node_->shutdown_phase() == ShutdownPhase::NONE))
         {
             scene_.delete_root_node(follower_name_);
+            this_destroyed = true;
         }
     }
-    if (&destroyed_object == follower_node_.get()) {
+    if (!this_destroyed && (&destroyed_object == follower_node_.get())) {
         follower_node_->clear_absolute_movable();
         follower_node_ = nullptr;
         global_object_pool.remove(this);
