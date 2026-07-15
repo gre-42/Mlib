@@ -91,19 +91,14 @@ EM_JS(int, createWebTransportSocket,
         try {
             const socket = globalThis.webTransportSockets[handle];
             const permanent = globalThis.webTransportPermanent[handle];
-            try {
-                await socket.ready;
-            } catch (e) {
-                console.error("Reader error:", e);
-                return;
-            }
-            console.log("WebTransport ready");
-
             let closedDueToTimeout = false;
             // Background reader
             (async () => {
                 let reader = null;
                 try {
+                    console.log("Wait for WebTransport to become ready");
+                    await socket.ready;
+                    console.log("WebTransport ready");
                     reader = socket["datagrams"]["readable"].getReader();
                     while (true) {
                         const timeoutId = setTimeout(() => {
