@@ -35,7 +35,7 @@ struct SiteVersions {
 
 struct SocketVersions {
     SiteVersions local;
-    DatagramIndexType remote_version;
+    DatagramIndexType remote_version = 0;
 };
 
 std::ostream& operator << (std::ostream& ostr, const IncrementalVersionsRead& versions);
