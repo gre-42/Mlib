@@ -18,11 +18,12 @@ DECLARE_ARGUMENT(node);
 }
 
 AppendExternalsDeleter::AppendExternalsDeleter(PhysicsScene& physics_scene)
-: LoadPhysicsSceneInstanceFunction{ physics_scene }
+    : LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
 void AppendExternalsDeleter::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
+    args.arguments.validate(KnownArgs::options);
     auto node_name = args.arguments.at<VariableAndHash<std::string>>(KnownArgs::node);
     DanglingBaseClassRef<SceneNode> node = scene.get_node(node_name, CURRENT_SOURCE_LOCATION);
     // players.get_player(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::player)).append_delete_externals(
@@ -47,7 +48,6 @@ struct RegisterJsonUserFunction {
             "append_externals_deleter",
             [](const LoadSceneJsonUserFunctionArgs& args)
             {
-                args.arguments.validate(KnownArgs::options);
                 AppendExternalsDeleter(args.physics_scene()).execute(args);
             });
     }
