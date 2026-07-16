@@ -1,3 +1,4 @@
+#include <Mlib/Array/Vector.hpp>
 #include <Mlib/Array/Verbose_Vector.hpp>
 #include <Mlib/Audio/Audio_Context.hpp>
 #include <Mlib/Audio/Audio_Device.hpp>
@@ -460,6 +461,7 @@ void android_main(android_app* app)
         #endif
         "    [--print_remote_data\n"
         "    [--print_remote_metadata\n"
+        "    [--debug_vector_allocation\n"
         "    [--verbose]",
         {"--wire_frame",
          "--cull_faces",
@@ -503,6 +505,7 @@ void android_main(android_app* app)
         #endif
          "--print_remote_data",
          "--print_remote_metadata",
+         "--debug_vector_allocation",
          "--verbose"},
         {"--record_track_basename",
          "--mesh",
@@ -612,6 +615,9 @@ void android_main(android_app* app)
         }
         if (args.has_named("--print_rendered_materials")) {
             print_rendered_materials(PrintRenderedMaterials::ENABLED);
+        }
+        if (args.has_named("--debug_vector_allocation")) {
+            debug_vector_allocation(true);
         }
         list_audio_devices(linfo(LogFlags::NO_APPEND_NEWLINE).ref());
         AudioDevice audio_device;
