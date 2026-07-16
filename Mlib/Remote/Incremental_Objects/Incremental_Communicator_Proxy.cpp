@@ -81,15 +81,16 @@ void IncrementalCommunicatorProxy::receive_from_home(std::istream& istr) {
         }
         socket_versions_.local.local_version = 0;
         proxy_objects_caches_->remove_proxy(home_site_id_);
-    }
-    if (versions.remote_new_version < socket_versions_.remote_version) {
-        linfo() << "Outdated packet ignored (" << (versions.remote_new_version + 0) <<
-            " < " << (socket_versions_.remote_version + 0) << ')';
-        return;
-    }
-    if (versions.remote_new_version == socket_versions_.remote_version) {
-        throw std::runtime_error("Received two packets with the same version (" +
-            std::to_string(versions.remote_new_version + 0) + ')');
+    } else {
+        if (versions.local_remote_version < socket_versions_.local.remote_version) {
+            linfo() << "Outdated packet ignored (" << (versions.local_remote_version + 0) <<
+                " < " << (socket_versions_.local.remote_version + 0) << ')';
+            return;
+        }
+        if (versions.local_remote_version == socket_versions_.local.remote_version) {
+            throw std::runtime_error("Received two packets with the same version: " +
+                std::to_string(versions.remote_new_version + 0));
+        }
     }
     socket_versions_.local.remote_version = versions.local_remote_version;
     socket_versions_.remote_version = versions.remote_new_version;
