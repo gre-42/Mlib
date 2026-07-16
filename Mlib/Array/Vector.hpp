@@ -20,32 +20,30 @@ public:
     inline Vector(size_t size, size_t alignment, Uninitialized)
         : size_{size}
     {
-        if (alignment == 0) {
-            data_ = (UData*)std::malloc(size_ * sizeof(UData));
-            if (data_ == nullptr) {
-                throw std::bad_alloc();
-            }
-        } else {
-            if ((size_ * sizeof(UData)) % alignment != 0) {
-                throw std::runtime_error((std::stringstream() << "Vector size in bytes is not a multiple of the alignment. " <<
-                    "Alignment (must be a power of 2): " << alignment <<
-                    ", count: " << size <<
-                    ", element size: " << sizeof(UData)).str());
-            }
+        if (alignment % alignof(TData) != 0) {
+            throw std::runtime_error((std::stringstream() << "Alignment is not a multiple of 'alignof'. " <<
+                "Alignment (must be a power of 2): " << alignment <<
+                ", alignof: " << alignof(UData)).str());
+        }
+        if ((size_ * sizeof(UData)) % alignment != 0) {
+            throw std::runtime_error((std::stringstream() << "Vector size in bytes is not a multiple of the alignment. " <<
+                "Alignment (must be a power of 2): " << alignment <<
+                ", count: " << size <<
+                ", element size: " << sizeof(UData)).str());
+        }
 #ifdef __EMSCRIPTEN__
-            // Avoid infinite loop when replacing "new", by calling the low-level allocator
-            if (int result = posix_memalign((void**)&data_, alignment, size * sizeof(UData)); result != 0) {
-                data_ = nullptr;
-            }
+        // Avoid infinite loop when replacing "new", by calling the low-level allocator
+        if (int result = posix_memalign((void**)&data_, alignment, size * sizeof(UData)); result != 0) {
+            data_ = nullptr;
+        }
 #else
-            data_ = (UData*)::Mlib::aligned_alloc(alignment, size * sizeof(UData));
+        data_ = (UData*)::Mlib::aligned_alloc(alignment, size * sizeof(UData));
 #endif
-            if (data_ == nullptr) {
-                throw std::runtime_error((std::stringstream() << "Memory allocation failed. " <<
-                    "Alignment (must be a power of 2): " << alignment <<
-                    ", count: " << size <<
-                    ", element size: " << sizeof(UData)).str());
-            }
+        if (data_ == nullptr) {
+            throw std::runtime_error((std::stringstream() << "Memory allocation failed. " <<
+                "Alignment (must be a power of 2): " << alignment <<
+                ", count: " << size <<
+                ", element size: " << sizeof(UData)).str());
         }
         if constexpr (!std::is_trivially_constructible_v<UData>) {
             for (size_t i = 0; i < size_; ++i) {
