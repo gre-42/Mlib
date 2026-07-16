@@ -25,6 +25,20 @@
 
 using S = Mlib::VariableAndHash<std::string>;
 
+namespace Keys {
+static const S LEFT_CONTROL{"LEFT_CONTROL"};
+static const S LEFT_ALT{"LEFT_ALT"};
+static const S UP{"UP"};
+static const S DOWN{"DOWN"};
+static const S LEFT{"LEFT"};
+static const S RIGHT{"RIGHT"};
+static const S PAGE_UP{"PAGE_UP"};
+static const S PAGE_DOWN{"PAGE_DOWN"};
+static const S KP_ADD{"KP_ADD"};
+static const S KP_SUBTRACT{"KP_SUBTRACT"};
+static const S P{"P"};
+};
+
 namespace Mlib {
 class FlyingCameraLogicKeys {
 public:
@@ -33,17 +47,20 @@ public:
         , w{ button_states, key_configurations, 0, "w", "" }
         , d{ button_states, key_configurations, 0, "d", "" }
         , c{ button_states, key_configurations, 0, "c", "" }
+        , e{ button_states, key_configurations, 0, "e", "" }
     {
         auto lock = key_configurations.lock_exclusive_for(std::chrono::seconds(2), "Key configurations");
         lock->insert(0, "v", { {{{.key = S("V")}}} });
         lock->insert(0, "w", { {{{.key = S("W")}}} });
         lock->insert(0, "d", { {{{.key = S("D")}}} });
         lock->insert(0, "c", { {{{.key = S("C")}}} });
+        lock->insert(0, "e", { {{{.key = S("E")}}} });
     }
     ButtonPress v;
     ButtonPress w;
     ButtonPress d;
     ButtonPress c;
+    ButtonPress e;
 private:
     LockableKeyConfigurations key_configurations;
 };
@@ -55,56 +72,56 @@ static void flying_key_callback(
     FlyingCameraUserClass& user_object,
     FlyingCameraLogicKeys& keys)
 {
-    if (user_object.button_states.key_down({.key = S("LEFT_CONTROL")})) {
-        if (user_object.button_states.key_down({.key = S("UP")})) {
+    if (user_object.button_states.key_down({.key = Keys::LEFT_CONTROL})) {
+        if (user_object.button_states.key_down({.key = Keys::UP})) {
             user_object.obj_angles(2) += 0.01f;
         }
-        if (user_object.button_states.key_down({.key = S("DOWN")})) {
+        if (user_object.button_states.key_down({.key = Keys::DOWN})) {
             user_object.obj_angles(2) -= 0.01f;
         }
-        if (user_object.button_states.key_down({.key = S("LEFT")})) {
+        if (user_object.button_states.key_down({.key = Keys::LEFT})) {
             user_object.obj_angles(1) += 0.01f;
         }
-        if (user_object.button_states.key_down({.key = S("RIGHT")})) {
+        if (user_object.button_states.key_down({.key = Keys::RIGHT})) {
             user_object.obj_angles(1) -= 0.01f;
         }
-        if (user_object.button_states.key_down({.key = S("PAGE_UP")})) {
+        if (user_object.button_states.key_down({.key = Keys::PAGE_UP})) {
             user_object.obj_angles(0) += 0.01f;
         }
-        if (user_object.button_states.key_down({.key = S("PAGE_DOWN")})) {
+        if (user_object.button_states.key_down({.key = Keys::PAGE_DOWN})) {
             user_object.obj_angles(0) -= 0.01f;
         }
-        if (user_object.button_states.key_down({.key = S("KP_ADD")})) {
+        if (user_object.button_states.key_down({.key = Keys::KP_ADD})) {
             user_object.obj_position(1) += 0.04f;
         }
-        if (user_object.button_states.key_down({.key = S("KP_SUBTRACT")})) {
+        if (user_object.button_states.key_down({.key = Keys::KP_SUBTRACT})) {
             user_object.obj_position(1) -= 0.04f;
         }
     } else {
-        if (user_object.button_states.key_down({.key = S("UP")})) {
+        if (user_object.button_states.key_down({.key = Keys::UP})) {
             user_object.position -= (0.2f * tait_bryan_angles_2_matrix(user_object.angles).column(2)).casted<ScenePos>();
             // user_object.position(2) -= 0.04f;
         }
-        if (user_object.button_states.key_down({.key = S("DOWN")})) {
+        if (user_object.button_states.key_down({.key = Keys::DOWN})) {
             user_object.position += (0.2f * tait_bryan_angles_2_matrix(user_object.angles).column(2)).casted<ScenePos>();
             // user_object.position(2) += 0.04f;
         }
-        if (user_object.button_states.key_down({.key = S("LEFT")})) {
+        if (user_object.button_states.key_down({.key = Keys::LEFT})) {
             user_object.angles(1) += 0.01f;
         }
-        if (user_object.button_states.key_down({.key = S("RIGHT")})) {
+        if (user_object.button_states.key_down({.key = Keys::RIGHT})) {
             user_object.angles(1) -= 0.01f;
         }
-        if (user_object.button_states.key_down({.key = S("PAGE_UP")})) {
+        if (user_object.button_states.key_down({.key = Keys::PAGE_UP})) {
             user_object.angles(0) += 0.01f;
         }
-        if (user_object.button_states.key_down({.key = S("PAGE_DOWN")})) {
+        if (user_object.button_states.key_down({.key = Keys::PAGE_DOWN})) {
             user_object.angles(0) -= 0.01f;
         }
-        if (user_object.button_states.key_down({.key = S("KP_ADD")})) {
+        if (user_object.button_states.key_down({.key = Keys::KP_ADD})) {
             user_object.position(1) += 0.2f;
         }
-        if (user_object.button_states.key_down({.key = S("KP_SUBTRACT")})) {
+        if (user_object.button_states.key_down({.key = Keys::KP_SUBTRACT})) {
             user_object.position(1) -= 0.2f;
         }
     }
@@ -123,12 +140,12 @@ static void nofly_key_callback(
     if (keys.v.keys_pressed()) {
         user_object.cameras.cycle_camera(CameraCycleType::FAR);
     }
-    // if (button_press.key_pressed({.key = S("P")})) {
+    // if (button_press.key_pressed({.key = Keys::P})) {
     //     if (user_object.physics_set_fps != nullptr) {
     //         user_object.physics_set_fps->toggle_pause_resume();
     //     }
     // }
-    if (user_object.button_states.key_down({.key = S("LEFT_CONTROL")})) {
+    if (user_object.button_states.key_down({.key = Keys::LEFT_CONTROL})) {
 #if !defined(__ANDROID__) && !defined(__EMSCRIPTEN__)
         if (keys.w.keys_pressed()) {
             user_object.wire_frame = zapped(user_object.wire_frame);
@@ -139,6 +156,16 @@ static void nofly_key_callback(
         }
         if (keys.c.keys_pressed()) {
             user_object.cull_faces = zapped(user_object.cull_faces);
+        }
+        if (user_object.button_states.key_down({.key = Keys::LEFT_ALT})) {
+            if (keys.e.keys_pressed()) {
+                check_gl_errors((CheckGlErrors)!check_gl_errors());
+                if (check_gl_errors()) {
+                    linfo() << "OpenGL error check enabled";
+                } else {
+                    linfo() << "OpenGL error check disabled";
+                }
+            }
         }
     }
 }

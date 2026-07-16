@@ -56,6 +56,7 @@ void log_glfw_call(const char* position);
 namespace Mlib {
 
 void check_gl_errors(CheckGlErrors check);
+bool check_gl_errors();
 void print_gl_calls(PrintGlCalls print);
 void print_rendered_materials(PrintRenderedMaterials print);
 bool print_rendered_materials();

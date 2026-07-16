@@ -15,6 +15,10 @@ void Mlib::check_gl_errors(CheckGlErrors check) {
     CHECK_GL_ERRORS = (check == CheckGlErrors::ENABLED);
 }
 
+bool Mlib::check_gl_errors() {
+    return CHECK_GL_ERRORS;
+}
+
 void Mlib::print_gl_calls(PrintGlCalls print) {
     PRINT_GL_CALLS = (print == PrintGlCalls::ENABLED);
 }
