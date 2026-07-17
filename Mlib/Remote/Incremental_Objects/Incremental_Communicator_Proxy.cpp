@@ -10,6 +10,7 @@
 #include <Mlib/Remote/Incremental_Objects/Proxy_Tasks.hpp>
 #include <Mlib/Remote/Incremental_Objects/Transmission_History.hpp>
 #include <Mlib/Remote/Incremental_Objects/Transmitted_Fields.hpp>
+#include <concepts>
 
 using namespace Mlib;
 
@@ -50,6 +51,13 @@ static bool is_loading(LocalSceneLevelLoadStatus status) {
     throw std::runtime_error("Unknown scene level load status");
 }
 
+template <std::unsigned_integral T>
+static bool is_newer(T incoming, T newest) {
+    // Deduce the signed counterpart (e.g., uint16_t -> int16_t)
+    using SignedType = std::make_signed_t<T>;
+    return SignedType(incoming - newest) > 0;
+}
+
 void IncrementalCommunicatorProxy::receive_from_home(std::istream& istr) {
     auto reader = BinaryBitwiseWordsReader{istr, nullptr, verbosity_};
     {
@@ -79,18 +87,11 @@ void IncrementalCommunicatorProxy::receive_from_home(std::istream& istr) {
         if (any(verbosity_ & IoVerbosity::METADATA)) {
             linfo() << "Detected client restart" << versions;
         }
-        socket_versions_.local.local_version = 0;
         proxy_objects_caches_->remove_proxy(home_site_id_);
-    } else {
-        if (versions.remote_new_version < socket_versions_.remote_version) {
-            linfo() << "Outdated packet ignored (" << (versions.remote_new_version + 0) <<
-                " < " << (socket_versions_.remote_version + 0) << ')';
-            return;
-        }
-        if (versions.remote_new_version == socket_versions_.remote_version) {
-            throw std::runtime_error("Received two packets with the same version: " +
-                std::to_string(versions.remote_new_version + 0));
-        }
+    } else if (!is_newer(versions.remote_new_version, socket_versions_.remote_version)) {
+        linfo() << "Outdated or duplicate packet ignored (" << (versions.remote_new_version + 0) <<
+            " <= " << (socket_versions_.remote_version + 0) << ", considering modulo)";
+        return;
     }
     socket_versions_.local.remote_version = versions.local_remote_version;
     socket_versions_.remote_version = versions.remote_new_version;
