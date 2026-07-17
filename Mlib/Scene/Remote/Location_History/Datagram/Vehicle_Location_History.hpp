@@ -2,6 +2,7 @@
 #include <Mlib/Scene/Remote/Location_History/Avatar_Location_History_Entry.hpp>
 #include <Mlib/Scene/Remote/Location_History/Vehicle_Location_History_Entry.hpp>
 #include <Mlib/Scene_Config/Remote_Integers.hpp>
+#include <optional>
 
 namespace Mlib::Datagram {
 
@@ -17,10 +18,8 @@ public:
         DatagramIndexType local_version);
     bool has_local_version = false;
     bool has_remote_version = false;
-    std::vector<TAbsoluteLocation8> location_history =
-        std::vector<TAbsoluteLocation8>(std::numeric_limits<DatagramIndexType>::max(), TAbsoluteLocation8::nan());
-private:
-    DatagramIndexType size = 0;
+    std::vector<std::optional<TAbsoluteLocation8>> location_history =
+        std::vector<std::optional<TAbsoluteLocation8>>(std::numeric_limits<DatagramIndexType>::max(), std::nullopt);
 };
 
 template <class TAbsoluteLocation8, class TDeltaLocation, class TLocation>
@@ -30,10 +29,8 @@ public:
     TLocation get_absolute_location(
         DatagramIndexType base_version, DatagramIndexType new_version, const TDeltaLocation& delta);
     bool has_local_version = false;
-    std::vector<TAbsoluteLocation8> location_history =
-        std::vector<TAbsoluteLocation8>(std::numeric_limits<DatagramIndexType>::max(), TAbsoluteLocation8::nan());
-private:
-    DatagramIndexType size = 0;
+    std::vector<std::optional<TAbsoluteLocation8>> location_history =
+        std::vector<std::optional<TAbsoluteLocation8>>(std::numeric_limits<DatagramIndexType>::max(), std::nullopt);
 };
 
 template <class TAbsoluteLocation8, class TDeltaLocation, class TLocation>

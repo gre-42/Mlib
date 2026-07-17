@@ -17,9 +17,8 @@ TAbsoluteLocation8 RemoteRigidBodyVehicleLocalHistory<TAbsoluteLocation8, TDelta
     }
     has_local_version = true;
     auto& new_ = location_history.at(new_datagram_index - 1);
-    new_ = l.fixed_point().downsample();
-    size = std::max(size, new_datagram_index);
-    return new_;
+    new_.emplace(l.fixed_point().downsample());
+    return *new_;
 }
 
 template <class TAbsoluteLocation8, class TDeltaLocation, class TLocation>
@@ -31,26 +30,24 @@ std::optional<TDeltaLocation> RemoteRigidBodyVehicleLocalHistory<TAbsoluteLocati
     if (base_version == 0) {
         throw std::runtime_error("Incremental location requires base version > 0");
     }
-    if (!(base_version - 1 < size)) {
-        throw std::runtime_error((std::stringstream() <<
-            "Base version exceeds history size (0). Base version " << (base_version + 0) <<
-            ", size " << (size + 0)).str());
-    }
     if (local_version == 0) {
         throw std::runtime_error("Incremental location requires local version > 0");
     }
     const auto& base = location_history.at(base_version - 1);
+    if (!base.has_value()) {
+        throw std::runtime_error((std::stringstream() <<
+            "Base version does not exist (0). Base version " << (base_version + 0)).str());
+    }
     auto f = l.fixed_point();
     auto c = IncrementalConfig::NONE;
-    auto diff = minus_position(f, base, c);
+    auto diff = minus_position(f, *base, c);
     if (any(c & IncrementalConfig::OVERFLOW)) {
         has_local_version = false;
         return std::nullopt;
     }
     has_local_version = true;
     auto& new_ = location_history.at(local_version - 1);
-    new_ = f.downsample();
-    size = std::max(size, local_version);
+    new_.emplace(f.downsample());
     return diff;
 }
 
@@ -64,8 +61,7 @@ void RemoteRigidBodyVehicleRemoteHistory<TAbsoluteLocation8, TDeltaLocation, TLo
     if (version == 0) {
         throw std::runtime_error("Absolute location requires version > 0");
     }
-    location_history.at(version - 1) = l8;
-    size = std::max(size, version);
+    location_history.at(version - 1).emplace(l8);
     has_local_version = true;
 }
 
@@ -80,16 +76,14 @@ TLocation RemoteRigidBodyVehicleRemoteHistory<TAbsoluteLocation8, TDeltaLocation
             ", base: " << (base_version + 0) <<
             ", new: " << (new_version + 0)).str());
     }
-    if (!(base_version - 1 < size)) {
-        throw std::runtime_error((std::stringstream() <<
-            "Base version exceeds history size (1). Base version " << (base_version + 0) <<
-            ", size " << (size + 0)).str());
-    }
     const auto& base = location_history.at(base_version - 1);
+    if (!base.has_value()) {
+        throw std::runtime_error((std::stringstream() <<
+            "Base version does not exist (1). Base version " << (base_version + 0)).str());
+    }
     auto& new_ = location_history.at(new_version - 1);
-    auto f = base + delta;
-    new_ = f.downsample();
-    size = std::max(size, new_version);
+    auto f = (*base) + delta;
+    new_.emplace(f.downsample());
     return f.floating_point();
 }
 
