@@ -34,7 +34,6 @@ struct AbsoluteVehicleLocation8 {
     EFixedArray<CompressedSceneR8, 3> r;
     EFixedArray<CompressedSceneV8, 3> v_com;
     EFixedArray<CompressedSceneW8, 3> w;
-    static AbsoluteVehicleLocation8 nan();
     VehicleLocation upsample() const;
     template <class Archive>
     void serialize(Archive& archiver) {

@@ -30,14 +30,6 @@ AbsoluteVehicleLocation8 AbsoluteVehicleLocation16::downsample() const {
     };
 }
 
-AbsoluteVehicleLocation8 AbsoluteVehicleLocation8::nan() {
-    return {
-        fixed_full<CompressedSceneT16, 3>((CompressedSceneT16)4.3),
-        (CompressedSceneR8)3.4,
-        fixed_full<CompressedSceneV8, 3>((CompressedSceneV8)4.3),
-        (CompressedSceneW8)4.3,
-    };
-}
 VehicleLocation AbsoluteVehicleLocation8::upsample() const {
     return VehicleLocation{
         .T = T.casted<ScenePos>(),
