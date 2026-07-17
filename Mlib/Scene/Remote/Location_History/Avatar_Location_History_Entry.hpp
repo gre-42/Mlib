@@ -6,6 +6,7 @@
 #include <Mlib/Physics/Incremental_Coordinates/Incremental_Scene_T.hpp>
 #include <Mlib/Physics/Incremental_Coordinates/Incremental_Scene_V.hpp>
 #include <Mlib/Physics/Incremental_Coordinates/Incremental_Scene_W.hpp>
+#include <Mlib/Scene/Remote/Location_History/Velocity_Config.hpp>
 
 namespace Mlib::Avatar {
 
@@ -15,8 +16,10 @@ struct AbsoluteVehicleLocation16;
 struct VehicleLocation {
     FixedArray<ScenePos, 3> T;
     SceneDir r1;
+    #ifndef WITHOUT_VELOCITY
     FixedArray<SceneDir, 3> v_com;
     SceneDir w1;
+    #endif
     AbsoluteVehicleLocation16 fixed_point() const;
 };
 
@@ -25,38 +28,48 @@ struct AbsoluteVehicleLocation16 {
     AbsoluteVehicleLocation8 downsample() const;
     FixedArray<CompressedSceneT32, 3> T;
     CompressedSceneR16 r1;
+    #ifndef WITHOUT_VELOCITY
     FixedArray<CompressedSceneV16, 3> v_com;
     CompressedSceneW16 w1;
+    #endif
 };
 
 struct AbsoluteVehicleLocation8 {
     EFixedArray<CompressedSceneT16, 3> T;
     CompressedSceneR8 r1;
+    #ifndef WITHOUT_VELOCITY
     EFixedArray<CompressedSceneV8, 3> v_com;
     CompressedSceneW8 w1;
+    #endif
     VehicleLocation upsample() const;
     template <class Archive>
     void serialize(Archive& archiver) {
         SafeArchiver archive{archiver};
         archive(T);
         archive(r1);
+        #ifndef WITHOUT_VELOCITY
         archive(v_com);
         archive(w1);
+        #endif
     }
 };
 
 struct DeltaVehicleLocation {
     EFixedArray<DeltaSceneT16, 3> T;
     DeltaSceneR8 r1;
+    #ifndef WITHOUT_VELOCITY
     EFixedArray<DeltaSceneV8, 3> v_com;
     DeltaSceneW8 w1;
+    #endif
     template <class Archive>
     void serialize(Archive& archiver) {
         SafeArchiver archive{archiver};
         archive(T);
         archive(r1);
+        #ifndef WITHOUT_VELOCITY
         archive(v_com);
         archive(w1);
+        #endif
     }
 };
 

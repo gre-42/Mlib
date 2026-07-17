@@ -4,6 +4,7 @@
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Math/Lerp.hpp>
+#include <Mlib/Math/Transformation/Axis_Angle.hpp>
 #include <Mlib/Misc/Pragma_Gcc.hpp>
 #include <Mlib/Os/Io/Safe_Archiver.hpp>
 #include <cmath>
@@ -246,6 +247,14 @@ public:
     }
     TData dot0d(const Quaternion& rhs) const {
         return s * rhs.s + ::Mlib::dot0d(v, rhs.v);
+    }
+    AxisAngle<TData, 3> axis_angle() const {
+        auto len2 = sum(squared(v));
+        if (len2 < 1e-12) {
+            return { FixedArray<TData, 3>{1.f, 0.f, 0.f}, 0.f };
+        } else {
+            return { v / std::sqrt(len2), 2 * std::acos(std::clamp<TData>(s, -1, 1)) };
+        }
     }
     template <class Archive>
     void serialize(Archive& archiver) {

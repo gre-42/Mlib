@@ -48,8 +48,8 @@ public:
         const FixedArray<ScenePos, 3>& position,
         float relaxation,
         const SourceLocation& loc);
-    void set_v_com(const FixedArray<float, 3>& v_com, float dt, const SourceLocation& loc);
-    void set_w(const FixedArray<float, 3>& w, float dt, const SourceLocation& loc);
+    void set_v_com(const FixedArray<float, 3>& v_com, float dt, float relaxation, const SourceLocation& loc);
+    void set_w(const FixedArray<float, 3>& w, float dt, float relaxation, const SourceLocation& loc);
     void integrate_delta_v(const FixedArray<float, 3>& dv, float dt, const SourceLocation& loc);
     void integrate_delta_angular_momentum(const FixedArray<float, 3>& dL, float extra_w, float dt, const SourceLocation& loc);
     void integrate_impulse(const VectorAtPosition<float, ScenePos, 3>& J, float extra_w, float dt, const SourceLocation& loc);

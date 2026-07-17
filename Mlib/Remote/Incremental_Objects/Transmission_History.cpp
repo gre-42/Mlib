@@ -47,6 +47,10 @@ std::chrono::steady_clock::time_point TransmissionHistoryReader::read_time(
     return base_time_ - offset;
 }
 
+std::chrono::steady_clock::time_point TransmissionHistoryReader::base_time() const {
+    return base_time_;
+}
+
 TransmissionHistoryWriter::TransmissionHistoryWriter(
     std::chrono::steady_clock::time_point base_time,
     uint32_t datagram_counter)

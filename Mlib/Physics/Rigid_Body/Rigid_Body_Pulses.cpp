@@ -171,11 +171,15 @@ void RigidBodyPulses::integrate_delta_v(
     float dt,
     const SourceLocation& loc)
 {
-    set_v_com(v_com_ + dv, dt, loc);
+    set_v_com(v_com_ + dv, dt, 1.f, loc);
 }
 
-void RigidBodyPulses::set_v_com(const FixedArray<float, 3>& v_com, float dt, const SourceLocation& loc) {
-    v_com_ = v_com;
+void RigidBodyPulses::set_v_com(const FixedArray<float, 3>& v_com, float dt, float relaxation, const SourceLocation& loc) {
+    if (relaxation == 1.f) {
+        v_com_ = v_com;
+    } else {
+        v_com_ = lerp(v_com_, v_com, relaxation);
+    }
     auto vmax = penetration_limits_.vmax_translation(dt);
     if (vmax != INFINITY) {
         auto l = std::sqrt(sum(squared(v_com_)));
@@ -192,11 +196,15 @@ void RigidBodyPulses::integrate_delta_angular_momentum(
     float dt,
     const SourceLocation& loc)
 {
-    set_w(w_ + (1 + extra_w) * solve_abs_I(dL), dt, loc);
+    set_w(w_ + (1 + extra_w) * solve_abs_I(dL), dt, 1.f, loc);
 }
 
-void RigidBodyPulses::set_w(const FixedArray<float, 3>& w, float dt, const SourceLocation& loc) {
-    w_ = w;
+void RigidBodyPulses::set_w(const FixedArray<float, 3>& w, float dt, float relaxation, const SourceLocation& loc) {
+    if (relaxation == 1.f) {
+        w_ = w;
+    } else {
+        w_ = lerp(w_, w, relaxation);
+    }
     float wmax = penetration_limits_.wmax(dt);
     if (wmax != INFINITY) {
         auto l = std::sqrt(sum(squared(w_)));

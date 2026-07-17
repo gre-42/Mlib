@@ -4,6 +4,7 @@
 #include <Mlib/Geometry/Instance/Rendering_Dynamics.hpp>
 #include <Mlib/Json/Base.hpp>
 #include <Mlib/Json/Json_View.hpp>
+#include <Mlib/Math/Transformation/Quaternion.hpp>
 #include <Mlib/Memory/Object_Pool.hpp>
 #include <Mlib/Misc/Masked_Set.hpp>
 #include <Mlib/Os/Io/Serialize/Serialize.hpp>
@@ -76,6 +77,8 @@ RemoteRigidBodyVehicle::RemoteRigidBodyVehicle(
     , rb_{ rb.ptr() }
     , physics_scene_{ physics_scene }
     , verbosity_{ verbosity }
+    , old_T_{ uninitialized }
+    , old_r_{ uninitialized }
     , rb_on_destroy_{ rb->on_destroy.deflt, CURRENT_SOURCE_LOCATION }
 {
     if (any(verbosity_ & IoVerbosity::METADATA)) {
@@ -312,8 +315,8 @@ DanglingBaseClassPtr<RemoteRigidBodyVehicle> RemoteRigidBodyVehicle::try_create_
         throw std::runtime_error("RemoteRigidBodyVehicle: Unknown scene object type");
     }();
     auto rb = get_rigid_body_vehicle(pnode.get(), CURRENT_SOURCE_LOCATION);
-    rb->rbp_.set_v_com(v_com, physics_scene.physics_engine_.config().dt_min(), CURRENT_SOURCE_LOCATION);
-    rb->rbp_.set_w(w, physics_scene.physics_engine_.config().dt_min(), CURRENT_SOURCE_LOCATION);
+    rb->rbp_.set_v_com(v_com, physics_scene.physics_engine_.config().dt_min(), 1.f, CURRENT_SOURCE_LOCATION);
+    rb->rbp_.set_w(w, physics_scene.physics_engine_.config().dt_min(), 1.f, CURRENT_SOURCE_LOCATION);
     rb->flags_ = flags;
     rb->flags_local_ |= RigidBodyVehicleFlagsLocal::WAITING_FOR_INITIAL_POSITION;
     rb->remote_object_id_ = remote_object_id;
@@ -425,9 +428,11 @@ void RemoteRigidBodyVehicle::read(
                 auto location = read_vehicle_location(*vcache, reader, versions);
                 if (location.has_value()) {
                     position = location->T;
-                    v_com = location->v_com;
                     rotation = location->r;
+                    #ifndef WITHOUT_VELOCITY
+                    v_com = location->v_com;
                     w = location->w;
+                    #endif
                 }
                 has_location = location.has_value();
             }
@@ -441,9 +446,11 @@ void RemoteRigidBodyVehicle::read(
                 auto location = read_vehicle_location(*vcache, reader, versions);
                 if (location.has_value()) {
                     position = location->T;
-                    v_com = location->v_com;
                     rotation = {0.f, location->r1, 0.f};
+                    #ifndef WITHOUT_VELOCITY
+                    v_com = location->v_com;
                     w = {0.f, location->w1, 0.f};
+                    #endif
                 }
                 has_location = location.has_value();
             }
@@ -510,16 +517,46 @@ void RemoteRigidBodyVehicle::read(
             SceneTime::initial(physics_scene_->dynamic_world_.get_time()));
         // Notify child nodes with absolute movables (e.g. wheels)
         rb_->scene_node_->clear_transformation_history();
+        #ifdef WITHOUT_VELOCITY
+        old_time_ = {};
+        #endif
     }
     auto mask = ~RigidBodyVehicleFlags::NONE;
     if (pp.update_position) {
+        #ifdef WITHOUT_VELOCITY
+        if (old_time_ == std::chrono::steady_clock::time_point()) {
+            v_com = 0;
+            w = 0;
+        } else {
+            auto dt = std::chrono::duration<float>{transmission_history_reader.base_time() - old_time_}.count() * seconds;
+            if (dt < 1 * milli * seconds) {
+                v_com = 0;
+                w = 0;
+                // throw std::runtime_error("DataFrame time difference below 1ms: " + std::to_string(dt));
+            } else {
+                v_com = (position - old_T_).casted<float>() / dt;
+                auto q_new = Quaternion<SceneDir>::from_tait_bryan_angles(rotation);
+                auto q_old = Quaternion<SceneDir>::from_tait_bryan_angles(old_r_);
+                auto q_diff = q_new * q_old.inverse();
+                // Enforce shortest path
+                if (q_diff.s < 0) { 
+                    q_diff = -q_diff;
+                }
+                w = q_diff.axis_angle().w() / dt;
+            }
+        }
+        old_T_ = position;
+        old_r_ = rotation;
+        old_time_ = transmission_history_reader.base_time();
+        #endif
         assert_true(has_location);
         float relaxation = pp.invalidate_transformation_history
             ? 1.f
             : physics_scene_->physics_engine_.config().remote_location_relaxation;
+        float dt_min = physics_scene_->physics_engine_.config().dt_min();
         rb_->rbp_.set_pose(tait_bryan_angles_2_matrix(rotation), position, relaxation, CURRENT_SOURCE_LOCATION);
-        rb_->rbp_.set_v_com(v_com, physics_scene_->physics_engine_.config().dt_min(), CURRENT_SOURCE_LOCATION);
-        rb_->rbp_.set_w(w, physics_scene_->physics_engine_.config().dt_min(), CURRENT_SOURCE_LOCATION);
+        rb_->rbp_.set_v_com(v_com, dt_min, relaxation, CURRENT_SOURCE_LOCATION);
+        rb_->rbp_.set_w(w, dt_min, relaxation, CURRENT_SOURCE_LOCATION);
         rb_->flags_local_ &= ~RigidBodyVehicleFlagsLocal::WAITING_FOR_INITIAL_POSITION;
     } else if (rb_->is_deactivated_avatar()) {
         mask &= ~RigidBodyVehicleFlags::IS_ANY_AVATAR;
@@ -611,8 +648,10 @@ void RemoteRigidBodyVehicle::write(
                     auto location = Vehicle::VehicleLocation{
                         .T = rb_->rbp_.abs_position(),
                         .r = matrix_2_tait_bryan_angles(rb_->rbp_.rotation_),
+                        #ifndef WITHOUT_VELOCITY
                         .v_com = rb_->rbp_.v_com_,
-                        .w = rb_->rbp_.w_
+                        .w = rb_->rbp_.w_,
+                        #endif
                     };
                     write_vehicle_location(vcache, writer, location, versions, verbosity_);
                 }
@@ -627,8 +666,10 @@ void RemoteRigidBodyVehicle::write(
                     auto location = Avatar::VehicleLocation{
                         .T = rb_->rbp_.abs_position(),
                         .r1 = z_to_yaw(rb_->rbp_.rotation_.column(2)),
+                        #ifndef WITHOUT_VELOCITY
                         .v_com = rb_->rbp_.v_com_,
-                        .w1 = rb_->rbp_.w_(1)
+                        .w1 = rb_->rbp_.w_(1),
+                        #endif
                     };
                     write_vehicle_location(vcache, writer, location, versions, verbosity_);
                 }

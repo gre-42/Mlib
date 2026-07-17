@@ -46,6 +46,7 @@ public:
         TransmittedFields transmitted_fields);
     std::chrono::steady_clock::time_point read_time(
         BinaryBitwiseWordsReader& reader) const;
+    std::chrono::steady_clock::time_point base_time() const;
     const LocalSceneLevel& home_scene_level;
 private:
     std::chrono::steady_clock::time_point base_time_;

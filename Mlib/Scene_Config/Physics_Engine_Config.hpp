@@ -89,7 +89,7 @@ struct PhysicsEngineConfig {
     uint32_t max_interpolated_particles = 20;
 
     // Remote
-    float remote_location_relaxation = 0.2f;
+    float remote_location_relaxation = 0.1f;
 };
 
 }

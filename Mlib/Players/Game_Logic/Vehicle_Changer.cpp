@@ -152,8 +152,8 @@ bool VehicleChanger::enter_vehicle(
                 "\". Passenger: \"" + a.get_primary_scene_vehicle()->rb()->name() + '"');
         }
         b_rb->rbp_.set_pose(b_new_trafo.R, b_new_trafo.t, 1.f, CURRENT_SOURCE_LOCATION);
-        b_rb->rbp_.set_v_com(fixed_zeros<float, 3>(), cfg.dt_min(), CURRENT_SOURCE_LOCATION);
-        b_rb->rbp_.set_w(fixed_zeros<float, 3>(), cfg.dt_min(), CURRENT_SOURCE_LOCATION);
+        b_rb->rbp_.set_v_com(fixed_zeros<float, 3>(), cfg.dt_min(), 1.f, CURRENT_SOURCE_LOCATION);
+        b_rb->rbp_.set_w(fixed_zeros<float, 3>(), cfg.dt_min(), 1.f, CURRENT_SOURCE_LOCATION);
         b.get_primary_scene_vehicle()->scene_node()->set_absolute_pose(
             b_new_trafo.t,
             matrix_2_tait_bryan_angles(b_new_trafo.R),

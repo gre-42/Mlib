@@ -2,10 +2,16 @@
 #include <Mlib/Memory/Destruction_Functions.hpp>
 #include <Mlib/Remote/Incremental_Objects/IIncremental_Object.hpp>
 #include <Mlib/Remote/Incremental_Objects/Incremental_Cache_Object_Token.hpp>
+#include <Mlib/Scene/Remote/Location_History/Velocity_Config.hpp>
 #include <Mlib/Scene_Config/Remote_Integers.hpp>
 #include <memory>
 #include <nlohmann/json.hpp>
 #include <string>
+#ifdef WITHOUT_VELOCITY
+#include <Mlib/Array/Fixed_Array.hpp>
+#include <Mlib/Scene_Config/Scene_Precision.hpp>
+#include <chrono>
+#endif
 
 namespace Mlib {
 
@@ -69,6 +75,11 @@ private:
     DanglingBaseClassPtr<RigidBodyVehicle> rb_;
     DanglingBaseClassRef<PhysicsScene> physics_scene_;
     IoVerbosity verbosity_;
+    #ifdef WITHOUT_VELOCITY
+    std::chrono::steady_clock::time_point old_time_;
+    FixedArray<ScenePos, 3> old_T_;
+    FixedArray<SceneDir, 3> old_r_;
+    #endif
     DestructionFunctionsRemovalTokens rb_on_destroy_;
 };
 
