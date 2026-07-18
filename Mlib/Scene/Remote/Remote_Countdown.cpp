@@ -73,7 +73,7 @@ void RemoteCountdown::read(
     if (type != RemoteSceneObjectType::COUNTDOWN) {
         throw std::runtime_error((std::stringstream() <<
             "RemoteCountdown::read: Unexpected scene object type. Object ID = " <<
-            remote_object_id << ", type = 0x" << std::hex << to_underlying(type)).str());
+            remote_object_id << ", type = 0x" << std::hex << (to_underlying(type) + 0)).str());
     }
     read_data(reader, remote_object_id);
 }
