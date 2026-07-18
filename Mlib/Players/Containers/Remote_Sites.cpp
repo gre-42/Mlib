@@ -138,7 +138,6 @@ NUserCountType RemoteSites::get_total_user_count(UserTypes user_types) const {
 
 void RemoteSites::set_local_user_count(NUserCountType user_count) {
     std::scoped_lock lock{ mutex_ };
-    local_users_->set_user_count(user_count);
     local_site_.users.clear_and_reserve(user_count);
     if (remote_params_.has_value()) {
         for (NUserCountType i = 0; i < user_count; ++i) {
@@ -151,6 +150,7 @@ void RemoteSites::set_local_user_count(NUserCountType user_count) {
                 std::move(full_name),
                 DanglingBaseClassRef<UserInfo>{user, CURRENT_SOURCE_LOCATION},
                 CURRENT_SOURCE_LOCATION);
+            local_users_->set_user_count(i + 1);
         }
     } else {
         for (NUserCountType i = 0; i < user_count; ++i) {
@@ -162,6 +162,7 @@ void RemoteSites::set_local_user_count(NUserCountType user_count) {
                 std::move(name),
                 DanglingBaseClassRef<UserInfo>{user, CURRENT_SOURCE_LOCATION},
                 CURRENT_SOURCE_LOCATION);
+            local_users_->set_user_count(i + 1);
         }
     }
 }
