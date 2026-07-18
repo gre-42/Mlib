@@ -31,7 +31,7 @@ struct AnimationState;
 struct ColorStyle;
 struct ExternalRenderPass;
 enum class BlendingPassType;
-enum class ExternalRenderPassType;
+enum class ExternalRenderPassType: uint32_t;
 enum class PhysicsMaterial: uint32_t;
 enum class RenderingStrategies;
 class SceneNode;

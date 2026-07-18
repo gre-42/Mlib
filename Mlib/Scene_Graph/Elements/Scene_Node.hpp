@@ -55,7 +55,7 @@ class IAbsoluteObserver;
 class IDynamicLights;
 struct Light;
 struct Skidmark;
-enum class ExternalRenderPassType;
+enum class ExternalRenderPassType: uint32_t;
 struct RenderedSceneDescriptor;
 struct ExternalRenderPass;
 template <class TPos>

@@ -4,6 +4,7 @@
 #include <Mlib/Scene_Graph/Instances/Deferred_Vertex_Arrays_And_Instances.hpp>
 #include <Mlib/Scene_Graph/Instances/Instance_Location.hpp>
 #include <cstddef>
+#include <cstdint>
 #include <list>
 #include <map>
 #include <memory>
@@ -11,7 +12,7 @@
 
 namespace Mlib {
 
-enum class ExternalRenderPassType;
+enum class ExternalRenderPassType: uint32_t;
 template <typename TData, size_t... tshape>
 class FixedArray;
 template <class TDir, class TPos, size_t n>

@@ -7,7 +7,7 @@
 
 namespace Mlib {
 
-enum class ExternalRenderPassType;
+enum class ExternalRenderPassType: uint32_t;
 
 struct BillboardAtlasInstance {
     OrderableFixedArray<float, 2> uv_scale = uninitialized;

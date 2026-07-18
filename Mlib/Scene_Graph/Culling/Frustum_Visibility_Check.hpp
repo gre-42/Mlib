@@ -11,7 +11,7 @@ class VisibilityCheck;
 struct Material;
 struct Morphology;
 struct SceneGraphConfig;
-enum class ExternalRenderPassType;
+enum class ExternalRenderPassType: uint32_t;
 template <class TData, size_t tndim>
 class ExtremalAxisAlignedBoundingBox;
 template <class TData>

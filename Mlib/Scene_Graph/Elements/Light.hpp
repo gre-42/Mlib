@@ -2,12 +2,13 @@
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Geometry/Texture/ITexture_Handle.hpp>
 #include <Mlib/Scene_Config/Scene_Precision.hpp>
+#include <cstdint>
 #include <memory>
 #include <optional>
 
 namespace Mlib {
 
-enum class ExternalRenderPassType;
+enum class ExternalRenderPassType: uint32_t;
 
 struct Light {
     FixedArray<float, 3> ambient{1.f, 1.f, 1.f};

@@ -1,4 +1,5 @@
 #pragma once
+#include <cstdint>
 #include <iosfwd>
 #include <string>
 
@@ -9,7 +10,7 @@ namespace Mlib {
  * See Mlib/OpenGL/Renderables/Renderable_Colored_Vertex_Array.cpp:
  *     "cva->material.occluded_pass < l.second->shadow_render_pass"
  */
-enum class ExternalRenderPassType {
+enum class ExternalRenderPassType: uint32_t {
     NONE                                    = 0,
     STANDARD_MASK                           = (1 << 0),
 

@@ -12,7 +12,7 @@ struct Material;
 struct Morphology;
 struct SceneGraphConfig;
 struct ExternalRenderPass;
-enum class ExternalRenderPassType;
+enum class ExternalRenderPassType: uint32_t;
 template <class T>
 class VariableAndHash;
 

@@ -13,7 +13,7 @@ class Frustum3;
 struct Material;
 struct Morphology;
 struct SceneGraphConfig;
-enum class ExternalRenderPassType;
+enum class ExternalRenderPassType: uint32_t;
 template <class TData>
 class VisibilityCheck;
 template <class T>

@@ -19,7 +19,7 @@ namespace Mlib {
 enum class BlendMode;
 enum class AggregateMode;
 enum class TransformationMode;
-enum class ExternalRenderPassType;
+enum class ExternalRenderPassType: uint32_t;
 enum class PhysicsMaterial: uint32_t;
 enum class RectangleTriangulationMode;
 struct BillboardAtlasInstance;

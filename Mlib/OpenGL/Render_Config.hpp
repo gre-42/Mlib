@@ -1,12 +1,13 @@
 #pragma once
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Threads/Thread_Local.hpp>
+#include <cstdint>
 #include <string>
 
 namespace Mlib {
 
 struct Material;
-enum class ExternalRenderPassType;
+enum class ExternalRenderPassType: uint32_t;
 enum class InternalRenderPass;
 
 struct NoCopy {

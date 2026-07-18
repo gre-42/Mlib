@@ -2,6 +2,7 @@
 #include <Mlib/Scene_Config/Scene_Precision.hpp>
 #include <Mlib/Scene_Graph/Instances/Deferred_Vertex_Arrays_And_Instances.hpp>
 #include <Mlib/Threads/Thread_Local.hpp>
+#include <cstdint>
 #include <list>
 #include <memory>
 
@@ -17,7 +18,7 @@ struct RenderConfig;
 struct SceneGraphConfig;
 struct TransformedColoredVertexArray;
 class IInstancesRenderer;
-enum class ExternalRenderPassType;
+enum class ExternalRenderPassType: uint32_t;
 struct RenderedSceneDescriptor;
 enum class TaskLocation;
 class BackgroundLoop;

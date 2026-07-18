@@ -1,4 +1,5 @@
 #pragma once
+#include <cstdint>
 #include <optional>
 #include <string>
 
@@ -10,7 +11,7 @@ class SceneNodeResources;
 struct ColoredVertexArrayFilter;
 enum class BlendMode;
 enum class InterpolationMode;
-enum class ExternalRenderPassType;
+enum class ExternalRenderPassType: uint32_t;
 class FPath;
 
 void modify_rendering_material(

@@ -11,7 +11,7 @@
 namespace Mlib {
 
 class RenderingResources;
-enum class ExternalRenderPassType;
+enum class ExternalRenderPassType: uint32_t;
 class FrameBuffer;
 class SceneNode;
 struct Light;

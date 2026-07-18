@@ -1,13 +1,13 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Geometry/Material/Colormap_With_Modifiers.hpp>
+#include <cstdint>
 #include <string>
 
 namespace Mlib {
 
 enum class BlendMode;
-enum class ExternalRenderPassType;
-enum class ExternalRenderPassType;
+enum class ExternalRenderPassType: uint32_t;
 enum class AggregateMode;
 
 struct MergedTexturesConfig {

@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/Scene_Config/Scene_Precision.hpp>
 #include <cstddef>
+#include <cstdint>
 
 namespace Mlib {
 
@@ -8,7 +9,7 @@ class Scene;
 class OrthoCamera;
 template <class TDir, class TPos, size_t n>
 class TransformationMatrix;
-enum class ExternalRenderPassType;
+enum class ExternalRenderPassType: uint32_t;
 
 void fit_canvas_to_renderables(
     Scene& scene,

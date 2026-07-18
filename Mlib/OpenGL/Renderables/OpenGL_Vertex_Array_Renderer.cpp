@@ -1546,7 +1546,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen = [](
     }
     sstr << "    vec3 frag_brightness_emissive_ambient_diffuse = vec3(0.0, 0.0, 0.0);" << std::endl;
     sstr << "    vec3 frag_brightness_specular = vec3(0.0, 0.0, 0.0);" << std::endl;
-    auto compute_light_color = [&sstr, &lights, &render_pass](size_t i){
+    auto compute_light_color = [&sstr, &lights](size_t i){
         if (i > lights.size()) {
             throw std::runtime_error("Light index too large");
         }
@@ -1557,7 +1557,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen = [](
         if (VisibilityCheck{*light.vp}.orthographic()) {
             sstr << "            vec3 light_color = texture(texture_light_color" << i << ", proj_coords01_light" << i << ").rgb;" << std::endl;
             sstr << "            if (!is_inside_texture(proj_coords01_light" << i << ")) {" << std::endl;
-            if (any(render_pass & ExternalRenderPassType::LIGHTMAP_BLOBS_MASK)) {
+            if (any(light.shadow_render_pass & ExternalRenderPassType::LIGHTMAP_BLOBS_MASK)) {
                 sstr << "                light_color = vec3(0.0, 0.0, 0.0);" << std::endl;
             } else {
                 sstr << "                light_color = vec3(1.0, 1.0, 1.0);" << std::endl;
@@ -1568,7 +1568,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen = [](
             sstr << "            vec2 proj_coords01 = proj_coords11 * 0.5 + 0.5;" << std::endl;
             sstr << "            vec3 light_color = texture(texture_light_color" << i << ", proj_coords01).rgb;" << std::endl;
             sstr << "            if (!is_inside_texture(proj_coords01" << i << ")) {" << std::endl;
-            if (any(render_pass & ExternalRenderPassType::LIGHTMAP_BLOBS_MASK)) {
+            if (any(light.shadow_render_pass & ExternalRenderPassType::LIGHTMAP_BLOBS_MASK)) {
                 sstr << "                light_color = vec3(0.0, 0.0, 0.0);" << std::endl;
             } else {
                 sstr << "                light_color = vec3(1.0, 1.0, 1.0);" << std::endl;

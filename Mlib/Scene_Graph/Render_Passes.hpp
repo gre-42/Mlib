@@ -9,7 +9,7 @@
 
 namespace Mlib {
 
-enum class ExternalRenderPassType;
+enum class ExternalRenderPassType: uint32_t;
 class SceneNode;
 class IRenderableScene;
 

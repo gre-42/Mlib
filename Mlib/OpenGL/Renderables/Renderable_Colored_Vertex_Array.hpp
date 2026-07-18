@@ -5,6 +5,7 @@
 #include <Mlib/Initialization/Default_Uninitialized_Vector.hpp>
 #include <Mlib/OpenGL/Renderables/OpenGL_Vertex_Array_Renderer.hpp>
 #include <Mlib/Scene_Graph/Elements/Renderable.hpp>
+#include <cstdint>
 #include <map>
 #include <unordered_set>
 
@@ -15,7 +16,7 @@ class OffsetAndQuaternion;
 class ColoredVertexArrayResource;
 struct RenderableResourceFilter;
 class RenderingResources;
-enum class ExternalRenderPassType;
+enum class ExternalRenderPassType: uint32_t;
 struct RenderPass;
 class IGpuVertexArray;
 class IGpuVertexData;
