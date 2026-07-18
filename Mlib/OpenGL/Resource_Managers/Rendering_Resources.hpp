@@ -30,6 +30,8 @@
 #include <unordered_map>
 #include <vector>
 
+#undef IGNORE
+
 template <class TData>
 class StbInfo;
 

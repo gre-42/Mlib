@@ -12,6 +12,8 @@
 #include <Mlib/Os/Os.hpp>
 #include <optional>
 
+#undef IGNORE
+
 // This file is based on the "librw" project (https://github.com/aap/librw)
 
 using namespace Mlib::Dff;

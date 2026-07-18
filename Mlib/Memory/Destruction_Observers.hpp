@@ -3,6 +3,8 @@
 #include <atomic>
 #include <set>
 
+#undef IGNORE
+
 namespace Mlib {
 
 template <class T>
