@@ -16,7 +16,7 @@
 
 using namespace Mlib;
 
-static const size_t MAX_INSTANCES = 200'000;
+static const size_t MAX_INSTANCES = 400'000;
 
 ArrayInstancesRenderer::ArrayInstancesRenderer(
     const IGpuObjectFactory& gpu_object_factory,
