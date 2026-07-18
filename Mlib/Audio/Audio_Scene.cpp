@@ -155,9 +155,6 @@ void AudioScene::flush_sources() {
                 }
             }
             if (s->pending_command_.has_value()) {
-                if (s->position_requirement_ == PositionRequirement::WAITING_FOR_POSITION) {
-                    throw std::runtime_error("Attempt to play/stop/pause audio while waiting for position");
-                }
                 switch (*s->pending_command_) {
                     case AL_PLAYING:
                         AL_CHK(alSourcePlay(s->source_));
