@@ -508,6 +508,7 @@ void android_main(android_app* app)
          "--debug_vector_allocation",
          "--verbose"},
         {"--record_track_basename",
+         "--flavor",
          "--mesh",
          "--animated_mesh",
          "--audio",
