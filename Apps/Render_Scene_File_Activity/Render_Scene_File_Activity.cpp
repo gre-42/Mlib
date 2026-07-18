@@ -791,8 +791,10 @@ void android_main(android_app* app)
                 {"if_show_global_log", args.has_named("--show_global_log")},
                 #ifdef __ANDROID__
                 {"if_android", true},
+                {"if_web", false},
                 #elifdef __EMSCRIPTEN__
                 {"if_android", false},
+                {"if_web", true},
                 #else
                 #error Detected neither __ANDROID__ nor __EMSCRIPTEN__
                 #endif

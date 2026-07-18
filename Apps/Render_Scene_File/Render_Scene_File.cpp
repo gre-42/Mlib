@@ -809,6 +809,7 @@ int main(int argc, char** argv) {
                 {"if_show_debug_wheels", args.has_named("--show_debug_wheels")},
                 {"if_show_global_log", args.has_named("--show_global_log")},
                 {"if_android", false},
+                {"if_web", false},
                 {"if_compressed", args.has_named("--compressed")},
                 #ifdef WITHOUT_AUDIO
                 {"if_audio", false},
