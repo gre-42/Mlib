@@ -5,6 +5,7 @@
 #include <Mlib/Remote/Incremental_Objects/Scene_Level.hpp>
 #include <Mlib/Remote/Remote_Params.hpp>
 #include <Mlib/Remote/Remote_Role.hpp>
+#include <Mlib/Scene/Physics_Scene.hpp>
 #include <Mlib/Scene/Remote/Network_Socket_Status.hpp>
 #include <Mlib/Scene/Remote/Remote_Config.hpp>
 #include <Mlib/Scene/Remote/Remote_Countdown.hpp>
@@ -59,13 +60,15 @@ RemoteScene::RemoteScene(
             #ifdef WITHOUT_GRAPHICS
             proxies_.add_receive_socket(remote_config.admin_socket);
             #endif
-            objects_.add_local_object({
-                    global_object_pool.create<RemoteCountdown>(
-                        CURRENT_SOURCE_LOCATION,
-                        verbosity,
-                        physics_scene),
-                    CURRENT_SOURCE_LOCATION},
-                RemoteObjectVisibility::PRIVATE);
+            if (physics_scene->countdown_start_ != nullptr) {
+                objects_.add_local_object({
+                        global_object_pool.create<RemoteCountdown>(
+                            CURRENT_SOURCE_LOCATION,
+                            verbosity,
+                            physics_scene),
+                        CURRENT_SOURCE_LOCATION},
+                    RemoteObjectVisibility::PRIVATE);
+            }
             return;
         case RemoteRole::CLIENT:
             proxies_.add_handshake_socket(home_node_);
