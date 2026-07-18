@@ -41,7 +41,12 @@ public:
     }
     template <class... Args>
     inline T& emplace_back(Args&&... args) {
-        return *new(data_[size_++].data) T(std::forward<Args>(args)...);
+        if (size_ == capacity_) {
+            throw std::runtime_error("Vector capacity exceeded");
+        }
+        T& result = *new(data_[size_].data) T(std::forward<Args>(args)...);
+        ++size_;
+        return result;
     }
     inline const T& operator [] (size_t index) const {
         assert(index < size_);
@@ -71,7 +76,7 @@ public:
         return empty() ? nullptr : &(*this)[0];
     }
     T* end() {
-        return empty() ? nullptr : &(*this)[size_];
+        return empty() ? nullptr : begin() + size_;
     }
 };
 
