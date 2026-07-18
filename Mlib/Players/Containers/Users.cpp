@@ -17,7 +17,7 @@ void Users::set_user_count(uint32_t user_count) {
     // if (user_count == 0) {
     //     throw std::runtime_error("User count cannot be zero");
     // }
-    user_count_ = std::move(user_count);
+    user_count_ = user_count;
 }
 
 bool Users::for_each_user(const std::function<bool(uint32_t)>& operation) {

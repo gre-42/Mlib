@@ -139,6 +139,7 @@ NUserCountType RemoteSites::get_total_user_count(UserTypes user_types) const {
 void RemoteSites::set_local_user_count(NUserCountType user_count) {
     std::scoped_lock lock{ mutex_ };
     local_site_.users.clear_and_reserve(user_count);
+    local_users_->set_user_count(0);
     if (remote_params_.has_value()) {
         for (NUserCountType i = 0; i < user_count; ++i) {
             auto name = std::to_string(i);
