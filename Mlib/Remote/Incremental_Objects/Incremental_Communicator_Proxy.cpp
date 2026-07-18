@@ -8,6 +8,7 @@
 #include <Mlib/Remote/Incremental_Objects/Known_Fields.hpp>
 #include <Mlib/Remote/Incremental_Objects/Object_Lifetime_Status.hpp>
 #include <Mlib/Remote/Incremental_Objects/Proxy_Tasks.hpp>
+#include <Mlib/Remote/Incremental_Objects/Scene_Level.hpp>
 #include <Mlib/Remote/Incremental_Objects/Transmission_History.hpp>
 #include <Mlib/Remote/Incremental_Objects/Transmitted_Fields.hpp>
 #include <concepts>
@@ -59,21 +60,24 @@ static bool is_newer(T incoming, T newest) {
 }
 
 void IncrementalCommunicatorProxy::receive_from_home(std::istream& istr) {
+    std::optional<LocalSceneLevel> home_scene_level;
     auto reader = BinaryBitwiseWordsReader{istr, nullptr, verbosity_};
     {
         auto scene_level_name = reader.read_string<StringLengthType>("scene level name");
         auto time_of_day = reader.read_string<StringLengthType>("time of day");
         auto reload_count = reader.read_binary<ReloadCountType>("reload_count");
-        home_scene_level_.emplace(std::move(scene_level_name), std::move(time_of_day), reload_count);
+        home_scene_level.emplace(std::move(scene_level_name), std::move(time_of_day), reload_count);
         auto level_selector = objects_->local_scene_level_selector();
         if (any(tasks_ & ProxyTasks::RELOAD_SCENE)) {
             if (level_selector->client_set_next_scene_level(
-                home_scene_level_->level_name,
-                home_scene_level_->time_of_day,
-                home_scene_level_->reload_count))
+                home_scene_level->level_name,
+                home_scene_level->time_of_day,
+                home_scene_level->reload_count))
             {
                 return;
             }
+        } else if (level_selector->reload_required(*home_scene_level)) {
+            return;
         }
         auto home_load_level_status = reader.read_binary<LocalSceneLevelLoadStatus>("scene level load status");
         if (is_loading(level_selector->load_status()) ||
@@ -121,7 +125,7 @@ void IncrementalCommunicatorProxy::receive_from_home(std::istream& istr) {
     auto receive_local = [&](RemoteObjectVisibility visibility){
         const auto& deleted_objects = objects_->deleted_objects();
         // linfo() << "Received " << object_count << " objects_";
-        auto transmission_history_reader = TransmissionHistoryReader{*home_scene_level_, objects_->local_time()};
+        auto transmission_history_reader = TransmissionHistoryReader{*home_scene_level, objects_->local_time()};
         while (true) {
             auto transmitted_fields = reader.read_binary<TransmittedFields>("transmitted fields");
             if (transmitted_fields == TransmittedFields::NONE) {

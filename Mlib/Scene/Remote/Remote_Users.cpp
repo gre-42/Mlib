@@ -41,10 +41,8 @@ inline TransmittedFields& operator |= (TransmittedFields& a, RemoteUsersTransmit
 RemoteUsers::RemoteUsers(
     IoVerbosity verbosity,
     const DanglingBaseClassRef<PhysicsScene>& physics_scene,
-    const DanglingBaseClassRef<SceneLevelSelector>& local_scene_level_selector,
     RemoteSiteId site_id)
     : physics_scene_{ physics_scene }
-    , local_scene_level_selector_{ local_scene_level_selector }
     , verbosity_{ verbosity }
     , site_id_{ site_id }
     , physics_scene_on_destroy_{ physics_scene->on_destroy.deflt, CURRENT_SOURCE_LOCATION }
@@ -64,7 +62,6 @@ RemoteUsers::~RemoteUsers() {
 
 DanglingBaseClassPtr<RemoteUsers> RemoteUsers::try_create_from_stream(
     PhysicsScene& physics_scene,
-    SceneLevelSelector& local_scene_level_selector,
     BinaryBitwiseWordsReader& reader,
     TransmittedFields transmitted_fields,
     ObjectLifetimeStatus lifetime_status,
@@ -80,7 +77,6 @@ DanglingBaseClassPtr<RemoteUsers> RemoteUsers::try_create_from_stream(
         CURRENT_SOURCE_LOCATION,
         verbosity,
         DanglingBaseClassRef<PhysicsScene>{physics_scene, CURRENT_SOURCE_LOCATION},
-        DanglingBaseClassRef<SceneLevelSelector>{local_scene_level_selector, CURRENT_SOURCE_LOCATION},
         site_id);
     res->read_data(reader, transmitted_fields, proxy_tasks, transmission_history_reader);
     if (lifetime_status == ObjectLifetimeStatus::DELETED) {
@@ -163,24 +159,9 @@ void RemoteUsers::read_data(
             for (auto user_id : users_transmitted) {
                 auto user = physics_scene_->remote_sites_->get_user(site_id_, user_id);
                 auto status = reader.read_binary<UserStatus>("user status");
-                if (!any(proxy_tasks & ProxyTasks::RELOAD_SCENE)) {
-                    auto final_status = [&](){
-                        switch (status) {
-                        case UserStatus::INITIAL:
-                        case UserStatus::LEVEL_LOADING:
-                            return status;
-                        case UserStatus::LEVEL_LOADED:
-                            {
-                                if (local_scene_level_selector_->reload_required(transmission_history_reader.home_scene_level)) {
-                                    return UserStatus::INITIAL;
-                                }
-                                return status;
-                            }
-                        }
-                        throw std::runtime_error("Unknown user status");
-                    }();
-                    user->set_status(final_status);
-                } else if (site_id_ != local_site_id) {
+                if (!any(proxy_tasks & ProxyTasks::RELOAD_SCENE) ||
+                    (site_id_ != local_site_id))
+                {
                     user->set_status(status);
                 }
             }

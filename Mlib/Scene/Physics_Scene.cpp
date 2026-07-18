@@ -242,14 +242,13 @@ PhysicsScene::PhysicsScene(
         physics_engine_.advance_times_.add_advance_time({ one_shot_audio_, CURRENT_SOURCE_LOCATION }, CURRENT_SOURCE_LOCATION);
         #endif
         if (with_countdown_start) {
-            if ((remote_config != nullptr) &&
-                remote_config->game.has_value() &&
-                (remote_config->game->role == RemoteRole::CLIENT))
-            {
-                throw std::runtime_error("Client attempt to create a countdown");
-            }
             countdown_start_ = std::make_unique<CountdownPhysics>();
-            physics_engine_.advance_times_.add_advance_time({ *countdown_start_, CURRENT_SOURCE_LOCATION }, CURRENT_SOURCE_LOCATION);
+            if ((remote_config == nullptr) ||
+                !remote_config->game.has_value() ||
+                (remote_config->game->role == RemoteRole::SERVER))
+            {
+                physics_engine_.advance_times_.add_advance_time({ *countdown_start_, CURRENT_SOURCE_LOCATION }, CURRENT_SOURCE_LOCATION);
+            }
         }
 
         if ((remote_config != nullptr) && remote_config->game.has_value()) {

@@ -36,7 +36,6 @@ RemoteScene::RemoteScene(
     #endif
     , remote_scene_object_factory_{
         physics_scene,
-        scene_level_selector,
         verbosity }
     , objects_{ remote_params_.site_id, scene_level_selector }
     , communicator_proxy_factory_{
@@ -82,7 +81,6 @@ RemoteScene::RemoteScene(
                 CURRENT_SOURCE_LOCATION,
                 verbosity,
                 physics_scene,
-                scene_level_selector,
                 remote_params_.site_id),
             CURRENT_SOURCE_LOCATION},
         RemoteObjectVisibility::PUBLIC);
