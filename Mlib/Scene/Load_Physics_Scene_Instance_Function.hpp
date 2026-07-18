@@ -101,7 +101,7 @@ protected:
     GameLogic* game_logic;
     RemoteScene* remote_scene;
     RemoteSites& remote_sites;
-    CountdownPhysics& countdown_start;
+    CountdownPhysics* countdown_start;
     #ifndef WITHOUT_GRAPHICS
     UiFocus& ui_focus;
     #endif

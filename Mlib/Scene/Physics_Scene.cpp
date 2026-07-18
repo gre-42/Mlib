@@ -5,6 +5,7 @@
 #include <Mlib/OpenGL/Batch_Renderers/Trail_Renderer.hpp>
 #include <Mlib/Os/Env.hpp>
 #include <Mlib/Os/Io/Binary.hpp>
+#include <Mlib/Physics/Advance_Times/Countdown_Physics.hpp>
 #include <Mlib/Physics/Dynamic_Lights/Dynamic_Lights.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Iteration.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Loop.hpp>
@@ -50,7 +51,8 @@ PhysicsScene::PhysicsScene(
     bool save_playback,
     const RaceIdentifier& race_identfier,
     std::shared_ptr<Translator> translator,
-    RemoteConfig* remote_config)
+    RemoteConfig* remote_config,
+    bool with_countdown_start)
     : macro_line_executor_{ macro_line_executor }
     , remote_sites_{ remote_sites, CURRENT_SOURCE_LOCATION }
     #ifndef WITHOUT_GRAPHICS
@@ -239,10 +241,15 @@ PhysicsScene::PhysicsScene(
         #ifndef WITHOUT_AUDIO
         physics_engine_.advance_times_.add_advance_time({ one_shot_audio_, CURRENT_SOURCE_LOCATION }, CURRENT_SOURCE_LOCATION);
         #endif
-        if ((remote_config == nullptr) ||
-            (remote_config->game.has_value() && (remote_config->game->role == RemoteRole::SERVER)))
-        {
-            physics_engine_.advance_times_.add_advance_time({ countdown_start_, CURRENT_SOURCE_LOCATION }, CURRENT_SOURCE_LOCATION);
+        if (with_countdown_start) {
+            if ((remote_config != nullptr) &&
+                remote_config->game.has_value() &&
+                (remote_config->game->role == RemoteRole::CLIENT))
+            {
+                throw std::runtime_error("Client attempt to create a countdown");
+            }
+            countdown_start_ = std::make_unique<CountdownPhysics>();
+            physics_engine_.advance_times_.add_advance_time({ *countdown_start_, CURRENT_SOURCE_LOCATION }, CURRENT_SOURCE_LOCATION);
         }
 
         if ((remote_config != nullptr) && remote_config->game.has_value()) {
@@ -340,7 +347,9 @@ void PhysicsScene::shutdown() {
     object_pool_.clear();
     air_particles_.particle_renderer->on_destroy.clear();
     skidmark_particles_.particle_renderer->on_destroy.clear();
-    countdown_start_.on_destroy.clear();
+    if (countdown_start_ != nullptr) {
+        countdown_start_->on_destroy.clear();
+    }
     scene_.shutdown();
     on_destroy.clear();
 }

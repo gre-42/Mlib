@@ -5,6 +5,7 @@
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Load_Scene_Funcs.hpp>
+#include <Mlib/Scene/Physics_Scene.hpp>
 #include <mutex>
 #include <stdexcept>
 
@@ -21,7 +22,10 @@ ResetCountdown::ResetCountdown(PhysicsScene& physics_scene)
 
 void ResetCountdown::execute(const LoadSceneJsonUserFunctionArgs& args) {
     args.arguments.validate(KnownArgs::options);
-    countdown_start.reset(args.arguments.at<float>(KnownArgs::duration) * seconds);
+    if (countdown_start == nullptr) {
+        throw std::runtime_error("Countdown not instantiated");
+    }
+    countdown_start->reset(args.arguments.at<float>(KnownArgs::duration) * seconds);
 }
 
 namespace {

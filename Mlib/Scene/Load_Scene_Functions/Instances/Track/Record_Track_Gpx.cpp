@@ -28,6 +28,9 @@ RecordTrackGpx::RecordTrackGpx(PhysicsScene& physics_scene)
 
 void RecordTrackGpx::execute(const LoadSceneJsonUserFunctionArgs& args) {
     args.arguments.validate(KnownArgs::options);
+    if (countdown_start == nullptr) {
+        throw std::runtime_error("Countdown not instantiated");
+    }
     DanglingBaseClassRef<SceneNode> recorder_node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::node), CURRENT_SOURCE_LOCATION);
     auto rb = get_rigid_body_vehicle(recorder_node.get(), CURRENT_SOURCE_LOCATION);
     auto& at = global_object_pool.create<RigidBodyRecorderGpx>(
@@ -36,7 +39,7 @@ void RecordTrackGpx::execute(const LoadSceneJsonUserFunctionArgs& args) {
         recorder_node,
         rb,
         scene_node_resources.get_geographic_mapping(VariableAndHash<std::string>{"world"}),
-        &countdown_start);
+        countdown_start);
     physics_engine.advance_times_.add_advance_time({ at, CURRENT_SOURCE_LOCATION }, CURRENT_SOURCE_LOCATION);
 }
 

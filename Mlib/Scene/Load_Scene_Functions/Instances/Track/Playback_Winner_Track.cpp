@@ -36,6 +36,9 @@ PlaybackWinnerTrack::PlaybackWinnerTrack(PhysicsScene& physics_scene)
 
 void PlaybackWinnerTrack::execute(const LoadSceneJsonUserFunctionArgs& args) {
     args.arguments.validate(KnownArgs::options);
+    if (countdown_start == nullptr) {
+        throw std::runtime_error("Countdown not instantiated");
+    }
     auto rank = args.arguments.at<size_t>(KnownArgs::rank);
     auto wt = players.get_winner_track_filename(rank);
     if (!wt.has_value()) {
@@ -50,7 +53,7 @@ void PlaybackWinnerTrack::execute(const LoadSceneJsonUserFunctionArgs& args) {
     auto filename = wt->m_filename;
     auto playback = std::make_shared<RigidBodyPlayback>(
         std::make_unique<TrackElementFile>(create_ifstream(filename), filename),
-        &countdown_start,
+        countdown_start,
         scene_node_resources.get_geographic_mapping(VariableAndHash<std::string>{"world.inverse"}),
         args.arguments.at<float>(KnownArgs::speed),
         node_prefixes.size());

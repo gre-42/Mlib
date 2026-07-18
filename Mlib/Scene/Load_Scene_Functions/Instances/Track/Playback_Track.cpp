@@ -32,6 +32,9 @@ PlaybackTrack::PlaybackTrack(PhysicsScene& physics_scene)
 
 void PlaybackTrack::execute(const LoadSceneJsonUserFunctionArgs& args) {
     args.arguments.validate(KnownArgs::options);
+    if (countdown_start == nullptr) {
+        throw std::runtime_error("Countdown not instantiated");
+    }
     auto asset_id = args.arguments.at<std::string>(KnownArgs::asset_id);
     const auto& vars = args
         .asset_references["vehicles"]
@@ -41,7 +44,7 @@ void PlaybackTrack::execute(const LoadSceneJsonUserFunctionArgs& args) {
     auto filename = args.arguments.path(KnownArgs::filename);
     auto playback = std::make_shared<RigidBodyPlayback>(
         std::make_unique<TrackElementFile>(create_ifstream(filename), filename),
-        &countdown_start,
+        countdown_start,
         scene_node_resources.get_geographic_mapping(VariableAndHash<std::string>{"world.inverse"}),
         args.arguments.at<float>(KnownArgs::speed),
         node_prefixes.size());

@@ -9,6 +9,7 @@
 #include <Mlib/Misc/Argument_List.hpp>
 #include <Mlib/OpenGL/Render_Logics/Render_Logics.hpp>
 #include <Mlib/OpenGL/Text/Charsets.hpp>
+#include <Mlib/Physics/Advance_Times/Countdown_Physics.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Engine.hpp>
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Resource_Context/Rendering_Context.hpp>
@@ -42,9 +43,12 @@ CountdownStart::CountdownStart(RenderableScene& renderable_scene)
 void CountdownStart::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     args.arguments.validate(KnownArgs::options);
+    if (countdown_start == nullptr) {
+        throw std::runtime_error("Countdown not instantiated");
+    }
     auto countdown_logic = global_object_pool.create_unique<CountdownVisual>(
         CURRENT_SOURCE_LOCATION,
-        DanglingBaseClassRef<CountdownPhysics>{ countdown_start, CURRENT_SOURCE_LOCATION },
+        DanglingBaseClassRef<CountdownPhysics>{ *countdown_start, CURRENT_SOURCE_LOCATION },
         std::make_unique<ExpressionWatcher>(args.macro_line_executor),        
         args.arguments.at<std::string>(KnownArgs::charset),
         args.arguments.path(KnownArgs::ttf_file),

@@ -45,8 +45,10 @@ void SceneReloader::reload_scene() {
 }
 
 void SceneReloader::change_scene() {
-    if (remote_role_ == RemoteRole::SERVER) {
-        linfo() << "Change scene as server";
+    if (!remote_role_.has_value() ||
+        (remote_role_ == RemoteRole::SERVER))
+    {
+        linfo() << "Change scene as single-player or server";
         // The scene level selector triggers "local_load_scene_by_filename".
         scene_level_selector_.server_set_next_scene_level(
             get_selected_level_id_(),

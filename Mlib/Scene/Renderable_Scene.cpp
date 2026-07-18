@@ -82,11 +82,13 @@ RenderableScene::RenderableScene(
             config.fly,
             config.rotate)
           : nullptr}
-    , key_bindings_{std::make_unique<KeyBindings>(
-          selected_cameras_,
-          ui_focus.focuses,
-          physics_scene->countdown_start_,
-          physics_scene->physics_engine_)}
+    , key_bindings_{(physics_scene->countdown_start_ != nullptr)
+          ? std::make_unique<KeyBindings>(
+            selected_cameras_,
+            ui_focus.focuses,
+            *physics_scene->countdown_start_,
+            physics_scene->physics_engine_)
+          : nullptr}
     , read_pixels_logic_{ *aggregate_render_logic_, button_states, key_configurations, ReadPixelsRole::INTERMEDIATE }
     , dirtmap_logic_{ std::make_unique<DirtmapLogic>(physics_scene->rendering_resources_, read_pixels_logic_) }
     , motion_interp_logic_{ std::make_unique<MotionInterpolationLogic>(read_pixels_logic_, InterpolationType::OPTICAL_FLOW) }
@@ -117,7 +119,9 @@ RenderableScene::RenderableScene(
     if (config.with_flying_logic) {
         render_logics_.append({ *flying_camera_logic_, CURRENT_SOURCE_LOCATION }, 0 /* z_order */, CURRENT_SOURCE_LOCATION);
     }
-    render_logics_.append({ *key_bindings_, CURRENT_SOURCE_LOCATION }, 0 /* z_order */, CURRENT_SOURCE_LOCATION);
+    if (key_bindings_ != nullptr) {
+        render_logics_.append({ *key_bindings_, CURRENT_SOURCE_LOCATION }, 0 /* z_order */, CURRENT_SOURCE_LOCATION);
+    }
     render_logics_.append({ *dirtmap_logic_, CURRENT_SOURCE_LOCATION }, 0 /* z_order */, CURRENT_SOURCE_LOCATION);
     render_logics_.append({ *imposter_render_logics_, CURRENT_SOURCE_LOCATION }, 0 /* z_order */, CURRENT_SOURCE_LOCATION);
     render_logics_.append({ *bloom_selector_logic_, CURRENT_SOURCE_LOCATION }, 0 /* z_order */, CURRENT_SOURCE_LOCATION);
@@ -131,13 +135,17 @@ RenderableScene::RenderableScene(
             physics_scene_->physics_engine_.advance_times_.delete_advance_time(*audio_listener_updater_, CURRENT_SOURCE_LOCATION);
             audio_listener_updater_ = nullptr;
         }
-        physics_scene_->physics_engine_.remove_external_force_provider(*key_bindings_);
+        if (key_bindings_ != nullptr) {
+            physics_scene_->physics_engine_.remove_external_force_provider(*key_bindings_);
+        }
         render_logics_.remove(physics_scene_->render_logics_);
         counter_user_.reset();
         physics_scene_ = nullptr;
     }, CURRENT_SOURCE_LOCATION);
 
-    physics_scene_->physics_engine_.add_external_force_provider(*key_bindings_);
+    if (key_bindings_ != nullptr) {
+        physics_scene_->physics_engine_.add_external_force_provider(*key_bindings_);
+    }
 }
 
 RenderableScene::~RenderableScene() {

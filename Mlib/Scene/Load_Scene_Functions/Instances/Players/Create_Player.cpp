@@ -36,6 +36,9 @@ void CreatePlayer::execute(const JsonView& args, PlayerCreator creator)
     if (game_logic == nullptr) {
         throw std::runtime_error("Game logic is null, cannot create player");
     }
+    if (countdown_start == nullptr) {
+        throw std::runtime_error("Countdown not instantiated");
+    }
     std::shared_ptr<UserAccount> user_account;
     if (auto user_account_key = args.try_at_non_null<std::string>(PlayerArgs::user_account_key);
         user_account_key.has_value())
@@ -85,7 +88,7 @@ void CreatePlayer::execute(const JsonView& args, PlayerCreator creator)
         args.at<std::string>(PlayerArgs::behavior),
         driving_direction_from_string(args.at<std::string>(PlayerArgs::driving_direction)),
         delete_node_mutex,
-        countdown_start);
+        *countdown_start);
     players.add_player({ *player, CURRENT_SOURCE_LOCATION });
     physics_engine.advance_times_.add_advance_time({ *player, CURRENT_SOURCE_LOCATION }, CURRENT_SOURCE_LOCATION);
     physics_engine.add_external_force_provider(*player);

@@ -88,7 +88,9 @@ CreateCheckPoints::CreateCheckPoints(PhysicsScene& physics_scene)
 void CreateCheckPoints::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     args.arguments.validate(KnownArgs::options);
-
+    if (countdown_start == nullptr) {
+        throw std::runtime_error("Countdown not instantiated");
+    }
     #ifndef WITHOUT_GRAPHICS
     RenderableScene* renderable_scene = nullptr;
     auto user_is_local = args.arguments.at<bool>(KnownArgs::user_is_local);
@@ -143,7 +145,7 @@ void CreateCheckPoints::execute(const LoadSceneJsonUserFunctionArgs& args)
         scene_node_resources,
         scene,
         delete_node_mutex,
-        &countdown_start,
+        countdown_start,
         args.arguments.at<bool>(KnownArgs::height_changed),
         args.arguments.at<EFixedArray<float, 3>>(KnownArgs::selection_emissivity, fixed_full<float, 3>(-1.f)),
         args.arguments.at<EFixedArray<float, 3>>(KnownArgs::deselection_emissivity, fixed_full<float, 3>(-1.f)),

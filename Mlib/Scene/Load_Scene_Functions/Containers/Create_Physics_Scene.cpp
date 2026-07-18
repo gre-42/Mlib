@@ -30,6 +30,7 @@ DECLARE_ARGUMENT(save_playback);
 DECLARE_ARGUMENT(gid);
 DECLARE_ARGUMENT(primary_user_id);
 DECLARE_ARGUMENT(remote);
+DECLARE_ARGUMENT(with_countdown_start);
 }
 
 struct RegisterJsonUserFunction {
@@ -72,7 +73,8 @@ struct RegisterJsonUserFunction {
                     std::make_unique<Translator>(args.translators, VariableAndHash{ args.arguments.at<AssetGroupAndId>(KnownArgs::gid) }),
                     args.arguments.at<bool>(KnownArgs::remote, false)
                         ? &args.remote_config_and_sites.config
-                        : nullptr);
+                        : nullptr,
+                    args.arguments.at<bool>(KnownArgs::with_countdown_start, false));
                 if (state == InsertionStatus::FAILURE_NAME_COLLISION) {
                     throw std::runtime_error("Scene with name \"" + name + "\" already exists");
                 }

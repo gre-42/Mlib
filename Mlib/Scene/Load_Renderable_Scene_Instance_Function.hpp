@@ -84,7 +84,7 @@ protected:
     SkyboxLogic& skybox_logic;
     GameLogic* game_logic;
     BaseLog& base_log;
-    CountdownPhysics& countdown_start;
+    CountdownPhysics* countdown_start;
     UiFocus& ui_focus;
     SafeAtomicRecursiveSharedMutex& delete_node_mutex;
 

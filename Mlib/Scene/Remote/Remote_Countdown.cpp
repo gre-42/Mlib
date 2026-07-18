@@ -3,6 +3,7 @@
 #include <Mlib/Misc/To_Underlying.hpp>
 #include <Mlib/Os/Io/Binary_Bitwise_Words_Reader.hpp>
 #include <Mlib/Os/Io/Binary_Bitwise_Words_Writer.hpp>
+#include <Mlib/Physics/Advance_Times/Countdown_Physics.hpp>
 #include <Mlib/Players/Containers/Remote_Sites.hpp>
 #include <Mlib/Remote/Incremental_Objects/Transmission_History.hpp>
 #include <Mlib/Remote/Incremental_Objects/Transmitted_Fields.hpp>
@@ -84,7 +85,10 @@ void RemoteCountdown::read_data(BinaryBitwiseWordsReader& reader, const RemoteOb
         throw std::runtime_error("Local site ID not set");
     }
     if (remote_object_id.site_id != *physics_scene_->remote_sites_->get_local_site_id()) {
-        physics_scene_->countdown_start_.set(elapsed, duration);
+        if (physics_scene_->countdown_start_ == nullptr) {
+            throw std::runtime_error("Countdown not instantiated (0)");
+        }
+        physics_scene_->countdown_start_->set(elapsed, duration);
     }
     if (remote_end_check_enabled()) {
         auto end = reader.read_binary<RemoteSceneObjectType>("inverted countdown");
@@ -110,11 +114,14 @@ void RemoteCountdown::write(
     if (remote_object_id.site_id != *physics_scene_->remote_sites_->get_local_site_id()) {
         throw std::runtime_error("Attempt to send RemoteCountdown from client");
     }
+    if (physics_scene_->countdown_start_ == nullptr) {
+        throw std::runtime_error("Countdown not instantiated (1)");
+    }
     transmission_history_writer.write_remote_object_id(writer, remote_object_id, TransmittedFields::END);
     
     writer.write_binary(RemoteSceneObjectType::COUNTDOWN, "countdown");
-    writer.write_binary(physics_scene_->countdown_start_.elapsed(), "elapsed");
-    writer.write_binary(physics_scene_->countdown_start_.duration(), "duration");
+    writer.write_binary(physics_scene_->countdown_start_->elapsed(), "elapsed");
+    writer.write_binary(physics_scene_->countdown_start_->duration(), "duration");
     if (remote_end_check_enabled()) {
         writer.write_binary(~RemoteSceneObjectType::COUNTDOWN, "inverted countdown");
     }

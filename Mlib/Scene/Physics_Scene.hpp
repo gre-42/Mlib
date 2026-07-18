@@ -5,7 +5,6 @@
 #include <Mlib/Memory/Event_Emitter.hpp>
 #include <Mlib/Memory/Object_Pool.hpp>
 #include <Mlib/Memory/Usage_Counter.hpp>
-#include <Mlib/Physics/Advance_Times/Countdown_Physics.hpp>
 #include <Mlib/Physics/Bullets/Bullet_Generator.hpp>
 #include <Mlib/Physics/Misc/Gravity_Efp.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Engine.hpp>
@@ -57,6 +56,7 @@ class PhysicsIteration;
 class PhysicsLoop;
 template <class TTimepoint>
 class TimeAndPause;
+class CountdownPhysics;
 
 struct SceneConfig;
 struct RaceIdentifier;
@@ -90,7 +90,8 @@ public:
         bool save_playback,
         const RaceIdentifier& race_identfier,
         std::shared_ptr<Translator> translator,
-        RemoteConfig* remote_config);
+        RemoteConfig* remote_config,
+        bool with_countdown_start);
     ~PhysicsScene();
 
     // Misc
@@ -158,7 +159,7 @@ public:
     std::unique_ptr<GameLogic> game_logic_;
     UsageCounter usage_counter_;
     CounterUser remote_counter_user_;
-    CountdownPhysics countdown_start_;
+    std::unique_ptr<CountdownPhysics> countdown_start_;
     std::shared_ptr<Translator> translator_;
     std::unique_ptr<RemoteScene> remote_scene_;
     std::optional<EventReceiverDeletionToken<const UserInfo&>> on_user_loaded_level_token_;

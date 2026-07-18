@@ -39,7 +39,7 @@ LoadRenderableSceneInstanceFunction::LoadRenderableSceneInstanceFunction(Rendera
     , skybox_logic{ renderable_scene.skybox_logic_ }
     , game_logic{ renderable_scene.physics_scene_->game_logic_.get() }
     , base_log{ renderable_scene.physics_scene_->fifo_log_ }
-    , countdown_start{ renderable_scene.physics_scene_->countdown_start_ }
+    , countdown_start{ renderable_scene.physics_scene_->countdown_start_.get() }
     , ui_focus{ renderable_scene.ui_focus_ }
     , delete_node_mutex{ renderable_scene.physics_scene_->scene_.delete_node_mutex }
     , arg0_{ renderable_scene.physics_scene_->primary_audio_resource_context_ }
