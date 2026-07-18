@@ -9,7 +9,3 @@ void AUi::ShowMessage(
 {
     emscripten_console_log((title + ": " + message).c_str());
 }
-
-std::string AUi::GetFlavor() {
-    return "extended";
-}

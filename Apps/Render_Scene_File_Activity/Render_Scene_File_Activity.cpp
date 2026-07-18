@@ -798,7 +798,13 @@ void android_main(android_app* app)
                 {"if_compressed", args.has_named("--compressed")},
                 {"if_audio", true},
                 {"if_graphics", true},
+                #ifdef __ANDROID__
                 {"flavor", AUi::GetFlavor()},
+                #elifdef __EMSCRIPTEN__
+                {"flavor", args.named_svalue("--flavor", "main")},
+                #else
+                #error Detected neither __ANDROID__ nor __EMSCRIPTEN__
+                #endif
                 {"mesh", args.named_value("--mesh", "obj")},
                 {"animated_mesh", args.named_value("--animated_mesh", "mhx2")},
                 {"audio", args.named_value("--audio", "wav")},

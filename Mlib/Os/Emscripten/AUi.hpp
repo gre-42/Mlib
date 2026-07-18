@@ -12,7 +12,6 @@ public:
     static void ShowMessage(
         const std::string& title,
         const std::string& message);
-    static std::string GetFlavor();
 };
 
 }
