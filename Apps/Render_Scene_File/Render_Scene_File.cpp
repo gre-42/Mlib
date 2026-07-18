@@ -765,7 +765,9 @@ int main(int argc, char** argv) {
         #endif
         Users users;
         RemoteSites remote_sites{ {users, CURRENT_SOURCE_LOCATION}, remote_params };
-        remote_sites.set_local_user_count(user_count);
+        // Settings the user count this is done in the script,
+        // so it can be changed by reloading the scene.
+        // remote_sites.set_local_user_count(user_count);
         RemoteConfig remote_config{
             .game = remote_params
             #ifdef WITHOUT_GRAPHICS
