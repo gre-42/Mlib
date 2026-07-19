@@ -119,6 +119,7 @@ void IncrementalCommunicatorProxy::receive_from_home(std::istream& istr) {
             if (any(verbosity_ & IoVerbosity::METADATA)) {
                 linfo() << "Detected uninitialized server: " << versions;
             }
+            reset_caches();
         } else {
             if (any(verbosity_ & IoVerbosity::METADATA)) {
                 linfo() << "Detected client restart: " << versions;
