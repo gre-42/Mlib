@@ -29,6 +29,7 @@ public:
         const RemoteObjectId& remote_object_id,
         nlohmann::json initial,
         std::string node_suffix,
+        std::chrono::steady_clock::time_point time,
         const DanglingBaseClassRef<RigidBodyVehicle>& rb,
         const DanglingBaseClassRef<PhysicsScene>& physics_scene);
     virtual ~RemoteRigidBodyVehicle() override;
@@ -42,6 +43,7 @@ public:
         const RemoteObjectId& remote_object_id,
         ProxyObjectsCaches& proxy_objects_caches,
         const IncrementalVersionsRead& versions,
+        TransmissionHistoryReader& transmission_history_reader,
         IoVerbosity verbosity);
     virtual std::string name() const override;
     virtual int32_t priority() const override;

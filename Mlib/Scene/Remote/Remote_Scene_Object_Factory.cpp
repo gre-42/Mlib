@@ -48,7 +48,8 @@ DanglingBaseClassPtr<IIncrementalObject> RemoteSceneObjectFactory::try_create_sh
     case RemoteSceneObjectType::RIGID_BODY_AVATAR:
         return RemoteRigidBodyVehicle::try_create_from_stream(
             type, physics_scene_.get(), reader, sender_site_id,
-            transmitted_fields, lifetime_status, remote_object_id, proxy_objects_caches, versions, verbosity_);
+            transmitted_fields, lifetime_status, remote_object_id,
+            proxy_objects_caches, versions, transmission_history_reader, verbosity_);
     case RemoteSceneObjectType::COUNTDOWN:
         if (lifetime_status == ObjectLifetimeStatus::DELETED) {
             throw std::runtime_error("COUNTDOWN: Reading deleted objects not supported");

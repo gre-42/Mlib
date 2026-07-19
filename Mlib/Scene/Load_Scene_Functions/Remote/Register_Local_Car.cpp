@@ -34,6 +34,7 @@ void RegisterLocalCar::execute(const JsonView& args) {
         RemoteObjectId{remote_scene->local_site_id(), remote_scene->next_local_object_id()},
         args.json(),
         suffix,
+        std::chrono::steady_clock::time_point(),
         rb,
         DanglingBaseClassRef<PhysicsScene>{physics_scene, CURRENT_SOURCE_LOCATION});
     rb->owner_site_id_ = remote_scene->local_site_id();

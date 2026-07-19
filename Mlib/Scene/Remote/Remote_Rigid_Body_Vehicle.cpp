@@ -68,6 +68,7 @@ RemoteRigidBodyVehicle::RemoteRigidBodyVehicle(
     const RemoteObjectId& remote_object_id,
     nlohmann::json initial,
     std::string node_suffix,
+    std::chrono::steady_clock::time_point time,
     const DanglingBaseClassRef<RigidBodyVehicle>& rb,
     const DanglingBaseClassRef<PhysicsScene>& physics_scene)
     : proxy_object_cache_token_{ create_cache_object_token(physics_scene.get(), remote_object_id) }
@@ -77,6 +78,7 @@ RemoteRigidBodyVehicle::RemoteRigidBodyVehicle(
     , rb_{ rb.ptr() }
     , physics_scene_{ physics_scene }
     , verbosity_{ verbosity }
+    , old_time_{ time }
     , old_T_{ uninitialized }
     , old_r_{ uninitialized }
     , rb_on_destroy_{ rb->on_destroy.deflt, CURRENT_SOURCE_LOCATION }
@@ -117,6 +119,7 @@ DanglingBaseClassPtr<RemoteRigidBodyVehicle> RemoteRigidBodyVehicle::try_create_
     const RemoteObjectId& remote_object_id,
     ProxyObjectsCaches& proxy_objects_caches,
     const IncrementalVersionsRead& versions,
+    TransmissionHistoryReader& transmission_history_reader,
     IoVerbosity verbosity)
 {
     if (any(transmitted_fields & ~(
@@ -326,6 +329,7 @@ DanglingBaseClassPtr<RemoteRigidBodyVehicle> RemoteRigidBodyVehicle::try_create_
             remote_object_id,
             std::move(initial),
             std::move(node_suffix),
+            transmission_history_reader.base_time(),
             rb.set_loc(CURRENT_SOURCE_LOCATION),
             DanglingBaseClassRef<PhysicsScene>{physics_scene, CURRENT_SOURCE_LOCATION}),
         CURRENT_SOURCE_LOCATION};
