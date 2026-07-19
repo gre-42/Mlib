@@ -139,6 +139,8 @@ DanglingBaseClassPtr<RemoteRigidBodyVehicle> RemoteRigidBodyVehicle::try_create_
                 initial[CarParameters::if_damageable] = reader.read_bool_bit("if_damageable");
                 initial[CarParameters::parking_brake_pulled] = reader.read_bool_bit("parking_brake_pulled");
                 initial[CarParameters::color] = reader.read_binary<EFixedArray<float, 3>>("color");
+                initial[CarParameters::velocity] = reader.read_binary<EFixedArray<float, 3>>("velocity");
+                initial[CarParameters::angular_velocity] = reader.read_binary<EFixedArray<float, 3>>("angular_velocity");
                 initial[CarParameters::velocity_error_std] = reader.read_binary<float>("velocity_error_std");
                 initial[CarParameters::error_alpha] = reader.read_binary<float>("error_alpha");
                 initial[CarParameters::yaw_error_std] = reader.read_binary<float>("yaw_error_std");
@@ -154,6 +156,8 @@ DanglingBaseClassPtr<RemoteRigidBodyVehicle> RemoteRigidBodyVehicle::try_create_
                 initial[AvatarParameters::if_damageable] = reader.read_bool_bit("if_damageable");
                 initial[AvatarParameters::parking_brake_pulled] = reader.read_bool_bit("parking_brake_pulled");
                 initial[AvatarParameters::color] = reader.read_binary<EFixedArray<float, 3>>("color");
+                initial[AvatarParameters::velocity] = reader.read_binary<EFixedArray<float, 3>>("velocity");
+                initial[AvatarParameters::angular_velocity] = reader.read_binary<EFixedArray<float, 3>>("angular_velocity");
                 initial[AvatarParameters::velocity_error_std] = reader.read_binary<float>("velocity_error_std");
                 initial[AvatarParameters::error_alpha] = reader.read_binary<float>("error_alpha");
                 initial[AvatarParameters::locked_on_angle] = reader.read_binary<float>("locked_on_angle");
@@ -183,10 +187,6 @@ DanglingBaseClassPtr<RemoteRigidBodyVehicle> RemoteRigidBodyVehicle::try_create_
         }();
     }
     std::unique_ptr<ProxyObjectCacheEntry> cache;
-    auto position = fixed_zeros<ScenePos, 3>();
-    auto v_com = fixed_zeros<SceneDir, 3>();
-    auto rotation = fixed_zeros<SceneDir, 3>();
-    auto w = fixed_zeros<SceneDir, 3>();
     [&](){
         switch (type) {
         case RemoteSceneObjectType::RIGID_BODY_CAR:
@@ -250,9 +250,9 @@ DanglingBaseClassPtr<RemoteRigidBodyVehicle> RemoteRigidBodyVehicle::try_create_
     #endif
     auto initial_view = JsonView{ initial };
     auto node = make_unique_scene_node(
-        position,
-        rotation,
-        1.f, // scale
+        fixed_zeros<ScenePos, 3>(), // position
+        fixed_zeros<SceneDir, 3>(), // rotation
+        1.f,                        // scale
         physics_scene.dynamic_world_.try_get_time(),
         PoseInterpolationMode::ENABLED,
         SceneNodeDomain::RENDER | SceneNodeDomain::PHYSICS,
@@ -285,8 +285,6 @@ DanglingBaseClassPtr<RemoteRigidBodyVehicle> RemoteRigidBodyVehicle::try_create_
     [&](){
         switch (type) {
         case RemoteSceneObjectType::RIGID_BODY_CAR:
-            initial[CarParameters::velocity] = v_com;
-            initial[CarParameters::angular_velocity] = w;
             // CreateGenericCar(physics_scene).execute(initial);
             {
                 auto command = nlohmann::json{
@@ -299,8 +297,6 @@ DanglingBaseClassPtr<RemoteRigidBodyVehicle> RemoteRigidBodyVehicle::try_create_
             }
             return;
         case RemoteSceneObjectType::RIGID_BODY_AVATAR:
-            initial[AvatarParameters::velocity] = v_com;
-            initial[AvatarParameters::angular_velocity] = w;
             CreateGenericAvatar(
                 physics_scene,
                 physics_scene
@@ -315,8 +311,6 @@ DanglingBaseClassPtr<RemoteRigidBodyVehicle> RemoteRigidBodyVehicle::try_create_
         throw std::runtime_error("RemoteRigidBodyVehicle: Unknown scene object type");
     }();
     auto rb = get_rigid_body_vehicle(pnode.get(), CURRENT_SOURCE_LOCATION);
-    rb->rbp_.set_v_com(v_com, physics_scene.physics_engine_.config().dt_min(), 1.f, CURRENT_SOURCE_LOCATION);
-    rb->rbp_.set_w(w, physics_scene.physics_engine_.config().dt_min(), 1.f, CURRENT_SOURCE_LOCATION);
     rb->flags_ = flags;
     rb->flags_local_ |= RigidBodyVehicleFlagsLocal::WAITING_FOR_INITIAL_POSITION;
     rb->remote_object_id_ = remote_object_id;
@@ -375,6 +369,8 @@ void RemoteRigidBodyVehicle::read(
                 reader.read_bool_bit("if_damageable");
                 reader.read_bool_bit("parking_brake_pulled");
                 reader.read_binary<EFixedArray<float, 3>>("color");
+                reader.read_binary<EFixedArray<float, 3>>("velocity");
+                reader.read_binary<EFixedArray<float, 3>>("angular_velocity");
                 reader.read_binary<float>("velocity_error_std");
                 reader.read_binary<float>("error_alpha");
                 reader.read_binary<float>("yaw_error_std");
@@ -387,6 +383,8 @@ void RemoteRigidBodyVehicle::read(
                 reader.read_bool_bit("if_damageable");
                 reader.read_bool_bit("parking_brake_pulled");
                 reader.read_binary<EFixedArray<float, 3>>("color");
+                reader.read_binary<EFixedArray<float, 3>>("velocity");
+                reader.read_binary<EFixedArray<float, 3>>("angular_velocity");
                 reader.read_binary<float>("velocity_error_std");
                 reader.read_binary<float>("error_alpha");
                 reader.read_binary<float>("locked_on_angle");
@@ -600,6 +598,8 @@ void RemoteRigidBodyVehicle::write(
                 writer.write_bool_bit(jv.at<bool>(CarParameters::if_damageable), "if_damageable");
                 writer.write_bool_bit(jv.at<bool>(CarParameters::parking_brake_pulled), "parking_brake_pulled");
                 writer.write_binary(jv.at<EFixedArray<float, 3>>(CarParameters::color), "color");
+                writer.write_binary(jv.at<EFixedArray<float, 3>>(CarParameters::velocity), "velocity");
+                writer.write_binary(jv.at<EFixedArray<float, 3>>(CarParameters::angular_velocity), "angular_velocity");
                 writer.write_binary(jv.at<float>(CarParameters::velocity_error_std), "velocity_error_std");
                 writer.write_binary(jv.at<float>(CarParameters::error_alpha), "error_alpha");
                 writer.write_binary(jv.at<float>(CarParameters::yaw_error_std), "yaw_error_std");
@@ -612,6 +612,8 @@ void RemoteRigidBodyVehicle::write(
                 writer.write_bool_bit(jv.at<bool>(AvatarParameters::if_damageable), "if_damageable");
                 writer.write_bool_bit(jv.at<bool>(AvatarParameters::parking_brake_pulled), "parking_brake_pulled");
                 writer.write_binary(jv.at<EFixedArray<float, 3>>(AvatarParameters::color), "color");
+                writer.write_binary(jv.at<EFixedArray<float, 3>>(AvatarParameters::velocity), "velocity");
+                writer.write_binary(jv.at<EFixedArray<float, 3>>(AvatarParameters::angular_velocity), "angular_velocity");
                 writer.write_binary(jv.at<float>(AvatarParameters::velocity_error_std), "velocity_error_std");
                 writer.write_binary(jv.at<float>(AvatarParameters::error_alpha), "error_alpha");
                 writer.write_binary(jv.at<float>(AvatarParameters::locked_on_angle), "locked_on_angle");
