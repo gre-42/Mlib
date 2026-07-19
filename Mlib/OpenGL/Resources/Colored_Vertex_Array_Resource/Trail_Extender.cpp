@@ -15,12 +15,14 @@ TrailExtender::TrailExtender(
     ScenePos min_spawn_length,
     ScenePos max_spawn_length,
     float spawn_duration)
+    #ifndef WITHOUT_GRAPHICS
     : trails_instance_{ trails_instance }
     , trail_sequence_{ trail_sequence }
     , segment_{ segment }
     , min_spawn_length_squared_{ squared(min_spawn_length) }
     , max_spawn_length_squared_{ squared(max_spawn_length) }
     , spawn_duration_{ spawn_duration }
+    #endif
 {
     if (segment.empty()) {
         throw std::runtime_error("Trail segment is empty");
@@ -32,6 +34,7 @@ void TrailExtender::append_location(
     TrailLocationType location_type,
     const StaticWorld& world)
 {
+    #ifndef WITHOUT_GRAPHICS
     if (trails_instance_.time() == std::chrono::steady_clock::time_point()) {
         trails_instance_.move(0.f, world);
     }
@@ -109,4 +112,5 @@ void TrailExtender::append_location(
         }
     }
     previous_center_ = PreviousCenter{ .position = location.t, .time = trails_instance_.time() };
+    #endif
 }

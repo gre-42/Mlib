@@ -36,6 +36,7 @@ public:
         const StaticWorld& world) override;
 
 private:
+    #ifndef WITHOUT_GRAPHICS
     TrailsInstance& trails_instance_;
     const TrailSequence& trail_sequence_;
     const UUVector<FixedArray<ColoredVertex<float>, 3>>& segment_;
@@ -45,6 +46,7 @@ private:
     std::optional<PreviousCenter> previous_center_;
     std::map<OrderableFixedArray<float, 2>, FixedArray<ScenePos, 3>> previous_vertices_;
     std::map<OrderableFixedArray<float, 2>, FixedArray<ScenePos, 3>> current_vertices_;
+    #endif
 };
 
 }
