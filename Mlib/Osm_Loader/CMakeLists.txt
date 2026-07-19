@@ -28,7 +28,6 @@ target_link_libraries(MlibOsmLoader
         MlibGeography
         MlibGeometry
         MlibMacroExecutor
-        MlibCereal
         MlibStrings)
 if (NOT EMSCRIPTEN)
     target_link_openmp(MlibOsmLoader)

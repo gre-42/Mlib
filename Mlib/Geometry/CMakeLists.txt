@@ -16,5 +16,4 @@ target_link_libraries(MlibGeometry
         MlibHalf
         MlibImages
         MlibMacroExecutor
-        MlibCompression
-        MlibCereal)
+        MlibCompression)

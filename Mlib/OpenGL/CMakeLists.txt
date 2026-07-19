@@ -102,10 +102,8 @@ else()
 
     target_link_libraries(MlibOpenGL
         PUBLIC
-            MlibCereal
             MlibJson
             MlibProctree
             MlibResourceContext
-            MlibSceneGraph
-            )
+            MlibSceneGraph)
 endif()

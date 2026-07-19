@@ -15,9 +15,9 @@ using NShotsType = uint16_t;
 using NSelectNextVehicleEventsType = uint8_t;
 using NUserCountType = uint8_t;
 using UserStatusType = uint8_t;
-using JSONLengthType = uint16_t;
 using StringLengthType = uint8_t;
 using ReloadCountType = uint8_t;
+using ReconnectCountType = uint16_t;
 using SkillsType = uint8_t;
 
 }

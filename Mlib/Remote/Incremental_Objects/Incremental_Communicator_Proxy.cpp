@@ -25,6 +25,7 @@ IncrementalCommunicatorProxy::IncrementalCommunicatorProxy(
     RemoteSiteId home_site_id)
     : incremental_cache_proxy_token_{ proxy_objects_caches, home_site_id }
     , datagram_counter_{ 0 }
+    , reconnect_counter_{ 0 }
     , send_socket_{ std::move(send_socket) }
     , shared_object_factory_{ shared_object_factory }
     , objects_{ objects }
@@ -86,13 +87,52 @@ void IncrementalCommunicatorProxy::receive_from_home(std::istream& istr) {
             return;
         }
     }
+    auto reset_caches = [this](){
+        socket_versions_ = {};
+        proxy_objects_caches_->remove_proxy(home_site_id_);
+    };
+    auto reconnect_counter = reader.deserialize<ReconnectCountType>("reconnect counter");
+    if (any(tasks_ & ProxyTasks::RELOAD_SCENE)) {
+        if (is_newer(reconnect_counter, reconnect_counter_)) {
+            reconnect_counter_ = reconnect_counter;
+            reset_caches();
+            return;
+        } else if (reconnect_counter != reconnect_counter_) {
+            if (any(verbosity_ & IoVerbosity::METADATA)) {
+                linfo() << "Client received differing reconnect counter. Client: " <<
+                    (reconnect_counter_ + 0) <<
+                    ", server: " << (reconnect_counter + 0);
+            }
+            return;
+        }
+    } else if (reconnect_counter_ != reconnect_counter) {
+        if (any(verbosity_ & IoVerbosity::METADATA)) {
+            linfo() << "Server received differing reconnect counter. Server: " <<
+                (reconnect_counter_ + 0) <<
+                ", client: " << (reconnect_counter + 0);
+        }
+        return;
+    }
     auto versions = reader.deserialize<IncrementalVersionsRead>("incremental versions");
     if (versions.local_remote_version == 0) {
-        if (any(verbosity_ & IoVerbosity::METADATA)) {
-            linfo() << "Detected client restart" << versions;
+        if (any(tasks_ & ProxyTasks::RELOAD_SCENE)) {
+            if (any(verbosity_ & IoVerbosity::METADATA)) {
+                linfo() << "Detected uninitialized server: " << versions;
+            }
+        } else {
+            if (any(verbosity_ & IoVerbosity::METADATA)) {
+                linfo() << "Detected client restart: " << versions;
+            }
+            ++reconnect_counter_;
+            // This reset is subject to data races, but the reset
+            // indices should be good enough to survive level loading.
+            reset_caches();
+            return;
         }
-        proxy_objects_caches_->remove_proxy(home_site_id_);
-    } else if (!is_newer(versions.remote_new_version, socket_versions_.remote_version)) {
+    } else if (
+        (socket_versions_.remote_version != 0) &&
+        !is_newer(versions.remote_new_version, socket_versions_.remote_version))
+    {
         linfo() << "Outdated or duplicate packet ignored (" << (versions.remote_new_version + 0) <<
             " <= " << (socket_versions_.remote_version + 0) << ", considering modulo)";
         return;
@@ -231,6 +271,7 @@ void IncrementalCommunicatorProxy::send_home(std::iostream& iostr) {
                 break;
             }
         }
+        writer.write_binary(reconnect_counter_, "reconnect counter");
         socket_versions_.local.local_version = std::max(DatagramIndexType(1), ++socket_versions_.local.local_version);
         auto versions = IncrementalVersionsWrite{
             .remote_local_version = socket_versions_.remote_version,        // local_remote_version

@@ -75,10 +75,10 @@ if (BUILD_GRAPHICS)
     endif()
 endif()
 
-add_library(MlibCereal INTERFACE)
-target_include_directories(MlibCereal INTERFACE 
-    "${CMAKE_CURRENT_SOURCE_DIR}/cereal/include"
-)
+# add_library(MlibCereal INTERFACE)
+# target_include_directories(MlibCereal INTERFACE 
+#     "${CMAKE_CURRENT_SOURCE_DIR}/cereal/include"
+# )
 
 if (MSVC)
     if (BUILD_AUDIO)
