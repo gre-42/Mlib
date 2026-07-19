@@ -2,8 +2,6 @@
 
 namespace Mlib {
 
-struct PenetrationLimits;
-
 class PenetrationLimitsFactory {
 public:
     PenetrationLimitsFactory(float max_penetration, float radius);

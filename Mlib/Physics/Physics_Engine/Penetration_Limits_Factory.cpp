@@ -1,5 +1,6 @@
 #include "Penetration_Limits_Factory.hpp"
 #include <Mlib/Physics/Physics_Engine/Penetration_Limits.hpp>
+#include <Mlib/Scene_Config/Physics_Precision.hpp>
 #include <cmath>
 
 using namespace Mlib;
@@ -16,8 +17,19 @@ PenetrationLimitsFactory PenetrationLimitsFactory::inf() {
 }
 
 float PenetrationLimitsFactory::vmax_translation(float dt) const {
-    return PenetrationLimits{dt, max_penetration_}.vmax_translation;
+    if (max_penetration_ == INFINITY) {
+        return INFINITY;
+    }
+    return std::min(
+        PenetrationLimits{dt, max_penetration_}.vmax_translation,
+        MAX_REMOTE_VELOCITY);
 }
+
 float PenetrationLimitsFactory::wmax(float dt) const {
-    return PenetrationLimits{dt, max_penetration_}.wmax(radius_);
+    if (max_penetration_ == INFINITY) {
+        return INFINITY;
+    }
+    return std::min(
+        PenetrationLimits{dt, max_penetration_}.wmax(radius_),
+        MAX_REMOTE_ANGULAR_VELOCITY);
 }
