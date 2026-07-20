@@ -11,9 +11,16 @@
 #include <Mlib/Remote/Incremental_Objects/Scene_Level.hpp>
 #include <Mlib/Remote/Incremental_Objects/Transmission_History.hpp>
 #include <Mlib/Remote/Incremental_Objects/Transmitted_Fields.hpp>
+#include <chrono>
 #include <concepts>
 
 using namespace Mlib;
+
+SessionIdType get_session_id() {
+    auto now = std::chrono::system_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch());
+    return std::max(SessionIdType(1), SessionIdType(duration.count()));
+}
 
 IncrementalCommunicatorProxy::IncrementalCommunicatorProxy(
     std::shared_ptr<ISendSocket> send_socket,
@@ -25,7 +32,6 @@ IncrementalCommunicatorProxy::IncrementalCommunicatorProxy(
     RemoteSiteId home_site_id)
     : incremental_cache_proxy_token_{ proxy_objects_caches, home_site_id }
     , datagram_counter_{ 0 }
-    , reconnect_counter_{ 0 }
     , send_socket_{ std::move(send_socket) }
     , shared_object_factory_{ shared_object_factory }
     , objects_{ objects }
@@ -33,7 +39,13 @@ IncrementalCommunicatorProxy::IncrementalCommunicatorProxy(
     , verbosity_{ verbosity }
     , tasks_{ tasks }
     , home_site_id_{ home_site_id }
-{}
+{
+    if (any(tasks_ & ProxyTasks::RELOAD_SCENE)) {
+        session_id_ = get_session_id();
+    } else {
+        session_id_ = 0;
+    }
+}
 
 IncrementalCommunicatorProxy::~IncrementalCommunicatorProxy() {
     on_destroy.clear();
@@ -63,6 +75,7 @@ static bool is_newer(T incoming, T newest) {
 void IncrementalCommunicatorProxy::receive_from_home(std::istream& istr) {
     std::optional<LocalSceneLevel> home_scene_level;
     auto reader = BinaryBitwiseWordsReader{istr, nullptr, verbosity_};
+    auto session_id = reader.read_binary<SessionIdType>("session ID");
     {
         auto scene_level_name = reader.read_string<StringLengthType>("scene level name");
         auto time_of_day = reader.read_string<StringLengthType>("time of day");
@@ -87,57 +100,30 @@ void IncrementalCommunicatorProxy::receive_from_home(std::istream& istr) {
             return;
         }
     }
-    auto reset_caches = [this](){
-        socket_versions_ = {};
-        proxy_objects_caches_->remove_proxy(home_site_id_);
-    };
-    auto reconnect_counter = reader.deserialize<ReconnectCountType>("reconnect counter");
     if (any(tasks_ & ProxyTasks::RELOAD_SCENE)) {
-        if (is_newer(reconnect_counter, reconnect_counter_)) {
-            reconnect_counter_ = reconnect_counter;
-            reset_caches();
-            return;
-        } else if (reconnect_counter != reconnect_counter_) {
+        // Client code
+        if (session_id != session_id_) {
             if (any(verbosity_ & IoVerbosity::METADATA)) {
-                linfo() << "Client received differing reconnect counter. Client: " <<
-                    (reconnect_counter_ + 0) <<
-                    ", server: " << (reconnect_counter + 0);
+                linfo() << "Client received differing session ID. Client: " <<
+                    (session_id_+ 0) <<
+                    ", server: " << (session_id + 0);
             }
             return;
         }
-    } else if (reconnect_counter_ != reconnect_counter) {
-        if (any(verbosity_ & IoVerbosity::METADATA)) {
-            linfo() << "Server received differing reconnect counter. Server: " <<
-                (reconnect_counter_ + 0) <<
-                ", client: " << (reconnect_counter + 0);
+    } else {
+        // Server code
+        if (session_id != session_id_) {
+            if (any(verbosity_ & IoVerbosity::METADATA)) {
+                linfo() << "Server received differing session ID. Server: " <<
+                    (session_id_ + 0) <<
+                    ", client: " << (session_id + 0);
+            }
+            session_id_ = session_id;
+            socket_versions_ = {};
+            proxy_objects_caches_->remove_proxy(home_site_id_);
         }
-        return;
     }
     auto versions = reader.deserialize<IncrementalVersionsRead>("incremental versions");
-    if (versions.local_remote_version == 0) {
-        if (any(tasks_ & ProxyTasks::RELOAD_SCENE)) {
-            if (any(verbosity_ & IoVerbosity::METADATA)) {
-                linfo() << "Detected uninitialized server: " << versions;
-            }
-            reset_caches();
-        } else {
-            if (any(verbosity_ & IoVerbosity::METADATA)) {
-                linfo() << "Detected client restart: " << versions;
-            }
-            ++reconnect_counter_;
-            // This reset is subject to data races, but the reset
-            // indices should be good enough to survive level loading.
-            reset_caches();
-            return;
-        }
-    } else if (
-        (socket_versions_.remote_version != 0) &&
-        !is_newer(versions.remote_new_version, socket_versions_.remote_version))
-    {
-        linfo() << "Outdated or duplicate packet ignored (" << (versions.remote_new_version + 0) <<
-            " <= " << (socket_versions_.remote_version + 0) << ", considering modulo)";
-        return;
-    }
     socket_versions_.local.remote_version = versions.local_remote_version;
     socket_versions_.remote_version = versions.remote_new_version;
     if (any(verbosity_ & IoVerbosity::METADATA)) {
@@ -260,6 +246,7 @@ void IncrementalCommunicatorProxy::send_home(std::iostream& iostr) {
         update_object_to_send_completely_remote(objects_->public_remote_objects());
     }
     auto writer = BinaryBitwiseWordsWriter{iostr, nullptr};
+    writer.write_binary(session_id_, "session ID");
     switch (0) { case 0:
         {
             auto level_selector = objects_->local_scene_level_selector();
@@ -272,7 +259,6 @@ void IncrementalCommunicatorProxy::send_home(std::iostream& iostr) {
                 break;
             }
         }
-        writer.write_binary(reconnect_counter_, "reconnect counter");
         socket_versions_.local.local_version = std::max(DatagramIndexType(1), ++socket_versions_.local.local_version);
         auto versions = IncrementalVersionsWrite{
             .remote_local_version = socket_versions_.remote_version,        // local_remote_version

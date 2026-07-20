@@ -17,7 +17,7 @@ using NUserCountType = uint8_t;
 using UserStatusType = uint8_t;
 using StringLengthType = uint8_t;
 using ReloadCountType = uint8_t;
-using ReconnectCountType = uint16_t;
+using SessionIdType = uint32_t;
 using SkillsType = uint8_t;
 
 }

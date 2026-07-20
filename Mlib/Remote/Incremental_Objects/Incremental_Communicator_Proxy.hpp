@@ -33,7 +33,6 @@ public:
 private:
     IncrementalCacheProxyToken incremental_cache_proxy_token_;
     uint32_t datagram_counter_;
-    ReconnectCountType reconnect_counter_;
     std::unordered_set<RemoteObjectId> objects_unknown_at_home_;
     std::unordered_set<RemoteObjectId> objects_unknown_here_;
     std::shared_ptr<ISendSocket> send_socket_;
@@ -43,6 +42,7 @@ private:
     IoVerbosity verbosity_;
     ProxyTasks tasks_;
     RemoteSiteId home_site_id_;
+    SessionIdType session_id_;
     SocketVersions socket_versions_;
 };
 
