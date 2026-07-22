@@ -124,6 +124,13 @@ void IncrementalCommunicatorProxy::receive_from_home(std::istream& istr) {
         }
     }
     auto versions = reader.deserialize<IncrementalVersionsRead>("incremental versions");
+    if (is_newer(socket_versions_.remote_version, versions.remote_new_version)) {
+        if (any(verbosity_ & IoVerbosity::METADATA)) {
+            linfo() << "Detected outdated datagram. Stored: " << (socket_versions_.remote_version + 0) <<
+                ", received: " << versions.remote_base_version;
+        }
+        return;
+    }
     socket_versions_.local.remote_version = versions.local_remote_version;
     socket_versions_.remote_version = versions.remote_new_version;
     if (any(verbosity_ & IoVerbosity::METADATA)) {

@@ -4,14 +4,15 @@
 INTERFACE=""
 PORT=""
 DELAY_VAL="0ms"   # Default to 0 delay
+JITTER_VAL="0ms"  # Default to 0 jitter
 LOSS_VAL="0%"     # Default to 0% loss
 
 # Function to display usage instructions
 usage() {
-    echo "Usage: sudo ./netem_flags.sh -i <interface> -p <port> [--delay <value>] [--loss <%>]"
+    echo "Usage: sudo ./netem_flags.sh -i <interface> -p <port> [--delay <value>] [--jitter <value>] [--loss <%>]"
     echo "  --delay and --loss are optional. If omitted, they default to 0."
     echo "  Examples:"
-    echo "    sudo ./netem_flags.sh -i eth0 -p 8080 --delay 100ms --loss 5%"
+    echo "    sudo ./netem_flags.sh -i eth0 -p 8080 --delay 100ms --jitter 50ms --loss 5%"
     echo "    sudo ./netem_flags.sh -i lo -p 5000 --delay 50ms"
     exit 1
 }
@@ -35,6 +36,10 @@ while [ "$#" -gt 0 ]; do
             ;;
         --delay)
             DELAY_VAL="$2"
+            shift 2
+            ;;
+        --jitter)
+            JITTER_VAL="$2"
             shift 2
             ;;
         --loss)
@@ -67,7 +72,7 @@ trap cleanup SIGINT
 # --- Apply Configuration ---
 
 echo "Applying configuration:"
-echo "Interface: $INTERFACE, Port: $PORT, Delay: $DELAY_VAL, Loss: $LOSS_VAL"
+echo "Interface: $INTERFACE, Port: $PORT, Delay: $DELAY_VAL, Jitter: $JITTER_VAL, Loss: $LOSS_VAL"
 
 tc qdisc del dev "$INTERFACE" root 2>/dev/null # Start fresh
 
@@ -80,8 +85,8 @@ tc class add dev "$INTERFACE" parent 1: classid 1:1 htb rate 1000mbit quantum 15
 # 3. Add specific class (1:10) for conditioned traffic - explicitly set quantum
 tc class add dev "$INTERFACE" parent 1: classid 1:10 htb rate 1000mbit quantum 1500
 
-# 4. Attach netem qdisc with BOTH delay and loss parameters
-tc qdisc add dev "$INTERFACE" parent 1:10 netem delay "$DELAY_VAL" loss "$LOSS_VAL"
+# 4. Attach netem qdisc with delay, jitter, and loss parameters
+tc qdisc add dev "$INTERFACE" parent 1:10 netem delay "$DELAY_VAL" "$JITTER_VAL" loss "$LOSS_VAL"
 
 # 5. Add a filter to direct traffic for the specific port to the conditioned class (1:10)
 tc filter add dev "$INTERFACE" protocol ip parent 1:0 prio 1 u32 match ip dport "$PORT" 0xffff flowid 1:10
