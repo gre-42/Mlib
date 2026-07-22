@@ -131,3 +131,7 @@ bool RemoteScene::try_remove(const RemoteObjectId& id) {
 RemoteSiteId RemoteScene::local_site_id() const {
     return objects_.local_site_id();
 }
+
+std::optional<RemoteTimeCount> RemoteScene::local_time_count() const {
+    return objects_.local_time_count();
+}

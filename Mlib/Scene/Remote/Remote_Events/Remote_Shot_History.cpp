@@ -13,7 +13,7 @@ Player::ShotHistory Mlib::read_shot_history(
     Player::ShotHistory result;
     auto nevents = reader.read_binary<NShotsType>("nshots");
     for (NShotsType i = 0; i < nevents; ++i) {
-        auto time = transmission_history_reader.read_time(reader);
+        auto time = transmission_history_reader.read_local_time(reader);
         auto weapon = reader.read_string<StringLengthType>("weapon name");
         result.try_emplace(time, std::move(weapon));
     }

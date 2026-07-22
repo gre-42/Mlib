@@ -30,6 +30,7 @@ public:
     ~IncrementalRemoteObjects();
     RemoteSiteId local_site_id() const;
     std::chrono::steady_clock::time_point local_time() const;
+    std::optional<RemoteTimeCount> local_time_count() const;
     PauseStatus pause_status() const;
     void set_local_time(const TimeAndPause<std::chrono::steady_clock::time_point>& time);
     DanglingBaseClassRef<SceneLevelSelector> local_scene_level_selector() const;

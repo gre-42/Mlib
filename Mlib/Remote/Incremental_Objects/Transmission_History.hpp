@@ -39,17 +39,20 @@ class TransmissionHistoryReader {
 public:
     explicit TransmissionHistoryReader(
         const LocalSceneLevel& home_scene_level,
-        std::chrono::steady_clock::time_point base_time);
+        RemoteTimeCount remote_time,
+        std::chrono::steady_clock::time_point local_base_time);
     ~TransmissionHistoryReader();
     RemoteObjectId read_remote_object_id(
         BinaryBitwiseWordsReader& reader,
         TransmittedFields transmitted_fields);
-    std::chrono::steady_clock::time_point read_time(
+    std::chrono::steady_clock::time_point read_local_time(
         BinaryBitwiseWordsReader& reader) const;
-    std::chrono::steady_clock::time_point base_time() const;
+    std::chrono::steady_clock::time_point local_base_time() const;
+    RemoteTimeCount remote_time() const;
     const LocalSceneLevel& home_scene_level;
 private:
-    std::chrono::steady_clock::time_point base_time_;
+    RemoteTimeCount remote_time_;
+    std::chrono::steady_clock::time_point local_base_time_;
     std::optional<RemoteSiteId> site_id_;
 };
 

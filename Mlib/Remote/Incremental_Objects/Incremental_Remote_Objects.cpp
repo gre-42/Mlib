@@ -27,6 +27,14 @@ std::chrono::steady_clock::time_point IncrementalRemoteObjects::local_time() con
     return local_time_.time();
 }
 
+std::optional<RemoteTimeCount> IncrementalRemoteObjects::local_time_count() const {
+    if (!local_time_.initialized()) {
+        return std::nullopt;
+    } 
+    return std::chrono::duration_cast<std::chrono::duration<RemoteTimeCount, RemoteTimeRatio>>(
+        local_time().time_since_epoch()).count();
+}
+
 PauseStatus IncrementalRemoteObjects::pause_status() const {
     return local_time_.status();
 }

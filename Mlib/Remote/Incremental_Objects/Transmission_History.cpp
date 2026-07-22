@@ -8,9 +8,11 @@ using namespace Mlib;
 
 TransmissionHistoryReader::TransmissionHistoryReader(
     const LocalSceneLevel& home_scene_level,
-    std::chrono::steady_clock::time_point base_time)
+    RemoteTimeCount remote_time,
+    std::chrono::steady_clock::time_point local_base_time)
     : home_scene_level{ home_scene_level }
-    , base_time_{ base_time }
+    , remote_time_{ remote_time }
+    , local_base_time_{ local_base_time }
 {}
 
 TransmissionHistoryReader::~TransmissionHistoryReader() = default;
@@ -34,21 +36,25 @@ RemoteObjectId TransmissionHistoryReader::read_remote_object_id(
     }
 }
 
-std::chrono::steady_clock::time_point TransmissionHistoryReader::read_time(
+std::chrono::steady_clock::time_point TransmissionHistoryReader::read_local_time(
     BinaryBitwiseWordsReader& reader) const
 {
-    if (base_time_ == std::chrono::steady_clock::time_point()) {
+    if (local_base_time_ == std::chrono::steady_clock::time_point()) {
         throw std::runtime_error("Attempt to read time, but no base time was set");
     }
     auto offset = reader.read_binary<RemoteEventHistoryOffset>("remote time offset");
-    if (offset >= base_time_.time_since_epoch()) {
+    if (offset >= local_base_time_.time_since_epoch()) {
         throw std::runtime_error("Time offset larger or equal the time since epoch");
     }
-    return base_time_ - offset;
+    return local_base_time_ - offset;
 }
 
-std::chrono::steady_clock::time_point TransmissionHistoryReader::base_time() const {
-    return base_time_;
+std::chrono::steady_clock::time_point TransmissionHistoryReader::local_base_time() const {
+    return local_base_time_;
+}
+
+RemoteTimeCount TransmissionHistoryReader::remote_time() const {
+    return remote_time_;
 }
 
 TransmissionHistoryWriter::TransmissionHistoryWriter(

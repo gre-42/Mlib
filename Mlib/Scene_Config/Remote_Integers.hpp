@@ -1,8 +1,13 @@
 #pragma once
+#include <Mlib/Physics/Units.hpp>
 #include <cstdint>
+#include <ratio>
 
 namespace Mlib {
 
+using RemoteTimeRatio = std::milli;
+static constexpr const float REMOTE_TIME_UNIT = (RemoteTimeRatio::num * seconds) / RemoteTimeRatio::den;
+using RemoteTimeCount = uint16_t;
 using DatagramIndexType = uint16_t;
 using TransmissionHistoryType = uint8_t;
 using TransmittedFieldsType = uint8_t;

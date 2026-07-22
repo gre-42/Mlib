@@ -6,6 +6,7 @@
 #include <Mlib/Scene_Config/Remote_Integers.hpp>
 #include <memory>
 #include <nlohmann/json.hpp>
+#include <optional>
 #include <string>
 #ifdef WITHOUT_VELOCITY
 #include <Mlib/Array/Fixed_Array.hpp>
@@ -29,7 +30,7 @@ public:
         const RemoteObjectId& remote_object_id,
         nlohmann::json initial,
         std::string node_suffix,
-        std::chrono::steady_clock::time_point time,
+        std::optional<RemoteTimeCount> remote_time,
         const DanglingBaseClassRef<RigidBodyVehicle>& rb,
         const DanglingBaseClassRef<PhysicsScene>& physics_scene);
     virtual ~RemoteRigidBodyVehicle() override;
@@ -78,7 +79,7 @@ private:
     DanglingBaseClassRef<PhysicsScene> physics_scene_;
     IoVerbosity verbosity_;
     #ifdef WITHOUT_VELOCITY
-    std::chrono::steady_clock::time_point old_time_;
+    std::optional<RemoteTimeCount> old_remote_time_;
     FixedArray<ScenePos, 3> old_T_;
     FixedArray<SceneDir, 3> old_r_;
     #endif

@@ -1,4 +1,5 @@
 #include "Incremental_Communicator_Proxy.hpp"
+#include <Mlib/Math/Is_Newer.hpp>
 #include <Mlib/Os/Io/Binary.hpp>
 #include <Mlib/Os/Io/Serialize/Serialize.hpp>
 #include <Mlib/Remote/ISend_Socket.hpp>
@@ -12,7 +13,6 @@
 #include <Mlib/Remote/Incremental_Objects/Transmission_History.hpp>
 #include <Mlib/Remote/Incremental_Objects/Transmitted_Fields.hpp>
 #include <chrono>
-#include <concepts>
 
 using namespace Mlib;
 
@@ -65,17 +65,11 @@ static bool is_loading(LocalSceneLevelLoadStatus status) {
     throw std::runtime_error("Unknown scene level load status");
 }
 
-template <std::unsigned_integral T>
-static bool is_newer(T incoming, T newest) {
-    // Deduce the signed counterpart (e.g., uint16_t -> int16_t)
-    using SignedType = std::make_signed_t<T>;
-    return SignedType(incoming - newest) > 0;
-}
-
 void IncrementalCommunicatorProxy::receive_from_home(std::istream& istr) {
     std::optional<LocalSceneLevel> home_scene_level;
     auto reader = BinaryBitwiseWordsReader{istr, nullptr, verbosity_};
     auto session_id = reader.read_binary<SessionIdType>("session ID");
+    auto remote_time = reader.read_binary<RemoteTimeCount>("remote time [ms]");
     {
         auto scene_level_name = reader.read_string<StringLengthType>("scene level name");
         auto time_of_day = reader.read_string<StringLengthType>("time of day");
@@ -159,7 +153,7 @@ void IncrementalCommunicatorProxy::receive_from_home(std::istream& istr) {
     auto receive_local = [&](RemoteObjectVisibility visibility){
         const auto& deleted_objects = objects_->deleted_objects();
         // linfo() << "Received " << object_count << " objects_";
-        auto transmission_history_reader = TransmissionHistoryReader{*home_scene_level, objects_->local_time()};
+        auto transmission_history_reader = TransmissionHistoryReader{*home_scene_level, remote_time, objects_->local_time()};
         while (true) {
             auto transmitted_fields = reader.read_binary<TransmittedFields>("transmitted fields");
             if (transmitted_fields == TransmittedFields::NONE) {
@@ -254,6 +248,10 @@ void IncrementalCommunicatorProxy::send_home(std::iostream& iostr) {
     }
     auto writer = BinaryBitwiseWordsWriter{iostr, nullptr};
     writer.write_binary(session_id_, "session ID");
+    writer.write_binary(
+        std::chrono::duration_cast<std::chrono::duration<RemoteTimeCount, RemoteTimeRatio>>(
+            objects_->local_time().time_since_epoch()).count(),
+            "remote time [ms]");
     switch (0) { case 0:
         {
             auto level_selector = objects_->local_scene_level_selector();

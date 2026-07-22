@@ -16,7 +16,7 @@ Player::SelectNextVehicleHistory Mlib::read_select_next_vehicle_history(
     Player::SelectNextVehicleHistory result;
     auto nevents = reader.read_binary<NSelectNextVehicleEventsType>("nselect_next_vehicle_events");
     for (NSelectNextVehicleEventsType i = 0; i < nevents; ++i) {
-        auto time = transmission_history_reader.read_time(reader);
+        auto time = transmission_history_reader.read_local_time(reader);
         auto q = reader.read_bits<SelectNextVehicleQuery>(SELECT_NEXT_VEHICLE_QUERY_NBITS, "select_next_vehicle_query");
         auto seat = vehicle_seat_to_string(reader.read_bits<VehicleSeat>(VEHICLE_SEAT_NBITS, "seat"));
         result.try_emplace(time, SelectNextVehicleEvent{q, std::move(seat)});

@@ -9,6 +9,7 @@
 #include <Mlib/Remote/Incremental_Objects/Proxy_Object_Cache.hpp>
 #include <Mlib/Remote/Remote_Params.hpp>
 #include <Mlib/Scene/Remote/Remote_Scene_Object_Factory.hpp>
+#include <Mlib/Scene_Config/Remote_Integers.hpp>
 #include <chrono>
 #include <memory>
 #ifndef __EMSCRIPTEN__
@@ -45,6 +46,7 @@ public:
         return add_local_object({global_object_pool.create<Class>(loc, verbosity_, std::forward<Args>(args)...), loc});
     }
     RemoteSiteId local_site_id() const;
+    std::optional<RemoteTimeCount> local_time_count() const;
     inline IncrementalCacheProxyToken cache_proxy_token(RemoteSiteId proxy_id)
     {
         return { {proxy_objects_caches_, CURRENT_SOURCE_LOCATION}, proxy_id };
