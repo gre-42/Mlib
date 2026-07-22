@@ -30,7 +30,6 @@ public:
         const RemoteObjectId& remote_object_id,
         nlohmann::json initial,
         std::string node_suffix,
-        std::optional<RemoteTimeCount> remote_time,
         const DanglingBaseClassRef<RigidBodyVehicle>& rb,
         const DanglingBaseClassRef<PhysicsScene>& physics_scene);
     virtual ~RemoteRigidBodyVehicle() override;

@@ -69,7 +69,6 @@ RemoteRigidBodyVehicle::RemoteRigidBodyVehicle(
     const RemoteObjectId& remote_object_id,
     nlohmann::json initial,
     std::string node_suffix,
-    std::optional<RemoteTimeCount> remote_time,
     const DanglingBaseClassRef<RigidBodyVehicle>& rb,
     const DanglingBaseClassRef<PhysicsScene>& physics_scene)
     : proxy_object_cache_token_{ create_cache_object_token(physics_scene.get(), remote_object_id) }
@@ -79,9 +78,8 @@ RemoteRigidBodyVehicle::RemoteRigidBodyVehicle(
     , rb_{ rb.ptr() }
     , physics_scene_{ physics_scene }
     , verbosity_{ verbosity }
-    , old_remote_time_{ remote_time }
-    , old_T_{ uninitialized }
-    , old_r_{ uninitialized }
+    , old_T_{ fixed_nans<ScenePos, 3>() }
+    , old_r_{ fixed_nans<SceneDir, 3>() }
     , rb_on_destroy_{ rb->on_destroy.deflt, CURRENT_SOURCE_LOCATION }
 {
     if (any(verbosity_ & IoVerbosity::METADATA)) {
@@ -330,7 +328,6 @@ DanglingBaseClassPtr<RemoteRigidBodyVehicle> RemoteRigidBodyVehicle::try_create_
             remote_object_id,
             std::move(initial),
             std::move(node_suffix),
-            transmission_history_reader.remote_time(),
             rb.set_loc(CURRENT_SOURCE_LOCATION),
             DanglingBaseClassRef<PhysicsScene>{physics_scene, CURRENT_SOURCE_LOCATION}),
         CURRENT_SOURCE_LOCATION};
@@ -521,31 +518,26 @@ void RemoteRigidBodyVehicle::read(
         // Notify child nodes with absolute movables (e.g. wheels)
         rb_->scene_node_->clear_transformation_history();
         #ifdef WITHOUT_VELOCITY
-        old_remote_time_.emplace(transmission_history_reader.remote_time());
+        old_remote_time_.reset();
         #endif
-    }
-    if (!old_remote_time_.has_value()) {
-        old_remote_time_.emplace(transmission_history_reader.remote_time());
     }
     auto mask = ~RigidBodyVehicleFlags::NONE;
     if (pp.update_position) {
-        #ifdef WITHOUT_VELOCITY
-        auto dt_count = minus_modulo(transmission_history_reader.remote_time(), *old_remote_time_);
-        if (dt_count < 0) {
-            throw std::runtime_error((std::stringstream() <<
-                "New remote time (" << (transmission_history_reader.remote_time() + 0) <<
-                ") is below old remote time (" << (*old_remote_time_ + 0) << ')').str());
-        }
-        auto dt = dt_count * REMOTE_TIME_UNIT;
-        if (dt == 0) {
-            v_com = 0;
-            w = 0;
-        } else {
+        if (old_remote_time_.has_value()) {
+            #ifdef WITHOUT_VELOCITY
+            auto dt_count = minus_modulo(transmission_history_reader.remote_time(), *old_remote_time_);
+            if (dt_count < 0) {
+                throw std::runtime_error((std::stringstream() <<
+                    "New remote time (" << (transmission_history_reader.remote_time() + 0) <<
+                    ") is below old remote time (" << (*old_remote_time_ + 0) << ')').str());
+            }
+            auto dt = dt_count * REMOTE_TIME_UNIT;
             if (dt < 1 * milli * seconds) {
                 v_com = 0;
                 w = 0;
-                // throw std::runtime_error("DataFrame time difference below 1ms: " + std::to_string(dt));
             } else {
+                assert_true(!any(isnan(old_T_)));
+                assert_true(!any(isnan(old_r_)));
                 v_com = (position - old_T_).casted<float>() / dt;
                 auto q_new = Quaternion<SceneDir>::from_tait_bryan_angles(rotation);
                 auto q_old = Quaternion<SceneDir>::from_tait_bryan_angles(old_r_);
@@ -556,19 +548,19 @@ void RemoteRigidBodyVehicle::read(
                 }
                 w = q_diff.axis_angle().w() / dt;
             }
+            #endif
+            assert_true(has_location);
+            float relaxation = (pp.invalidate_transformation_history || (dt == 0))
+                ? 1.f
+                : (1.f - std::pow(0.5f, dt / REMOTE_INTERPOLATION_HALFLIFE));
+            float dt_min = physics_scene_->physics_engine_.config().dt_min();
+            rb_->rbp_.set_pose(tait_bryan_angles_2_matrix(rotation), position, relaxation, CURRENT_SOURCE_LOCATION);
+            rb_->rbp_.set_v_com(v_com, dt_min, relaxation, CURRENT_SOURCE_LOCATION);
+            rb_->rbp_.set_w(w, dt_min, relaxation, CURRENT_SOURCE_LOCATION);
         }
         old_T_ = position;
         old_r_ = rotation;
         old_remote_time_.emplace(transmission_history_reader.remote_time());
-        #endif
-        assert_true(has_location);
-        float relaxation = (pp.invalidate_transformation_history || (dt == 0))
-            ? 1.f
-            : (1.f - std::pow(0.5f, dt / REMOTE_INTERPOLATION_HALFLIFE));
-        float dt_min = physics_scene_->physics_engine_.config().dt_min();
-        rb_->rbp_.set_pose(tait_bryan_angles_2_matrix(rotation), position, relaxation, CURRENT_SOURCE_LOCATION);
-        rb_->rbp_.set_v_com(v_com, dt_min, relaxation, CURRENT_SOURCE_LOCATION);
-        rb_->rbp_.set_w(w, dt_min, relaxation, CURRENT_SOURCE_LOCATION);
         rb_->flags_local_ &= ~RigidBodyVehicleFlagsLocal::WAITING_FOR_INITIAL_POSITION;
     } else if (rb_->is_deactivated_avatar()) {
         mask &= ~RigidBodyVehicleFlags::IS_ANY_AVATAR;
