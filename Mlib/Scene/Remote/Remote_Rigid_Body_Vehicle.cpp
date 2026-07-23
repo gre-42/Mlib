@@ -562,8 +562,11 @@ void RemoteRigidBodyVehicle::read(
         old_r_ = rotation;
         old_remote_time_.emplace(transmission_history_reader.remote_time());
         rb_->flags_local_ &= ~RigidBodyVehicleFlagsLocal::WAITING_FOR_INITIAL_POSITION;
-    } else if (rb_->is_deactivated_avatar()) {
-        mask &= ~RigidBodyVehicleFlags::IS_ANY_AVATAR;
+    } else {
+        old_remote_time_.reset();
+        if (rb_->is_deactivated_avatar()) {
+            mask &= ~RigidBodyVehicleFlags::IS_ANY_AVATAR;
+        }
     }
     if (!privileges.is_manager_local) {
         masked_set(rb_->flags_, flags, mask);
