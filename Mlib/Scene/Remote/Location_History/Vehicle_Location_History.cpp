@@ -2,7 +2,6 @@
 #include <Mlib/Scene/Remote/Location_History/Vehicle_Location_History_Entry.hpp>
 
 using namespace Mlib;
-using namespace Mlib::Datagram;
 
 // =========
 // | Local |
@@ -87,10 +86,14 @@ TLocation RemoteRigidBodyVehicleRemoteHistory<TAbsoluteLocation8, TDeltaLocation
     return f.floating_point();
 }
 
-template class Datagram::RemoteRigidBodyVehicleLocalHistory<Vehicle::AbsoluteVehicleLocation8, Vehicle::DeltaVehicleLocation, Vehicle::VehicleLocation>;
-template class Datagram::RemoteRigidBodyVehicleRemoteHistory<Vehicle::AbsoluteVehicleLocation8, Vehicle::DeltaVehicleLocation, Vehicle::VehicleLocation>;
-template struct Datagram::RemoteRigidBodyVehicleCache<Vehicle::AbsoluteVehicleLocation8, Vehicle::DeltaVehicleLocation, Vehicle::VehicleLocation>;
+namespace Mlib {
 
-template class Datagram::RemoteRigidBodyVehicleLocalHistory<Avatar::AbsoluteVehicleLocation8, Avatar::DeltaVehicleLocation, Avatar::VehicleLocation>;
-template class Datagram::RemoteRigidBodyVehicleRemoteHistory<Avatar::AbsoluteVehicleLocation8, Avatar::DeltaVehicleLocation, Avatar::VehicleLocation>;
-template struct Datagram::RemoteRigidBodyVehicleCache<Avatar::AbsoluteVehicleLocation8, Avatar::DeltaVehicleLocation, Avatar::VehicleLocation>;
+template class RemoteRigidBodyVehicleLocalHistory<Vehicle::AbsoluteVehicleLocation8, Vehicle::DeltaVehicleLocation, Vehicle::VehicleLocation>;
+template class RemoteRigidBodyVehicleRemoteHistory<Vehicle::AbsoluteVehicleLocation8, Vehicle::DeltaVehicleLocation, Vehicle::VehicleLocation>;
+template struct RemoteRigidBodyVehicleCache<Vehicle::AbsoluteVehicleLocation8, Vehicle::DeltaVehicleLocation, Vehicle::VehicleLocation>;
+
+template class RemoteRigidBodyVehicleLocalHistory<Avatar::AbsoluteVehicleLocation8, Avatar::DeltaVehicleLocation, Avatar::VehicleLocation>;
+template class RemoteRigidBodyVehicleRemoteHistory<Avatar::AbsoluteVehicleLocation8, Avatar::DeltaVehicleLocation, Avatar::VehicleLocation>;
+template struct RemoteRigidBodyVehicleCache<Avatar::AbsoluteVehicleLocation8, Avatar::DeltaVehicleLocation, Avatar::VehicleLocation>;
+
+}

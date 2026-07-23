@@ -6,7 +6,7 @@
 #include <Mlib/Scene_Config/Remote_Integers.hpp>
 #include <optional>
 
-namespace Mlib::Datagram {
+namespace Mlib {
 
 template <class TRemoteRigidBodyVehicleCache>
 void read_vehicle_location_and_forget(

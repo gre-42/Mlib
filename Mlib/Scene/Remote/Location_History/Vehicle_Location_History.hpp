@@ -1,33 +1,36 @@
 #pragma once
 #include <Mlib/Scene/Remote/Location_History/Avatar_Location_History_Entry.hpp>
 #include <Mlib/Scene/Remote/Location_History/Vehicle_Location_History_Entry.hpp>
+#include <Mlib/Scene_Config/Remote_Integers.hpp>
+#include <optional>
 
-namespace Mlib::Individual {
-
-using VersionType = uint8_t;
+namespace Mlib {
 
 template <class TAbsoluteLocation8, class TDeltaLocation, class TLocation>
 class RemoteRigidBodyVehicleLocalHistory {
 public:
-    TAbsoluteLocation8 get_absolute8(const TLocation& l);
-    std::optional<TDeltaLocation> get_delta8(const TLocation& l);
-    VersionType local_version = 0;
-    VersionType remote_version = 0;
-    std::vector<TAbsoluteLocation8> location_history =
-        std::vector<TAbsoluteLocation8>(std::numeric_limits<VersionType>::max(), TAbsoluteLocation8::nan());
-private:
-    void increase_local_version();
+    TAbsoluteLocation8 get_absolute8(
+        const TLocation& l,
+        DatagramIndexType new_datagram_index);
+    std::optional<TDeltaLocation> get_delta8(
+        const TLocation& l,
+        DatagramIndexType base_version,
+        DatagramIndexType local_version);
+    bool has_local_version = false;
+    bool has_remote_version = false;
+    std::vector<std::optional<TAbsoluteLocation8>> location_history =
+        std::vector<std::optional<TAbsoluteLocation8>>(std::numeric_limits<DatagramIndexType>::max(), std::nullopt);
 };
 
 template <class TAbsoluteLocation8, class TDeltaLocation, class TLocation>
 class RemoteRigidBodyVehicleRemoteHistory {
 public:
-    void initialize8(VersionType version, const TAbsoluteLocation8& l8);
+    void initialize8(DatagramIndexType version, const TAbsoluteLocation8& l8);
     TLocation get_absolute_location(
-        VersionType base_version, VersionType new_version, const TDeltaLocation& delta);
-    VersionType local_version = 0;
-    std::vector<TAbsoluteLocation8> location_history =
-        std::vector<TAbsoluteLocation8>(std::numeric_limits<VersionType>::max(), TAbsoluteLocation8::nan());
+        DatagramIndexType base_version, DatagramIndexType new_version, const TDeltaLocation& delta);
+    bool has_local_version = false;
+    std::vector<std::optional<TAbsoluteLocation8>> location_history =
+        std::vector<std::optional<TAbsoluteLocation8>>(std::numeric_limits<DatagramIndexType>::max(), std::nullopt);
 };
 
 template <class TAbsoluteLocation8, class TDeltaLocation, class TLocation>
