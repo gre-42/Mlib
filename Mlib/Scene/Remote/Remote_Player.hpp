@@ -13,7 +13,7 @@ enum class ObjectLifetimeStatus;
 
 class RemotePlayer final: public IIncrementalObject {
 public:
-    explicit RemotePlayer(
+    RemotePlayer(
         IoVerbosity verbosity,
         const DanglingBaseClassRef<Player>& player,
         const DanglingBaseClassRef<PhysicsScene>& physics_scene);

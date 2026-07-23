@@ -2,6 +2,7 @@
 #include <Mlib/Math/Is_Newer.hpp>
 #include <Mlib/Os/Io/Binary.hpp>
 #include <Mlib/Os/Io/Serialize/Serialize.hpp>
+#include <Mlib/Os/Io/Stream_Size_Logger.hpp>
 #include <Mlib/Remote/ISend_Socket.hpp>
 #include <Mlib/Remote/Incremental_Objects/IIncremental_Object.hpp>
 #include <Mlib/Remote/Incremental_Objects/IIncremental_Object_Factory.hpp>
@@ -275,6 +276,10 @@ void IncrementalCommunicatorProxy::send_home(std::iostream& iostr) {
             linfo() << "send versions " << versions;
         }
         {
+            std::optional<StreamSizeLogger> sl;
+            if (any(verbosity_ & IoVerbosity::METADATA)) {
+                sl.emplace(iostr, "Deleted objects [bytes]: ");
+            }
             const auto& deleted = objects_->deleted_objects();
             if (any(verbosity_ & IoVerbosity::METADATA)) {
                 linfo() << "Delete " << deleted.size() << " objects";
@@ -320,6 +325,10 @@ void IncrementalCommunicatorProxy::send_home(std::iostream& iostr) {
                         linfo() << "Maybe send partial object to home site " << (home_site_id_ + 0) << ", " << i << " \"" << o->name() << '"';
                     }
                 }
+                std::optional<StreamSizeLogger> sl;
+                if (any(verbosity_ & IoVerbosity::METADATA)) {
+                    sl.emplace(iostr, o->name() + " [bytes]: ");
+                }
                 o->write(writer, home_site_id_, j, tasks_, known_fields, proxy_objects_caches_.get(), versions, transmission_history_writer);
             }
             writer.write_binary(TransmittedFields::NONE, "transmitted fields EOF");
@@ -362,6 +371,10 @@ void IncrementalCommunicatorProxy::send_home(std::iostream& iostr) {
                     if (any(verbosity_ & IoVerbosity::METADATA)) {
                         linfo() << "Maybe send partial object to home site " << (home_site_id_ + 0) << ", " << i << " \"" << o->name() << '"';
                     }
+                }
+                std::optional<StreamSizeLogger> sl;
+                if (any(verbosity_ & IoVerbosity::METADATA)) {
+                    sl.emplace(iostr, o->name() + " [bytes]: ");
                 }
                 o->write(writer, home_site_id_, i, tasks_, known_fields, proxy_objects_caches_.get(), versions, transmission_history_writer);
             }
