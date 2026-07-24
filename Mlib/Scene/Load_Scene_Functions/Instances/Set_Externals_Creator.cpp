@@ -93,7 +93,7 @@ void SetExternalsCreator::execute_unsafe(
         }
     );
     vehicle.set_create_vehicle_internals(
-        [mle=macro_line_executor, macro=std::move(internals)](
+        [mle=macro_line_executor, macro=std::move(internals), &vehicle](
             const Player& player,
             const InternalsMode& internals_mode)
         {
@@ -114,6 +114,7 @@ void SetExternalsCreator::execute_unsafe(
             };
             if (user_info != nullptr) {
                 let[LetKeys::full_user_name] = user_info->full_name;
+                let[LetKeys::s2] = vehicle.generate_s2();
                 if (user_info->type == UserType::LOCAL) {
                     let[LetKeys::local_user_id] = user_info->user_id;
                 }

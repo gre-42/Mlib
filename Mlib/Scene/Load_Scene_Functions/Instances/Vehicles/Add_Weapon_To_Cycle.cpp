@@ -5,11 +5,11 @@
 #include <Mlib/Misc/Argument_List.hpp>
 #include <Mlib/Physics/Bullets/Bullet_Property_Db.hpp>
 #include <Mlib/Physics/Misc/Weapon_Cycle.hpp>
-#include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle_Flags.hpp>
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Players/Advance_Times/Player.hpp>
 #include <Mlib/Players/Containers/Players.hpp>
 #include <Mlib/Players/Containers/Remote_Sites.hpp>
+#include <Mlib/Players/Scene_Vehicle/Scene_Vehicle.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Load_Scene_Funcs.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
@@ -78,7 +78,8 @@ void AddWeaponToInventory::operator () (const JsonView& args) {
             nlohmann::json let{
                 {"player_name", player_name},
                 {"user_name", user_info->name},
-                {"full_user_name", user_info->full_name}};
+                {"full_user_name", user_info->full_name},
+                {"s2", player->vehicle()->generate_s2()}};
             if (user_info->type == UserType::LOCAL) {
                 let["user_is_local"] = true;
                 let["local_user_id"] = user_info->user_id;
