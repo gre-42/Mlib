@@ -8,7 +8,6 @@
 #include <chrono>
 #include <memory>
 #include <nlohmann/json.hpp>
-#include <optional>
 #include <string>
 
 namespace Mlib {
@@ -74,9 +73,6 @@ private:
     DanglingBaseClassPtr<RigidBodyVehicle> rb_;
     DanglingBaseClassRef<PhysicsScene> physics_scene_;
     IoVerbosity verbosity_;
-    std::optional<RemoteTimeCount> old_remote_time_;
-    FixedArray<ScenePos, 3> old_T_;
-    FixedArray<SceneDir, 3> old_r_;
     DestructionFunctionsRemovalTokens rb_on_destroy_;
 };
 

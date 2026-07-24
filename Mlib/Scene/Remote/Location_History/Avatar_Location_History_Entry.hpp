@@ -21,12 +21,12 @@ struct VehicleLocation {
 struct AbsoluteVehicleLocation16 {
     VehicleLocation floating_point() const;
     AbsoluteVehicleLocation8 downsample() const;
-    FixedArray<CompressedSceneT32, 3> T;
+    FixedArray<CompressedSceneT32, 3> T = uninitialized;
     CompressedSceneR16 r1;
 };
 
 struct AbsoluteVehicleLocation8 {
-    EFixedArray<CompressedSceneT16, 3> T;
+    FixedArray<CompressedSceneT16, 3> T = uninitialized;
     CompressedSceneR8 r1;
     VehicleLocation upsample() const;
     template <class Archive>
@@ -38,7 +38,7 @@ struct AbsoluteVehicleLocation8 {
 };
 
 struct DeltaVehicleLocation {
-    EFixedArray<DeltaSceneT16, 3> T;
+    FixedArray<DeltaSceneT16, 3> T = uninitialized;
     DeltaSceneR8 r1;
     template <class Archive>
     void serialize(Archive& archiver) {

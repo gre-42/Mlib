@@ -78,8 +78,6 @@ RemoteRigidBodyVehicle::RemoteRigidBodyVehicle(
     , rb_{ rb.ptr() }
     , physics_scene_{ physics_scene }
     , verbosity_{ verbosity }
-    , old_T_{ fixed_nans<ScenePos, 3>() }
-    , old_r_{ fixed_nans<SceneDir, 3>() }
     , rb_on_destroy_{ rb->on_destroy.deflt, CURRENT_SOURCE_LOCATION }
 {
     if (any(verbosity_ & IoVerbosity::METADATA)) {
@@ -414,9 +412,10 @@ void RemoteRigidBodyVehicle::read(
     }
     bool has_location;
     FixedArray<ScenePos, 3> position = uninitialized;
-    FixedArray<SceneDir, 3> v_com = uninitialized;
     FixedArray<SceneDir, 3> rotation = uninitialized;
-    FixedArray<SceneDir, 3> w = uninitialized;
+    std::optional<RemoteTimeCount>* old_remote_time = nullptr;
+    Quaternion<SceneDir>* old_remote_r = nullptr;
+    FixedArray<ScenePos, 3>* old_remote_t = nullptr;
     [&](){
         switch (type) {
         case RemoteSceneObjectType::RIGID_BODY_CAR:
@@ -431,6 +430,9 @@ void RemoteRigidBodyVehicle::read(
                     rotation = location->r;
                 }
                 has_location = location.has_value();
+                old_remote_time = &vcache->old_remote_time;
+                old_remote_r = &vcache->old_remote_r;
+                old_remote_t = &vcache->old_remote_t;
             }
             return;
         case RemoteSceneObjectType::RIGID_BODY_AVATAR:
@@ -445,6 +447,9 @@ void RemoteRigidBodyVehicle::read(
                     rotation = {0.f, location->r1, 0.f};
                 }
                 has_location = location.has_value();
+                old_remote_time = &vcache->old_remote_time;
+                old_remote_r = &vcache->old_remote_r;
+                old_remote_t = &vcache->old_remote_t;
             }
             return;
         case RemoteSceneObjectType::REMOTE_USERS:
@@ -509,28 +514,33 @@ void RemoteRigidBodyVehicle::read(
             SceneTime::initial(physics_scene_->dynamic_world_.get_time()));
         // Notify child nodes with absolute movables (e.g. wheels)
         rb_->scene_node_->clear_transformation_history();
-        old_remote_time_.reset();
+        old_remote_time->reset();
     }
     auto mask = ~RigidBodyVehicleFlags::NONE;
     if (pp.update_position) {
-        if (old_remote_time_.has_value()) {
-            auto dt_count = minus_modulo(transmission_history_reader.remote_time(), *old_remote_time_);
+        assert_true(has_location);
+        auto q_new = Quaternion<SceneDir>::from_tait_bryan_angles(rotation);
+        if (old_remote_time->has_value()) {
+            assert_true(old_remote_r != nullptr);
+            assert_true(old_remote_t != nullptr);
+            auto dt_count = minus_modulo(transmission_history_reader.remote_time(), **old_remote_time);
             if (dt_count < 0) {
                 throw std::runtime_error((std::stringstream() <<
                     "New remote time (" << (transmission_history_reader.remote_time() + 0) <<
-                    ") is below old remote time (" << (*old_remote_time_ + 0) << ')').str());
+                    ") is below old remote time (" << (**old_remote_time + 0) << ')').str());
             }
+            FixedArray<SceneDir, 3> v_com = uninitialized;
+            FixedArray<SceneDir, 3> w = uninitialized;
             auto dt = dt_count * REMOTE_TIME_UNIT;
             if (dt < 1 * milli * seconds) {
                 v_com = 0;
                 w = 0;
             } else {
-                assert_true(!any(isnan(old_T_)));
-                assert_true(!any(isnan(old_r_)));
-                v_com = (position - old_T_).casted<float>() / dt;
-                auto q_new = Quaternion<SceneDir>::from_tait_bryan_angles(rotation);
-                auto q_old = Quaternion<SceneDir>::from_tait_bryan_angles(old_r_);
-                auto q_diff = q_new * q_old.inverse();
+                assert_true(!std::isnan(old_remote_r->s));
+                assert_true(!any(isnan(old_remote_r->v)));
+                assert_true(!any(isnan(*old_remote_t)));
+                v_com = (position - *old_remote_t).casted<float>() / dt;
+                auto q_diff = q_new * old_remote_r->inverse();
                 // Enforce shortest path
                 if (q_diff.s < 0) { 
                     q_diff = -q_diff;
@@ -546,12 +556,12 @@ void RemoteRigidBodyVehicle::read(
             rb_->rbp_.set_v_com(v_com, dt_min, relaxation, CURRENT_SOURCE_LOCATION);
             rb_->rbp_.set_w(w, dt_min, relaxation, CURRENT_SOURCE_LOCATION);
         }
-        old_T_ = position;
-        old_r_ = rotation;
-        old_remote_time_.emplace(transmission_history_reader.remote_time());
+        *old_remote_r = q_new;
+        *old_remote_t = position;
+        old_remote_time->emplace(transmission_history_reader.remote_time());
         rb_->flags_local_ &= ~RigidBodyVehicleFlagsLocal::WAITING_FOR_INITIAL_POSITION;
     } else {
-        old_remote_time_.reset();
+        old_remote_time->reset();
         if (rb_->is_deactivated_avatar()) {
             mask &= ~RigidBodyVehicleFlags::IS_ANY_AVATAR;
         }

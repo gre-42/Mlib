@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Math/Transformation/Quaternion.hpp>
 #include <Mlib/Scene/Remote/Location_History/Avatar_Location_History_Entry.hpp>
 #include <Mlib/Scene/Remote/Location_History/Vehicle_Location_History_Entry.hpp>
 #include <Mlib/Scene_Config/Remote_Integers.hpp>
@@ -40,6 +41,9 @@ struct RemoteRigidBodyVehicleCache: public Object {
     using Location = TLocation;
     RemoteRigidBodyVehicleLocalHistory<TAbsoluteLocation8, TDeltaLocation, TLocation> local;
     RemoteRigidBodyVehicleRemoteHistory<TAbsoluteLocation8, TDeltaLocation, TLocation> remote;
+    std::optional<RemoteTimeCount> old_remote_time;
+    Quaternion<SceneDir> old_remote_r{NAN, fixed_nans<SceneDir, 3>()};
+    FixedArray<ScenePos, 3> old_remote_t{fixed_nans<ScenePos, 3>()};
 };
 
 using VehicleRemoteRigidBodyVehicleCache = RemoteRigidBodyVehicleCache<Vehicle::AbsoluteVehicleLocation8, Vehicle::DeltaVehicleLocation, Vehicle::VehicleLocation>;
