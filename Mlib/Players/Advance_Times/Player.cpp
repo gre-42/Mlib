@@ -306,6 +306,7 @@ void Player::reset_node() {
         car_movement.reset_node();
         stuck_start_ = std::chrono::steady_clock::time_point();
         unstuck_start_ = std::chrono::steady_clock::time_point();
+        shot_history.clear();
     }
     if (!delete_vehicle_externals.empty()) {
         delete_vehicle_externals.clear();

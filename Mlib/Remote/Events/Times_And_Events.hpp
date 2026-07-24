@@ -32,6 +32,9 @@ public:
     decltype(auto) end() const {
         return events_.end();
     }
+    void clear() {
+        events_.clear();
+    }
 private:
     std::map<TTime, TEvent> events_;
 };

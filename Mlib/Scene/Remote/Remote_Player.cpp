@@ -150,13 +150,13 @@ DanglingBaseClassPtr<RemotePlayer> RemotePlayer::try_create_from_stream(
     if (!any(transmitted_fields & PlayerTransmittedFields::SKILLS)) {
         return nullptr;
     }
-    if (full_user_name.has_value() &&
-        !(*full_user_name)->empty() &&
-        !physics_scene.remote_sites_->contains_user(*full_user_name))
-    {
-        linfo() << "Not creating player for user \"" << **full_user_name << '"';
-        return nullptr;
-    }
+    // if (full_user_name.has_value() &&
+    //     !(*full_user_name)->empty() &&
+    //     !physics_scene.remote_sites_->contains_user(*full_user_name))
+    // {
+    //     linfo() << "Not creating player for user \"" << **full_user_name << '"';
+    //     return nullptr;
+    // }
     if (lifetime_status == ObjectLifetimeStatus::DELETED) {
         return nullptr;
     }

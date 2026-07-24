@@ -27,7 +27,7 @@ void WeaponCycle::modify_node() {
     if (equipped_ != desired_) {
         auto it = weapon_infos_.find(desired_.weapon_name);
         if (it == weapon_infos_.end()) {
-            throw std::runtime_error("Inventory does not have information about a weapon with name \"" + desired_.weapon_name + '"');
+            throw std::runtime_error("Inventory does not have information about a weapon with name (0) \"" + desired_.weapon_name + '"');
         }
         if (it->second.create_weapon && (equipped_.weapon_name != desired_.weapon_name)) {
             it->second.create_weapon();
@@ -97,13 +97,13 @@ void WeaponCycle::equip_previous_weapon(std::optional<VariableAndHash<std::strin
     desired_.player_name = std::move(player_name);
 }
 
-InventoryItem WeaponCycle::ammo_type() const {
-    auto it = weapon_infos_.find(equipped_.weapon_name);
-    if (it == weapon_infos_.end()) {
-        throw std::runtime_error("Inventory does not have information about a weapon with name \"" + equipped_.weapon_name + '"');
-    }
-    return it->second.ammo_type;
-}
+// InventoryItem WeaponCycle::ammo_type() const {
+//     auto it = weapon_infos_.find(equipped_.weapon_name);
+//     if (it == weapon_infos_.end()) {
+//         throw std::runtime_error("Inventory does not have information about a weapon with name (1) \"" + equipped_.weapon_name + '"');
+//     }
+//     return it->second.ammo_type;
+// }
 
 const std::string& WeaponCycle::weapon_name() const {
     if (equipped_.weapon_name.empty()) {

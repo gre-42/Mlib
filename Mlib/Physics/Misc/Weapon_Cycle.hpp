@@ -50,7 +50,7 @@ public:
         WhenToEquip when_to_equip);
     void equip_next_weapon(std::optional<VariableAndHash<std::string>> player_name);
     void equip_previous_weapon(std::optional<VariableAndHash<std::string>> player_name);
-    InventoryItem ammo_type() const;
+    // InventoryItem ammo_type() const;
     const std::string& weapon_name() const;
     const std::map<std::string, WeaponInfo>& weapon_infos() const;
 private:
