@@ -12,7 +12,7 @@ enum class IoVerbosity;
 
 class RemoteUsers final: public IIncrementalObject {
 public:
-    explicit RemoteUsers(
+    RemoteUsers(
         IoVerbosity verbosity,
         const DanglingBaseClassRef<PhysicsScene>& physics_scene,
         RemoteSiteId site_id);

@@ -100,6 +100,7 @@ RemoteSites::RemoteSites(
     , remote_sites_{ "Site", [](RemoteSiteId site_id){ return std::to_string(site_id); } }
     , users_total_{ 0 }
     , users_with_loaded_level_{ 0 }
+    , deny_modify_local_user_count_{ false }
 {}
 
 RemoteSites::~RemoteSites() = default;
@@ -136,8 +137,24 @@ NUserCountType RemoteSites::get_total_user_count(UserTypes user_types) const {
     return result;
 }
 
+void RemoteSites::set_deny_modify_local_user_count() {
+    std::scoped_lock lock{ mutex_ };
+    if (deny_modify_local_user_count_) {
+        throw std::runtime_error("Multiple calls to \"set_deny_modify_local_user_count\"");
+    }
+    deny_modify_local_user_count_ = true;
+}
+
+void RemoteSites::set_allow_modify_local_user_count() {
+    std::scoped_lock lock{ mutex_ };
+    deny_modify_local_user_count_ = false;
+}
+
 void RemoteSites::set_local_user_count(NUserCountType user_count) {
     std::scoped_lock lock{ mutex_ };
+    if (deny_modify_local_user_count_) {
+        throw std::runtime_error("Attempt to modify the local user count on a readonly object");
+    }
     local_site_.users.clear_and_reserve(user_count);
     local_users_->set_user_count(0);
     if (remote_params_.has_value()) {

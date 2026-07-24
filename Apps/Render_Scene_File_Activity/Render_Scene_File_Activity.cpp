@@ -892,6 +892,7 @@ void android_main(android_app* app)
             num_renderings = args_num_renderings;
             ui_focuses.clear();
             button_states.tap_buttons_.clear();
+            remote_sites.set_allow_modify_local_user_count();
 
             PhysicsEngineConfig physics_engine_config{
                 .dt = physics_dt * seconds,

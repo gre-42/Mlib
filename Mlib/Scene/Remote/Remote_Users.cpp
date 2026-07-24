@@ -50,6 +50,13 @@ RemoteUsers::RemoteUsers(
     if (any(verbosity_ & IoVerbosity::METADATA)) {
         linfo() << "Create RemoteUsers";
     }
+    if (!physics_scene_->remote_sites_->get_local_site_id().has_value()) {
+        throw std::runtime_error("Local site ID not set");
+    }
+    auto local_site_id = *physics_scene_->remote_sites_->get_local_site_id();
+    if (site_id == local_site_id) {
+        physics_scene_->remote_sites_->set_deny_modify_local_user_count();
+    }
     physics_scene_on_destroy_.add([this](){ global_object_pool.remove(this); }, CURRENT_SOURCE_LOCATION);
 }
 

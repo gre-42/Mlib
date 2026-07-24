@@ -104,6 +104,8 @@ public:
     NUserCountType get_local_user_count() const;
     NUserCountType get_user_count(RemoteSiteId site_id) const;
     NUserCountType get_total_user_count(UserTypes user_types) const;
+    void set_deny_modify_local_user_count();
+    void set_allow_modify_local_user_count();
     void set_local_user_count(NUserCountType user_count);
     void set_user_count(RemoteSiteId site_id, NUserCountType user_count);
     bool for_each_site_user(
@@ -141,6 +143,7 @@ private:
     std::function<void()> on_all_users_loaded_level_;
     size_t users_total_;
     size_t users_with_loaded_level_;
+    bool deny_modify_local_user_count_;
 };
 
 }

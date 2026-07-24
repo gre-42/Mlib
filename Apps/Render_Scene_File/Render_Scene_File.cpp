@@ -896,6 +896,7 @@ int main(int argc, char** argv) {
             num_renderings = args_num_renderings;
             ui_focuses.clear();
             #endif
+            remote_sites.set_allow_modify_local_user_count();
 
             SceneGraphConfig scene_graph_config{
                 .max_distance_black = safe_stof(args.named_svalue("--max_distance_black", "200")) * meters,
