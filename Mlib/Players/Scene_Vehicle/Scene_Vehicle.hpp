@@ -51,6 +51,7 @@ public:
     ShutdownPhase scene_node_shutdown_phase() const;
     DanglingBaseClassRef<RigidBodyVehicle> rb();
     DanglingBaseClassRef<const RigidBodyVehicle> rb() const;
+    std::string generate_s2();
 private:
     DestructionFunctionsRemovalTokens on_scene_node_destroyed_;
     DestructionFunctionsRemovalTokens on_rigid_body_destroyed_;
@@ -59,6 +60,7 @@ private:
     DanglingBaseClassPtr<RigidBodyVehicle> rb_;
     CreateVehicleExternals create_vehicle_externals_;
     CreateRoleExternals create_vehicle_internals_;
+    uint16_t s2_;
 };
 
 }

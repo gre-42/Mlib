@@ -15,6 +15,7 @@ SceneVehicle::SceneVehicle(
     , scene_node_name_{ std::move(scene_node_name) }
     , scene_node_{ scene_node.ptr().set_loc(CURRENT_SOURCE_LOCATION) }
     , rb_{ rb.ptr().set_loc(CURRENT_SOURCE_LOCATION) }
+    , s2_{ 0 }
 {
     on_scene_node_destroyed_.add([this](){ global_object_pool.remove(this); }, CURRENT_SOURCE_LOCATION);
     on_rigid_body_destroyed_.add([this](){ global_object_pool.remove(this); }, CURRENT_SOURCE_LOCATION);
@@ -93,4 +94,8 @@ DanglingBaseClassRef<RigidBodyVehicle> SceneVehicle::rb() {
 
 DanglingBaseClassRef<const RigidBodyVehicle> SceneVehicle::rb() const {
     return *rb_;
+}
+
+std::string SceneVehicle::generate_s2() {
+    return '_' + std::to_string(s2_++);
 }

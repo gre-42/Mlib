@@ -35,6 +35,7 @@ DECLARE_ARGUMENT(asset_id);
 namespace LetKeys {
 BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(full_user_name);
+DECLARE_ARGUMENT(s2);
 DECLARE_ARGUMENT(local_user_id);
 DECLARE_ARGUMENT(player_name);
 DECLARE_ARGUMENT(if_pc);
@@ -68,7 +69,7 @@ void SetExternalsCreator::execute_unsafe(
     macro_line_executor.block_arguments().validate_complement(LetKeys::options);
 
     vehicle.set_create_vehicle_externals(
-        [mle=macro_line_executor, macro=std::move(externals)](
+        [mle=macro_line_executor, macro=std::move(externals), &vehicle](
             const Player& player,
             ExternalsMode externals_mode)
         {
@@ -83,6 +84,7 @@ void SetExternalsCreator::execute_unsafe(
             };
             if (user_info != nullptr) {
                 let[LetKeys::full_user_name] = user_info->full_name;
+                let[LetKeys::s2] = vehicle.generate_s2();
                 if (user_info->type == UserType::LOCAL) {
                     let[LetKeys::local_user_id] = user_info->user_id;
                 }
