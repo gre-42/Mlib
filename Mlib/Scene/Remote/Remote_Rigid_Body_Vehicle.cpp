@@ -507,6 +507,7 @@ void RemoteRigidBodyVehicle::read(
     }
     if (pp.invalidate_transformation_history) {
         assert_true(has_location);
+        assert_true(pp.update_position);
         rb_->scene_node_->set_absolute_pose(
             position,
             rotation,

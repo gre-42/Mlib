@@ -15,28 +15,33 @@ RemotePrivileges::RemotePrivileges(
 
 PositionPrivileges RemotePrivileges::position(PositionFlags flags) {
     PositionPrivileges result;
-    result.invalidate_transformation_history = [&](){
-        if (is_manager_local) {
+    bool accept_coordinates = [&](){
+        if (any(flags & PositionFlags::POSITION_IS_INCOMPLETE) ||
+            any(flags & PositionFlags::IS_DEACTIVATED_AVATAR))
+        {
             return false;
         }
-        if (any(flags & PositionFlags::POSITION_IS_INCOMPLETE)) {
+        if (is_manager_local) {
+            return !any(flags & PositionFlags::POSITION_CONTAINS_JUMP) && is_owner_sender;
+        } else {
+            return true;
+        }
+    }();
+    result.invalidate_transformation_history = [&](){
+        if (!accept_coordinates) {
             return false;
         }
         return any(flags & PositionFlags::POSITION_CONTAINS_JUMP) ||
                (flags == PositionFlags::IS_REMOTELY_ACTIVATED_AVATAR);
     }();
     result.update_position = [&](){
-        if (any(flags & PositionFlags::POSITION_IS_INCOMPLETE)) {
+        if (!accept_coordinates) {
             return false;
         }
-        if (any(flags & PositionFlags::IS_DEACTIVATED_AVATAR)) {
-            return false;
+        if (result.invalidate_transformation_history) {
+            return true;
         }
-        if (is_manager_local) {
-            return !any(flags & PositionFlags::POSITION_CONTAINS_JUMP) && is_owner_sender;
-        } else {
-            return result.invalidate_transformation_history || !is_owner_local;
-        }
+        return !is_owner_local;
     }();
     return result;
 }
