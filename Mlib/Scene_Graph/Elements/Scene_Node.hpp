@@ -102,12 +102,6 @@ enum class SceneNodeVisibility {
     INVISIBLE
 };
 
-enum class ChildRegistrationState {
-    NOT_REGISTERED,
-    MAYBE_REGISTERED,
-    IS_REGISTERED
-};
-
 enum class ChildParentState {
     PARENT_NOT_SET,
     PARENT_ALREADY_SET
@@ -122,7 +116,7 @@ enum class ShutdownPhase {
 struct SceneNodeInstances {
     using SmallInstances = GenericBvh<CompressedScenePos, 3, BillboardContainer>;
 
-    ChildRegistrationState registration_state;
+    std::optional<VariableAndHash<std::string>> global_name;
     std::unique_ptr<SceneNode> scene_node;
     CompressedScenePos max_center_distance;
     SmallInstances small_instances;
@@ -131,7 +125,7 @@ struct SceneNodeInstances {
 };
 
 struct SceneNodeChild {
-    ChildRegistrationState registration_state;
+    std::optional<VariableAndHash<std::string>> global_name;
     std::unique_ptr<SceneNode> scene_node;
 };
 
@@ -204,7 +198,7 @@ public:
     void add_child(
         const VariableAndHash<std::string>& name,
         std::unique_ptr<SceneNode>&& node,
-        ChildRegistrationState child_registration_state = ChildRegistrationState::NOT_REGISTERED,
+        const std::optional<VariableAndHash<std::string>>& global_name = std::nullopt,
         ChildParentState = ChildParentState::PARENT_NOT_SET);
     void set_parent(DanglingBaseClassRef<SceneNode> parent);
     bool has_parent() const;
@@ -216,17 +210,18 @@ public:
     void clear();
     DanglingBaseClassRef<SceneNode> get_child(const VariableAndHash<std::string>& name);
     DanglingBaseClassRef<const SceneNode> get_child(const VariableAndHash<std::string>& name) const;
-    void remove_child(const VariableAndHash<std::string>& name);
+    void remove_local_child(const VariableAndHash<std::string>& name);
+    void remove_global_child(const VariableAndHash<std::string>& name);
     bool contains_child(const VariableAndHash<std::string>& name) const;
     void add_aggregate_child(
         const VariableAndHash<std::string>& name,
         std::unique_ptr<SceneNode>&& node,
-        ChildRegistrationState child_registration_state = ChildRegistrationState::NOT_REGISTERED,
+        const std::optional<VariableAndHash<std::string>>& global_name = std::nullopt,
         ChildParentState child_parent_state =  ChildParentState::PARENT_NOT_SET);
     void add_instances_child(
         const VariableAndHash<std::string>& name,
         std::unique_ptr<SceneNode>&& node,
-        ChildRegistrationState child_registration_state = ChildRegistrationState::NOT_REGISTERED,
+        const std::optional<VariableAndHash<std::string>>& global_name = std::nullopt,
         ChildParentState child_parent_state =  ChildParentState::PARENT_NOT_SET);
     void add_instances_position(
         const VariableAndHash<std::string>& name,
@@ -379,7 +374,7 @@ private:
     void setup_child_unsafe(
         const VariableAndHash<std::string>& name,
         DanglingBaseClassRef<SceneNode> node,
-        ChildRegistrationState child_registration_state,
+        const std::optional<VariableAndHash<std::string>>& global_name,
         ChildParentState child_parent_state);
     void clear_unsafe();
     ViewableRemoteObject remote_viewable_;
@@ -398,6 +393,7 @@ private:
     StringWithHashUnorderedMap<SceneNodeChild> aggregate_children_;
     StringWithHashUnorderedMap<SceneNodeInstances> instances_children_;
     StringWithHashUnorderedMap<SceneNodeInstances> collide_only_instances_children_;
+    StringWithHashUnorderedMap<VariableAndHash<std::string>> global_2_child_;
     std::list<std::shared_ptr<Light>> lights_;
     std::list<std::shared_ptr<Skidmark>> skidmarks_;
     OffsetAndQuaternion<float, ScenePos> trafo_;

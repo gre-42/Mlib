@@ -224,8 +224,8 @@ void CreateGenericCar::execute(const JsonView& args)
                 child_renderable_instance("blob" + suffix, VH{"light_left_front" + suffix}, VH{"car_light_beam"});
             }
             if (auto p = vdb.try_at_non_null<UFixedArray<ScenePos, 3>>(KnownDb::light_right_front_position); p.has_value()) {
-                create_child_node("dynamic", parent, VH{"light_right_front_position" + suffix}, *p);
-                child_renderable_instance("blob" + suffix, VH{"light_right_front_position" + suffix}, VH{"car_light_beam"});
+                create_child_node("dynamic", parent, VH{"light_right_front" + suffix}, *p);
+                child_renderable_instance("blob" + suffix, VH{"light_right_front" + suffix}, VH{"car_light_beam"});
             }};
         create_lights();
     }

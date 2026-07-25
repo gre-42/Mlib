@@ -222,7 +222,7 @@ void SmokeParticleGenerator::generate_child_node(
             .renderable_resource_filter = RenderableResourceFilter{}});
     #endif
     auto child_node_ref = child_node.ref(CURRENT_SOURCE_LOCATION);
-    parent->add_child(child_node_name, std::move(child_node), ChildRegistrationState::IS_REGISTERED);
+    parent->add_child(child_node_name, std::move(child_node), child_node_name);
     scene_.register_node(child_node_name, child_node_ref);
 }
 

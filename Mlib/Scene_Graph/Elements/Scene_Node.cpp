@@ -72,6 +72,7 @@ SceneNode::SceneNode(
     , aggregate_children_{ "Aggregate children" }
     , instances_children_{ "Instances children" }
     , collide_only_instances_children_{ "Collide-only instances children" }
+    , global_2_child_{ "Global child" }
     , trafo_{ OffsetAndQuaternion<float, ScenePos>::from_tait_bryan_angles({ rotation, position }) }
     , trafo_history_{ trafo_, std::chrono::steady_clock::now() }
     , trafo_history_invalidated_{ false }
@@ -182,11 +183,11 @@ DanglingBaseClassRef<const SceneNode> SceneNode::parent() const {
 void SceneNode::setup_child_unsafe(
     const VariableAndHash<std::string>& name,
     DanglingBaseClassRef<SceneNode> node,
-    ChildRegistrationState child_registration_state,
+    const std::optional<VariableAndHash<std::string>>& global_name,
     ChildParentState child_parent_state)
 {
     // Required in SceneNonde::~SceneNode
-    if ((child_registration_state == ChildRegistrationState::IS_REGISTERED) && (scene_ == nullptr)) {
+    if (global_name.has_value() && (scene_ == nullptr)) {
         throw std::runtime_error("Parent of registered node " + *name + " does not have a scene");
     }
     if (name->empty()) {
@@ -205,6 +206,9 @@ void SceneNode::setup_child_unsafe(
     }
     if (scene_ != nullptr) {
         node->set_scene_and_state_unsafe(*scene_, state_);
+    }
+    if (global_name.has_value()) {
+        global_2_child_.add(*global_name, name);
     }
 }
 
@@ -506,21 +510,12 @@ void SceneNode::clear_unsafe() {
             }
             child.mapped().scene_node->shutdown();
             if (scene_ != nullptr) {
-                [&](){
-                    // scene_ is non-null, checked in "add_child".
-                    switch (child.mapped().registration_state) {
-                    case ChildRegistrationState::MAYBE_REGISTERED:
-                        scene_->try_unregister_node(child.key());
-                        return;
-                    case ChildRegistrationState::IS_REGISTERED:
-                        scene_->unregister_node(child.key());
-                        return;
-                    case ChildRegistrationState::NOT_REGISTERED:
-                        // Do nothing
-                        return;
+                if (child.mapped().global_name.has_value()) {
+                    scene_->unregister_node(*child.mapped().global_name);
+                    if (global_2_child_.erase(*child.mapped().global_name) != 1) {
+                        verbose_abort("Could not remove global child (0) \"" + **child.mapped().global_name + '"');
                     }
-                    verbose_abort("Unknown child registration state");
-                }();
+                }
                 // linfo() << "c add " << child.mapped().scene_node.get(CURRENT_SOURCE_LOCATION).get() << " " << child.key();
                 scene_->add_to_trash_can(std::move(child.mapped().scene_node));
             }
@@ -543,19 +538,19 @@ void SceneNode::clear_unsafe() {
 void SceneNode::add_child(
     const VariableAndHash<std::string>& name,
     std::unique_ptr<SceneNode>&& node,
-    ChildRegistrationState child_registration_state,
+    const std::optional<VariableAndHash<std::string>>& global_name,
     ChildParentState child_parent_state)
 {
     auto nref = DanglingBaseClassRef<SceneNode>{*node, CURRENT_SOURCE_LOCATION};
     std::scoped_lock lock{ mutex_ };
     if (!children_.try_emplace(
         name,
-        child_registration_state,
+        global_name,
         std::move(node)).second)
     {
         throw std::runtime_error("Child node with name " + *name + " already exists");
     }
-    setup_child_unsafe(name, nref, child_registration_state, child_parent_state);
+    setup_child_unsafe(name, nref, global_name, child_parent_state);
 }
 
 DanglingBaseClassRef<SceneNode> SceneNode::get_child(const VariableAndHash<std::string>& name) {
@@ -571,7 +566,7 @@ DanglingBaseClassRef<const SceneNode> SceneNode::get_child(const VariableAndHash
     return const_cast<SceneNode*>(this)->get_child(name);
 }
 
-void SceneNode::remove_child(const VariableAndHash<std::string>& name) {
+void SceneNode::remove_local_child(const VariableAndHash<std::string>& name) {
     std::scoped_lock lock{ mutex_ };
     if (state_ == SceneNodeState::STATIC) {
         verbose_abort("Cannot shutdown child \"" + *name + "\" from static node");
@@ -584,16 +579,20 @@ void SceneNode::remove_child(const VariableAndHash<std::string>& name) {
         verbose_abort("Child node \"" + *name + "\" shutting down (2)");
     }
     it->scene_node->shutdown();
-    if (it->registration_state != ChildRegistrationState::NOT_REGISTERED) {
+    if (it->global_name.has_value()) {
         if (scene_ == nullptr) {
             verbose_abort("Can not deregister child \"" + *name + "\" because scene is not set");
         }
-        if (it->registration_state == ChildRegistrationState::MAYBE_REGISTERED) {
-            scene_->try_unregister_node(name);
-        } else {
-            scene_->unregister_node(name);
+        scene_->unregister_node(*it->global_name);
+        if (global_2_child_.erase(*it->global_name) != 1) {
+            verbose_abort("Could not remove global child (1) \"" + **it->global_name + '"');
         }
     }
+}
+
+void SceneNode::remove_global_child(const VariableAndHash<std::string>& name) {
+    auto local = global_2_child_.get(name);
+    remove_local_child(local);
 }
 
 bool SceneNode::contains_child(const VariableAndHash<std::string>& name) const {
@@ -604,24 +603,24 @@ bool SceneNode::contains_child(const VariableAndHash<std::string>& name) const {
 void SceneNode::add_aggregate_child(
     const VariableAndHash<std::string>& name,
     std::unique_ptr<SceneNode>&& node,
-    ChildRegistrationState child_registration_state,
+    const std::optional<VariableAndHash<std::string>>& global_name,
     ChildParentState child_parent_state)
 {
     auto nref = DanglingBaseClassRef<SceneNode>{*node, CURRENT_SOURCE_LOCATION};
     std::scoped_lock lock{ mutex_ };
     if (!aggregate_children_.try_emplace(name, SceneNodeChild{
-        .registration_state= child_registration_state,
+        .global_name = global_name,
         .scene_node = std::move(node)}).second)
     {
         throw std::runtime_error("Aggregate node with name " + *name + " already exists");
     }
-    setup_child_unsafe(name, nref, child_registration_state, child_parent_state);
+    setup_child_unsafe(name, nref, global_name, child_parent_state);
 }
 
 void SceneNode::add_instances_child(
     const VariableAndHash<std::string>& name,
     std::unique_ptr<SceneNode>&& node,
-    ChildRegistrationState child_registration_state,
+    const std::optional<VariableAndHash<std::string>>& global_name,
     ChildParentState child_parent_state)
 {
     std::scoped_lock lock{ mutex_ };
@@ -634,7 +633,7 @@ void SceneNode::add_instances_child(
     {
         if (!ic.try_emplace(
             name,
-            child_registration_state,
+            global_name,
             std::move(node),
             (CompressedScenePos)0.f,                                                                                // max_center_distance
             SceneNodeInstances::SmallInstances(fixed_full<CompressedScenePos, 3>(CompressedScenePos(15.f)), 12),    // small_instances
@@ -658,7 +657,7 @@ void SceneNode::add_instances_child(
         }
         emplace_instances_child(instances_children_);
     }
-    setup_child_unsafe(name, nref, child_registration_state, child_parent_state);
+    setup_child_unsafe(name, nref, global_name, child_parent_state);
 }
 
 void SceneNode::add_instances_position(
@@ -970,7 +969,7 @@ void SceneNode::move(
                 throw std::runtime_error("Error moving node \"" + *child_name + "\": " + e.what());
             }
             if ((child.scene_node->shutdown_phase() == ShutdownPhase::NONE) && child.scene_node->to_be_deleted(time)) {
-                remove_child(child_name);
+                remove_local_child(child_name);
             }
         }
         children_.erase_if([this](auto& child){

@@ -284,7 +284,7 @@ void Scene::delete_node(const VariableAndHash<std::string>& name) {
             if (node->has_parent()) {
                 DanglingBaseClassRef<SceneNode> parent = node->parent();
                 node = nullptr;
-                parent->remove_child(name);
+                parent->remove_global_child(name);
             } else {
                 node = nullptr;
                 delete_root_node(name);

@@ -58,12 +58,13 @@ void CreateChildNode::operator () (
         interpolation);
     DanglingBaseClassRef<SceneNode> nparent = scene.get_node(parent, CURRENT_SOURCE_LOCATION);
     auto node_ref = node.ref(CURRENT_SOURCE_LOCATION);
+    auto local_name = VariableAndHash<std::string>{*name + scene.get_temporary_instance_suffix()};
     if (type == "aggregate") {
-        nparent->add_aggregate_child(name, std::move(node), ChildRegistrationState::IS_REGISTERED);
+        nparent->add_aggregate_child(local_name, std::move(node), name);
     } else if (type == "instances") {
-        nparent->add_instances_child(name, std::move(node), ChildRegistrationState::IS_REGISTERED);
+        nparent->add_instances_child(local_name, std::move(node), name);
     } else if (type == "dynamic") {
-        nparent->add_child(name, std::move(node), ChildRegistrationState::IS_REGISTERED);
+        nparent->add_child(local_name, std::move(node), name);
     } else {
         throw std::runtime_error("Unknown non-root node type: " + type);
     }

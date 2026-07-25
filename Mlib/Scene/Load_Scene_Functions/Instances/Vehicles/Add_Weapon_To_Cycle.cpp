@@ -78,8 +78,7 @@ void AddWeaponToInventory::operator () (const JsonView& args) {
             nlohmann::json let{
                 {"player_name", player_name},
                 {"user_name", user_info->name},
-                {"full_user_name", user_info->full_name},
-                {"s2", player->vehicle()->generate_s2()}};
+                {"full_user_name", user_info->full_name}};
             if (user_info->type == UserType::LOCAL) {
                 let["user_is_local"] = true;
                 let["local_user_id"] = user_info->user_id;
