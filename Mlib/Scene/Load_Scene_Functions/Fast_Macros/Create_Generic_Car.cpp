@@ -272,7 +272,7 @@ void CreateGenericCar::execute(const JsonView& args)
             if (engine_exhausts->empty()) {
                 throw std::runtime_error("Engine exhaust array is empty");
             }
-            auto particle_renderer = std::make_shared<ParticleRenderer>(particle_resources, ParticleType::SMOKE, ExtremalBoundingVolume::EMPTY);
+            auto particle_renderer = std::make_shared<ParticleRenderer>(particle_resources, ParticleType::SMOKE);
             parent_node->add_renderable(
                 VariableAndHash<std::string>{"exhaust_particles"},
                 particle_renderer);

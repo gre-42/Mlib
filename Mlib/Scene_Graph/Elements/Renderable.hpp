@@ -3,6 +3,7 @@
 #include <Mlib/Geometry/Primitives/Extremal_Axis_Aligned_Bounding_Box.hpp>
 #include <Mlib/Geometry/Primitives/Extremal_Bounding_Sphere.hpp>
 #include <Mlib/Scene_Config/Scene_Precision.hpp>
+#include <cstdint>
 #include <list>
 #include <memory>
 #include <type_traits>
@@ -34,6 +35,7 @@ enum class BlendingPassType;
 enum class ExternalRenderPassType: uint32_t;
 enum class PhysicsMaterial: uint32_t;
 enum class RenderingStrategies;
+enum class RenderableFilter: uint32_t;
 class SceneNode;
 class SmallInstancesQueues;
 class LargeInstancesQueue;
@@ -92,17 +94,7 @@ public:
         ExternalRenderPassType render_pass,
         AxisAlignedBoundingBox<CompressedScenePos, 3>& aabb) const;
     virtual ExtremalAxisAlignedBoundingBox<CompressedScenePos, 3> aabb() const;
-    virtual ExtremalBoundingSphere<CompressedScenePos, 3> bounding_sphere() const;
-    template <class TBoundingPrimitive>
-    TBoundingPrimitive bounding_primitive() const {
-        if constexpr (std::is_same_v<TBoundingPrimitive, AxisAlignedBoundingBox<CompressedScenePos, 3>>) {
-            return aabb();
-        } else if constexpr (std::is_same_v<TBoundingPrimitive, BoundingSphere<CompressedScenePos, 3>>) {
-            return bounding_sphere();
-        } else {
-            static_assert(sizeof(TBoundingPrimitive) == 0, "Unknown bounding primitive");
-        }
-    }
+    virtual ExtremalBoundingSphere<CompressedScenePos, 3> bounding_sphere(RenderableFilter filter) const;
     virtual ScenePos max_center_distance2(BillboardId billboard_id) const;
 };
 

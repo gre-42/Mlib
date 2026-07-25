@@ -84,7 +84,7 @@ public:
         ExternalRenderPassType render_pass,
         AxisAlignedBoundingBox<CompressedScenePos, 3>& aabb) const override;
     virtual ExtremalAxisAlignedBoundingBox<CompressedScenePos, 3> aabb() const override;
-    virtual ExtremalBoundingSphere<CompressedScenePos, 3> bounding_sphere() const override;
+    virtual ExtremalBoundingSphere<CompressedScenePos, 3> bounding_sphere(RenderableFilter filter) const override;
     virtual ScenePos max_center_distance2(BillboardId billboard_id) const override;
     void print_stats(std::ostream& ostr) const;
     #ifndef WITHOUT_GRAPHICS
@@ -114,7 +114,8 @@ private:
     int continuous_blending_z_order_;
     OpenGLVertexArrayRenderer gpu_vertex_array_renderer_;
     ExtremalAxisAlignedBoundingBox<CompressedScenePos, 3> aabb_;
-    ExtremalBoundingSphere<CompressedScenePos, 3> bounding_sphere_;
+    ExtremalBoundingSphere<CompressedScenePos, 3> bounding_sphere_all_;
+    ExtremalBoundingSphere<CompressedScenePos, 3> bounding_sphere_visible_;
     #endif
 };
 

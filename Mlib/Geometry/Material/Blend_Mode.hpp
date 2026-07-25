@@ -1,4 +1,5 @@
 #pragma once
+#include <cstdint>
 #include <string>
 
 namespace Mlib {
@@ -6,7 +7,7 @@ namespace Mlib {
 /**
  * Explicit numbers to facilitate sorting for rendering.
  */
-enum class BlendMode {
+enum class BlendMode: uint32_t {
     INVISIBLE_MASK          = (1 << 0),
     THRESHOLD_02_MASK       = (1 << 1),
     THRESHOLD_05_MASK       = (1 << 2),

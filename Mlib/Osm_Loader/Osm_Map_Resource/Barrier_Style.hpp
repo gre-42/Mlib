@@ -2,11 +2,12 @@
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Geometry/Material/Shading.hpp>
 #include <Mlib/Misc/FPath.hpp>
+#include <cstdint>
 #include <string>
 
 namespace Mlib {
 
-enum class BlendMode;
+enum class BlendMode: uint32_t;
 enum class WrapMode;
 
 struct BarrierStyle {

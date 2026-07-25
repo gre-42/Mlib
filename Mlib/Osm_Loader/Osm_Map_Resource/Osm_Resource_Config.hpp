@@ -35,7 +35,7 @@
 
 namespace Mlib {
 
-enum class BlendMode;
+enum class BlendMode: uint32_t;
 enum class DrivingDirection: uint32_t;
 struct WaysideResourceNamesSurface;
 struct WaysideResourceNamesVertex;

@@ -17,6 +17,7 @@
 #include <Mlib/Scene_Config/Scene_Graph_Config.hpp>
 #include <Mlib/Scene_Graph/Culling/Visibility_Check.hpp>
 #include <Mlib/Scene_Graph/Elements/Animation_State.hpp>
+#include <Mlib/Scene_Graph/Elements/Renderable_Filter.hpp>
 #include <Mlib/Scene_Graph/Elements/Rendering_Strategies.hpp>
 #include <Mlib/Scene_Graph/Instances/Large_Instances_Queue.hpp>
 #include <Mlib/Scene_Graph/Instances/Small_Instances_Queues.hpp>
@@ -152,7 +153,8 @@ RenderableColoredVertexArray::RenderableColoredVertexArray(
     , continuous_blending_z_order_{ CONTINUOUS_BLENDING_Z_ORDER_UNDEFINED }
     , gpu_vertex_array_renderer_{ RenderingContextStack::primary_rendering_resources(), rendering_resources }
     , aabb_{ ExtremalBoundingVolume::EMPTY }
-    , bounding_sphere_{ ExtremalBoundingVolume::EMPTY }
+    , bounding_sphere_all_{ ExtremalBoundingVolume::EMPTY }
+    , bounding_sphere_visible_{ ExtremalBoundingVolume::EMPTY }
     #endif
 {
     #ifdef DEBUG
@@ -274,21 +276,31 @@ RenderableColoredVertexArray::RenderableColoredVertexArray(
     }
 
     #ifndef WITHOUT_GRAPHICS
-    for (auto& cva : aggregate_off_) {
+    auto extend_with_cva0 = [this](auto& cva){
         cva->extend_aabb(aabb_);
-        cva->extend_bounding_sphere(bounding_sphere_);
+        cva->extend_bounding_sphere(bounding_sphere_all_);
+        if (!any(cva->vertices()->mesh_meta().material.blend_mode & BlendMode::INVISIBLE)) {
+            cva->extend_bounding_sphere(bounding_sphere_visible_);
+        }
+    };
+    auto extend_with_cva1 = [this](auto& cva){
+        cva->extend_aabb(aabb_);
+        cva->extend_bounding_sphere(bounding_sphere_all_);
+        if (!any(cva->meta.material.blend_mode & BlendMode::INVISIBLE)) {
+            cva->extend_bounding_sphere(bounding_sphere_visible_);
+        }
+    };
+    for (auto& cva : aggregate_off_) {
+        extend_with_cva0(cva);
     }
     for (auto& cva : aggregate_once_) {
-        cva->extend_aabb(aabb_);
-        cva->extend_bounding_sphere(bounding_sphere_);
+        extend_with_cva1(cva);
     }
     for (auto& cva : saggregate_sorted_continuously_) {
-        cva->extend_aabb(aabb_);
-        cva->extend_bounding_sphere(bounding_sphere_);
+        extend_with_cva1(cva);
     }
     for (auto& cva : daggregate_sorted_continuously_) {
-        cva->extend_aabb(aabb_);
-        cva->extend_bounding_sphere(bounding_sphere_);
+        extend_with_cva1(cva);
     }
     #endif
 }
@@ -627,11 +639,15 @@ ExtremalAxisAlignedBoundingBox<CompressedScenePos, 3> RenderableColoredVertexArr
     #endif
 }
 
-ExtremalBoundingSphere<CompressedScenePos, 3> RenderableColoredVertexArray::bounding_sphere() const {
+ExtremalBoundingSphere<CompressedScenePos, 3> RenderableColoredVertexArray::bounding_sphere(RenderableFilter filter) const {
     #ifdef WITHOUT_GRAPHICS
     throw std::runtime_error("RenderableColoredVertexArray::bounding_sphere called without graphics support");
     #else
-    return bounding_sphere_;
+    if (any(filter & RenderableFilter::INVISIBLE)) {
+        return bounding_sphere_all_;
+    } else {
+        return bounding_sphere_visible_;
+    }
     #endif
 }
 

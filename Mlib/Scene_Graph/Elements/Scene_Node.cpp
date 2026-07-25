@@ -1712,14 +1712,14 @@ ExtremalAxisAlignedBoundingBox<CompressedScenePos, 3> SceneNode::relative_aabb()
     return result;
 }
 
-ExtremalBoundingSphere<CompressedScenePos, 3> SceneNode::relative_bounding_sphere() const {
+ExtremalBoundingSphere<CompressedScenePos, 3> SceneNode::relative_bounding_sphere(RenderableFilter filter) const {
     std::shared_lock lock{ mutex_ };
     ExtremalBoundingSphere<CompressedScenePos, 3> result = ExtremalBoundingVolume::EMPTY;
     for (const auto& [_, r] : renderables_) {
-        result.extend((*r)->bounding_sphere());
+        result.extend((*r)->bounding_sphere(filter));
     }
     for (const auto& [_, c] : children_) {
-        auto cb = c.scene_node->relative_bounding_sphere();
+        auto cb = c.scene_node->relative_bounding_sphere(filter);
         if (cb.full()) {
             return ExtremalBoundingVolume::FULL;
         } else if (!cb.empty()) {

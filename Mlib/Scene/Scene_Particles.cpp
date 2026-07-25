@@ -18,7 +18,7 @@ SceneParticles::SceneParticles(
     RigidBodies& rigid_bodies,
     const VariableAndHash<std::string>& node_name,
     ParticleType particle_type)
-    : particle_renderer{ std::make_shared<ParticleRenderer>(particle_resources, particle_type, ExtremalBoundingVolume::FULL) }
+    : particle_renderer{ std::make_shared<ParticleRenderer>(particle_resources, particle_type) }
     #ifdef WITHOUT_GRAPHICS
     , smoke_particle_generator{ scene_node_resources, particle_renderer, scene, rigid_bodies }
     #else

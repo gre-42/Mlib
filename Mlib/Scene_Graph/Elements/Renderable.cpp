@@ -75,7 +75,7 @@ ExtremalAxisAlignedBoundingBox<CompressedScenePos, 3> Renderable::aabb() const {
     throw std::runtime_error("Renderable::aabb not implemented");
 }
 
-ExtremalBoundingSphere<CompressedScenePos, 3> Renderable::bounding_sphere() const {
+ExtremalBoundingSphere<CompressedScenePos, 3> Renderable::bounding_sphere(RenderableFilter filter) const {
     throw std::runtime_error("Renderable::bounding_sphere not implemented");
 }
 

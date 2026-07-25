@@ -1,9 +1,11 @@
 #include "Particle_Renderer.hpp"
 #include <Mlib/Geometry/Material/Blending_Pass_Type.hpp>
 #include <Mlib/Geometry/Material/Particle_Type.hpp>
+#include <Mlib/Geometry/Primitives/Extremal_Bounding_Sphere.hpp>
 #include <Mlib/OpenGL/Batch_Renderers/Particle_Creator.hpp>
 #include <Mlib/OpenGL/Batch_Renderers/Particles_Instance.hpp>
 #include <Mlib/OpenGL/Resource_Managers/Particle_Resources.hpp>
+#include <Mlib/Scene_Graph/Elements/Renderable_Filter.hpp>
 #include <Mlib/Scene_Graph/Elements/Rendering_Strategies.hpp>
 #include <Mlib/Scene_Graph/Render_Pass.hpp>
 #include <mutex>
@@ -12,10 +14,8 @@ using namespace Mlib;
 
 ParticleRenderer::ParticleRenderer(
     ParticleResources& resources,
-    ParticleType particle_type,
-    const ExtremalBoundingSphere<CompressedScenePos, 3>& bounding_sphere)
+    ParticleType particle_type)
     : particle_type_{ particle_type }
-    , bounding_sphere_{ bounding_sphere }
     , resources_{ resources }
     , instances_{ [this](const VariableAndHash<std::string>& name) {
         auto res = resources_.instantiate_particles_instance(name);
@@ -105,6 +105,10 @@ ScenePos ParticleRenderer::max_center_distance2(BillboardId billboard_id) const 
     return INFINITY;
 }
 
-ExtremalBoundingSphere<CompressedScenePos, 3> ParticleRenderer::bounding_sphere() const {
-    return bounding_sphere_;
+ExtremalBoundingSphere<CompressedScenePos, 3> ParticleRenderer::bounding_sphere(RenderableFilter filter) const {
+    if (any(filter & RenderableFilter::SMOKE)) {
+        throw std::runtime_error("ParticleRenderer::bounding_sphere not implemented");
+    } else {
+        return ExtremalBoundingVolume::EMPTY;
+    }
 }

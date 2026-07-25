@@ -13,6 +13,7 @@
 #include <Mlib/OpenGL/Viewport_Guard.hpp>
 #include <Mlib/Players/Advance_Times/Player.hpp>
 #include <Mlib/Scene_Graph/Elements/Make_Scene_Node.hpp>
+#include <Mlib/Scene_Graph/Elements/Renderable_Filter.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Rendered_Scene_Descriptor.hpp>
 #include <sstream>
@@ -86,7 +87,8 @@ void HudOpponentZoomLogic::render_with_setup(
     if (!vg.has_value()) {
         return;
     }
-    auto rel_sphere = observed_node->relative_bounding_sphere();
+    auto rel_sphere = observed_node->relative_bounding_sphere(
+        RenderableFilter::ALL & ~(RenderableFilter::INVISIBLE | RenderableFilter::SMOKE));
     if (rel_sphere.empty() || rel_sphere.full()) {
         return;
     }

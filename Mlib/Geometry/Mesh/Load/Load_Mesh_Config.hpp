@@ -16,7 +16,7 @@
 
 namespace Mlib {
 
-enum class BlendMode;
+enum class BlendMode: uint32_t;
 enum class AggregateMode;
 enum class TransformationMode;
 enum class ExternalRenderPassType: uint32_t;

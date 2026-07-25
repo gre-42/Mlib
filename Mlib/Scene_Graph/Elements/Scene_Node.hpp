@@ -56,6 +56,7 @@ class IDynamicLights;
 struct Light;
 struct Skidmark;
 enum class ExternalRenderPassType: uint32_t;
+enum class RenderableFilter: uint32_t;
 struct RenderedSceneDescriptor;
 struct ExternalRenderPass;
 template <class TPos>
@@ -334,7 +335,7 @@ public:
         std::chrono::steady_clock::time_point time,
         std::chrono::steady_clock::duration dt) const;
     ExtremalAxisAlignedBoundingBox<CompressedScenePos, 3> relative_aabb() const;
-    ExtremalBoundingSphere<CompressedScenePos, 3> relative_bounding_sphere() const;
+    ExtremalBoundingSphere<CompressedScenePos, 3> relative_bounding_sphere(RenderableFilter filter) const;
     ScenePos max_center_distance2(BillboardId billboard_id) const;
     void print(std::ostream& ostr, size_t recursion_depth = 0) const;
     bool has_color_style(const VariableAndHash<std::string>& name) const;

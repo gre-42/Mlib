@@ -9,7 +9,7 @@ template <class T>
 class VariableAndHash;
 class SceneNodeResources;
 struct ColoredVertexArrayFilter;
-enum class BlendMode;
+enum class BlendMode: uint32_t;
 enum class InterpolationMode;
 enum class ExternalRenderPassType: uint32_t;
 class FPath;

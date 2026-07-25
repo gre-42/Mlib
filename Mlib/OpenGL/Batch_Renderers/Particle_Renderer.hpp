@@ -1,5 +1,4 @@
 #pragma once
-#include <Mlib/Geometry/Primitives/Extremal_Bounding_Sphere.hpp>
 #include <Mlib/Map/Threadsafe_Default_Map.hpp>
 #include <Mlib/Scene_Graph/Interfaces/IParticle_Renderer.hpp>
 #include <Mlib/Threads/Recursive_Shared_Mutex.hpp>
@@ -16,8 +15,7 @@ class ParticleRenderer final: public IParticleRenderer {
 public:
     ParticleRenderer(
         ParticleResources& resources,
-        ParticleType particle_type,
-        const ExtremalBoundingSphere<CompressedScenePos, 3>& bounding_sphere);
+        ParticleType particle_type);
     virtual ~ParticleRenderer() override;
 
     // IParticleRenderer
@@ -45,11 +43,10 @@ public:
         const RenderPass& render_pass,
         const AnimationState* animation_state,
         const ColorStyle* color_style) const override;
-    virtual ExtremalBoundingSphere<CompressedScenePos, 3> bounding_sphere() const override;
+    virtual ExtremalBoundingSphere<CompressedScenePos, 3> bounding_sphere(RenderableFilter filter) const override;
 
 private:
     ParticleType particle_type_;
-    ExtremalBoundingSphere<CompressedScenePos, 3> bounding_sphere_;
     ParticleResources& resources_;
     ThreadsafeDefaultMap<std::shared_ptr<ParticlesInstance>> instances_;
     ThreadsafeDefaultMap<std::unique_ptr<IParticleCreator>> instantiators_;

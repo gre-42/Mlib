@@ -1,6 +1,5 @@
 #include "Set_Particle_Renderer.hpp"
 #include <Mlib/Geometry/Material/Particle_Type.hpp>
-#include <Mlib/Geometry/Primitives/Extremal_Bounding_Volume.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Misc/Argument_List.hpp>
 #include <Mlib/OpenGL/Batch_Renderers/Particle_Renderer.hpp>
@@ -16,7 +15,6 @@ namespace KnownArgs {
 BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(node);
 DECLARE_ARGUMENT(renderable);
-DECLARE_ARGUMENT(bounding_volume);
 }
 
 SetParticleRenderer::SetParticleRenderer(PhysicsScene& physics_scene)
@@ -28,19 +26,16 @@ void SetParticleRenderer::execute(const LoadSceneJsonUserFunctionArgs& args) con
     args.arguments.validate(KnownArgs::options);
     (*this)(
         args.arguments.at<VariableAndHash<std::string>>(KnownArgs::node),
-        args.arguments.at<VariableAndHash<std::string>>(KnownArgs::renderable),
-        extremal_bounding_volume_from_string(args.arguments.at<std::string>(KnownArgs::bounding_volume)));
+        args.arguments.at<VariableAndHash<std::string>>(KnownArgs::renderable));
 }
 
 void SetParticleRenderer::operator () (
     const VariableAndHash<std::string>& node,
-    const VariableAndHash<std::string>& renderable,
-    ExtremalBoundingVolume bounding_volume) const
+    const VariableAndHash<std::string>& renderable) const
 {
     auto particle_renderer = std::make_shared<ParticleRenderer>(
         particle_resources,
-        ParticleType::SMOKE,
-        bounding_volume);
+        ParticleType::SMOKE);
     scene.get_node(node, CURRENT_SOURCE_LOCATION)->set_particle_renderer(renderable, particle_renderer);
     physics_engine.advance_times_.add_advance_time(
         DanglingBaseClassRef<ParticleRenderer>{
