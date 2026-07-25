@@ -38,6 +38,7 @@ static std::set<std::string_view> unexpanded_keys =
     UserKeys::charset,
     MacroKeys::required,
     MacroKeys::exclude,
+    MacroKeys::let,
     MacroKeys::arguments,
     MacroKeys::content,
     MacroKeys::comment,

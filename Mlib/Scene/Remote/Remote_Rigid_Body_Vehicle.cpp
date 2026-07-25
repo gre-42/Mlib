@@ -81,7 +81,7 @@ RemoteRigidBodyVehicle::RemoteRigidBodyVehicle(
     , rb_on_destroy_{ rb->on_destroy.deflt, CURRENT_SOURCE_LOCATION }
 {
     if (any(verbosity_ & IoVerbosity::METADATA)) {
-        linfo() << "Create RemoteRigidBodyVehicle";
+        linfo() << "Create RemoteRigidBodyVehicle \"" << rb_->name() << '"';
     }
     rb_on_destroy_.add([this](){ global_object_pool.remove(this); }, CURRENT_SOURCE_LOCATION);
 }
@@ -221,7 +221,14 @@ DanglingBaseClassPtr<RemoteRigidBodyVehicle> RemoteRigidBodyVehicle::try_create_
     auto flags = reader.read_bits<RigidBodyVehicleFlags>(RIGID_BODY_VEHICLE_FLAGS_NBITS, "rigid body flags");
     std::optional<RemoteSiteId> owner_site_id;
     if (any(transmitted_fields & RigidBodyTransmittedFields::OWNERSHIP)) {
-        owner_site_id = reader.read_binary<RemoteSiteId>("owner_site_id");
+        owner_site_id.emplace(reader.read_binary<RemoteSiteId>("owner_site_id"));
+    } else if (lifetime_status != ObjectLifetimeStatus::DELETED) {
+        if (remote_object_id.site_id != sender_site_id) {
+            throw std::runtime_error((std::stringstream() <<
+                "Object site ID " << (remote_object_id.site_id + 0) <<
+                " does not equal sender site ID " << (sender_site_id + 0)).str());
+        }
+        owner_site_id.emplace(sender_site_id);
     }
     if (remote_end_check_enabled()) {
         auto end = reader.read_binary<RemoteSceneObjectType>("inverted scene object type");
@@ -239,10 +246,14 @@ DanglingBaseClassPtr<RemoteRigidBodyVehicle> RemoteRigidBodyVehicle::try_create_
     }
     auto local_site_id = physics_scene.remote_scene_->local_site_id();
     if (!any(transmitted_fields & RigidBodyTransmittedFields::INITIAL) ||
-        !any(transmitted_fields & RigidBodyTransmittedFields::OWNERSHIP) ||
         (remote_object_id.site_id == local_site_id) ||
         (lifetime_status == ObjectLifetimeStatus::DELETED))
     {
+        if (any(verbosity & IoVerbosity::METADATA)) {
+            linfo() << "RemoteRigidBodyVehicle: Not creating " << remote_object_id <<
+                ", initial " << (int)any(transmitted_fields & RigidBodyTransmittedFields::INITIAL) <<
+                ", exists " << (int)(lifetime_status == ObjectLifetimeStatus::EXISTS);
+        }
         return nullptr;
     }
     #ifdef WITHOUT_GRAPHICS
@@ -314,9 +325,10 @@ DanglingBaseClassPtr<RemoteRigidBodyVehicle> RemoteRigidBodyVehicle::try_create_
     rb->flags_ = flags;
     rb->flags_local_ |= RigidBodyVehicleFlagsLocal::WAITING_FOR_INITIAL_POSITION;
     rb->remote_object_id_ = remote_object_id;
-    if (owner_site_id.has_value()) {
-        rb->owner_site_id_ = *owner_site_id;
+    if (!owner_site_id.has_value()) {
+        throw std::runtime_error("Owner site ID not set");
     }
+    rb->owner_site_id_.emplace(*owner_site_id);
     proxy_objects_caches.add(sender_site_id, remote_object_id, std::move(cache));
     return {
         global_object_pool.create<RemoteRigidBodyVehicle>(
@@ -461,7 +473,7 @@ void RemoteRigidBodyVehicle::read(
     }();
     auto flags = reader.read_bits<RigidBodyVehicleFlags>(RIGID_BODY_VEHICLE_FLAGS_NBITS, "rigid body flags");
     if (any(transmitted_fields & RigidBodyTransmittedFields::OWNERSHIP)) {
-        rb_->owner_site_id_ = reader.read_binary<RemoteSiteId>("owner_site_id");
+        rb_->owner_site_id_.emplace(reader.read_binary<RemoteSiteId>("owner_site_id"));
     }
     if (remote_end_check_enabled()) {
         auto end = reader.read_binary<RemoteSceneObjectType>("inverted scene object type");

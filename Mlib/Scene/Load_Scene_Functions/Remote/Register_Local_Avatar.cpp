@@ -39,7 +39,7 @@ void RegisterLocalAvatar::execute(const JsonView& args) {
         suffix,
         rb.set_loc(CURRENT_SOURCE_LOCATION),
         DanglingBaseClassRef<PhysicsScene>{physics_scene, CURRENT_SOURCE_LOCATION});
-    rb->owner_site_id_ = remote_scene->local_site_id();
+    rb->owner_site_id_.emplace(remote_scene->local_site_id());
 }
 
 namespace {

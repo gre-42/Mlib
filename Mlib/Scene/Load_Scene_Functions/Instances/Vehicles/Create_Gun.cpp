@@ -11,6 +11,9 @@
 #include <Mlib/Physics/Physics_Engine/Physics_Engine.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle_Flags.hpp>
+#include <Mlib/Players/Advance_Times/Player.hpp>
+#include <Mlib/Players/Containers/Players.hpp>
+#include <Mlib/Players/Containers/Remote_Sites.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Linker.hpp>
 #include <Mlib/Scene/Load_Scene_Funcs.hpp>
@@ -120,7 +123,7 @@ void CreateGun::operator()(const JsonView& args)
         }};
     const auto& bullet_props = bullet_property_db.get(args.at<VariableAndHash<std::string>>(KnownArgs::bullet_type));
     std::function<void(
-        const std::optional<VariableAndHash<std::string>>& player,
+        const std::optional<VariableAndHash<std::string>>& player_name,
         const std::string& bullet_suffix,
         const std::optional<VariableAndHash<std::string>>& target,
         const FixedArray<float, 3>& velocity,
@@ -128,21 +131,33 @@ void CreateGun::operator()(const JsonView& args)
     if (auto g = args.try_at(KnownArgs::generate_smart_bullet); g.has_value()) {
         generate_smart_bullet =
             [mle = macro_line_executor,
-             l = *g]
+             l = *g,
+             &players = players]
             (
-                const std::optional<VariableAndHash<std::string>>& player,
+                const std::optional<VariableAndHash<std::string>>& player_name,
                 const std::string& bullet_suffix,
                 const std::optional<VariableAndHash<std::string>>& target,
                 const FixedArray<float, 3>& velocity,
                 const FixedArray<float, 3>& angular_velocity)
             {
                 nlohmann::json let{
-                    {"bullet_player_name", player.has_value() ? nlohmann::json(*player) : nlohmann::json()},
+                    {"bullet_player_name", player_name.has_value() ? nlohmann::json(*player_name) : nlohmann::json()},
                     {"bullet_target", target.has_value() ? nlohmann::json(*target) : nlohmann::json()},
-                    {"bullet_suffix", bullet_suffix},
-                    {"bullet_velocity", velocity / kph},
-                    {"bullet_angular_velocity", angular_velocity / rpm},
+                    {"suffix", bullet_suffix},
+                    {"velocity", velocity / kph},
+                    {"angular_velocity", angular_velocity / rpm},
                 };
+                let["user_is_local"] = [&](){
+                    if (!player_name.has_value()) {
+                        return true;
+                    }
+                    auto player = players.get_player(*player_name, CURRENT_SOURCE_LOCATION);
+                    auto user_info = player->user_info();
+                    if (user_info == nullptr) {
+                        return true;
+                    }
+                    return (user_info->type == UserType::LOCAL);
+                }();
                 mle.inserted_block_arguments(std::move(let))(l, nullptr);
             };
     }
