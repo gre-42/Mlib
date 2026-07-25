@@ -2,6 +2,7 @@
 #include <Mlib/Geometry/Primitives/Bounding_Sphere.hpp>
 #include <Mlib/Geometry/Primitives/Extremal_Bounding_Volume.hpp>
 #include <Mlib/Os/Os.hpp>
+#include <ostream>
 #include <variant>
 
 namespace Mlib {
@@ -80,8 +81,33 @@ public:
         }
         verbose_abort("BoundingSphere is either empty or full");
     }
+    void print(std::ostream& ostr, size_t rec = 0) const {
+        std::string indent(rec, ' ');
+        if (const auto* d = std::get_if<ExtremalBoundingVolume>(&data_)) {
+            switch (*d) {
+                case ExtremalBoundingVolume::EMPTY:
+                    ostr << indent << "empty";
+                    return;
+                case ExtremalBoundingVolume::FULL:
+                    ostr << indent << "full";
+                    return;
+            }
+            verbose_abort("Unknown bounding volume: " + std::to_string((int)(*d)));
+        }
+        if (auto* s = std::get_if<BoundingSphere<TData, tndim>>(&data_)) {
+            ostr << indent << *s;
+            return;
+        }
+        verbose_abort("Unknown bounding volume");
+    }
 private:
     std::variant<ExtremalBoundingVolume, BoundingSphere<TData, tndim>> data_;
 };
+
+template <class TData, size_t tndim>
+std::ostream& operator << (std::ostream& ostr, const ExtremalBoundingSphere<TData, tndim>& es) {
+    es.print(ostr);
+    return ostr;
+}
 
 }

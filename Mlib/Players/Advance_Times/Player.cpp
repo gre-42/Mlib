@@ -1062,15 +1062,19 @@ void Player::select_opponent(OpponentSelectionStrategy strategy) {
             break;
         }
         Player& p = *players_vec[i];
-        if (p.team_ != team_) {
-            if (!p.has_scene_vehicle()) {
-                continue;
-            }
-            ScenePos candidate_score = opponent_score(i);
-            if (candidate_score > best_score) {
-                best_score = candidate_score;
-                best_opponent = &p;
-            }
+        if (p.player_role_ == PlayerRole::BYSTANDER) {
+            continue;
+        }
+        if (p.team_ == team_) {
+            continue;
+        }
+        if (!p.has_scene_vehicle()) {
+            continue;
+        }
+        ScenePos candidate_score = opponent_score(i);
+        if (candidate_score > best_score) {
+            best_score = candidate_score;
+            best_opponent = &p;
         }
     }
     if (best_opponent != nullptr) {

@@ -10,6 +10,7 @@
 #include <Mlib/Memory/Integral_To_Float.hpp>
 #include <Mlib/Misc/Pragma_Gcc.hpp>
 #include <Mlib/Stats/Min_Max.hpp>
+#include <ostream>
 #include <stdexcept>
 
 PRAGMA_GCC_O3_BEGIN
@@ -107,6 +108,10 @@ public:
         return all(center == other.center) &&
                (radius == other.radius);
     }
+    void print(std::ostream& ostr, size_t rec = 0) const {
+        std::string indent(rec, ' ');
+        ostr << indent << "center " << center << " radius " << radius;
+    }
     FixedArray<TPos, tndim> center;
     TPos radius;
 };
@@ -117,6 +122,12 @@ BoundingSphere<TPos, tndim> operator + (
     const FixedArray<TPos, tndim>& x)
 {
     return { b.center + x, b.radius };
+}
+
+template <class TPos, size_t tndim>
+std::ostream& operator << (std::ostream& ostr, const BoundingSphere<TPos, tndim>& b) {
+    b.print(ostr);
+    return ostr;
 }
 
 template <class TPos, size_t tndim>

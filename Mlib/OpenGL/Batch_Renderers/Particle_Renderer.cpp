@@ -12,8 +12,10 @@ using namespace Mlib;
 
 ParticleRenderer::ParticleRenderer(
     ParticleResources& resources,
-    ParticleType particle_type)
+    ParticleType particle_type,
+    const ExtremalBoundingSphere<CompressedScenePos, 3>& bounding_sphere)
     : particle_type_{ particle_type }
+    , bounding_sphere_{ bounding_sphere }
     , resources_{ resources }
     , instances_{ [this](const VariableAndHash<std::string>& name) {
         auto res = resources_.instantiate_particles_instance(name);
@@ -101,4 +103,8 @@ void ParticleRenderer::render(
 
 ScenePos ParticleRenderer::max_center_distance2(BillboardId billboard_id) const {
     return INFINITY;
+}
+
+ExtremalBoundingSphere<CompressedScenePos, 3> ParticleRenderer::bounding_sphere() const {
+    return bounding_sphere_;
 }

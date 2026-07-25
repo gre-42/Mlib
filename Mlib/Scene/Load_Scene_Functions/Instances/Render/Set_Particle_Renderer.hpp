@@ -8,13 +8,15 @@ namespace Mlib {
 template <class T>
 class VariableAndHash;
 struct LoadSceneJsonUserFunctionArgs;
+enum class ExtremalBoundingVolume;
 
 class SetParticleRenderer: public LoadPhysicsSceneInstanceFunction {
 public:
     explicit SetParticleRenderer(PhysicsScene& physics_scene);
     void operator () (
         const VariableAndHash<std::string>& node,
-        const VariableAndHash<std::string>& renderable) const;
+        const VariableAndHash<std::string>& renderable,
+        ExtremalBoundingVolume bounding_volume) const;
     void execute(const LoadSceneJsonUserFunctionArgs& args) const;
 };
 
