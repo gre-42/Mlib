@@ -523,6 +523,9 @@ void RemoteRigidBodyVehicle::read(
             ", lo " << (int)privileges.is_owner_local <<
             ", so " << (int)privileges.is_owner_sender;
     }
+    if (pp.update_physics) {
+        rb_->flags_local_ &= ~RigidBodyVehicleFlagsLocal::WAITING_FOR_INITIAL_POSITION;
+    }
     if (pp.invalidate_transformation_history) {
         assert_true(has_location);
         assert_true(pp.update_position);
@@ -534,7 +537,6 @@ void RemoteRigidBodyVehicle::read(
                 SceneTime::initial(physics_scene_->dynamic_world_.get_time()));
             // Notify child nodes with absolute movables (e.g. wheels)
             rb_->scene_node_->clear_transformation_history();
-            rb_->flags_local_ &= ~RigidBodyVehicleFlagsLocal::WAITING_FOR_INITIAL_POSITION;
         }
         old_remote_time->reset();
     }

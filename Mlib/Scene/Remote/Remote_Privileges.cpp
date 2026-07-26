@@ -29,6 +29,9 @@ PositionPrivileges RemotePrivileges::position(PositionFlags flags) {
         }
     }();
     result.update_physics = [&](){
+        if (!accept_coordinates) {
+            return false;
+        }
         if (is_manager_local) {
             return is_owner_sender;
         } else {
