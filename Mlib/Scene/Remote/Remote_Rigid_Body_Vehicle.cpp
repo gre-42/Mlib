@@ -532,6 +532,7 @@ void RemoteRigidBodyVehicle::read(
                 SceneTime::initial(physics_scene_->dynamic_world_.get_time()));
             // Notify child nodes with absolute movables (e.g. wheels)
             rb_->scene_node_->clear_transformation_history();
+            rb_->flags_local_ &= ~RigidBodyVehicleFlagsLocal::WAITING_FOR_INITIAL_POSITION;
         }
         old_remote_time->reset();
     }
@@ -574,7 +575,6 @@ void RemoteRigidBodyVehicle::read(
             rb_->rbp_.set_pose(tait_bryan_angles_2_matrix(rotation), position, relaxation, CURRENT_SOURCE_LOCATION);
             rb_->rbp_.set_v_com(v_com, dt_min, relaxation, CURRENT_SOURCE_LOCATION);
             rb_->rbp_.set_w(w, dt_min, relaxation, CURRENT_SOURCE_LOCATION);
-            rb_->flags_local_ &= ~RigidBodyVehicleFlagsLocal::WAITING_FOR_INITIAL_POSITION;
         }
         *old_remote_r = q_new;
         *old_remote_t = position;
