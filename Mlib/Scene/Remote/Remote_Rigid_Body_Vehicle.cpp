@@ -84,6 +84,10 @@ RemoteRigidBodyVehicle::RemoteRigidBodyVehicle(
         linfo() << "Create RemoteRigidBodyVehicle \"" << rb_->name() << '"';
     }
     rb_on_destroy_.add([this](){ global_object_pool.remove(this); }, CURRENT_SOURCE_LOCATION);
+    if (physics_scene_->remote_scene_ == nullptr) {
+        verbose_abort("RemoteRigidBodyVehicle: Remote scene is null");
+    }
+    rb->local_site_id_.emplace(physics_scene->remote_scene_->local_site_id());
 }
 
 RemoteRigidBodyVehicle::~RemoteRigidBodyVehicle() {

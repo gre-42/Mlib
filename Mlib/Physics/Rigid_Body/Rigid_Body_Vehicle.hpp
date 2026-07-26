@@ -369,6 +369,7 @@ public:
     FixedArray<float, 3> damage_absorption_direction_;
     std::optional<RemoteObjectId> remote_object_id_;
     std::optional<RemoteSiteId> owner_site_id_;
+    std::optional<RemoteSiteId> local_site_id_;
 private:
     void advance_time_skate(
         const PhysicsEngineConfig& cfg,

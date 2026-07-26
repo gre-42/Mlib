@@ -280,19 +280,21 @@ void RigidBodyVehicle::collide_with_air(CollisionHistory& c)
         auto drag = -wing->drag_coefficients * svel2;
         float fac = wing->fac(lvel);
         auto thr = rbp_.mass_ * c.cfg.max_aerodynamic_acceleration;
-        integrate_force(
-            VectorAtPosition<float, ScenePos, 3>{
-                .vector = abs_location.rotate(
-                    clamped(
-                        fac * FixedArray<float, 3>{
-                            drag(0),
-                            drag(1) - svel2(2) * wing->angle_of_attack * wing->angle_coefficient_yz + vel2(2) * wing->lift_coefficient,
-                            drag(2) - svel2(2) * std::abs(wing->brake_angle) * wing->angle_coefficient_zz},
-                        -thr,
-                        thr)),
-                .position = abs_location.t },
-            c.cfg,
-            c.phase);
+        if (!owner_site_id_.has_value() || !local_site_id_.has_value() || (*owner_site_id_ == *local_site_id_)) {
+            integrate_force(
+                VectorAtPosition<float, ScenePos, 3>{
+                    .vector = abs_location.rotate(
+                        clamped(
+                            fac * FixedArray<float, 3>{
+                                drag(0),
+                                drag(1) - svel2(2) * wing->angle_of_attack * wing->angle_coefficient_yz + vel2(2) * wing->lift_coefficient,
+                                drag(2) - svel2(2) * std::abs(wing->brake_angle) * wing->angle_coefficient_zz},
+                            -thr,
+                            thr)),
+                    .position = abs_location.t },
+                c.cfg,
+                c.phase);
+        }
         if (wing->trail_source.has_value()) {
             const auto& s = *wing->trail_source;
             if (std::abs(lvel) > s.minimum_velocity) {
