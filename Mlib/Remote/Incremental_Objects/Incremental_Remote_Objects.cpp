@@ -126,7 +126,8 @@ bool IncrementalRemoteObjects::try_remove(const RemoteObjectId& id) {
     // If the local time is not set, this means that no transmission has taken
     // place yet, and the deleted objects need not be updated.
     if (local_time_.initialized()) {
-        deleted_objects_.try_emplace(id, local_time());
+        deleted_objects_short_.try_emplace(id, local_time());
+        deleted_objects_long_.try_emplace(id, local_time());
     }
     if (!global_object_pool.contains(o.get())) {
         return false;
@@ -135,12 +136,17 @@ bool IncrementalRemoteObjects::try_remove(const RemoteObjectId& id) {
     return true;
 }
 
-const DeletedObjects& IncrementalRemoteObjects::deleted_objects() const {
-    return deleted_objects_;
+const DeletedObjects& IncrementalRemoteObjects::deleted_objects_short() const {
+    return deleted_objects_short_;
+}
+
+const DeletedObjects& IncrementalRemoteObjects::deleted_objects_long() const {
+    return deleted_objects_long_;
 }
 
 void IncrementalRemoteObjects::forget_old_deleted_objects() {
-    deleted_objects_.forget_old_entries(local_time());
+    deleted_objects_short_.forget_old_entries(local_time(), REMOTE_EVENT_HISTORY_DURATION);
+    deleted_objects_long_.forget_old_entries(local_time(), REMOTE_DELETION_DURATION);
 }
 
 const LocalObjects& IncrementalRemoteObjects::private_local_objects() const {
@@ -157,7 +163,8 @@ const RemoteObjects& IncrementalRemoteObjects::public_remote_objects() const {
 
 void IncrementalRemoteObjects::print(std::ostream& ostr) const {
     ostr <<
-        "#deleted: " << deleted_objects_.size() <<
+        "#deleted short: " << deleted_objects_short_.size() <<
+        ", #deleted long: " << deleted_objects_long_.size() <<
         ", #private local: " << private_local_objects_.size() <<
         ", #public local: " << public_local_objects_.size() <<
         ", #private remote: " << private_remote_objects_.size() <<

@@ -18,9 +18,10 @@ public:
     decltype(auto) try_emplace(K&& k, Args&&... args) {
         return events_.try_emplace(std::forward<K>(k), std::forward<Args...>(args...));
     }
-    void forget_old_entries(TTime local_time) {
+    template <class TDuration>
+    void forget_old_entries(TTime local_time, TDuration history_duration) {
         std::erase_if(events_, [&](const auto& item){
-            return item.first + REMOTE_EVENT_HISTORY_DURATION < local_time;
+            return item.first + history_duration < local_time;
         });
     }
     size_t size() const {

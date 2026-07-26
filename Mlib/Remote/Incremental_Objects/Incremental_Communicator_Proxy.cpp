@@ -151,8 +151,8 @@ void IncrementalCommunicatorProxy::receive_from_home(std::istream& istr) {
             objects_unknown_at_home_.insert(id);
         }
     }
-    auto receive_local = [&](RemoteObjectVisibility visibility){
-        const auto& deleted_objects = objects_->deleted_objects();
+    auto receive_any = [&](RemoteObjectVisibility visibility){
+        const auto& deleted_objects_long = objects_->deleted_objects_long();
         // linfo() << "Received " << object_count << " objects_";
         auto transmission_history_reader = TransmissionHistoryReader{*home_scene_level, remote_time, objects_->local_time()};
         while (true) {
@@ -174,7 +174,7 @@ void IncrementalCommunicatorProxy::receive_from_home(std::istream& istr) {
                 if (any(verbosity_ & IoVerbosity::METADATA)) {
                     linfo() << this << " create from home site " << (home_site_id_ + 0) << ", object " << i;
                 }
-                auto lifetime_status = deleted_objects.contains_key(i)
+                auto lifetime_status = deleted_objects_long.contains_key(i)
                     ? ObjectLifetimeStatus::DELETED
                     : ObjectLifetimeStatus::EXISTS;
                 auto o = shared_object_factory_->try_create_shared_object(
@@ -197,9 +197,9 @@ void IncrementalCommunicatorProxy::receive_from_home(std::istream& istr) {
             }
         }
     };
-    receive_local(RemoteObjectVisibility::PRIVATE);
-    receive_local(RemoteObjectVisibility::PUBLIC);
-    receive_local(RemoteObjectVisibility::PUBLIC);
+    receive_any(RemoteObjectVisibility::PRIVATE);
+    receive_any(RemoteObjectVisibility::PUBLIC);
+    receive_any(RemoteObjectVisibility::PUBLIC);
     {
         std::vector<LocalObjectId> objects_to_be_deleted;
         objects_to_be_deleted.reserve(objects_known_and_owned_by_home.size());
@@ -280,13 +280,13 @@ void IncrementalCommunicatorProxy::send_home(std::iostream& iostr) {
             if (any(verbosity_ & IoVerbosity::METADATA)) {
                 sl.emplace(iostr, "Deleted objects [bytes]: ");
             }
-            const auto& deleted = objects_->deleted_objects();
+            const auto& deleted_short = objects_->deleted_objects_short();
             if (any(verbosity_ & IoVerbosity::METADATA)) {
-                linfo() << "Delete " << deleted.size() << " objects";
+                linfo() << "Delete " << deleted_short.size() << " objects (short)";
             }
-            writer.write_binary(integral_cast<NDeletedType>(deleted.size()), "#ndeleted");
-            for (const auto& [id, time] : deleted) {
-                writer.serialize(id, "deleted ID");
+            writer.write_binary(integral_cast<NDeletedType>(deleted_short.size()), "#ndeleted");
+            for (const auto& [id, time] : deleted_short) {
+                writer.serialize(id, "deleted ID (short)");
             }
         }
         {

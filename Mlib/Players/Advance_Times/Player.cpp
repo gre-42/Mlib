@@ -574,7 +574,7 @@ void Player::advance_time(float dt, const StaticWorld& world) {
             }
         }
     }
-    shot_history.forget_old_entries(world.time);
+    shot_history.forget_old_entries(world.time, REMOTE_EVENT_HISTORY_DURATION);
     if (any(site_privileges_ & PlayerSitePrivileges::MANAGER)) {
         for (const auto& [time, event] : select_next_vehicle_history) {
             if ((time >= old_world_time_) && (time < world.time)) {
@@ -582,7 +582,7 @@ void Player::advance_time(float dt, const StaticWorld& world) {
             }
         }
     }
-    select_next_vehicle_history.forget_old_entries(world.time);
+    select_next_vehicle_history.forget_old_entries(world.time, REMOTE_EVENT_HISTORY_DURATION);
     old_world_time_ = world.time;
 }
 

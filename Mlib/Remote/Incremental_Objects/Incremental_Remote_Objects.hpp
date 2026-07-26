@@ -13,6 +13,8 @@ namespace Mlib {
 class IIncrementalObject;
 class SceneLevelSelector;
 
+// Objects that were not necessarily created by this site, but deleted by this site.
+// Objects that were deleted by its owner are deleted using the "objects_known_and_owned_by_home" variable.
 using DeletedObjects = EventsAndTimes<RemoteObjectId, std::chrono::steady_clock::time_point>;
 using LocalObjects = DanglingValueMap<LocalObjectId, IIncrementalObject>;
 using RemoteObjects = DanglingValueMap<RemoteObjectId, IIncrementalObject>;
@@ -44,7 +46,8 @@ public:
         RemoteObjectVisibility visibility);
     DanglingBaseClassPtr<IIncrementalObject> try_get(const RemoteObjectId& id) const;
     bool try_remove(const RemoteObjectId& id);
-    const DeletedObjects& deleted_objects() const;
+    const DeletedObjects& deleted_objects_short() const;
+    const DeletedObjects& deleted_objects_long() const;
     void forget_old_deleted_objects();
     const LocalObjects& private_local_objects() const;
     const LocalObjects& public_local_objects() const;
@@ -55,7 +58,8 @@ private:
     RemoteSiteId local_site_id_;
     TimeAndPause<std::chrono::steady_clock::time_point> local_time_;
     DanglingBaseClassRef<SceneLevelSelector> local_scene_level_selector_;
-    DeletedObjects deleted_objects_;
+    DeletedObjects deleted_objects_short_;
+    DeletedObjects deleted_objects_long_;
     LocalObjectId next_local_object_id_;
     LocalObjects private_local_objects_;
     LocalObjects public_local_objects_;
