@@ -26,6 +26,7 @@ inline PositionFlags& operator |= (PositionFlags& a, PositionFlags b) {
 }
 
 struct PositionPrivileges {
+    bool update_physics;
     bool invalidate_transformation_history;
     bool update_position;
 };
@@ -38,6 +39,7 @@ public:
         RemoteSiteId object_owner,
         RemoteSiteId object_manager);
     bool is_manager_local;
+    bool is_manager_sender;
     bool is_owner_local;
     bool is_owner_sender;
     PositionPrivileges position(PositionFlags flags);

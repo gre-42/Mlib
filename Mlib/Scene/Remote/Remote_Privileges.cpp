@@ -9,6 +9,7 @@ RemotePrivileges::RemotePrivileges(
     RemoteSiteId object_manager)
 {
     is_manager_local = (object_manager == local_site);
+    is_manager_sender = (object_manager == update_sender);
     is_owner_local = (object_owner == local_site);
     is_owner_sender = (object_owner == update_sender);
 };
@@ -25,6 +26,13 @@ PositionPrivileges RemotePrivileges::position(PositionFlags flags) {
             return !any(flags & PositionFlags::POSITION_CONTAINS_JUMP) && is_owner_sender;
         } else {
             return true;
+        }
+    }();
+    result.update_physics = [&](){
+        if (is_manager_local) {
+            return is_owner_sender;
+        } else {
+            return is_manager_sender; 
         }
     }();
     result.invalidate_transformation_history = [&](){

@@ -524,20 +524,22 @@ void RemoteRigidBodyVehicle::read(
     if (pp.invalidate_transformation_history) {
         assert_true(has_location);
         assert_true(pp.update_position);
-        rb_->scene_node_->set_absolute_pose(
-            position,
-            rotation,
-            1.f,
-            SceneTime::initial(physics_scene_->dynamic_world_.get_time()));
-        // Notify child nodes with absolute movables (e.g. wheels)
-        rb_->scene_node_->clear_transformation_history();
+        if (pp.update_physics) {
+            rb_->scene_node_->set_absolute_pose(
+                position,
+                rotation,
+                1.f,
+                SceneTime::initial(physics_scene_->dynamic_world_.get_time()));
+            // Notify child nodes with absolute movables (e.g. wheels)
+            rb_->scene_node_->clear_transformation_history();
+        }
         old_remote_time->reset();
     }
     auto mask = ~RigidBodyVehicleFlags::NONE;
     if (pp.update_position) {
         assert_true(has_location);
         auto q_new = Quaternion<SceneDir>::from_tait_bryan_angles(rotation);
-        if (old_remote_time->has_value()) {
+        if (old_remote_time->has_value() && pp.update_physics) {
             assert_true(old_remote_r != nullptr);
             assert_true(old_remote_t != nullptr);
             auto dt_count = minus_modulo(transmission_history_reader.remote_time(), **old_remote_time);
@@ -572,11 +574,11 @@ void RemoteRigidBodyVehicle::read(
             rb_->rbp_.set_pose(tait_bryan_angles_2_matrix(rotation), position, relaxation, CURRENT_SOURCE_LOCATION);
             rb_->rbp_.set_v_com(v_com, dt_min, relaxation, CURRENT_SOURCE_LOCATION);
             rb_->rbp_.set_w(w, dt_min, relaxation, CURRENT_SOURCE_LOCATION);
+            rb_->flags_local_ &= ~RigidBodyVehicleFlagsLocal::WAITING_FOR_INITIAL_POSITION;
         }
         *old_remote_r = q_new;
         *old_remote_t = position;
         old_remote_time->emplace(transmission_history_reader.remote_time());
-        rb_->flags_local_ &= ~RigidBodyVehicleFlagsLocal::WAITING_FOR_INITIAL_POSITION;
     } else {
         old_remote_time->reset();
         if (rb_->is_deactivated_avatar()) {
