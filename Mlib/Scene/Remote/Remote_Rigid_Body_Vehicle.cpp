@@ -498,7 +498,9 @@ void RemoteRigidBodyVehicle::read(
         remote_object_id.site_id};
     auto pf = PositionFlags::NONE;
     if (has_location) {
-        if (sum(squared(rb_->rbp_.abs_position() - position)) > squared(REMOTE_INTERPOLATION_JUMP_DISTANCE)) {
+        // Compare scene node position, not rigid body, in
+        // case multiple datagrams are received in one time step.
+        if (sum(squared(rb_->scene_node_->absolute_model_matrix().t - position)) > squared(REMOTE_INTERPOLATION_JUMP_DISTANCE)) {
             pf |= PositionFlags::POSITION_CONTAINS_JUMP;
         }
     } else {
