@@ -41,10 +41,10 @@ IncrementalCommunicatorProxy::IncrementalCommunicatorProxy(
     , tasks_{ tasks }
     , home_site_id_{ home_site_id }
 {
-    if (any(tasks_ & ProxyTasks::RELOAD_SCENE)) {
-        session_id_ = get_session_id();
-    } else {
+    if (any(tasks_ & ProxyTasks::SEND_OWNERSHIP)) {
         session_id_ = 0;
+    } else {
+        session_id_ = get_session_id();
     }
 }
 
@@ -95,17 +95,7 @@ void IncrementalCommunicatorProxy::receive_from_home(std::istream& istr) {
             return;
         }
     }
-    if (any(tasks_ & ProxyTasks::RELOAD_SCENE)) {
-        // Client code
-        if (session_id != session_id_) {
-            if (any(verbosity_ & IoVerbosity::METADATA)) {
-                linfo() << "Client received differing session ID. Client: " <<
-                    (session_id_+ 0) <<
-                    ", server: " << (session_id + 0);
-            }
-            return;
-        }
-    } else {
+    if (any(tasks_ & ProxyTasks::SEND_OWNERSHIP)) {
         // Server code
         if (session_id != session_id_) {
             if (any(verbosity_ & IoVerbosity::METADATA)) {
@@ -116,6 +106,16 @@ void IncrementalCommunicatorProxy::receive_from_home(std::istream& istr) {
             session_id_ = session_id;
             socket_versions_ = {};
             proxy_objects_caches_->remove_proxy(home_site_id_);
+        }
+    } else {
+        // Client code
+        if (session_id != session_id_) {
+            if (any(verbosity_ & IoVerbosity::METADATA)) {
+                linfo() << "Client received differing session ID. Client: " <<
+                    (session_id_+ 0) <<
+                    ", server: " << (session_id + 0);
+            }
+            return;
         }
     }
     auto versions = reader.deserialize<IncrementalVersionsRead>("incremental versions");
@@ -137,7 +137,11 @@ void IncrementalCommunicatorProxy::receive_from_home(std::istream& istr) {
         auto ndeleted = reader.read_binary<NDeletedType>("#deleted");
         for (NDeletedType i = 0; i < ndeleted; ++i) {
             auto id = reader.deserialize<RemoteObjectId>("deleted ID");
-            objects_->try_remove(id);
+            if (objects_->try_remove(id)) {
+                if (any(verbosity_ & IoVerbosity::METADATA)) {
+                    linfo() << "Delete " << id;
+                }
+            }
         }
     }
     {
@@ -211,7 +215,11 @@ void IncrementalCommunicatorProxy::receive_from_home(std::istream& istr) {
             }
         }
         for (auto i : objects_to_be_deleted) {
-            objects_->try_remove({home_site_id_, i});
+            if (objects_->try_remove({home_site_id_, i})) {
+                if (any(verbosity_ & IoVerbosity::METADATA)) {
+                    linfo() << "Delete site " << (home_site_id_ + 0) << ", object " << (i + 0);
+                }
+            }
         }
     }
 }

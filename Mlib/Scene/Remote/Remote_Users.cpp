@@ -78,6 +78,9 @@ DanglingBaseClassPtr<RemoteUsers> RemoteUsers::try_create_from_stream(
     IoVerbosity verbosity)
 {
     if (!any(transmitted_fields & RemoteUsersTransmittedFields::ALL)) {
+        if (any(verbosity & IoVerbosity::METADATA)) {
+            linfo() << "Attempt to incrementally create remote users";
+        }
         return nullptr;
     }
     auto res = global_object_pool.create_unique<RemoteUsers>(
@@ -87,6 +90,9 @@ DanglingBaseClassPtr<RemoteUsers> RemoteUsers::try_create_from_stream(
         site_id);
     res->read_data(reader, transmitted_fields, proxy_tasks, transmission_history_reader);
     if (lifetime_status == ObjectLifetimeStatus::DELETED) {
+        if (any(verbosity & IoVerbosity::METADATA)) {
+            linfo() << "Remote users deleted";
+        }
         return nullptr;
     }
     return {res.release(), CURRENT_SOURCE_LOCATION};

@@ -327,7 +327,7 @@ DanglingBaseClassPtr<RemoteRigidBodyVehicle> RemoteRigidBodyVehicle::try_create_
     }();
     auto rb = get_rigid_body_vehicle(pnode.get(), CURRENT_SOURCE_LOCATION);
     rb->flags_ = flags;
-    rb->flags_local_ |= RigidBodyVehicleFlagsLocal::WAITING_FOR_INITIAL_POSITION;
+    rb->flags_local_ |= RigidBodyVehicleFlagsLocal::WAITING_FOR_INITIAL_POSITION_OR_VELOCITY;
     rb->remote_object_id_ = remote_object_id;
     if (!owner_site_id.has_value()) {
         throw std::runtime_error("Owner site ID not set");
@@ -492,10 +492,10 @@ void RemoteRigidBodyVehicle::read(
         throw std::runtime_error("RemoteRigidBodyVehicle: Owner site ID not set");
     }
     auto privileges = RemotePrivileges{
+        proxy_tasks,
         physics_scene_->remote_scene_->local_site_id(),
         sender_site_id,
-        *rb_->owner_site_id_,
-        remote_object_id.site_id};
+        *rb_->owner_site_id_};
     auto pf = PositionFlags::NONE;
     if (has_location) {
         // Compare scene node position, not rigid body, in
@@ -509,22 +509,27 @@ void RemoteRigidBodyVehicle::read(
     if (any(flags & RigidBodyVehicleFlags::IS_DEACTIVATED_AVATAR)) {
         pf |= PositionFlags::IS_DEACTIVATED_AVATAR;
     }
-    if (!privileges.is_manager_local) {
+    if (!privileges.is_server_local) {
         if (rb_->is_deactivated_avatar() && !any(flags & RigidBodyVehicleFlags::IS_DEACTIVATED_AVATAR)) {
             pf |= PositionFlags::IS_REMOTELY_ACTIVATED_AVATAR;
         }
     }
+    if (any(rb_->flags_local_ & RigidBodyVehicleFlagsLocal::WAITING_FOR_INITIAL_POSITION)) {
+        pf |= PositionFlags::WAITING_FOR_POSITION;
+    }
+    if (any(rb_->flags_local_ & RigidBodyVehicleFlagsLocal::WAITING_FOR_INITIAL_VELOCITY)) {
+        pf |= PositionFlags::WAITING_FOR_VELOCITY;
+    }
     auto pp = privileges.position(pf);
     if (any(verbosity_ & IoVerbosity::METADATA)) {
         linfo() <<
-            "i " << (int)pp.invalidate_transformation_history <<
-            ", p " << (int)pp.update_position <<
-            ", lm " << (int)privileges.is_manager_local <<
+            "lc " << (int)has_location <<
+            ", i " << (int)pp.invalidate_transformation_history <<
+            ", po " << (int)pp.update_position <<
+            ", ph " << (int)pp.update_physics <<
+            ", sl " << (int)privileges.is_server_local <<
             ", lo " << (int)privileges.is_owner_local <<
             ", so " << (int)privileges.is_owner_sender;
-    }
-    if (pp.update_physics) {
-        rb_->flags_local_ &= ~RigidBodyVehicleFlagsLocal::WAITING_FOR_INITIAL_POSITION;
     }
     if (pp.invalidate_transformation_history) {
         assert_true(has_location);
@@ -537,11 +542,15 @@ void RemoteRigidBodyVehicle::read(
                 SceneTime::initial(physics_scene_->dynamic_world_.get_time()));
             // Notify child nodes with absolute movables (e.g. wheels)
             rb_->scene_node_->clear_transformation_history();
+            rb_->flags_local_ &= ~RigidBodyVehicleFlagsLocal::WAITING_FOR_INITIAL_POSITION;
         }
         old_remote_time->reset();
     }
     auto mask = ~RigidBodyVehicleFlags::NONE;
     if (pp.update_position) {
+        if (pp.update_physics && any(rb_->flags_local_ & RigidBodyVehicleFlagsLocal::WAITING_FOR_INITIAL_POSITION)) {
+            throw std::runtime_error("Attempt to update vehicle velocity without position");
+        }
         assert_true(has_location);
         auto q_new = Quaternion<SceneDir>::from_tait_bryan_angles(rotation);
         if (old_remote_time->has_value() && pp.update_physics) {
@@ -579,6 +588,7 @@ void RemoteRigidBodyVehicle::read(
             rb_->rbp_.set_pose(tait_bryan_angles_2_matrix(rotation), position, relaxation, CURRENT_SOURCE_LOCATION);
             rb_->rbp_.set_v_com(v_com, dt_min, relaxation, CURRENT_SOURCE_LOCATION);
             rb_->rbp_.set_w(w, dt_min, relaxation, CURRENT_SOURCE_LOCATION);
+            rb_->flags_local_ &= ~RigidBodyVehicleFlagsLocal::WAITING_FOR_INITIAL_VELOCITY;
         }
         *old_remote_r = q_new;
         *old_remote_t = position;
@@ -589,7 +599,7 @@ void RemoteRigidBodyVehicle::read(
             mask &= ~RigidBodyVehicleFlags::IS_ANY_AVATAR;
         }
     }
-    if (!privileges.is_manager_local) {
+    if (!privileges.is_server_local) {
         masked_set(rb_->flags_, flags, mask);
     }
 }
@@ -675,6 +685,9 @@ void RemoteRigidBodyVehicle::write(
             {
                 auto& vcache = proxy_objects_caches.get_or_create<VehicleRemoteRigidBodyVehicleCache>(receiver_site_id, remote_object_id);
                 if (any(rb_->flags_local_ & RigidBodyVehicleFlagsLocal::WAITING_FOR_INITIAL_POSITION)) {
+                    if (any(verbosity_ & IoVerbosity::METADATA)) {
+                        linfo() << "Waiting for initial car position, writing dummy positions";
+                    }
                     write_dummy_vehicle_location(vcache, writer, verbosity_);
                 } else {
                     auto location = Vehicle::VehicleLocation{
@@ -689,6 +702,9 @@ void RemoteRigidBodyVehicle::write(
             {
                 auto& vcache = proxy_objects_caches.get_or_create<AvatarRemoteRigidBodyVehicleCache>(receiver_site_id, remote_object_id);
                 if (any(rb_->flags_local_ & RigidBodyVehicleFlagsLocal::WAITING_FOR_INITIAL_POSITION)) {
+                    if (any(verbosity_ & IoVerbosity::METADATA)) {
+                        linfo() << "Waiting for initial avatar position, writing dummy positions";
+                    }
                     write_dummy_vehicle_location(vcache, writer, verbosity_);
                 } else {
                     auto location = Avatar::VehicleLocation{

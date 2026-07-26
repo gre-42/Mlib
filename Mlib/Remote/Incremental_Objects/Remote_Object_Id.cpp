@@ -4,11 +4,11 @@
 using namespace Mlib;
 
 std::string RemoteObjectId::to_string() const {
-    return (std::stringstream() << (site_id + 0) << '_' << object_id).str();
+    return (std::stringstream() << (site_id + 0) << '_' << (object_id + 0)).str();
 }
 
 std::string RemoteObjectId::to_displayname() const {
-    return (std::stringstream() << "site: " << (site_id + 0) << ", object: " << object_id).str();
+    return (std::stringstream() << "site: " << (site_id + 0) << ", object: " << (object_id + 0)).str();
 }
 
 std::ostream& Mlib::operator << (std::ostream& ostr, RemoteObjectId id) {

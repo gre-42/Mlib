@@ -169,8 +169,8 @@ void PhysicsEngine::burn_in(
         if (o.rigid_body->is_deactivated_avatar()) {
             continue;
         }
-        if (o.rigid_body->is_waiting_for_initial_position()) {
-            throw std::runtime_error("Attempt to burn-in rigidy body waiting for its initial position");
+        if (o.rigid_body->is_waiting_for_initial_position_or_velocity()) {
+            throw std::runtime_error("Attempt to burn-in rigidy body waiting for its initial position or velocity");
         }
         if (o.rigid_body->is_in_collision_error_state()) {
             throw std::runtime_error("Attempt to burn-in rigidy body that is in collision error");
@@ -200,8 +200,8 @@ void PhysicsEngine::burn_in(
                         if (o.rigid_body->is_deactivated_avatar()) {
                             continue;
                         }
-                        if (o.rigid_body->is_waiting_for_initial_position()) {
-                            throw std::runtime_error("Attempt to burn-in rigidy body waiting for its initial position");
+                        if (o.rigid_body->is_waiting_for_initial_position_or_velocity()) {
+                            throw std::runtime_error("Attempt to burn-in rigidy body waiting for its initial position or velocity");
                         }
                         o.rigid_body->rbp_.set_w(fixed_zeros<float, 3>(), cfg_.dt_substeps(phase), 1.f, CURRENT_SOURCE_LOCATION);
                     }

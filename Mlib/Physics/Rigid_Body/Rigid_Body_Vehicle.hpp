@@ -279,7 +279,7 @@ public:
     bool is_activated_avatar() const;
     bool is_deactivated_avatar() const;
     bool is_deactivated() const;
-    bool is_waiting_for_initial_position() const;
+    bool is_waiting_for_initial_position_or_velocity() const;
     bool is_in_collision_error_state() const;
 
     void calibrate_controllers();

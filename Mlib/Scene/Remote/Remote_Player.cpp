@@ -8,6 +8,7 @@
 #include <Mlib/Physics/Misc/Weapon_Cycle.hpp>
 #include <Mlib/Physics/Misc/When_To_Equip.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
+#include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle_Flags_Local.hpp>
 #include <Mlib/Players/Advance_Times/Player.hpp>
 #include <Mlib/Players/Advance_Times/Player_Site_Privileges.hpp>
 #include <Mlib/Players/Containers/Players.hpp>
@@ -148,6 +149,9 @@ DanglingBaseClassPtr<RemotePlayer> RemotePlayer::try_create_from_stream(
         throw std::runtime_error("RemotePlayer: Remote scene is null");
     }
     if (!any(transmitted_fields & PlayerTransmittedFields::SKILLS)) {
+        if (any(verbosity & IoVerbosity::METADATA)) {
+            linfo() << "Remote player created without skills";
+        }
         return nullptr;
     }
     // if (full_user_name.has_value() &&
@@ -158,6 +162,9 @@ DanglingBaseClassPtr<RemotePlayer> RemotePlayer::try_create_from_stream(
     //     return nullptr;
     // }
     if (lifetime_status == ObjectLifetimeStatus::DELETED) {
+        if (any(verbosity & IoVerbosity::METADATA)) {
+            linfo() << "Remote player deleted";
+        }
         return nullptr;
     }
     CreatePlayer{physics_scene, physics_scene.macro_line_executor_}.execute(JsonView{args}, PlayerCreator::REMOTE);
@@ -211,10 +218,10 @@ void RemotePlayer::read(
         }
     }();
     auto privileges = RemotePrivileges{
+        proxy_tasks,
         physics_scene_->remote_scene_->local_site_id(),
         sender_site_id,
-        owner_site_id,
-        remote_object_id.site_id};
+        owner_site_id};
     auto pp = privileges.position(PositionFlags::NONE);
     bool has_scene_vehicle;
     if (any(transmitted_fields & PlayerTransmittedFields::SKILLS)) {
@@ -233,11 +240,18 @@ void RemotePlayer::read(
     } else {
         has_scene_vehicle = reader.read_bool_bit("has_scene_vehicle");
     }
+    if (any(verbosity_ & IoVerbosity::METADATA)) {
+        linfo() << "Remote player has scene vehicle: " << (int)has_scene_vehicle <<
+            ", local: " << (int)player_->has_scene_vehicle();
+    }
     if (has_scene_vehicle) {
         auto vehicle_object_id = reader.deserialize<RemoteObjectId>("vehicle_object_id");
         auto seat = vehicle_seat_to_string(reader.read_bits<VehicleSeat>(VEHICLE_SEAT_NBITS, "seat"));
         auto externals_mode = reader.read_bits<ExternalsMode>(EXTERNALS_MODE_BITS, "externals mode");
-        if (!privileges.is_manager_local) {
+        if (!privileges.is_server_local) {
+            if (any(verbosity_ & IoVerbosity::METADATA)) {
+                linfo() << "Player client code";
+            }
             if (player_->has_scene_vehicle()) {
                 auto rb = player_->rigid_body();
                 if (!rb->remote_object_id_.has_value()) {
@@ -251,6 +265,9 @@ void RemotePlayer::read(
                 throw std::runtime_error("RemotePlayer: Remote scene is null");
             }
             if (!player_->has_scene_vehicle()) {
+                if (any(verbosity_ & IoVerbosity::METADATA)) {
+                    linfo() << "Local player has no scene vehicle";
+                }
                 auto ro = physics_scene_->remote_scene_->try_get(vehicle_object_id);
                 if (ro != nullptr) {
                     auto rbv = dynamic_cast<RemoteRigidBodyVehicle*>(ro.get());
@@ -261,7 +278,23 @@ void RemotePlayer::read(
                     if (rb->scene_node_ == nullptr) {
                         throw std::runtime_error("Rigid body has no scene node");
                     }
+                    if (any(verbosity_ & IoVerbosity::METADATA)) {
+                        if (rb->is_deactivated()) {
+                            auto wp = any(rb->flags_local_ & RigidBodyVehicleFlagsLocal::WAITING_FOR_INITIAL_POSITION);
+                            auto wv = any(rb->flags_local_ & RigidBodyVehicleFlagsLocal::WAITING_FOR_INITIAL_VELOCITY);
+                            linfo() << "Player \"" << *player_->id() <<
+                                "\" waiting for vehicle \"" << rb->name() <<
+                                "\", position: " << int(wp) <<
+                                ", velocity: " << int(wv);
+                        }
+                        if (!rb->drivers_.seat_is_free(seat)) {
+                            linfo() << "Vehicle has no free seat \"" << seat << '"';
+                        }
+                    }
                     if (!rb->is_deactivated() && rb->drivers_.seat_is_free(seat)) {
+                        if (any(verbosity_ & IoVerbosity::METADATA)) {
+                            linfo() << "Set vehicle";
+                        }
                         reset_node();
                         auto& vehicle =
                             global_object_pool.create<SceneVehicle>(
@@ -324,7 +357,7 @@ void RemotePlayer::read(
                 player_->set_gun_pitch((SceneDir)gun_pitch);
             }
         }
-    } else if (!privileges.is_manager_local) {
+    } else if (!privileges.is_server_local) {
         reset_node();
     }
     {

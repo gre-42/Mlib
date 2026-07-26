@@ -9,8 +9,12 @@ enum class PositionFlags: uint32_t {
     IS_REMOTELY_ACTIVATED_AVATAR = 1 << 0,
     IS_DEACTIVATED_AVATAR = 1 << 1,
     POSITION_CONTAINS_JUMP = 1 << 2,
-    POSITION_IS_INCOMPLETE = 1 << 3
+    POSITION_IS_INCOMPLETE = 1 << 3,
+    WAITING_FOR_POSITION = 1 << 4,
+    WAITING_FOR_VELOCITY = 1 << 5,
 };
+
+enum class ProxyTasks;
 
 inline bool any(PositionFlags a) {
     return a != PositionFlags::NONE;
@@ -34,12 +38,11 @@ struct PositionPrivileges {
 class RemotePrivileges {
 public:
     RemotePrivileges(
+        ProxyTasks local_proxy_tasks,
         RemoteSiteId local_site,
         RemoteSiteId update_sender,
-        RemoteSiteId object_owner,
-        RemoteSiteId object_manager);
-    bool is_manager_local;
-    bool is_manager_sender;
+        RemoteSiteId object_owner);
+    bool is_server_local;
     bool is_owner_local;
     bool is_owner_sender;
     PositionPrivileges position(PositionFlags flags);
