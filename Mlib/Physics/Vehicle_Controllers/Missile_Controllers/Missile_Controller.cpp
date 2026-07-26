@@ -1,6 +1,7 @@
 #include "Missile_Controller.hpp"
 #include <Mlib/Physics/Actuators/Engine_Power_Intent.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
+#include <sstream>
 #include <stdexcept>
 
 using namespace Mlib;
@@ -44,10 +45,9 @@ void MissileController::apply(float dt) {
         auto angle = dot0d(wing_controller.gain, fake_dir) + wing_controller.antiroll_angle * roll_strength;
         auto max_error = 4 * M_PI;
         if (std::abs(angle) > max_error) {
-            throw std::runtime_error(
-                "Missile wing angle too large. Actual: " +
-                std::to_string(angle) + ". Max (error): " +
-                std::to_string(max_error));
+            throw std::runtime_error((std::stringstream() <<
+                "Missile wing angle too large. Actual: " <<
+                angle << ". Max (error): " << max_error).str());
         }
         rb_->set_wing_angle_of_attack(
             wing_controller.i,
