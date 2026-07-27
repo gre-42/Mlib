@@ -91,14 +91,14 @@ RemoteRigidBodyVehicle::RemoteRigidBodyVehicle(
 }
 
 RemoteRigidBodyVehicle::~RemoteRigidBodyVehicle() {
-    if (any(verbosity_ & IoVerbosity::METADATA)) {
-        linfo() << "Destroy RemoteRigidBodyVehicle";
-    }
     if (rb_ == nullptr) {
         verbose_abort("RemoteRigidBodyVehicle: Rigid body is null");
     }
     if (!rb_->remote_object_id_.has_value()) {
         verbose_abort("RemoteRigidBodyVehicle: Rigid body has no remote object ID");
+    }
+    if (any(verbosity_ & IoVerbosity::METADATA)) {
+        linfo() << "Destroy RemoteRigidBodyVehicle " << *rb_->remote_object_id_;
     }
     if (physics_scene_->remote_scene_ == nullptr) {
         verbose_abort("RemoteRigidBodyVehicle: Remote scene is null");
