@@ -114,7 +114,7 @@ public:
     bool for_each_site_user(
         const std::function<bool(const UserInfo& user)>& operation,
         UserTypes user_types) const;
-    EventEmitter<const UserInfo&> on_user_loaded_level;
+    EventEmitter<UserInfo&> on_user_loaded_level;
     EventEmitter<> on_all_users_loaded_level;
     DanglingBaseClassRef<UserInfo> get_user(RemoteSiteId site_id, NUserCountType id);
     DanglingBaseClassRef<const UserInfo> get_user(RemoteSiteId site_id, NUserCountType id) const;

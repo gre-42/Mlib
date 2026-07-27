@@ -163,7 +163,7 @@ public:
     std::unique_ptr<CountdownPhysics> countdown_start_;
     std::shared_ptr<Translator> translator_;
     std::unique_ptr<RemoteScene> remote_scene_;
-    std::optional<EventReceiverDeletionToken<const UserInfo&>> on_user_loaded_level_token_;
+    std::optional<EventReceiverDeletionToken<UserInfo&>> on_user_loaded_level_token_;
     std::optional<EventReceiverDeletionToken<>> on_all_users_loaded_level_token_;
     std::optional<LateJoinPlayerFactory> late_join_player_factory_;
     #ifndef WITHOUT_AUDIO

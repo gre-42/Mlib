@@ -23,7 +23,7 @@ public:
         RemoteSites& remote_sites);
 private:
     std::unordered_map<uint32_t, std::function<void()>> create_rank_player_;
-    EventReceiverDeletionToken<const UserInfo&> on_user_loaded_level_token_;
+    EventReceiverDeletionToken<UserInfo&> on_user_loaded_level_token_;
 };
 
 }

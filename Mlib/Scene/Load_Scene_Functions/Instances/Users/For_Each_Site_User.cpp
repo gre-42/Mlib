@@ -78,7 +78,7 @@ void OnUserLoadedLevel::execute(const LoadSceneJsonUserFunctionArgs& args) {
         args.remote_config_and_sites.sites.on_user_loaded_level,
         [mle = args.macro_line_executor,
          content = args.arguments.at(KnownArgs::content),
-         &remote_sites = args.remote_config_and_sites.sites](const UserInfo& user)
+         &remote_sites = args.remote_config_and_sites.sites](UserInfo& user)
         {
             visit_user(mle, remote_sites, nullptr, content, user);
             return true;

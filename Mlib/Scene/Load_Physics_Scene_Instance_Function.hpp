@@ -107,7 +107,7 @@ protected:
     #endif
     BaseLog& base_log;
     SafeAtomicRecursiveSharedMutex& delete_node_mutex;
-    std::optional<EventReceiverDeletionToken<const UserInfo&>>& on_user_loaded_level_token;
+    std::optional<EventReceiverDeletionToken<UserInfo&>>& on_user_loaded_level_token;
     std::optional<EventReceiverDeletionToken<>>& on_all_users_loaded_level_token;
     std::optional<LateJoinPlayerFactory>& late_join_player_factory;
 
