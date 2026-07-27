@@ -208,9 +208,14 @@ void IncrementalCommunicatorProxy::receive_from_home(std::istream& istr) {
         std::vector<LocalObjectId> objects_to_be_deleted;
         objects_to_be_deleted.reserve(objects_known_and_owned_by_home.size());
         for (auto& [i, o] : objects_->public_remote_objects()) {
-            if ((i.site_id == home_site_id_) &&
-                !objects_known_and_owned_by_home.contains(i.object_id))
-            {
+            bool can_delete = [&](){
+                if (any(tasks_ & ProxyTasks::SEND_OWNERSHIP)) {
+                    return i.site_id == home_site_id_;
+                } else {
+                    return i.site_id != objects_->local_site_id();
+                }
+            }();
+            if (can_delete && !objects_known_and_owned_by_home.contains(i.object_id)) {
                 objects_to_be_deleted.push_back(i.object_id);
             }
         }
