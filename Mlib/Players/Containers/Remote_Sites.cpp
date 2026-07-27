@@ -1,6 +1,7 @@
 #include "Remote_Sites.hpp"
 #include <Mlib/Iterator/Enumerate.hpp>
 #include <Mlib/Memory/Integral_Cast.hpp>
+#include <Mlib/Os/Io/Optional.hpp>
 #include <Mlib/Players/Containers/Users.hpp>
 #include <Mlib/Stats/Arange.hpp>
 #include <mutex>
@@ -21,7 +22,6 @@ UserInfo::UserInfo(
     , name{ std::move(name) }
     , full_name{ std::move(full_name) }
     , type{ type }
-    , random_rank{ remote_sites->compute_free_user_rank() }
     , status_{ UserStatus::INITIAL }
     , remote_sites_{ remote_sites }
 {
@@ -81,7 +81,7 @@ std::ostream& Mlib::operator << (std::ostream& ostr, const UserInfo& user_info) 
         ", name: \"" << user_info.name << '"' <<
         ", full name: \"" << user_info.full_name << '"' <<
         ", type: " << "0x" << std::hex << (int)user_info.type <<
-        ", random rank: " << (user_info.random_rank + 0) <<
+        ", random rank: " << user_info.random_rank <<
         ", status: " << "0x" << std::hex << (int)user_info.get_status();
     return ostr;
 }
@@ -375,7 +375,7 @@ NUserCountType RemoteSites::compute_random_user_ranks() {
             if (i >= perm.length()) {
                 verbose_abort("RemoteSites::compute_random_user_rank: Number of users changed");
             }
-            user.random_rank = perm(i);
+            user.random_rank.emplace(perm(i));
             ++i;
             return true;
         }, UserTypes::ALL);

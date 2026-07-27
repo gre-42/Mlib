@@ -257,7 +257,9 @@ void RemotePlayer::read(
                 if (!rb->remote_object_id_.has_value()) {
                     throw std::runtime_error("remote vehicle object ID not set");
                 }
-                if (*rb->remote_object_id_ != vehicle_object_id) {
+                if ((*rb->remote_object_id_ != vehicle_object_id) ||
+                    (player_->externals_mode() != externals_mode))
+                {
                     reset_node();
                 }
             }

@@ -95,7 +95,10 @@ LateJoinPlayerFactory::LateJoinPlayerFactory(
     : on_user_loaded_level_token_{
         remote_sites.on_user_loaded_level,
         [this](const UserInfo& user){
-            auto it = create_rank_player_.find(user.random_rank);
+            if (!user.random_rank.has_value()) {
+                throw std::runtime_error("User \"" + user.full_name + "\" has no rank");
+            }
+            auto it = create_rank_player_.find(*user.random_rank);
             if (it != create_rank_player_.end()) {
                 linfo() << "Creating user: " << user;
                 it->second();

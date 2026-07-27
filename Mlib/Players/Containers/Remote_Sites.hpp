@@ -77,7 +77,7 @@ public:
     std::string name;
     std::string full_name;
     UserType type;
-    NUserCountType random_rank;
+    std::optional<NUserCountType> random_rank;
     UserStatus get_status() const;
     void set_status(UserStatus value);
 private:

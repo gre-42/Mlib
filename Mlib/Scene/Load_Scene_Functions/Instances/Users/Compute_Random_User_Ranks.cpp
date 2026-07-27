@@ -25,8 +25,11 @@ void ComputeRandomUserRanks::execute(const LoadSceneJsonUserFunctionArgs& args) 
         args.remote_config_and_sites.sites.for_each_site_user(
             [&](UserInfo& user)
             {
-                vars.set("random_rank_" + user.full_name, user.random_rank);
-                vars.set("random_rank_str_" + user.full_name, std::to_string(user.random_rank));
+                if (!user.random_rank.has_value()) {
+                    throw std::runtime_error("User \"" + user.full_name + "\" has no rank after random rank computation");
+                }
+                vars.set("random_rank_" + user.full_name, *user.random_rank);
+                vars.set("random_rank_str_" + user.full_name, std::to_string(*user.random_rank));
                 return true;
             }, UserTypes::ALL);
     }
