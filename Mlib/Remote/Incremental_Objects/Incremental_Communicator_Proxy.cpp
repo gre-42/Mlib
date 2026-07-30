@@ -155,55 +155,57 @@ void IncrementalCommunicatorProxy::receive_from_home(std::istream& istr) {
             objects_unknown_at_home_.insert(id);
         }
     }
-    auto receive_any = [&](RemoteObjectVisibility visibility){
-        const auto& deleted_objects_long = objects_->deleted_objects_long();
-        // linfo() << "Received " << object_count << " objects_";
+    {
         auto transmission_history_reader = TransmissionHistoryReader{*home_scene_level, remote_time, objects_->local_time()};
-        while (true) {
-            auto transmitted_fields = reader.read_binary<TransmittedFields>("transmitted fields");
-            if (transmitted_fields == TransmittedFields::NONE) {
-                break;
-            }
-            auto i = transmission_history_reader.read_remote_object_id(reader, transmitted_fields);
-            if (i.site_id == home_site_id_) {
-                objects_known_and_owned_by_home.insert(i.object_id);
-            }
-            if (auto it = objects_->try_get(i); it != nullptr) {
-                if (any(verbosity_ & IoVerbosity::METADATA)) {
-                    linfo() << this << " read from home site " << (home_site_id_ + 0) << ", object " << i << " \"" << it->name() << '"';
+        auto receive_any = [&](RemoteObjectVisibility visibility){
+            const auto& deleted_objects_long = objects_->deleted_objects_long();
+            // linfo() << "Received " << object_count << " objects_";
+            while (true) {
+                auto transmitted_fields = reader.read_binary<TransmittedFields>("transmitted fields");
+                if (transmitted_fields == TransmittedFields::NONE) {
+                    break;
                 }
-                it->read(reader, home_site_id_, i, tasks_, transmitted_fields,
-                    proxy_objects_caches_.get(), versions, transmission_history_reader);
-            } else {
-                if (any(verbosity_ & IoVerbosity::METADATA)) {
-                    linfo() << this << " create from home site " << (home_site_id_ + 0) << ", object " << i;
+                auto i = transmission_history_reader.read_remote_object_id(reader, transmitted_fields);
+                if (i.site_id == home_site_id_) {
+                    objects_known_and_owned_by_home.insert(i.object_id);
                 }
-                auto lifetime_status = deleted_objects_long.contains_key(i)
-                    ? ObjectLifetimeStatus::DELETED
-                    : ObjectLifetimeStatus::EXISTS;
-                auto o = shared_object_factory_->try_create_shared_object(
-                    reader, home_site_id_, i, tasks_, transmitted_fields, lifetime_status,
-                    proxy_objects_caches_.get(), versions, transmission_history_reader);
-                if (o == nullptr) {
+                if (auto it = objects_->try_get(i); it != nullptr) {
                     if (any(verbosity_ & IoVerbosity::METADATA)) {
-                        linfo() << this << " cannot create object";
+                        linfo() << this << " read from home site " << (home_site_id_ + 0) << ", object " << i << " \"" << it->name() << '"';
                     }
-                    if (i.site_id != objects_->local_site_id()) {
-                        objects_unknown_here_.insert(i);
-                    }
+                    it->read(reader, home_site_id_, i, tasks_, transmitted_fields,
+                        proxy_objects_caches_.get(), versions, transmission_history_reader);
                 } else {
                     if (any(verbosity_ & IoVerbosity::METADATA)) {
-                        linfo() << this << " object created: \"" << o->name() << '"';
+                        linfo() << this << " create from home site " << (home_site_id_ + 0) << ", object " << i;
                     }
-                    objects_->add_remote_object(i, *o, visibility);
-                    objects_unknown_here_.erase(i);
+                    auto lifetime_status = deleted_objects_long.contains_key(i)
+                        ? ObjectLifetimeStatus::DELETED
+                        : ObjectLifetimeStatus::EXISTS;
+                    auto o = shared_object_factory_->try_create_shared_object(
+                        reader, home_site_id_, i, tasks_, transmitted_fields, lifetime_status,
+                        proxy_objects_caches_.get(), versions, transmission_history_reader);
+                    if (o == nullptr) {
+                        if (any(verbosity_ & IoVerbosity::METADATA)) {
+                            linfo() << this << " cannot create object";
+                        }
+                        if (i.site_id != objects_->local_site_id()) {
+                            objects_unknown_here_.insert(i);
+                        }
+                    } else {
+                        if (any(verbosity_ & IoVerbosity::METADATA)) {
+                            linfo() << this << " object created: \"" << o->name() << '"';
+                        }
+                        objects_->add_remote_object(i, *o, visibility);
+                        objects_unknown_here_.erase(i);
+                    }
                 }
             }
-        }
-    };
-    receive_any(RemoteObjectVisibility::PRIVATE);
-    receive_any(RemoteObjectVisibility::PUBLIC);
-    receive_any(RemoteObjectVisibility::PUBLIC);
+        };
+        receive_any(RemoteObjectVisibility::PRIVATE);
+        receive_any(RemoteObjectVisibility::PUBLIC);
+        receive_any(RemoteObjectVisibility::PUBLIC);
+    }
     {
         std::vector<LocalObjectId> objects_to_be_deleted;
         objects_to_be_deleted.reserve(objects_known_and_owned_by_home.size());
@@ -311,61 +313,10 @@ void IncrementalCommunicatorProxy::send_home(std::iostream& iostr) {
                 writer.serialize(id, "unknown ID");
             }
         }
-        bool new_object_sent = false;
-        auto send_local = [&](const LocalObjects& objects){
-            if (any(verbosity_ & IoVerbosity::METADATA)) {
-                linfo() << "Maybe send " << objects.size() << " local objects";
-            }
+        {
+            bool new_object_sent = false;
             auto transmission_history_writer = TransmissionHistoryWriter{objects_->local_time(), datagram_counter_};
-            for (auto& [i, o] : objects) {
-                auto j = RemoteObjectId{objects_->local_site_id(), i};
-                auto known_fields = objects_unknown_at_home_.contains(j)
-                    ? KnownFields::NONE
-                    : KnownFields::ALL;
-                if (known_fields == KnownFields::NONE) {
-                    if (any(verbosity_ & IoVerbosity::METADATA)) {
-                        linfo() << "Maybe send complete object to home site " << (home_site_id_ + 0) << ", " << i << " \"" << o->name() << '"';
-                    }
-                    if (new_object_sent || (object_to_send_completely.has_value() && (j != *object_to_send_completely))) {
-                        if (any(verbosity_ & IoVerbosity::METADATA)) {
-                            linfo() << "Not sending object";
-                        }
-                        continue;
-                    }
-                    new_object_sent = true;
-                } else {
-                    if (any(verbosity_ & IoVerbosity::METADATA)) {
-                        linfo() << "Maybe send partial object to home site " << (home_site_id_ + 0) << ", " << i << " \"" << o->name() << '"';
-                    }
-                }
-                std::optional<StreamSizeLogger> sl;
-                if (any(verbosity_ & IoVerbosity::METADATA)) {
-                    sl.emplace(iostr, o->name() + " [bytes]: ");
-                }
-                o->write(writer, home_site_id_, j, tasks_, known_fields, proxy_objects_caches_.get(), versions, transmission_history_writer);
-            }
-            writer.write_binary(TransmittedFields::NONE, "transmitted fields EOF");
-        };
-        auto send_zero = [&](const char* msg){
-            if (any(verbosity_ & IoVerbosity::METADATA)) {
-                linfo() << "Send no " << msg << " objects";
-            }
-            writer.write_binary(TransmittedFields::NONE, "transmitted fields EOF");
-        };
-        if (any(tasks_ & ProxyTasks::SEND_LOCAL)) {
-            send_local(objects_->private_local_objects());
-            send_local(objects_->public_local_objects());
-        } else {
-            send_zero("local");
-            send_zero("local");
-        }
-        if (any(tasks_ & ProxyTasks::SEND_REMOTE)) {
-            const auto& objects = objects_->public_remote_objects();
-            if (any(verbosity_ & IoVerbosity::METADATA)) {
-                linfo() << "Maybe send " << objects.size() << " remote objects";
-            }
-            auto transmission_history_writer = TransmissionHistoryWriter{objects_->local_time(), datagram_counter_};
-            for (auto& [i, o] : objects) {
+            auto send_object = [&](RemoteObjectId i, const DestructionFunctionsTokensRef<IIncrementalObject>& o){
                 auto known_fields = objects_unknown_at_home_.contains(i)
                     ? KnownFields::NONE
                     : KnownFields::ALL;
@@ -373,13 +324,16 @@ void IncrementalCommunicatorProxy::send_home(std::iostream& iostr) {
                     if (any(verbosity_ & IoVerbosity::METADATA)) {
                         linfo() << "Maybe send complete object to home site " << (home_site_id_ + 0) << ", " << i << " \"" << o->name() << '"';
                     }
-                    if (new_object_sent || (object_to_send_completely.has_value() && (i != *object_to_send_completely))) {
-                        if (any(verbosity_ & IoVerbosity::METADATA)) {
-                            linfo() << "Not sending object";
+                    if (object_to_send_completely.has_value() && (i == *object_to_send_completely)) {
+                        if (new_object_sent) {
+                            if (any(verbosity_ & IoVerbosity::METADATA)) {
+                                linfo() << "Sending only object only partially";
+                            }
+                            known_fields = KnownFields::ALL;
+                        } else {
+                            new_object_sent = true;
                         }
-                        continue;
                     }
-                    new_object_sent = true;
                 } else {
                     if (any(verbosity_ & IoVerbosity::METADATA)) {
                         linfo() << "Maybe send partial object to home site " << (home_site_id_ + 0) << ", " << i << " \"" << o->name() << '"';
@@ -390,10 +344,42 @@ void IncrementalCommunicatorProxy::send_home(std::iostream& iostr) {
                     sl.emplace(iostr, o->name() + " [bytes]: ");
                 }
                 o->write(writer, home_site_id_, i, tasks_, known_fields, proxy_objects_caches_.get(), versions, transmission_history_writer);
+            };
+            auto send_local = [&](const LocalObjects& objects){
+                if (any(verbosity_ & IoVerbosity::METADATA)) {
+                    linfo() << "Maybe send " << objects.size() << " local objects";
+                }
+                for (auto& [i, o] : objects) {
+                    auto j = RemoteObjectId{objects_->local_site_id(), i};
+                    send_object(j, o);
+                }
+                writer.write_binary(TransmittedFields::NONE, "transmitted fields EOF");
+            };
+            auto send_zero = [&](const char* msg){
+                if (any(verbosity_ & IoVerbosity::METADATA)) {
+                    linfo() << "Send no " << msg << " objects";
+                }
+                writer.write_binary(TransmittedFields::NONE, "transmitted fields EOF");
+            };
+            if (any(tasks_ & ProxyTasks::SEND_LOCAL)) {
+                send_local(objects_->private_local_objects());
+                send_local(objects_->public_local_objects());
+            } else {
+                send_zero("local");
+                send_zero("local");
             }
-            writer.write_binary(TransmittedFields::NONE, "transmitted fields EOF");
-        } else {
-            send_zero("remote");
+            if (any(tasks_ & ProxyTasks::SEND_REMOTE)) {
+                const auto& objects = objects_->public_remote_objects();
+                if (any(verbosity_ & IoVerbosity::METADATA)) {
+                    linfo() << "Maybe send " << objects.size() << " remote objects";
+                }
+                for (auto& [i, o] : objects) {
+                    send_object(i, o);
+                }
+                writer.write_binary(TransmittedFields::NONE, "transmitted fields EOF");
+            } else {
+                send_zero("remote");
+            }
         }
     }
     writer.flush_partial("before send");
