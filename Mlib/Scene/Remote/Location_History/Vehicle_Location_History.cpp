@@ -34,8 +34,11 @@ std::optional<TDeltaLocation> RemoteRigidBodyVehicleLocalHistory<TAbsoluteLocati
     }
     const auto& base = location_history.at(base_version - 1);
     if (!base.has_value()) {
-        throw std::runtime_error((std::stringstream() <<
-            "Base version does not exist. Is the \"REMOTE_DELETION_DURATION\" too short? Base version " << (base_version + 0)).str());
+        // The session ID can change from a->b->a due to message reordering,
+        // deleting caches while transitioning to b (and back to a).
+        return std::nullopt;
+        // throw std::runtime_error((std::stringstream() <<
+        //     "Base version does not exist. Is the \"REMOTE_DELETION_DURATION\" too short? Base version " << (base_version + 0)).str());
     }
     auto f = l.fixed_point();
     auto c = IncrementalConfig::NONE;
