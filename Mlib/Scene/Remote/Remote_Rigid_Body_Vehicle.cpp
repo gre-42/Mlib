@@ -436,36 +436,30 @@ void RemoteRigidBodyVehicle::read(
         switch (type) {
         case RemoteSceneObjectType::RIGID_BODY_CAR:
             {
-                auto vcache = proxy_objects_caches.try_get<VehicleRemoteRigidBodyVehicleCache>(sender_site_id, remote_object_id);
-                if (vcache == nullptr) {
-                    throw std::runtime_error("Could not get vehicle location cache");
-                }
-                auto location = read_vehicle_location(*vcache, reader, versions);
+                auto& vcache = proxy_objects_caches.get_or_create<VehicleRemoteRigidBodyVehicleCache>(sender_site_id, remote_object_id);
+                auto location = read_vehicle_location(vcache, reader, versions);
                 if (location.has_value()) {
                     position = location->T;
                     rotation = location->r;
                 }
                 has_location = location.has_value();
-                old_remote_time = &vcache->old_remote_time;
-                old_remote_r = &vcache->old_remote_r;
-                old_remote_t = &vcache->old_remote_t;
+                old_remote_time = &vcache.old_remote_time;
+                old_remote_r = &vcache.old_remote_r;
+                old_remote_t = &vcache.old_remote_t;
             }
             return;
         case RemoteSceneObjectType::RIGID_BODY_AVATAR:
             {
-                auto vcache = proxy_objects_caches.try_get<AvatarRemoteRigidBodyVehicleCache>(sender_site_id, remote_object_id);
-                if (vcache == nullptr) {
-                    throw std::runtime_error("Could not get avatar location cache");
-                }
-                auto location = read_vehicle_location(*vcache, reader, versions);
+                auto& vcache = proxy_objects_caches.get_or_create<AvatarRemoteRigidBodyVehicleCache>(sender_site_id, remote_object_id);
+                auto location = read_vehicle_location(vcache, reader, versions);
                 if (location.has_value()) {
                     position = location->T;
                     rotation = {0.f, location->r1, 0.f};
                 }
                 has_location = location.has_value();
-                old_remote_time = &vcache->old_remote_time;
-                old_remote_r = &vcache->old_remote_r;
-                old_remote_t = &vcache->old_remote_t;
+                old_remote_time = &vcache.old_remote_time;
+                old_remote_r = &vcache.old_remote_r;
+                old_remote_t = &vcache.old_remote_t;
             }
             return;
         case RemoteSceneObjectType::REMOTE_USERS:
