@@ -24,17 +24,20 @@ enum class LocalSceneLevelLoadStatus: uint8_t {
     RUNNING = 0x2B
 };
 
+enum class RemoteRole;
+
 class SceneLevelSelector: public virtual DanglingBaseClass {
 public:
     SceneLevelSelector(
         LocalSceneLevel local_scene_level,
         std::function<void()> on_schedule_load_scene,
+        std::function<void()> on_reload_transient_objects,
         std::function<void()> on_update_time_of_day);
     ~SceneLevelSelector();
     LocalSceneLevel get_local_scene_level() const;
     LocalSceneLevel get_next_scene_level() const;
     std::string get_next_scene_name() const;
-    std::string get_time_of_day() const;
+    std::string get_next_time_of_day() const;
     bool server_set_next_scene_level(
         const std::string& level_name,
         const std::string& time_of_day);
@@ -49,12 +52,14 @@ private:
     bool set_next_scene_level(
         const std::string& level_name,
         const std::string& time_of_day,
-        uint8_t reload_count);
+        uint8_t reload_count,
+        RemoteRole remote_role);
     mutable SafeAtomicRecursiveSharedMutex mutex_;
     LocalSceneLevelLoadStatus load_status_;
     LocalSceneLevel local_scene_level_;
     LocalSceneLevel next_scene_level_;
     std::function<void()> on_schedule_load_scene_;
+    std::function<void()> on_reload_transient_objects_;
     std::function<void()> on_update_time_of_day_;
 };
 

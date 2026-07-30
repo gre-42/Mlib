@@ -124,16 +124,23 @@ LoadScene::LoadScene(
     , scene_level_selector_{
         std::move(scene_level),
         [this](){
-            linfo() << "Time of day (0): " << scene_level_selector_.get_time_of_day();
+            linfo() << "Schedule load scene: " << scene_level_selector_.get_next_time_of_day();
             auto args = macro_line_executor_.writable_json_macro_arguments();
-            args->set("loaded_time_of_day", scene_level_selector_.get_time_of_day());
+            args->set("loaded_time_of_day", scene_level_selector_.get_next_time_of_day());
             args.unlock_and_notify();
             macro_line_executor_({{"playback", "remote.level.load_" + scene_level_selector_.get_next_scene_name()}}, nullptr);
         },
         [this](){
-            linfo() << "Time of day (1): " << scene_level_selector_.get_time_of_day();
+            linfo() << "Reload transient objects";
             auto args = macro_line_executor_.writable_json_macro_arguments();
-            args->set("loaded_time_of_day", scene_level_selector_.get_time_of_day());
+            args->set("loaded_time_of_day", scene_level_selector_.get_next_time_of_day());
+            args.unlock_and_notify();
+            macro_line_executor_({{"playback", "reload_transient_objects_in_physics_thread"}}, nullptr);
+        },
+        [this](){
+            linfo() << "Update time of day: " << scene_level_selector_.get_next_time_of_day();
+            auto args = macro_line_executor_.writable_json_macro_arguments();
+            args->set("loaded_time_of_day", scene_level_selector_.get_next_time_of_day());
             args.unlock_and_notify();
             macro_line_executor_({{"playback", "update_time_of_day"}}, nullptr);
         }}

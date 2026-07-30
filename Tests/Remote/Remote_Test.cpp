@@ -193,9 +193,10 @@ void test_remote() {
     SharedString s{ "Hello world" };
     LocalSceneLevel local_scene_level;
     std::function<void()> on_schedule_load_scene;
+    std::function<void()> on_reload_transient_objects;
     std::function<void()> on_update_time_of_day;
-    SceneLevelSelector server_scene_level{local_scene_level, on_schedule_load_scene, on_update_time_of_day};
-    SceneLevelSelector client_scene_level{local_scene_level, on_schedule_load_scene, on_update_time_of_day};
+    SceneLevelSelector server_scene_level{local_scene_level, on_schedule_load_scene, on_reload_transient_objects, on_update_time_of_day};
+    SceneLevelSelector client_scene_level{local_scene_level, on_schedule_load_scene, on_reload_transient_objects, on_update_time_of_day};
 
     ProxyObjectsCaches caches;
     RemoteObjectFactory shared_object_factory;
