@@ -36,6 +36,8 @@ std::optional<TDeltaLocation> RemoteRigidBodyVehicleLocalHistory<TAbsoluteLocati
     if (!base.has_value()) {
         // The session ID can change from a->b->a due to message reordering,
         // deleting caches while transitioning to b (and back to a).
+        // Datagram timestamp versioning (is_newer(...)) happens **after**
+        // session ID comparison.
         return std::nullopt;
         // throw std::runtime_error((std::stringstream() <<
         //     "Base version does not exist. Is the \"REMOTE_DELETION_DURATION\" too short? Base version " << (base_version + 0)).str());

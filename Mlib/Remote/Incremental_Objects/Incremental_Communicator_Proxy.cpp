@@ -324,15 +324,16 @@ void IncrementalCommunicatorProxy::send_home(std::iostream& iostr) {
                     if (any(verbosity_ & IoVerbosity::METADATA)) {
                         linfo() << "Maybe send complete object to home site " << (home_site_id_ + 0) << ", " << i << " \"" << o->name() << '"';
                     }
-                    if (object_to_send_completely.has_value() && (i == *object_to_send_completely)) {
-                        if (new_object_sent) {
-                            if (any(verbosity_ & IoVerbosity::METADATA)) {
-                                linfo() << "Sending only object only partially";
-                            }
-                            known_fields = KnownFields::ALL;
-                        } else {
-                            new_object_sent = true;
+                    if (!object_to_send_completely.has_value()) {
+                        throw std::runtime_error((std::stringstream() << "Object to send completely not set: " << i).str());
+                    }
+                    if (new_object_sent || (i != *object_to_send_completely)) {
+                        if (any(verbosity_ & IoVerbosity::METADATA)) {
+                            linfo() << "Sending object only partially";
                         }
+                        known_fields = KnownFields::ALL;
+                    } else {
+                        new_object_sent = true;
                     }
                 } else {
                     if (any(verbosity_ & IoVerbosity::METADATA)) {
