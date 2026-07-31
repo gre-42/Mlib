@@ -1879,6 +1879,11 @@ void SceneNode::invalidate_transformation_history() {
     trafo_history_invalidated_ = true;
 }
 
+bool SceneNode::transformation_history_invalidated() const {
+    std::scoped_lock lock{ pose_mutex_ };
+    return trafo_history_invalidated_;
+}
+
 void SceneNode::clear_transformation_history()
 {
     if (parent_ == nullptr) {

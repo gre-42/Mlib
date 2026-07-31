@@ -494,7 +494,9 @@ void RemoteRigidBodyVehicle::read(
     if (has_location) {
         // Compare scene node position, not rigid body, in
         // case multiple datagrams are received in one time step.
-        if (sum(squared(rb_->scene_node_->absolute_model_matrix().t - position)) > squared(REMOTE_INTERPOLATION_JUMP_DISTANCE)) {
+        if ((sum(squared(rb_->scene_node_->absolute_model_matrix().t - position)) > squared(REMOTE_INTERPOLATION_JUMP_DISTANCE)) ||
+            rb_->scene_node_->transformation_history_invalidated())
+        {
             pf |= PositionFlags::POSITION_CONTAINS_JUMP;
         }
     } else {
@@ -536,6 +538,7 @@ void RemoteRigidBodyVehicle::read(
                 SceneTime::initial(physics_scene_->dynamic_world_.get_time()));
             // Notify child nodes with absolute movables (e.g. wheels)
             rb_->scene_node_->clear_transformation_history();
+            rb_->scene_node_->invalidate_transformation_history();
             rb_->flags_local_ &= ~RigidBodyVehicleFlagsLocal::WAITING_FOR_INITIAL_POSITION;
         }
         old_remote_time->reset();
@@ -555,7 +558,7 @@ void RemoteRigidBodyVehicle::read(
                 ? **old_remote_time
                 : transmission_history_reader.remote_time();
             auto dt_count = minus_modulo(transmission_history_reader.remote_time(), fake_old_remote_time);
-            if (old_remote_time->has_value() && (dt_count < 0)) {
+            if (dt_count < 0) {
                 throw std::runtime_error((std::stringstream() <<
                     "New remote time (" << (transmission_history_reader.remote_time() + 0) <<
                     ") is below old remote time (" << (fake_old_remote_time + 0) << ')').str());

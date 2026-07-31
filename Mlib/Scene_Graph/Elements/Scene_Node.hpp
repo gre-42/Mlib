@@ -362,6 +362,7 @@ public:
     PoseInterpolationMode pose_interpolation_mode() const;
     SceneNodeDomain domain() const;
     void invalidate_transformation_history();
+    bool transformation_history_invalidated() const;
     void clear_transformation_history();
     mutable DestructionObservers<SceneNode&> clearing_observers;
     mutable DestructionObservers<SceneNode&> destruction_observers;
