@@ -547,21 +547,25 @@ void RemoteRigidBodyVehicle::read(
         }
         assert_true(has_location);
         auto q_new = Quaternion<SceneDir>::from_tait_bryan_angles(rotation);
-        if (old_remote_time->has_value() && pp.update_physics) {
+        if (pp.update_physics) {
             assert_true(old_remote_r != nullptr);
             assert_true(old_remote_t != nullptr);
-            auto dt_count = minus_modulo(transmission_history_reader.remote_time(), **old_remote_time);
-            if (dt_count < 0) {
+            assert_true(old_remote_time != nullptr);
+            auto fake_old_remote_time = old_remote_time->has_value()
+                ? **old_remote_time
+                : transmission_history_reader.remote_time();
+            auto dt_count = minus_modulo(transmission_history_reader.remote_time(), fake_old_remote_time);
+            if (old_remote_time->has_value() && (dt_count < 0)) {
                 throw std::runtime_error((std::stringstream() <<
                     "New remote time (" << (transmission_history_reader.remote_time() + 0) <<
-                    ") is below old remote time (" << (**old_remote_time + 0) << ')').str());
+                    ") is below old remote time (" << (fake_old_remote_time + 0) << ')').str());
             }
             FixedArray<SceneDir, 3> v_com = uninitialized;
             FixedArray<SceneDir, 3> w = uninitialized;
             auto dt = dt_count * REMOTE_TIME_UNIT;
             if (dt < 1 * milli * seconds) {
-                v_com = 0;
-                w = 0;
+                v_com = rb_->rbp_.v_com_;
+                w = rb_->rbp_.w_;
             } else {
                 assert_true(!std::isnan(old_remote_r->s));
                 assert_true(!any(isnan(old_remote_r->v)));
