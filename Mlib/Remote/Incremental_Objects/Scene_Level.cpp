@@ -130,6 +130,11 @@ bool SceneLevelSelector::set_next_scene_level(
         }
         local_scene_level_.time_of_day = time_of_day;
         load_status_ = LocalSceneLevelLoadStatus::RUNNING;
+    } else if (remote_role == RemoteRole::SERVER) {
+        load_status_ = LocalSceneLevelLoadStatus::LOADING;
+        print("Reload transient objects: ");
+        on_reload_transient_objects_();
+        load_status_ = LocalSceneLevelLoadStatus::RUNNING;
     }
     return false;
 }
