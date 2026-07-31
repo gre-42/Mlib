@@ -93,7 +93,7 @@ EM_JS(int, createWebTransportSocket,
             const permanent = globalThis.webTransportPermanent[handle];
             let closedDueToTimeout = false;
             // Background reader
-            (async () => {
+            {
                 let reader = null;
                 try {
                     console.log("Wait for WebTransport to become ready");
@@ -125,12 +125,12 @@ EM_JS(int, createWebTransportSocket,
                 } catch (e) {
                     console.error("Reader error:", e);
                 } finally {
-                    if (reader) {
+                    if (reader !== null) {
                         reader.releaseLock();
                     }
                     socket["_isClosed"] = true;
                 }
-            })();
+            }
             try {
                 await socket.closed;
                 if (closedDueToTimeout) {
