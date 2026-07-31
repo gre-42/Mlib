@@ -364,6 +364,7 @@ public:
     void invalidate_transformation_history();
     bool transformation_history_invalidated() const;
     void clear_transformation_history();
+    bool transformation_history_empty() const;
     mutable DestructionObservers<SceneNode&> clearing_observers;
     mutable DestructionObservers<SceneNode&> destruction_observers;
     mutable SharedPtrs clearing_pointers;

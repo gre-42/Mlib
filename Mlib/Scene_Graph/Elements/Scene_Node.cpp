@@ -983,9 +983,9 @@ void SceneNode::move(
         });
     }
     std::scoped_lock lock{ pose_mutex_ };
-    if ((interpolation_mode_ == PoseInterpolationMode::DISABLED) ||
+    if (any(time.type() & SceneTimeType::INITIAL) ||
         trafo_history_invalidated_ ||
-        (any(time.type() & SceneTimeType::INITIAL)))
+        (interpolation_mode_ == PoseInterpolationMode::DISABLED))
     {
         trafo_history_.clear();
         trafo_history_invalidated_ = false;
@@ -1891,6 +1891,11 @@ void SceneNode::clear_transformation_history()
     } else {
         clear_transformation_history(parent_->absolute_model_matrix());
     }
+}
+
+bool SceneNode::transformation_history_empty() const {
+    std::shared_lock lock{ pose_mutex_ };
+    return trafo_history_.empty();
 }
 
 void SceneNode::clear_transformation_history(

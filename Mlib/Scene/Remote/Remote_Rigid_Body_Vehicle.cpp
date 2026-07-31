@@ -495,7 +495,7 @@ void RemoteRigidBodyVehicle::read(
         // Compare scene node position, not rigid body, in
         // case multiple datagrams are received in one time step.
         if ((sum(squared(rb_->scene_node_->absolute_model_matrix().t - position)) > squared(REMOTE_INTERPOLATION_JUMP_DISTANCE)) ||
-            rb_->scene_node_->transformation_history_invalidated())
+            rb_->scene_node_->transformation_history_empty())
         {
             pf |= PositionFlags::POSITION_CONTAINS_JUMP;
         }
@@ -538,7 +538,6 @@ void RemoteRigidBodyVehicle::read(
                 SceneTime::initial(physics_scene_->dynamic_world_.get_time()));
             // Notify child nodes with absolute movables (e.g. wheels)
             rb_->scene_node_->clear_transformation_history();
-            rb_->scene_node_->invalidate_transformation_history();
             rb_->flags_local_ &= ~RigidBodyVehicleFlagsLocal::WAITING_FOR_INITIAL_POSITION;
         }
         old_remote_time->reset();
