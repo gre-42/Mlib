@@ -232,6 +232,10 @@ void IncrementalCommunicatorProxy::receive_from_home(std::istream& istr) {
 }
 
 void IncrementalCommunicatorProxy::send_home(std::iostream& iostr) {
+    std::optional<StreamSizeLogger> sl;
+    if (any(verbosity_ & IoVerbosity::METADATA)) {
+        sl.emplace(iostr, "Send home [bytes]: ");
+    }
     std::optional<RemoteObjectId> object_to_send_completely;
     {
         std::optional<int32_t> highest_priority;
