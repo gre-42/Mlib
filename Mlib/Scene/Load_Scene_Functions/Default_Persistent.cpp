@@ -25,7 +25,9 @@ struct RegisterJsonUserFunction {
             {
                 auto local_user_id = args.arguments.at<NUserCountType>(KnownArgs::local_user_id);
                 if (local_user_id >= args.users.get_user_count()) {
-                    throw std::runtime_error("User ID greater or equal number of users");
+                    throw std::runtime_error((std::stringstream() <<
+                        "User ID (" << (local_user_id + 0) <<
+                        ") greater or equal number of users (" << (args.users.get_user_count() + 0) << ')').str());
                 }
                 auto variables = args.arguments.at(KnownArgs::variables);
                 for (const auto& [k, v] : variables.items()) {

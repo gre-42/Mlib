@@ -18,9 +18,10 @@ void Mlib::print_chars(std::span<char> span, std::string_view message) {
 }
 
 std::vector<std::byte> Mlib::read_all_vector(std::istream& istr, std::string_view message, IoVerbosity verbosity) {
+    auto begin = istr.tellg();
     istr.seekg(0, std::istream::end);
-    std::streamoff file_size = istr.tellg();
-    istr.seekg(0, std::istream::beg);
+    auto file_size = istr.tellg() - begin;
+    istr.seekg(begin);
     std::vector<std::byte> res(integral_cast<size_t>(file_size));
     read_vector(istr, res, message, verbosity);
     return res;

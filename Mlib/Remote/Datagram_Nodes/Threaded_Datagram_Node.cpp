@@ -78,22 +78,7 @@ void ThreadedDatagramNode::bind() {
 }
 
 void ThreadedDatagramNode::send(std::istream& istr) {
-    std::error_code ec;
-    istr.seekg(0, std::ios::end);
-    auto len = integral_cast<size_t>(istr.tellg() - std::streampos(0));
-    istr.seekg(0);
-    std::vector<std::byte> data(len);
-    read_vector(istr, data, "send buffer", IoVerbosity::SILENT);
-    auto sent = socket_->send(data, ec);
-    if (getenv_default_bool("NET_DEBUG", false)) {
-        linfo() << this << " send_to. Error: " << (int)(bool)ec << ", Length: " << sent << " / " << data.size();
-    }
-    if (ec) {
-        throw std::runtime_error("UDP send failed: \"" + ec.message() + '"');
-    }
-    if (sent != len) {
-        throw std::runtime_error((std::stringstream() << "Bytes sent: " << sent << ". Expected: " << len).str());
-    }
+    socket_->send(istr);
 }
 
 std::shared_ptr<ISendSocket> ThreadedDatagramNode::try_receive(

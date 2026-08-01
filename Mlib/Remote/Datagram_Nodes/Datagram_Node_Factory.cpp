@@ -1,4 +1,5 @@
 #include "Datagram_Node_Factory.hpp"
+#include <Mlib/Remote/Datagram_Nodes/Fragmenting_Datagram_Node.hpp>
 #include <Mlib/Remote/Datagram_Nodes/Threaded_Datagram_Node.hpp>
 #include <Mlib/Remote/Remote_Socket.hpp>
 #include <Mlib/Remote/Sockets/Websocket_Socket.hpp>
@@ -19,7 +20,8 @@ std::shared_ptr<IDatagramNode> DatagramNodeFactory::create_web_transport(
     const RemoteSocket& socket,
     std::vector<std::byte> cert_hash)
 {
-    return WebTransportDatagramNode::create(socket, std::move(cert_hash), socket.remote_secret);
+    auto wt = WebTransportDatagramNode::create(socket, std::move(cert_hash), socket.remote_secret);
+    return std::make_shared<FragmentingDatagramNode>(wt);
 }
 #else
 std::shared_ptr<IDatagramNode> DatagramNodeFactory::create_udp(
@@ -30,7 +32,8 @@ std::shared_ptr<IDatagramNode> DatagramNodeFactory::create_udp(
     auto boost_socket = std::make_shared<udp::socket>(io_context);
     auto mlib_socket = std::make_shared<UdpSocket>(udp::v4(), std::move(boost_socket), endpoint);
     mlib_socket->open();
-    return std::make_shared<ThreadedDatagramNode>(mlib_socket);
+    auto udp = std::make_shared<ThreadedDatagramNode>(mlib_socket);
+    return std::make_shared<FragmentingDatagramNode>(udp);
 }
 #endif
 
@@ -38,5 +41,6 @@ std::shared_ptr<IDatagramNode> DatagramNodeFactory::create_websocket(
     boost::beast::websocket::stream<boost::asio::ip::tcp::socket> socket)
 {
     auto mlib_socket = std::make_shared<WebsocketSocket>(std::move(socket));
-    return std::make_shared<ThreadedDatagramNode>(mlib_socket);
+    auto ws = std::make_shared<ThreadedDatagramNode>(mlib_socket);
+    return std::make_shared<FragmentingDatagramNode>(ws);
 }

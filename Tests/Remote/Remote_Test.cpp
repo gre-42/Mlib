@@ -18,6 +18,8 @@
 #include <Mlib/Remote/Incremental_Objects/Transmission_History.hpp>
 #include <Mlib/Remote/Incremental_Objects/Transmitted_Fields.hpp>
 #include <Mlib/Remote/Remote_Socket.hpp>
+#include <Mlib/Remote/Sockets/Fragmenting_Receiver.hpp>
+#include <Mlib/Remote/Sockets/Fragmenting_Sender.hpp>
 #include <Mlib/Stats/Random_Number_Generators.hpp>
 #include <Mlib/Threads/Realtime_Threads.hpp>
 #include <cstdint>
@@ -274,10 +276,42 @@ void test_bandwidth_estimator() {
     }
 }
 
+class SendMock: public ISendSocket {
+public:
+    explicit SendMock(std::list<std::vector<std::byte>>& res)
+        : res_{res}
+    {}
+    virtual void send(std::istream& istr) override {
+        res_.emplace_back(read_all_vector(istr, "send mock data", IoVerbosity::DATA | IoVerbosity::METADATA));
+    }
+private:
+    std::list<std::vector<std::byte>>& res_;
+};
+
+void test_fragmenting_datagram_node() {
+    FragmentingSender sender;
+    FragmentingReceiveSocket receiver;
+    std::list<std::vector<std::byte>> res;
+    {
+        std::stringstream sstr;
+        sstr << "abc";
+        SendMock send_mock{res};
+        sender.send(sstr, send_mock);
+    }
+    std::stringstream osstr;
+    for (auto& r : res) {
+        std::stringstream fsstr;
+        write_iterable(fsstr, r, "r");
+        receiver.try_receive(osstr, fsstr);
+    }
+    read_all_vector(osstr, "osstr", IoVerbosity::DATA | IoVerbosity::METADATA);
+}
+
 int main(int argc, char** argv) {
     enable_floating_point_exceptions();
     reserve_realtime_threads(0);
     try {
+        test_fragmenting_datagram_node();
         test_bandwidth_estimator();
         test_remote();
     } catch (const std::runtime_error& e) {

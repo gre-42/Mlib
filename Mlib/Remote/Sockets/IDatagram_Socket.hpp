@@ -19,6 +19,7 @@ public:
     virtual size_t send(
         const std::vector<std::byte>& data,
         std::error_code& ec) = 0;
+    void send(std::istream& istr);
 };
 
 }
