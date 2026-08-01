@@ -94,7 +94,7 @@ void RemoteScene::send_and_receive(const TimeAndPause<std::chrono::steady_clock:
     objects_.set_local_time(time);
     objects_.forget_old_deleted_objects();
     if ((remote_params_.role == RemoteRole::CLIENT) &&
-        proxies_.handshare_required())
+        proxies_.handshake_required())
     {
         linfo() << "Sending handshake";
         proxies_.send_and_receive(TransmissionType::HANDSHAKE);

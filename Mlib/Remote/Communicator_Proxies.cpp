@@ -12,7 +12,7 @@ CommunicatorProxies::CommunicatorProxies(
     RemoteSiteId site_id)
     : communicator_proxy_factory_{ communicator_proxy_factory }
     , site_id_{ site_id }
-    , handshare_required_{ true }
+    , handshake_required_{ true }
 {}
 
 CommunicatorProxies::~CommunicatorProxies() = default;
@@ -35,6 +35,7 @@ void CommunicatorProxies::send_and_receive(TransmissionType transmission_type) {
 void CommunicatorProxies::send(TransmissionType transmission_type) {
     switch (transmission_type) {
     case TransmissionType::HANDSHAKE:
+        time_of_last_handshake_ = std::chrono::steady_clock::now();
         for (auto& proxy : handshake_communicator_proxies_) {
             std::stringstream sstr;
             write_binary(sstr, site_id_, "location ID");
@@ -60,13 +61,13 @@ void CommunicatorProxies::send(TransmissionType transmission_type) {
 }
 
 void CommunicatorProxies::receive() {
-    handshare_required_ = receive_sockets_.empty();
+    handshake_required_ = receive_sockets_.empty();
     for (auto& s : receive_sockets_) {
         while (true) {
             std::stringstream sstr;
             NetworkTransmissionStatus receive_status;
             auto responder = s->try_receive(sstr, receive_status);
-            handshare_required_ |= (receive_status == NetworkTransmissionStatus::DISCONNECTED);
+            handshake_required_ |= (receive_status == NetworkTransmissionStatus::DISCONNECTED);
             if (responder == nullptr) {
                 break;
             }
@@ -92,8 +93,14 @@ void CommunicatorProxies::receive() {
     }
 }
 
-bool CommunicatorProxies::handshare_required() const {
-    return handshare_required_;
+bool CommunicatorProxies::handshake_required() const {
+    if (!handshake_required_) {
+        return false;
+    }
+    if (time_of_last_handshake_ == std::chrono::steady_clock::time_point()) {
+        return true;
+    }
+    return (std::chrono::steady_clock::now() - time_of_last_handshake_) > std::chrono::seconds{5};
 }
 
 void CommunicatorProxies::print(std::ostream& ostr) const {
