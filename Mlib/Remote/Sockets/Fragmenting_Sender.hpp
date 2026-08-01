@@ -5,11 +5,15 @@
 namespace Mlib {
 
 class ISendSocket;
+enum class SendStatusCode: int;
 
 class FragmentingSender {
 public:
     explicit FragmentingSender();
-    void send(std::istream& istr, ISendSocket& socket);
+    void send(
+        std::istream& istr,
+        ISendSocket& socket,
+        SendStatusCode& status_code);
 private:
     FragmentGroupType group_id_;
 };

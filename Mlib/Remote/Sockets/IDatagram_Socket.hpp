@@ -5,6 +5,8 @@
 
 namespace Mlib {
 
+enum class SendStatusCode: int;
+
 class IDatagramSocket {
 public:
     virtual ~IDatagramSocket() = default;
@@ -16,10 +18,12 @@ public:
         std::vector<std::byte>& receive_buffer,
         std::shared_ptr<IDatagramSocket>& reply_socket,
         std::error_code& ec) = 0;
-    virtual size_t send(
+    virtual void send(
         const std::vector<std::byte>& data,
-        std::error_code& ec) = 0;
-    void send(std::istream& istr);
+        SendStatusCode& status_code) = 0;
+    void send(
+        std::istream& istr,
+        SendStatusCode& status_code);
 };
 
 }

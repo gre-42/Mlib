@@ -19,6 +19,8 @@ using ReceiveSockets = DanglingUnorderedSet<IReceiveSocket>;
 using HandshakeProxies = DanglingList<ICommunicatorProxy>;
 using CommunicatorProxyMap = DanglingValueUnorderedMap<RemoteSiteId, ICommunicatorProxy>;
 
+enum class SendStatusCode: int;
+
 enum class TransmissionType {
     HANDSHAKE,
     UNICAST,
@@ -30,7 +32,7 @@ public:
     virtual ~ICommunicatorProxy() = default;
     virtual void set_send_socket(std::shared_ptr<ISendSocket> send_socket) = 0;
     virtual void receive_from_home(std::istream& istr) = 0;
-    virtual void send_home(std::iostream& iostr) = 0;
+    virtual void send_home(std::iostream& iostr, SendStatusCode& status_code) = 0;
 };
 
 class ICommunicatorProxyFactory: public virtual DestructionNotifier, public virtual DanglingBaseClass {

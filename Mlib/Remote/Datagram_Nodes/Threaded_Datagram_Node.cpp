@@ -77,8 +77,8 @@ void ThreadedDatagramNode::bind() {
     socket_->bind();
 }
 
-void ThreadedDatagramNode::send(std::istream& istr) {
-    socket_->send(istr);
+void ThreadedDatagramNode::send(std::istream& istr, SendStatusCode& status_code) {
+    socket_->send(istr, status_code);
 }
 
 std::shared_ptr<ISendSocket> ThreadedDatagramNode::try_receive(

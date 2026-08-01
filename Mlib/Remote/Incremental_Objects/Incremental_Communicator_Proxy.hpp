@@ -29,7 +29,7 @@ public:
     virtual ~IncrementalCommunicatorProxy() override;
     virtual void set_send_socket(std::shared_ptr<ISendSocket> send_socket) override;
     virtual void receive_from_home(std::istream& istr) override;
-    virtual void send_home(std::iostream& iostr) override;
+    virtual void send_home(std::iostream& iostr, SendStatusCode& status_code) override;
 private:
     IncrementalCacheProxyToken incremental_cache_proxy_token_;
     uint32_t datagram_counter_;

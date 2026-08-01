@@ -231,7 +231,10 @@ void IncrementalCommunicatorProxy::receive_from_home(std::istream& istr) {
     }
 }
 
-void IncrementalCommunicatorProxy::send_home(std::iostream& iostr) {
+void IncrementalCommunicatorProxy::send_home(
+    std::iostream& iostr,
+    SendStatusCode& status_code)
+{
     std::optional<StreamSizeLogger> sl;
     if (any(verbosity_ & IoVerbosity::METADATA)) {
         sl.emplace(iostr, "Send home [bytes]: ");
@@ -388,6 +391,6 @@ void IncrementalCommunicatorProxy::send_home(std::iostream& iostr) {
         }
     }
     writer.flush_partial("before send");
-    send_socket_->send(iostr);
+    send_socket_->send(iostr, status_code);
     ++datagram_counter_;
 }

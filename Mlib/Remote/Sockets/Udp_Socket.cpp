@@ -1,4 +1,5 @@
 #include "Udp_Socket.hpp"
+#include <Mlib/Remote/Send_Status_Code.hpp>
 
 using namespace Mlib;
 
@@ -49,12 +50,15 @@ size_t UdpSocket::receive(
     return len;
 }
 
-size_t UdpSocket::send(
+void UdpSocket::send(
     const std::vector<std::byte>& data,
-    std::error_code& ec)
+    SendStatusCode& status_code)
 {
     boost::system::error_code boost_ec;
     auto res = socket_->send_to(boost::asio::buffer(data), endpoint_, 0, boost_ec);
-    ec = boost_ec;
-    return res;
+    if (boost_ec || (res != data.size())) {
+        status_code = SendStatusCode::ERROR;
+    } else {
+        status_code = SendStatusCode::SUCCESS;
+    }
 }

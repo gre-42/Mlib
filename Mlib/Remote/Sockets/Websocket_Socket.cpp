@@ -1,4 +1,5 @@
 #include "Websocket_Socket.hpp"
+#include <Mlib/Remote/Send_Status_Code.hpp>
 
 using namespace Mlib;
 
@@ -46,12 +47,15 @@ size_t WebsocketSocket::receive(
     return len;
 }
 
-size_t WebsocketSocket::send(
+void WebsocketSocket::send(
     const std::vector<std::byte>& data,
-    std::error_code& ec)
+    SendStatusCode& status_code)
 {
     boost::system::error_code boost_ec;
     auto res = socket_.write(boost::asio::buffer(data), boost_ec);
-    ec = boost_ec;
-    return res;
+    if (boost_ec || (res != data.size())) {
+        status_code = SendStatusCode::ERROR;
+    } else {
+        status_code = SendStatusCode::SUCCESS;
+    }
 }

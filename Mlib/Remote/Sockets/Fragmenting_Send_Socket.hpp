@@ -12,7 +12,7 @@ public:
     FragmentingSendSocket(
         std::shared_ptr<ISendSocket> socket,
         std::shared_ptr<FragmentingSender> fragmenting_sender);
-    virtual void send(std::istream& istr) override;
+    virtual void send(std::istream& istr, SendStatusCode& status_code) override;
 private:
     std::shared_ptr<ISendSocket> socket_;
     std::shared_ptr<FragmentingSender> fragmenting_sender_;

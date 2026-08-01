@@ -4,6 +4,7 @@
 #include <Mlib/Remote/IReceive_Socket.hpp>
 #include <Mlib/Remote/ISend_Socket.hpp>
 #include <Mlib/Remote/Network_Transmission_Status.hpp>
+#include <Mlib/Remote/Send_Status_Code.hpp>
 
 using namespace Mlib;
 
@@ -35,25 +36,35 @@ void CommunicatorProxies::send_and_receive(TransmissionType transmission_type) {
 void CommunicatorProxies::send(TransmissionType transmission_type) {
     switch (transmission_type) {
     case TransmissionType::HANDSHAKE:
-        time_of_last_handshake_ = std::chrono::steady_clock::now();
-        for (auto& proxy : handshake_communicator_proxies_) {
-            std::stringstream sstr;
-            write_binary(sstr, site_id_, "location ID");
-            proxy->send_home(sstr);
+        {
+            time_of_last_handshake_ = std::chrono::steady_clock::now();
+            size_t nsuccesses = 0;
+            for (auto& proxy : handshake_communicator_proxies_) {
+                std::stringstream sstr;
+                write_binary(sstr, site_id_, "location ID");
+                SendStatusCode status_code;
+                proxy->send_home(sstr, status_code);
+                nsuccesses += (status_code == SendStatusCode::SUCCESS);
+            }
+            if (nsuccesses == handshake_communicator_proxies_.size()) {
+                handshake_required_ = false;
+            }
         }
         return;
     case TransmissionType::UNICAST:
         for (auto& [_, proxy] : unicast_communicator_proxies_) {
             std::stringstream sstr;
             write_binary(sstr, site_id_, "location ID");
-            proxy->send_home(sstr);
+            SendStatusCode status_code;
+            proxy->send_home(sstr, status_code);
         }
         return;
     case TransmissionType::MULTICAST:
         for (auto& [_, proxy] : multicast_communicator_proxies_) {
             std::stringstream sstr;
             write_binary(sstr, site_id_, "location ID");
-            proxy->send_home(sstr);
+            SendStatusCode status_code;
+            proxy->send_home(sstr, status_code);
         }
         return;
     }
@@ -61,7 +72,6 @@ void CommunicatorProxies::send(TransmissionType transmission_type) {
 }
 
 void CommunicatorProxies::receive() {
-    handshake_required_ = receive_sockets_.empty();
     for (auto& s : receive_sockets_) {
         while (true) {
             std::stringstream sstr;

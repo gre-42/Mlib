@@ -18,6 +18,7 @@
 #include <Mlib/Remote/Incremental_Objects/Transmission_History.hpp>
 #include <Mlib/Remote/Incremental_Objects/Transmitted_Fields.hpp>
 #include <Mlib/Remote/Remote_Socket.hpp>
+#include <Mlib/Remote/Send_Status_Code.hpp>
 #include <Mlib/Remote/Sockets/Fragmenting_Receiver.hpp>
 #include <Mlib/Remote/Sockets/Fragmenting_Sender.hpp>
 #include <Mlib/Stats/Random_Number_Generators.hpp>
@@ -281,8 +282,9 @@ public:
     explicit SendMock(std::list<std::vector<std::byte>>& res)
         : res_{res}
     {}
-    virtual void send(std::istream& istr) override {
+    virtual void send(std::istream& istr, SendStatusCode& status_code) override {
         res_.emplace_back(read_all_vector(istr, "send mock data", IoVerbosity::DATA | IoVerbosity::METADATA));
+        status_code = SendStatusCode::SUCCESS;
     }
 private:
     std::list<std::vector<std::byte>>& res_;
@@ -296,7 +298,8 @@ void test_fragmenting_datagram_node() {
         std::stringstream sstr;
         sstr << "abc";
         SendMock send_mock{res};
-        sender.send(sstr, send_mock);
+        SendStatusCode status_code;
+        sender.send(sstr, send_mock, status_code);
     }
     std::stringstream osstr;
     for (auto& r : res) {

@@ -24,8 +24,8 @@ void FragmentingDatagramNode::bind() {
     node_->bind();
 }
 
-void FragmentingDatagramNode::send(std::istream& istr) {
-    fragmenting_sender_->send(istr, *node_);
+void FragmentingDatagramNode::send(std::istream& istr, SendStatusCode& status_code) {
+    fragmenting_sender_->send(istr, *node_, status_code);
 }
 
 std::shared_ptr<ISendSocket> FragmentingDatagramNode::try_receive(

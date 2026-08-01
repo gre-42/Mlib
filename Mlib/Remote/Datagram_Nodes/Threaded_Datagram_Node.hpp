@@ -24,7 +24,7 @@ public:
     virtual ~ThreadedDatagramNode() override;
     virtual void start_receive_thread(uint32_t max_stored_received_messages) override;
     virtual void bind() override;
-    virtual void send(std::istream& istr) override;
+    virtual void send(std::istream& istr, SendStatusCode& status_code) override;
     virtual std::shared_ptr<ISendSocket> try_receive(
         std::ostream& ostr,
         NetworkTransmissionStatus& transmission_status) override;

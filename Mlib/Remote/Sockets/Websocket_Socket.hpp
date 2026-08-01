@@ -17,9 +17,9 @@ public:
         std::vector<std::byte>& receive_buffer,
         std::shared_ptr<IDatagramSocket>& reply_socket,
         std::error_code& ec) override;
-    virtual size_t send(
+    virtual void send(
         const std::vector<std::byte>& data,
-        std::error_code& ec) override;
+        SendStatusCode& status_code) override;
 private:
     boost::beast::websocket::stream<boost::asio::ip::tcp::socket> socket_;
 };

@@ -1,6 +1,7 @@
 #include "Fragmenting_Sender.hpp"
 #include <Mlib/Os/Io/Binary.hpp>
 #include <Mlib/Remote/ISend_Socket.hpp>
+#include <Mlib/Remote/Send_Status_Code.hpp>
 #include <sstream>
 #include <vector>
 
@@ -10,7 +11,11 @@ FragmentingSender::FragmentingSender()
     : group_id_{ 0 }
 {}
 
-void FragmentingSender::send(std::istream& istr, ISendSocket& socket) {
+void FragmentingSender::send(
+    std::istream& istr,
+    ISendSocket& socket,
+    SendStatusCode& status_code)
+{
     auto begin = istr.tellg();
     istr.seekg(0, std::ios::end);
     auto len = integral_cast<size_t>(istr.tellg() - begin);
@@ -30,7 +35,10 @@ void FragmentingSender::send(std::istream& istr, ISendSocket& socket) {
         write_binary(sstr, nblocks, "fragment nblocks");
         write_iterable(sstr, buffer, "payload");
 
-        socket.send(sstr);
+        socket.send(sstr, status_code);
+        if (status_code != SendStatusCode::SUCCESS) {
+            break;
+        }
         len -= MAX_FRAGMENT_BYTES;
     }
     ++group_id_;

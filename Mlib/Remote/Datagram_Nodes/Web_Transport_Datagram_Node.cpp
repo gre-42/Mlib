@@ -4,6 +4,7 @@
 #include <Mlib/Os/Io/Binary.hpp>
 #include <Mlib/Remote/Network_Transmission_Status.hpp>
 #include <Mlib/Remote/Remote_Socket.hpp>
+#include <Mlib/Remote/Send_Status_Code.hpp>
 #include <cstddef>
 #include <emscripten/bind.h>
 #include <emscripten/em_js.h>
@@ -13,25 +14,18 @@
 using namespace Mlib;
 using emscripten::EM_VAL;
 
-enum class JsStatusCode: int {
-    SUCCESS = 0,
-    FAILURE = 1
-};
-
-// Expose the Enum to the global Emscripten Module
 EMSCRIPTEN_BINDINGS(js_status_code_bindings) {
-    emscripten::enum_<JsStatusCode>("JsStatusCode")
-        .value("SUCCESS", JsStatusCode::SUCCESS)
-        .value("FAILURE", JsStatusCode::FAILURE);
+    emscripten::enum_<SendStatusCode>("SendStatusCode")
+        .value("SUCCESS", SendStatusCode::SUCCESS)
+        .value("RECONNECTING", SendStatusCode::RECONNECTING)
+        .value("ERROR", SendStatusCode::ERROR);
 }
 
-extern "C" EMSCRIPTEN_KEEPALIVE void resolve_promise(void* promise_ptr, int js_status_code) {
+extern "C" EMSCRIPTEN_KEEPALIVE void resolve_promise(void* promise_ptr, int js_async_status_code) {
     auto* prop = static_cast<std::promise<int>*>(promise_ptr);
-    prop->set_value(js_status_code);
+    prop->set_value(js_async_status_code);
 }
 
-// EM_JS functions need to be wrapped in a namespace or be global to ensure
-// they are correctly linked.
 EM_JS(int, createWebTransportSocket,
     (const char* serverUrlPtr, std::ptrdiff_t serverUrlLen,
      int maxStoredReceivedMessages,
@@ -171,13 +165,13 @@ EM_JS(void, closeWebTransportSocket, (int transportHandle), {
     }
 });
 
-EM_JS(bool, sendUsingWebTransportSocket, (int transportHandle, const uint8_t* dataPtr, std::ptrdiff_t dataLength, void* promise_ptr), {
+EM_JS(SendStatusCode, sendUsingWebTransportSocket, (int transportHandle, const uint8_t* dataPtr, std::ptrdiff_t dataLength, void* promise_ptr), {
     const dataArray = HEAPU8.slice(Number(dataPtr), Number(dataPtr) + Number(dataLength));
 
     try {
         const socket = globalThis.webTransportSockets[transportHandle];
         if (socket === null) {
-            return false;
+            return Module["SendStatusCode"]["RECONNECTING"]["value"];
         }
         const writer = socket["datagrams"]["writable"].getWriter();
         (async () => {
@@ -185,17 +179,17 @@ EM_JS(bool, sendUsingWebTransportSocket, (int transportHandle, const uint8_t* da
                 await writer.write(dataArray);
             } catch (error) {
                 console.error("Failed to write data:", error);
-                _resolve_promise(promise_ptr, Module["JsStatusCode"]["FAILURE"]["value"]);
+                _resolve_promise(promise_ptr, Module["SendStatusCode"]["ERROR"]["value"]);
                 return;
             } finally {
                 writer.releaseLock();
             }
-            _resolve_promise(promise_ptr, Module["JsStatusCode"]["SUCCESS"]["value"]);
+            _resolve_promise(promise_ptr, Module["SendStatusCode"]["SUCCESS"]["value"]);
         })();
-        return true;
+        return Module["SendStatusCode"]["SUCCESS"]["value"];
     } catch (error) {
         console.error("Failed to write data:", error);
-        return false;
+        return Module["SendStatusCode"]["ERROR"]["value"];
     }
 });
 
@@ -271,7 +265,7 @@ void WebTransportDatagramNode::bind() {
     throw std::runtime_error("WebTransportDatagramNode::bind not available");
 }
 
-void WebTransportDatagramNode::send(std::istream& istr) {
+void WebTransportDatagramNode::send(std::istream& istr, SendStatusCode& status_code) {
     if (socket_handle_ == -1) {
         throw std::runtime_error("WebTransportDatagramNode::send on a null socket");
     }
@@ -280,22 +274,21 @@ void WebTransportDatagramNode::send(std::istream& istr) {
     //     // Note that WebTransport sends are often fire-and-forget.
     //     send_handle_.await();
     // }
-    std::promise<JsStatusCode> done;
-    bool success;
+    std::promise<SendStatusCode> async_status;
     execute_in_main_thread([&](){
-        success = sendUsingWebTransportSocket(
+        status_code = sendUsingWebTransportSocket(
             socket_handle_,
             (const uint8_t*)data.data(),
             integral_cast<std::ptrdiff_t>(data.size()),
-            &done);
+            &async_status);
     });
-    if (!success) {
+    if (status_code != SendStatusCode::SUCCESS) {
         lwarn() << "Could not send WebTransport message";
     } else {
         // linfo() << "Send: Waiting for WebTransport status code";
-        auto status_code = done.get_future().get();
+        status_code = async_status.get_future().get();
         // linfo() << "Send: Received WebTransport status code " + std::to_string((int)status_code);
-        if (status_code != JsStatusCode::SUCCESS) {
+        if (status_code != SendStatusCode::SUCCESS) {
             lwarn() << "Could not send using WebTransport";
         }
     }
@@ -319,7 +312,6 @@ std::shared_ptr<ISendSocket> WebTransportDatagramNode::try_receive(
     });
     if ((bytesReceived == -1) || (bytesReceived == -3)){
         transmission_status = NetworkTransmissionStatus::DISCONNECTED;
-        linfo() << "WebTransport disconnect";
         return nullptr;
     }
     if (bytesReceived < 0) {

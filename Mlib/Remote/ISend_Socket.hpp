@@ -5,10 +5,12 @@
 
 namespace Mlib {
 
+enum class SendStatusCode: int;
+
 class ISendSocket: public virtual DestructionNotifier, public virtual DanglingBaseClass {
 public:
     virtual ~ISendSocket() = default;
-    virtual void send(std::istream& istr) = 0;
+    virtual void send(std::istream& istr, SendStatusCode& status_code) = 0;
 };
 
 }

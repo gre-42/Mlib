@@ -14,6 +14,6 @@ FragmentingSendSocket::FragmentingSendSocket(
     }
 }
 
-void FragmentingSendSocket::send(std::istream& istr) {
-    fragmenting_sender_->send(istr, *socket_);
+void FragmentingSendSocket::send(std::istream& istr, SendStatusCode& status_code) {
+    fragmenting_sender_->send(istr, *socket_, status_code);
 }
