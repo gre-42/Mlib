@@ -100,7 +100,7 @@ bool CommunicatorProxies::handshake_required() const {
     if (time_of_last_handshake_ == std::chrono::steady_clock::time_point()) {
         return true;
     }
-    return (std::chrono::steady_clock::now() - time_of_last_handshake_) > std::chrono::seconds{5};
+    return (std::chrono::steady_clock::now() - time_of_last_handshake_) > std::chrono::seconds{1};
 }
 
 void CommunicatorProxies::print(std::ostream& ostr) const {
