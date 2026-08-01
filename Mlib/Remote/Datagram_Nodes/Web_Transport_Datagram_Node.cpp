@@ -308,6 +308,7 @@ std::shared_ptr<ISendSocket> WebTransportDatagramNode::try_receive(
     NetworkTransmissionStatus& transmission_status)
 {
     if (socket_handle_ == -1) {
+        transmission_status = NetworkTransmissionStatus::ERROR;
         throw std::runtime_error("WebTransportDatagramNode::try_receive on a null socket");
     }
     std::vector<std::byte> receive_buffer(65535);
