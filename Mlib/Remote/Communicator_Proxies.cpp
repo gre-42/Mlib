@@ -13,7 +13,6 @@ CommunicatorProxies::CommunicatorProxies(
     RemoteSiteId site_id)
     : communicator_proxy_factory_{ communicator_proxy_factory }
     , site_id_{ site_id }
-    , handshake_required_{ true }
 {}
 
 CommunicatorProxies::~CommunicatorProxies() = default;
@@ -33,22 +32,34 @@ void CommunicatorProxies::send_and_receive(TransmissionType transmission_type) {
     receive();
 }
 
+void CommunicatorProxies::send_and_receive() {
+    auto handshake_required = [&](){
+        if (unicast_communicator_proxies_.empty()) {
+            return true;
+        }
+        for (auto& [_, proxy] : unicast_communicator_proxies_) {
+            if ((proxy->newest_receive_time() == std::chrono::steady_clock::time_point()) ||
+                (std::chrono::steady_clock::now() - proxy->newest_receive_time()) > std::chrono::seconds(1))
+            {
+                return true;
+            }
+        }
+        return false;
+    }();
+    if (handshake_required) {
+        send_and_receive(TransmissionType::HANDSHAKE);
+    }
+    send_and_receive(TransmissionType::UNICAST);
+}
+
 void CommunicatorProxies::send(TransmissionType transmission_type) {
     switch (transmission_type) {
     case TransmissionType::HANDSHAKE:
-        {
-            time_of_last_handshake_ = std::chrono::steady_clock::now();
-            size_t nsuccesses = 0;
-            for (auto& proxy : handshake_communicator_proxies_) {
-                std::stringstream sstr;
-                write_binary(sstr, site_id_, "location ID");
-                SendStatusCode status_code;
-                proxy->send_home(sstr, status_code);
-                nsuccesses += (status_code == SendStatusCode::SUCCESS);
-            }
-            if (nsuccesses == handshake_communicator_proxies_.size()) {
-                handshake_required_ = false;
-            }
+        for (auto& proxy : handshake_communicator_proxies_) {
+            std::stringstream sstr;
+            write_binary(sstr, site_id_, "location ID");
+            SendStatusCode status_code;
+            proxy->send_home(sstr, status_code);
         }
         return;
     case TransmissionType::UNICAST:
@@ -77,7 +88,6 @@ void CommunicatorProxies::receive() {
             std::stringstream sstr;
             NetworkTransmissionStatus receive_status;
             auto responder = s->try_receive(sstr, receive_status);
-            handshake_required_ |= (receive_status == NetworkTransmissionStatus::DISCONNECTED);
             if (responder == nullptr) {
                 break;
             }
@@ -101,16 +111,6 @@ void CommunicatorProxies::receive() {
             communicator_proxy->receive_from_home(sstr);
         }
     }
-}
-
-bool CommunicatorProxies::handshake_required() const {
-    if (!handshake_required_) {
-        return false;
-    }
-    if (time_of_last_handshake_ == std::chrono::steady_clock::time_point()) {
-        return true;
-    }
-    return (std::chrono::steady_clock::now() - time_of_last_handshake_) > std::chrono::seconds{1};
 }
 
 void CommunicatorProxies::print(std::ostream& ostr) const {

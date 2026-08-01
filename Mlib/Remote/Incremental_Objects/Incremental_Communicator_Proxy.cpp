@@ -67,6 +67,7 @@ static bool is_loading(LocalSceneLevelLoadStatus status) {
 }
 
 void IncrementalCommunicatorProxy::receive_from_home(std::istream& istr) {
+    newest_receive_time_ = std::chrono::steady_clock::now();
     std::optional<LocalSceneLevel> home_scene_level;
     auto reader = BinaryBitwiseWordsReader{istr, nullptr, verbosity_};
     auto session_id = reader.read_binary<SessionIdType>("session ID");
@@ -393,4 +394,8 @@ void IncrementalCommunicatorProxy::send_home(
     writer.flush_partial("before send");
     send_socket_->send(iostr, status_code);
     ++datagram_counter_;
+}
+
+std::chrono::steady_clock::time_point IncrementalCommunicatorProxy::newest_receive_time() const {
+    return newest_receive_time_;
 }

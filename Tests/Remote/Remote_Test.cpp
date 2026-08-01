@@ -239,9 +239,9 @@ void test_remote() {
     };
     auto send_and_receive = [&](){
         print();
-        server_sys.send_and_receive(TransmissionType::UNICAST); std::this_thread::sleep_for(std::chrono::milliseconds(200));
+        server_sys.send_and_receive(); std::this_thread::sleep_for(std::chrono::milliseconds(200));
         print();
-        client_sys.send_and_receive(TransmissionType::UNICAST); std::this_thread::sleep_for(std::chrono::milliseconds(200));
+        client_sys.send_and_receive(); std::this_thread::sleep_for(std::chrono::milliseconds(200));
         print();
     };
     for (size_t i = 0; i < 3; ++i) {
@@ -249,7 +249,7 @@ void test_remote() {
     }
     server_sys.add_receive_socket({*server, CURRENT_SOURCE_LOCATION});
     client_sys.add_receive_socket({*client, CURRENT_SOURCE_LOCATION});
-    client_sys.send_and_receive(TransmissionType::HANDSHAKE);
+    client_sys.send_and_receive();
     for (size_t i = 0; i < 3; ++i) {
         send_and_receive();
     }

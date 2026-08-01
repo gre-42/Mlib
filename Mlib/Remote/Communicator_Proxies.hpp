@@ -4,7 +4,6 @@
 #include <Mlib/Memory/Dangling_Value_Unordered_Map.hpp>
 #include <Mlib/Memory/Destruction_Notifier.hpp>
 #include <Mlib/Scene_Config/Remote_Integers.hpp>
-#include <chrono>
 #include <compare>
 #include <iosfwd>
 #include <memory>
@@ -33,6 +32,7 @@ public:
     virtual void set_send_socket(std::shared_ptr<ISendSocket> send_socket) = 0;
     virtual void receive_from_home(std::istream& istr) = 0;
     virtual void send_home(std::iostream& iostr, SendStatusCode& status_code) = 0;
+    virtual std::chrono::steady_clock::time_point newest_receive_time() const = 0;
 };
 
 class ICommunicatorProxyFactory: public virtual DestructionNotifier, public virtual DanglingBaseClass {
@@ -52,19 +52,18 @@ public:
     ~CommunicatorProxies();
     void add_receive_socket(const DanglingBaseClassRef<IReceiveSocket>& socket);
     void add_handshake_socket(std::shared_ptr<ISendSocket> socket);
-    void send_and_receive(TransmissionType transmission_type);
-    bool handshake_required() const;
+    void send_and_receive();
     void print(std::ostream& ostr) const;
 private:
     void send(TransmissionType transmission_type);
     void receive();
+    void send_and_receive(TransmissionType transmission_type);
     ReceiveSockets receive_sockets_;
     HandshakeProxies handshake_communicator_proxies_;
     CommunicatorProxyMap unicast_communicator_proxies_;
     CommunicatorProxyMap multicast_communicator_proxies_;
     DanglingBaseClassRef<ICommunicatorProxyFactory> communicator_proxy_factory_;
     RemoteSiteId site_id_;
-    bool handshake_required_;
     std::chrono::steady_clock::time_point time_of_last_handshake_;
 };
 
