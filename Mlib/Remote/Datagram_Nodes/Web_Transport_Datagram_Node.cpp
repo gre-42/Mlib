@@ -283,7 +283,7 @@ void WebTransportDatagramNode::send(std::istream& istr, SendStatusCode& status_c
             &async_status);
     });
     if (status_code != SendStatusCode::SUCCESS) {
-        lwarn() << "Could not send WebTransport message";
+        // lwarn() << "Could not send WebTransport message";
     } else {
         // linfo() << "Send: Waiting for WebTransport status code";
         status_code = async_status.get_future().get();
