@@ -325,7 +325,7 @@ std::shared_ptr<ISendSocket> WebTransportDatagramNode::try_receive(
     }
     if (bytesReceived < 0) {
         transmission_status = NetworkTransmissionStatus::ERROR;
-        throw std::runtime_error("Error reading WebTransport data: " + std::to_string(bytesReceived));
+        throw std::runtime_error(std::format("Error reading WebTransport data: {}", bytesReceived));
     }
     if (bytesReceived == 0) {
         transmission_status = NetworkTransmissionStatus::SUCCESS;

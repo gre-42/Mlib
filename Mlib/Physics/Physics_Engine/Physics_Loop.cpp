@@ -29,7 +29,9 @@ PhysicsLoop::PhysicsLoop(
                 size_t nframes2 = nframes;
                 auto simulated_time = set_fps_.simulated_time();
                 // PeriodicLagFinder lag_finder{ "Physics: ", std::chrono::milliseconds{ 100 }};
-                while (!physics_thread_.get_stop_token().stop_requested()) {
+                while (!physics_thread_.get_stop_token().stop_requested() &&
+                       !unhandled_exceptions_occured())
+                {
                     auto loading = ll();
                     if (!set_fps_.paused() && !loading) {
                         // lag_finder.start();
