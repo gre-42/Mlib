@@ -102,8 +102,8 @@ void FollowMovable::set_absolute_model_matrix(
     const TransformationMatrix<float, ScenePos, 3>& absolute_model_matrix,
     const SourceLocation& loc)
 {
-    if (std::abs(absolute_model_matrix.get_scale2() - 1) > 1e-6) {
-        throw std::runtime_error("FollowMovable does not support scaling");
+    if (auto err = std::abs(absolute_model_matrix.get_scale2() - 1); err > 1e-5) {
+        throw std::runtime_error(std::format("FollowMovable does not support scaling. Error = {:e}", err));
     }
     transformation_matrix_ = absolute_model_matrix;
     attachment_position_(0) = transformation_matrix_.t(0) - node_displacement_(0);
