@@ -171,9 +171,7 @@ EM_JS(void, closeWebTransportSocket, (int transportHandle), {
     }
 });
 
-// Marked as ASYNC because we await writer.write
 EM_JS(bool, sendUsingWebTransportSocket, (int transportHandle, const uint8_t* dataPtr, std::ptrdiff_t dataLength, void* promise_ptr), {
-    // Grab raw bytes directly out of the Wasm memory heap
     const dataArray = HEAPU8.slice(Number(dataPtr), Number(dataPtr) + Number(dataLength));
 
     try {
