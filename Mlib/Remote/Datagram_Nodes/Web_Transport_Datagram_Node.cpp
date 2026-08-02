@@ -178,12 +178,12 @@ EM_JS(SendStatusCode, sendUsingWebTransportSocket, (int transportHandle, const u
     try {
         const writer = socket["datagrams"]["writable"].getWriter();
         writer.write(dataArray);
-        writer.releaseLock();
         writer.ready.then(() => {
             socket["_writeInProgress"] = false;
         }).catch(() => {
             socket["_writeInProgress"] = true;
         });
+        writer.releaseLock();
         return Module["SendStatusCode"]["SUCCESS"]["value"];
     } catch (error) {
         console.error("Error locking writer:", error);
