@@ -33,23 +33,11 @@ void CommunicatorProxies::send_and_receive(TransmissionType transmission_type) {
 }
 
 void CommunicatorProxies::send_and_receive() {
-    auto handshake_required = [&](){
-        if (unicast_communicator_proxies_.empty()) {
-            return true;
-        }
-        for (auto& [_, proxy] : unicast_communicator_proxies_) {
-            if ((proxy->newest_receive_time() == std::chrono::steady_clock::time_point()) ||
-                (std::chrono::steady_clock::now() - proxy->newest_receive_time()) > std::chrono::seconds(1))
-            {
-                return true;
-            }
-        }
-        return false;
-    }();
-    if (handshake_required) {
+    if (unicast_communicator_proxies_.empty()) {
         send_and_receive(TransmissionType::HANDSHAKE);
+    } else {
+        send_and_receive(TransmissionType::UNICAST);
     }
-    send_and_receive(TransmissionType::UNICAST);
 }
 
 void CommunicatorProxies::send(TransmissionType transmission_type) {

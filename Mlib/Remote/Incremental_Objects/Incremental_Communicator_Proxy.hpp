@@ -30,7 +30,6 @@ public:
     virtual void set_send_socket(std::shared_ptr<ISendSocket> send_socket) override;
     virtual void receive_from_home(std::istream& istr) override;
     virtual void send_home(std::iostream& iostr, SendStatusCode& status_code) override;
-    virtual std::chrono::steady_clock::time_point newest_receive_time() const override;
 private:
     IncrementalCacheProxyToken incremental_cache_proxy_token_;
     uint32_t datagram_counter_;
@@ -45,7 +44,6 @@ private:
     RemoteSiteId home_site_id_;
     SessionIdType session_id_;
     SocketVersions socket_versions_;
-    std::chrono::steady_clock::time_point newest_receive_time_;
 };
 
 }

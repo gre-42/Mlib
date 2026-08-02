@@ -53,7 +53,11 @@ PhysicsLoop::PhysicsLoop(
                     // TimeGuard::print_groups(lraw());
                     // lag_finder.stop();
                 }
+            } catch (const std::exception& e) {
+                lerr() << "Unhandled exception in physics loop: " << e.what();
+                add_unhandled_exception(std::current_exception());
             } catch (...) {
+                lerr() << "Unknown unhandled exception in physics loop";
                 add_unhandled_exception(std::current_exception());
             }
             })}
