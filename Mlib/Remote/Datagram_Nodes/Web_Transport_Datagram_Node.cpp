@@ -177,6 +177,7 @@ EM_JS(SendStatusCode, sendUsingWebTransportSocket, (int transportHandle, const u
     const dataArray = HEAPU8.slice(Number(dataPtr), Number(dataPtr) + Number(dataLength));
     try {
         const writer = socket["datagrams"]["writable"].getWriter();
+        socket["_writeInProgress"] = true;
         writer.write(dataArray);
         writer.ready.then(() => {
             socket["_writeInProgress"] = false;
