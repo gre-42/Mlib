@@ -7,7 +7,7 @@ namespace Mlib {
 enum class SendStatusCode: int {
     SUCCESS,
     RECONNECTING,
-    TIMEOUT,
+    CONGESTED,
     ERROR
 };
 

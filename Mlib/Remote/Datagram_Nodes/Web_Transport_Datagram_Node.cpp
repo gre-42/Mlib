@@ -9,7 +9,6 @@
 #include <emscripten/bind.h>
 #include <emscripten/em_js.h>
 #include <emscripten/val.h>
-#include <future>
 
 using namespace Mlib;
 using emscripten::EM_VAL;
@@ -18,14 +17,14 @@ EMSCRIPTEN_BINDINGS(js_status_code_bindings) {
     emscripten::enum_<SendStatusCode>("SendStatusCode")
         .value("SUCCESS", SendStatusCode::SUCCESS)
         .value("RECONNECTING", SendStatusCode::RECONNECTING)
-        .value("TIMEOUT", SendStatusCode::TIMEOUT)
+        .value("CONGESTED", SendStatusCode::CONGESTED)
         .value("ERROR", SendStatusCode::ERROR);
 }
 
-extern "C" EMSCRIPTEN_KEEPALIVE void resolve_promise(void* promise_ptr, int js_async_status_code) {
-    auto* prop = static_cast<std::promise<int>*>(promise_ptr);
-    prop->set_value(js_async_status_code);
-}
+// extern "C" EMSCRIPTEN_KEEPALIVE void resolve_promise(void* promise_ptr, int js_async_status_code) {
+//     auto* prop = static_cast<std::promise<int>*>(promise_ptr);
+//     prop->set_value(js_async_status_code);
+// }
 
 EM_JS(int, createWebTransportSocket,
     (const char* serverUrlPtr, std::ptrdiff_t serverUrlLen,
@@ -80,6 +79,7 @@ EM_JS(int, createWebTransportSocket,
             : ("?" + queryList.join("&"));
         const socket = new globalThis["WebTransport"](serverUrl + queryString, options);
         socket["_isClosed"] = false;
+        socket["_writeInProgress"] = false;
         globalThis.webTransportSockets[handle] = socket;
     }
     async function connectTransport() {
@@ -166,50 +166,28 @@ EM_JS(void, closeWebTransportSocket, (int transportHandle), {
     }
 });
 
-EM_JS(void, sendUsingWebTransportSocket, (int transportHandle, const uint8_t* dataPtr, std::ptrdiff_t dataLength, void* promise_ptr), {
+EM_JS(SendStatusCode, sendUsingWebTransportSocket, (int transportHandle, const uint8_t* dataPtr, std::ptrdiff_t dataLength), {
+    const dataArray = HEAPU8.slice(Number(dataPtr), Number(dataPtr) + Number(dataLength));
+    const socket = globalThis.webTransportSockets[transportHandle];
+    if (socket === null) {
+        return Module["SendStatusCode"]["RECONNECTING"]["value"];
+    }
+    if (socket["_writeInProgress"]) {
+        return Module["SendStatusCode"]["CONGESTED"]["value"];
+    }
     try {
-        const dataArray = HEAPU8.slice(Number(dataPtr), Number(dataPtr) + Number(dataLength));
-        const socket = globalThis.webTransportSockets[transportHandle];
-        if (socket === null) {
-            _resolve_promise(promise_ptr, Module["SendStatusCode"]["RECONNECTING"]["value"]);
-            return;
-        }
-        try {
-            const writer = socket["datagrams"]["writable"].getWriter();
-            (async () => {
-                let closedDueToTimeout = false;
-                const timeoutId = setTimeout(() => {
-                    closedDueToTimeout = true;
-                    console.error("Close socket after timeout during send");
-                    writer.abort("User abort due to timeout");
-                    socket.close();
-                }, 7000);
-                try {
-                    await writer.ready;
-                    await writer.write(dataArray);
-                    await writer.ready;
-                } catch (error) {
-                    if (closedDueToTimeout) {
-                        console.error("Timeout while writing data:", error);
-                        _resolve_promise(promise_ptr, Module["SendStatusCode"]["TIMEOUT"]["value"]);
-                    } else {
-                        console.error("Failed to write data:", error);
-                        _resolve_promise(promise_ptr, Module["SendStatusCode"]["ERROR"]["value"]);
-                    }
-                    return;
-                } finally {
-                    clearTimeout(timeoutId);
-                    writer.releaseLock();
-                }
-                _resolve_promise(promise_ptr, Module["SendStatusCode"]["SUCCESS"]["value"]);
-            })();
-        } catch (error) {
-            console.error("Error locking writer:", error);
-            _resolve_promise(promise_ptr, Module["SendStatusCode"]["ERROR"]["value"]);
-        }
+        const writer = socket["datagrams"]["writable"].getWriter();
+        writer.write(dataArray);
+        writer.releaseLock();
+        writer.ready.then(() => {
+            socket["_writeInProgress"] = false;
+        }).catch(() => {
+            socket["_writeInProgress"] = true;
+        });
+        return Module["SendStatusCode"]["SUCCESS"]["value"];
     } catch (error) {
-        console.error("Failed to write data:", error);
-        _resolve_promise(promise_ptr, Module["SendStatusCode"]["ERROR"]["value"]);
+        console.error("Error locking writer:", error);
+        return Module["SendStatusCode"]["ERROR"]["value"];
     }
 });
 
@@ -294,22 +272,17 @@ void WebTransportDatagramNode::send(std::istream& istr, SendStatusCode& status_c
     //     // Note that WebTransport sends are often fire-and-forget.
     //     send_handle_.await();
     // }
-    std::promise<SendStatusCode> async_status;
     execute_in_main_thread([&](){
-        sendUsingWebTransportSocket(
+        status_code = sendUsingWebTransportSocket(
             socket_handle_,
             (const uint8_t*)data.data(),
-            integral_cast<std::ptrdiff_t>(data.size()),
-            &async_status);
+            integral_cast<std::ptrdiff_t>(data.size()));
     });
-    status_code = async_status.get_future().get();
     // linfo() << "Send: Received WebTransport status code " + std::to_string((int)status_code);
     switch (status_code) {
     case SendStatusCode::SUCCESS:
     case SendStatusCode::RECONNECTING:
-        break;
-    case SendStatusCode::TIMEOUT:
-        lwarn() << "Timeout while sending with WebTransport";
+    case SendStatusCode::CONGESTED:
         break;
     case SendStatusCode::ERROR:
         lwarn() << "Error while sending with WebTransport";
