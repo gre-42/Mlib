@@ -167,9 +167,8 @@ EM_JS(void, closeWebTransportSocket, (int transportHandle), {
 });
 
 EM_JS(void, sendUsingWebTransportSocket, (int transportHandle, const uint8_t* dataPtr, std::ptrdiff_t dataLength, void* promise_ptr), {
-    const dataArray = HEAPU8.slice(Number(dataPtr), Number(dataPtr) + Number(dataLength));
-
     try {
+        const dataArray = HEAPU8.slice(Number(dataPtr), Number(dataPtr) + Number(dataLength));
         const socket = globalThis.webTransportSockets[transportHandle];
         if (socket === null) {
             _resolve_promise(promise_ptr, Module["SendStatusCode"]["RECONNECTING"]["value"]);
@@ -181,6 +180,7 @@ EM_JS(void, sendUsingWebTransportSocket, (int transportHandle, const uint8_t* da
                 let closedDueToTimeout = false;
                 const timeoutId = setTimeout(() => {
                     closedDueToTimeout = true;
+                    console.error("Close socket after timeout during send");
                     writer.abort("User abort due to timeout");
                     socket.close();
                 }, 7000);
@@ -304,8 +304,16 @@ void WebTransportDatagramNode::send(std::istream& istr, SendStatusCode& status_c
     });
     status_code = async_status.get_future().get();
     // linfo() << "Send: Received WebTransport status code " + std::to_string((int)status_code);
-    if (status_code != SendStatusCode::SUCCESS) {
-        lwarn() << "Could not send using WebTransport";
+    switch (status_code) {
+    case SendStatusCode::SUCCESS:
+    case SendStatusCode::RECONNECTING:
+        break;
+    case SendStatusCode::TIMEOUT:
+        lwarn() << "Timeout while sending with WebTransport";
+        break;
+    case SendStatusCode::ERROR:
+        lwarn() << "Error while sending with WebTransport";
+        break;
     }
 }
 
