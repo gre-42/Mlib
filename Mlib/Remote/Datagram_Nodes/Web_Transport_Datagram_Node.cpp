@@ -167,7 +167,6 @@ EM_JS(void, closeWebTransportSocket, (int transportHandle), {
 });
 
 EM_JS(SendStatusCode, sendUsingWebTransportSocket, (int transportHandle, const uint8_t* dataPtr, std::ptrdiff_t dataLength), {
-    const dataArray = HEAPU8.slice(Number(dataPtr), Number(dataPtr) + Number(dataLength));
     const socket = globalThis.webTransportSockets[transportHandle];
     if (socket === null) {
         return Module["SendStatusCode"]["RECONNECTING"]["value"];
@@ -175,13 +174,14 @@ EM_JS(SendStatusCode, sendUsingWebTransportSocket, (int transportHandle, const u
     if (socket["_writeInProgress"]) {
         return Module["SendStatusCode"]["CONGESTED"]["value"];
     }
+    const dataArray = HEAPU8.slice(Number(dataPtr), Number(dataPtr) + Number(dataLength));
     try {
         const writer = socket["datagrams"]["writable"].getWriter();
         writer.write(dataArray);
         writer.ready.then(() => {
             socket["_writeInProgress"] = false;
         }).catch(() => {
-            socket["_writeInProgress"] = true;
+            socket["_writeInProgress"] = false;
         });
         writer.releaseLock();
         return Module["SendStatusCode"]["SUCCESS"]["value"];
