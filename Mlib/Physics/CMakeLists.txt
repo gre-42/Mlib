@@ -15,12 +15,13 @@ target_include_directories(MlibPhysics PUBLIC ${Mlib_INCLUDE_DIR})
 
 target_link_libraries(MlibPhysics
     PUBLIC
-        MlibMap
         MlibGeometry
+        MlibMap
+        MlibMemory
+        MlibRemote
         MlibSceneGraph
         MlibThreads
-        MlibTime
-        MlibMemory)
+        MlibTime)
 
 if (BUILD_AUDIO)
     target_link_libraries(MlibPhysics

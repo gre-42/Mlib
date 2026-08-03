@@ -40,6 +40,7 @@
 #include <Mlib/Physics/Vehicle_Controllers/Car_Controllers/Rigid_Body_Vehicle_Controller.hpp>
 #include <Mlib/Physics/Vehicle_Controllers/Missile_Controllers/Rigid_Body_Missile_Controller.hpp>
 #include <Mlib/Physics/Vehicle_Controllers/Plane_Controllers/Rigid_Body_Plane_Controller.hpp>
+#include <Mlib/Scene_Config/Interpolation_Thresholds.hpp>
 #include <Mlib/Scene_Config/Physics_Engine_Config.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
@@ -268,40 +269,48 @@ void RigidBodyVehicle::collide_with_air(CollisionHistory& c)
                     .beta = c.cfg.point_equality_beta}));
         }
     }
-    auto rbp_orig = rbp_;
-    for (auto& [wing_id, wing] : wings_) {
-        // Absolute location
-        auto abs_location = wing->absolute_location(rbp_.abs_transformation());
-        // Relative velocity
-        auto vel = dot(rbp_orig.velocity_at_position(abs_location.t), abs_location.R);
-        auto vel2 = squared(vel);
-        auto lvel = std::sqrt(sum(squared(vel)));
-        auto svel2 = lvel * vel;
-        auto drag = -wing->drag_coefficients * svel2;
-        float fac = wing->fac(lvel);
-        auto thr = rbp_.mass_ * c.cfg.max_aerodynamic_acceleration;
-        if (!owner_site_id_.has_value() || !local_site_id_.has_value() || (*owner_site_id_ == *local_site_id_)) {
-            integrate_force(
-                VectorAtPosition<float, ScenePos, 3>{
-                    .vector = abs_location.rotate(
-                        clamped(
-                            fac * FixedArray<float, 3>{
-                                drag(0),
-                                drag(1) - svel2(2) * wing->angle_of_attack * wing->angle_coefficient_yz + vel2(2) * wing->lift_coefficient,
-                                drag(2) - svel2(2) * std::abs(wing->brake_angle) * wing->angle_coefficient_zz},
-                            -thr,
-                            thr)),
-                    .position = abs_location.t },
-                c.cfg,
-                c.phase);
+    if (!wings_.empty()) {
+        bool compute_real_physics = !owner_site_id_.has_value() || !local_site_id_.has_value() || (*owner_site_id_ == *local_site_id_);
+        if (!compute_real_physics) {
+            float dt = c.cfg.dt_substeps(c.phase);
+            float relaxation = (1.f - std::pow(0.5f, dt / REMOTE_AIR_DAMPING_HALFLIFE));
+            rbp_.set_w(fixed_zeros<SceneDir, 3>(), dt, relaxation, CURRENT_SOURCE_LOCATION);
         }
-        if (wing->trail_source.has_value()) {
-            const auto& s = *wing->trail_source;
-            if (std::abs(lvel) > s.minimum_velocity) {
-                TransformationMatrix<float, ScenePos, 3> trail_location{
-                    abs_location.R,
-                    abs_location.transform(s.position.casted<ScenePos>()) };
-                s.extender->append_location(trail_location, TrailLocationType::MIDPOINT, c.world);
+        auto rbp_orig = rbp_;
+        for (auto& [wing_id, wing] : wings_) {
+            // Absolute location
+            auto abs_location = wing->absolute_location(rbp_.abs_transformation());
+            // Relative velocity
+            auto vel = dot(rbp_orig.velocity_at_position(abs_location.t), abs_location.R);
+            auto vel2 = squared(vel);
+            auto lvel = std::sqrt(sum(squared(vel)));
+            auto svel2 = lvel * vel;
+            auto drag = -wing->drag_coefficients * svel2;
+            float fac = wing->fac(lvel);
+            auto thr = rbp_.mass_ * c.cfg.max_aerodynamic_acceleration;
+            if (compute_real_physics) {
+                integrate_force(
+                    VectorAtPosition<float, ScenePos, 3>{
+                        .vector = abs_location.rotate(
+                            clamped(
+                                fac * FixedArray<float, 3>{
+                                    drag(0),
+                                    drag(1) - svel2(2) * wing->angle_of_attack * wing->angle_coefficient_yz + vel2(2) * wing->lift_coefficient,
+                                    drag(2) - svel2(2) * std::abs(wing->brake_angle) * wing->angle_coefficient_zz},
+                                -thr,
+                                thr)),
+                        .position = abs_location.t },
+                    c.cfg,
+                    c.phase);
+            }
+            if (wing->trail_source.has_value()) {
+                const auto& s = *wing->trail_source;
+                if (std::abs(lvel) > s.minimum_velocity) {
+                    TransformationMatrix<float, ScenePos, 3> trail_location{
+                        abs_location.R,
+                        abs_location.transform(s.position.casted<ScenePos>()) };
+                    s.extender->append_location(trail_location, TrailLocationType::MIDPOINT, c.world);
+                }
             }
         }
     }
