@@ -136,10 +136,10 @@ EM_JS(int, createWebTransportSocket,
                 }
             } catch (error) {
                 console.error(`Connection lost due to error/timeout: ${error}`);
-                globalThis.webTransportSockets[handle] = null; 
+                globalThis.webTransportSockets[handle] = null;
                 console.error("Attempting to reconnect in 5 seconds...");
                 setTimeout(() => {
-                    createWebTransport(); 
+                    createWebTransport();
                     connectTransport();
                 }, 5000);
             }
