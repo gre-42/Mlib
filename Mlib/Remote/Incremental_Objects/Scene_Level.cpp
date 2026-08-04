@@ -1,5 +1,6 @@
 #include "Scene_Level.hpp"
 #include <Mlib/Remote/Remote_Role.hpp>
+#include <Mlib/Remote/Session_Id.hpp>
 #include <mutex>
 #include <stdexcept>
 
@@ -12,7 +13,7 @@ LocalSceneLevel::LocalSceneLevel()
 LocalSceneLevel::LocalSceneLevel(
     std::string level_name,
     std::string time_of_day,
-    uint8_t reload_count)
+    ReloadCountType reload_count)
     : level_name{ std::move(level_name) }
     , time_of_day{ std::move(time_of_day) }
     , reload_count{ reload_count }
@@ -71,14 +72,14 @@ bool SceneLevelSelector::server_set_next_scene_level(
     if (local_scene_level_.level_name == level_name) {
         return set_next_scene_level(level_name, time_of_day, local_scene_level_.reload_count, RemoteRole::SERVER);
     } else {
-        return set_next_scene_level(level_name, time_of_day, local_scene_level_.reload_count + 1, RemoteRole::SERVER);
+        return set_next_scene_level(level_name, time_of_day, get_session_id(local_scene_level_.reload_count), RemoteRole::SERVER);
     }
 }
 
 bool SceneLevelSelector::client_set_next_scene_level(
     const std::string& level_name,
     const std::string& time_of_day,
-    uint8_t reload_count)
+    ReloadCountType reload_count)
 {
     return set_next_scene_level(level_name, time_of_day, reload_count, RemoteRole::CLIENT);
 }
@@ -86,7 +87,7 @@ bool SceneLevelSelector::client_set_next_scene_level(
 bool SceneLevelSelector::set_next_scene_level(
     const std::string& level_name,
     const std::string& time_of_day,
-    uint8_t reload_count,
+    ReloadCountType reload_count,
     RemoteRole remote_role)
 {
     std::scoped_lock lock{ mutex_ };

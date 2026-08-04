@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Memory/Dangling_Base_Class.hpp>
+#include <Mlib/Scene_Config/Remote_Integers.hpp>
 #include <Mlib/Threads/Recursive_Shared_Mutex.hpp>
 #include <functional>
 #include <string>
@@ -11,12 +12,12 @@ struct LocalSceneLevel {
     LocalSceneLevel(
         std::string level_name,
         std::string time_of_day,
-        uint8_t reload_counter = 0);
+        ReloadCountType reload_counter = 0);
     ~LocalSceneLevel();
     bool reload_required(const LocalSceneLevel& other_level) const;
     std::string level_name;
     std::string time_of_day;
-    uint8_t reload_count;
+    ReloadCountType reload_count;
 };
 
 enum class LocalSceneLevelLoadStatus: uint8_t {
@@ -44,7 +45,7 @@ public:
     bool client_set_next_scene_level(
         const std::string& level_name,
         const std::string& time_of_day,
-        uint8_t reload_count);
+        ReloadCountType reload_count);
     bool reload_required(const LocalSceneLevel& other_level) const;
     LocalSceneLevelLoadStatus load_status() const;
     void notify_level_loaded();
@@ -52,7 +53,7 @@ private:
     bool set_next_scene_level(
         const std::string& level_name,
         const std::string& time_of_day,
-        uint8_t reload_count,
+        ReloadCountType reload_count,
         RemoteRole remote_role);
     mutable SafeAtomicRecursiveSharedMutex mutex_;
     LocalSceneLevelLoadStatus load_status_;

@@ -22,8 +22,9 @@ using NSelectNextVehicleEventsType = uint8_t;
 using NUserCountType = uint8_t;
 using UserStatusType = uint8_t;
 using StringLengthType = uint8_t;
-using ReloadCountType = uint8_t;
-using SessionIdType = uint32_t;
+using GenericSessionIdType = uint32_t;
+using ReloadCountType = GenericSessionIdType;
+using SessionIdType = GenericSessionIdType;
 using FragmentGroupType = uint16_t;
 using FragmentIndexType = uint8_t;
 // WebTransport allows at least 1'200 bytes.

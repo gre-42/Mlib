@@ -13,15 +13,10 @@
 #include <Mlib/Remote/Incremental_Objects/Scene_Level.hpp>
 #include <Mlib/Remote/Incremental_Objects/Transmission_History.hpp>
 #include <Mlib/Remote/Incremental_Objects/Transmitted_Fields.hpp>
+#include <Mlib/Remote/Session_Id.hpp>
 #include <chrono>
 
 using namespace Mlib;
-
-SessionIdType get_session_id() {
-    auto now = std::chrono::system_clock::now();
-    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch());
-    return std::max(SessionIdType(1), SessionIdType(duration.count()));
-}
 
 IncrementalCommunicatorProxy::IncrementalCommunicatorProxy(
     std::shared_ptr<ISendSocket> send_socket,
@@ -44,7 +39,7 @@ IncrementalCommunicatorProxy::IncrementalCommunicatorProxy(
     if (any(tasks_ & ProxyTasks::SEND_OWNERSHIP)) {
         session_id_ = 0;
     } else {
-        session_id_ = get_session_id();
+        session_id_ = get_session_id(0);
     }
 }
 
