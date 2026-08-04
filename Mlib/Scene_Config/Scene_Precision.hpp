@@ -12,17 +12,15 @@ constexpr int64_t right_shift(double max) {
     return (int64_t)floor_log2(std::numeric_limits<T>::max() / max);
 }
 
-template <std::integral T, class TLarge>
+template <std::integral T, class TLarge, class TWidth>
 struct DeltaFixedPointNumber {
-    static const auto delta = right_shift<T>((double)std::numeric_limits<TLarge>::min());
+    using Width = decltype(TWidth::width);
+    static constexpr const auto delta = right_shift<T>((Width)std::numeric_limits<TLarge>::min() + TWidth::width);
     using value_type = FixedPointNumber<T, delta>;
 };
 
-template <std::integral T, class TLarge>
-using DeltaFixedPointNumberT = DeltaFixedPointNumber<T, TLarge>::value_type;
-
-template <std::integral T, class TLarge>
-static const auto DELTA_RIGHT_SHIFT = DeltaFixedPointNumber<T, TLarge>::delta;
+template <std::integral T, class TLarge, class TWidth>
+using DeltaFixedPointNumberT = DeltaFixedPointNumber<T, TLarge, TWidth>::value_type;
 
 using SceneDir = float;
 using ScenePos = double;

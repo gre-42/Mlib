@@ -2,7 +2,6 @@
 #include <Mlib/Math/Fixed_Point_Number.hpp>
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Scene_Config/Scene_Precision.hpp>
-#include <concepts>
 #include <cstddef>
 #include <limits>
 
@@ -23,22 +22,14 @@ using CompressedSceneV8 = FixedPointNumber<int8_t, SCENE_V_8_SHIFT>;
 
 // Relative + highres
 static constexpr float PING = 100.f * milli * seconds;
-static constexpr const std::intmax_t PHYSICS_T_16_SHIFT = right_shift<int16_t>(MAX_REMOTE_VELOCITY * PING);
-static constexpr const std::intmax_t PHYSICS_R_8_SHIFT = right_shift<int8_t>(0.125f * rps * PING);
-static constexpr const std::intmax_t PHYSICS_W_8_SHIFT = right_shift<int8_t>(MAX_REMOTE_ANGULAR_VELOCITY / (1.f * seconds) * PING);
-static constexpr const std::intmax_t PHYSICS_V_8_SHIFT = right_shift<int8_t>(100.f * kph / (1.f * seconds) * PING);
-static constexpr const std::intmax_t NUMERIC_T_16_SHIFT = DELTA_RIGHT_SHIFT<int16_t, CompressedSceneT16>;
-static constexpr const std::intmax_t NUMERIC_R_8_SHIFT = DELTA_RIGHT_SHIFT<int8_t, CompressedSceneR8>;
-static constexpr const std::intmax_t NUMERIC_W_8_SHIFT = DELTA_RIGHT_SHIFT<int8_t, CompressedSceneW8>;
-static constexpr const std::intmax_t NUMERIC_V_8_SHIFT = DELTA_RIGHT_SHIFT<int8_t, CompressedSceneV8>;
-static constexpr const std::intmax_t DELTA_T_16_SHIFT = std::min(PHYSICS_T_16_SHIFT, NUMERIC_T_16_SHIFT);
-static constexpr const std::intmax_t DELTA_R_8_SHIFT = std::min(PHYSICS_R_8_SHIFT, NUMERIC_R_8_SHIFT);
-static constexpr const std::intmax_t DELTA_W_8_SHIFT = std::min(PHYSICS_W_8_SHIFT, NUMERIC_W_8_SHIFT);
-static constexpr const std::intmax_t DELTA_V_8_SHIFT = std::min(PHYSICS_V_8_SHIFT, NUMERIC_V_8_SHIFT);
-using DeltaSceneT16 = FixedPointNumber<int16_t, DELTA_T_16_SHIFT>;
-using DeltaSceneR8 = FixedPointNumber<int8_t, DELTA_R_8_SHIFT>;
-using DeltaSceneW8 = FixedPointNumber<int8_t, DELTA_W_8_SHIFT>;
-using DeltaSceneV8 = FixedPointNumber<int8_t, DELTA_V_8_SHIFT>;
+struct DeltaSceneT16Width { static constexpr const double width = MAX_REMOTE_VELOCITY * PING; };
+struct DeltaSceneR8Width { static constexpr const double width = 0.125f * rps * PING; };
+struct DeltaSceneW8Width { static constexpr const double width = MAX_REMOTE_ANGULAR_VELOCITY / (1.f * seconds) * PING; };
+struct DeltaSceneV8Width { static constexpr const double width = MAX_REMOTE_ANGULAR_VELOCITY / (1.f * seconds) * PING; };
+using DeltaSceneT16 = DeltaFixedPointNumberT<int16_t, CompressedSceneT16, DeltaSceneT16Width>;
+using DeltaSceneR8 = DeltaFixedPointNumberT<int8_t, CompressedSceneR8, DeltaSceneR8Width>;
+using DeltaSceneW8 = DeltaFixedPointNumberT<int8_t, CompressedSceneW8, DeltaSceneW8Width>;
+using DeltaSceneV8 = DeltaFixedPointNumberT<int8_t, CompressedSceneV8, DeltaSceneV8Width>;
 
 // Absolute + highres
 using CompressedSceneT32 = DeltaSceneT16::ReplacedInt<int32_t>;
