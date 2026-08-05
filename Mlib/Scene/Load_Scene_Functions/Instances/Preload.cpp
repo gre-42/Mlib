@@ -39,7 +39,7 @@ void Preload::execute(const LoadSceneJsonUserFunctionArgs& args) {
     args.arguments.validate(KnownArgs::options);
 
     {
-        auto e = args.arguments.at<bool>(KnownArgs::throw_if_resource_unknown)
+        auto e = args.arguments.at<bool>(KnownArgs::throw_if_resource_unknown, true)
             ? ResourceDoesNotExistBehavior::THROW
             : ResourceDoesNotExistBehavior::RETURN_NULL;
         if (args.arguments.contains(KnownArgs::resources)) {
