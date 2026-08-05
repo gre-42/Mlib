@@ -12,7 +12,7 @@ struct LocalSceneLevel {
     LocalSceneLevel(
         std::string level_name,
         std::string time_of_day,
-        ReloadCountType reload_counter = 0);
+        ReloadCountType reload_counter);
     ~LocalSceneLevel();
     bool reload_required(const LocalSceneLevel& other_level) const;
     std::string level_name;
