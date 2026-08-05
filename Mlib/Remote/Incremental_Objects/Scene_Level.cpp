@@ -7,7 +7,7 @@
 using namespace Mlib;
 
 LocalSceneLevel::LocalSceneLevel()
-    : LocalSceneLevel{"", "", get_session_id(0)}
+    : LocalSceneLevel{"", "", 0}
 {}
 
 LocalSceneLevel::LocalSceneLevel(
