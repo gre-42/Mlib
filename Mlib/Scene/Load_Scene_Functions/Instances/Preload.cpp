@@ -26,7 +26,7 @@ BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(resources);
 DECLARE_ARGUMENT(file);
 DECLARE_ARGUMENT(tire_contacts);
-DECLARE_ARGUMENT(throw_if_resource_unknown);
+DECLARE_ARGUMENT(throw_if_file_resource_unknown);
 }
 
 Preload::Preload(PhysicsScene& physics_scene)
@@ -38,24 +38,22 @@ void Preload::execute(const LoadSceneJsonUserFunctionArgs& args) {
 
     args.arguments.validate(KnownArgs::options);
 
-    {
-        auto e = args.arguments.at<bool>(KnownArgs::throw_if_resource_unknown, true)
-            ? ResourceDoesNotExistBehavior::THROW
-            : ResourceDoesNotExistBehavior::RETURN_NULL;
-        if (args.arguments.contains(KnownArgs::resources)) {
-            for (const auto &r : args.arguments.at<std::vector<VariableAndHash<std::string>>>(KnownArgs::resources))
-            {
-                RenderingContextStack::primary_scene_node_resources().preload_single(
-                    r,
-                    RenderableResourceFilter{},
-                    e);
-            }
+    if (args.arguments.contains(KnownArgs::resources)) {
+        for (const auto &r : args.arguments.at<std::vector<VariableAndHash<std::string>>>(KnownArgs::resources))
+        {
+            RenderingContextStack::primary_scene_node_resources().preload_single(
+                r,
+                RenderableResourceFilter{});
         }
     }
     if (args.arguments.contains(KnownArgs::file)) {
+        auto e = args.arguments.at<bool>(KnownArgs::throw_if_file_resource_unknown, true)
+            ? ResourceDoesNotExistBehavior::THROW
+            : ResourceDoesNotExistBehavior::RETURN_NULL;
         RenderingContextStack::primary_scene_node_resources().preload_many(
             args.arguments.path_or_variable(KnownArgs::file).local_path(),
-            RenderableResourceFilter{});
+            RenderableResourceFilter{},
+            e);
     }
     if (args.arguments.contains(KnownArgs::tire_contacts)) {
         for (const auto &r : args.arguments.at<std::vector<VariableAndHash<std::string>>>(KnownArgs::tire_contacts))
