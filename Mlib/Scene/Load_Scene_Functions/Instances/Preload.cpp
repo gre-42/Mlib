@@ -15,6 +15,7 @@
 #include <Mlib/Scene/Load_Scene_Funcs.hpp>
 #include <Mlib/Scene/Scene_Particles.hpp>
 #include <Mlib/Scene_Graph/Resources/Renderable_Resource_Filter.hpp>
+#include <Mlib/Scene_Graph/Resources/Resource_Does_Not_Exist_Behavior.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
 #include <Mlib/Threads/Thread_Top.hpp>
 
@@ -25,6 +26,7 @@ BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(resources);
 DECLARE_ARGUMENT(file);
 DECLARE_ARGUMENT(tire_contacts);
+DECLARE_ARGUMENT(throw_if_resource_unknown);
 }
 
 Preload::Preload(PhysicsScene& physics_scene)
@@ -36,12 +38,18 @@ void Preload::execute(const LoadSceneJsonUserFunctionArgs& args) {
 
     args.arguments.validate(KnownArgs::options);
 
-    if (args.arguments.contains(KnownArgs::resources)) {
-        for (const auto &r : args.arguments.at<std::vector<VariableAndHash<std::string>>>(KnownArgs::resources))
-        {
-            RenderingContextStack::primary_scene_node_resources().preload_single(
-                r,
-                RenderableResourceFilter{});
+    {
+        auto e = args.arguments.at<bool>(KnownArgs::throw_if_resource_unknown)
+            ? ResourceDoesNotExistBehavior::THROW
+            : ResourceDoesNotExistBehavior::RETURN_NULL;
+        if (args.arguments.contains(KnownArgs::resources)) {
+            for (const auto &r : args.arguments.at<std::vector<VariableAndHash<std::string>>>(KnownArgs::resources))
+            {
+                RenderingContextStack::primary_scene_node_resources().preload_single(
+                    r,
+                    RenderableResourceFilter{},
+                    e);
+            }
         }
     }
     if (args.arguments.contains(KnownArgs::file)) {

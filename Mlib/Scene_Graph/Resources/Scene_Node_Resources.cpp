@@ -72,7 +72,8 @@ void SceneNodeResources::write_loaded_resources(const Utf8Path& filename) const 
 
 void SceneNodeResources::preload_many(
     const Utf8Path& filename,
-    const RenderableResourceFilter& filter) const
+    const RenderableResourceFilter& filter,
+    ResourceDoesNotExistBehavior not_exists_behavior) const
 {
     std::scoped_lock lock{mutex_};
     auto fstr = create_ifstream(filename);
@@ -93,14 +94,21 @@ void SceneNodeResources::preload_many(
         throw std::runtime_error("Could not parse file: \"" + filename.string() + '"');
     }
     for (const auto& resource_name : resource_names) {
-        preload_single(resource_name, filter);
+        preload_single(resource_name, filter, not_exists_behavior);
     }
 }
 
 void SceneNodeResources::preload_single(
     const VariableAndHash<std::string>& name,
-    const RenderableResourceFilter& filter) const {
-    auto resource = get_resource(name);
+    const RenderableResourceFilter& filter,
+    ResourceDoesNotExistBehavior not_exists_behavior) const
+{
+    auto resource = get_resource(name, not_exists_behavior);
+    if ((not_exists_behavior == ResourceDoesNotExistBehavior::RETURN_NULL) &&
+        (resource == nullptr))
+    {
+        return;
+    }
     try {
         resource->preload(filter);
     } catch (const std::runtime_error& e) {
@@ -598,7 +606,8 @@ void SceneNodeResources::add_companion(
 }
 
 std::shared_ptr<ISceneNodeResource> SceneNodeResources::get_resource(
-    const VariableAndHash<std::string>& name) const
+    const VariableAndHash<std::string>& name,
+    ResourceDoesNotExistBehavior not_exists_behavior) const
 {
     if (auto* r = resources_.try_get(name); r != nullptr) {
         return *r;
@@ -609,7 +618,11 @@ std::shared_ptr<ISceneNodeResource> SceneNodeResources::get_resource(
     }
     auto lit = resource_loaders_.try_get(name);
     if (lit == nullptr) {
-        throw std::runtime_error("Could not find resource or loader with name \"" + *name + '"');
+        if (not_exists_behavior == ResourceDoesNotExistBehavior::THROW) {
+            throw std::runtime_error("Could not find resource or loader with name \"" + *name + '"');
+        } else {
+            return nullptr;
+        }
     }
     auto resource = (*lit)();
     auto* mit = modifiers_.try_get(name);

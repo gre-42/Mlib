@@ -4,7 +4,8 @@
 #include <Mlib/Map/Verbose_Unordered_Map.hpp>
 #include <Mlib/Scene_Config/Scene_Precision.hpp>
 #include <Mlib/Scene_Graph/Interfaces/Way_Points_Fwd.hpp>
-#include <Mlib/Scene_Graph/Preload_Behavior.hpp>
+#include <Mlib/Scene_Graph/Resources/Preload_Behavior.hpp>
+#include <Mlib/Scene_Graph/Resources/Resource_Does_Not_Exist_Behavior.hpp>
 #include <Mlib/Strings/Utf8_Path.hpp>
 #include <Mlib/Threads/Recursive_Shared_Mutex.hpp>
 #include <Mlib/Threads/Safe_Atomic_Shared_Mutex.hpp>
@@ -65,10 +66,12 @@ public:
     void write_loaded_resources(const Utf8Path& filename) const;
     void preload_many(
         const Utf8Path& filename,
-        const RenderableResourceFilter& filter) const;
+        const RenderableResourceFilter& filter,
+        ResourceDoesNotExistBehavior not_exists_behavior = ResourceDoesNotExistBehavior::THROW) const;
     void preload_single(
         const VariableAndHash<std::string>& name,
-        const RenderableResourceFilter& filter) const;
+        const RenderableResourceFilter& filter,
+        ResourceDoesNotExistBehavior not_exists_behavior = ResourceDoesNotExistBehavior::THROW) const;
 
     // Misc
     bool is_invisible_resource(
@@ -197,7 +200,9 @@ public:
         const VariableAndHash<std::string>& source_name,
         const VariableAndHash<std::string>& dest_name);
 private:
-    std::shared_ptr<ISceneNodeResource> get_resource(const VariableAndHash<std::string>& name) const;
+    std::shared_ptr<ISceneNodeResource> get_resource(
+        const VariableAndHash<std::string>& name,
+        ResourceDoesNotExistBehavior not_exists_behavior = ResourceDoesNotExistBehavior::THROW) const;
     mutable ThreadsafeStringWithHashUnorderedMap<std::shared_ptr<ISceneNodeResource>> resources_;
     ThreadsafeStringWithHashUnorderedMap<InstanceInformation<ScenePos>> instantiables_;
     ThreadsafeStringWithHashUnorderedMap<TransformationMatrix<double, double, 3>> geographic_mappings_;
