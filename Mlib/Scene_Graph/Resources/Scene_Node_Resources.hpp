@@ -17,6 +17,7 @@
 #include <memory>
 #include <mutex>
 #include <string>
+#include <unordered_set>
 
 namespace Mlib {
 
@@ -52,6 +53,14 @@ class IGpuVertexData;
 enum class AggregateMode;
 enum class PhysicsMaterial: uint32_t;
 enum class SmoothnessTarget;
+
+enum class NotPreloadedBehavior {
+    WARN,
+    SILENT
+};
+
+void set_not_preloaded_behavior(NotPreloadedBehavior value);
+NotPreloadedBehavior get_not_preloaded_behavior();
 
 class SceneNodeResources {
 public:
@@ -203,6 +212,7 @@ private:
     std::shared_ptr<ISceneNodeResource> get_resource(
         const VariableAndHash<std::string>& name,
         ResourceDoesNotExistBehavior not_exists_behavior = ResourceDoesNotExistBehavior::THROW) const;
+    mutable std::unordered_set<VariableAndHash<std::string>> preloaded_or_warned_resources_;
     mutable ThreadsafeStringWithHashUnorderedMap<std::shared_ptr<ISceneNodeResource>> resources_;
     ThreadsafeStringWithHashUnorderedMap<InstanceInformation<ScenePos>> instantiables_;
     ThreadsafeStringWithHashUnorderedMap<TransformationMatrix<double, double, 3>> geographic_mappings_;
@@ -211,6 +221,7 @@ private:
     StringWithHashUnorderedMap<std::list<std::pair<VariableAndHash<std::string>, RenderableResourceFilter>>> companions_;
     StringWithHashUnorderedMap<std::function<std::shared_ptr<ISceneNodeResource>()>> resource_loaders_;
     mutable StringWithHashUnorderedMap<std::list<std::function<void(ISceneNodeResource&)>>> modifiers_;
+    mutable FastMutex preloaded_or_warned_resources_mutex_;
     mutable SafeAtomicRecursiveSharedMutex mutex_;
     mutable SafeAtomicRecursiveSharedMutex companion_mutex_;
 

@@ -286,6 +286,7 @@ JThread loader_thread(
                         }
                     }
                 }
+                set_not_preloaded_behavior(NotPreloadedBehavior::WARN);
                 load_scene.notify_level_loaded();
                 remote_sites.set_user_status(UserTypes::ALL_LOCAL, UserStatus::LEVEL_LOADED);
             }
@@ -887,6 +888,7 @@ void android_main(android_app* app)
         LocalSceneLevel local_scene_level;
         size_t args_num_renderings = safe_stoz(args.named_svalue("--num_renderings", "-1"));
         while (!render_loop.destroy_requested() && !unhandled_exceptions_occured()) {
+            set_not_preloaded_behavior(NotPreloadedBehavior::SILENT);
             ThreadSafePromise<void> reload_requested;
             TerminationNotificationGuardPromise tngp{reload_requested};
             num_renderings = args_num_renderings;

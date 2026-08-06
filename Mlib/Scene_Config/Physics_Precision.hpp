@@ -21,7 +21,7 @@ using CompressedSceneW8 = FixedPointNumber<int8_t, SCENE_W_8_SHIFT>;
 using CompressedSceneV8 = FixedPointNumber<int8_t, SCENE_V_8_SHIFT>;
 
 // Relative + highres
-static constexpr float PING = 250.f * milli * seconds;
+static constexpr float PING = 200.f * milli * seconds;
 struct DeltaSceneT16Width { static constexpr const double width = MAX_REMOTE_VELOCITY * PING; };
 struct DeltaSceneR8Width { static constexpr const double width = 0.125f * rps * PING; };
 struct DeltaSceneW8Width { static constexpr const double width = MAX_REMOTE_ANGULAR_VELOCITY / (1.f * seconds) * PING; };

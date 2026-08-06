@@ -253,6 +253,7 @@ JThread loader_thread(
                         }
                     }
                 }
+                set_not_preloaded_behavior(NotPreloadedBehavior::WARN);
                 load_scene.notify_level_loaded();
                 remote_sites.set_user_status(UserTypes::ALL_LOCAL, UserStatus::LEVEL_LOADED);
             }
@@ -890,6 +891,7 @@ int main(int argc, char** argv) {
             #endif
             !unhandled_exceptions_occured())
         {
+            set_not_preloaded_behavior(NotPreloadedBehavior::SILENT);
             ThreadSafePromise<void> reload_requested;
             TerminationNotificationGuardPromise tngp{reload_requested};
             #ifndef WITHOUT_GRAPHICS

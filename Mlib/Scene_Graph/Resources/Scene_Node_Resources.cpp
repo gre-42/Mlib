@@ -30,6 +30,19 @@
 
 using namespace Mlib;
 
+static NotPreloadedBehavior not_preloaded_behavior = NotPreloadedBehavior::WARN;
+static FastMutex not_preloaded_behavior_mutex;
+
+void Mlib::set_not_preloaded_behavior(NotPreloadedBehavior value) {
+    std::scoped_lock lock{not_preloaded_behavior_mutex};
+    not_preloaded_behavior = value;
+}
+
+NotPreloadedBehavior Mlib::get_not_preloaded_behavior() {
+    std::scoped_lock lock{not_preloaded_behavior_mutex};
+    return not_preloaded_behavior;
+}
+
 SceneNodeResources::SceneNodeResources(
     #ifndef WITHOUT_GRAPHICS
     IGpuObjectFactory& gpu_object_factory
@@ -111,6 +124,10 @@ void SceneNodeResources::preload_single(
     }
     try {
         resource->preload(filter);
+        {
+            std::scoped_lock lock{mutex_};
+            preloaded_or_warned_resources_.insert(name);
+        }
     } catch (const std::runtime_error& e) {
         throw std::runtime_error("Could not preload resource \"" + *name + "\": " + e.what());
     }
@@ -609,6 +626,13 @@ std::shared_ptr<ISceneNodeResource> SceneNodeResources::get_resource(
     const VariableAndHash<std::string>& name,
     ResourceDoesNotExistBehavior not_exists_behavior) const
 {
+    if (get_not_preloaded_behavior() == NotPreloadedBehavior::WARN) {
+        std::scoped_lock lock{ mutex_ };
+        if (!preloaded_or_warned_resources_.contains(name)) {
+            lwarn() << "Resource not preloaded: \"" << *name << '"';
+            preloaded_or_warned_resources_.insert(name);
+        }
+    }
     if (auto* r = resources_.try_get(name); r != nullptr) {
         return *r;
     }
