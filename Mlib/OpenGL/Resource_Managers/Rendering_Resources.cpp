@@ -775,6 +775,10 @@ void RenderingResources::preload(const TextureDescriptor& descriptor) const {
     }
 }
 
+void RenderingResources::preload(const FPath& name) const {
+    preload(get_colormap(name), TextureRole::TRUSTED);
+}
+
 void RenderingResources::preload(const ColormapWithModifiers& color, TextureRole role) const {
     LOG_FUNCTION("RenderingResources::preload, color=" + color);
     if (color.filename.empty()) {

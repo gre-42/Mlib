@@ -164,6 +164,9 @@ void ColoredVertexArrayResource::preload(const RenderableResourceFilter& filter)
             rendering_resources_.resolve_aliases(t.texture_descriptor);
             rendering_resources_.preload(t.texture_descriptor);
         }
+        for (const auto& n : meta.material.interior_textures.names) {
+            rendering_resources_.preload(n);
+        }
     };
     if (triangles_res_ != nullptr) {
         auto preload_cvas = [&](const auto& cvas) {

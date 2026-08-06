@@ -157,6 +157,7 @@ public:
     ~RenderingResources();
     const ColormapWithModifiers& colormap(const ColormapWithModifiers& name) const;
     void preload(const TextureDescriptor& descriptor) const;
+    void preload(const FPath& name) const;
     bool texture_is_loaded_and_try_preload(
         const ColormapWithModifiers& color,
         TextureRole role = TextureRole::COLOR) const;
