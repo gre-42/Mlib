@@ -73,10 +73,6 @@ public:
 
     // Preload
     void write_loaded_resources(const Utf8Path& filename) const;
-    void preload_many(
-        const Utf8Path& filename,
-        const RenderableResourceFilter& filter,
-        ResourceDoesNotExistBehavior not_exists_behavior = ResourceDoesNotExistBehavior::THROW) const;
     void preload_single(
         const VariableAndHash<std::string>& name,
         const RenderableResourceFilter& filter,

@@ -83,34 +83,6 @@ void SceneNodeResources::write_loaded_resources(const Utf8Path& filename) const 
     }
 }
 
-void SceneNodeResources::preload_many(
-    const Utf8Path& filename,
-    const RenderableResourceFilter& filter,
-    ResourceDoesNotExistBehavior not_exists_behavior) const
-{
-    std::scoped_lock lock{mutex_};
-    auto fstr = create_ifstream(filename);
-    if (fstr->fail()) {
-        throw std::runtime_error("Could not open preload-file for read: \"" + filename.string() + '"');
-    }
-    nlohmann::json j;
-    *fstr >> j;
-    if (fstr->fail()) {
-        throw std::runtime_error("Could not load from file: \"" + filename.string() + '"');
-    }
-    std::vector<VariableAndHash<std::string>> resource_names;
-    try {
-        resource_names = j.get<std::vector<VariableAndHash<std::string>>>();
-    } catch (const nlohmann::json::parse_error&) {
-        throw std::runtime_error("Could not parse file: \"" + filename.string() + '"');
-    } catch (const nlohmann::json::type_error&) {
-        throw std::runtime_error("Could not parse file: \"" + filename.string() + '"');
-    }
-    for (const auto& resource_name : resource_names) {
-        preload_single(resource_name, filter, not_exists_behavior);
-    }
-}
-
 void SceneNodeResources::preload_single(
     const VariableAndHash<std::string>& name,
     const RenderableResourceFilter& filter,

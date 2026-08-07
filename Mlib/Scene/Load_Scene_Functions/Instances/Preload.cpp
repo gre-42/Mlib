@@ -14,6 +14,7 @@
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Load_Scene_Funcs.hpp>
 #include <Mlib/Scene/Scene_Particles.hpp>
+#include <Mlib/Scene_Graph/Interfaces/ITrail_Renderer.hpp>
 #include <Mlib/Scene_Graph/Resources/Renderable_Resource_Filter.hpp>
 #include <Mlib/Scene_Graph/Resources/Resource_Does_Not_Exist_Behavior.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
@@ -23,10 +24,44 @@ using namespace Mlib;
 
 namespace KnownArgs {
 BEGIN_ARGUMENT_LIST;
+DECLARE_ARGUMENT(files);
 DECLARE_ARGUMENT(resources);
-DECLARE_ARGUMENT(file);
 DECLARE_ARGUMENT(tire_contacts);
+DECLARE_ARGUMENT(trails);
 DECLARE_ARGUMENT(throw_if_file_resource_unknown);
+}
+
+std::list<std::vector<VariableAndHash<std::string>>> get_names(
+    const JsonMacroArguments& variables,
+    const std::optional<JsonMacroArguments>& files,
+    std::string_view attr)
+{
+    std::list<std::vector<VariableAndHash<std::string>>> result;
+    if (variables.contains(attr)) {
+        result.push_back(variables.at<std::vector<VariableAndHash<std::string>>>(attr));
+    }
+    if (files.has_value() && files->contains(attr)) {
+        auto filename = files->path(attr);
+        auto fstr = create_ifstream(filename);
+        if (fstr->fail()) {
+            throw std::runtime_error("Could not open preload-file for read: \"" + filename.string() + '"');
+        }
+        nlohmann::json j;
+        *fstr >> j;
+        if (fstr->fail()) {
+            throw std::runtime_error("Could not load from file: \"" + filename.string() + '"');
+        }
+        std::vector<VariableAndHash<std::string>> resource_names;
+        try {
+            resource_names = j.get<std::vector<VariableAndHash<std::string>>>();
+        } catch (const nlohmann::json::parse_error&) {
+            throw std::runtime_error("Could not parse file: \"" + filename.string() + '"');
+        } catch (const nlohmann::json::type_error&) {
+            throw std::runtime_error("Could not parse file: \"" + filename.string() + '"');
+        }
+        result.push_back(resource_names);
+    }
+    return result;
 }
 
 Preload::Preload(PhysicsScene& physics_scene)
@@ -38,26 +73,22 @@ void Preload::execute(const LoadSceneJsonUserFunctionArgs& args) {
 
     args.arguments.validate(KnownArgs::options);
 
-    if (args.arguments.contains(KnownArgs::resources)) {
-        for (const auto &r : args.arguments.at<std::vector<VariableAndHash<std::string>>>(KnownArgs::resources))
-        {
+    auto files = args.arguments.try_get_child(KnownArgs::files);
+
+    auto e = args.arguments.at<bool>(KnownArgs::throw_if_file_resource_unknown, true)
+        ? ResourceDoesNotExistBehavior::THROW
+        : ResourceDoesNotExistBehavior::RETURN_NULL;
+    for (const auto& vec : get_names(args.arguments, files, KnownArgs::resources)) {
+        for (const auto& r : vec) {
             RenderingContextStack::primary_scene_node_resources().preload_single(
                 r,
-                RenderableResourceFilter{});
+                RenderableResourceFilter{},
+                e);
         }
     }
-    if (args.arguments.contains(KnownArgs::file)) {
-        auto e = args.arguments.at<bool>(KnownArgs::throw_if_file_resource_unknown, true)
-            ? ResourceDoesNotExistBehavior::THROW
-            : ResourceDoesNotExistBehavior::RETURN_NULL;
-        RenderingContextStack::primary_scene_node_resources().preload_many(
-            args.arguments.path_or_variable(KnownArgs::file).local_path(),
-            RenderableResourceFilter{},
-            e);
-    }
-    if (args.arguments.contains(KnownArgs::tire_contacts)) {
-        for (const auto &r : args.arguments.at<std::vector<VariableAndHash<std::string>>>(KnownArgs::tire_contacts))
-        {
+
+    for (const auto& vec : get_names(args.arguments, files, KnownArgs::tire_contacts)) {
+        for (const auto& r : vec) {
             auto res = RenderingContextStack::primary_scene_node_resources().get_arrays(
                 r,
                 ColoredVertexArrayFilter{
@@ -105,6 +136,11 @@ void Preload::execute(const LoadSceneJsonUserFunctionArgs& args) {
             };
             preload_cvas(res->scvas);
             preload_cvas(res->dcvas);
+        }
+    }
+    for (const auto& vec : get_names(args.arguments, files, KnownArgs::trails)) {
+        for (const auto& r : vec) {
+            trail_renderer.preload(r);
         }
     }
 }
