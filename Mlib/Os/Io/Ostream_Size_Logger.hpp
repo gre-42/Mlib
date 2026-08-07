@@ -5,12 +5,12 @@
 
 namespace Mlib {
 
-class StreamSizeLogger {
+class OstreamSizeLogger {
 public:
-    StreamSizeLogger(std::istream& istr, std::string message);
-    ~StreamSizeLogger();
+    OstreamSizeLogger(std::ostream& ostr, std::string message);
+    ~OstreamSizeLogger();
 private:
-    std::istream& istr_;
+    std::ostream& ostr_;
     std::string message_;
     std::streampos streampos_;
 };

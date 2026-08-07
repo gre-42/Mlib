@@ -1,8 +1,8 @@
 #include "Incremental_Communicator_Proxy.hpp"
 #include <Mlib/Math/Is_Newer.hpp>
 #include <Mlib/Os/Io/Binary.hpp>
+#include <Mlib/Os/Io/Ostream_Size_Logger.hpp>
 #include <Mlib/Os/Io/Serialize/Serialize.hpp>
-#include <Mlib/Os/Io/Stream_Size_Logger.hpp>
 #include <Mlib/Remote/ISend_Socket.hpp>
 #include <Mlib/Remote/Incremental_Objects/IIncremental_Object.hpp>
 #include <Mlib/Remote/Incremental_Objects/IIncremental_Object_Factory.hpp>
@@ -230,7 +230,7 @@ void IncrementalCommunicatorProxy::send_home(
     std::iostream& iostr,
     SendStatusCode& status_code)
 {
-    std::optional<StreamSizeLogger> sl;
+    std::optional<OstreamSizeLogger> sl;
     if (any(verbosity_ & IoVerbosity::METADATA)) {
         sl.emplace(iostr, "Send home [bytes]: ");
     }
@@ -289,7 +289,7 @@ void IncrementalCommunicatorProxy::send_home(
             linfo() << "send versions " << versions;
         }
         {
-            std::optional<StreamSizeLogger> sl;
+            std::optional<OstreamSizeLogger> sl;
             if (any(verbosity_ & IoVerbosity::METADATA)) {
                 sl.emplace(iostr, "Deleted objects [bytes]: ");
             }
@@ -338,7 +338,7 @@ void IncrementalCommunicatorProxy::send_home(
                         linfo() << "Maybe send partial object to home site " << (home_site_id_ + 0) << ", " << i << " \"" << o->name() << '"';
                     }
                 }
-                std::optional<StreamSizeLogger> sl;
+                std::optional<OstreamSizeLogger> sl;
                 if (any(verbosity_ & IoVerbosity::METADATA)) {
                     sl.emplace(iostr, o->name() + " [bytes]: ");
                 }
