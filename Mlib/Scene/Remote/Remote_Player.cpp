@@ -154,13 +154,6 @@ DanglingBaseClassPtr<RemotePlayer> RemotePlayer::try_create_from_stream(
         }
         return nullptr;
     }
-    // if (full_user_name.has_value() &&
-    //     !(*full_user_name)->empty() &&
-    //     !physics_scene.remote_sites_->contains_user(*full_user_name))
-    // {
-    //     linfo() << "Not creating player for user \"" << **full_user_name << '"';
-    //     return nullptr;
-    // }
     if (lifetime_status == ObjectLifetimeStatus::DELETED) {
         if (any(verbosity & IoVerbosity::METADATA)) {
             linfo() << "Remote player deleted";
@@ -170,9 +163,14 @@ DanglingBaseClassPtr<RemotePlayer> RemotePlayer::try_create_from_stream(
     // The user is owned by the client, while the player is owned by the server.
     // The player can therefore be created before the user, despite the user's
     // higher RemoteSceneObjectPriority.
-    if (full_user_name.has_value() && !physics_scene.remote_sites_->contains_user(*full_user_name)) {
+    if (full_user_name.has_value() &&
+        !(*full_user_name)->empty() &&
+        !physics_scene.remote_sites_->contains_user(*full_user_name))
+    {
         if (any(verbosity & IoVerbosity::METADATA)) {
-            linfo() << "Not creating player, user does not yet exist";
+            linfo() << "Not creating player \"" <<
+                *name.value_or(VariableAndHash<std::string>{"<not transmitted>"}) <<
+                "\", user \"" << **full_user_name << "\" does not yet exist";
         }
         return nullptr;
     }
