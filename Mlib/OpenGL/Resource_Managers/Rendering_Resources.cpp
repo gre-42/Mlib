@@ -1026,9 +1026,9 @@ static GLint nchannels2internal_format(size_t nchannels) {
         case 1:
             return GL_R8;
         case 3:
-            return GL_RGB;
+            return GL_RGB8;
         case 4:
-            return GL_RGBA;
+            return GL_RGBA8;
         default:
             throw std::runtime_error("Unsupported number of channels: " + std::to_string(nchannels));
     };
@@ -2089,7 +2089,7 @@ InitializedTexture RenderingResources::initialize_non_dds_texture(
         }
         CHK(glPixelStorei(GL_UNPACK_ALIGNMENT, 1));  // https://stackoverflow.com/a/49126350/2292832
         {
-#ifdef __ANDROID__
+#if defined(__ANDROID__) || defined(__EMSCRIPTEN__)
             auto nchannels = (size_t)nrChannels;
 #else
             auto nchannels = max(color.color_mode);
@@ -2145,7 +2145,7 @@ InitializedTexture RenderingResources::initialize_non_dds_texture(
         }
         CHK(glPixelStorei(GL_UNPACK_ALIGNMENT, 1));  // https://stackoverflow.com/a/49126350/2292832
         {
-#ifdef __ANDROID__
+#if defined(__ANDROID__) || defined(__EMSCRIPTEN__)
             auto nchannels = (size_t)data[0]->nrChannels;
 #else
             auto nchannels = max(color.color_mode);
