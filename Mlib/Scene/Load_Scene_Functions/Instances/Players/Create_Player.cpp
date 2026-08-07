@@ -49,7 +49,7 @@ void CreatePlayer::execute(const JsonView& args, PlayerCreator creator)
     if (auto full_user_name = args.try_at<VariableAndHash<std::string>>(PlayerArgs::full_user_name);
         full_user_name.has_value())
     {
-        user_info = remote_sites.get_user(*full_user_name).ptr().set_loc(CURRENT_SOURCE_LOCATION);
+        user_info = remote_sites.get_user(*full_user_name, "player").ptr().set_loc(CURRENT_SOURCE_LOCATION);
     }
     auto name = args.at<VariableAndHash<std::string>>(PlayerArgs::name);
     auto site_privileges = PlayerSitePrivileges::NONE;

@@ -43,6 +43,8 @@ class ISceneNodeResource {
 public:
     explicit ISceneNodeResource(std::string name);
     virtual ~ISceneNodeResource();
+
+    std::string name() const;
     // Misc
     virtual void preload(const RenderableResourceFilter& filter);
     virtual void instantiate_child_renderable(const ChildInstantiationOptions& options) const;

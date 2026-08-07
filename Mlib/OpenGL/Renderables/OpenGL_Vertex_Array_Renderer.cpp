@@ -39,6 +39,7 @@
 #include <Mlib/Scene_Graph/Render_Pass.hpp>
 #include <Mlib/Strings/Join.hpp>
 #include <Mlib/Testing/Assert.hpp>
+#include <Mlib/Time/Fps/Lag_Finder.hpp>
 
 using namespace Mlib;
 
@@ -1839,7 +1840,10 @@ void OpenGLVertexArrayRenderer::render(
     const AnimationState* animation_state,
     const ColorStyle* color_style) const
 {
-    // AperiodicLagFinder lag_finder{ "render_cva " + meta.name + ": ", std::chrono::milliseconds{5} };
+    std::optional<AperiodicLagFinder> lag_finder;
+    if (lag_finders_enabled()) {
+        lag_finder.emplace("render_cva " + cva->identifier() + ": ", std::chrono::milliseconds{5});
+    }
     LOG_FUNCTION("render_cva");
     LOG_INFO("RenderableColoredVertexArray::render_cva " + cva->identifier());
     TIME_GUARD_DECLARE(time_guard, "render_cva", cva->identifier());

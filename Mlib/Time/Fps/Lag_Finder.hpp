@@ -4,6 +4,9 @@
 
 namespace Mlib {
 
+void set_lag_finders_enabled(bool enabled);
+bool lag_finders_enabled();
+
 class PeriodicLagFinder {
 public:
     PeriodicLagFinder(std::string prefix, const std::chrono::milliseconds& lag_duration);

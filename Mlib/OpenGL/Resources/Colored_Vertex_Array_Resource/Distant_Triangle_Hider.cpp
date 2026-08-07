@@ -379,7 +379,7 @@ void DistantTriangleHider::delete_triangles_far_away_legacy(
 
 void DistantTriangleHider::preload() {
     auto& res = RenderingContextStack::primary_rendering_resources();
-    res.preload(cva_->meta);
+    res.preload(cva_->meta.material);
 }
 
 const MeshMeta& DistantTriangleHider::mesh_meta() const {

@@ -5,6 +5,7 @@
 #include <Mlib/Resource_Context/Rendering_Context.hpp>
 #include <Mlib/Scene_Graph/Render/Caching_Behavior.hpp>
 #include <Mlib/Scene_Graph/Render_Pass.hpp>
+#include <Mlib/Time/Fps/Lag_Finder.hpp>
 #ifndef WITHOUT_GRAPHICS
 #include <Mlib/OpenGL/Renderables/Gpu_Renderable_Colored_Vertex_Array.hpp>
 #include <Mlib/OpenGL/Renderables/Renderable_Colored_Vertex_Array.hpp>
@@ -115,7 +116,10 @@ void TrailsInstance::render(
     #else
     FixedArray<ScenePos, 3> offset = uninitialized;
     {
-        // AperiodicLagFinder lag_finder{ "update " + std::to_string(instances->num_instances()) + " instances " + cva->name + ": ", std::chrono::milliseconds{5} };
+        std::optional<AperiodicLagFinder> lag_finder;
+        if (lag_finders_enabled()) {
+            lag_finder.emplace("update " + std::to_string(dynamic_vertex_buffers_->ntriangles()) + " triangles " + dynamic_vertex_buffers_->identifier() + ": ", std::chrono::milliseconds{5});
+        }
         std::scoped_lock lock{ mutex_ };
         dynamic_vertex_buffers_->update(frame_id.external_render_pass.time);
         offset = offset_;

@@ -86,22 +86,37 @@ void SceneNodeResources::write_loaded_resources(const Utf8Path& filename) const 
 void SceneNodeResources::preload_single(
     const VariableAndHash<std::string>& name,
     const RenderableResourceFilter& filter,
-    ResourceDoesNotExistBehavior not_exists_behavior) const
+    ResourceDoesNotExistBehavior not_exists_behavior,
+    unsigned int recursion_depth) const
 {
-    auto resource = get_resource(name, not_exists_behavior);
-    if ((not_exists_behavior == ResourceDoesNotExistBehavior::RETURN_NULL) &&
-        (resource == nullptr))
-    {
-        return;
+    if (recursion_depth > 10) {
+        throw std::runtime_error("preload_single exceeded its recursion depth");
     }
-    try {
-        resource->preload(filter);
+    {
+        auto resource = get_resource(name, not_exists_behavior);
+        if ((not_exists_behavior == ResourceDoesNotExistBehavior::RETURN_NULL) &&
+            (resource == nullptr))
         {
-            std::scoped_lock lock{mutex_};
-            preloaded_or_warned_resources_.insert(name);
+            return;
         }
-    } catch (const std::runtime_error& e) {
-        throw std::runtime_error("Could not preload resource \"" + *name + "\": " + e.what());
+        try {
+            resource->preload(filter);
+            {
+                std::scoped_lock lock{mutex_};
+                preloaded_or_warned_resources_.insert(name);
+            }
+        } catch (const std::runtime_error& e) {
+            throw std::runtime_error("Could not preload resource \"" + *name + "\": " + e.what());
+        }
+    }
+    {
+        std::shared_lock lock{ companion_mutex_ };
+        auto cit = companions_.try_get(name);
+        if (cit != nullptr) {
+            for (const auto& [companion_name, filter] : *cit) {
+                preload_single(companion_name, filter, ResourceDoesNotExistBehavior::THROW, recursion_depth + 1);
+            }
+        }
     }
 }
 

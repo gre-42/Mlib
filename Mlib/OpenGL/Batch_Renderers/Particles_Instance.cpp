@@ -12,6 +12,7 @@
 #include <Mlib/Scene_Graph/Render/Caching_Behavior.hpp>
 #include <Mlib/Scene_Graph/Render/IGpu_Vertex_Data.hpp>
 #include <Mlib/Scene_Graph/Render_Pass.hpp>
+#include <Mlib/Time/Fps/Lag_Finder.hpp>
 #ifndef WITHOUT_GRAPHICS
 #include <Mlib/OpenGL/Resources/Colored_Vertex_Array_Resource/Dynamic_Instance_Buffers.hpp>
 #endif
@@ -117,7 +118,10 @@ void ParticlesInstance::render(
     #else
     FixedArray<ScenePos, 3> offset = uninitialized;
     {
-        // AperiodicLagFinder lag_finder{ "update " + std::to_string(instances->num_instances()) + " instances " + cva->name + ": ", std::chrono::milliseconds{5} };
+        std::optional<AperiodicLagFinder> lag_finder;
+        if (lag_finders_enabled()) {
+            lag_finder.emplace("update " + std::to_string(dynamic_instance_buffers_->num_instances()) + " instances " + cvar_->name() + ": ", std::chrono::milliseconds{5});
+        }
         std::scoped_lock lock{ mutex_ };
         dynamic_instance_buffers_->update(frame_id.external_render_pass.time, frame_id.time_id);
         offset = offset_;

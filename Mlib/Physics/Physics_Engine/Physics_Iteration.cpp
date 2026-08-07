@@ -19,6 +19,7 @@
 #include <Mlib/Scene_Graph/Interfaces/IScene_Node_Resource.hpp>
 #include <Mlib/Scene_Graph/Resources/Renderable_Resource_Filter.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
+#include <Mlib/Time/Fps/Lag_Finder.hpp>
 #include <Mlib/Time/Time_And_Pause.hpp>
 
 using namespace Mlib;
@@ -58,36 +59,58 @@ void PhysicsIteration::operator()(const TimeAndPause<std::chrono::steady_clock::
         };
         // Note that g_beacons is delayed by one frame.
         std::list<Beacon> beacons = std::move(get_beacons());
-        for (const auto& g : physics_engine_.rigid_bodies_.collision_groups()) {
-            auto idt = std::chrono::duration_cast<std::chrono::steady_clock::duration>(
-                std::chrono::duration<float>(physics_cfg_.dt_substeps_(g.nsubsteps) / seconds));
-            for (size_t i = 0; i < g.nsubsteps; ++i) {
-                std::list<Beacon>* bcns = (i == g.nsubsteps - 1)
-                    ? &beacons
-                    : nullptr;
-                auto substep_time = time.time() - (g.nsubsteps - 1 - i) * idt;
-                world.time = substep_time;
-                dynamic_world_.set_time (substep_time);
-                auto phase = PhysicsPhase{
-                    .burn_in = false,
-                    .substep = i,
-                    .group = g
-                };
-                physics_engine_.compute_transformed_objects(&phase);
-                physics_engine_.collide(
-                    world,
-                    bcns,
-                    phase,
-                    base_log_);
-                physics_engine_.move_rigid_bodies(
-                    world,
-                    bcns,
-                    phase);
+        {
+            std::optional<PeriodicLagFinder> lag_finder;
+            if (lag_finders_enabled()) {
+                lag_finder.emplace("Physics collide: ", std::chrono::milliseconds{ 10 });
+            }
+            for (const auto& g : physics_engine_.rigid_bodies_.collision_groups()) {
+                auto idt = std::chrono::duration_cast<std::chrono::steady_clock::duration>(
+                    std::chrono::duration<float>(physics_cfg_.dt_substeps_(g.nsubsteps) / seconds));
+                for (size_t i = 0; i < g.nsubsteps; ++i) {
+                    std::list<Beacon>* bcns = (i == g.nsubsteps - 1)
+                        ? &beacons
+                        : nullptr;
+                    auto substep_time = time.time() - (g.nsubsteps - 1 - i) * idt;
+                    world.time = substep_time;
+                    dynamic_world_.set_time (substep_time);
+                    auto phase = PhysicsPhase{
+                        .burn_in = false,
+                        .substep = i,
+                        .group = g
+                    };
+                    physics_engine_.compute_transformed_objects(&phase);
+                    physics_engine_.collide(
+                        world,
+                        bcns,
+                        phase,
+                        base_log_);
+                    physics_engine_.move_rigid_bodies(
+                        world,
+                        bcns,
+                        phase);
+                }
             }
         }
-        physics_engine_.move_particles(world);
-        physics_engine_.compute_transformed_objects(nullptr);
         {
+            std::optional<PeriodicLagFinder> lag_finder;
+            if (lag_finders_enabled()) {
+                lag_finder.emplace("Physics move particles: ", std::chrono::milliseconds{ 10 });
+            }
+            physics_engine_.move_particles(world);
+        }
+        {
+            std::optional<PeriodicLagFinder> lag_finder;
+            if (lag_finders_enabled()) {
+                lag_finder.emplace("Physics compute transformed: ", std::chrono::milliseconds{ 10 });
+            }
+            physics_engine_.compute_transformed_objects(nullptr);
+        }
+        {
+            std::optional<PeriodicLagFinder> lag_finder;
+            if (lag_finders_enabled()) {
+                lag_finder.emplace("Physics cleanup and beacons: ", std::chrono::milliseconds{ 10 });
+            }
             scene_.notify_cleanup_required();
             DestructionGuard dg{ [&]() { scene_.notify_cleanup_done(); } };
             // for(size_t i = 0; i < 32; ++i) {
@@ -120,12 +143,28 @@ void PhysicsIteration::operator()(const TimeAndPause<std::chrono::steady_clock::
                     scene_.auto_add_root_node(node_name, std::move(node), RenderingDynamics::MOVING);
                 }
             }
-            // TimeGuard tg1{"scene.move"};
-            scene_.move(physics_cfg_.dt, SceneTime::standard(time.time()));
+            {
+                std::optional<PeriodicLagFinder> lag_finder;
+                if (lag_finders_enabled()) {
+                    lag_finder.emplace("Physics move: ", std::chrono::milliseconds{ 10 });
+                }
+                // TimeGuard tg1{"scene.move"};
+                scene_.move(physics_cfg_.dt, SceneTime::standard(time.time()));
+            }
         }
-        physics_engine_.move_advance_times(world);
+        {
+            std::optional<PeriodicLagFinder> lag_finder;
+            if (lag_finders_enabled()) {
+                lag_finder.emplace("Physics advance times: ", std::chrono::milliseconds{ 10 });
+            }
+            physics_engine_.move_advance_times(world);
+        }
     }
     if (send_and_receive_) {
+        std::optional<PeriodicLagFinder> lag_finder;
+        if (lag_finders_enabled()) {
+            lag_finder.emplace("Physics send and receive: ", std::chrono::milliseconds{ 10 });
+        }
         send_and_receive_(time);
     }
 }

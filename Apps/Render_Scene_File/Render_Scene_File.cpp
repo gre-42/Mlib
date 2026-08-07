@@ -40,6 +40,7 @@
 #include <Mlib/Threads/Thread_Affinity.hpp>
 #include <Mlib/Threads/Thread_Initializer.hpp>
 #include <Mlib/Threads/Thread_Safe_Promise.hpp>
+#include <Mlib/Time/Fps/Lag_Finder.hpp>
 #include <Mlib/Time/Fps/Realtime_Dependent_Fps.hpp>
 #include <Mlib/Time/Time_And_Pause.hpp>
 #include <filesystem>
@@ -422,6 +423,7 @@ int main(int argc, char** argv) {
         "    [--check_gl_errors]\n"
         "    [--print_gl_calls]\n"
         "    [--print_glfw_calls]\n"
+        "    [--print_lag]\n"
         "    [--print_rendered_materials]\n"
         "    [--rgba_debug_image <name>]\n"
         "    [--window_title <title>]\n"
@@ -474,6 +476,7 @@ int main(int argc, char** argv) {
          "--check_gl_errors",
          "--print_gl_calls",
          "--print_glfw_calls",
+         "--print_lag",
          "--print_rendered_materials",
          #endif
          "--print_remote_data",
@@ -608,6 +611,9 @@ int main(int argc, char** argv) {
         }
         if (args.has_named("--print_glfw_calls")) {
             print_glfw_calls(PrintGlfwCalls::ENABLED);
+        }
+        if (args.has_named("--print_lag")) {
+            set_lag_finders_enabled(true);
         }
         if (args.has_named("--print_rendered_materials")) {
             print_rendered_materials(PrintRenderedMaterials::ENABLED);
@@ -766,7 +772,7 @@ int main(int argc, char** argv) {
         #endif
         Users users;
         RemoteSites remote_sites{ {users, CURRENT_SOURCE_LOCATION}, remote_params };
-        // Settings the user count this is done in the script,
+        // Setting the user count this is done in the script,
         // so it can be changed by reloading the scene.
         // remote_sites.set_local_user_count(user_count);
         RemoteConfig remote_config{

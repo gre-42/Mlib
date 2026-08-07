@@ -48,7 +48,7 @@ class RenderingResources;
 struct BlendMapTexture;
 struct ColoredRenderProgram;
 struct LoadedFont;
-struct MeshMeta;
+struct Material;
 struct RenderProgramIdentifier;
 struct TextureDescriptor;
 
@@ -159,7 +159,7 @@ public:
     const ColormapWithModifiers& colormap(const ColormapWithModifiers& name) const;
     void preload(const TextureDescriptor& descriptor) const;
     void preload(const FPath& name) const;
-    void preload(MeshMeta& meta) const;
+    void preload(Material& material) const;
     bool texture_is_loaded_and_try_preload(
         const ColormapWithModifiers& color,
         TextureRole role = TextureRole::COLOR) const;

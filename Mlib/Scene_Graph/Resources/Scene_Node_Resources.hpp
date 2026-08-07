@@ -76,7 +76,8 @@ public:
     void preload_single(
         const VariableAndHash<std::string>& name,
         const RenderableResourceFilter& filter,
-        ResourceDoesNotExistBehavior not_exists_behavior = ResourceDoesNotExistBehavior::THROW) const;
+        ResourceDoesNotExistBehavior not_exists_behavior = ResourceDoesNotExistBehavior::THROW,
+        unsigned int recursion_depth = 0) const;
 
     // Misc
     bool is_invisible_resource(

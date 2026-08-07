@@ -44,7 +44,7 @@ void RootNodeInstance::execute(const LoadSceneJsonUserFunctionArgs& args)
     if (auto full_user_name = args.arguments.try_at<VariableAndHash<std::string>>(KnownArgs::full_user_name);
         full_user_name.has_value())
     {
-        auto user = args.remote_config_and_sites.sites.get_user(*full_user_name);
+        auto user = args.remote_config_and_sites.sites.get_user(*full_user_name, "root node");
         viewable = { user->site_id, user->user_id };
     }
     auto node = make_unique_scene_node(

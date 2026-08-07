@@ -158,7 +158,7 @@ void AnimatedTextureLayerBuffers::delete_triangles_far_away_legacy(
 
 void AnimatedTextureLayerBuffers::preload() {
     auto& res = RenderingContextStack::primary_rendering_resources();
-    res.preload(mesh_meta_);
+    res.preload(mesh_meta_.material);
 }
 
 const MeshMeta& AnimatedTextureLayerBuffers::mesh_meta() const {

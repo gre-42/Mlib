@@ -237,27 +237,23 @@ void IncrementalCommunicatorProxy::send_home(
     std::optional<RemoteObjectId> object_to_send_completely;
     {
         std::optional<int32_t> highest_priority;
+        auto update_common = [&](const RemoteObjectId& i, const IIncrementalObject& o){
+            if (!objects_unknown_at_home_.contains(i)) {
+                return;
+            }
+            if (!object_to_send_completely.has_value() || (o.priority() > *highest_priority)) {
+                object_to_send_completely.emplace(i);
+                highest_priority.emplace(o.priority());
+            }
+        };
         auto update_object_to_send_completely_local = [&](const LocalObjects& objects){
             for (const auto& [i, o] : objects) {
-                auto j = RemoteObjectId{objects_->local_site_id(), i};
-                if (!objects_unknown_at_home_.contains(j)) {
-                    continue;
-                }
-                if (!object_to_send_completely.has_value() || (o->priority() > *highest_priority)) {
-                    object_to_send_completely.emplace(j);
-                    highest_priority.emplace(o->priority());
-                }
+                update_common(RemoteObjectId{objects_->local_site_id(), i}, o.get());
             }
         };
         auto update_object_to_send_completely_remote = [&](const RemoteObjects& objects){
             for (const auto& [i, o] : objects) {
-                if (!objects_unknown_at_home_.contains(i)) {
-                    continue;
-                }
-                if (!object_to_send_completely.has_value() || (o->priority() > *highest_priority)) {
-                    object_to_send_completely.emplace(i);
-                    highest_priority.emplace(o->priority());
-                }
+                update_common(i, o.get());
             }
         };
         update_object_to_send_completely_local(objects_->private_local_objects());

@@ -28,13 +28,18 @@ PhysicsLoop::PhysicsLoop(
                 ThreadInitializer ti{ tn, thread_affinity };
                 size_t nframes2 = nframes;
                 auto simulated_time = set_fps_.simulated_time();
-                // PeriodicLagFinder lag_finder{ "Physics: ", std::chrono::milliseconds{ 100 }};
+                std::optional<PeriodicLagFinder> lag_finder;
+                if (lag_finders_enabled()) {
+                    lag_finder.emplace("Physics: ", std::chrono::milliseconds{ 50 });
+                }
                 while (!physics_thread_.get_stop_token().stop_requested() &&
                        !unhandled_exceptions_occured())
                 {
+                    if (lag_finder.has_value()) {
+                        lag_finder->start();
+                    }
                     auto loading = ll();
                     if (!set_fps_.paused() && !loading) {
-                        // lag_finder.start();
                         // TimeGuard::initialize(5 * 60);
                         if (nframes2 != SIZE_MAX) {
                             if (nframes2-- == 0) {
@@ -51,7 +56,9 @@ PhysicsLoop::PhysicsLoop(
                         set_fps_.sleep();
                     }
                     // TimeGuard::print_groups(lraw());
-                    // lag_finder.stop();
+                    if (lag_finder.has_value()) {
+                        lag_finder->stop();
+                    }
                 }
             } catch (const std::exception& e) {
                 lerr() << "Unhandled exception in physics loop: " << e.what();

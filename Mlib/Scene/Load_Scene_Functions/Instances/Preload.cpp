@@ -31,6 +31,13 @@ DECLARE_ARGUMENT(trails);
 DECLARE_ARGUMENT(throw_if_file_resource_unknown);
 }
 
+namespace FilesKnownArgs {
+BEGIN_ARGUMENT_LIST;
+DECLARE_ARGUMENT(resources);
+DECLARE_ARGUMENT(tire_contacts);
+DECLARE_ARGUMENT(trails);
+}
+
 std::list<std::vector<VariableAndHash<std::string>>> get_names(
     const JsonMacroArguments& variables,
     const std::optional<JsonMacroArguments>& files,
@@ -74,6 +81,9 @@ void Preload::execute(const LoadSceneJsonUserFunctionArgs& args) {
     args.arguments.validate(KnownArgs::options);
 
     auto files = args.arguments.try_get_child(KnownArgs::files);
+    if (files.has_value()) {
+        files->validate(FilesKnownArgs::options);
+    }
 
     auto e = args.arguments.at<bool>(KnownArgs::throw_if_file_resource_unknown, true)
         ? ResourceDoesNotExistBehavior::THROW

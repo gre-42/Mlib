@@ -29,6 +29,7 @@
 #include <Mlib/Threads/Throwing_Lock_Guard.hpp>
 #include <Mlib/Threads/Unlock_Guard.hpp>
 #include <Mlib/Time/Fps/Lag_Finder.hpp>
+#include <Mlib/Time/Fps/Lag_Finder.hpp>
 #include <mutex>
 #include <stdexcept>
 
@@ -496,7 +497,10 @@ void Scene::render(
     const RenderedSceneDescriptor& frame_id,
     const std::function<std::function<void()>(std::function<void()>)>& run_in_background) const
 {
-    // AperiodicLagFinder lag_finder{ "Render: ", std::chrono::milliseconds{5} };
+    std::optional<AperiodicLagFinder> lag_finder;
+    if (lag_finders_enabled()) {
+        lag_finder.emplace("Render: ", std::chrono::milliseconds{50});
+    }
     LOG_FUNCTION("Scene::render");
     if (frame_id.external_render_pass.pass == ExternalRenderPassType::NONE) {
         throw std::runtime_error("Scene::render: External render pass is NONE");
@@ -650,7 +654,10 @@ void Scene::render(
                             }
                         }
                     }
-                    // AperiodicLagFinder lag_finder{ "Large aggregates: ", std::chrono::milliseconds{5} };
+                    std::optional<AperiodicLagFinder> lag_finder;
+                    if (lag_finders_enabled()) {
+                        lag_finder.emplace("Large aggregates: ", std::chrono::milliseconds{5});
+                    }
                     large_aggregate_renderer->render_aggregates(
                         vp,
                         iv,
@@ -700,11 +707,17 @@ void Scene::render(
                             }
                         }
                     }
-                    // AperiodicLagFinder lag_finder{ "large instances: ", std::chrono::milliseconds{5} };
+                    std::optional<AperiodicLagFinder> lag_finder;
+                    if (lag_finders_enabled()) {
+                        lag_finder.emplace("large instances: ", std::chrono::milliseconds{5});
+                    }
                     large_instances_renderer->render_instances(vp, iv, lights, skidmarks, scene_graph_config, render_config, frame_id);
                 }
                 {
-                    // AperiodicLagFinder lag_finder{ "blended early: ", std::chrono::milliseconds{5} };
+                    std::optional<AperiodicLagFinder> lag_finder;
+                    if (lag_finders_enabled()) {
+                        lag_finder.emplace("blended early: ", std::chrono::milliseconds{5});
+                    }
                     LOG_INFO("Scene::render early blended");
                     blended->early.render(
                         dynamic_lights_,
@@ -756,7 +769,10 @@ void Scene::render(
                             }
                         }
                     }
-                    // AperiodicLagFinder lag_finder{ "Small sorted aggregates: ", std::chrono::milliseconds{5} };
+                    std::optional<AperiodicLagFinder> lag_finder;
+                    if (lag_finders_enabled()) {
+                        lag_finder.emplace("Small sorted aggregates: ", std::chrono::milliseconds{5});
+                    }
                     small_sorted_aggregate_renderer->render_aggregates(
                         vp,
                         iv,
@@ -838,7 +854,10 @@ void Scene::render(
                             }
                         }
                     }
-                    // AperiodicLagFinder lag_finder{ "Small sorted instances: ", std::chrono::milliseconds{5} };
+                    std::optional<AperiodicLagFinder> lag_finder;
+                    if (lag_finders_enabled()) {
+                        lag_finder.emplace("Small sorted instances: ", std::chrono::milliseconds{5});
+                    }
                     small_sorted_instances_renderers->get_instances_renderer(frame_id.external_render_pass.pass)->render_instances(
                         vp, iv, lights, skidmarks, scene_graph_config, render_config, frame_id);
                 }
@@ -858,7 +877,10 @@ void Scene::render(
         }
     }
     {
-        // AperiodicLagFinder lag_finder{ "blended late: ", std::chrono::milliseconds{5} };
+        std::optional<AperiodicLagFinder> lag_finder;
+        if (lag_finders_enabled()) {
+            lag_finder.emplace("blended late: ", std::chrono::milliseconds{5});
+        }
         LOG_INFO("Scene::render late blended");
         blended->late.render(
             dynamic_lights_,

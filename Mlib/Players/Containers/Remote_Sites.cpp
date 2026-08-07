@@ -287,18 +287,22 @@ DanglingBaseClassRef<const UserInfo> RemoteSites::get_user(RemoteSiteId site_id,
     return const_cast<RemoteSites*>(this)->get_user(site_id, id);
 }
 
-DanglingBaseClassRef<UserInfo> RemoteSites::get_user(const VariableAndHash<std::string>& full_name) {
+DanglingBaseClassRef<UserInfo> RemoteSites::get_user(
+    const VariableAndHash<std::string>& full_name,
+    std::string_view message)
+{
     auto it = named_users_.find(full_name);
     if (it == named_users_.end()) {
-        throw std::runtime_error("Could not find user with name \"" + *full_name + '"');
+        throw std::runtime_error("Could not find user with name \"" + *full_name + "\": " + std::string(message));
     }
     return it->second.object();
 }
 
 DanglingBaseClassRef<const UserInfo> RemoteSites::get_user(
-    const VariableAndHash<std::string>& full_name) const
+    const VariableAndHash<std::string>& full_name,
+    std::string_view message) const
 {
-    return const_cast<RemoteSites*>(this)->get_user(full_name);
+    return const_cast<RemoteSites*>(this)->get_user(full_name, message);
 }
 
 bool RemoteSites::contains_user(const VariableAndHash<std::string>& full_name) const {

@@ -161,7 +161,7 @@ void ColoredVertexArrayResource::preload(const RenderableResourceFilter& filter)
                 if (!filter.matches(i, *cva)) {
                     continue;
                 }
-                rendering_resources_.preload(cva->meta);
+                rendering_resources_.preload(cva->meta.material);
             }
         };
         preload_cvas(triangles_res_->scvas);

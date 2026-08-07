@@ -15,6 +15,7 @@
 #include <iosfwd>
 #include <map>
 #include <optional>
+#include <string_view>
 
 namespace Mlib {
 
@@ -118,8 +119,8 @@ public:
     EventEmitter<> on_all_users_loaded_level;
     DanglingBaseClassRef<UserInfo> get_user(RemoteSiteId site_id, NUserCountType id);
     DanglingBaseClassRef<const UserInfo> get_user(RemoteSiteId site_id, NUserCountType id) const;
-    DanglingBaseClassRef<UserInfo> get_user(const VariableAndHash<std::string>& full_name);
-    DanglingBaseClassRef<const UserInfo> get_user(const VariableAndHash<std::string>& full_name) const;
+    DanglingBaseClassRef<UserInfo> get_user(const VariableAndHash<std::string>& full_name, std::string_view message);
+    DanglingBaseClassRef<const UserInfo> get_user(const VariableAndHash<std::string>& full_name, std::string_view message) const;
     bool contains_user(const VariableAndHash<std::string>& full_name) const;
     DanglingBaseClassRef<const UserInfo> get_local_user(NUserCountType id) const;
     DanglingBaseClassRef<const UserInfo> get_user_by_rank(NUserCountType rank) const;
