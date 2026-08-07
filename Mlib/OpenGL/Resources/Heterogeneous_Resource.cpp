@@ -52,14 +52,7 @@ void HeterogeneousResource::preload(const RenderableResourceFilter& filter) {
             if (!filter.matches(i, *cva)) {
                 continue;
             }
-            for (auto& tex : cva->meta.material.textures_color) {
-                res.resolve_aliases(tex.texture_descriptor);
-                res.preload(tex.texture_descriptor);
-            }
-            for (auto& tex : cva->meta.material.textures_alpha) {
-                res.resolve_aliases(tex.texture_descriptor);
-                res.preload(tex.texture_descriptor);
-            }
+            res.preload(cva->meta);
         }
     };
     preload_textures(acvas->scvas);

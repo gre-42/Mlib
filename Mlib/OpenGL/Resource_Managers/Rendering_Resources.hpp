@@ -37,19 +37,20 @@ class StbInfo;
 
 namespace Mlib {
 
+enum class ColorMode;
 enum class FlipMode;
+enum class InterpolationMode;
+enum class TextureTarget;
 enum class TextureWarnFlags;
-struct TextureDescriptor;
-struct RenderProgramIdentifier;
-struct ColoredRenderProgram;
+class FPath;
+class ITextureHandle;
 class RenderingResources;
 struct BlendMapTexture;
-enum class InterpolationMode;
-enum class ColorMode;
+struct ColoredRenderProgram;
 struct LoadedFont;
-class ITextureHandle;
-enum class TextureTarget;
-class FPath;
+struct MeshMeta;
+struct RenderProgramIdentifier;
+struct TextureDescriptor;
 
 struct TextureSizeAndMipmaps {
     std::shared_ptr<ITextureHandle> handle;
@@ -158,6 +159,7 @@ public:
     const ColormapWithModifiers& colormap(const ColormapWithModifiers& name) const;
     void preload(const TextureDescriptor& descriptor) const;
     void preload(const FPath& name) const;
+    void preload(MeshMeta& meta) const;
     bool texture_is_loaded_and_try_preload(
         const ColormapWithModifiers& color,
         TextureRole role = TextureRole::COLOR) const;

@@ -155,26 +155,13 @@ ColoredVertexArrayResource::~ColoredVertexArrayResource() = default;
 
 void ColoredVertexArrayResource::preload(const RenderableResourceFilter& filter) {
     #ifndef WITHOUT_GRAPHICS
-    auto preload_meta = [&](MeshMeta& meta) {
-        for (auto& t : meta.material.textures_color) {
-            rendering_resources_.resolve_aliases(t.texture_descriptor);
-            rendering_resources_.preload(t.texture_descriptor);
-        }
-        for (auto& t : meta.material.textures_alpha) {
-            rendering_resources_.resolve_aliases(t.texture_descriptor);
-            rendering_resources_.preload(t.texture_descriptor);
-        }
-        for (const auto& n : meta.material.interior_textures.names) {
-            rendering_resources_.preload(n);
-        }
-    };
     if (triangles_res_ != nullptr) {
         auto preload_cvas = [&](const auto& cvas) {
             for (const auto& [i, cva] : enumerate(cvas)) {
                 if (!filter.matches(i, *cva)) {
                     continue;
                 }
-                preload_meta(cva->meta);
+                rendering_resources_.preload(cva->meta);
             }
         };
         preload_cvas(triangles_res_->scvas);

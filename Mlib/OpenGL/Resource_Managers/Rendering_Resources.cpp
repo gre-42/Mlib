@@ -3,6 +3,7 @@
 #include <Mlib/Geometry/Material/Blend_Map_Texture.hpp>
 #include <Mlib/Geometry/Material/Texture_Descriptor.hpp>
 #include <Mlib/Geometry/Material/Texture_Target.hpp>
+#include <Mlib/Geometry/Mesh/Mesh_Meta.hpp>
 #include <Mlib/Geometry/Texture/ITexture_Handle.hpp>
 #include <Mlib/Geometry/Texture/Pack_Boxes.hpp>
 #include <Mlib/Geometry/Texture/Uv_Tile.hpp>
@@ -777,6 +778,20 @@ void RenderingResources::preload(const TextureDescriptor& descriptor) const {
 
 void RenderingResources::preload(const FPath& name) const {
     preload(get_colormap(name), TextureRole::TRUSTED);
+}
+
+void RenderingResources::preload(MeshMeta& meta) const {
+    for (auto& t : meta.material.textures_color) {
+        resolve_aliases(t.texture_descriptor);
+        preload(t.texture_descriptor);
+    }
+    for (auto& t : meta.material.textures_alpha) {
+        resolve_aliases(t.texture_descriptor);
+        preload(t.texture_descriptor);
+    }
+    for (const auto& n : meta.material.interior_textures.names) {
+        preload(n);
+    }
 }
 
 void RenderingResources::preload(const ColormapWithModifiers& color, TextureRole role) const {

@@ -158,14 +158,7 @@ void AnimatedTextureLayerBuffers::delete_triangles_far_away_legacy(
 
 void AnimatedTextureLayerBuffers::preload() {
     auto& res = RenderingContextStack::primary_rendering_resources();
-    for (auto& tex : mesh_meta_.material.textures_color) {
-        res.resolve_aliases(tex.texture_descriptor);
-        res.preload(tex.texture_descriptor);
-    }
-    for (auto& tex : mesh_meta_.material.textures_alpha) {
-        res.resolve_aliases(tex.texture_descriptor);
-        res.preload(tex.texture_descriptor);
-    }
+    res.preload(mesh_meta_);
 }
 
 const MeshMeta& AnimatedTextureLayerBuffers::mesh_meta() const {
