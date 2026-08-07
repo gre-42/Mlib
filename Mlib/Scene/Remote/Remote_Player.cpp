@@ -167,6 +167,15 @@ DanglingBaseClassPtr<RemotePlayer> RemotePlayer::try_create_from_stream(
         }
         return nullptr;
     }
+    // The user is owned by the client, while the player is owned by the server.
+    // The player can therefore be created before the user, despite the user's
+    // higher RemoteSceneObjectPriority.
+    if (full_user_name.has_value() && !physics_scene.remote_sites_->contains_user(*full_user_name)) {
+        if (any(verbosity & IoVerbosity::METADATA)) {
+            linfo() << "Not creating player, user does not yet exist";
+        }
+        return nullptr;
+    }
     CreatePlayer{physics_scene, physics_scene.macro_line_executor_}.execute(JsonView{args}, PlayerCreator::REMOTE);
     return {
         global_object_pool.create<RemotePlayer>(
