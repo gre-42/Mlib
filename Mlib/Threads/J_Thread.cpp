@@ -18,6 +18,10 @@ JThread::JThread(std::function<void()> f)
     : thread_{ std::move(f) }
 {}
 
+JThread::JThread(std::function<void(const StopToken& stop_token)> f)
+    : thread_{ [this, f=std::move(f)](){ f(stop_token_); } }
+{}
+
 JThread::~JThread() {
     request_stop();
     if (thread_.joinable()) {

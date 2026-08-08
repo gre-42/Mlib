@@ -15,6 +15,8 @@
 #include "JNIHelper.h"
 #include <Mlib/Memory/Integral_Cast.hpp>
 #include <Mlib/Threads/Thread_Local.hpp>
+#include <Mlib/Os/Io/Binary.hpp>
+#include <Mlib/Memory/Destruction_Guard.hpp>
 #include <cstring>
 #include <filesystem>
 #include <fstream>
@@ -151,9 +153,10 @@ static size_t AssetNameStart(const char* path) {
 //---------------------------------------------------------------------------
 // readFile
 //---------------------------------------------------------------------------
-bool JNIHelper::ReadFile(const char* fileName,
-                         std::vector<uint8_t>* buffer_ref,
-                         StorageType storage_types) {
+std::vector<std::byte> JNIHelper::ReadFile(
+  const char* fileName,
+  StorageType storage_types)
+{
   if (activity_ == nullptr) {
     Mlib::verbose_abort(
         "JNIHelper has not been initialized. Call init() to initialize the "
@@ -171,14 +174,7 @@ bool JNIHelper::ReadFile(const char* fileName,
       {
         std::ifstream f(s.c_str(), std::ios::binary);
         if (f) {
-          f.seekg(0, std::ifstream::end);
-          std::streamoff file_size = f.tellg();
-          f.seekg(0, std::ifstream::beg);
-          buffer_ref->reserve(stream_off_cast(file_size));
-          buffer_ref->assign(std::istreambuf_iterator<char>(f),
-                            std::istreambuf_iterator<char>());
-          f.close();
-          return true;
+          return Mlib::read_all_vector(f, "file storage", Mlib::IoVerbosity::SILENT);
         }
       }
     }
@@ -189,25 +185,20 @@ bool JNIHelper::ReadFile(const char* fileName,
     AAssetManager* assetManager = activity_->assetManager;
     AAsset* assetFile =
         AAssetManager_open(assetManager, fileName + start, AASSET_MODE_BUFFER);
-    if (!assetFile) {
-      return false;
+    if (assetFile == nullptr) {
+      throw std::runtime_error(std::format("Could not read from file \"{}\"", fileName));
     }
-    auto* data = (uint8_t*)AAsset_getBuffer(assetFile);
+    Mlib::DestructionGuard dg{[assetFile](){
+      AAsset_close(assetFile);
+    }};
+    auto* data = (std::byte*)AAsset_getBuffer(assetFile);
     auto size = Mlib::integral_cast<size_t>(AAsset_getLength(assetFile));
     if (data == nullptr) {
-      AAsset_close(assetFile);
-
-      LOGE("Failed to load: %s", fileName);
-      return false;
+      throw std::runtime_error(std::format("Failed to load \"{}\"", fileName));
     }
-
-    buffer_ref->reserve(size);
-    buffer_ref->assign(data, data + size);
-
-    AAsset_close(assetFile);
-    return true;
+    return std::vector<std::byte>(data, data + size);
   }
-  return false;
+  throw std::runtime_error(std::format("Could find file \"{}\"", fileName));
 }
 
 //---------------------------------------------------------------------------
@@ -258,17 +249,17 @@ bool JNIHelper::PathExists(
 }
 
 DirectoryEntry::DirectoryEntry(
-  Utf8Path path,
+  Mlib::Utf8Path path,
   bool is_listable)
 : path_{std::move(path)},
   is_listable_{is_listable}
 {}
 
-const Utf8Path& DirectoryEntry::path() const {
+const Mlib::Utf8Path& DirectoryEntry::path() const {
   return path_;
 }
 
-DirectoryEntry::operator const Utf8Path& () const {
+DirectoryEntry::operator std::filesystem::path () const {
   return path_;
 }
 
@@ -320,10 +311,8 @@ DirectoryIterator::DirectoryIterator(
   }
   auto dirs_file = fs::path{dir_name} / "directories.txt";
   if (JNIHelper::GetInstance()->PathExists(dirs_file.c_str(), StorageType::RESOURCES)) {
-    std::vector<uint8_t> buffer;
-    JNIHelper::GetInstance()->ReadFile(
+    std::vector<std::byte> buffer = JNIHelper::GetInstance()->ReadFile(
         dirs_file.c_str(),
-        &buffer,
         StorageType::RESOURCES);
     std::istringstream isstr{std::string((char *) buffer.data(), buffer.size())};
     std::string line;
@@ -379,16 +368,16 @@ DirectoryEntry DirectoryIterator::operator *() const {
     Mlib::verbose_abort("Derefenciation of end() or a move source");
   }
   if (subdir_iterator_not_at_end()) {
-    return {fs::path{dir_name_} / *subdir_it_, true};
+    return {Mlib::Utf8Path{dir_name_} / *subdir_it_, true};
   } else if (filesystem_directory_iterator_ != fs::end(filesystem_directory_iterator_)) {
     std::error_code ec;
     bool is_directory = filesystem_directory_iterator_->is_directory(ec);
     if (ec) {
         throw std::runtime_error("Could not check if path \"" + filesystem_directory_iterator_->path().string() + "\" is a directory. " + ec.message());
     }
-    return {fs::relative(*filesystem_directory_iterator_, JNIHelper::GetInstance()->GetFilesDir(filesystem_directory_iterators_it_->second)), is_directory};
+    return {Mlib::Utf8Path::from_path(fs::relative(*filesystem_directory_iterator_, JNIHelper::GetInstance()->GetFilesDir(filesystem_directory_iterators_it_->second))), is_directory};
   } else if (current_asset_filename_ != nullptr) {
-    return {fs::path{dir_name_} / current_asset_filename_, false};
+    return {Mlib::Utf8Path{dir_name_} / current_asset_filename_, false};
   } else {
     Mlib::verbose_abort("Derefenciation past the end");
   }

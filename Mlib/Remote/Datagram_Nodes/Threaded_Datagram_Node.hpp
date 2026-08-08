@@ -6,6 +6,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <memory>
+#include <optional>
 #include <string>
 
 namespace Mlib {
@@ -32,7 +33,7 @@ private:
     std::chrono::steady_clock::time_point last_received_time_;
     std::shared_ptr<IDatagramSocket> socket_;
     FastMutex message_mutex_;
-    std::jthread receive_thread_;
+    std::optional<JThread> receive_thread_;
     std::list<ReceivedMessage> messages_received_;
 };
 

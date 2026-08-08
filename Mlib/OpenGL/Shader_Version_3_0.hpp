@@ -2,6 +2,7 @@
 #include <string>
 #include <string_view>
 
+#undef ANDROID
 #undef EMSCRIPTEN
 
 enum class ShaderPlatform {

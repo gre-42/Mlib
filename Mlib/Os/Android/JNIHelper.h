@@ -69,13 +69,13 @@ inline bool any(StorageType s) {
 class DirectoryEntry {
 public:
   DirectoryEntry(
-    Utf8Path path,
+    Mlib::Utf8Path path,
     bool is_listable);
-  const Utf8Path& path() const;
-  operator const Utf8Path& () const;
+  const Mlib::Utf8Path& path() const;
+  operator std::filesystem::path () const;
   bool is_listable() const;
 private:
-  Utf8Path path_;
+  Mlib::Utf8Path path_;
   bool is_listable_;
 };
 
@@ -212,9 +212,8 @@ class JNIHelper {
    * true when file read succeeded
    * false when it failed to read the file
    */
-  bool ReadFile(
+  std::vector<std::byte> ReadFile(
     const char* file_name,
-    std::vector<uint8_t>* buffer_ref,
     StorageType storage_types = StorageType::RESOURCES | StorageType::EXTERNAL | StorageType::CACHE);
 
   bool PathExists(

@@ -45,22 +45,13 @@ std::unique_ptr<std::istream> AUi::OpenFile(
     const Utf8Path& filename,
     std::ios_base::openmode mode)
 {
-    std::vector<uint8_t> buffer;
-    if (!ndk_helper::JNIHelper::GetInstance()->ReadFile(filename.lexically_normal().c_str(), &buffer)) {
-        auto res = std::make_unique<std::istringstream>(mode);
-        res->setstate(std::ios::failbit);
-        return res;
-    }
+    std::vector<std::byte> buffer = ndk_helper::JNIHelper::GetInstance()->ReadFile(filename.lexically_normal().c_str());
     return std::make_unique<std::istringstream>(
         std::string((char*)buffer.data(), buffer.size()));
 }
 
-std::vector<uint8_t> AUi::ReadFile(const Utf8Path& filename) {
-    std::vector<uint8_t> buffer;
-    if (!ndk_helper::JNIHelper::GetInstance()->ReadFile(filename.lexically_normal().c_str(), &buffer)) {
-        Mlib::verbose_abort("Could not read from file \"" + filename.string() + '"');
-    }
-    return buffer;
+std::vector<std::byte> AUi::ReadFile(const Utf8Path& filename) {
+    return ndk_helper::JNIHelper::GetInstance()->ReadFile(filename.lexically_normal().c_str());
 }
 
 bool AUi::PathExists(const Utf8Path& path) {

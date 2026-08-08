@@ -104,6 +104,7 @@ for path, dirs, files in os.walk('.'):
         'cork',
         'siv',
         'nv_dds',
+        'Boost-for-Android',
         '.cxx'}]
     files[:] = [f for f in files if f not in {
         'Array.hpp',

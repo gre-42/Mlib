@@ -665,9 +665,11 @@ void android_main(android_app* app)
             .swap_interval = safe_stoi(args.named_svalue("--swap_interval", "1")),
             .fullscreen_refresh_rate = safe_stoi(args.named_svalue("--fullscreen_refresh_rate", "0")),
             .draw_distance_add = safe_stof(args.named_svalue("--draw_distance_add", "inf"))};
+        #ifdef __EMSCRIPTEN__
         InputConfig input_config{
             .show_mouse_cursor = args.has_named("--show_mouse_cursor"),
         };
+        #endif
         auto physics_dt = safe_stof(args.named_svalue("--physics_dt", "0.01667"));
         auto render_delay = std::chrono::duration_cast<std::chrono::steady_clock::duration>(
             std::chrono::duration<float>{ 1.0f * physics_dt });
@@ -875,7 +877,11 @@ void android_main(android_app* app)
             args,
             render_set_fps,
             menu_logic};
+        #ifdef __EMSCRIPTEN__
         AEngine a_engine{ scene_renderer, input_config, button_states, cursor_states, scroll_wheel_states };
+        #elifdef __ANDROID__
+        AEngine a_engine{ scene_renderer, button_states };
+        #endif
         AContext context;
         ContextQueryGuard context_query_guard{ context };
         ClearWrapperGuard clear_wrapper_guard;

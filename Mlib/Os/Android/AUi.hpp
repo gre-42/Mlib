@@ -23,7 +23,7 @@ public:
     static std::unique_ptr<std::istream> OpenFile(
         const Utf8Path& filename,
         std::ios_base::openmode mode);
-    static std::vector<uint8_t> ReadFile(const Utf8Path& filename);
+    static std::vector<std::byte> ReadFile(const Utf8Path& filename);
     static bool PathExists(const Utf8Path& path);
     static ndk_helper::DirectoryIterator ListDir(const Utf8Path& dirname);
     static std::string GetFilesDir(ndk_helper::StorageType storage_type);

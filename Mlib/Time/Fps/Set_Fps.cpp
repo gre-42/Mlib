@@ -25,6 +25,10 @@ SetFps::~SetFps() = default;
 void SetFps::tick(std::chrono::steady_clock::time_point completed_time)
 {
     completed_time_ = completed_time;
+    sleep();
+}
+
+void SetFps::sleep() {
     if (sleeper_ != nullptr) {
         sleeper_->tick();
     }
@@ -43,12 +47,6 @@ void SetFps::tick(std::chrono::steady_clock::time_point completed_time)
     }
     if (on_tick_) {
         on_tick_();
-    }
-}
-
-void SetFps::sleep() {
-    if (sleeper_ != nullptr) {
-        sleeper_->tick();
     }
 }
 

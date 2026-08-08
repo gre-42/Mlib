@@ -19,13 +19,13 @@ ThreadedDatagramNode::ThreadedDatagramNode(
 {}
 
 void ThreadedDatagramNode::start_receive_thread(uint32_t max_stored_received_messages) {
-    if (receive_thread_.joinable()) {
+    if (receive_thread_.has_value()) {
         throw std::runtime_error("UDP receive-thread already started");
     }
-    receive_thread_ = std::jthread{[&, max_stored_received_messages](){
+    receive_thread_.emplace([&, max_stored_received_messages](const StopToken& stop_token){
         ThreadInitializer ti{"ThreadedDatagramNode", ThreadAffinity::POOL};
         std::vector<std::byte> receive_buffer(1024 * 1024);
-        while (!receive_thread_.get_stop_token().stop_requested() && !unhandled_exceptions_occured()) {
+        while (!stop_token.stop_requested() && !unhandled_exceptions_occured()) {
             try {
                 std::error_code ec;
                 std::shared_ptr<IDatagramSocket> reply_socket;
@@ -55,20 +55,20 @@ void ThreadedDatagramNode::start_receive_thread(uint32_t max_stored_received_mes
                 add_unhandled_exception(std::current_exception());
             }
         }
-    }};
+    });
 }
 
 ThreadedDatagramNode::~ThreadedDatagramNode() {
     on_destroy.clear();
-    if (receive_thread_.joinable()) {
+    if (receive_thread_.has_value()) {
         // linfo() << "---------------- shutdown --------------";
         {
             std::error_code ec;
             socket_->shutdown(ec);
             socket_->close();
         }
-        receive_thread_.request_stop();
-        receive_thread_.join();
+        receive_thread_->request_stop();
+        receive_thread_->join();
         messages_received_.clear();
     }
 }

@@ -3,6 +3,8 @@
 #include <functional>
 #include <list>
 
+struct android_app;
+
 namespace Mlib {
 
 class IRenderer;
@@ -15,7 +17,6 @@ struct LayoutConstraintParameters;
 //-------------------------------------------------------------------------
 // Shared state for our app.
 //-------------------------------------------------------------------------
-struct android_app;
 class AEngine {
     Mlib::IRenderer& renderer_;
     Mlib::ButtonStates& button_states_;

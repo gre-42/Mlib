@@ -31,7 +31,7 @@ if (BUILD_GRAPHICS)
             MlibStb
             MlibTime)
 
-    if (NOT EMSCRIPTEN)
+    if ((NOT EMSCRIPTEN) AND (NOT ANDROID))
         target_link_libraries(MlibOpenGL
             PUBLIC
                 MlibGlad)

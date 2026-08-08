@@ -177,7 +177,7 @@ std::unique_ptr<std::istream> Mlib::create_ifstream(
     return AUi::OpenFile(filename, mode);
 }
 
-std::vector<uint8_t> Mlib::read_file_bytes(const Utf8Path& filename) {
+std::vector<std::byte> Mlib::read_file_bytes(const Utf8Path& filename) {
     return AUi::ReadFile(filename);
 }
 

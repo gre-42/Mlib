@@ -72,12 +72,12 @@ std::variant<StbInfo<uint8_t>, StbInfo<uint16_t>> stb_load(
             &bytes_per_pixel);
     } else {
 #ifdef __ANDROID__
-        std::vector<uint8_t> buffer = Mlib::read_file_bytes(filename);
+        std::vector<std::byte> buffer = Mlib::read_file_bytes(filename);
         if (buffer.size() > INT_MAX) {
             throw std::runtime_error("File too large");
         }
         image = stbi_load_from_memory_bpc(
-            buffer.data(),
+            (uint8_t*)buffer.data(),
             (int)buffer.size(),
             &width,
             &height,
