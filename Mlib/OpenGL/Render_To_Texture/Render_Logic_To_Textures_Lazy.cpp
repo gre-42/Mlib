@@ -220,7 +220,7 @@ void Mlib::render_logic_to_textures_lazy(
             .color_mode = ColorMode::RGBA
         }.compute_hash();
         rendering_resources.add_texture_descriptor(std::move(color_texture_name), TextureDescriptor{.color = cm});
-        rendering_resources.set_texture(std::move(cm), std::move(color));
+        rendering_resources.set_texture(std::move(cm), std::move(color), nullptr, DeallocationRecovery::RECOVERABLE);
     }
     if (depth_kind == FrameBufferChannelKind::TEXTURE) {
         auto depth = std::make_shared<LazyRenderLogicTextureHandle>(
@@ -232,6 +232,6 @@ void Mlib::render_logic_to_textures_lazy(
             .color_mode = ColorMode::GRAYSCALE
         };
         rendering_resources.add_texture_descriptor(std::move(depth_texture_name), TextureDescriptor{.color = cm});
-        rendering_resources.set_texture(std::move(cm), std::move(depth));
+        rendering_resources.set_texture(std::move(cm), std::move(depth), nullptr, DeallocationRecovery::RECOVERABLE);
     }
 }

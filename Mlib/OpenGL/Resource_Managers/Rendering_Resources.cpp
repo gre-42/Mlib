@@ -736,19 +736,26 @@ RenderingResources::RenderingResources(
                 append_render_allocator(state->generate_activator());
             }
         }
-        deallocate();
+        deallocate(DeallocationMode::TEMPORARY);
     }) }
     , lifetime_indicator_{ std::make_shared<int>(42) }
 {}
 
 RenderingResources::~RenderingResources() {
-    deallocate();
+    deallocate(DeallocationMode::FINAL);
 }
 
-void RenderingResources::deallocate() {
+void RenderingResources::deallocate(DeallocationMode deallocation_mode) {
     std::scoped_lock lock{ mutex_ };
     render_programs_.clear();
-    textures_.clear();
+    switch (deallocation_mode) {
+    case DeallocationMode::FINAL:
+        textures_.clear();
+        break;
+    case DeallocationMode::TEMPORARY:
+        textures_.erase_if([](const auto& e){ return e.second.deallocation_recovery == DeallocationRecovery::UNRECOVERABLE; });
+        break;
+    }
     texture_targets_.clear();
     font_textures_.clear();
     texture_sizes_.clear();
@@ -1267,11 +1274,12 @@ GLuint RenderingResources::get_cubemap_unsafe(const VariableAndHash<std::string>
 void RenderingResources::add_texture(
     const ColormapWithModifiers& name,
     std::shared_ptr<ITextureHandle> id,
-    const TextureSize* texture_size)
+    const TextureSize* texture_size,
+    DeallocationRecovery deallocation_recovery)
 {
-    LOG_FUNCTION("RenderingResources::set_texture " + name.filename.string());
+    LOG_FUNCTION("RenderingResources::add_texture " + name.filename.string());
     std::scoped_lock lock{ mutex_ };
-    add(textures_, name, TextureHandleAndOwner{ .handle = id });
+    add(textures_, name, TextureHandleAndOwner{ .handle = id, .deallocation_recovery = deallocation_recovery });
     if (texture_size != nullptr) {
         add(texture_sizes_, name.filename.variable_and_hash(), *texture_size);
     }
@@ -1280,14 +1288,15 @@ void RenderingResources::add_texture(
 void RenderingResources::set_texture(
     const ColormapWithModifiers& name,
     std::shared_ptr<ITextureHandle> id,
-    const TextureSize* texture_size)
+    const TextureSize* texture_size,
+    DeallocationRecovery deallocation_recovery)
 {
     LOG_FUNCTION("RenderingResources::set_texture " + *name.filename);
     std::scoped_lock lock{ mutex_ };
     if (auto v = textures_.try_get(name); v != nullptr) {
         v->handle = std::move(id);
     } else {
-        add(textures_, name, TextureHandleAndOwner{ .handle = std::move(id) });
+        add(textures_, name, TextureHandleAndOwner{ .handle = std::move(id), .deallocation_recovery = deallocation_recovery });
     }
     if (texture_size != nullptr) {
         texture_sizes_.insert_or_assign(name.filename.variable_and_hash(), *texture_size);

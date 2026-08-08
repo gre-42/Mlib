@@ -52,6 +52,16 @@ struct Material;
 struct RenderProgramIdentifier;
 struct TextureDescriptor;
 
+enum class DeallocationRecovery {
+    UNRECOVERABLE,
+    RECOVERABLE
+};
+
+enum class DeallocationMode {
+    FINAL,
+    TEMPORARY
+};
+
 struct TextureSizeAndMipmaps {
     std::shared_ptr<ITextureHandle> handle;
     GLsizei width;
@@ -64,6 +74,7 @@ struct TextureSizeAndMipmaps {
 
 struct TextureHandleAndOwner {
     std::shared_ptr<ITextureHandle> handle;
+    DeallocationRecovery deallocation_recovery;
 };
 
 struct ManualAtlasTileSource {
@@ -184,11 +195,13 @@ public:
     void add_texture(
         const ColormapWithModifiers& name,
         std::shared_ptr<ITextureHandle> id,
-        const TextureSize* texture_size = nullptr);
+        const TextureSize* texture_size = nullptr,
+        DeallocationRecovery deallocation_recovery = DeallocationRecovery::UNRECOVERABLE);
     void set_texture(
         const ColormapWithModifiers& name,
         std::shared_ptr<ITextureHandle> id,
-        const TextureSize* texture_size = nullptr);
+        const TextureSize* texture_size = nullptr,
+        DeallocationRecovery deallocation_recovery = DeallocationRecovery::UNRECOVERABLE);
     void set_textures_lazy(std::function<void()> func);
     void add_texture_descriptor(VariableAndHash<std::string> name, TextureDescriptor descriptor);
     void add_colormap(VariableAndHash<std::string> name, ColormapWithModifiers colormap);
@@ -271,7 +284,7 @@ private:
     GLuint get_cubemap_unsafe(const VariableAndHash<std::string>& name) const;
     void preload(const ColormapWithModifiers& color, TextureRole role) const;
     bool texture_is_loaded_unsafe(const ColormapWithModifiers& name) const;
-    void deallocate();
+    void deallocate(DeallocationMode deallocation_mode);
     InitializedTexture initialize_non_dds_texture(const ColormapWithModifiers& name, TextureRole role, float aniso) const;
     std::shared_ptr<ITextureHandle> initialize_dds_texture(const ColormapWithModifiers& name, float aniso) const;
     template <class TContainer, class... TArgs>
