@@ -2,6 +2,7 @@
 #include <Mlib/Geometry/Colored_Vertex.hpp>
 #include <Mlib/Geometry/Primitives/Extremal_Axis_Aligned_Bounding_Box.hpp>
 #include <Mlib/Geometry/Primitives/Extremal_Bounding_Sphere.hpp>
+#include <Mlib/Memory/Field_Offset.hpp>
 #include <Mlib/OpenGL/CHK.hpp>
 #include <Mlib/OpenGL/Instance_Handles/IArray_Buffer.hpp>
 #include <Mlib/OpenGL/Resources/Colored_Vertex_Array_Resource/Shader_Structs.hpp>
@@ -52,23 +53,23 @@ void GpuRenderableColoredVertexArray::initialize() {
     auto attr_ids = attr_idc.build();
 
     {
+        using CV = ColoredVertex<float>;
         vertices_->vertex_buffer().bind();
-        ColoredVertex<float>* cv = nullptr;
         CHK(glEnableVertexAttribArray(attr_ids.idx_position));
-        CHK(glVertexAttribPointer(attr_ids.idx_position, 3, GL_FLOAT, GL_FALSE, sizeof(ColoredVertex<float>), &cv->position));
+        CHK(glVertexAttribPointer(attr_ids.idx_position, 3, GL_FLOAT, GL_FALSE, sizeof(CV), field_offset(&CV::position)));
         CHK(glEnableVertexAttribArray(attr_ids.idx_color));
-        CHK(glVertexAttribPointer(attr_ids.idx_color, 3, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(ColoredVertex<float>), &cv->color));
+        CHK(glVertexAttribPointer(attr_ids.idx_color, 3, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(CV), field_offset(&CV::color)));
         CHK(glEnableVertexAttribArray(attr_ids.idx_uv_0));
-        CHK(glVertexAttribPointer(attr_ids.idx_uv_0, 2, GL_FLOAT, GL_FALSE, sizeof(ColoredVertex<float>), &cv->uv));
+        CHK(glVertexAttribPointer(attr_ids.idx_uv_0, 2, GL_FLOAT, GL_FALSE, sizeof(CV), field_offset(&CV::uv)));
         // The vertex array is cached by cva => Use material properties, not the RenderProgramIdentifier.
         if (attr_idc.has_normal) {
             CHK(glEnableVertexAttribArray(attr_ids.idx_normal));
-            CHK(glVertexAttribPointer(attr_ids.idx_normal, 3, GL_FLOAT, GL_FALSE, sizeof(ColoredVertex<float>), &cv->normal));
+            CHK(glVertexAttribPointer(attr_ids.idx_normal, 3, GL_FLOAT, GL_FALSE, sizeof(CV), field_offset(&CV::normal)));
         }
         // The vertex array is cached by cva => Use material properties, not the RenderProgramIdentifier.
         if (attr_idc.has_tangent) {
             CHK(glEnableVertexAttribArray(attr_ids.idx_tangent));
-            CHK(glVertexAttribPointer(attr_ids.idx_tangent, 3, GL_FLOAT, GL_FALSE, sizeof(ColoredVertex<float>), &cv->tangent));
+            CHK(glVertexAttribPointer(attr_ids.idx_tangent, 3, GL_FLOAT, GL_FALSE, sizeof(CV), field_offset(&CV::tangent)));
         }
     }
     if (vertices_->nuvs() > 1) {
@@ -97,12 +98,12 @@ void GpuRenderableColoredVertexArray::initialize() {
         CHK(glVertexAttribPointer(integral_cast<GLuint>(attr_ids.idx_alpha), 1, GL_FLOAT, GL_FALSE, sizeof(float), nullptr));
     }
     if (vertices_->has_bone_indices()) {
+        using SBW = ShaderBoneWeight;
         vertices_->bone_weight_buffer().bind();
-        ShaderBoneWeight* bw = nullptr;
         CHK(glEnableVertexAttribArray(attr_ids.idx_bone_indices));
-        CHK(glVertexAttribIPointer(attr_ids.idx_bone_indices, ANIMATION_NINTERPOLATED, GL_UNSIGNED_BYTE, sizeof(ShaderBoneWeight), &bw->indices));
+        CHK(glVertexAttribIPointer(attr_ids.idx_bone_indices, ANIMATION_NINTERPOLATED, GL_UNSIGNED_BYTE, sizeof(SBW), field_offset(&SBW::indices)));
         CHK(glEnableVertexAttribArray(attr_ids.idx_bone_weights));
-        CHK(glVertexAttribPointer(attr_ids.idx_bone_weights, ANIMATION_NINTERPOLATED, GL_FLOAT, GL_FALSE, sizeof(ShaderBoneWeight), &bw->weights));
+        CHK(glVertexAttribPointer(attr_ids.idx_bone_weights, ANIMATION_NINTERPOLATED, GL_FLOAT, GL_FALSE, sizeof(SBW), field_offset(&SBW::weights)));
     }
     if (vertices_->has_continuous_triangle_texture_layers() &&
         vertices_->has_discrete_triangle_texture_layers())
