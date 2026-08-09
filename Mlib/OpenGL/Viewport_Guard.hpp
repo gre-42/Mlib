@@ -6,7 +6,7 @@
 
 namespace Mlib {
 
-#ifdef __ANDROID__
+#if defined(__ANDROID__) || defined(__EMSCRIPTEN__)
 struct Viewport {
     int x;
     int y;
