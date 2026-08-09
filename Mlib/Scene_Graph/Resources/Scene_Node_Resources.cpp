@@ -395,7 +395,7 @@ void SceneNodeResources::print(const VariableAndHash<std::string>& name, std::os
 
 void SceneNodeResources::set_relative_joint_poses(
     const VariableAndHash<std::string>& name,
-    const StringWithHashUnorderedMap<OffsetAndQuaternion<float, float>>& poses)
+    const UUVector<OffsetAndQuaternion<float, float>>& poses)
 {
     auto resource = get_resource(name);
     try {
@@ -405,22 +405,27 @@ void SceneNodeResources::set_relative_joint_poses(
     }
 }
 
-StringWithHashUnorderedMap<OffsetAndQuaternion<float, float>> SceneNodeResources::get_relative_poses(const VariableAndHash<std::string>& name, float seconds) const
+UUVector<OffsetAndQuaternion<float, float>> SceneNodeResources::get_relative_poses(
+    const VariableAndHash<std::string>& name,
+    float seconds,
+    const StringWithHashUnorderedMap<uint32_t>& bone_indices) const
 {
     auto resource = get_resource(name);
     try {
-        return resource->get_relative_poses(seconds);
+        return resource->get_relative_poses(seconds, bone_indices);
     } catch (const std::runtime_error& e) {
         throw std::runtime_error("get_relative_poses for resource \"" + *name + "\" failed: " + e.what());
     }
 }
 
-StringWithHashUnorderedMap<OffsetAndQuaternion<float, float>> SceneNodeResources::get_absolute_poses(
-    const VariableAndHash<std::string>& name, float seconds) const
+UUVector<OffsetAndQuaternion<float, float>> SceneNodeResources::get_absolute_poses(
+    const VariableAndHash<std::string>& name,
+    float seconds,
+    const StringWithHashUnorderedMap<uint32_t>& bone_indices) const
 {
     auto resource = get_resource(name);
     try {
-        return resource->get_absolute_poses(seconds);
+        return resource->get_absolute_poses(seconds, bone_indices);
     } catch (const std::runtime_error& e) {
         throw std::runtime_error("get_absolute_poses for resource \"" + *name + "\" failed: " + e.what());
     }

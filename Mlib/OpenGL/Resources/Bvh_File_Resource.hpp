@@ -14,8 +14,12 @@ public:
         const BvhConfig& config);
     ~BvhFileResource();
     virtual void preload(const RenderableResourceFilter& filter) override;
-    virtual StringWithHashUnorderedMap<OffsetAndQuaternion<float, float>> get_relative_poses(float seconds) const override;
-    virtual StringWithHashUnorderedMap<OffsetAndQuaternion<float, float>> get_absolute_poses(float seconds) const override;
+    virtual UUVector<OffsetAndQuaternion<float, float>> get_relative_poses(
+        float seconds,
+        const StringWithHashUnorderedMap<uint32_t>& bone_indices) const override;
+    virtual UUVector<OffsetAndQuaternion<float, float>> get_absolute_poses(
+        float seconds,
+        const StringWithHashUnorderedMap<uint32_t>& bone_indices) const override;
     virtual float get_animation_duration() const override;
 private:
     std::unique_ptr<BvhLoader> bvh_loader;

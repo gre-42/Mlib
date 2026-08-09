@@ -26,6 +26,7 @@ BvhLoader::BvhLoader(
     const BvhConfig& cfg)
     : offsets_{ "Offset" }
     , parents_{ "Parent" }
+    , bone_indices_{ "Bone index" }
     , cfg_{ cfg }
     , frame_time_{ NAN }
 {
@@ -61,6 +62,9 @@ BvhLoader::BvhLoader(
                     throw std::runtime_error("Parent of \"" + *joint_name + "\" already set");
                 }
                 joint_stack.push_back(joint_name);
+                if (!bone_indices_.try_emplace(joint_name, bone_indices_.size()).second) {
+                    throw std::runtime_error("Joint with name \"" + *joint_name + "\" already exists");
+                }
             } else if (Mlib::re::regex_match(line, match, closing_re)) {
                 if (joint_stack.empty()) {
                     throw std::runtime_error("Joint stack is empty despite \"}\"");
@@ -223,7 +227,10 @@ const StringWithHashUnorderedMap<OffsetAndQuaternion<float, float>>& BvhLoader::
     return transformed_frames_[id];
 }
 
-StringWithHashUnorderedMap<OffsetAndQuaternion<float, float>> BvhLoader::get_relative_interpolated_frame(float time) const {
+UUVector<OffsetAndQuaternion<float, float>> BvhLoader::get_relative_interpolated_frame(
+    float time,
+    const StringWithHashUnorderedMap<uint32_t>& bone_indices) const
+{
     if (transformed_frames_.empty()) {
         throw std::runtime_error("No frames to interpolate from");
     }
@@ -241,29 +248,29 @@ StringWithHashUnorderedMap<OffsetAndQuaternion<float, float>> BvhLoader::get_rel
     float a0 = i - float(i0);
     const auto& f0 = get_frame(i0);
     const auto& f1 = get_frame(i1);
-    StringWithHashUnorderedMap<OffsetAndQuaternion<float, float>> result{ "Relative interpolated frame" };
-    for (const auto& j0 : f0) {
-        const auto& m0 = j0.second;
-        const auto& m1 = f1.get(j0.first);
-        result.add(j0.first, m0.slerp(m1, a0));
+    UUVector<OffsetAndQuaternion<float, float>> result(bone_indices.size());
+    for (const auto& [rn, ri] : bone_indices) {
+        const auto& m0 = f0.get(rn);
+        const auto& m1 = f1.get(rn);
+        result.at(ri) = m0.slerp(m1, a0);
     }
     return result;
 }
 
-void BvhLoader::compute_absolute_transformation(
+OffsetAndQuaternion<float, float> BvhLoader::compute_absolute_transformation(
     const VariableAndHash<std::string>& name,
-    const StringWithHashUnorderedMap<OffsetAndQuaternion<float, float>>& relative_transformations,
-    StringWithHashUnorderedMap<OffsetAndQuaternion<float, float>>& absolute_transformations,
+    const UUVector<OffsetAndQuaternion<float, float>>& relative_transformations,
+    std::vector<std::optional<OffsetAndQuaternion<float, float>>>& absolute_transformations,
     size_t ncalls) const
 {
-    if (absolute_transformations.contains(name)) {
-        return;
+    auto source_id = bone_indices_.get(name);
+    const auto& a = absolute_transformations.at(source_id);
+    if (a.has_value()) {
+        return *a;
     }
     const auto* it = parents_.try_get(name);
     if (it == nullptr) {
-        if (!absolute_transformations.try_emplace(name, relative_transformations.get(name)).second) {
-            verbose_abort("compute_absolute_transformation internal error");
-        }
+        absolute_transformations.at(source_id).emplace(relative_transformations.at(source_id));
     } else {
         if (ncalls > 100) {
             for (const auto& [n, p] : parents_) {
@@ -271,20 +278,25 @@ void BvhLoader::compute_absolute_transformation(
             }
             throw std::runtime_error("Recursion depth exceeded, probably loop in parents mapping");
         }
-        compute_absolute_transformation(
+        auto parent = compute_absolute_transformation(
             *it,
             relative_transformations,
             absolute_transformations,
             ncalls + 1);
-        absolute_transformations.add(name, absolute_transformations.get(*it) * relative_transformations.get(name));
+        absolute_transformations.at(source_id) = parent * relative_transformations.at(source_id);
     }
+    return a.value();
 }
 
-StringWithHashUnorderedMap<OffsetAndQuaternion<float, float>> BvhLoader::get_absolute_interpolated_frame(float time) const {
-    auto rel = get_relative_interpolated_frame(time);
-    StringWithHashUnorderedMap<OffsetAndQuaternion<float, float>> result{ "Absolute interpolated frame" };
-    for (const auto& [name, _] : rel) {
-        compute_absolute_transformation(name, rel, result, 0);
+UUVector<OffsetAndQuaternion<float, float>> BvhLoader::get_absolute_interpolated_frame(
+    float time,
+    const StringWithHashUnorderedMap<uint32_t>& bone_indices) const
+{
+    auto rel = get_relative_interpolated_frame(time, bone_indices_);
+    std::vector<std::optional<OffsetAndQuaternion<float, float>>> oresult(bone_indices_.size());
+    UUVector<OffsetAndQuaternion<float, float>> result(bone_indices.size());
+    for (const auto& [name, id] : bone_indices) {
+        result.at(id) = compute_absolute_transformation(name, rel, oresult, 0);
     }
     return result;
 }

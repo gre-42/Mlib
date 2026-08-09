@@ -17,12 +17,18 @@ void BvhFileResource::preload(const RenderableResourceFilter& filter) {
     // Do nothing
 }
 
-StringWithHashUnorderedMap<OffsetAndQuaternion<float, float>> BvhFileResource::get_relative_poses(float time) const {
-    return bvh_loader->get_relative_interpolated_frame(time);
+UUVector<OffsetAndQuaternion<float, float>> BvhFileResource::get_relative_poses(
+    float time,
+    const StringWithHashUnorderedMap<uint32_t>& bone_indices) const
+{
+    return bvh_loader->get_relative_interpolated_frame(time, bone_indices);
 }
 
-StringWithHashUnorderedMap<OffsetAndQuaternion<float, float>> BvhFileResource::get_absolute_poses(float time) const {
-    return bvh_loader->get_absolute_interpolated_frame(time);
+UUVector<OffsetAndQuaternion<float, float>> BvhFileResource::get_absolute_poses(
+    float time,
+    const StringWithHashUnorderedMap<uint32_t>& bone_indices) const
+{
+    return bvh_loader->get_absolute_interpolated_frame(time, bone_indices);
 }
 
 float BvhFileResource::get_animation_duration() const {

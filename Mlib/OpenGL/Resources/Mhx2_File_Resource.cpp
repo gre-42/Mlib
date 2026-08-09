@@ -40,9 +40,8 @@ AggregateMode Mhx2FileResource::get_aggregate_mode() const {
     return rva_->get_aggregate_mode();
 }
 
-void Mhx2FileResource::set_relative_joint_poses(const StringWithHashUnorderedMap<OffsetAndQuaternion<float, float>>& poses) {
-    UUVector<OffsetAndQuaternion<float, float>> ms = vectorize_joint_poses(poses);
-    UUVector<OffsetAndQuaternion<float, float>> mt = acvas_->skeleton->rebase_to_initial_absolute_transform(ms);
+void Mhx2FileResource::set_relative_joint_poses(const UUVector<OffsetAndQuaternion<float, float>>& poses) {
+    UUVector<OffsetAndQuaternion<float, float>> mt = acvas_->skeleton->rebase_to_initial_absolute_transform(poses);
     rva_->set_absolute_joint_poses(mt);
     acvas_->bone_indices.clear();
     acvas_->skeleton = nullptr;
@@ -55,10 +54,11 @@ void Mhx2FileResource::downsample(size_t n) {
     rva_->downsample(n);
 }
 
-UUVector<OffsetAndQuaternion<float, float>> Mhx2FileResource::vectorize_joint_poses(
-    const StringWithHashUnorderedMap<OffsetAndQuaternion<float, float>>& poses) const
-{
-    return acvas_->vectorize_joint_poses(poses);
+const StringWithHashUnorderedMap<uint32_t>& Mhx2FileResource::bone_indices() const {
+    if (acvas_->skeleton == nullptr) {
+        throw std::runtime_error("Mhx2 file has no skeleton");
+    }
+    return acvas_->bone_indices;
 }
 
 const Bone& Mhx2FileResource::skeleton() const {

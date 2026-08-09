@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
+#include <Mlib/Initialization/Default_Uninitialized_Vector.hpp>
 #include <Mlib/Map/String_With_Hash_Unordered_Map.hpp>
 #include <Mlib/Math/Transformation/Quaternion.hpp>
 #include <list>
@@ -49,19 +50,24 @@ public:
         const std::string& filename,
         const BvhConfig& cfg = blender_bvh_config);
     const StringWithHashUnorderedMap<OffsetAndQuaternion<float, float>>& get_frame(size_t id) const;
-    StringWithHashUnorderedMap<OffsetAndQuaternion<float, float>> get_relative_interpolated_frame(float time) const;
-    StringWithHashUnorderedMap<OffsetAndQuaternion<float, float>> get_absolute_interpolated_frame(float time) const;
+    UUVector<OffsetAndQuaternion<float, float>> get_relative_interpolated_frame(
+        float time,
+        const StringWithHashUnorderedMap<uint32_t>& bone_indices) const;
+    UUVector<OffsetAndQuaternion<float, float>> get_absolute_interpolated_frame(
+        float time,
+        const StringWithHashUnorderedMap<uint32_t>& bone_indices) const;
     float duration() const;
 private:
     void smoothen();
-    void compute_absolute_transformation(
+    OffsetAndQuaternion<float, float> compute_absolute_transformation(
         const VariableAndHash<std::string>& name,
-        const StringWithHashUnorderedMap<OffsetAndQuaternion<float, float>>& relative_transformations,
-        StringWithHashUnorderedMap<OffsetAndQuaternion<float, float>>& absolute_transformations,
+        const UUVector<OffsetAndQuaternion<float, float>>& relative_transformations,
+        std::vector<std::optional<OffsetAndQuaternion<float, float>>>& absolute_transformations,
         size_t ncalls) const;
     std::vector<StringWithHashUnorderedMap<OffsetAndQuaternion<float, float>>> transformed_frames_;
     StringWithHashUnorderedMap<FixedArray<float, 3>> offsets_;
     StringWithHashUnorderedMap<VariableAndHash<std::string>> parents_;
+    StringWithHashUnorderedMap<uint32_t> bone_indices_;
     std::list<ColumnDescription> columns_;
     BvhConfig cfg_;
     float frame_time_;

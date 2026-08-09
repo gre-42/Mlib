@@ -152,9 +152,15 @@ public:
         const VariableAndHash<std::string>& name,
         const ColoredVertexArrayFilter& filter) const;
     std::list<TypedMesh<std::shared_ptr<IIntersectable>>> get_intersectables(const VariableAndHash<std::string>& name) const;
-    void set_relative_joint_poses(const VariableAndHash<std::string>& name, const StringWithHashUnorderedMap<OffsetAndQuaternion<float, float>>& poses);
-    StringWithHashUnorderedMap<OffsetAndQuaternion<float, float>> get_relative_poses(const VariableAndHash<std::string>& name, float seconds) const;
-    StringWithHashUnorderedMap<OffsetAndQuaternion<float, float>> get_absolute_poses(const VariableAndHash<std::string>& name, float seconds) const;
+    void set_relative_joint_poses(const VariableAndHash<std::string>& name, const UUVector<OffsetAndQuaternion<float, float>>& poses);
+    UUVector<OffsetAndQuaternion<float, float>> get_relative_poses(
+        const VariableAndHash<std::string>& name,
+        float seconds,
+        const StringWithHashUnorderedMap<uint32_t>& bone_indices) const;
+    UUVector<OffsetAndQuaternion<float, float>> get_absolute_poses(
+        const VariableAndHash<std::string>& name,
+        float seconds,
+        const StringWithHashUnorderedMap<uint32_t>& bone_indices) const;
     float get_animation_duration(const VariableAndHash<std::string>& name) const;
 
     // Modifiers

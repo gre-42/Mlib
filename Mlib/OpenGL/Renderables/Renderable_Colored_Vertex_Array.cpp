@@ -325,9 +325,9 @@ UUVector<OffsetAndQuaternion<float, float>> RenderableColoredVertexArray::calcul
         }
         auto poses = rcva_->scene_node_resources_.get_relative_poses(
             animation_name,
-            time);
-        UUVector<OffsetAndQuaternion<float, float>> ms = rcva_->triangles_res_->vectorize_joint_poses(poses);
-        UUVector<OffsetAndQuaternion<float, float>> absolute_bone_transformations = rcva_->triangles_res_->skeleton->rebase_to_initial_absolute_transform(ms);
+            time,
+            rcva_->triangles_res_->bone_indices);
+        UUVector<OffsetAndQuaternion<float, float>> absolute_bone_transformations = rcva_->triangles_res_->skeleton->rebase_to_initial_absolute_transform(poses);
         if (absolute_bone_transformations.size() != rcva_->triangles_res_->bone_indices.size()) {
             throw std::runtime_error("Number of bone indices differs from number of quaternions");
         }

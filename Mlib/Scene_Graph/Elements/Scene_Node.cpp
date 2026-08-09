@@ -901,14 +901,17 @@ void SceneNode::move(
                 if (std::isnan(time)) {
                     throw std::runtime_error("Scene node animation loop time is NAN");
                 }
+                StringWithHashUnorderedMap<uint32_t> bone_indices{"Bone index"};
+                bone_indices.add(bone_.name, 0);
                 auto poses = scene_node_resources->get_absolute_poses(
                     animation_name,
-                    time);
-                const auto* it = poses.try_get(bone_.name);
-                if (it == nullptr) {
-                    throw std::runtime_error("Could not find bone with name \"node\" in animation \"" + *animation_name + '"');
+                    time,
+                    bone_indices);
+                if (poses.size() != 1) {
+                    throw std::runtime_error("Error calculating bone with name \"node\" in animation \"" + *animation_name + '"');
                 }
-                OffsetAndQuaternion<float, ScenePos> q1{it->t.casted<ScenePos>(), it->q};
+                const auto& pose = poses.front();
+                OffsetAndQuaternion<float, ScenePos> q1{pose.t.casted<ScenePos>(), pose.q};
                 auto res_pose = trafo_.slerp(q1, 1.f - bone_.smoothness);
                 res_pose.q = res_pose.q.slerp(Quaternion<float>::identity(), 1.f - bone_.rotation_strength);
                 set_relative_pose(

@@ -137,7 +137,7 @@ void ISceneNodeResource::print(std::ostream& ostr) const {
     throw std::runtime_error(name_ + ": \"print\" not implemented");
 }
 
-void ISceneNodeResource::set_relative_joint_poses(const StringWithHashUnorderedMap<OffsetAndQuaternion<float, float>>& poses) {
+void ISceneNodeResource::set_relative_joint_poses(const UUVector<OffsetAndQuaternion<float, float>>& poses) {
     throw std::runtime_error(name_ + ": set_relative_joint_poses not implemented");
 }
 
@@ -152,11 +152,17 @@ void ISceneNodeResource::import_bone_weights(
     throw std::runtime_error(name_ + ": import_bone_weights not implemented");
 }
 
-StringWithHashUnorderedMap<OffsetAndQuaternion<float, float>> ISceneNodeResource::get_relative_poses(float seconds) const {
+UUVector<OffsetAndQuaternion<float, float>> ISceneNodeResource::get_relative_poses(
+    float seconds,
+    const StringWithHashUnorderedMap<uint32_t>& bone_indices) const
+{
     throw std::runtime_error(name_ + ": get_relative_poses not implemented");
 }
 
-StringWithHashUnorderedMap<OffsetAndQuaternion<float, float>> ISceneNodeResource::get_absolute_poses(float seconds) const {
+UUVector<OffsetAndQuaternion<float, float>> ISceneNodeResource::get_absolute_poses(
+    float seconds,
+    const StringWithHashUnorderedMap<uint32_t>& bone_indices) const
+{
     throw std::runtime_error(name_ + ": get_absolute_poses not implemented");
 }
 
