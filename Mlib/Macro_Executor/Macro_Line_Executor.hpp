@@ -19,6 +19,29 @@ class JsonView;
 class JsonMacroArgumentsAndLock;
 class WritableJsonMacroArgumentsAndLock;
 
+enum class MacroExecutorVerbosity {
+    SILENT = 0,
+    FUNCTIONS = 1 << 0,
+    MACROS = 1 << 1
+};
+
+inline bool any(MacroExecutorVerbosity verbosity) {
+    return verbosity != MacroExecutorVerbosity::SILENT;
+}
+
+inline MacroExecutorVerbosity operator & (MacroExecutorVerbosity a, MacroExecutorVerbosity b) {
+    return MacroExecutorVerbosity((int)a & (int)b);
+}
+
+inline MacroExecutorVerbosity operator | (MacroExecutorVerbosity a, MacroExecutorVerbosity b) {
+    return MacroExecutorVerbosity((int)a | (int)b);
+}
+
+inline MacroExecutorVerbosity& operator |= (MacroExecutorVerbosity& a, MacroExecutorVerbosity b) {
+    (int&)a |= (int)b;
+    return a;
+}
+
 class MacroLineExecutor {
     friend MacroRecorder;
 public:
@@ -37,7 +60,7 @@ public:
         nlohmann::json block_arguments,
         NotifyingJsonMacroArguments& global_json_macro_arguments,
         const AssetReferences& asset_references,
-        bool verbose);
+        MacroExecutorVerbosity verbosity);
     MacroLineExecutor changed_script_filename(
         std::string script_filename) const;
     MacroLineExecutor inserted_block_arguments(
@@ -79,7 +102,7 @@ private:
     nlohmann::json block_arguments_;
     NotifyingJsonMacroArguments& global_json_macro_arguments_;
     const AssetReferences& asset_references_;
-    bool verbose_;
+    MacroExecutorVerbosity verbosity_;
 };
 
 }

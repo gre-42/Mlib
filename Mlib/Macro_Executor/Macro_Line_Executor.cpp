@@ -12,6 +12,7 @@
 #include <Mlib/Regex/Misc.hpp>
 #include <Mlib/Regex/Regex_Select.hpp>
 #include <Mlib/Strings/String_View_To_Number.hpp>
+#include <Mlib/Time/Fps/Lag_Finder.hpp>
 #include <Mlib/Time/Fps/Object_Life_Time.hpp>
 #include <filesystem>
 #include <fstream>
@@ -112,7 +113,7 @@ MacroLineExecutor::MacroLineExecutor(
     nlohmann::json block_arguments,
     NotifyingJsonMacroArguments& global_json_macro_arguments,
     const AssetReferences& asset_references,
-    bool verbose)
+    MacroExecutorVerbosity verbosity)
     : macro_recorder_{ macro_recorder }
     , script_filename_{ std::move(script_filename) }
     , search_path_{ search_path }
@@ -121,7 +122,7 @@ MacroLineExecutor::MacroLineExecutor(
     , block_arguments_(std::move(block_arguments))
     , global_json_macro_arguments_{ global_json_macro_arguments }
     , asset_references_{ asset_references }
-    , verbose_{ verbose }
+    , verbosity_{ verbosity }
 {}
 
 MacroLineExecutor MacroLineExecutor::changed_script_filename(
@@ -136,7 +137,7 @@ MacroLineExecutor MacroLineExecutor::changed_script_filename(
         block_arguments_,
         global_json_macro_arguments_,
         asset_references_,
-        verbose_};
+        verbosity_};
 }
 
 MacroLineExecutor MacroLineExecutor::inserted_block_arguments(
@@ -153,7 +154,7 @@ MacroLineExecutor MacroLineExecutor::inserted_block_arguments(
         let.move_json(),
         global_json_macro_arguments_,
         asset_references_,
-        verbose_};
+        verbosity_};
 }
 
 MacroLineExecutor MacroLineExecutor::changed_context(
@@ -169,7 +170,7 @@ MacroLineExecutor MacroLineExecutor::changed_context(
         std::move(block_arguments),
         global_json_macro_arguments_,
         asset_references_,
-        verbose_};
+        verbosity_};
 }
 
 MacroLineExecutor MacroLineExecutor::changed_script_filename_and_context(
@@ -186,7 +187,7 @@ MacroLineExecutor MacroLineExecutor::changed_script_filename_and_context(
         std::move(block_arguments),
         global_json_macro_arguments_,
         asset_references_,
-        verbose_};
+        verbosity_};
 }
 
 void MacroLineExecutor::operator () (
@@ -208,7 +209,7 @@ void MacroLineExecutor::operator () (
     // BENCHMARK         }
     // BENCHMARK     }
     // BENCHMARK     } };
-    if (verbose_) {
+    if (any(verbosity_ & MacroExecutorVerbosity::MACROS)) {
         linfo() << "Processing object " << j;
     }
 
@@ -219,7 +220,7 @@ void MacroLineExecutor::operator () (
         merged_args.insert_json(local_json_macro_arguments->json());
         // BENCHMARK times.emplace_back("local_json_macro_arguments", ot.elapsed());
     }
-    if (j.type() == nlohmann::detail::value_t::object) {
+    if (j.is_object()) {
         JsonView jv{ j };
         jv.validate(MacroKeys::options);
         // BENCHMARK times.emplace_back("validate", ot.elapsed());
@@ -252,7 +253,7 @@ void MacroLineExecutor::operator () (
         } catch (const std::exception& e) {
             std::stringstream msg;
             msg << "Exception while evaluating conditionals in \"" << j << "\n\nException message: " << e.what();
-            if (verbose_) {
+            if (any(verbosity_)) {
                 linfo() << msg.str();
             }
             throw std::runtime_error(msg.str());
@@ -323,7 +324,7 @@ void MacroLineExecutor::operator () (
                 } catch (const std::exception& e) {
                     std::stringstream msg;
                     msg << "Exception while merging \"let\" variables of macro \"" << name << "\". Line: " << std::setw(2) << macro_it->second.content << "\n\nException message: " << e.what();
-                    if (verbose_) {
+                    if (any(verbosity_)) {
                         linfo() << msg.str();
                     }
                     throw std::runtime_error(msg.str());
@@ -338,12 +339,23 @@ void MacroLineExecutor::operator () (
                 } catch (const std::exception& e) {
                     std::stringstream msg;
                     msg << "Exception while executing macro \"" << name << "\". Line: " << std::setw(2) << macro_it->second.content << "\n\nException message: " << e.what();
-                    if (verbose_) {
+                    if (any(verbosity_)) {
                         linfo() << msg.str();
                     }
                     throw std::runtime_error(msg.str());
                 }
             } else if (jv.contains(MacroKeys::call)) {
+                std::optional<AperiodicLagFinder> lag_finder;
+                if (lag_finders_enabled()) {
+                    lag_finder.emplace(
+                        (std::stringstream() << "Slow call " << j << ": ").str(),
+                        std::chrono::milliseconds{5});
+                }
+                if (!any(verbosity_ & MacroExecutorVerbosity::MACROS) &&
+                    any(verbosity_ & MacroExecutorVerbosity::FUNCTIONS))
+                {
+                    linfo() << "Processing call " << j;
+                }
                 if (jv.contains(MacroKeys::else_)) {
                     throw std::runtime_error("\"else_\" not supported for \"call\"");
                 }
@@ -390,7 +402,7 @@ void MacroLineExecutor::operator () (
                 } catch (const std::exception& e) {
                     std::stringstream msg;
                     msg << "Exception while executing function \"" << name << "\". Line: " << std::setw(2) << j << "\n\nException message: " << e.what();
-                    if (verbose_) {
+                    if (any(verbosity_)) {
                         linfo() << msg.str();
                     }
                     throw std::runtime_error(msg.str());
@@ -399,7 +411,7 @@ void MacroLineExecutor::operator () (
                 if (!success) {
                     std::stringstream msg;
                     msg << "Could not find function with name \"" << name << "\". Line: " << std::setw(2) << j;
-                    if (verbose_) {
+                    if (any(verbosity_)) {
                         linfo() << msg.str();
                     }
                     throw std::runtime_error(msg.str());
@@ -468,7 +480,7 @@ void MacroLineExecutor::operator () (
                     throw std::runtime_error((std::stringstream() << e.what() << "\nCould not validate " << jv.json()).str());
                 }
                 auto name = jv.at<std::string>(MacroKeys::declare_macro);
-                if (verbose_) {
+                if (any(verbosity_)) {
                     linfo() << "Storing macro \"" << name << '"';
                 }
                 if (!macro_recorder_.json_macros_.try_emplace(
@@ -489,7 +501,7 @@ void MacroLineExecutor::operator () (
                 throw std::runtime_error("Cannot interpret " + msg.str());
             }
         }
-    } else if (j.type() == nlohmann::detail::value_t::array) {
+    } else if (j.is_array()) {
         JsonMacroArguments local_json_macro_arguments_2;
         for (const nlohmann::json& l : j) {
             (*this)(l, &local_json_macro_arguments_2);

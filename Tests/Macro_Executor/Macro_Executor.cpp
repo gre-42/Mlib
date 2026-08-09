@@ -34,7 +34,7 @@ void test_json() {
         nlohmann::json::object(),
         global_substitutions,
         asset_references,
-        true}; // verbose
+        MacroExecutorVerbosity::FUNCTIONS | MacroExecutorVerbosity::MACROS}; // verbose
     mr(mle);
 }
 

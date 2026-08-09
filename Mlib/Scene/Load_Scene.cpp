@@ -20,7 +20,7 @@ LoadScene::LoadScene(
     ThreadSafeString& next_scene_filename,
     LocalSceneLevel scene_level,
     NotifyingJsonMacroArguments& external_json_macro_arguments,
-    bool verbose,
+    MacroExecutorVerbosity verbosity,
     SurfaceContactDb& surface_contact_db,
     BulletPropertyDb& bullet_property_db,
     DynamicLightDb& dynamic_light_db,
@@ -117,7 +117,7 @@ LoadScene::LoadScene(
         nlohmann::json::object(),
         external_json_macro_arguments,
         asset_references,
-        verbose}
+        verbosity}
     #ifndef WITHOUT_GRAPHICS
     , focus_finalizer_{ ui_focuses, macro_line_executor_ }
     #endif

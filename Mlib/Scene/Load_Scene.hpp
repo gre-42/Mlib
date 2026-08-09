@@ -45,7 +45,7 @@ public:
         ThreadSafeString& next_scene_filename,
         LocalSceneLevel scene_level,
         NotifyingJsonMacroArguments& external_json_macro_arguments,
-        bool verbose,
+        MacroExecutorVerbosity verbosity,
         SurfaceContactDb& surface_contact_db,
         BulletPropertyDb& bullet_property_db,
         DynamicLightDb& dynamic_light_db,

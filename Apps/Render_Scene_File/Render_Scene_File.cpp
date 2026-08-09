@@ -1017,13 +1017,17 @@ int main(int argc, char** argv) {
                 #endif
                 remote_sites.set_user_status(UserTypes::ALL_REMOTE, UserStatus::INITIAL);
                 remote_sites.set_user_status(UserTypes::ALL_LOCAL, UserStatus::LEVEL_LOADING);
+                auto verbosity = MacroExecutorVerbosity::SILENT;
+                if (args.has_named("--verbose")) {
+                    verbosity |= MacroExecutorVerbosity::FUNCTIONS | MacroExecutorVerbosity::MACROS;
+                }
                 load_scene.reset(new LoadScene(
                     search_path,
                     main_scene_filename,
                     next_scene_filename,
                     local_scene_level,
                     external_json_macro_arguments,
-                    args.has_named("--verbose"),
+                    verbosity,
                     surface_contact_db,
                     bullet_property_db,
                     dynamic_light_db,

@@ -27,7 +27,7 @@ void MacroRecorder::operator()(const MacroLineExecutor& macro_line_executor)
         if (ifs->fail()) {
             throw std::runtime_error("Could not open script file \"" + macro_line_executor.script_filename_.string() + '"');
         }
-        if (macro_line_executor.verbose_) {
+        if (any(macro_line_executor.verbosity_)) {
             linfo() << "Processing JSON scene file \"" << macro_line_executor.script_filename_ << '"';
         }
         nlohmann::json j;
@@ -42,7 +42,7 @@ void MacroRecorder::operator()(const MacroLineExecutor& macro_line_executor)
         macro_line_executor(j, nullptr);
     } else if (macro_line_executor.script_filename_.extension() == ".json") {
         auto rp = ReplacementParameterAndFilename::from_json(macro_line_executor.script_filename_);
-        if (macro_line_executor.verbose_) {
+        if (any(macro_line_executor.verbosity_)) {
             linfo() << "Processing JSON macro \"" << rp.rp.on_execute << '"';
         }
         macro_line_executor(rp.rp.on_execute, nullptr);
