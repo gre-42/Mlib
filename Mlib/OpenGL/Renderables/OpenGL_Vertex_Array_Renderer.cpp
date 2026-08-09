@@ -1615,7 +1615,9 @@ static GenShaderText fragment_shader_text_textured_rgb_gen = [](
                     ++nwater_waves;
                     return;
                 case ParticleType::SEA_SPRAY:
-                    sstr << "    sea_spray_color = max(sea_spray_color, texture(texture_skidmarks[" << i << "], proj_coords01_skidmarks[" << i << "]).rgb);" << std::endl;
+                    sstr << "    if (is_inside_texture(proj_coords01_skidmarks[" << i << "])) {" << std::endl;
+                    sstr << "        sea_spray_color = max(sea_spray_color, texture(texture_skidmarks[" << i << "], proj_coords01_skidmarks[" << i << "]).rgb);" << std::endl;
+                    sstr << "    }" << std::endl;
                     return;
                 }
                 throw std::runtime_error("Unknown particle type");
