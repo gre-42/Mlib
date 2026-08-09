@@ -278,7 +278,8 @@ void IncrementalCommunicatorProxy::send_home(
                 break;
             }
         }
-        socket_versions_.local.local_version = std::max(DatagramIndexType(1), ++socket_versions_.local.local_version);
+        ++socket_versions_.local.local_version;
+        socket_versions_.local.local_version = std::max(DatagramIndexType(1), socket_versions_.local.local_version);
         auto versions = IncrementalVersionsWrite{
             .remote_local_version = socket_versions_.remote_version,        // local_remote_version
             .local_base_version = socket_versions_.local.remote_version,    // remote_base_version

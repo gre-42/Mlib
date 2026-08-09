@@ -22,7 +22,6 @@ LoadRenderableSceneInstanceFunction::LoadRenderableSceneInstanceFunction(Rendera
     , physics_engine{ renderable_scene.physics_scene_->physics_engine_ }
     , deferred_instantiator{ renderable_scene.physics_scene_->deferred_instantiator_ }
     , supply_depots{ renderable_scene.physics_scene_->supply_depots_ }
-    , key_bindings{ *renderable_scene.key_bindings_ }
     , selected_cameras{ renderable_scene.selected_cameras_ }
     , scene_config{ renderable_scene.scene_config_ }
     , render_logics{ renderable_scene.render_logics_ }
@@ -45,5 +44,12 @@ LoadRenderableSceneInstanceFunction::LoadRenderableSceneInstanceFunction(Rendera
     , arg0_{ renderable_scene.physics_scene_->primary_audio_resource_context_ }
     , arg1_{ renderable_scene.physics_scene_->secondary_audio_resource_context_ }
 {}
+
+KeyBindings& LoadRenderableSceneInstanceFunction::key_bindings() {
+    if (renderable_scene.key_bindings_ == nullptr) {
+        throw std::runtime_error("Key bindings not set");
+    }
+    return *renderable_scene.key_bindings_;
+}
 
 LoadRenderableSceneInstanceFunction::~LoadRenderableSceneInstanceFunction() = default;

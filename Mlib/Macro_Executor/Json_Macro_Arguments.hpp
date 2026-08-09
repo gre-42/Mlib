@@ -112,7 +112,7 @@ public:
         SubstitutionMode mode) const;
     JsonMacroArguments as_child(const nlohmann::json& j) const;
     inline nlohmann::json&& move_json() {
-        return std::move(j_);
+        return std::move(json());
     }
     inline decltype(auto) items() const {
         return j_.items();
@@ -120,7 +120,6 @@ public:
 private:
     template <JsonKey Key>
     void set_generic(const Key& key, nlohmann::json value);
-    nlohmann::json j_;
     std::function<std::list<Utf8Path>(const Utf8Path& f)> fpathes_;
     std::function<FPath(const FPath& f)> fpath_;
     std::function<Utf8Path(const Utf8Path& f)> spath_;

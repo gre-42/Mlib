@@ -42,7 +42,7 @@ endif
 # UBSAN
 ifeq ($(UBSAN),1)
     CFLAGS    += -fsanitize=undefined
-    CXXFLAGS  += -fsanitize=undefined
+    CXXFLAGS  += -fsanitize=undefined -Wno-error=mismatched-new-delete
     LDFLAGS   += -fsanitize=undefined
     BUILD_DIR := B$(BUILD_DIR)
 endif
@@ -60,11 +60,13 @@ ifeq ($(LAME),1)
 endif
 # CLANG
 ifeq ($(CLANG),1)
-    # If the default Clang version is too old, pick Clang 20.
-    DEFAULT_CLANG_VERSION := $(shell clang --version | sed -nE 's/.*version ([0-9]+).*/\1/p')
-    CLANG_SUFFIX := $(shell if [[ "$(DEFAULT_CLANG_VERSION)" -lt 20 ]]; then echo 20; else echo ""; fi)
-    ENV       += $(E_FLAG) CC=clang$(CLANG_SUFFIX) $(E_FLAG) CXX=clang++$(CLANG_SUFFIX)
+    ENV       += $(E_FLAG) CC=clang-22 $(E_FLAG) CXX=clang++-22
     BUILD_DIR := L$(BUILD_DIR)
+endif
+# g++ 16
+ifeq ($(GPP16),1)
+    ENV       += $(E_FLAG) CC=gcc-16 $(E_FLAG) CXX=g++-16
+    BUILD_DIR := 6$(BUILD_DIR)
 endif
 # LIBCPP
 ifeq ($(LIBCPP),1)

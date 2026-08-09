@@ -22,7 +22,7 @@ CreateCameraKeyBinding::CreateCameraKeyBinding(RenderableScene& renderable_scene
 
 void CreateCameraKeyBinding::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    key_bindings.add_camera_key_binding(std::unique_ptr<CameraKeyBinding>(new CameraKeyBinding{
+    key_bindings().add_camera_key_binding(std::unique_ptr<CameraKeyBinding>(new CameraKeyBinding{
         .tpe = camera_cycle_type_from_string(args.arguments.at<std::string>(KnownArgs::tpe)),
         .button_press{
             args.button_states,

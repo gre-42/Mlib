@@ -33,7 +33,8 @@ void CreateCarControllerIdleBinding::execute(const LoadSceneJsonUserFunctionArgs
 
     DanglingBaseClassRef<SceneNode> node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::node), CURRENT_SOURCE_LOCATION);
     auto player = players.get_player(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::player), CURRENT_SOURCE_LOCATION);
-    auto& kb = key_bindings.add_car_controller_idle_binding(std::unique_ptr<CarControllerIdleBinding>(new CarControllerIdleBinding{
+    auto& kbs = key_bindings();
+    auto& kb = kbs.add_car_controller_idle_binding(std::unique_ptr<CarControllerIdleBinding>(new CarControllerIdleBinding{
         .node = node.ptr(),
         .surface_power = args.arguments.at<float>(KnownArgs::surface_power, 0.f) * W,
         .steer_angle = args.arguments.at<float>(KnownArgs::steer_angle, 0.f) * degrees,
@@ -41,8 +42,8 @@ void CreateCarControllerIdleBinding::execute(const LoadSceneJsonUserFunctionArgs
         .steer_relaxation = args.arguments.at<float>(KnownArgs::steer_relaxation, 0.f),
         .on_node_clear{ DestructionFunctionsRemovalTokens{ node->on_clear.early, CURRENT_SOURCE_LOCATION } },
         .on_player_delete_vehicle_internals{ DestructionFunctionsRemovalTokens{ player->delete_vehicle_internals, CURRENT_SOURCE_LOCATION } }}));
-    kb.on_node_clear.add([&kbs=key_bindings, &kb](){ kbs.delete_car_controller_idle_binding(kb); }, CURRENT_SOURCE_LOCATION);
-    kb.on_player_delete_vehicle_internals.add([&kbs=key_bindings, &kb](){ kbs.delete_car_controller_idle_binding(kb); }, CURRENT_SOURCE_LOCATION);
+    kb.on_node_clear.add([&kbs, &kb](){ kbs.delete_car_controller_idle_binding(kb); }, CURRENT_SOURCE_LOCATION);
+    kb.on_player_delete_vehicle_internals.add([&kbs, &kb](){ kbs.delete_car_controller_idle_binding(kb); }, CURRENT_SOURCE_LOCATION);
 }
 
 namespace {

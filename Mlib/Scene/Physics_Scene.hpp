@@ -123,6 +123,7 @@ public:
     #ifndef WITHOUT_GRAPHICS
     RenderingResources rendering_resources_;
     #endif
+    UsageCounter usage_counter_;
     std::function<bool()> paused_;
     EventEmitter<> paused_changed_;
     std::unique_ptr<ITrailRenderer> trail_renderer_;
@@ -158,7 +159,6 @@ public:
     Players players_;
     SupplyDepots supply_depots_;
     std::unique_ptr<GameLogic> game_logic_;
-    UsageCounter usage_counter_;
     CounterUser remote_counter_user_;
     std::unique_ptr<CountdownPhysics> countdown_start_;
     std::shared_ptr<Translator> translator_;

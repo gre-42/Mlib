@@ -1,5 +1,6 @@
 #include "stb_image_load.hpp"
 #include <Mlib/Misc/Features.hpp>
+#include <climits>
 #include <cstdlib>
 #include <stb/stb_image_bpc.h>
 #include <stdexcept>

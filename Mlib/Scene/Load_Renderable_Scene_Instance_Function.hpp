@@ -67,7 +67,7 @@ protected:
     PhysicsEngine& physics_engine;
     DeferredInstantiator& deferred_instantiator;
     SupplyDepots& supply_depots;
-    KeyBindings& key_bindings;
+    KeyBindings& key_bindings();
     SelectedCameras& selected_cameras;
     const SceneConfig& scene_config;
     RenderLogics& render_logics;

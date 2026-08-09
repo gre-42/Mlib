@@ -34,7 +34,8 @@ void CreateWeaponCycleKeyBinding::execute(const LoadSceneJsonUserFunctionArgs& a
     args.arguments.validate(KnownArgs::options);
 
     auto player = players.get_player(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::player), CURRENT_SOURCE_LOCATION);
-    auto& kb = key_bindings.add_weapon_inventory_key_binding(std::unique_ptr<WeaponCycleKeyBinding>(new WeaponCycleKeyBinding{
+    auto& kbs = key_bindings();
+    auto& kb = kbs.add_weapon_inventory_key_binding(std::unique_ptr<WeaponCycleKeyBinding>(new WeaponCycleKeyBinding{
         .player = player,
         .direction = args.arguments.at<int>(KnownArgs::weapon_increment),
         .button_press{
@@ -50,7 +51,7 @@ void CreateWeaponCycleKeyBinding::execute(const LoadSceneJsonUserFunctionArgs& a
             args.arguments.at<std::string>(KnownArgs::id)),
         .on_player_delete_vehicle_internals{ DestructionFunctionsRemovalTokens{ player->delete_vehicle_internals, CURRENT_SOURCE_LOCATION } }}));
     kb.on_player_delete_vehicle_internals.add(
-        [&kbs=key_bindings, &kb](){
+        [&kbs, &kb](){
             kbs.delete_weapon_cycle_key_binding(kb);
         }, CURRENT_SOURCE_LOCATION
     );

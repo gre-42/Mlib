@@ -4,10 +4,7 @@
 
 using namespace Mlib;
 
-JsonObjectFile::JsonObjectFile()
-    : JsonView{j_, CheckIsObjectBehavior::NO_CHECK}
-    , j_{nlohmann::json::object()}
-{}
+JsonObjectFile::JsonObjectFile() = default;
 
 JsonObjectFile::~JsonObjectFile() = default;
 

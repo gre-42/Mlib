@@ -3,14 +3,33 @@
 
 using namespace Mlib;
 
-JsonView::JsonView(
-    const nlohmann::json& j,
-    CheckIsObjectBehavior check)
-: j_{j}
+JsonView::JsonView()
+    : jo_{nlohmann::json::object()}
+    , j_{*jo_}
+{}
+
+JsonView::JsonView(const nlohmann::json& j)
+    : j_{j}
 {
-    if ((check == CheckIsObjectBehavior::CHECK) &&
-        (j_.type() != nlohmann::detail::value_t::object))
-    {
+    if (j_.type() != nlohmann::detail::value_t::object) {
+        throw std::runtime_error("JSON is not of type object");
+    }
+}
+
+JsonView::JsonView(nlohmann::json j, CopyJson)
+    : jo_{std::move(j)}
+    , j_{*jo_}
+{
+    if (j_.type() != nlohmann::detail::value_t::object) {
+        throw std::runtime_error("JSON is not of type object");
+    }
+}
+
+JsonView::JsonView(nlohmann::json&& j)
+    : jo_{std::move(j)}
+    , j_{*jo_}
+{
+    if (j_.type() != nlohmann::detail::value_t::object) {
         throw std::runtime_error("JSON is not of type object");
     }
 }

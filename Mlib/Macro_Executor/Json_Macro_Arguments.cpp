@@ -5,57 +5,35 @@
 
 using namespace Mlib;
 
-JsonMacroArguments::JsonMacroArguments()
-    : JsonView{ j_, CheckIsObjectBehavior::NO_CHECK }
-    , j_(nlohmann::json::value_t::object)
-{}
+JsonMacroArguments::JsonMacroArguments() = default;
 
 JsonMacroArguments::JsonMacroArguments(const JsonMacroArguments& other)
-    : JsonView{ j_, CheckIsObjectBehavior::NO_CHECK }
-    , j_(other.j_)
+    : JsonView{ other.json(), copy_json }
     , fpathes_{ other.fpathes_ }
     , fpath_{ other.fpath_ }
     , spath_{ other.spath_ }
-{
-    if (j_.type() != nlohmann::detail::value_t::object) {
-        throw std::runtime_error("JSON is not of type object");
-    }
-}
+{}
 
 JsonMacroArguments::JsonMacroArguments(JsonMacroArguments&& other) noexcept
-    : JsonView{ j_, CheckIsObjectBehavior::NO_CHECK }
-    , j_(std::move(other.j_))
+    : JsonView{ std::move(other.json()) }
     , fpathes_{ std::move(other.fpathes_) }
     , fpath_{ std::move(other.fpath_) }
     , spath_{ std::move(other.spath_) }
-{
-    if (j_.type() != nlohmann::detail::value_t::object) {
-        verbose_abort("JSON is not of type object");
-    }
-}
+{}
 
 JsonMacroArguments::JsonMacroArguments(nlohmann::json j)
-    : JsonView{ j_, CheckIsObjectBehavior::NO_CHECK }
-    , j_(std::move(j))
-{
-    if (j_.type() != nlohmann::detail::value_t::object) {
-        throw std::runtime_error("JSON is not of type object");
-    }
-}
+    : JsonView{ std::move(j) }
+{}
 
 JsonMacroArguments::JsonMacroArguments(
     const nlohmann::json& j,
     Filter::With,
     const std::set<std::string>& with)
-    : JsonView{ j_, CheckIsObjectBehavior::NO_CHECK }
-    , j_(nlohmann::json::object())
 {
-    if (j.type() != nlohmann::detail::value_t::object) {
-        throw std::runtime_error("JSON is not of type object");
-    }
+    auto& self = json();
     for (const auto& [k, v] : j.items()) {
         if (with.contains(k)) {
-            j_[k] = v;
+            self[k] = v;
         }
     }
 }
@@ -64,15 +42,11 @@ JsonMacroArguments::JsonMacroArguments(
     const nlohmann::json& j,
     Filter::Without,
     const std::set<std::string>& without)
-    : JsonView{ j_, CheckIsObjectBehavior::NO_CHECK }
-    , j_(nlohmann::json::object())
 {
-    if (j.type() != nlohmann::detail::value_t::object) {
-        throw std::runtime_error("JSON is not of type object");
-    }
+    auto& self = json();
     for (const auto& [k, v] : j.items()) {
         if (!without.contains(k)) {
-            j_[k] = v;
+            self[k] = v;
         }
     }
 }
@@ -105,7 +79,7 @@ static void set_internal(
 
 template <JsonKey Key>
 void JsonMacroArguments::set_generic(const Key& key, nlohmann::json value) {
-    set_internal(j_, key, value);
+    set_internal(json(), key, value);
 }
 
 void JsonMacroArguments::set(const std::string_view& key, nlohmann::json value) {
@@ -117,20 +91,22 @@ void JsonMacroArguments::set(const std::vector<std::string>& key, nlohmann::json
 }
 
 void JsonMacroArguments::merge(const JsonView& other, std::string_view prefix) {
+    auto& self = json();
     if (prefix.empty()) {
         for (const auto& [key, value] : other.json().items()) {
-            j_[key] = value;
+            self[key] = value;
         }
     } else {
         auto sp = std::string{ prefix };
         for (const auto& [key, value] : other.json().items()) {
-            j_[sp + key] = value;
+            self[sp + key] = value;
         }
     }
 }
 
 void JsonMacroArguments::clear() {
-    j_ = nlohmann::json::object();
+    auto& self = json();
+    self = nlohmann::json::object();
 }
 
 static nlohmann::json subst_and_replace(
@@ -225,10 +201,11 @@ void JsonMacroArguments::insert_json(
 }
 
 void JsonMacroArguments::insert_json(std::string_view key, nlohmann::json j) {
-    if (j_.contains(key)) {
+    auto& self = json();
+    if (self.contains(key)) {
         throw std::runtime_error("Multiple definitions of key \"" + std::string{ key } + '"');
     }
-    j_[key] = std::move(j);
+    self[key] = std::move(j);
 }
 
 void JsonMacroArguments::set_fpathes(std::function<std::list<Utf8Path>(const Utf8Path& f)> fpathes) {

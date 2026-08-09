@@ -32,15 +32,16 @@ void CreateAbsIdleKeyBinding::execute(const LoadSceneJsonUserFunctionArgs& args)
 
     DanglingBaseClassRef<SceneNode> node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::node), CURRENT_SOURCE_LOCATION);
     auto player = players.get_player(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::player), CURRENT_SOURCE_LOCATION);
-    auto& kb = key_bindings.add_absolute_movable_idle_binding(std::unique_ptr<AbsoluteMovableIdleBinding>(new AbsoluteMovableIdleBinding{
+    auto& kbs = key_bindings();
+    auto& kb = kbs.add_absolute_movable_idle_binding(std::unique_ptr<AbsoluteMovableIdleBinding>(new AbsoluteMovableIdleBinding{
         .node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::node), CURRENT_SOURCE_LOCATION).ptr(),
         .tires_z = args.arguments.at<EFixedArray<float, 3>>(
             KnownArgs::tires_z,
             FixedArray<float, 3>{0.f, 0.f, 1.f}),
         .on_node_clear{ DestructionFunctionsRemovalTokens{ node->on_clear.early, CURRENT_SOURCE_LOCATION } },
         .on_player_delete_vehicle_internals{ DestructionFunctionsRemovalTokens{ player->delete_vehicle_internals, CURRENT_SOURCE_LOCATION } }}));
-    kb.on_node_clear.add([&kbs=key_bindings, &kb](){ kbs.delete_absolute_movable_idle_binding(kb); }, CURRENT_SOURCE_LOCATION);
-    kb.on_player_delete_vehicle_internals.add([&kbs=key_bindings, &kb](){ kbs.delete_absolute_movable_idle_binding(kb); }, CURRENT_SOURCE_LOCATION);
+    kb.on_node_clear.add([&kbs, &kb](){ kbs.delete_absolute_movable_idle_binding(kb); }, CURRENT_SOURCE_LOCATION);
+    kb.on_player_delete_vehicle_internals.add([&kbs, &kb](){ kbs.delete_absolute_movable_idle_binding(kb); }, CURRENT_SOURCE_LOCATION);
 }
 
 namespace {

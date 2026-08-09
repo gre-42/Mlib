@@ -42,7 +42,8 @@ void CreateRelKeyBinding::execute(const LoadSceneJsonUserFunctionArgs& args)
     args.arguments.validate(KnownArgs::options);
     DanglingBaseClassRef<SceneNode> node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::node), CURRENT_SOURCE_LOCATION);
     auto player = players.get_player(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::player), CURRENT_SOURCE_LOCATION);
-    auto& kb = key_bindings.add_relative_movable_key_binding(std::unique_ptr<RelativeMovableKeyBinding>(new RelativeMovableKeyBinding{
+    auto& kbs = key_bindings();
+    auto& kb = kbs.add_relative_movable_key_binding(std::unique_ptr<RelativeMovableKeyBinding>(new RelativeMovableKeyBinding{
         .dynamic_node = [node]() { return node.ptr(); },
         .translation = args.arguments.at<EFixedArray<ScenePos, 3>>(KnownArgs::translation, fixed_zeros<ScenePos, 3>()),
         .rotation_axis = args.arguments.at<EFixedArray<float, 3>>(KnownArgs::rotation_axis, fixed_zeros<float, 3>()),
@@ -71,8 +72,8 @@ void CreateRelKeyBinding::execute(const LoadSceneJsonUserFunctionArgs& args)
         .on_destroy_key_bindings{ DestructionFunctionsRemovalTokens{ nullptr, CURRENT_SOURCE_LOCATION } },
         .on_node_clear{ DestructionFunctionsRemovalTokens{ node->on_clear.early, CURRENT_SOURCE_LOCATION } },
         .on_player_delete_vehicle_internals{ DestructionFunctionsRemovalTokens{ player->delete_vehicle_internals, CURRENT_SOURCE_LOCATION } }}));
-    kb.on_node_clear.add([&kbs=key_bindings, &kb](){ kbs.delete_relative_movable_key_binding(kb); }, CURRENT_SOURCE_LOCATION);
-    kb.on_player_delete_vehicle_internals.add([&kbs=key_bindings, &kb](){ kbs.delete_relative_movable_key_binding(kb); }, CURRENT_SOURCE_LOCATION);
+    kb.on_node_clear.add([&kbs, &kb](){ kbs.delete_relative_movable_key_binding(kb); }, CURRENT_SOURCE_LOCATION);
+    kb.on_player_delete_vehicle_internals.add([&kbs, &kb](){ kbs.delete_relative_movable_key_binding(kb); }, CURRENT_SOURCE_LOCATION);
 }
 
 namespace {

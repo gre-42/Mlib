@@ -53,8 +53,7 @@ struct RegisterJsonUserFunction {
                 auto mipmap_mode = mipmap_mode_from_string(
                     args.arguments.at<std::string>(KnownArgs::mipmap_mode, "with_mipmaps"));
                 auto tiles = args.arguments.at_vector<nlohmann::json>(KnownArgs::images, [&](const nlohmann::json& layer){
-                    JsonView layer_view{layer, CheckIsObjectBehavior::NO_CHECK};
-                    return layer_view.get_vector<nlohmann::json>([&](const nlohmann::json& j){
+                    return get_vector<nlohmann::json>(layer, [&](const nlohmann::json& j){
                         auto a = args.arguments.as_child(j);
                         a.validate(AtlasTileArgs::options);
                         return AutoAtlasTileDescriptor{

@@ -29,7 +29,8 @@ void CreateGunKeyBinding::execute(const LoadSceneJsonUserFunctionArgs& args)
     args.arguments.validate(KnownArgs::options);
 
     auto player = players.get_player(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::player), CURRENT_SOURCE_LOCATION);
-    auto& kb = key_bindings.add_gun_key_binding(std::unique_ptr<GunKeyBinding>(new GunKeyBinding{
+    auto& kbs = key_bindings();
+    auto& kb = kbs.add_gun_key_binding(std::unique_ptr<GunKeyBinding>(new GunKeyBinding{
         .player = player,
         .button_press{
             args.button_states,
@@ -39,7 +40,7 @@ void CreateGunKeyBinding::execute(const LoadSceneJsonUserFunctionArgs& args)
             args.arguments.at<std::string>(KnownArgs::seat)},
         .on_player_delete_vehicle_internals{ DestructionFunctionsRemovalTokens{ player->delete_vehicle_internals, CURRENT_SOURCE_LOCATION } }}));
     kb.on_player_delete_vehicle_internals.add(
-        [&kbs = key_bindings, &kb]() {
+        [&kbs, &kb]() {
             kbs.delete_gun_key_binding(kb);
         }, CURRENT_SOURCE_LOCATION
     );

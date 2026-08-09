@@ -15,17 +15,15 @@
 
 namespace Mlib {
 
-enum class CheckIsObjectBehavior {
-    CHECK,
-    NO_CHECK
-};
+constexpr struct CopyJson {} copy_json;
 
 class JsonView {
     friend std::ostream& operator << (std::ostream& ostr, const JsonView& container);
 public:
-    explicit JsonView(
-        const nlohmann::json& j,
-        CheckIsObjectBehavior check = CheckIsObjectBehavior::CHECK);
+    JsonView();
+    explicit JsonView(const nlohmann::json& j);
+    explicit JsonView(nlohmann::json j, CopyJson);
+    explicit JsonView(nlohmann::json&& j);
     std::optional<nlohmann::json> try_resolve(std::string_view key) const;
     template <class TKey0, class TKey1, class... TKeys2>
     std::optional<nlohmann::json> try_resolve(const TKey0& key0, const TKey1& key1, TKeys2&&... path) const {
@@ -85,14 +83,6 @@ public:
     bool contains_non_null(std::string_view name) const;
     bool contains(const std::vector<std::string>& name) const;
     bool contains_non_null(const std::vector<std::string>& name) const;
-    template <class T>
-    T get() const {
-        return j_.get<T>();
-    }
-    template <class TData, class TOperation>
-    auto get_vector(const TOperation& op) const {
-        return Mlib::get_vector<TData>(j_, op);
-    }
     nlohmann::json at(std::string_view name) const;
     nlohmann::json at(const std::vector<std::string>& path) const;
     template <class T, JsonKey Key>
@@ -168,10 +158,18 @@ public:
     inline void validate_complement(const std::set<std::string_view>& known_keys, std::string_view prefix = "") const {
         Mlib::validate_complement(j_, known_keys, prefix);
     }
+    inline nlohmann::json& json() {
+        if (!jo_.has_value()) {
+            throw std::runtime_error("JsonView is readonly");
+        }
+        return *jo_;
+    }
     inline const nlohmann::json& json() const {
         return j_;
     }
 private:
+    std::optional<nlohmann::json> jo_;
+protected:
     const nlohmann::json& j_;
 };
 

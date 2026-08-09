@@ -36,7 +36,8 @@ CreateRelKeyBindingSpectator::CreateRelKeyBindingSpectator(RenderableScene& rend
 void CreateRelKeyBindingSpectator::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     args.arguments.validate(KnownArgs::options);
-    auto& kb = key_bindings.add_relative_movable_key_binding(std::unique_ptr<RelativeMovableKeyBinding>(new RelativeMovableKeyBinding{
+    auto& kbs = key_bindings();
+    auto& kb = kbs.add_relative_movable_key_binding(std::unique_ptr<RelativeMovableKeyBinding>(new RelativeMovableKeyBinding{
         .dynamic_node = [&scene=scene, &sc=selected_cameras]() -> DanglingBaseClassPtr<SceneNode> {
             auto name = sc.camera_node_name();
             auto cycle = sc.cycle(name);
@@ -69,10 +70,10 @@ void CreateRelKeyBindingSpectator::execute(const LoadSceneJsonUserFunctionArgs& 
             args.arguments.at<NUserCountType>(KnownArgs::local_user_id),
             args.arguments.at<std::string>(KnownArgs::id),
             args.arguments.at<std::string>(KnownArgs::seat)},
-        .on_destroy_key_bindings{ DestructionFunctionsRemovalTokens{ key_bindings.on_destroy.deflt, CURRENT_SOURCE_LOCATION } },
+        .on_destroy_key_bindings{ DestructionFunctionsRemovalTokens{ kbs.on_destroy.deflt, CURRENT_SOURCE_LOCATION } },
         .on_node_clear{ DestructionFunctionsRemovalTokens{ nullptr, CURRENT_SOURCE_LOCATION } },
         .on_player_delete_vehicle_internals{ DestructionFunctionsRemovalTokens{ nullptr, CURRENT_SOURCE_LOCATION }} }));
-    kb.on_destroy_key_bindings.add([&kbs = key_bindings, &kb]() {
+    kb.on_destroy_key_bindings.add([&kbs, &kb]() {
         kbs.delete_relative_movable_key_binding(kb);
     }, CURRENT_SOURCE_LOCATION);
 }
