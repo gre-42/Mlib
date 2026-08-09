@@ -194,24 +194,24 @@ void RigidBodyEngine::advance_time(
     const RotatingFrame<SceneDir, ScenePos, 3>& frame,
     const StaticWorld& static_world)
 {
-    float average_tire_w_;
+    float average_tire_w;
     if (tires_w_.empty()) {
-        average_tire_w_ = NAN;
+        average_tire_w = NAN;
     } else {
-        average_tire_w_ = 0.f;
+        average_tire_w = 0.f;
         for (const float* tire_w : tires_w_) {
-            average_tire_w_ += *tire_w;
+            average_tire_w += *tire_w;
         }
-        average_tire_w_ /= (float)tires_w_.size();
+        average_tire_w /= (float)tires_w_.size();
     }
     if (engine_power_.has_value()) {
-        if (!std::isnan(average_tire_w_)) {
-            engine_power_->auto_set_gear(dt.dt_substep, average_tire_w_);
+        if (!std::isnan(average_tire_w)) {
+            engine_power_->auto_set_gear(dt.dt_substep, average_tire_w);
         }
         if (!phase.burn_in && (phase.substep == 0) && (listener_ != nullptr)) {
             listener_->notify_rotation(
                 engine_power_->engine_w(),
-                average_tire_w_,
+                average_tire_w,
                 engine_power_intent_,
                 engine_power_->get_power(),
                 static_world);
