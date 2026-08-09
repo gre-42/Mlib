@@ -3,7 +3,7 @@
 #include <Mlib/Misc/Object.hpp>
 #include <Mlib/Misc/Source_Location.hpp>
 #include <Mlib/Os/Os.hpp>
-#include <Mlib/Threads/Safe_Atomic_Shared_Mutex.hpp>
+#include <Mlib/Os/Threads/Safe_Atomic_Shared_Mutex.hpp>
 #include <atomic>
 #include <shared_mutex>
 #include <type_traits>

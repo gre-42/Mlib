@@ -1,7 +1,7 @@
 #pragma once
-#include <Mlib/Threads/Fast_Mutex.hpp>
-#include <Mlib/Threads/Guarded_Object.hpp>
-#include <Mlib/Threads/Throwing_Lock_Guard.hpp>
+#include <Mlib/Os/Threads/Fast_Mutex.hpp>
+#include <Mlib/Os/Threads/Guarded_Object.hpp>
+#include <Mlib/Os/Threads/Throwing_Lock_Guard.hpp>
 
 namespace Mlib {
 

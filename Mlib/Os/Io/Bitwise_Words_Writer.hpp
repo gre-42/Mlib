@@ -2,7 +2,7 @@
 #include <Mlib/Os/Io/Binary_Writer.hpp>
 #include <Mlib/Os/Io/Bitwise_Word_Writer.hpp>
 #include <Mlib/Os/Os.hpp>
-#include <Mlib/Threads/Termination_Manager.hpp>
+#include <Mlib/Os/Threads/Termination_Manager.hpp>
 #include <Mlib/Type_Traits/Unsigned_Enum.hpp>
 #include <concepts>
 #include <cstdint>

@@ -1,6 +1,7 @@
 #include "Vehicle_Changer.hpp"
 #include <Mlib/Components/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
+#include <Mlib/Os/Threads/Throwing_Lock_Guard.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Players/Advance_Times/Player.hpp>
 #include <Mlib/Players/Containers/Vehicle_Spawners.hpp>
@@ -12,7 +13,6 @@
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Time.hpp>
 #include <Mlib/Scene_Graph/Spawn_Arguments.hpp>
-#include <Mlib/Threads/Throwing_Lock_Guard.hpp>
 #include <stdexcept>
 
 using namespace Mlib;

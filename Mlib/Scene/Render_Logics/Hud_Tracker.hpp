@@ -1,9 +1,9 @@
 #pragma once
 #include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/Memory/Dangling_Set.hpp>
+#include <Mlib/Os/Threads/Fast_Mutex.hpp>
 #include <Mlib/Scene_Config/Scene_Precision.hpp>
 #include <Mlib/Signal/Exponential_Smoother.hpp>
-#include <Mlib/Threads/Fast_Mutex.hpp>
 #include <vector>
 #ifndef WITHOUT_GRAPHICS
 #include <Mlib/OpenGL/Render_Logics/Fill_With_Texture_Logic.hpp>

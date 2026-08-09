@@ -1,7 +1,7 @@
 #pragma once
 #include <Mlib/Audio/Audio_Entity_State.hpp>
+#include <Mlib/Os/Threads/Fast_Mutex.hpp>
 #include <Mlib/Scene_Config/Scene_Precision.hpp>
-#include <Mlib/Threads/Fast_Mutex.hpp>
 #include <optional>
 
 namespace Mlib {

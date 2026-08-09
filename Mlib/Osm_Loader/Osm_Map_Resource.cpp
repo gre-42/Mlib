@@ -36,6 +36,8 @@
 #include <Mlib/OpenGL/Resources/Colored_Vertex_Array_Resource.hpp>
 #include <Mlib/Os/Env.hpp>
 #include <Mlib/Os/Io/Serialize/Serialize.hpp>
+#include <Mlib/Os/Threads/Malloc_Map.hpp>
+#include <Mlib/Os/Threads/Thread_Top.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Add_Bridge_Piers.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Add_Grass_Inside_Triangles.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Add_Grass_on_Steiner_Points.hpp>
@@ -124,8 +126,6 @@
 #include <Mlib/Scene_Graph/Way_Point_Sandbox.hpp>
 #include <Mlib/Strings/String_View_To_Number.hpp>
 #include <Mlib/Strings/String_View_To_Scene_Pos.hpp>
-#include <Mlib/Threads/Malloc_Map.hpp>
-#include <Mlib/Threads/Thread_Top.hpp>
 #include <fstream>
 #include <mutex>
 #include <poly2tri/edge_exception.hpp>

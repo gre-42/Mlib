@@ -50,6 +50,13 @@
 #include <Mlib/OpenGL/Viewport_Guard.hpp>
 #include <Mlib/OpenGL/Window.hpp>
 #include <Mlib/Os/Env.hpp>
+#include <Mlib/Os/Threads/Containers/Thread_Safe_String.hpp>
+#include <Mlib/Os/Threads/J_Thread.hpp>
+#include <Mlib/Os/Threads/Realtime_Threads.hpp>
+#include <Mlib/Os/Threads/Termination_Manager.hpp>
+#include <Mlib/Os/Threads/Thread_Affinity.hpp>
+#include <Mlib/Os/Threads/Thread_Initializer.hpp>
+#include <Mlib/Os/Threads/Thread_Safe_Promise.hpp>
 #include <Mlib/Physics/Bullets/Bullet_Property_Db.hpp>
 #include <Mlib/Physics/Dynamic_Lights/Dynamic_Light_Db.hpp>
 #include <Mlib/Physics/Smoke_Generation/Surface_Contact_Db.hpp>
@@ -75,13 +82,6 @@
 #include <Mlib/Strings/Base64.hpp>
 #include <Mlib/Strings/Iterate_Over_Chunks_Of_String.hpp>
 #include <Mlib/Strings/String_View_To_Number.hpp>
-#include <Mlib/Threads/Containers/Thread_Safe_String.hpp>
-#include <Mlib/Threads/J_Thread.hpp>
-#include <Mlib/Threads/Realtime_Threads.hpp>
-#include <Mlib/Threads/Termination_Manager.hpp>
-#include <Mlib/Threads/Thread_Affinity.hpp>
-#include <Mlib/Threads/Thread_Initializer.hpp>
-#include <Mlib/Threads/Thread_Safe_Promise.hpp>
 #include <Mlib/Time/Fps/Lag_Finder.hpp>
 #include <Mlib/Time/Fps/Realtime_Dependent_Fps.hpp>
 #include <Mlib/Time/Time_And_Pause.hpp>

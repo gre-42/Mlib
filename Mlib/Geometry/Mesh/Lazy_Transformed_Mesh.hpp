@@ -4,7 +4,7 @@
 #include <Mlib/Geometry/Mesh/IIntersectable_Mesh.hpp>
 #include <Mlib/Geometry/Primitives/Bounding_Sphere.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
-#include <Mlib/Threads/Fast_Mutex.hpp>
+#include <Mlib/Os/Threads/Fast_Mutex.hpp>
 #include <atomic>
 #include <cstdint>
 #include <vector>

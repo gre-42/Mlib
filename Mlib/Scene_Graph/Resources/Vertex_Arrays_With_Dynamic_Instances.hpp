@@ -1,7 +1,7 @@
 #pragma once
 #include <Mlib/Geometry/Billboard_Id.hpp>
 #include <Mlib/Map/Unordered_Map.hpp>
-#include <Mlib/Threads/Safe_Atomic_Shared_Mutex.hpp>
+#include <Mlib/Os/Threads/Safe_Atomic_Shared_Mutex.hpp>
 #include <memory>
 
 namespace Mlib {

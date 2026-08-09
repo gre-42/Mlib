@@ -1,6 +1,6 @@
 #pragma once
-#include <Mlib/Threads/Malloc_Map.hpp>
-#include <Mlib/Threads/Realtime_Threads.hpp>
+#include <Mlib/Os/Threads/Malloc_Map.hpp>
+#include <Mlib/Os/Threads/Realtime_Threads.hpp>
 #include <optional>
 #include <string>
 

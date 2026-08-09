@@ -1,7 +1,7 @@
 #pragma once
+#include <Mlib/Os/Threads/Fast_Mutex.hpp>
+#include <Mlib/Os/Threads/J_Thread.hpp>
 #include <Mlib/Remote/Datagram_Nodes/IDatagram_Node.hpp>
-#include <Mlib/Threads/Fast_Mutex.hpp>
-#include <Mlib/Threads/J_Thread.hpp>
 #include <chrono>
 #include <cstddef>
 #include <cstdint>

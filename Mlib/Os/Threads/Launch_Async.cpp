@@ -1,7 +1,7 @@
 #include "Launch_Async.hpp"
 #include <Mlib/Os/Os.hpp>
-#include <Mlib/Threads/Thread_Affinity.hpp>
-#include <Mlib/Threads/Thread_Initializer.hpp>
+#include <Mlib/Os/Threads/Thread_Affinity.hpp>
+#include <Mlib/Os/Threads/Thread_Initializer.hpp>
 #include <mutex>
 
 using namespace Mlib;

@@ -5,8 +5,8 @@
 #include <Mlib/OpenGL/Data_Display/Centered_Texture_Image_Logic.hpp>
 #include <Mlib/OpenGL/Render_Logic.hpp>
 #include <Mlib/OpenGL/Render_Logics/Fill_With_Texture_Logic.hpp>
+#include <Mlib/Os/Threads/Fast_Mutex.hpp>
 #include <Mlib/Physics/Interfaces/IAdvance_Time.hpp>
-#include <Mlib/Threads/Fast_Mutex.hpp>
 #include <mutex>
 
 namespace Mlib {

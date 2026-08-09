@@ -3,6 +3,7 @@
 #include <Mlib/Images/Svg.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Os/Env.hpp>
+#include <Mlib/Os/Threads/Throwing_Lock_Guard.hpp>
 #include <Mlib/Physics/Ai/Ai_Waypoint.hpp>
 #include <Mlib/Physics/Ai/IVehicle_Ai.hpp>
 #include <Mlib/Physics/Physics_Engine/Beacons.hpp>
@@ -10,7 +11,6 @@
 #include <Mlib/Players/Advance_Times/Player.hpp>
 #include <Mlib/Players/Scene_Vehicle/Scene_Vehicle.hpp>
 #include <Mlib/Scene_Graph/Way_Point_Location.hpp>
-#include <Mlib/Threads/Throwing_Lock_Guard.hpp>
 #include <stdexcept>
 
 using namespace Mlib;

@@ -45,6 +45,9 @@
 #include <Mlib/OpenGL/Ui/Button_States.hpp>
 #include <Mlib/OpenGL/Ui/Cursor_States.hpp>
 #include <Mlib/Os/Env.hpp>
+#include <Mlib/Os/Threads/Realtime_Threads.hpp>
+#include <Mlib/Os/Threads/Termination_Manager.hpp>
+#include <Mlib/Os/Threads/Thread_Affinity.hpp>
 #include <Mlib/Physics/Bullets/Bullet_Property_Db.hpp>
 #include <Mlib/Physics/Collision/Collidable_Mode.hpp>
 #include <Mlib/Physics/Collision/Power_To_Force.hpp>
@@ -67,9 +70,6 @@
 #include <Mlib/Scene_Graph/Render/Caching_Gpu_Object_Factory.hpp>
 #include <Mlib/Scene_Graph/Resources/Renderable_Resource_Filter.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
-#include <Mlib/Threads/Realtime_Threads.hpp>
-#include <Mlib/Threads/Termination_Manager.hpp>
-#include <Mlib/Threads/Thread_Affinity.hpp>
 #include <Mlib/Time/Fps/Fixed_Time_Sleeper.hpp>
 #include <Mlib/Time/Fps/Realtime_Sleeper.hpp>
 #include <Mlib/Time/Fps/Set_Fps.hpp>

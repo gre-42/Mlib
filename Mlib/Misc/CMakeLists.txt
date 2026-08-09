@@ -9,4 +9,7 @@ my_add_library(
 
 target_include_directories(MlibMisc PUBLIC ${Mlib_INCLUDE_DIR})
 
-target_link_libraries(MlibMisc PUBLIC MlibStrings MlibOs MlibThreads)
+target_link_libraries(MlibMisc
+    PUBLIC
+        MlibStrings
+        MlibOs)

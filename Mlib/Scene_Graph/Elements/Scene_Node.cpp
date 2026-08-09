@@ -14,6 +14,8 @@
 #include <Mlib/Math/Transformation/Tait_Bryan_Angles.hpp>
 #include <Mlib/Memory/Recursive_Deletion.hpp>
 #include <Mlib/Os/Os.hpp>
+#include <Mlib/Os/Threads/Throwing_Defer_Lock_Guard.hpp>
+#include <Mlib/Os/Threads/Unlock_Guard.hpp>
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Scene_Config/Interpolation_Thresholds.hpp>
 #include <Mlib/Scene_Config/Scene_Graph_Config.hpp>
@@ -40,8 +42,6 @@
 #include <Mlib/Scene_Graph/Interfaces/Scene_Node/IRelative_Movable.hpp>
 #include <Mlib/Scene_Graph/Render_Pass.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
-#include <Mlib/Threads/Throwing_Defer_Lock_Guard.hpp>
-#include <Mlib/Threads/Unlock_Guard.hpp>
 #include <mutex>
 #include <stdexcept>
 

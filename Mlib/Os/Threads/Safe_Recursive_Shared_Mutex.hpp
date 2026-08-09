@@ -1,6 +1,6 @@
 #pragma once
-#include <Mlib/Threads/Fast_Mutex.hpp>
-#include <Mlib/Threads/Recursive_Shared_Mutex.hpp>
+#include <Mlib/Os/Threads/Fast_Mutex.hpp>
+#include <Mlib/Os/Threads/Recursive_Shared_Mutex.hpp>
 #include <cstdint>
 #include <mutex>
 #include <unordered_map>

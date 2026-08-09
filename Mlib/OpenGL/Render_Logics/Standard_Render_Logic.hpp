@@ -1,7 +1,7 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/OpenGL/Render_Logic.hpp>
-#include <Mlib/Threads/Fast_Mutex.hpp>
+#include <Mlib/Os/Threads/Fast_Mutex.hpp>
 #include <mutex>
 
 namespace Mlib {

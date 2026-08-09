@@ -6,6 +6,7 @@
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array_Filter.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Misc/Argument_List.hpp>
+#include <Mlib/Os/Threads/Thread_Top.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Load_Scene_Funcs.hpp>
 #include <Mlib/Scene_Graph/Instances/Dynamic_World.hpp>
@@ -13,7 +14,6 @@
 #include <Mlib/Scene_Graph/Instantiation/Read_Ipl.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
 #include <Mlib/Strings/Filesystem_Path.hpp>
-#include <Mlib/Threads/Thread_Top.hpp>
 #include <set>
 
 using namespace Mlib;

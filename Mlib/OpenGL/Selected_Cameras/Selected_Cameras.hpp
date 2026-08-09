@@ -3,7 +3,7 @@
 #include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/Memory/Event_Emitter.hpp>
 #include <Mlib/OpenGL/Selected_Cameras/Camera_Cycle.hpp>
-#include <Mlib/Threads/Recursive_Shared_Mutex.hpp>
+#include <Mlib/Os/Threads/Recursive_Shared_Mutex.hpp>
 #include <iosfwd>
 #include <map>
 #include <optional>

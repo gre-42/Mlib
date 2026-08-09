@@ -2,9 +2,9 @@
 #include <Mlib/Geometry/Coordinates/Gl_Look_At.hpp>
 #include <Mlib/Geometry/Coordinates/Homogeneous.hpp>
 #include <Mlib/Memory/Object_Pool.hpp>
+#include <Mlib/Os/Threads/Throwing_Lock_Guard.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
-#include <Mlib/Threads/Throwing_Lock_Guard.hpp>
 
 using namespace Mlib;
 

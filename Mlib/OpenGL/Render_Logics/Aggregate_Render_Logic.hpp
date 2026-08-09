@@ -1,7 +1,7 @@
 #pragma once
 #include <Mlib/OpenGL/Render_Logic.hpp>
-#include <Mlib/Threads/Background_Loop.hpp>
-#include <Mlib/Threads/Recursive_Shared_Mutex.hpp>
+#include <Mlib/Os/Threads/Background_Loop.hpp>
+#include <Mlib/Os/Threads/Recursive_Shared_Mutex.hpp>
 #include <memory>
 
 namespace Mlib {

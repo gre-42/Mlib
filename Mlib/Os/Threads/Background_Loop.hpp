@@ -1,6 +1,6 @@
 #pragma once
-#include <Mlib/Threads/J_Thread.hpp>
-#include <Mlib/Threads/Worker_Status.hpp>
+#include <Mlib/Os/Threads/J_Thread.hpp>
+#include <Mlib/Os/Threads/Worker_Status.hpp>
 #include <condition_variable>
 #include <functional>
 #include <mutex>

@@ -20,7 +20,7 @@ target_link_libraries(MlibPhysics
         MlibMemory
         MlibRemote
         MlibSceneGraph
-        MlibThreads
+        MlibOs
         MlibTime)
 
 if (BUILD_AUDIO)

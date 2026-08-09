@@ -13,12 +13,12 @@
 #include <Mlib/Os/Io/Binary_Bitwise_Words_Reader.hpp>
 #include <Mlib/Os/Io/Binary_Bitwise_Words_Writer.hpp>
 #include <Mlib/Os/Os.hpp>
+#include <Mlib/Os/Threads/Dispatcher.hpp>
+#include <Mlib/Os/Threads/Recursive_Shared_Mutex.hpp>
 #include <Mlib/Regex/Misc.hpp>
 #include <Mlib/Regex/Template_Regex.hpp>
 #include <Mlib/Scene_Config/Physics_Precision.hpp>
 #include <Mlib/Testing/Assert.hpp>
-#include <Mlib/Threads/Dispatcher.hpp>
-#include <Mlib/Threads/Recursive_Shared_Mutex.hpp>
 #include <iostream>
 
 using namespace Mlib;

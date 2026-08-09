@@ -17,11 +17,11 @@
 #include <Mlib/OpenGL/Any_Gl.hpp>
 #include <Mlib/OpenGL/Resource_Managers/Font_Name_And_Height_Hash.hpp>
 #include <Mlib/OpenGL/Resource_Managers/Texture_Role.hpp>
+#include <Mlib/Os/Threads/Background_Loop.hpp>
+#include <Mlib/Os/Threads/Get_Or_Lock.hpp>
+#include <Mlib/Os/Threads/Recursive_Shared_Mutex.hpp>
+#include <Mlib/Os/Threads/Safe_Atomic_Shared_Mutex.hpp>
 #include <Mlib/Scene_Config/Scene_Precision.hpp>
-#include <Mlib/Threads/Background_Loop.hpp>
-#include <Mlib/Threads/Get_Or_Lock.hpp>
-#include <Mlib/Threads/Recursive_Shared_Mutex.hpp>
-#include <Mlib/Threads/Safe_Atomic_Shared_Mutex.hpp>
 #include <cstdint>
 #include <functional>
 #include <map>

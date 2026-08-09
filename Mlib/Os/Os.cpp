@@ -1,5 +1,6 @@
 #include "Os.hpp"
 #include <Mlib/Os/Io/Binary.hpp>
+#include <Mlib/Os/Preload.hpp>
 #include <Mlib/Os/Weakly_Canonical_Preserve_Symlinks.hpp>
 #include <filesystem>
 #include <fstream>
@@ -174,6 +175,14 @@ std::unique_ptr<std::istream> Mlib::create_ifstream(
     const Utf8Path& filename,
     std::ios_base::openmode mode)
 {
+    switch (get_not_preloaded_behavior()) {
+    case NotPreloadedBehavior::SILENT:
+        // Do nothing
+        break;
+    case NotPreloadedBehavior::WARN:
+        lwarn() << "Opening file \"" << filename.string() << '"';
+        break;
+    }
     return AUi::OpenFile(filename, mode);
 }
 
@@ -313,6 +322,14 @@ std::unique_ptr<std::istream> Mlib::create_ifstream(
     const Utf8Path& filename,
     std::ios_base::openmode mode)
 {
+    switch (get_not_preloaded_behavior()) {
+    case NotPreloadedBehavior::SILENT:
+        // Do nothing
+        break;
+    case NotPreloadedBehavior::WARN:
+        lwarn() << "Opening file \"" << filename.string() << '"';
+        break;
+    }
     return std::make_unique<std::ifstream>(filename, mode);
 }
 

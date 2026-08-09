@@ -11,8 +11,8 @@ target_link_libraries(MlibAudio
     PUBLIC
         MlibMap
         MlibMisc
-        MlibThreads
         MlibMemory
+        MlibOs
         MlibTime
         MlibSceneGraph
         MlibMiniMp3)

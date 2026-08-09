@@ -3,9 +3,9 @@
 #include <Mlib/Geometry/Primitives/Interval.hpp>
 #include <Mlib/Math/Fixed_Point_Number.hpp>
 #include <Mlib/Memory/Event_Emitter.hpp>
+#include <Mlib/Os/Threads/Fast_Mutex.hpp>
+#include <Mlib/Os/Threads/J_Thread.hpp>
 #include <Mlib/Scene_Config/Scene_Precision.hpp>
-#include <Mlib/Threads/Fast_Mutex.hpp>
-#include <Mlib/Threads/J_Thread.hpp>
 #include <cmath>
 #include <functional>
 #include <iosfwd>

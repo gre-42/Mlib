@@ -1,10 +1,10 @@
 #include "Root_Nodes.hpp"
 #include <Mlib/Geometry/Primitives/Intersectable_Point.hpp>
 #include <Mlib/Memory/Recursive_Deletion.hpp>
+#include <Mlib/Os/Threads/Throwing_Lock_Guard.hpp>
+#include <Mlib/Os/Threads/Unlock_Guard.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
-#include <Mlib/Threads/Throwing_Lock_Guard.hpp>
-#include <Mlib/Threads/Unlock_Guard.hpp>
 #include <iostream>
 #include <stdexcept>
 

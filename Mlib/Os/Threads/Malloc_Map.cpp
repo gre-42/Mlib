@@ -2,8 +2,8 @@
 
 #include "Malloc_Map.hpp"
 #include <Mlib/Os/Os.hpp>
-#include <Mlib/Threads/Fast_Mutex.hpp>
-#include <Mlib/Threads/Thread_Local.hpp>
+#include <Mlib/Os/Threads/Fast_Mutex.hpp>
+#include <Mlib/Os/Threads/Thread_Local.hpp>
 #include <map>
 #include <mutex>
 #include <list>

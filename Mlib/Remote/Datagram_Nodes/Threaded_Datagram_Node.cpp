@@ -2,12 +2,12 @@
 #include <Mlib/Memory/Integral_Cast.hpp>
 #include <Mlib/Os/Env.hpp>
 #include <Mlib/Os/Io/Binary.hpp>
+#include <Mlib/Os/Threads/Termination_Manager.cpp>
+#include <Mlib/Os/Threads/Thread_Affinity.hpp>
+#include <Mlib/Os/Threads/Thread_Initializer.hpp>
 #include <Mlib/Remote/Network_Transmission_Status.hpp>
 #include <Mlib/Remote/Remote_Socket.hpp>
 #include <Mlib/Remote/Sockets/IDatagram_Socket.hpp>
-#include <Mlib/Threads/Termination_Manager.cpp>
-#include <Mlib/Threads/Thread_Affinity.hpp>
-#include <Mlib/Threads/Thread_Initializer.hpp>
 #include <mutex>
 #include <stdexcept>
 

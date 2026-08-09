@@ -1,6 +1,6 @@
 #include "AAnimation_Frame_Worker.hpp"
 #include <Mlib/Os/Os.hpp>
-#include <Mlib/Threads/Fast_Mutex.hpp>
+#include <Mlib/Os/Threads/Fast_Mutex.hpp>
 #include <atomic>
 #include <condition_variable>
 #include <emscripten.h>

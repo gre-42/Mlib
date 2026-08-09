@@ -7,6 +7,7 @@
 #include <Mlib/Misc/FPath.hpp>
 #include <Mlib/Os/Env.hpp>
 #include <Mlib/Os/Os.hpp>
+#include <Mlib/Os/Threads/Thread_Top.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Osm_Resource_Config.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Road_Type.hpp>
@@ -20,7 +21,6 @@
 #include <Mlib/Scene_Graph/Resources/Sampler/Triangle_Sampler/Terrain_Type.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
 #include <Mlib/Strings/Trim.hpp>
-#include <Mlib/Threads/Thread_Top.hpp>
 #include <concepts>
 #include <filesystem>
 #include <stdexcept>

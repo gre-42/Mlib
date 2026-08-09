@@ -3,8 +3,8 @@
 #include <Mlib/AGameHelper/Emscripten/AEngine.hpp>
 #include <Mlib/OpenGL/IRenderer.hpp>
 #include <Mlib/Os/Os.hpp>
-#include <Mlib/Threads/Termination_Manager.hpp>
-#include <Mlib/Threads/Thread_Local.hpp>
+#include <Mlib/Os/Threads/Termination_Manager.hpp>
+#include <Mlib/Os/Threads/Thread_Local.hpp>
 #include <emscripten/html5.h>
 
 using namespace Mlib;

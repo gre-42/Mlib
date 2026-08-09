@@ -70,6 +70,8 @@
 #include <Mlib/OpenGL/Selected_Cameras/Selected_Cameras.hpp>
 #include <Mlib/OpenGL/Ui/Button_States.hpp>
 #include <Mlib/OpenGL/Ui/Cursor_States.hpp>
+#include <Mlib/Os/Threads/Realtime_Threads.hpp>
+#include <Mlib/Os/Threads/Termination_Manager.hpp>
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Resource_Context/Rendering_Context.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
@@ -92,8 +94,6 @@
 #include <Mlib/Strings/String_View_To_Number.hpp>
 #include <Mlib/Strings/String_View_To_Scene_Pos.hpp>
 #include <Mlib/Strings/Utf8_Path.hpp>
-#include <Mlib/Threads/Realtime_Threads.hpp>
-#include <Mlib/Threads/Termination_Manager.hpp>
 #include <Mlib/Time/Fps/Fixed_Time_Sleeper.hpp>
 #include <Mlib/Time/Fps/Measure_Fps.hpp>
 #include <Mlib/Time/Fps/Set_Fps.hpp>

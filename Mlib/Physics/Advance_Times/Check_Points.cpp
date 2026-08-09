@@ -6,6 +6,7 @@
 #include <Mlib/Math/Transformation/Tait_Bryan_Angles.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
 #include <Mlib/Memory/Object_Pool.hpp>
+#include <Mlib/Os/Threads/Throwing_Lock_Guard.hpp>
 #include <Mlib/Physics/Advance_Times/Countdown_Physics.hpp>
 #include <Mlib/Physics/Containers/Race_State.hpp>
 #include <Mlib/Physics/Interfaces/IPlayer.hpp>
@@ -21,7 +22,6 @@
 #include <Mlib/Scene_Graph/Interfaces/Scene_Node/IAbsolute_Movable.hpp>
 #include <Mlib/Scene_Graph/Resources/Renderable_Resource_Filter.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
-#include <Mlib/Threads/Throwing_Lock_Guard.hpp>
 #include <Mlib/Time/Format.hpp>
 #include <stdexcept>
 

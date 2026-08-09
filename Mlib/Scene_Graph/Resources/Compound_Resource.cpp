@@ -10,14 +10,14 @@
 #include <Mlib/Hashing/Variable_And_Hash.hpp>
 #include <Mlib/Iterator/Enumerate.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
+#include <Mlib/Os/Threads/Recursion_Guard.hpp>
+#include <Mlib/Os/Threads/Thread_Local.hpp>
 #include <Mlib/Scene_Graph/Instantiation/Child_Instantiation_Options.hpp>
 #include <Mlib/Scene_Graph/Instantiation/Root_Instantiation_Options.hpp>
 #include <Mlib/Scene_Graph/Interfaces/Way_Points.hpp>
 #include <Mlib/Scene_Graph/Resources/Animated_Colored_Vertex_Array_Resource.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
 #include <Mlib/Scene_Graph/Spawn_Point.hpp>
-#include <Mlib/Threads/Recursion_Guard.hpp>
-#include <Mlib/Threads/Thread_Local.hpp>
 #include <mutex>
 #include <stdexcept>
 #include <unordered_set>

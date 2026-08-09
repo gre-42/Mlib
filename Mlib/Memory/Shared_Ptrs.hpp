@@ -1,6 +1,6 @@
 #pragma once
 #include <Mlib/Misc/Object.hpp>
-#include <Mlib/Threads/Fast_Mutex.hpp>
+#include <Mlib/Os/Threads/Fast_Mutex.hpp>
 #include <atomic>
 #include <list>
 #include <memory>

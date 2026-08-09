@@ -10,6 +10,7 @@
 #include <Mlib/Memory/Destruction_Functions_Removeal_Tokens_Ref.hpp>
 #include <Mlib/Memory/Integral_Cast.hpp>
 #include <Mlib/Memory/Recursive_Deletion.hpp>
+#include <Mlib/Os/Threads/Throwing_Lock_Guard.hpp>
 #include <Mlib/Physics/Advance_Times/Bullet.hpp>
 #include <Mlib/Physics/Advance_Times/Countdown_Physics.hpp>
 #include <Mlib/Physics/Advance_Times/Gun.hpp>
@@ -51,7 +52,6 @@
 #include <Mlib/Scene_Graph/Spawn_Point.hpp>
 #include <Mlib/Scene_Graph/Way_Point_Location.hpp>
 #include <Mlib/Testing/Assert.hpp>
-#include <Mlib/Threads/Throwing_Lock_Guard.hpp>
 #include <fstream>
 #include <stdexcept>
 

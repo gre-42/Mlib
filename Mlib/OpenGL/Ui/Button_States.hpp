@@ -8,7 +8,7 @@
 
 #include <Mlib/OpenGL/Ui/Tap_Buttons_States.hpp>
 #include <Mlib/Signal/Clamped_Exponential_Smoother.hpp>
-#include <Mlib/Threads/Recursive_Shared_Mutex.hpp>
+#include <Mlib/Os/Threads/Recursive_Shared_Mutex.hpp>
 #include <cstddef>
 #include <cstdint>
 #include <iosfwd>

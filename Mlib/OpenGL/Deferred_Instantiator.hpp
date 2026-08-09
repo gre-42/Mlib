@@ -2,8 +2,8 @@
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/Memory/Destruction_Functions.hpp>
+#include <Mlib/Os/Threads/Fast_Mutex.hpp>
 #include <Mlib/Scene_Graph/Interfaces/IImposters.hpp>
-#include <Mlib/Threads/Fast_Mutex.hpp>
 #include <unordered_map>
 
 namespace Mlib {

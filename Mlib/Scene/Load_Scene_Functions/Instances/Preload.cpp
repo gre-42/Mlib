@@ -8,6 +8,7 @@
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Misc/Argument_List.hpp>
 #include <Mlib/OpenGL/Batch_Renderers/Particle_Renderer.hpp>
+#include <Mlib/Os/Threads/Thread_Top.hpp>
 #include <Mlib/Physics/Smoke_Generation/Surface_Contact_Db.hpp>
 #include <Mlib/Physics/Smoke_Generation/Surface_Contact_Info.hpp>
 #include <Mlib/Resource_Context/Rendering_Context.hpp>
@@ -18,7 +19,6 @@
 #include <Mlib/Scene_Graph/Resources/Renderable_Resource_Filter.hpp>
 #include <Mlib/Scene_Graph/Resources/Resource_Does_Not_Exist_Behavior.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
-#include <Mlib/Threads/Thread_Top.hpp>
 
 using namespace Mlib;
 

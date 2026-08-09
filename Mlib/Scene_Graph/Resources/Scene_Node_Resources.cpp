@@ -14,6 +14,7 @@
 #include <Mlib/Math/Transformation/Quaternion.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
 #include <Mlib/Memory/Recursive_Deletion.hpp>
+#include <Mlib/Os/Preload.hpp>
 #include <Mlib/Scene_Graph/Instantiation/Child_Instantiation_Options.hpp>
 #include <Mlib/Scene_Graph/Instantiation/Root_Instantiation_Options.hpp>
 #include <Mlib/Scene_Graph/Interfaces/IScene_Node_Resource.hpp>
@@ -29,19 +30,6 @@
 #include <unordered_set>
 
 using namespace Mlib;
-
-static NotPreloadedBehavior not_preloaded_behavior = NotPreloadedBehavior::WARN;
-static FastMutex not_preloaded_behavior_mutex;
-
-void Mlib::set_not_preloaded_behavior(NotPreloadedBehavior value) {
-    std::scoped_lock lock{not_preloaded_behavior_mutex};
-    not_preloaded_behavior = value;
-}
-
-NotPreloadedBehavior Mlib::get_not_preloaded_behavior() {
-    std::scoped_lock lock{not_preloaded_behavior_mutex};
-    return not_preloaded_behavior;
-}
 
 SceneNodeResources::SceneNodeResources(
     #ifndef WITHOUT_GRAPHICS

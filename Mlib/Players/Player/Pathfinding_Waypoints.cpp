@@ -4,6 +4,7 @@
 #include <Mlib/Iterator/Enumerate.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
 #include <Mlib/Os/Env.hpp>
+#include <Mlib/Os/Threads/Throwing_Lock_Guard.hpp>
 #include <Mlib/Physics/Misc/Beacon.hpp>
 #include <Mlib/Physics/Physics_Engine/Beacons.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
@@ -13,7 +14,6 @@
 #include <Mlib/Players/Containers/Players.hpp>
 #include <Mlib/Scene_Graph/Interfaces/Way_Points.hpp>
 #include <Mlib/Testing/Assert.hpp>
-#include <Mlib/Threads/Throwing_Lock_Guard.hpp>
 #include <stdexcept>
 
 using namespace Mlib;

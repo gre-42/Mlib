@@ -1,7 +1,7 @@
 #include "Thread_Top.hpp"
 #include <Mlib/Os/Os.hpp>
-#include <Mlib/Threads/Fast_Mutex.hpp>
-#include <Mlib/Threads/Get_Thread_Name.hpp>
+#include <Mlib/Os/Threads/Fast_Mutex.hpp>
+#include <Mlib/Os/Threads/Get_Thread_Name.hpp>
 #include <list>
 #include <map>
 #include <mutex>

@@ -3,7 +3,7 @@
 #include <Mlib/Misc/Object.hpp>
 #include <Mlib/Misc/Source_Location.hpp>
 #include <Mlib/Os/Os.hpp>
-#include <Mlib/Threads/Fast_Mutex.hpp>
+#include <Mlib/Os/Threads/Fast_Mutex.hpp>
 #include <compare>
 #include <functional>
 #include <memory>

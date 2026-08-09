@@ -14,6 +14,7 @@
 #include <Mlib/Memory/Destruction_Functions_Removeal_Tokens_Ref.hpp>
 #include <Mlib/Memory/Destruction_Notifier.hpp>
 #include <Mlib/Memory/Destruction_Observers.hpp>
+#include <Mlib/Os/Threads/Fast_Mutex.hpp>
 #include <Mlib/Physics/Ai/IVehicle_Ai.hpp>
 #include <Mlib/Physics/Containers/Rigid_Bodies.hpp>
 #include <Mlib/Physics/Interfaces/Collision_Observer.hpp>
@@ -27,7 +28,6 @@
 #include <Mlib/Scene_Graph/Interfaces/Scene_Node/IAbsolute_Movable.hpp>
 #include <Mlib/Scene_Graph/Interfaces/Scene_Node/INode_Hider.hpp>
 #include <Mlib/Scene_Graph/Status_Writer.hpp>
-#include <Mlib/Threads/Fast_Mutex.hpp>
 #include <cstdint>
 #include <map>
 #include <memory>

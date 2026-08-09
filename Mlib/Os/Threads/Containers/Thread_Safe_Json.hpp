@@ -1,6 +1,6 @@
 #pragma once
 #include <Mlib/Json/Base.hpp>
-#include <Mlib/Threads/Fast_Mutex.hpp>
+#include <Mlib/Os/Threads/Fast_Mutex.hpp>
 #include <compare>
 
 namespace Mlib {

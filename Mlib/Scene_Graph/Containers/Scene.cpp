@@ -6,6 +6,9 @@
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Memory/Recursive_Deletion.hpp>
 #include <Mlib/Misc/Log.hpp>
+#include <Mlib/Os/Threads/Background_Loop.hpp>
+#include <Mlib/Os/Threads/Throwing_Lock_Guard.hpp>
+#include <Mlib/Os/Threads/Unlock_Guard.hpp>
 #include <Mlib/Scene_Config/Scene_Graph_Config.hpp>
 #include <Mlib/Scene_Graph/Containers/List_Of_Blended.hpp>
 #include <Mlib/Scene_Graph/Containers/Root_Nodes.hpp>
@@ -25,9 +28,6 @@
 #include <Mlib/Scene_Graph/Render/Batch_Renderers/Task_Location.hpp>
 #include <Mlib/Scene_Graph/Render_Pass.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
-#include <Mlib/Threads/Background_Loop.hpp>
-#include <Mlib/Threads/Throwing_Lock_Guard.hpp>
-#include <Mlib/Threads/Unlock_Guard.hpp>
 #include <Mlib/Time/Fps/Lag_Finder.hpp>
 #include <Mlib/Time/Fps/Lag_Finder.hpp>
 #include <mutex>

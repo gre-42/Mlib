@@ -4,10 +4,10 @@
 #include <Mlib/Memory/Destruction_Functions.hpp>
 #include <Mlib/Memory/Destruction_Observer.hpp>
 #include <Mlib/OpenGL/Render_Logic.hpp>
+#include <Mlib/Os/Threads/Containers/Thread_Safe_String.hpp>
+#include <Mlib/Os/Threads/Fast_Mutex.hpp>
 #include <Mlib/Physics/Interfaces/IAdvance_Time.hpp>
 #include <Mlib/Scene_Graph/Status_Writer.hpp>
-#include <Mlib/Threads/Containers/Thread_Safe_String.hpp>
-#include <Mlib/Threads/Fast_Mutex.hpp>
 #include <cstddef>
 #include <memory>
 

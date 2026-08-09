@@ -2,7 +2,7 @@
 #include <Mlib/Audio/OpenAL_al.h>
 #include <Mlib/Audio/OpenAL_alc.h>
 #include <Mlib/Os/Os.hpp>
-#include <Mlib/Threads/Fast_Mutex.hpp>
+#include <Mlib/Os/Threads/Fast_Mutex.hpp>
 #include <iostream>
 #include <mutex>
 #include <stdexcept>

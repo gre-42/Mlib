@@ -2,13 +2,13 @@
 #include <Mlib/Map/String_With_Hash_Unordered_Map.hpp>
 #include <Mlib/Map/Threadsafe_String_With_Hash_Unordered_Map.hpp>
 #include <Mlib/Map/Verbose_Unordered_Map.hpp>
+#include <Mlib/Os/Threads/Recursive_Shared_Mutex.hpp>
+#include <Mlib/Os/Threads/Safe_Atomic_Shared_Mutex.hpp>
 #include <Mlib/Scene_Config/Scene_Precision.hpp>
 #include <Mlib/Scene_Graph/Interfaces/Way_Points_Fwd.hpp>
 #include <Mlib/Scene_Graph/Resources/Preload_Behavior.hpp>
 #include <Mlib/Scene_Graph/Resources/Resource_Does_Not_Exist_Behavior.hpp>
 #include <Mlib/Strings/Utf8_Path.hpp>
-#include <Mlib/Threads/Recursive_Shared_Mutex.hpp>
-#include <Mlib/Threads/Safe_Atomic_Shared_Mutex.hpp>
 #include <cstdint>
 #include <functional>
 #include <iosfwd>
@@ -53,14 +53,6 @@ class IGpuVertexData;
 enum class AggregateMode;
 enum class PhysicsMaterial: uint32_t;
 enum class SmoothnessTarget;
-
-enum class NotPreloadedBehavior {
-    WARN,
-    SILENT
-};
-
-void set_not_preloaded_behavior(NotPreloadedBehavior value);
-NotPreloadedBehavior get_not_preloaded_behavior();
 
 class SceneNodeResources {
 public:

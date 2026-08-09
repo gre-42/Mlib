@@ -14,7 +14,7 @@
 
 #include "JNIHelper.h"
 #include <Mlib/Memory/Integral_Cast.hpp>
-#include <Mlib/Threads/Thread_Local.hpp>
+#include <Mlib/Os/Threads/Thread_Local.hpp>
 #include <Mlib/Os/Io/Binary.hpp>
 #include <Mlib/Memory/Destruction_Guard.hpp>
 #include <cstring>

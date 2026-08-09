@@ -7,6 +7,7 @@
 #include <Mlib/Images/Pgm_Image.hpp>
 #include <Mlib/Images/StbImage3.hpp>
 #include <Mlib/Misc/Log.hpp>
+#include <Mlib/Os/Threads/Thread_Top.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Apply_Heightmap.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Height_Sampler.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Node_Height_Binding.hpp>
@@ -19,7 +20,6 @@
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Street_Way_Point.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Vertex_Height_Binding.hpp>
 #include <Mlib/Scene_Graph/Resources/Batch_Resource_Instantiator.hpp>
-#include <Mlib/Threads/Thread_Top.hpp>
 #include <list>
 #include <memory>
 #include <stdexcept>

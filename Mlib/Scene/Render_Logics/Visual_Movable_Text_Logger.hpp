@@ -1,8 +1,8 @@
 #pragma once
 #include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/OpenGL/Render_Logics/Render_Text_Logic.hpp>
+#include <Mlib/Os/Threads/Containers/Thread_Safe_String.hpp>
 #include <Mlib/Scene/Render_Logics/Visual_Movable_Logger_View.hpp>
-#include <Mlib/Threads/Containers/Thread_Safe_String.hpp>
 
 namespace Mlib {
 

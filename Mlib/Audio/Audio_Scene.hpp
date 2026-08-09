@@ -3,9 +3,9 @@
 #include <Mlib/Map/Verbose_Unordered_Map.hpp>
 #include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/Memory/Destruction_Functions.hpp>
+#include <Mlib/Os/Threads/Fast_Mutex.hpp>
 #include <Mlib/Scene_Config/Scene_Precision.hpp>
 #include <Mlib/Signal/Exponential_Smoother.hpp>
-#include <Mlib/Threads/Fast_Mutex.hpp>
 #include <chrono>
 #include <iosfwd>
 #include <optional>
