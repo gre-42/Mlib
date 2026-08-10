@@ -121,12 +121,12 @@ void GpuRenderableColoredVertexArray::initialize() {
         CHK(glVertexAttribIPointer(attr_ids.idx_texture_layer, 1, GL_UNSIGNED_BYTE, sizeof(uint8_t), nullptr));
     }
     if (vertices_->has_interiormap()) {
+        using SIMF = ShaderInteriorMappedFacade;
         vertices_->interior_mapping_buffer().bind();
-        ShaderInteriorMappedFacade* im = nullptr;
         CHK(glEnableVertexAttribArray(attr_ids.idx_interior_mapping_bottom_left));
-        CHK(glVertexAttribPointer(attr_ids.idx_interior_mapping_bottom_left, 3, GL_FLOAT, GL_FALSE, sizeof(ShaderInteriorMappedFacade), &im->bottom_left));
+        CHK(glVertexAttribPointer(attr_ids.idx_interior_mapping_bottom_left, 3, GL_FLOAT, GL_FALSE, sizeof(ShaderInteriorMappedFacade), field_offset(&SIMF::bottom_left)));
         CHK(glEnableVertexAttribArray(attr_ids.idx_interior_mapping_uvmap));
-        CHK(glVertexAttribPointer(attr_ids.idx_interior_mapping_uvmap, 4, GL_FLOAT, GL_FALSE, sizeof(ShaderInteriorMappedFacade), &im->uvmap));
+        CHK(glVertexAttribPointer(attr_ids.idx_interior_mapping_uvmap, 4, GL_FLOAT, GL_FALSE, sizeof(ShaderInteriorMappedFacade), field_offset(&SIMF::uvmap)));
     }
 
     if (instances_ != nullptr) {
