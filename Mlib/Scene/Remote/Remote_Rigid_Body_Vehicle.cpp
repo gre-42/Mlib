@@ -502,10 +502,14 @@ void RemoteRigidBodyVehicle::read(
     } else {
         pf |= PositionFlags::POSITION_IS_INCOMPLETE;
     }
-    if (any(flags & RigidBodyVehicleFlags::IS_DEACTIVATED_AVATAR)) {
-        pf |= PositionFlags::IS_DEACTIVATED_AVATAR;
-    }
-    if (!privileges.is_server_local) {
+    if (privileges.is_server_local) {
+        if (rb_->is_deactivated_avatar()) {
+            pf |= PositionFlags::IS_DEACTIVATED_AVATAR;
+        }
+    } else {
+        if (any(flags & RigidBodyVehicleFlags::IS_DEACTIVATED_AVATAR)) {
+            pf |= PositionFlags::IS_DEACTIVATED_AVATAR;
+        }
         if (rb_->is_deactivated_avatar() && !any(flags & RigidBodyVehicleFlags::IS_DEACTIVATED_AVATAR)) {
             pf |= PositionFlags::IS_REMOTELY_ACTIVATED_AVATAR;
         }
