@@ -9,7 +9,7 @@ class EnginePower {
 public:
     EnginePower(
         const Interp<float>& w_to_power,
-        const std::vector<float>& gear_ratios,
+        std::vector<float> gear_ratios,
         float w_clutch,
         float max_dw);
     void auto_set_gear(float dt, float tire_w);

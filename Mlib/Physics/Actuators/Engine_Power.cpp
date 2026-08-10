@@ -15,19 +15,19 @@ static float engine_w(float tire_w, float gear_ratio, float w_clutch) {
 
 EnginePower::EnginePower(
     const Interp<float>& w_to_power,
-    const std::vector<float>& gear_ratios,
+    std::vector<float> gear_ratios,
     float w_clutch,
     float max_dw)
-: engine_w_{0.f},
-  w_clutch_{w_clutch},
-  max_dw_{max_dw},
-  w_to_power_{w_to_power},
-  gear_ratios_{gear_ratios}
+    : engine_w_{0.f}
+    , w_clutch_{w_clutch}
+    , max_dw_{max_dw}
+    , w_to_power_{w_to_power}
+    , gear_ratios_{std::move(gear_ratios)}
 {
-    if (gear_ratios.empty()) {
+    if (gear_ratios_.empty()) {
         throw std::runtime_error("gear_ratios is empty");
     }
-    gear_ = gear_ratios.size() - 1;
+    gear_ = gear_ratios_.size() - 1;
     // if (w_to_power(0) == 0.f) {
     //     throw std::runtime_error("The power at angular velocity \"zero\" cannot be \"zero\". Please specify a small, positive value.");
     // }
