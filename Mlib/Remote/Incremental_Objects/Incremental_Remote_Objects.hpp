@@ -3,6 +3,7 @@
 #include <Mlib/Memory/Destruction_Notifier.hpp>
 #include <Mlib/Remote/Events/Events_And_Times.hpp>
 #include <Mlib/Remote/Incremental_Objects/Remote_Object_Id.hpp>
+#include <Mlib/Scene_Config/Remote_Transmission.hpp>
 #include <Mlib/Time/Time_And_Pause.hpp>
 #include <chrono>
 #include <iosfwd>

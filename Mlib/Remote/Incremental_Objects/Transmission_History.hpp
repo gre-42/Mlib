@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Scene_Config/Remote_Integers.hpp>
+#include <Mlib/Scene_Config/Remote_Transmission.hpp>
 #include <chrono>
 #include <cstdint>
 #include <optional>

@@ -2,6 +2,7 @@
 #include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/Memory/Destruction_Notifier.hpp>
 #include <Mlib/Scene_Config/Remote_Integers.hpp>
+#include <Mlib/Scene_Config/Remote_Transmission.hpp>
 
 namespace Mlib {
 

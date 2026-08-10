@@ -1,6 +1,6 @@
 #pragma once
 #include <Mlib/Remote/Bandwidth_Control/Bandwidth_Estimator.hpp>
-#include <Mlib/Scene_Config/Remote_Integers.hpp>
+#include <Mlib/Scene_Config/Remote_Transmission.hpp>
 #include <chrono>
 #include <cstdint>
 #include <unordered_map>

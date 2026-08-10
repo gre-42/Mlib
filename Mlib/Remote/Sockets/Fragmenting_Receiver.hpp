@@ -1,6 +1,6 @@
 #pragma once
 #include <Mlib/Remote/IReceive_Socket.hpp>
-#include <Mlib/Scene_Config/Remote_Integers.hpp>
+#include <Mlib/Scene_Config/Remote_Transmission.hpp>
 #include <chrono>
 #include <cstddef>
 #include <unordered_map>

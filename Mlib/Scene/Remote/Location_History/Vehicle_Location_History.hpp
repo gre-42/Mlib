@@ -2,7 +2,7 @@
 #include <Mlib/Math/Transformation/Quaternion.hpp>
 #include <Mlib/Scene/Remote/Location_History/Avatar_Location_History_Entry.hpp>
 #include <Mlib/Scene/Remote/Location_History/Vehicle_Location_History_Entry.hpp>
-#include <Mlib/Scene_Config/Remote_Integers.hpp>
+#include <Mlib/Scene_Config/Remote_Transmission.hpp>
 #include <optional>
 
 namespace Mlib {
