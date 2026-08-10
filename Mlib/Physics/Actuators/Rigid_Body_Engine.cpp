@@ -21,6 +21,7 @@ RigidBodyEngine::RigidBodyEngine(
         .drive_relaxation = 0.f}
     , engine_power_{ engine_power }
     , ntires_old_{ 0 }
+    , state_{ EngineAlgorithmState::INITIAL }
     , listener_{ std::move(listener) }
 {
     if (!engine_power.has_value() && (listener_ != nullptr)) {
@@ -54,9 +55,17 @@ DanglingBaseClassRef<StatusWriter> RigidBodyEngine::child_status_writer(const st
 }
 
 void RigidBodyEngine::reset_forces() {
+    switch (state_) {
+    case EngineAlgorithmState::INITIAL:
+    case EngineAlgorithmState::ADVANCE_TIME_CALLED:
+        break;
+    case EngineAlgorithmState::RESET_FORCES_CALLED:
+        throw std::runtime_error("Reset forces already called");
+    }
     ntires_old_ = tires_consumed_.size();
     tires_consumed_.clear();
     tires_w_.clear();
+    state_ = EngineAlgorithmState::RESET_FORCES_CALLED;
 }
 
 TirePowerIntent RigidBodyEngine::consume_tire_power(
@@ -65,6 +74,13 @@ TirePowerIntent RigidBodyEngine::consume_tire_power(
     const EnginePowerDeltaIntent& delta_intent,
     VelocityClassification velocity_classification)
 {
+    switch (state_) {
+    case EngineAlgorithmState::INITIAL:
+    case EngineAlgorithmState::ADVANCE_TIME_CALLED:
+        throw std::runtime_error("consume_tire_power: Forces were not reset");
+    case EngineAlgorithmState::RESET_FORCES_CALLED:
+        break;
+    }
     tires_w_.insert(tire_w);
     if (!tires_consumed_.insert(tire_id).second ||
         (tires_consumed_.size() > ntires_old_)) {
@@ -138,6 +154,13 @@ TirePowerIntent RigidBodyEngine::consume_rotor_power(
     const float* rotor_w,
     const EnginePowerDeltaIntent& delta_intent)
 {
+    switch (state_) {
+    case EngineAlgorithmState::INITIAL:
+    case EngineAlgorithmState::ADVANCE_TIME_CALLED:
+        throw std::runtime_error("consume_rotor_power: Forces were not reset");
+    case EngineAlgorithmState::RESET_FORCES_CALLED:
+        break;
+    }
     tires_w_.insert(rotor_w);
     if (!tires_consumed_.insert(rotor_id).second ||
         (tires_consumed_.size() > ntires_old_)) {
@@ -194,6 +217,14 @@ void RigidBodyEngine::advance_time(
     const RotatingFrame<SceneDir, ScenePos, 3>& frame,
     const StaticWorld& static_world)
 {
+    switch (state_) {
+    case EngineAlgorithmState::INITIAL:
+    case EngineAlgorithmState::ADVANCE_TIME_CALLED:
+        throw std::runtime_error("advance_time: Forces were not reset");
+    case EngineAlgorithmState::RESET_FORCES_CALLED:
+        break;
+    }
+    state_ = EngineAlgorithmState::ADVANCE_TIME_CALLED;
     float average_tire_w;
     if (tires_w_.empty()) {
         average_tire_w = NAN;

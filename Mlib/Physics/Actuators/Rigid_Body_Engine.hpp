@@ -25,6 +25,12 @@ struct PhysicsTimeStep;
 struct PhysicsPhase;
 struct StaticWorld;
 
+enum class EngineAlgorithmState {
+    INITIAL,
+    RESET_FORCES_CALLED,
+    ADVANCE_TIME_CALLED
+};
+
 class RigidBodyEngine: public StatusWriter {
     friend std::ostream& operator << (std::ostream& ostr, const RigidBodyEngine& engine);
 
@@ -68,6 +74,7 @@ private:
     std::set<const float*> tires_w_;
     std::optional<EnginePower> engine_power_;
     size_t ntires_old_;
+    EngineAlgorithmState state_;
     std::shared_ptr<IEngineEventListener> listener_;
 };
 
