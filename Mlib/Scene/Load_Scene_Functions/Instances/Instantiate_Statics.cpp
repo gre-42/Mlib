@@ -19,6 +19,7 @@ using namespace Mlib;
 namespace KnownArgs {
 BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(min_vertex_distance);
+DECLARE_ARGUMENT(w);
 }
 
 InstantiateStatics::InstantiateStatics(PhysicsScene& physics_scene)
@@ -30,13 +31,16 @@ void InstantiateStatics::execute(const LoadSceneJsonUserFunctionArgs& args) {
     std::list<std::pair<TransformationMatrix<float, ScenePos, 3>, std::shared_ptr<ColoredVertexArray<float>>>> float_queue;
     std::list<std::pair<TransformationMatrix<float, ScenePos, 3>, std::shared_ptr<ColoredVertexArray<CompressedScenePos>>>> double_queue;
     scene.append_physics_to_queue(float_queue, double_queue);
+    auto w = args.arguments.at<EFixedArray<float, 3>>(KnownArgs::w, fixed_zeros<float, 3>());
     auto add_rigid_cuboid = [&](const auto& cva, const std::string& name){
         auto rb = rigid_cuboid(
             name,                       // name
             "none",                     // asset_id
             INFINITY,                   // mass
             fixed_ones<float, 3>(),     // size
-            fixed_zeros<float, 3>());   // com
+            fixed_zeros<float, 3>(),    // com
+            fixed_zeros<float, 3>(),    // v
+            w);                         // w
         rb->set_absolute_model_matrix(TransformationMatrix<float, ScenePos, 3>::identity(), CURRENT_SOURCE_LOCATION);
         physics_engine.rigid_bodies_.add_rigid_body(*rb, {}, { cva }, {}, CollidableMode::COLLIDE);
         object_pool.add(global_object_pool.extract(std::move(rb)), CURRENT_SOURCE_LOCATION);

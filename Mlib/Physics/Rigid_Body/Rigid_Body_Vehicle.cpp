@@ -720,15 +720,17 @@ void RigidBodyVehicle::verify_tire_angular_velocity(size_t id) const {
     const auto& tire = get_tire(id);
     if (tire.rb != nullptr) {
         auto abs_rotation_axis = dot1d(rbp_.rotation_, tire.rotation_axis());
-        if (std::abs((tire.angular_velocity / rpm) - (dot0d(tire.rb->rbp_.w_, abs_rotation_axis) / rpm)) > 0.1) {
+        auto scalarRPM = tire.angular_velocity / rpm;
+        auto vectorialRPM = (dot0d(tire.rb->rbp_.w_, abs_rotation_axis) / rpm);
+        if (std::abs(scalarRPM - vectorialRPM) > 0.1) {
             std::stringstream sstr;
             sstr <<
                 "Last location update: " << tire.rb->rbp_.last_location_update_source_location_ <<
-                "Last velocity update: " << tire.rb->rbp_.last_velocity_update_source_location_ <<
-                " vehicle: \"" << name() <<
-                "\": tire " << id <<
-                " scalar RPM: " << (tire.angular_velocity / rpm) <<
-                " vectorial RPM: " << (dot0d(tire.rb->rbp_.w_, abs_rotation_axis) / rpm);
+                ", last velocity update: " << tire.rb->rbp_.last_velocity_update_source_location_ <<
+                ", vehicle: \"" << name() <<
+                "\", tire " << id <<
+                ", scalar RPM: " << scalarRPM <<
+                ", vectorial RPM: " << vectorialRPM;
             throw std::runtime_error(sstr.str());
         }
     }
