@@ -7,7 +7,6 @@
 #include <Mlib/Math/Is_Newer.hpp>
 #include <Mlib/Math/Transformation/Quaternion.hpp>
 #include <Mlib/Memory/Object_Pool.hpp>
-#include <Mlib/Misc/Masked_Set.hpp>
 #include <Mlib/Os/Io/Serialize/Serialize.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle_Flags.hpp>
@@ -551,7 +550,6 @@ void RemoteRigidBodyVehicle::read(
         }
         old_remote_time->reset();
     }
-    auto mask = ~RigidBodyVehicleFlags::NONE;
     if (pp.update_position) {
         if (pp.update_physics && any(rb_->flags_local_ & RigidBodyVehicleFlagsLocal::WAITING_FOR_INITIAL_POSITION)) {
             throw std::runtime_error("Attempt to update vehicle velocity without position");
@@ -604,12 +602,9 @@ void RemoteRigidBodyVehicle::read(
         old_remote_time->emplace(transmission_history_reader.remote_time());
     } else {
         old_remote_time->reset();
-        if (rb_->is_deactivated_avatar()) {
-            mask &= ~RigidBodyVehicleFlags::IS_ANY_AVATAR;
-        }
     }
     if (!privileges.is_server_local) {
-        masked_set(rb_->flags_, flags, mask);
+        rb_->flags_ = flags;
     }
 }
 
