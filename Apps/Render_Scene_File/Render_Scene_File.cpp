@@ -409,6 +409,7 @@ int main(int argc, char** argv) {
         "    [--show_only_file <filename>]\n"
         "    [--show_hitbox]\n"
         "    [--show_massbox]\n"
+        "    [--world_rpm <rpm>]\n"
         "    [--user_count <n>]\n"
         "    [--remote_site_id <id>]\n"
         #ifndef WITHOUT_GRAPHICS
@@ -544,6 +545,7 @@ int main(int argc, char** argv) {
          "--audio_frequency",
          "--audio_alpha",
          "--audio_distance_model",
+         "--world_rpm",
          "--user_count",
          "--remote_site_id",
          #ifndef WITHOUT_GRAPHICS
@@ -855,7 +857,8 @@ int main(int argc, char** argv) {
                 {"sparse_triangle_cluster_width", safe_stof(args.named_svalue("--sparse_triangle_cluster_width", "3e3"))},
                 {"medium_triangle_cluster_width", safe_stof(args.named_svalue("--medium_triangle_cluster_width", "700"))},
                 {"dense_triangle_cluster_width", safe_stof(args.named_svalue("--dense_triangle_cluster_width", "250"))},
-                {"object_cluster_width", safe_stof(args.named_svalue("--object_cluster_width", "500"))}};
+                {"object_cluster_width", safe_stof(args.named_svalue("--object_cluster_width", "500"))},
+                {"world_rpm", safe_stof(args.named_svalue("--world_rpm", "0"))}};
             {
                 auto show_hitbox = args.has_named("--show_hitbox");
                 auto show_massbox = args.has_named("--show_massbox");

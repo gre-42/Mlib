@@ -543,6 +543,11 @@ void RemoteRigidBodyVehicle::read(
             // Notify child nodes with absolute movables (e.g. wheels)
             rb_->scene_node_->clear_transformation_history();
             rb_->flags_local_ &= ~RigidBodyVehicleFlagsLocal::WAITING_FOR_INITIAL_POSITION;
+            if (!privileges.is_server_local) {
+                rb_->flags_local_ |= RigidBodyVehicleFlagsLocal::WAITING_FOR_INITIAL_VELOCITY;
+            }
+        } else if (!privileges.is_server_local) {
+            rb_->flags_local_ |= RigidBodyVehicleFlagsLocal::WAITING_FOR_INITIAL_POSITION_OR_VELOCITY;
         }
         old_remote_time->reset();
     }

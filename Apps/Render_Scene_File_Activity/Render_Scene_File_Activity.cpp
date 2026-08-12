@@ -447,6 +447,7 @@ void android_main(android_app* app)
         "    [--show_only_file <filename>]\n"
         "    [--show_hitbox]\n"
         "    [--show_massbox]\n"
+        "    [--world_rpm <rpm>]\n"
         "    [--user_count <n>]\n"
         "    [--remote_secret <id>]\n"
         "    [--remote_site_id <id>]\n"
@@ -574,6 +575,7 @@ void android_main(android_app* app)
          "--audio_frequency",
          "--audio_alpha",
          "--audio_distance_model",
+         "--world_rpm",
          "--user_count",
          "--remote_secret",
          "--remote_site_id",
@@ -839,16 +841,17 @@ void android_main(android_app* app)
                 {"sparse_triangle_cluster_width", safe_stof(args.named_svalue("--sparse_triangle_cluster_width", "3e3"))},
                 {"medium_triangle_cluster_width", safe_stof(args.named_svalue("--medium_triangle_cluster_width", "700"))},
                 {"dense_triangle_cluster_width", safe_stof(args.named_svalue("--dense_triangle_cluster_width", "250"))},
-                {"object_cluster_width", safe_stof(args.named_svalue("--object_cluster_width", "500"))}};
-                {
-                    auto show_hitbox = args.has_named("--show_hitbox");
-                    auto show_massbox = args.has_named("--show_massbox");
-                    j["show_hitbox"] = show_hitbox;
-                    j["show_massbox"] = show_massbox;
-                    j["hitbox_massbox_triangulation"] = (show_hitbox || show_massbox)
-                        ? "delaunay"
-                        : "disabled";
-                }
+                {"object_cluster_width", safe_stof(args.named_svalue("--object_cluster_width", "500"))},
+                {"world_rpm", safe_stof(args.named_svalue("--world_rpm", "0"))}};
+            {
+                auto show_hitbox = args.has_named("--show_hitbox");
+                auto show_massbox = args.has_named("--show_massbox");
+                j["show_hitbox"] = show_hitbox;
+                j["show_massbox"] = show_massbox;
+                j["hitbox_massbox_triangulation"] = (show_hitbox || show_massbox)
+                    ? "delaunay"
+                    : "disabled";
+            }
             external_json_macro_arguments.merge_and_notify(JsonMacroArguments{std::move(j)});
         }
         IRenderableHider* renderable_hider = nullptr;
