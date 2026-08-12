@@ -55,13 +55,6 @@ DanglingBaseClassRef<StatusWriter> RigidBodyEngine::child_status_writer(const st
 }
 
 void RigidBodyEngine::reset_forces() {
-    switch (state_) {
-    case EngineAlgorithmState::INITIAL:
-    case EngineAlgorithmState::ADVANCE_TIME_CALLED:
-        break;
-    case EngineAlgorithmState::RESET_FORCES_CALLED:
-        throw std::runtime_error("Reset forces already called");
-    }
     ntires_old_ = tires_consumed_.size();
     tires_consumed_.clear();
     tires_w_.clear();
