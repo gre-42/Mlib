@@ -64,7 +64,7 @@ void PhysicsEngine::collide(
     BaseLog* base_log)
 {
     rigid_bodies_.notify_colliding_start();
-    for (const auto& o : rigid_bodies_.transformed_objects()) {
+    for (const auto& o : rigid_bodies_.objects()) {
         o.rigid_body->reset_forces(phase);
     }
     for (const auto& co : controllables_) {
@@ -102,7 +102,7 @@ void PhysicsEngine::collide(
     for (const auto& efp : external_force_providers_) {
         efp->increment_external_forces(cfg_, phase, world);
     }
-    for (const auto& o : rigid_bodies_.transformed_objects()) {
+    for (const auto& o : rigid_bodies_.objects()) {
         o.rigid_body->collide_with_air(history);
     }
     collision_direction_ = (collision_direction_ == CollisionDirection::FORWARD)
@@ -117,7 +117,7 @@ void PhysicsEngine::collide(
             rigid_bodies_,
             history);
     }
-    for (const auto& o : rigid_bodies_.transformed_objects()) {
+    for (const auto& o : rigid_bodies_.objects()) {
         o.rigid_body->finalize_collisions(history);
     }
     // Handling rays before grind_infos so new grind_infos can be created
