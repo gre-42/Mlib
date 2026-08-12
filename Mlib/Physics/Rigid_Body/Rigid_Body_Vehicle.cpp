@@ -145,8 +145,8 @@ void RigidBodyVehicle::reset_forces(const PhysicsPhase& phase) {
     if (is_deactivated()) {
         throw std::runtime_error("Attempt to reset forces of deactivated rigid body");
     }
-    for (auto& e : engines_) {
-        e.second.reset_forces();
+    for (auto& [_, e] : engines_) {
+        e.reset_forces();
     }
 
     // Must be above the block below.
