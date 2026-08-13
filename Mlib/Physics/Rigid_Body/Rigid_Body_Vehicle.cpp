@@ -47,6 +47,7 @@
 #include <Mlib/Scene_Graph/Instances/Static_World.hpp>
 #include <Mlib/Scene_Graph/Interfaces/ITrail_Extender.hpp>
 #include <chrono>
+#include <format>
 #include <stdexcept>
 
 using namespace Mlib;
@@ -705,12 +706,7 @@ float RigidBodyVehicle::get_tire_angular_velocity(size_t id) const {
 void RigidBodyVehicle::update_tire_angular_velocity(size_t id) {
     auto& tire = get_tire(id);
     if (tire.rb == nullptr) {
-        std::stringstream sstr;
-        sstr <<
-            "Vehicle \"" << name() <<
-            "\": tire " << id <<
-            " has no rigid body";
-        throw std::runtime_error(sstr.str());
+        throw std::runtime_error(std::format("Vehicle \"{}\": tire {} has no rigid body", name(), id));
     }
     auto abs_rotation_axis = dot1d(rbp_.rotation_, tire.rotation_axis());
     tire.angular_velocity = dot0d(tire.rb->rbp_.w_, abs_rotation_axis);
