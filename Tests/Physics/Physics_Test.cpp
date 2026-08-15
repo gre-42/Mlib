@@ -145,7 +145,7 @@ void test_com() {
         .time = std::chrono::steady_clock::now()
     };
 
-    RigidBodies rbs{ cfg };
+    RigidBodies rbs{ cfg, std::nullopt };
     float mass = 123.f * kg;
     FixedArray<float, 3> size{2 * meters, 3 * meters, 4 * meters};
     FixedArray<float, 3> com0{0 * meters, 0 * meters, 0 * meters};

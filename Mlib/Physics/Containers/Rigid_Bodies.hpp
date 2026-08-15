@@ -23,6 +23,7 @@
 namespace Mlib {
 
 enum class CollidableMode;
+enum class RemoteRole;
 template <class TPos>
 class ColoredVertexArray;
 class RigidBodyVehicle;
@@ -85,7 +86,7 @@ public:
         RigidBodyAndCollisionLineSphere<HalfCompressedScenePos>,
         3>;
 
-    explicit RigidBodies(const PhysicsEngineConfig& cfg);
+    explicit RigidBodies(const PhysicsEngineConfig& cfg, std::optional<RemoteRole> remote_role);
     ~RigidBodies();
     void add_rigid_body(
         RigidBodyVehicle& rigid_body,
@@ -112,6 +113,7 @@ public:
 private:
     void transform_object_and_add(const RigidBodyAndMeshes& o);
     const PhysicsEngineConfig& cfg_;
+    std::optional<RemoteRole> remote_role_;
     std::unordered_map<const RigidBodyVehicle*, DestructionFunctionsTokensRef<RigidBodyVehicle>> rigid_bodies_;
     std::list<RigidBodyAndMeshes> objects_;
     std::list<RigidBodyAndIntersectableMeshes> transformed_objects_;

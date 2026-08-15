@@ -81,7 +81,11 @@ PhysicsScene::PhysicsScene(
     #endif
     // SceneNode destructors require that physics engine is destroyed after scene,
     // => Create PhysicsEngine before Scene
-    , physics_engine_{ scene_config.physics_engine_config }
+    , physics_engine_{
+        scene_config.physics_engine_config,
+        (remote_config == nullptr) || !remote_config->game.has_value()
+            ? std::nullopt
+            : std::optional{remote_config->game->role} }
     , scene_{
         name_,
         &scene_node_resources,

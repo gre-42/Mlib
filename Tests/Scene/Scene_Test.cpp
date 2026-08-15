@@ -129,7 +129,7 @@ void test_physics_engine(unsigned int seed) {
     };
     // SceneNode destructors require that physics engine is destroyed after scene,
     // => Create PhysicsEngine before Scene
-    PhysicsEngine pe{ physics_cfg };
+    PhysicsEngine pe{ physics_cfg, std::nullopt };
 
     OpenGLObjectFactory gpu_object_factory;
     CachingGpuObjectFactory caching_gpu_object_factory{gpu_object_factory};

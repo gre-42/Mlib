@@ -24,8 +24,10 @@
 
 using namespace Mlib;
 
-PhysicsEngine::PhysicsEngine(const PhysicsEngineConfig& cfg)
-    : rigid_bodies_{ cfg }
+PhysicsEngine::PhysicsEngine(
+    const PhysicsEngineConfig& cfg,
+    std::optional<RemoteRole> remote_role)
+    : rigid_bodies_{ cfg, remote_role }
     , collision_query_{ *this }
     , collision_direction_{ CollisionDirection::FORWARD }
     , surface_contact_db_{ nullptr }

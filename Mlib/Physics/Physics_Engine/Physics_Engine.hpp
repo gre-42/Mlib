@@ -23,7 +23,9 @@ struct PhysicsPhase;
 
 class PhysicsEngine {
 public:
-    explicit PhysicsEngine(const PhysicsEngineConfig& cfg);
+    explicit PhysicsEngine(
+        const PhysicsEngineConfig& cfg,
+        std::optional<RemoteRole> remote_role);
     ~PhysicsEngine();
     void add_external_force_provider(IExternalForceProvider& efp);
     void remove_external_force_provider(IExternalForceProvider& efp);

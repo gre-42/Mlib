@@ -22,8 +22,9 @@
 
 using namespace Mlib;
 
-RigidBodies::RigidBodies(const PhysicsEngineConfig& cfg)
+RigidBodies::RigidBodies(const PhysicsEngineConfig& cfg, std::optional<RemoteRole> remote_role)
     : cfg_{ cfg }
+    , remote_role_{ remote_role }
     , is_colliding_{ false }
     , convex_mesh_bvh_{
         {cfg.bvh_max_size, cfg.bvh_max_size, cfg.bvh_max_size},
@@ -486,8 +487,11 @@ std::vector<CollisionGroup> RigidBodies::collision_groups() {
                 std::sqrt(sum(squared(e->rb.rbp_.v_com_))) / vmax,
                 std::sqrt(sum(squared(e->rb.rbp_.w_))) / wmax);
             // linfo() << "  " << e->rb.name() << " - " << nf;
-            // Remote transmission results in slightly incorrect v/w estimates.
-            if (nf - 1e-1f > integral_to_float<float>(cfg_.nsubsteps)) {
+            // Remote transmission results in incorrect v/w estimates
+            // due to rubber banding.
+            if (!remote_role_.has_value() &&
+                (nf - 1e-6f > integral_to_float<float>(cfg_.nsubsteps)))
+            {
                 throw std::runtime_error(
                     "Velocity or angular velocity of rigid body \"" + e->rb.name() +
                     "\" out of bounds. " +
