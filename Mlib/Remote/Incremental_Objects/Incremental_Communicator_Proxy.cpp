@@ -65,6 +65,22 @@ void IncrementalCommunicatorProxy::receive_from_home(std::istream& istr) {
     std::optional<LocalSceneLevel> home_scene_level;
     auto reader = BinaryBitwiseWordsReader{istr, nullptr, verbosity_};
     auto session_id = reader.read_binary<SessionIdType>("session ID");
+    if (any(tasks_ & ProxyTasks::SEND_OWNERSHIP)) {
+        objects_->delete_orphaned_objects(home_site_id_, session_id);
+    } else {
+        auto nsites = reader.read_binary<NSitesType>("#sites");
+        for (NSitesType i = 0; i < nsites; ++i) {
+            auto site_id = reader.read_binary<RemoteSiteId>("remote site ID");
+            auto site_session_id = reader.read_binary<SessionIdType>("#site session ID");
+            if (site_id == home_site_id_) {
+                throw std::runtime_error("Received home site ID");
+            }
+            if (site_id == objects_->local_site_id()) {
+                throw std::runtime_error("Received local site ID");
+            }
+            objects_->delete_orphaned_objects(site_id, site_session_id);
+        }
+    }
     auto remote_time = reader.read_binary<RemoteTimeCount>("remote time [ms]");
     {
         auto scene_level_name = reader.read_string<StringLengthType>("scene level name");
@@ -262,6 +278,20 @@ void IncrementalCommunicatorProxy::send_home(
     }
     auto writer = BinaryBitwiseWordsWriter{iostr, nullptr};
     writer.write_binary(session_id_, "session ID");
+    if (any(tasks_ & ProxyTasks::SEND_OWNERSHIP)) {
+        const auto& session_ids = objects_->session_ids();
+        writer.write_binary(
+            integral_cast<NSitesType>(session_ids.size() - session_ids.contains(home_site_id_)),
+            "#sites");
+        for (const auto& [site_id, session_id] : session_ids) {
+            if ((site_id != home_site_id_) &&
+                (site_id != objects_->local_site_id()))
+            {
+                writer.write_binary(site_id, "site ID");
+                writer.write_binary(session_id, "session ID");
+            }
+        }
+    }
     writer.write_binary(
         std::chrono::duration_cast<std::chrono::duration<RemoteTimeCount, RemoteTimeRatio>>(
             objects_->local_time().time_since_epoch()).count(),

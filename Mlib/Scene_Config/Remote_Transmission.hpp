@@ -12,6 +12,7 @@ using RemoteTimeCount = uint16_t;
 using DatagramIndexType = uint16_t;
 using TransmissionHistoryType = uint8_t;
 using TransmittedFieldsType = uint8_t;
+using NSitesType = uint8_t;
 using NUnknownType = uint16_t;
 using NDeletedType = uint16_t;
 using NShotsType = uint16_t;

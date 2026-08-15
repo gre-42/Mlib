@@ -161,6 +161,38 @@ const RemoteObjects& IncrementalRemoteObjects::public_remote_objects() const {
     return public_remote_objects_;
 }
 
+void IncrementalRemoteObjects::delete_orphaned_objects(
+    RemoteSiteId site_id,
+    SessionIdType session_id)
+{
+    auto it = session_ids_.find(site_id);
+    if (it != session_ids_.end()) {
+        if (it->second != session_id) {
+            auto rm = [site_id](RemoteObjects& remote_objects){
+                std::vector<RemoteObjectId> to_be_deleted;
+                to_be_deleted.reserve(remote_objects.size());
+                for (const auto& id : remote_objects) {
+                    if (id.first.site_id == site_id) {
+                        to_be_deleted.emplace_back(id.first);
+                    }
+                }
+                for (const auto& id : to_be_deleted) {
+                    remote_objects.erase(id);
+                }
+            };
+            rm(private_remote_objects_);
+            rm(public_remote_objects_);
+            it->second = session_id;
+        }
+    } else {
+        session_ids_.emplace(site_id, session_id);
+    }
+}
+
+const SessionIds& IncrementalRemoteObjects::session_ids() const {
+    return session_ids_;
+}
+
 void IncrementalRemoteObjects::print(std::ostream& ostr) const {
     ostr <<
         "#deleted short: " << deleted_objects_short_.size() <<

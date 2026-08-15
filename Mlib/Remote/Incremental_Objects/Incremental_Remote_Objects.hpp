@@ -3,11 +3,12 @@
 #include <Mlib/Memory/Destruction_Notifier.hpp>
 #include <Mlib/Remote/Events/Events_And_Times.hpp>
 #include <Mlib/Remote/Incremental_Objects/Remote_Object_Id.hpp>
+#include <Mlib/Scene_Config/Remote_Integers.hpp>
 #include <Mlib/Scene_Config/Remote_Transmission.hpp>
 #include <Mlib/Time/Time_And_Pause.hpp>
 #include <chrono>
 #include <iosfwd>
-#include <map>
+#include <unordered_map>
 
 namespace Mlib {
 
@@ -19,6 +20,7 @@ class SceneLevelSelector;
 using DeletedObjects = EventsAndTimes<RemoteObjectId, std::chrono::steady_clock::time_point>;
 using LocalObjects = DanglingValueMap<LocalObjectId, IIncrementalObject>;
 using RemoteObjects = DanglingValueMap<RemoteObjectId, IIncrementalObject>;
+using SessionIds = std::unordered_map<RemoteSiteId, SessionIdType>;
 
 enum class RemoteObjectVisibility {
     PRIVATE,
@@ -53,9 +55,12 @@ public:
     const LocalObjects& private_local_objects() const;
     const LocalObjects& public_local_objects() const;
     const RemoteObjects& public_remote_objects() const;
+    void delete_orphaned_objects(RemoteSiteId site_id, SessionIdType session_id);
+    const SessionIds& session_ids() const;
     void print(std::ostream& ostr) const;
 
 private:
+    SessionIds session_ids_;
     RemoteSiteId local_site_id_;
     TimeAndPause<std::chrono::steady_clock::time_point> local_time_;
     DanglingBaseClassRef<SceneLevelSelector> local_scene_level_selector_;
