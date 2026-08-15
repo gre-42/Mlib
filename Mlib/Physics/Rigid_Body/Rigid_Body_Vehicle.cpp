@@ -284,7 +284,7 @@ void RigidBodyVehicle::collide_with_air(CollisionHistory& c)
             // Relative velocity
             auto vel = dot(rbp_orig.velocity_at_position(abs_location.t), abs_location.R);
             auto vel2 = squared(vel);
-            auto lvel = std::sqrt(sum(squared(vel)));
+            auto lvel = std::sqrt(sum(vel2));
             auto svel2 = lvel * vel;
             auto drag = -wing->drag_coefficients * svel2;
             float fac = wing->fac(lvel);

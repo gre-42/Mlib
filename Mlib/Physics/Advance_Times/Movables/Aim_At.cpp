@@ -70,6 +70,7 @@ void AimAt::set_absolute_model_matrix(const TransformationMatrix<float, ScenePos
             float t = 0;
             for (size_t i = 0; ; ++i) {
                 RigidBodyPulses rbp = followed_->rbp_;
+                rbp.penetration_limits_ = PenetrationLimitsFactory::inf();
                 rbp.v_com_ -= initial_bullet_velocity;
                 rbp.v_com_ *= (1 + verr);
                 rbp.advance_time(t);

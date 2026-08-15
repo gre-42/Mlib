@@ -17,6 +17,7 @@
 #include <Mlib/Physics/Advance_Times/Movables/Wheel.hpp>
 #include <Mlib/Physics/Collision/Collidable_Mode.hpp>
 #include <Mlib/Physics/Collision/Pacejkas_Magic_Formula.hpp>
+#include <Mlib/Physics/Physics_Engine/Limit_Sources.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Engine.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Physics/Rigid_Body/Vehicle_Type.hpp>
@@ -240,7 +241,7 @@ void CreateGenericCar::execute(const JsonView& args)
             .v = args.at<EFixedArray<float, 3>>(KnownArgs::velocity) * kph,
             .w = args.at<EFixedArray<float, 3>>(KnownArgs::angular_velocity) * rpm,
             .I_rotation = fixed_zeros<float, 3>(),
-            .with_penetration_limits = true,
+            .limit_sources = LimitSources::PENETRATION | LimitSources::REMOTE,
             .geographic_coordinates = scene_node_resources.get_geographic_mapping(WORLD),
             .waypoint_dy = vdb.at<CompressedScenePos>(KnownDb::waypoint_dy),
             .hitboxes = VariableAndHash<std::string>{asset_id + "_hitboxes"},
@@ -385,7 +386,7 @@ void CreateGenericCar::execute(const JsonView& args)
                         .v = fixed_zeros<float, 3>(),
                         .w = fixed_zeros<float, 3>(),
                         .I_rotation = { 0.f, 90 * degrees, 0.f },
-                        .with_penetration_limits = false,
+                        .limit_sources = LimitSources::NONE,
                         .geographic_coordinates = nullptr,
                         .flags = RigidBodyVehicleFlags::NONE,
                         .waypoint_dy = (CompressedScenePos)0.f,

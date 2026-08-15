@@ -45,6 +45,25 @@ RigidBodyPulses::RigidBodyPulses(
 
 void RigidBodyPulses::advance_time(float dt)
 {
+    {
+        if (auto vmax = penetration_limits_.vmax_translation(dt);
+            vmax != INFINITY)
+        {
+            auto l = std::sqrt(sum(squared(v_com_)));
+            if (l > vmax) {
+                v_com_ *= vmax / l;
+            }
+        }
+        if (float wmax = penetration_limits_.wmax(dt);
+            wmax != INFINITY)
+        {
+            auto l = std::sqrt(sum(squared(w_)));
+            if (l > wmax) {
+                w_ *= wmax / l;
+            }
+        }
+        last_velocity_update_source_location_ = CURRENT_SOURCE_LOCATION;
+    }
     abs_com_ += (dt * v_com_).casted<ScenePos>();
     rotation_ = dot2d(rodrigues1(dt * w_, false), rotation_);  // false = check_angle
     rotation_ = tait_bryan_angles_2_matrix(matrix_2_tait_bryan_angles(rotation_));
@@ -180,13 +199,6 @@ void RigidBodyPulses::set_v_com(const FixedArray<float, 3>& v_com, float dt, flo
     } else {
         v_com_ = lerp(v_com_, v_com, relaxation);
     }
-    auto vmax = penetration_limits_.vmax_translation(dt);
-    if (vmax != INFINITY) {
-        auto l = std::sqrt(sum(squared(v_com_)));
-        if (l > vmax) {
-            v_com_ *= vmax / l;
-        }
-    }
     last_velocity_update_source_location_ = loc;
 }
 
@@ -204,13 +216,6 @@ void RigidBodyPulses::set_w(const FixedArray<float, 3>& w, float dt, float relax
         w_ = w;
     } else {
         w_ = lerp(w_, w, relaxation);
-    }
-    float wmax = penetration_limits_.wmax(dt);
-    if (wmax != INFINITY) {
-        auto l = std::sqrt(sum(squared(w_)));
-        if (l > wmax) {
-            w_ *= wmax / l;
-        }
     }
     last_velocity_update_source_location_ = loc;
 }

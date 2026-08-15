@@ -111,7 +111,6 @@ VehicleAiMoveToStatus FlyingMissileAi::move_to(
     return result;
 }
 
-
 std::vector<SkillFactor> FlyingMissileAi::skills() const {
     return {
         SkillFactor{

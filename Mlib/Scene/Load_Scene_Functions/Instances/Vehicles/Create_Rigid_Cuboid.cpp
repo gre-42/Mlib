@@ -9,6 +9,7 @@
 #include <Mlib/Misc/Argument_List.hpp>
 #include <Mlib/Os/Env.hpp>
 #include <Mlib/Physics/Collision/Collidable_Mode.hpp>
+#include <Mlib/Physics/Physics_Engine/Limit_Sources.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Engine.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle_Flags.hpp>
@@ -32,7 +33,7 @@ DECLARE_ARGUMENT(com);
 DECLARE_ARGUMENT(v);
 DECLARE_ARGUMENT(w);
 DECLARE_ARGUMENT(I_rotation);
-DECLARE_ARGUMENT(with_penetration_limits);
+DECLARE_ARGUMENT(limit_sources);
 DECLARE_ARGUMENT(collidable_mode);
 DECLARE_ARGUMENT(name);
 DECLARE_ARGUMENT(asset_id);
@@ -60,7 +61,7 @@ void CreateRigidCuboid::execute(const LoadSceneJsonUserFunctionArgs& args) const
         args.arguments.at<EFixedArray<float, 3>>(KnownArgs::v, fixed_zeros<float, 3>()) * kph,
         args.arguments.at<EFixedArray<float, 3>>(KnownArgs::w, fixed_zeros<float, 3>()) * rpm,
         args.arguments.at<EFixedArray<float, 3>>(KnownArgs::I_rotation, fixed_zeros<float, 3>()) * degrees,
-        args.arguments.at<bool>(KnownArgs::with_penetration_limits),
+        limit_sources_from_string(args.arguments.at<std::string>(KnownArgs::limit_sources)),
         scene_node_resources.get_geographic_mapping(VariableAndHash<std::string>{"world"}),
         rigid_body_vehicle_flags_from_string(args.arguments.at<std::string>(KnownArgs::flags, "none")),
         CompressedScenePos::from_float_safe(args.arguments.at<ScenePos>(KnownArgs::waypoint_dy, 0.f) * meters),
@@ -77,7 +78,8 @@ DanglingBaseClassRef<RigidBodyVehicle> CreateRigidCuboid::operator () (const Cre
     auto radius = std::sqrt(sum(squared(abs(args.size / 2.f))));
     auto pl = PenetrationLimitsFactory{
         physics_engine.config().max_penetration,
-        radius};
+        radius,
+        args.limit_sources};
     auto rb = rigid_cuboid(
         args.name,
         args.asset_id,
@@ -87,7 +89,7 @@ DanglingBaseClassRef<RigidBodyVehicle> CreateRigidCuboid::operator () (const Cre
         args.v,
         args.w,
         args.I_rotation,
-        args.with_penetration_limits ? pl : PenetrationLimitsFactory::inf(),
+        pl,
         args.geographic_coordinates);
     rb->flags_ = args.flags;
     rb->set_waypoint_ofs(args.waypoint_dy);

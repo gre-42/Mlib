@@ -17,6 +17,7 @@ template <class TDir, class TPos, size_t n>
 class TransformationMatrix;
 enum class CollidableMode;
 class RigidBodyVehicle;
+enum class LimitSources;
 
 struct CreateRigidCuboidArgs {
     const VariableAndHash<std::string>& node;
@@ -28,7 +29,7 @@ struct CreateRigidCuboidArgs {
     FixedArray<float, 3> v;
     FixedArray<float, 3> w;
     FixedArray<float, 3> I_rotation;
-    bool with_penetration_limits;
+    LimitSources limit_sources;
     const TransformationMatrix<double, double, 3>* geographic_coordinates;
     RigidBodyVehicleFlags flags = RigidBodyVehicleFlags::NONE;
     CompressedScenePos waypoint_dy = (CompressedScenePos)0.f;

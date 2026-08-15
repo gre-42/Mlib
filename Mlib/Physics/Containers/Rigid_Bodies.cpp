@@ -486,7 +486,8 @@ std::vector<CollisionGroup> RigidBodies::collision_groups() {
                 std::sqrt(sum(squared(e->rb.rbp_.v_com_))) / vmax,
                 std::sqrt(sum(squared(e->rb.rbp_.w_))) / wmax);
             // linfo() << "  " << e->rb.name() << " - " << nf;
-            if (nf - 1e-6 > integral_to_float<float>(cfg_.nsubsteps)) {
+            // Remote transmission results in slightly incorrect v/w estimates.
+            if (nf - 1e-1f > integral_to_float<float>(cfg_.nsubsteps)) {
                 throw std::runtime_error(
                     "Velocity or angular velocity of rigid body \"" + e->rb.name() +
                     "\" out of bounds. " +
@@ -495,7 +496,7 @@ std::vector<CollisionGroup> RigidBodies::collision_groups() {
             auto ni = p2d.greatest_divider(
                 std::min(
                     cfg_.nsubsteps,
-                    float_to_integral<size_t>(std::ceil((1.f + cfg_.max_velocity_increase) * nf))));
+                    float_to_integral<size_t>(std::ceil((1.f + cfg_.max_velocity_increase) * std::max(nf, 1e-6f)))));
             e->rb.substep_history_.append(ni);
             g.nsubsteps = std::max(g.nsubsteps, max(e->rb.substep_history_));
             e->rb.get_rigid_pulses(g.rigid_bodies);

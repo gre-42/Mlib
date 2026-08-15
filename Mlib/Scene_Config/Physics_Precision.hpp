@@ -7,7 +7,7 @@
 
 namespace Mlib {
 
-static constexpr const float MAX_REMOTE_VELOCITY = 200.f * kph;
+static constexpr const float MAX_REMOTE_VELOCITY = 400.f * kph;
 static constexpr const float MAX_REMOTE_ANGULAR_VELOCITY = 0.25f * rps;
 
 // Absolute + lowres
