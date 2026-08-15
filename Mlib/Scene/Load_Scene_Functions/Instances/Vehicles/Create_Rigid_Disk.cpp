@@ -60,7 +60,7 @@ void CreateRigidDisk::execute(const LoadSceneJsonUserFunctionArgs& args) const
         args.arguments.at<EFixedArray<float, 3>>(KnownArgs::v, fixed_zeros<float, 3>()) * kph,
         args.arguments.at<EFixedArray<float, 3>>(KnownArgs::w, fixed_zeros<float, 3>()) * rpm,
         args.arguments.at<EFixedArray<float, 3>>(KnownArgs::I_rotation, fixed_zeros<float, 3>()) * degrees,
-        args.arguments.at<bool>(KnownArgs::with_penetration_limits, false),
+        args.arguments.at<bool>(KnownArgs::with_penetration_limits),
         scene_node_resources.get_geographic_mapping(VariableAndHash<std::string>{"world"}),
         rigid_body_vehicle_flags_from_string(args.arguments.at<std::string>(KnownArgs::flags, "none")),
         CompressedScenePos::from_float_safe(args.arguments.at<ScenePos>(KnownArgs::waypoint_dy, 0.f) * meters),
