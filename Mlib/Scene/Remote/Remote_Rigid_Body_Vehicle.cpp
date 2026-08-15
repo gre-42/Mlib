@@ -468,6 +468,16 @@ void RemoteRigidBodyVehicle::read(
         }
         throw std::runtime_error("RemoteRigidBodyVehicle: Unknown scene object type");
     }();
+    if (has_location) {
+        if (!all(isfinite(position)) || !all(abs(position) < 1.1e3 * kilo * meters)) {
+            throw std::runtime_error((std::stringstream() <<
+                "Remote rigid body \"" << rb_->name() << "\" position out of bounds: " << position).str());
+        }
+        if (!all(isfinite(rotation)) || !all(abs(rotation) < 1.1f * (float)M_PI)) {
+            throw std::runtime_error((std::stringstream() <<
+                "Remote rigid body \"" << rb_->name() << "\" rotation out of bounds: " << rotation).str());
+        }
+    }
     auto flags = reader.read_bits<RigidBodyVehicleFlags>(RIGID_BODY_VEHICLE_FLAGS_NBITS, "rigid body flags");
     if (any(transmitted_fields & RigidBodyTransmittedFields::OWNERSHIP)) {
         rb_->owner_site_id_.emplace(reader.read_binary<RemoteSiteId>("owner_site_id"));
