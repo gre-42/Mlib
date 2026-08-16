@@ -251,15 +251,22 @@ void IncrementalCommunicatorProxy::send_home(
         sl.emplace(iostr, "Send home [bytes]: ");
     }
     std::optional<RemoteObjectId> object_to_send_completely;
+    auto full_transmission_remainder = datagram_counter_ % std::max((uint32_t)1, objects_->num_full_transmission_remainders());
     {
         std::optional<int32_t> highest_priority;
+        bool best_full_transmission_remainder_matched = false;
         auto update_common = [&](const RemoteObjectId& i, const IIncrementalObject& o){
             if (!objects_unknown_at_home_.contains(i)) {
+                return;
+            }
+            auto matched = (o.full_transmission_remainder() == full_transmission_remainder);
+            if (best_full_transmission_remainder_matched && !matched) {
                 return;
             }
             if (!object_to_send_completely.has_value() || (o.priority() > *highest_priority)) {
                 object_to_send_completely.emplace(i);
                 highest_priority.emplace(o.priority());
+                best_full_transmission_remainder_matched = matched;
             }
         };
         auto update_object_to_send_completely_local = [&](const LocalObjects& objects){

@@ -28,6 +28,7 @@ public:
         IoVerbosity verbosity);
     virtual std::string name() const override;
     virtual int32_t priority() const override;
+    virtual uint32_t full_transmission_remainder() const override;
     virtual void read(
         BinaryBitwiseWordsReader& reader,
         RemoteSiteId sender_site_id,

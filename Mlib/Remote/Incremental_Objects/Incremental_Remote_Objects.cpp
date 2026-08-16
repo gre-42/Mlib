@@ -73,6 +73,9 @@ RemoteObjectId IncrementalRemoteObjects::add_local_object(
     {
         verbose_abort("Could not add private local object");
     }
+    num_full_transmission_remainders_ = std::max(
+        num_full_transmission_remainders_,
+        object->full_transmission_remainder() + 1);
     return {local_site_id_, next_local_object_id_++};
 }
 
@@ -96,6 +99,9 @@ void IncrementalRemoteObjects::add_remote_object(
     if (!objects.emplace(id, object, CURRENT_SOURCE_LOCATION).second) {
         throw std::runtime_error("Could not add remote object: " + id.to_displayname());
     }
+    num_full_transmission_remainders_ = std::max(
+        num_full_transmission_remainders_,
+        object->full_transmission_remainder() + 1);
 }
 
 DanglingBaseClassPtr<IIncrementalObject> IncrementalRemoteObjects::try_get(const RemoteObjectId& id) const {
@@ -191,6 +197,10 @@ void IncrementalRemoteObjects::delete_orphaned_objects(
 
 const SessionIds& IncrementalRemoteObjects::session_ids() const {
     return session_ids_;
+}
+
+uint32_t IncrementalRemoteObjects::num_full_transmission_remainders() const {
+    return num_full_transmission_remainders_;
 }
 
 void IncrementalRemoteObjects::print(std::ostream& ostr) const {

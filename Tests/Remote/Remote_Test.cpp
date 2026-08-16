@@ -58,6 +58,9 @@ public:
     virtual int32_t priority() const override {
         return 0;
     }
+    virtual uint32_t full_transmission_remainder() const override {
+        return 0;
+    }
     virtual void read(
         BinaryBitwiseWordsReader& reader,
         RemoteSiteId sender_site_id,
@@ -116,6 +119,9 @@ public:
         return "string";
     }
     virtual int32_t priority() const override {
+        return 0;
+    }
+    virtual uint32_t full_transmission_remainder() const override {
         return 0;
     }
     virtual void read(

@@ -24,6 +24,7 @@ public:
     virtual ~IIncrementalObject() = default;
     virtual std::string name() const = 0;
     virtual int32_t priority() const = 0;
+    virtual uint32_t full_transmission_remainder() const = 0;
     virtual void read(
         BinaryBitwiseWordsReader& reader,
         RemoteSiteId sender_site_id,

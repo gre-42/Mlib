@@ -59,6 +59,10 @@ int32_t RemoteCountdown::priority() const {
     return RemoteSceneObjectPriority::COUNTDOWN;
 }
 
+uint32_t RemoteCountdown::full_transmission_remainder() const {
+    return FullTransmissionRemainder::COUNTDOWN;
+}
+
 void RemoteCountdown::read(
     BinaryBitwiseWordsReader& reader,
     RemoteSiteId sender_site_id,
