@@ -1,6 +1,8 @@
 #pragma once
 #include <Mlib/Array/Array.hpp>
 #include <Mlib/Math/Is_Power_Of_Two.hpp>
+#include <Mlib/Memory/Integral_Cast.hpp>
+#include <cstdint>
 #include <stdexcept>
 
 namespace Mlib {
@@ -39,10 +41,10 @@ void fft1d_inplace(Array<std::complex<TFloat>>& x) {
         }
     }
     // Decimate
-    size_t m = (size_t)log2((double)N);
-    for (size_t a = 0; a < N; a++)
+    uint32_t m = (uint32_t)log2((double)N);
+    for (uint32_t a = 0; a < integral_cast<uint32_t>(N); a++)
     {
-        size_t b = a;
+        uint32_t b = a;
         // Reverse bits
         b = (((b & 0xaaaaaaaa) >> 1) | ((b & 0x55555555) << 1));
         b = (((b & 0xcccccccc) >> 2) | ((b & 0x33333333) << 2));

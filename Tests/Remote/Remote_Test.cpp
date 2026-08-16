@@ -1,3 +1,4 @@
+#include <Mlib/Math/Log2.hpp>
 #include <Mlib/Memory/Integral_To_Float.hpp>
 #include <Mlib/Memory/Object_Pool.hpp>
 #include <Mlib/Misc/Floating_Point_Exceptions.hpp>
@@ -22,6 +23,7 @@
 #include <Mlib/Remote/Send_Status_Code.hpp>
 #include <Mlib/Remote/Sockets/Fragmenting_Receiver.hpp>
 #include <Mlib/Remote/Sockets/Fragmenting_Sender.hpp>
+#include <Mlib/Remote/Transmission_Scheduler.hpp>
 #include <Mlib/Stats/Random_Number_Generators.hpp>
 #include <cstdint>
 
@@ -316,10 +318,19 @@ void test_fragmenting_datagram_node() {
     read_all_vector(osstr, "osstr", IoVerbosity::DATA | IoVerbosity::METADATA);
 }
 
+void test_transmission_scheduler() {
+    TransmissionLut lut{{1, 2, 3}, int_log2(64)};
+    // TransmissionLut lut{{2, 2, 2}, int_log2(64)};
+    for (size_t i = 0; i < 80; ++i) {
+        linfo() << lut();
+    }
+}
+
 int main(int argc, char** argv) {
     enable_floating_point_exceptions();
     reserve_realtime_threads(0);
     try {
+        test_transmission_scheduler();
         test_fragmenting_datagram_node();
         test_bandwidth_estimator();
         test_remote();
