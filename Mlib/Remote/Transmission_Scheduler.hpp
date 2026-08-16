@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Iterator/Enumerate.hpp>
 #include <Mlib/Memory/Integral_Cast.hpp>
 #include <bit>
 #include <cstdint>
@@ -28,7 +29,7 @@ std::vector<uint32_t> transmission_lut(
     uint32_t n = (1 << lut_size_exponent);
     uint32_t w = integral_cast<uint32_t>(std::bit_width(step_exponents.size()));
     std::vector<uint32_t> result(n, 0);
-    for (uint32_t e : step_exponents) {
+    for (const auto& [x, e] : tenumerate<uint32_t>(step_exponents)) {
         uint32_t step = (1 << e);
         for (uint32_t i = 0; i < step; ++i) {
             uint32_t offset = reverse_bits(i, w);
@@ -39,7 +40,7 @@ std::vector<uint32_t> transmission_lut(
                 continue;
             }
             for (uint32_t j = offset; j < n; j += step) {
-                result[j] |= (1 << i);
+                result[j] |= (1 << x);
             }
             break;
         }
@@ -49,17 +50,15 @@ std::vector<uint32_t> transmission_lut(
 
 class TransmissionLut {
 public:
-    TransmissionLut(
-        const std::vector<uint32_t>& step_exponents,
-        uint32_t lut_size_exponent)
-        : lut_{ transmission_lut(step_exponents, lut_size_exponent) }
+    TransmissionLut(const std::vector<uint32_t>& lut)
+        : lut_{ lut }
         , i_{ 0 }
     {}
     uint32_t operator () () {
         return lut_[(i_++) & (lut_.size() - 1)];
     }
 private:
-    std::vector<uint32_t> lut_;
+    const std::vector<uint32_t>& lut_;
     uint32_t i_;
 };
 

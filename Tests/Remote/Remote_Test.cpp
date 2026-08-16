@@ -319,8 +319,17 @@ void test_fragmenting_datagram_node() {
 }
 
 void test_transmission_scheduler() {
-    TransmissionLut lut{{1, 2, 3}, int_log2(64)};
+    // auto vec = transmission_lut({1, 2, 3}, int_log2(64));
     // TransmissionLut lut{{2, 2, 2}, int_log2(64)};
+    auto vec = transmission_lut(
+        {
+            int_log2(10),
+            int_log2(10),
+            int_log2(1),
+            int_log2(10)
+        },
+        int_log2(64));
+    TransmissionLut lut{vec};
     for (size_t i = 0; i < 80; ++i) {
         linfo() << lut();
     }
