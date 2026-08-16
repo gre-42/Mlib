@@ -323,10 +323,10 @@ void test_transmission_scheduler() {
     // TransmissionLut lut{{2, 2, 2}, int_log2(64)};
     auto vec = transmission_lut(
         {
-            int_log2(10),
-            int_log2(10),
+            int_log2(16),
+            int_log2(16),
             int_log2(1),
-            int_log2(10)
+            int_log2(16)
         },
         int_log2(64));
     TransmissionLut lut{vec};
