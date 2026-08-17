@@ -38,6 +38,10 @@ inline TransmittedFields& operator |= (TransmittedFields& a, RemoteUsersTransmit
     return a;
 }
 
+struct RemoteUsersCache: public Object {
+    NUserCountType next_transmitted_user = 0;
+};
+
 RemoteUsers::RemoteUsers(
     IoVerbosity verbosity,
     const DanglingBaseClassRef<PhysicsScene>& physics_scene,
@@ -70,9 +74,11 @@ RemoteUsers::~RemoteUsers() {
 DanglingBaseClassPtr<RemoteUsers> RemoteUsers::try_create_from_stream(
     PhysicsScene& physics_scene,
     BinaryBitwiseWordsReader& reader,
+    RemoteSiteId sender_site_id,
     TransmittedFields transmitted_fields,
     ObjectLifetimeStatus lifetime_status,
-    RemoteSiteId site_id,
+    const RemoteObjectId& remote_object_id,
+    ProxyObjectsCaches& proxy_objects_caches,
     ProxyTasks proxy_tasks,
     TransmissionHistoryReader& transmission_history_reader,
     IoVerbosity verbosity)
@@ -87,8 +93,8 @@ DanglingBaseClassPtr<RemoteUsers> RemoteUsers::try_create_from_stream(
         CURRENT_SOURCE_LOCATION,
         verbosity,
         DanglingBaseClassRef<PhysicsScene>{physics_scene, CURRENT_SOURCE_LOCATION},
-        site_id);
-    res->read_data(reader, transmitted_fields, proxy_tasks, transmission_history_reader);
+        remote_object_id.site_id);
+    res->read_data(reader, sender_site_id, remote_object_id, transmitted_fields, proxy_tasks, proxy_objects_caches, transmission_history_reader);
     if (lifetime_status == ObjectLifetimeStatus::DELETED) {
         if (any(verbosity & IoVerbosity::METADATA)) {
             linfo() << "Remote users deleted";
@@ -110,6 +116,12 @@ uint32_t RemoteUsers::full_transmission_mask() const {
     return FullTransmissionMask::REMOTE_USERS;
 }
 
+bool RemoteUsers::full_retransmission_required(
+    ProxyObjectsCaches& proxy_objects_caches) const
+{
+    return true;
+}
+
 void RemoteUsers::read(
     BinaryBitwiseWordsReader& reader,
     RemoteSiteId sender_site_id,
@@ -124,18 +136,33 @@ void RemoteUsers::read(
     if (type != RemoteSceneObjectType::REMOTE_USERS) {
         throw std::runtime_error("RemoteUsers::read: Unexpected scene object type");
     }
-    read_data(reader, transmitted_fields, proxy_tasks, transmission_history_reader);
+    read_data(reader, sender_site_id, remote_object_id, transmitted_fields, proxy_tasks, proxy_objects_caches, transmission_history_reader);
 }
 
 void RemoteUsers::read_data(
     BinaryBitwiseWordsReader& reader,
+    RemoteSiteId sender_site_id,
+    const RemoteObjectId& remote_object_id,
     TransmittedFields transmitted_fields,
     ProxyTasks proxy_tasks,
+    ProxyObjectsCaches& proxy_objects_caches,
     TransmissionHistoryReader& transmission_history_reader)
 {
+    if (remote_object_id.site_id != site_id_) {
+        throw std::runtime_error(std::format("Unexpected site ID. Old: {}, new: {}", site_id_ + 0, remote_object_id.site_id + 0));
+    }
     if (any(transmitted_fields & RemoteUsersTransmittedFields::ALL)) {
         auto user_count = reader.read_binary<NUserCountType>("#users");
-        physics_scene_->remote_sites_->set_user_count(site_id_, user_count);
+        if (proxy_objects_caches.try_get(sender_site_id, remote_object_id) == nullptr) {
+            physics_scene_->remote_sites_->set_user_count(site_id_, user_count);
+            proxy_objects_caches.get_or_create<RemoteUsersCache>(sender_site_id, remote_object_id);
+        }
+        {
+            auto old_user_count = physics_scene_->remote_sites_->get_user_count(site_id_);
+            if (user_count != old_user_count) {
+                throw std::runtime_error(std::format("Unexpected change in user count. Old: {}, new: {}", old_user_count + 0, user_count + 0));
+            }
+        }
         if (user_count > 0) {
             if (!physics_scene_->remote_sites_->get_local_site_id().has_value()) {
                 throw std::runtime_error("Local site ID not set");
@@ -213,7 +240,9 @@ void RemoteUsers::write(
         auto user_count = physics_scene_->remote_sites_->get_user_count(site_id_);
         writer.write_binary(user_count, "user count");
         if (user_count > 0) {
-            auto user_id = integral_cast<NUserCountType>(transmission_history_writer.datagram_counter() % user_count);
+            auto& cache = proxy_objects_caches.get_or_create<RemoteUsersCache>(receiver_site_id, remote_object_id);
+            auto user_id = cache.next_transmitted_user;
+            cache.next_transmitted_user = (cache.next_transmitted_user + 1) % user_count;
             writer.write_binary((NUserCountType)1, "#users transmitted");
             writer.write_binary(user_id, "user ID");
             {

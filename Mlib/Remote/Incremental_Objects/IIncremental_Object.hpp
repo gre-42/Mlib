@@ -25,6 +25,8 @@ public:
     virtual std::string name() const = 0;
     virtual int32_t priority() const = 0;
     virtual uint32_t full_transmission_mask() const = 0;
+    virtual bool full_retransmission_required(
+        ProxyObjectsCaches& proxy_objects_caches) const = 0;
     virtual void read(
         BinaryBitwiseWordsReader& reader,
         RemoteSiteId sender_site_id,

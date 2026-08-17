@@ -15,6 +15,7 @@
 #include <Mlib/Remote/Incremental_Objects/Transmitted_Fields.hpp>
 #include <Mlib/Remote/Session_Id.hpp>
 #include <chrono>
+#include <compare>
 
 using namespace Mlib;
 
@@ -244,6 +245,12 @@ void IncrementalCommunicatorProxy::receive_from_home(std::istream& istr) {
     }
 }
 
+struct MatchedAndPriority {
+    bool matched;
+    int32_t priority;
+    std::strong_ordering operator <=> (const MatchedAndPriority&) const = default;
+};
+
 void IncrementalCommunicatorProxy::send_home(
     std::iostream& iostr,
     SendStatusCode& status_code)
@@ -252,23 +259,23 @@ void IncrementalCommunicatorProxy::send_home(
     if (any(verbosity_ & IoVerbosity::METADATA)) {
         sl.emplace(iostr, "Send home [bytes]: ");
     }
+    auto full_transmission_required = [this](const RemoteObjectId& i, const IIncrementalObject& o){
+        return objects_unknown_at_home_.contains(i) ||
+               o.full_retransmission_required(proxy_objects_caches_.get());
+    };
     std::optional<RemoteObjectId> object_to_send_completely;
     auto full_transmission_mask = full_transmission_lut_();
     {
-        std::optional<int32_t> highest_priority;
-        bool best_full_transmission_remainder_matched = false;
+        std::optional<MatchedAndPriority> highest_priority;
         auto update_common = [&](const RemoteObjectId& i, const IIncrementalObject& o){
-            if (!objects_unknown_at_home_.contains(i)) {
+            if (!full_transmission_required(i, o)) {
                 return;
             }
             auto matched = bool(o.full_transmission_mask() & full_transmission_mask);
-            if (best_full_transmission_remainder_matched && !matched) {
-                return;
-            }
-            if (!object_to_send_completely.has_value() || (o.priority() > *highest_priority)) {
+            auto op = MatchedAndPriority{matched, o.priority()};
+            if (!object_to_send_completely.has_value() || (op > *highest_priority)) {
                 object_to_send_completely.emplace(i);
-                highest_priority.emplace(o.priority());
-                best_full_transmission_remainder_matched = matched;
+                highest_priority.emplace(op);
             }
         };
         auto update_object_to_send_completely_local = [&](const LocalObjects& objects){
@@ -355,7 +362,7 @@ void IncrementalCommunicatorProxy::send_home(
             bool new_object_sent = false;
             auto transmission_history_writer = TransmissionHistoryWriter{objects_->local_time(), datagram_counter_};
             auto send_object = [&](RemoteObjectId i, const DestructionFunctionsTokensRef<IIncrementalObject>& o){
-                auto known_fields = objects_unknown_at_home_.contains(i)
+                auto known_fields = full_transmission_required(i, o.get())
                     ? KnownFields::NONE
                     : KnownFields::ALL;
                 if (known_fields == KnownFields::NONE) {

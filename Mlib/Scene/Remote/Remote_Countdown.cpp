@@ -63,6 +63,12 @@ uint32_t RemoteCountdown::full_transmission_mask() const {
     return FullTransmissionMask::COUNTDOWN;
 }
 
+bool RemoteCountdown::full_retransmission_required(
+    ProxyObjectsCaches& proxy_objects_caches) const
+{
+    return false;
+}
+
 void RemoteCountdown::read(
     BinaryBitwiseWordsReader& reader,
     RemoteSiteId sender_site_id,

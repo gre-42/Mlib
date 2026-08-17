@@ -63,6 +63,11 @@ public:
     virtual uint32_t full_transmission_mask() const override {
         return 0;
     }
+    virtual bool full_retransmission_required(
+        ProxyObjectsCaches& proxy_objects_caches) const override
+    {
+        return false;
+    }
     virtual void read(
         BinaryBitwiseWordsReader& reader,
         RemoteSiteId sender_site_id,
@@ -125,6 +130,11 @@ public:
     }
     virtual uint32_t full_transmission_mask() const override {
         return 0;
+    }
+    virtual bool full_retransmission_required(
+        ProxyObjectsCaches& proxy_objects_caches) const override
+    {
+        return false;
     }
     virtual void read(
         BinaryBitwiseWordsReader& reader,
@@ -328,7 +338,7 @@ void test_transmission_scheduler() {
         {
             int_log2(16),
             int_log2(16),
-            int_log2(1),
+            int_log2(8),
             int_log2(16)
         },
         int_log2(64));

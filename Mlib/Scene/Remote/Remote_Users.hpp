@@ -20,15 +20,19 @@ public:
     static DanglingBaseClassPtr<RemoteUsers> try_create_from_stream(
         PhysicsScene& physics_scene,
         BinaryBitwiseWordsReader& reader,
+        RemoteSiteId sender_site_id,
         TransmittedFields transmitted_fields,
         ObjectLifetimeStatus lifetime_status,
-        RemoteSiteId site_id,
+        const RemoteObjectId& remote_object_id,
+        ProxyObjectsCaches& proxy_objects_caches,
         ProxyTasks proxy_tasks,
         TransmissionHistoryReader& transmission_history_reader,
         IoVerbosity verbosity);
     virtual std::string name() const override;
     virtual int32_t priority() const override;
     virtual uint32_t full_transmission_mask() const override;
+    virtual bool full_retransmission_required(
+        ProxyObjectsCaches& proxy_objects_caches) const override;
     virtual void read(
         BinaryBitwiseWordsReader& reader,
         RemoteSiteId sender_site_id,
@@ -51,8 +55,11 @@ public:
 private:
     void read_data(
         BinaryBitwiseWordsReader& reader,
+        RemoteSiteId sender_site_id,
+        const RemoteObjectId& remote_object_id,
         TransmittedFields transmitted_fields,
         ProxyTasks proxy_tasks,
+        ProxyObjectsCaches& proxy_objects_caches,
         TransmissionHistoryReader& transmission_history_reader);
 
     DanglingBaseClassRef<PhysicsScene> physics_scene_;

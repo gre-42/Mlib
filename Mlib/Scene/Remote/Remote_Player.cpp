@@ -196,6 +196,12 @@ uint32_t RemotePlayer::full_transmission_mask() const {
     return FullTransmissionMask::PLAYER;
 }
 
+bool RemotePlayer::full_retransmission_required(
+    ProxyObjectsCaches& proxy_objects_caches) const
+{
+    return false;
+}
+
 void RemotePlayer::read(
     BinaryBitwiseWordsReader& reader,
     RemoteSiteId sender_site_id,
