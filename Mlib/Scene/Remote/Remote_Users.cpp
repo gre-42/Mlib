@@ -155,7 +155,7 @@ void RemoteUsers::read_data(
         auto user_count = reader.read_binary<NUserCountType>("#users");
         if (proxy_objects_caches.try_get(sender_site_id, remote_object_id) == nullptr) {
             physics_scene_->remote_sites_->set_user_count(site_id_, user_count);
-            proxy_objects_caches.get_or_create<RemoteUsersCache>(sender_site_id, remote_object_id);
+            proxy_objects_caches.add(sender_site_id, remote_object_id, std::make_unique<RemoteUsersCache>());
         }
         {
             auto old_user_count = physics_scene_->remote_sites_->get_user_count(site_id_);
