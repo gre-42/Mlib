@@ -1,6 +1,8 @@
 #pragma once
 #include <Mlib/Memory/Object_Pool.hpp>
 #include <Mlib/Remote/Communicator_Proxies.hpp>
+#include <cstdint>
+#include <vector>
 
 namespace Mlib {
 
@@ -16,6 +18,7 @@ public:
         const DanglingBaseClassRef<IIncrementalObjectFactory>& shared_object_factory,
         const DanglingBaseClassRef<IncrementalRemoteObjects>& objects,
         const DanglingBaseClassRef<ProxyObjectsCaches>& proxy_objects_caches,
+        std::vector<uint32_t> transmission_intervals,
         IoVerbosity verbosity,
         ProxyTasks tasks);
     virtual ~IncrementalCommunicatorProxyFactory() override;
@@ -28,6 +31,7 @@ private:
     DanglingBaseClassRef<IIncrementalObjectFactory> shared_object_factory_;
     DanglingBaseClassRef<IncrementalRemoteObjects> objects_;
     DanglingBaseClassRef<ProxyObjectsCaches> proxy_objects_caches_;
+    std::vector<uint32_t> transmission_intervals_;
     IoVerbosity verbosity_;
     ProxyTasks tasks_;
     ObjectPool object_pool_;

@@ -58,13 +58,11 @@ public:
     const RemoteObjects& public_remote_objects() const;
     void delete_orphaned_objects(RemoteSiteId site_id, SessionIdType session_id);
     const SessionIds& session_ids() const;
-    uint32_t num_full_transmission_remainders() const;
     void print(std::ostream& ostr) const;
 
 private:
     SessionIds session_ids_;
     RemoteSiteId local_site_id_;
-    uint32_t num_full_transmission_remainders_;
     TimeAndPause<std::chrono::steady_clock::time_point> local_time_;
     DanglingBaseClassRef<SceneLevelSelector> local_scene_level_selector_;
     DeletedObjects deleted_objects_short_;

@@ -10,11 +10,13 @@ IncrementalCommunicatorProxyFactory::IncrementalCommunicatorProxyFactory(
     const DanglingBaseClassRef<IIncrementalObjectFactory>& shared_object_factory,
     const DanglingBaseClassRef<IncrementalRemoteObjects>& objects,
     const DanglingBaseClassRef<ProxyObjectsCaches>& proxy_objects_caches,
+    std::vector<uint32_t> transmission_intervals,
     IoVerbosity verbosity,
     ProxyTasks tasks)
     : shared_object_factory_{ shared_object_factory }
     , objects_{ objects }
     , proxy_objects_caches_{ proxy_objects_caches }
+    , transmission_intervals_{ std::move(transmission_intervals) }
     , verbosity_{ verbosity }
     , tasks_{ tasks }
     , object_pool_{ InObjectPoolDestructor::CLEAR }
@@ -31,6 +33,7 @@ DanglingBaseClassRef<ICommunicatorProxy> IncrementalCommunicatorProxyFactory::cr
             shared_object_factory_,
             objects_,
             proxy_objects_caches_,
+            TransmissionLut{transmission_intervals_},
             verbosity_,
             ProxyTasks::NONE,
             0xC0FEFACE),
@@ -48,6 +51,7 @@ DanglingBaseClassRef<ICommunicatorProxy> IncrementalCommunicatorProxyFactory::cr
             shared_object_factory_,
             objects_,
             proxy_objects_caches_,
+            TransmissionLut{transmission_intervals_},
             verbosity_,
             tasks_,
             home_site_id),

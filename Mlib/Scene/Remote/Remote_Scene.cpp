@@ -9,6 +9,7 @@
 #include <Mlib/Scene/Remote/Network_Socket_Status.hpp>
 #include <Mlib/Scene/Remote/Remote_Config.hpp>
 #include <Mlib/Scene/Remote/Remote_Countdown.hpp>
+#include <Mlib/Scene/Remote/Remote_Scene_Object_Priority.hpp>
 #include <Mlib/Scene/Remote/Remote_Users.hpp>
 #include <stdexcept>
 
@@ -42,6 +43,7 @@ RemoteScene::RemoteScene(
         { remote_scene_object_factory_, CURRENT_SOURCE_LOCATION },
         { objects_, CURRENT_SOURCE_LOCATION },
         { proxy_objects_caches_, CURRENT_SOURCE_LOCATION },
+        FullTransmissionMask::transmission_lut(),
         verbosity,
         remote_params_.role == RemoteRole::SERVER
             ? ProxyTasks::SEND_LOCAL | ProxyTasks::SEND_REMOTE | ProxyTasks::SEND_OWNERSHIP

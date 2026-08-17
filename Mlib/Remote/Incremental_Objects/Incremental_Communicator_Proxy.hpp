@@ -4,6 +4,7 @@
 #include <Mlib/Remote/Incremental_Objects/Incremental_Cache_Proxy_Token.hpp>
 #include <Mlib/Remote/Incremental_Objects/Incremental_Remote_Objects.hpp>
 #include <Mlib/Remote/Incremental_Objects/Incremental_Versions.hpp>
+#include <Mlib/Remote/Transmission_Scheduler.hpp>
 #include <Mlib/Scene_Config/Remote_Integers.hpp>
 #include <iosfwd>
 #include <unordered_set>
@@ -23,6 +24,7 @@ public:
         const DanglingBaseClassRef<IIncrementalObjectFactory>& shared_object_factory,
         const DanglingBaseClassRef<IncrementalRemoteObjects>& objects,
         const DanglingBaseClassRef<ProxyObjectsCaches>& proxy_objects_caches,
+        const TransmissionLut& full_transmission_lut,
         IoVerbosity verbosity,
         ProxyTasks tasks,
         RemoteSiteId home_site_id);
@@ -39,6 +41,7 @@ private:
     DanglingBaseClassRef<IIncrementalObjectFactory> shared_object_factory_;
     DanglingBaseClassRef<IncrementalRemoteObjects> objects_;
     DanglingBaseClassRef<ProxyObjectsCaches> proxy_objects_caches_;
+    TransmissionLut full_transmission_lut_;
     IoVerbosity verbosity_;
     ProxyTasks tasks_;
     RemoteSiteId home_site_id_;

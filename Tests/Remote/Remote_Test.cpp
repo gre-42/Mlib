@@ -60,7 +60,7 @@ public:
     virtual int32_t priority() const override {
         return 0;
     }
-    virtual uint32_t full_transmission_remainder() const override {
+    virtual uint32_t full_transmission_mask() const override {
         return 0;
     }
     virtual void read(
@@ -123,7 +123,7 @@ public:
     virtual int32_t priority() const override {
         return 0;
     }
-    virtual uint32_t full_transmission_remainder() const override {
+    virtual uint32_t full_transmission_mask() const override {
         return 0;
     }
     virtual void read(
@@ -213,16 +213,19 @@ void test_remote() {
     RemoteObjectFactory shared_object_factory;
     IncrementalRemoteObjects server_objects{ 42, {server_scene_level, CURRENT_SOURCE_LOCATION} };
     IncrementalRemoteObjects client_objects{ 43, {client_scene_level, CURRENT_SOURCE_LOCATION} };
+    std::vector<uint32_t> transmission_intervals{0};
     IncrementalCommunicatorProxyFactory server_communicator_proxy_factory{
         {shared_object_factory, CURRENT_SOURCE_LOCATION},
         {server_objects, CURRENT_SOURCE_LOCATION},
         {caches, CURRENT_SOURCE_LOCATION},
+        transmission_intervals,
         IoVerbosity::SILENT,
         ProxyTasks::SEND_LOCAL | ProxyTasks::SEND_REMOTE };
     IncrementalCommunicatorProxyFactory client_communicator_proxy_factory{
         {shared_object_factory, CURRENT_SOURCE_LOCATION},
         {client_objects, CURRENT_SOURCE_LOCATION},
         {caches, CURRENT_SOURCE_LOCATION},
+        transmission_intervals,
         IoVerbosity::SILENT,
         ProxyTasks::SEND_LOCAL | ProxyTasks::SEND_REMOTE };
 

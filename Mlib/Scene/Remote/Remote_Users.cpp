@@ -106,8 +106,8 @@ int32_t RemoteUsers::priority() const {
     return RemoteSceneObjectPriority::REMOTE_USERS;
 }
 
-uint32_t RemoteUsers::full_transmission_remainder() const {
-    return FullTransmissionRemainder::REMOTE_USERS;
+uint32_t RemoteUsers::full_transmission_mask() const {
+    return FullTransmissionMask::REMOTE_USERS;
 }
 
 void RemoteUsers::read(

@@ -23,6 +23,7 @@ IncrementalCommunicatorProxy::IncrementalCommunicatorProxy(
     const DanglingBaseClassRef<IIncrementalObjectFactory>& shared_object_factory,
     const DanglingBaseClassRef<IncrementalRemoteObjects>& objects,
     const DanglingBaseClassRef<ProxyObjectsCaches>& proxy_objects_caches,
+    const TransmissionLut& full_transmission_lut,
     IoVerbosity verbosity,
     ProxyTasks tasks,
     RemoteSiteId home_site_id)
@@ -32,6 +33,7 @@ IncrementalCommunicatorProxy::IncrementalCommunicatorProxy(
     , shared_object_factory_{ shared_object_factory }
     , objects_{ objects }
     , proxy_objects_caches_{ proxy_objects_caches }
+    , full_transmission_lut_{ full_transmission_lut }
     , verbosity_{ verbosity }
     , tasks_{ tasks }
     , home_site_id_{ home_site_id }
@@ -251,7 +253,7 @@ void IncrementalCommunicatorProxy::send_home(
         sl.emplace(iostr, "Send home [bytes]: ");
     }
     std::optional<RemoteObjectId> object_to_send_completely;
-    auto full_transmission_remainder = datagram_counter_ % std::max((uint32_t)1, objects_->num_full_transmission_remainders());
+    auto full_transmission_mask = full_transmission_lut_();
     {
         std::optional<int32_t> highest_priority;
         bool best_full_transmission_remainder_matched = false;
@@ -259,7 +261,7 @@ void IncrementalCommunicatorProxy::send_home(
             if (!objects_unknown_at_home_.contains(i)) {
                 return;
             }
-            auto matched = (o.full_transmission_remainder() == full_transmission_remainder);
+            auto matched = bool(o.full_transmission_mask() & full_transmission_mask);
             if (best_full_transmission_remainder_matched && !matched) {
                 return;
             }

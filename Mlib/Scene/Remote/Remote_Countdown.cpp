@@ -59,8 +59,8 @@ int32_t RemoteCountdown::priority() const {
     return RemoteSceneObjectPriority::COUNTDOWN;
 }
 
-uint32_t RemoteCountdown::full_transmission_remainder() const {
-    return FullTransmissionRemainder::COUNTDOWN;
+uint32_t RemoteCountdown::full_transmission_mask() const {
+    return FullTransmissionMask::COUNTDOWN;
 }
 
 void RemoteCountdown::read(

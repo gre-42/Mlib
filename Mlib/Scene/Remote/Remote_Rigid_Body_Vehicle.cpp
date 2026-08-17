@@ -354,8 +354,8 @@ int32_t RemoteRigidBodyVehicle::priority() const {
     return RemoteSceneObjectPriority::RIGID_BODY_VEHICLE;
 }
 
-uint32_t RemoteRigidBodyVehicle::full_transmission_remainder() const {
-    return FullTransmissionRemainder::RIGID_BODY_VEHICLE;
+uint32_t RemoteRigidBodyVehicle::full_transmission_mask() const {
+    return FullTransmissionMask::RIGID_BODY_VEHICLE;
 }
 
 void RemoteRigidBodyVehicle::read(

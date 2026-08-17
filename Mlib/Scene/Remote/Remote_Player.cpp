@@ -192,8 +192,8 @@ int32_t RemotePlayer::priority() const {
     return RemoteSceneObjectPriority::PLAYER;
 }
 
-uint32_t RemotePlayer::full_transmission_remainder() const {
-    return FullTransmissionRemainder::PLAYER;
+uint32_t RemotePlayer::full_transmission_mask() const {
+    return FullTransmissionMask::PLAYER;
 }
 
 void RemotePlayer::read(
