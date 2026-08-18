@@ -146,7 +146,7 @@ void IncrementalCommunicatorProxy::receive_from_home(std::istream& istr) {
         linfo() << "receive versions " << versions;
     }
 
-    std::unordered_set<LocalObjectId> objects_known_and_owned_by_home;
+    std::unordered_set<RemoteObjectId> objects_known_by_home;
     {
         auto ndeleted = reader.read_binary<NDeletedType>("#deleted");
         for (NDeletedType i = 0; i < ndeleted; ++i) {
@@ -170,6 +170,7 @@ void IncrementalCommunicatorProxy::receive_from_home(std::istream& istr) {
         }
     }
     {
+        objects_unknown_here_ = {};
         auto transmission_history_reader = TransmissionHistoryReader{*home_scene_level, remote_time, objects_->local_time()};
         auto receive_any = [&](RemoteObjectVisibility visibility){
             const auto& deleted_objects_long = objects_->deleted_objects_long();
@@ -180,9 +181,7 @@ void IncrementalCommunicatorProxy::receive_from_home(std::istream& istr) {
                     break;
                 }
                 auto i = transmission_history_reader.read_remote_object_id(reader, transmitted_fields);
-                if (i.site_id == home_site_id_) {
-                    objects_known_and_owned_by_home.insert(i.object_id);
-                }
+                objects_known_by_home.insert(i);
                 if (auto it = objects_->try_get(i); it != nullptr) {
                     if (any(verbosity_ & IoVerbosity::METADATA)) {
                         linfo() << this << " read from home site " << (home_site_id_ + 0) << ", object " << i << " \"" << it->name() << '"';
@@ -211,7 +210,6 @@ void IncrementalCommunicatorProxy::receive_from_home(std::istream& istr) {
                             linfo() << this << " object created: \"" << o->name() << '"';
                         }
                         objects_->add_remote_object(i, *o, visibility);
-                        objects_unknown_here_.erase(i);
                     }
                 }
             }
@@ -220,10 +218,10 @@ void IncrementalCommunicatorProxy::receive_from_home(std::istream& istr) {
         receive_any(RemoteObjectVisibility::PUBLIC);
         receive_any(RemoteObjectVisibility::PUBLIC);
     }
-    {
-        std::vector<LocalObjectId> objects_to_be_deleted;
-        objects_to_be_deleted.reserve(objects_known_and_owned_by_home.size());
-        for (auto& [i, o] : objects_->public_remote_objects()) {
+    auto delete_unknown_objects = [&](const RemoteObjects& objects){
+        std::vector<RemoteObjectId> objects_to_be_deleted;
+        objects_to_be_deleted.reserve(objects.size());
+        for (auto& [i, _] : objects) {
             bool can_delete = [&](){
                 if (any(tasks_ & ProxyTasks::SEND_OWNERSHIP)) {
                     return i.site_id == home_site_id_;
@@ -231,23 +229,26 @@ void IncrementalCommunicatorProxy::receive_from_home(std::istream& istr) {
                     return i.site_id != objects_->local_site_id();
                 }
             }();
-            if (can_delete && !objects_known_and_owned_by_home.contains(i.object_id)) {
-                objects_to_be_deleted.push_back(i.object_id);
+            if (can_delete && !objects_known_by_home.contains(i)) {
+                objects_to_be_deleted.push_back(i);
             }
         }
         for (auto i : objects_to_be_deleted) {
-            if (objects_->try_remove({home_site_id_, i})) {
+            if (objects_->try_remove(i)) {
                 if (any(verbosity_ & IoVerbosity::METADATA)) {
-                    linfo() << "Delete site " << (home_site_id_ + 0) << ", object " << (i + 0);
+                    linfo() << "Delete " << i;
                 }
             }
         }
-    }
+    };
+    delete_unknown_objects(objects_->private_remote_objects());
+    delete_unknown_objects(objects_->public_remote_objects());
 }
 
 struct MatchedAndPriority {
     bool matched;
     int32_t priority;
+    FullRetransmissionAge age;
     std::strong_ordering operator <=> (const MatchedAndPriority&) const = default;
 };
 
@@ -259,20 +260,26 @@ void IncrementalCommunicatorProxy::send_home(
     if (any(verbosity_ & IoVerbosity::METADATA)) {
         sl.emplace(iostr, "Send home [bytes]: ");
     }
-    auto full_transmission_required = [this](const RemoteObjectId& i, const IIncrementalObject& o){
-        return objects_unknown_at_home_.contains(i) ||
-               o.full_retransmission_required(proxy_objects_caches_.get());
+    std::unordered_map<RemoteObjectId, uint32_t> full_retransmission_age;
+    auto compute_full_transmission_age = [&](const RemoteObjectId& i, const IIncrementalObject& o){
+        if (objects_unknown_at_home_.contains(i)) {
+            full_retransmission_age.emplace(i, std::numeric_limits<FullRetransmissionAge>::max());
+        } else {
+            full_retransmission_age.emplace(i, o.full_retransmission_age(home_site_id_, proxy_objects_caches_.get()));
+        }
     };
     std::optional<RemoteObjectId> object_to_send_completely;
     auto full_transmission_mask = full_transmission_lut_();
+    if (any(verbosity_ & IoVerbosity::METADATA)) {
+        linfo() << "Full transmission mask: " << full_transmission_mask;
+    }
     {
         std::optional<MatchedAndPriority> highest_priority;
-        auto update_common = [&](const RemoteObjectId& i, const IIncrementalObject& o){
-            if (!full_transmission_required(i, o)) {
-                return;
-            }
+        auto update_common = [&, compute_full_transmission_age](const RemoteObjectId& i, const IIncrementalObject& o){
+            compute_full_transmission_age(i, o);
+            auto age = full_retransmission_age.at(i);
             auto matched = bool(o.full_transmission_mask() & full_transmission_mask);
-            auto op = MatchedAndPriority{matched, o.priority()};
+            auto op = MatchedAndPriority{matched, o.priority(), age};
             if (!object_to_send_completely.has_value() || (op > *highest_priority)) {
                 object_to_send_completely.emplace(i);
                 highest_priority.emplace(op);
@@ -362,7 +369,7 @@ void IncrementalCommunicatorProxy::send_home(
             bool new_object_sent = false;
             auto transmission_history_writer = TransmissionHistoryWriter{objects_->local_time(), datagram_counter_};
             auto send_object = [&](RemoteObjectId i, const DestructionFunctionsTokensRef<IIncrementalObject>& o){
-                auto known_fields = full_transmission_required(i, o.get())
+                auto known_fields = (full_retransmission_age.at(i) != 0)
                     ? KnownFields::NONE
                     : KnownFields::ALL;
                 if (known_fields == KnownFields::NONE) {

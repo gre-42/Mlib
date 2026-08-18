@@ -63,10 +63,11 @@ uint32_t RemoteCountdown::full_transmission_mask() const {
     return FullTransmissionMask::COUNTDOWN;
 }
 
-bool RemoteCountdown::full_retransmission_required(
+uint32_t RemoteCountdown::full_retransmission_age(
+    RemoteSiteId receiver_site_id,
     ProxyObjectsCaches& proxy_objects_caches) const
 {
-    return false;
+    return 0;
 }
 
 void RemoteCountdown::read(

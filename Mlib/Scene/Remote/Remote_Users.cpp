@@ -1,6 +1,7 @@
 #include "Remote_Users.hpp"
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Macro_Executor/Notifying_Json_Macro_Arguments.hpp>
+#include <Mlib/Math/Saturating_Increment.hpp>
 #include <Mlib/Os/Io/Binary_Bitwise_Words_Reader.hpp>
 #include <Mlib/Os/Io/Binary_Bitwise_Words_Writer.hpp>
 #include <Mlib/Players/Containers/Remote_Sites.hpp>
@@ -49,6 +50,7 @@ RemoteUsers::RemoteUsers(
     : physics_scene_{ physics_scene }
     , verbosity_{ verbosity }
     , site_id_{ site_id }
+    , full_retransmission_age_{ 0 }
     , physics_scene_on_destroy_{ physics_scene->on_destroy.deflt, CURRENT_SOURCE_LOCATION }
 {
     if (any(verbosity_ & IoVerbosity::METADATA)) {
@@ -116,10 +118,11 @@ uint32_t RemoteUsers::full_transmission_mask() const {
     return FullTransmissionMask::REMOTE_USERS;
 }
 
-bool RemoteUsers::full_retransmission_required(
+uint32_t RemoteUsers::full_retransmission_age(
+    RemoteSiteId receiver_site_id,
     ProxyObjectsCaches& proxy_objects_caches) const
 {
-    return true;
+    return full_retransmission_age_;
 }
 
 void RemoteUsers::read(
@@ -274,6 +277,9 @@ void RemoteUsers::write(
                 writer.write_binary(user->get_status(), "user status");
             }
         }
+        full_retransmission_age_ = 0;
+    } else {
+        full_retransmission_age_ = saturating_increment(full_retransmission_age_);
     }
     if (remote_end_check_enabled()) {
         writer.write_binary(~RemoteSceneObjectType::REMOTE_USERS, "inverted remote users");

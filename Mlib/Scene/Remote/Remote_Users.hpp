@@ -31,7 +31,8 @@ public:
     virtual std::string name() const override;
     virtual int32_t priority() const override;
     virtual uint32_t full_transmission_mask() const override;
-    virtual bool full_retransmission_required(
+    virtual uint32_t full_retransmission_age(
+        RemoteSiteId receiver_site_id,
         ProxyObjectsCaches& proxy_objects_caches) const override;
     virtual void read(
         BinaryBitwiseWordsReader& reader,
@@ -65,6 +66,7 @@ private:
     DanglingBaseClassRef<PhysicsScene> physics_scene_;
     IoVerbosity verbosity_;
     RemoteSiteId site_id_;
+    uint32_t full_retransmission_age_;
     DestructionFunctionsRemovalTokens physics_scene_on_destroy_;
 };
 

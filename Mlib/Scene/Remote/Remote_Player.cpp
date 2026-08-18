@@ -98,6 +98,8 @@ DanglingBaseClassPtr<RemotePlayer> RemotePlayer::try_create_from_stream(
     auto args = nlohmann::json::object();
     std::optional<VariableAndHash<std::string>> name;
     std::optional<VariableAndHash<std::string>> full_user_name;
+    std::optional<Skills> ai_skills;
+    std::optional<Skills> user_skills;
     if (any(transmitted_fields & PlayerTransmittedFields::SKILLS)) {
         name.emplace(reader.read_string<StringLengthType>("player ID"));
         args[PlayerArgs::name] = *name;
@@ -115,8 +117,8 @@ DanglingBaseClassPtr<RemotePlayer> RemotePlayer::try_create_from_stream(
         args[PlayerArgs::driving_direction] = driving_direction_to_string(reader.read_bits<DrivingDirection>(DRIVING_DIRECTION_BITS, PlayerArgs::driving_direction));
         has_scene_vehicle = reader.read_bool_bit("has_scene_vehicle");
         args[PlayerArgs::behavior] = reader.read_string<StringLengthType>("behavior");
-        reader.deserialize<Skills>("AI skills");
-        reader.deserialize<Skills>("user skills");
+        ai_skills.emplace(reader.deserialize<Skills>("AI skills"));
+        user_skills.emplace(reader.deserialize<Skills>("user skills"));
     } else {
         has_scene_vehicle = reader.read_bool_bit("has_scene_vehicle");
     }
@@ -175,13 +177,24 @@ DanglingBaseClassPtr<RemotePlayer> RemotePlayer::try_create_from_stream(
         return nullptr;
     }
     CreatePlayer{physics_scene, physics_scene.macro_line_executor_}.execute(JsonView{args}, PlayerCreator::REMOTE);
-    return {
-        global_object_pool.create<RemotePlayer>(
-            CURRENT_SOURCE_LOCATION,
-            verbosity,
-            physics_scene.players_.get_player(name.value(), CURRENT_SOURCE_LOCATION),
-            DanglingBaseClassRef<PhysicsScene>{physics_scene, CURRENT_SOURCE_LOCATION}),
-        CURRENT_SOURCE_LOCATION};
+    {
+        auto player = physics_scene.players_.get_player(name.value(), CURRENT_SOURCE_LOCATION);
+        if (!ai_skills.has_value()) {
+            throw std::runtime_error("New player has no AI skills");
+        }
+        if (!user_skills.has_value()) {
+            throw std::runtime_error("New player has no user skills");
+        }
+        player->set_skills(ControlSource::AI, *ai_skills);
+        player->set_skills(ControlSource::USER, *user_skills);
+        return {
+            global_object_pool.create<RemotePlayer>(
+                CURRENT_SOURCE_LOCATION,
+                verbosity,
+                player,
+                DanglingBaseClassRef<PhysicsScene>{physics_scene, CURRENT_SOURCE_LOCATION}),
+            CURRENT_SOURCE_LOCATION};
+    }
 }
 
 std::string RemotePlayer::name() const {
@@ -196,10 +209,11 @@ uint32_t RemotePlayer::full_transmission_mask() const {
     return FullTransmissionMask::PLAYER;
 }
 
-bool RemotePlayer::full_retransmission_required(
+uint32_t RemotePlayer::full_retransmission_age(
+    RemoteSiteId receiver_site_id,
     ProxyObjectsCaches& proxy_objects_caches) const
 {
-    return false;
+    return 0;
 }
 
 void RemotePlayer::read(

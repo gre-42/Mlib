@@ -55,6 +55,7 @@ public:
     void forget_old_deleted_objects();
     const LocalObjects& private_local_objects() const;
     const LocalObjects& public_local_objects() const;
+    const RemoteObjects& private_remote_objects() const;
     const RemoteObjects& public_remote_objects() const;
     void delete_orphaned_objects(RemoteSiteId site_id, SessionIdType session_id);
     const SessionIds& session_ids() const;

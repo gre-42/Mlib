@@ -358,10 +358,11 @@ uint32_t RemoteRigidBodyVehicle::full_transmission_mask() const {
     return FullTransmissionMask::RIGID_BODY_VEHICLE;
 }
 
-bool RemoteRigidBodyVehicle::full_retransmission_required(
+uint32_t RemoteRigidBodyVehicle::full_retransmission_age(
+    RemoteSiteId receiver_site_id,
     ProxyObjectsCaches& proxy_objects_caches) const
 {
-    return false;
+    return 0;
 }
 
 void RemoteRigidBodyVehicle::read(

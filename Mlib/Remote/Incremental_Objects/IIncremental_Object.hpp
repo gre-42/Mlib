@@ -18,6 +18,7 @@ struct IncrementalVersionsWrite;
 enum class KnownFields;
 enum class TransmittedFields: TransmittedFieldsType;
 enum class ProxyTasks;
+using FullRetransmissionAge = uint32_t;
 
 class IIncrementalObject: public virtual DestructionNotifier, public virtual DanglingBaseClass {
 public:
@@ -25,7 +26,8 @@ public:
     virtual std::string name() const = 0;
     virtual int32_t priority() const = 0;
     virtual uint32_t full_transmission_mask() const = 0;
-    virtual bool full_retransmission_required(
+    virtual FullRetransmissionAge full_retransmission_age(
+        RemoteSiteId receiver_site_id,
         ProxyObjectsCaches& proxy_objects_caches) const = 0;
     virtual void read(
         BinaryBitwiseWordsReader& reader,
