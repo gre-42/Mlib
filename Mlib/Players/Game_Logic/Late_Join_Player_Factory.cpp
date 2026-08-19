@@ -99,6 +99,10 @@ LateJoinPlayerFactory::LateJoinPlayerFactory(
     : on_user_loaded_level_token_{
         remote.sites.on_user_loaded_level,
         [this, &remote](UserInfo& user){
+            if (remote.config.game.has_value() && (remote.config.game->role == RemoteRole::CLIENT)) {
+                linfo() << "Not creating user due to client mode: " << user;
+                return;
+            }
             if (!user.random_rank.has_value()) {
                 linfo() << "User \"" << user.full_name << "\" has no rank, computing a free one";
                 user.random_rank.emplace(remote.sites.compute_free_user_rank());
@@ -158,6 +162,7 @@ LateJoinPlayerFactory::LateJoinPlayerFactory(
             players.add_team(team.at<NTeamCountType>(TeamKeys::id), VariableAndHash{name});
         }
         if (remote.config.game.has_value() && (remote.config.game->role == RemoteRole::CLIENT)) {
+            linfo() << "Creating players due to client mode";
             return;
         }
         auto prototypes = jv.at<std::map<std::string, nlohmann::json>>(ToplevelKeys::prototypes);
