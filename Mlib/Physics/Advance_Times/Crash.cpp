@@ -87,7 +87,7 @@ void Crash::notify_impact(
                 if (rigid_body.damageable_->health() <= 0) {
                     auto driver = rigid_body_->drivers_.try_get("driver");
                     if (driver != nullptr) {
-                        driver->notify_kill(rigid_body_.get());
+                        driver->notify_kill(rigid_body);
                     }
                 }
             }

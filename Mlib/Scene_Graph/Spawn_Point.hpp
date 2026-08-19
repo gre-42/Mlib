@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
+#include <Mlib/Hashing/Variable_And_Hash.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
 #include <Mlib/Os/Io/Safe_Archiver.hpp>
 #include <Mlib/Scene_Config/Scene_Precision.hpp>
@@ -18,7 +19,7 @@ struct SpawnPoint {
     SpawnPointType type;
     WayPointLocation location;
     TransformationMatrix<SceneDir, CompressedScenePos, 3> trafo = uninitialized;
-    std::string team;
+    VariableAndHash<std::string> team;
     std::string group;
     template <class Archive>
     void serialize(Archive& archiver) {

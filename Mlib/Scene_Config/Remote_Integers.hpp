@@ -11,6 +11,7 @@ using ReloadCountType = GenericSessionIdType;
 using SessionIdType = GenericSessionIdType;
 using SkillsType = uint8_t;
 using NUserCountType = uint8_t;
+enum class NTeamCountType : uint8_t {};
 using UserStatusType = uint8_t;
 
 }

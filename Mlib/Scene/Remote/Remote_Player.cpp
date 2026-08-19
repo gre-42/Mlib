@@ -103,7 +103,7 @@ DanglingBaseClassPtr<RemotePlayer> RemotePlayer::try_create_from_stream(
     if (any(transmitted_fields & PlayerTransmittedFields::SKILLS)) {
         name.emplace(reader.read_string<StringLengthType>("player ID"));
         args[PlayerArgs::name] = *name;
-        args[PlayerArgs::team] = reader.read_string<StringLengthType>(PlayerArgs::team);
+        args[PlayerArgs::team] = physics_scene.players_.get_team_name(reader.read_binary<NTeamCountType>(PlayerArgs::team));
         full_user_name.emplace(reader.read_string<StringLengthType>(PlayerArgs::full_user_name));
         if (!(*full_user_name)->empty()) {
             args[PlayerArgs::full_user_name] = **full_user_name;
@@ -257,7 +257,7 @@ void RemotePlayer::read(
     bool has_scene_vehicle;
     if (any(transmitted_fields & PlayerTransmittedFields::SKILLS)) {
         auto player_id = reader.read_string<StringLengthType>("player ID");
-        reader.read_string<StringLengthType>("team");
+        reader.read_binary<NTeamCountType>("team");
         reader.read_string<StringLengthType>("full_user_name");
         reader.read_string<StringLengthType>("user_account_key");
         reader.read_bits<GameMode>(GAME_MODE_BITS, "game_mode");
@@ -431,7 +431,7 @@ void RemotePlayer::write(
     auto has_scene_vehicle = player_->has_scene_vehicle();
     if (any(transmitted_fields & PlayerTransmittedFields::SKILLS)) {
         writer.write_string<StringLengthType>(*player_->id(), "player name");
-        writer.write_string<StringLengthType>(player_->team_name(), "player team");
+        writer.write_binary(player_->team_id(), "player team");
         if (auto u = player_->user_info(); u != nullptr) {
             writer.write_string<StringLengthType>(u->full_name, "player full username (0)");
         } else {

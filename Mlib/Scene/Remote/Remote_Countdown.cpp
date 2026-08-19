@@ -129,7 +129,7 @@ void RemoteCountdown::write(
         throw std::runtime_error("Countdown not instantiated (1)");
     }
     transmission_history_writer.write_remote_object_id(writer, remote_object_id, TransmittedFields::END);
-    
+
     writer.write_binary(RemoteSceneObjectType::COUNTDOWN, "countdown");
     writer.write_binary(physics_scene_->countdown_start_->elapsed(), "elapsed");
     writer.write_binary(physics_scene_->countdown_start_->duration(), "duration");

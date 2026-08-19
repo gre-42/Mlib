@@ -31,6 +31,7 @@
 #include <Mlib/Players/Containers/Players.hpp>
 #include <Mlib/Players/Containers/Remote_Sites.hpp>
 #include <Mlib/Players/Containers/Vehicle_Spawners.hpp>
+#include <Mlib/Players/Game_Logic/Game_Statistics.hpp>
 #include <Mlib/Players/Game_Logic/Navigate.hpp>
 #include <Mlib/Players/Game_Logic/Spawner.hpp>
 #include <Mlib/Players/Player/Supply_Depots_Waypoints_Collection.hpp>
@@ -144,6 +145,7 @@ DanglingBaseClassRef<AimAt> PlayerControlled::aim_at() {
 Player::Player(
     Scene& scene,
     SupplyDepots& supply_depots,
+    GameStatistics& game_statistics,
     const Navigate& navigate,
     const SupplyDepotsWaypointsCollection& supply_depots_waypoints_collection,
     Spawner& spawner,
@@ -154,7 +156,7 @@ Player::Player(
     PlayerSitePrivileges site_privileges,
     const DanglingBaseClassPtr<const UserInfo>& user_info,
     VariableAndHash<std::string> id,
-    std::string team,
+    NTeamCountType team,
     std::shared_ptr<UserAccount> user_account,
     GameMode game_mode,
     PlayerRole player_role,
@@ -179,12 +181,13 @@ Player::Player(
     , site_privileges_{ site_privileges }
     , user_info_{ user_info }
     , id_{ std::move(id) }
-    , team_{ std::move(team) }
+    , team_{ team }
     , vehicle_{ nullptr }
     , vehicle_spawner_{ nullptr }
     , controlled_{ .gun_node = nullptr }
     , target_scene_node_{ nullptr }
     , target_rb_{ nullptr }
+    , game_statistics_{ game_statistics }
     , game_mode_{ game_mode }
     , player_role_{ player_role }
     , unstuck_mode_{ unstuck_mode }
@@ -435,14 +438,14 @@ std::string Player::title() const {
     }
 }
 
-const std::string& Player::team_name() const {
+NTeamCountType Player::team_id() const {
     std::shared_lock lock{ mutex_ };
     return team_;
 }
 
 DanglingBaseClassRef<Team> Player::team() {
     std::shared_lock lock{ mutex_ };
-    return players_.get_team(team_name());
+    return players_.get_team(team_id());
 }
 
 std::shared_ptr<UserAccount> Player::user_account() {
@@ -467,6 +470,10 @@ float Player::car_health() const {
     } else {
         return NAN;
     }
+}
+
+uint32_t Player::nkills() const {
+    return game_statistics_.nkills_player(id_);
 }
 
 std::string Player::vehicle_name() const {
@@ -1521,10 +1528,7 @@ void Player::notify_kill(RigidBodyVehicle& rigid_body_vehicle) {
         if (player == nullptr) {
             throw std::runtime_error("Driver is not a player");
         }
-        if (player->team_name() != team_name()) {
-            ++stats_.nkills;
-            team()->notify_kill(rigid_body_vehicle);
-        }
+        game_statistics_.notify_local_kill(this, player, &team().get(), &player->team().get(), rigid_body_vehicle);
     }
 }
 

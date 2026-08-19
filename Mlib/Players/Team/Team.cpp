@@ -2,15 +2,20 @@
 #include <Mlib/Physics/Advance_Times/Bullet.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Players/Advance_Times/Player.hpp>
+#include <Mlib/Players/Game_Logic/Game_Statistics.hpp>
 #include <stdexcept>
 
 using namespace Mlib;
 
-Team::Team(std::string name)
-    : name_{ std::move(name) }
+Team::Team(
+    NTeamCountType id,
+    VariableAndHash<std::string> name,
+    GameStatistics& game_statistics)
+    : id_{ id }
+    , name_{ std::move(name) }
+    , game_statistics_{ game_statistics }
     , nwins_{ 0 }
     , nlosses_{ 0 }
-    , nkills_{ 0 }
     , destruction_observers_{ *this }
 {}
 
@@ -19,7 +24,11 @@ Team::~Team() {
     destruction_observers_.clear();
 }
 
-const std::string& Team::name() const {
+NTeamCountType Team::id() const {
+    return id_;
+}
+
+const VariableAndHash<std::string>& Team::name() const {
     return name_;
 }
 
@@ -30,7 +39,12 @@ void Team::notify_kill(RigidBodyVehicle& rigid_body_vehicle) {
             throw std::runtime_error("Driver is not a player");
         }
         if (&player->team().get() != this) {
-            ++nkills_;
+            game_statistics_.notify_local_kill(
+                nullptr,
+                player,
+                this,
+                &player->team().get(),
+                rigid_body_vehicle);
         }
     }
 }
@@ -58,7 +72,7 @@ uint32_t Team::nlosses() const {
 }
 
 uint32_t Team::nkills() const {
-    return nkills_;
+    return game_statistics_.nkills_team(id_);
 }
 
 void Team::increase_nwins() {
@@ -67,8 +81,4 @@ void Team::increase_nwins() {
 
 void Team::increase_nlosses() {
     ++nlosses_;
-}
-
-void Team::increase_nkills() {
-    ++nkills_;
 }

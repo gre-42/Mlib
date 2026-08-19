@@ -23,7 +23,7 @@ TeamSetWaypoint::TeamSetWaypoint(PhysicsScene& physics_scene)
 void TeamSetWaypoint::execute(const LoadSceneJsonUserFunctionArgs& args) {
     args.arguments.validate(KnownArgs::options);
     players.set_team_waypoint(
-        args.arguments.at<std::string>(KnownArgs::team),
+        args.arguments.at<NTeamCountType>(KnownArgs::team),
         {
             args.arguments.at<EFixedArray<CompressedScenePos, 3>>(KnownArgs::position),
             WayPointLocation::UNKNOWN

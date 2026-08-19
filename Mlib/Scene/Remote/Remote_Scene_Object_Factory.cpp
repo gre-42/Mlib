@@ -4,6 +4,7 @@
 #include <Mlib/Remote/Incremental_Objects/Object_Lifetime_Status.hpp>
 #include <Mlib/Remote/Incremental_Objects/Remote_Object_Id.hpp>
 #include <Mlib/Scene/Remote/Remote_Countdown.hpp>
+#include <Mlib/Scene/Remote/Remote_Game_Statistics.hpp>
 #include <Mlib/Scene/Remote/Remote_Player.hpp>
 #include <Mlib/Scene/Remote/Remote_Rigid_Body_Vehicle.hpp>
 #include <Mlib/Scene/Remote/Remote_Scene_Object_Type.hpp>
@@ -56,6 +57,13 @@ DanglingBaseClassPtr<IIncrementalObject> RemoteSceneObjectFactory::try_create_sh
         }
         return RemoteCountdown::try_create_from_stream(
             physics_scene_.get(), reader,
+            remote_object_id, verbosity_);
+    case RemoteSceneObjectType::GAME_STATISTICS:
+        if (lifetime_status == ObjectLifetimeStatus::DELETED) {
+            throw std::runtime_error("GAME_STATISTICS: Reading deleted objects not supported");
+        }
+        return RemoteGameStatistics::try_create_from_stream(
+            physics_scene_.get(), reader, transmitted_fields,
             remote_object_id, verbosity_);
     }
     throw std::runtime_error("Unknown object type: " + std::to_string((int)type));

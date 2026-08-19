@@ -184,6 +184,7 @@ DanglingBaseClassPtr<RemoteRigidBodyVehicle> RemoteRigidBodyVehicle::try_create_
             case RemoteSceneObjectType::REMOTE_USERS:
             case RemoteSceneObjectType::PLAYER:
             case RemoteSceneObjectType::COUNTDOWN:
+            case RemoteSceneObjectType::GAME_STATISTICS:
                 throw std::runtime_error("RemoteRigidBodyVehicle: Unexpected object type");
             }
             throw std::runtime_error("RemoteRigidBodyVehicle: Unknown scene object type");
@@ -217,6 +218,7 @@ DanglingBaseClassPtr<RemoteRigidBodyVehicle> RemoteRigidBodyVehicle::try_create_
         case RemoteSceneObjectType::REMOTE_USERS:
         case RemoteSceneObjectType::PLAYER:
         case RemoteSceneObjectType::COUNTDOWN:
+        case RemoteSceneObjectType::GAME_STATISTICS:
             throw std::runtime_error("RemoteRigidBodyVehicle: Unexpected object type");
         }
         throw std::runtime_error("RemoteRigidBodyVehicle: Unknown scene object type");
@@ -287,6 +289,7 @@ DanglingBaseClassPtr<RemoteRigidBodyVehicle> RemoteRigidBodyVehicle::try_create_
         case RemoteSceneObjectType::REMOTE_USERS:
         case RemoteSceneObjectType::PLAYER:
         case RemoteSceneObjectType::COUNTDOWN:
+        case RemoteSceneObjectType::GAME_STATISTICS:
             throw std::runtime_error("RemoteRigidBodyVehicle: Unexpected object type");
         }
         throw std::runtime_error("RemoteRigidBodyVehicle: Unknown scene object type");
@@ -320,6 +323,7 @@ DanglingBaseClassPtr<RemoteRigidBodyVehicle> RemoteRigidBodyVehicle::try_create_
         case RemoteSceneObjectType::REMOTE_USERS:
         case RemoteSceneObjectType::PLAYER:
         case RemoteSceneObjectType::COUNTDOWN:
+        case RemoteSceneObjectType::GAME_STATISTICS:
             throw std::runtime_error("RemoteRigidBodyVehicle: Unexpected object type");
         }
         throw std::runtime_error("RemoteRigidBodyVehicle: Unknown scene object type");
@@ -431,6 +435,7 @@ void RemoteRigidBodyVehicle::read(
             case RemoteSceneObjectType::REMOTE_USERS:
             case RemoteSceneObjectType::PLAYER:
             case RemoteSceneObjectType::COUNTDOWN:
+            case RemoteSceneObjectType::GAME_STATISTICS:
                 throw std::runtime_error("RemoteRigidBodyVehicle: Unexpected object type");
             }
             throw std::runtime_error("RemoteRigidBodyVehicle: Unknown scene object type");
@@ -475,6 +480,7 @@ void RemoteRigidBodyVehicle::read(
         case RemoteSceneObjectType::REMOTE_USERS:
         case RemoteSceneObjectType::PLAYER:
         case RemoteSceneObjectType::COUNTDOWN:
+        case RemoteSceneObjectType::GAME_STATISTICS:
             throw std::runtime_error("RemoteRigidBodyVehicle: Unexpected object type");
         }
         throw std::runtime_error("RemoteRigidBodyVehicle: Unknown scene object type");
@@ -699,6 +705,7 @@ void RemoteRigidBodyVehicle::write(
             case RemoteSceneObjectType::REMOTE_USERS:
             case RemoteSceneObjectType::PLAYER:
             case RemoteSceneObjectType::COUNTDOWN:
+            case RemoteSceneObjectType::GAME_STATISTICS:
                 throw std::runtime_error("RemoteRigidBodyVehicle: Unexpected object type");
             }
             throw std::runtime_error("RemoteRigidBodyVehicle: Unknown scene object type");
@@ -743,6 +750,7 @@ void RemoteRigidBodyVehicle::write(
         case RemoteSceneObjectType::REMOTE_USERS:
         case RemoteSceneObjectType::PLAYER:
         case RemoteSceneObjectType::COUNTDOWN:
+        case RemoteSceneObjectType::GAME_STATISTICS:
             throw std::runtime_error("RemoteRigidBodyVehicle: Unexpected object type");
         }
         throw std::runtime_error("RemoteRigidBodyVehicle: Unknown scene object type");

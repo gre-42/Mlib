@@ -2,8 +2,10 @@
 #include <Mlib/Macro_Executor/Focus.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Misc/Argument_List.hpp>
+#include <Mlib/Players/Containers/Players.hpp>
 #include <Mlib/Players/Containers/Vehicle_Spawners.hpp>
 #include <Mlib/Players/Scene_Vehicle/Vehicle_Spawner.hpp>
+#include <Mlib/Players/Team/Team.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Load_Scene_Funcs.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
@@ -45,12 +47,15 @@ void CreateSpawner::execute(const LoadSceneJsonUserFunctionArgs& args) {
             jv.at<bool>(KnownNodeArgs::if_with_physics)
         };
     };
+    auto team_name = args.arguments.at<VariableAndHash<std::string>>(KnownArgs::team);
+    auto team_id = players.get_team_id(team_name);
     vehicle_spawners.set(
         name,
         std::make_unique<VehicleSpawner>(
             scene,
             get_node(),
-            args.arguments.at<std::string>(KnownArgs::team),
+            team_id,
+            team_name,
             args.arguments.at<std::string>(KnownArgs::group),
             spawn_trigger_from_string(args.arguments.at<std::string>(KnownArgs::trigger))));
 }

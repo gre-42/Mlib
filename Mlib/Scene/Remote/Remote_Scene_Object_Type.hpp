@@ -11,7 +11,8 @@ enum class RemoteSceneObjectType: RemoteSceneObjectUnderlyingType {
     RIGID_BODY_AVATAR = 0x7A,
     // RIGID_BODY_HELICOPTER = 0xC4,  // this is currently the same as "car"
     // RIGID_BODY_PLANE = 0xFB,       // this is currently the same as "car"
-    COUNTDOWN = 0x3F
+    COUNTDOWN = 0x3F,
+    GAME_STATISTICS = 0x9E,
 };
 
 inline RemoteSceneObjectType operator ~ (RemoteSceneObjectType v) {

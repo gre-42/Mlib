@@ -60,16 +60,16 @@ void TeamDeathmatch::respawn_individually() {
 }
 
 void TeamDeathmatch::handle_last_team_standing_objective() {
-    std::set<std::string> all_teams;
-    std::set<std::string> winner_teams;
+    std::set<NTeamCountType> all_teams;
+    std::set<NTeamCountType> winner_teams;
     for (const auto& [_, p] : players_.players()) {
         if (p->player_role() == PlayerRole::BYSTANDER) {
             continue;
         }
         const VariableAndHash<std::string>& node_name = p->scene_node_name();
-        all_teams.insert(p->team_name());
+        all_teams.insert(p->team_id());
         if (!node_name->empty()) {
-            winner_teams.insert(p->team_name());
+            winner_teams.insert(p->team_id());
         }
     }
     if ((winner_teams.empty() ||
@@ -79,7 +79,7 @@ void TeamDeathmatch::handle_last_team_standing_objective() {
     {
         if (!winner_teams.empty()) {
             for (const auto& [_, p] : players_.players()) {
-                if (p->team_name() == *winner_teams.begin()) {
+                if (p->team_id() == *winner_teams.begin()) {
                     ++p->stats().nwins;
                 } else {
                     ++p->stats().nlosses;

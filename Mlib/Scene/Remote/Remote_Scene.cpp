@@ -9,6 +9,7 @@
 #include <Mlib/Scene/Remote/Network_Socket_Status.hpp>
 #include <Mlib/Scene/Remote/Remote_Config.hpp>
 #include <Mlib/Scene/Remote/Remote_Countdown.hpp>
+#include <Mlib/Scene/Remote/Remote_Game_Statistics.hpp>
 #include <Mlib/Scene/Remote/Remote_Scene_Object_Priority.hpp>
 #include <Mlib/Scene/Remote/Remote_Users.hpp>
 #include <stdexcept>
@@ -70,6 +71,13 @@ RemoteScene::RemoteScene(
                         CURRENT_SOURCE_LOCATION},
                     RemoteObjectVisibility::PRIVATE);
             }
+            objects_.add_local_object({
+                    global_object_pool.create<RemoteGameStatistics>(
+                        CURRENT_SOURCE_LOCATION,
+                        verbosity,
+                        physics_scene),
+                    CURRENT_SOURCE_LOCATION},
+                RemoteObjectVisibility::PUBLIC);
             return;
         case RemoteRole::CLIENT:
             proxies_.add_handshake_socket(home_node_);

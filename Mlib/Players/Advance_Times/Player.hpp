@@ -135,6 +135,7 @@ public:
     Player(
         Scene& scene,
         SupplyDepots& supply_depots,
+        GameStatistics& game_statistics,
         const Navigate& navigate,
         const SupplyDepotsWaypointsCollection& supply_depots_waypoints_collection,
         Spawner& spawner,
@@ -145,7 +146,7 @@ public:
         PlayerSitePrivileges site_privileges,
         const DanglingBaseClassPtr<const UserInfo>& user_info,
         VariableAndHash<std::string> id,
-        std::string team,
+        NTeamCountType team,
         std::shared_ptr<UserAccount> user_account,
         GameMode game_mode,
         PlayerRole player_role,
@@ -183,12 +184,13 @@ public:
     bool has_way_points() const;
     void set_way_point_location_filter(JoinedWayPointSandbox filter);
     DanglingBaseClassPtr<const UserInfo> user_info() const;
-    const std::string& team_name() const;
+    NTeamCountType team_id() const;
     DanglingBaseClassRef<Team> team();
     std::shared_ptr<UserAccount> user_account();
     PlayerStats& stats();
     const PlayerStats& stats() const;
     float car_health() const;
+    uint32_t nkills() const;
     GameMode game_mode() const;
     PlayerRole player_role() const;
     FixedArray<SceneDir, 3> vehicle_velocity() const;
@@ -330,7 +332,7 @@ private:
     PlayerSitePrivileges site_privileges_;
     DanglingBaseClassPtr<const UserInfo> user_info_;
     VariableAndHash<std::string> id_;
-    std::string team_;
+    NTeamCountType team_;
     DanglingBaseClassPtr<SceneVehicle> vehicle_;
     DanglingBaseClassPtr<VehicleSpawner> vehicle_spawner_;
     PlayerControlled controlled_;
@@ -338,6 +340,7 @@ private:
     DanglingBaseClassPtr<SceneNode> target_scene_node_;
     DanglingBaseClassPtr<RigidBodyVehicle> target_rb_;
     PlayerStats stats_;
+    GameStatistics& game_statistics_;
     GameMode game_mode_;
     PlayerRole player_role_;
     std::chrono::steady_clock::time_point stuck_start_;

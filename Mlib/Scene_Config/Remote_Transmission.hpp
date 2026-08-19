@@ -17,9 +17,11 @@ using NUnknownType = uint16_t;
 using NDeletedType = uint16_t;
 using NShotsType = uint16_t;
 using NSelectNextVehicleEventsType = uint8_t;
+using NFragEventsType = uint8_t;
 using StringLengthType = uint8_t;
 using FragmentGroupType = uint16_t;
 using FragmentIndexType = uint8_t;
+static const NFragEventsType MAX_FRAG_EVENTS = 200;
 // WebTransport allows at least 1'200 bytes.
 // The following calculation assumes no magic byte is present in the fragment header.
 static constexpr const size_t MAX_FRAGMENT_BYTES = 1'200 - sizeof(FragmentGroupType) - 2 * sizeof(FragmentIndexType);

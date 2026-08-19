@@ -11,6 +11,7 @@ using namespace Mlib;
 namespace KnownArgs {
 BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(json);
+DECLARE_ARGUMENT(is_remote_client);
 }
 
 LoadPlayers::LoadPlayers(PhysicsScene& physics_scene)
@@ -27,7 +28,8 @@ void LoadPlayers::execute(const LoadSceneJsonUserFunctionArgs& args)
         args.arguments.path(KnownArgs::json),
         args.macro_line_executor,
         args.asset_references,
-        args.remote_config_and_sites.sites);
+        args.remote_config_and_sites,
+        players);
 }
 
 namespace {

@@ -1,8 +1,10 @@
 #pragma once
+#include <Mlib/Hashing/Variable_And_Hash.hpp>
 #include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/Memory/Destruction_Notifier.hpp>
 #include <Mlib/Memory/Destruction_Observers.hpp>
 #include <Mlib/Physics/Interfaces/ITeam.hpp>
+#include <Mlib/Scene_Config/Remote_Integers.hpp>
 #include <cstdint>
 #include <set>
 #include <string>
@@ -12,13 +14,15 @@ namespace Mlib {
 class Player;
 template <class T>
 class VariableAndHash;
+class GameStatistics;
 
 class Team final: public ITeam, public virtual DanglingBaseClass, public virtual DestructionNotifier {
 public:
-    Team(std::string name);
+    Team(NTeamCountType id, VariableAndHash<std::string> name, GameStatistics& game_statistics_);
     ~Team();
 
-    const std::string& name() const;
+    NTeamCountType id() const;
+    const VariableAndHash<std::string>& name() const;
 
     // ITeam
     virtual void notify_kill(RigidBodyVehicle& rigid_body_vehicle) override;
@@ -32,14 +36,14 @@ public:
     uint32_t nkills() const;
     void increase_nwins();
     void increase_nlosses();
-    void increase_nkills();
 
 private:
-    std::string name_;
+    NTeamCountType id_;
+    VariableAndHash<std::string> name_;
     std::set<VariableAndHash<std::string>> players_;
+    GameStatistics& game_statistics_;
     uint32_t nwins_;
     uint32_t nlosses_;
-    uint32_t nkills_;
     DestructionObservers<const ITeam&> destruction_observers_;
 };
 

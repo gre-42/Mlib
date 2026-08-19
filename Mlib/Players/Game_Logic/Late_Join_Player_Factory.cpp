@@ -7,10 +7,12 @@
 #include <Mlib/Macro_Executor/Macro_Line_Executor.hpp>
 #include <Mlib/Macro_Executor/Replacement_Parameter.hpp>
 #include <Mlib/Misc/Argument_List.hpp>
+#include <Mlib/Players/Containers/Players.hpp>
 #include <Mlib/Players/Containers/Remote_Sites.hpp>
 #include <Mlib/Regex/Regex_Select.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Load_Scene_Funcs.hpp>
+#include <Mlib/Scene/Remote/Remote_Config.hpp>
 #include <Mlib/Strings/Join_Arguments.hpp>
 #include <fstream>
 #include <stdexcept>
@@ -43,6 +45,7 @@ DECLARE_ARGUMENT(user);
 
 namespace TeamKeys {
 BEGIN_ARGUMENT_LIST;
+DECLARE_ARGUMENT(id);
 DECLARE_ARGUMENT(style);
 }
 
@@ -91,13 +94,14 @@ LateJoinPlayerFactory::LateJoinPlayerFactory(
     const std::string& filename,
     const MacroLineExecutor& macro_line_executor,
     const AssetReferences& asset_references,
-    RemoteSites& remote_sites)
+    RemoteConfigAndSites& remote,
+    Players& players)
     : on_user_loaded_level_token_{
-        remote_sites.on_user_loaded_level,
-        [this, &remote_sites](UserInfo& user){
+        remote.sites.on_user_loaded_level,
+        [this, &remote](UserInfo& user){
             if (!user.random_rank.has_value()) {
                 linfo() << "User \"" << user.full_name << "\" has no rank, computing a free one";
-                user.random_rank.emplace(remote_sites.compute_free_user_rank());
+                user.random_rank.emplace(remote.sites.compute_free_user_rank());
             }
             auto it = create_rank_player_.find(*user.random_rank);
             if (it != create_rank_player_.end()) {
@@ -148,6 +152,14 @@ LateJoinPlayerFactory::LateJoinPlayerFactory(
         }
         JsonView jv{ j };
         jv.validate(ToplevelKeys::options);
+        for (const auto& [name, jteam] : jv.at<std::map<std::string, nlohmann::json>>(ToplevelKeys::teams)) {
+            JsonView team{jteam};
+            team.validate(TeamKeys::options);
+            players.add_team(team.at<NTeamCountType>(TeamKeys::id), VariableAndHash{name});
+        }
+        if (remote.config.game.has_value() && (remote.config.game->role == RemoteRole::CLIENT)) {
+            return;
+        }
         auto prototypes = jv.at<std::map<std::string, nlohmann::json>>(ToplevelKeys::prototypes);
         for (const auto& [_, v] : prototypes) {
             validate(v, PlayerKeys::options);
@@ -231,7 +243,7 @@ LateJoinPlayerFactory::LateJoinPlayerFactory(
                     locals0 = std::move(locals),
                     spawner_name0=std::move(spawner_name),
                     let0=std::move(let),
-                    &remote_sites]() -> std::optional<uint32_t>
+                    &remote]() -> std::optional<uint32_t>
                 {
                     auto locals = locals0;
                     auto spawner_name = spawner_name0;
@@ -242,7 +254,7 @@ LateJoinPlayerFactory::LateJoinPlayerFactory(
                             throw std::runtime_error("\"pc\" controller requires \"user\"");
                         }
                         auto rank = JsonView{*user}.at<uint32_t>(PlayerUserKeys::rank);
-                        u = remote_sites.try_get_user_by_rank(rank);
+                        u = remote.sites.try_get_user_by_rank(rank);
                         if ((u == nullptr) || ((u->type == UserType::REMOTE) && (u->get_status() != UserStatus::LEVEL_LOADED))) {
                             return rank;
                         }

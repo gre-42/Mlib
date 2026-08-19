@@ -1,9 +1,11 @@
 #pragma once
+#include <Mlib/Hashing/Variable_And_Hash.hpp>
 #include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/Memory/Dangling_List.hpp>
 #include <Mlib/Memory/Destruction_Functions.hpp>
 #include <Mlib/Memory/Object_Pool.hpp>
 #include <Mlib/Physics/Interfaces/ISpawner.hpp>
+#include <Mlib/Scene_Config/Remote_Integers.hpp>
 #include <Mlib/Scene_Config/Scene_Precision.hpp>
 #include <Mlib/Scene_Graph/Spawn_Arguments.hpp>
 #include <chrono>
@@ -48,7 +50,8 @@ public:
     VehicleSpawner(
         Scene& scene,
         NodeSpawnArguments node_args,
-        std::string team_name,
+        NTeamCountType team_id,
+        VariableAndHash<std::string> team_name,
         std::string group_name,
         SpawnTrigger spawn_trigger);
     ~VehicleSpawner();
@@ -61,7 +64,8 @@ public:
     void set_respawn_cooldown_time(float respawn_cooldown_time);
     float get_time_since_deletion() const;
 
-    std::string get_team_name() const;
+    NTeamCountType get_team_id() const;
+    VariableAndHash<std::string> get_team_name_() const;
     std::string get_group_name() const;
     
     bool has_player() const;
@@ -104,7 +108,8 @@ private:
     DestructionFunctionsRemovalTokens on_player_destroy_;
     DestructionFunctionsRemovalTokens on_primary_scene_vehicle_node_destroy_;
     NodeSpawnArguments node_args_;
-    std::string team_name_;
+    NTeamCountType team_id_;
+    VariableAndHash<std::string> team_name_;
     std::string group_name_;
     SpawnTrigger spawn_trigger_;
     float time_since_spawn_;

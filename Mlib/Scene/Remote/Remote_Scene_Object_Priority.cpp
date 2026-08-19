@@ -11,6 +11,7 @@ std::vector<uint32_t> FullTransmissionMask::transmission_lut() {
             int_log2(16),   // PLAYER
             int_log2(8),    // RIGID_BODY_VEHICLE
             int_log2(16),   // COUNTDOWN
+            int_log2(16),   // GAME_STATISTICS
         },
         int_log2(64));
     return lut;

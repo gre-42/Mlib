@@ -97,6 +97,26 @@ bool Spawner::try_spawn_at_spawn_point(
     // }
 }
 
+static bool spawn_point_matches_spawner(
+    const SpawnPoint& sp,
+    const VehicleSpawner& spawner,
+    const std::set<const SpawnPoint*>& occupied_spawn_points)
+{
+    if (!sp.team->empty() && (sp.team != spawner.get_team_name_())) {
+        return false;
+    }
+    if (spawner.get_group_name() != sp.group) {
+        return false;
+    }
+    if (sp.type != SpawnPointType::SPAWN_LINE) {
+        return false;
+    }
+    if (occupied_spawn_points.contains(&sp)) {
+        return false;
+    }
+    return true;
+}
+
 void Spawner::respawn_all_players() {
     for (auto& [_, p] : vehicle_spawners_.spawners()) {
         if (!p->has_scene_vehicle()) {
@@ -105,25 +125,16 @@ void Spawner::respawn_all_players() {
         p->delete_vehicle();
         ++ndelete_;
     }
-    std::set<SpawnPoint*> occupied_spawn_points;
+    std::set<const SpawnPoint*> occupied_spawn_points;
     for (const auto& [name, spawner] : vehicle_spawners_.spawners()) {
         auto shuffled_spawn_pts = shuffled_spawn_points();
         for (const auto& sp : shuffled_spawn_pts) {
-            if (!sp->team.empty() && (sp->team != spawner->get_team_name())) {
-                continue;
-            }
-            if (spawner->get_group_name() != sp->group) {
-                continue;
-            }
-            if (sp->type != SpawnPointType::SPAWN_LINE) {
-                continue;
-            }
-            if (occupied_spawn_points.contains(sp)) {
+            if (!spawn_point_matches_spawner(*sp, *spawner, occupied_spawn_points)) {
                 continue;
             }
             // lerr() << "Spawning \"" << name << "\" with team \"" << spawner->get_team_name() << '"';
             if (!try_spawn_at_spawn_point(*spawner, sp->trafo, AxisAlignedBoundingBox<CompressedScenePos, 3>::zero())) {
-                throw std::runtime_error("Could not spawn \"" + *name + "\" with team \"" + spawner->get_team_name() + '"');
+                throw std::runtime_error("Could not spawn \"" + *name + "\" with team \"" + *spawner->get_team_name_() + '"');
             }
             occupied_spawn_points.insert(sp);
             break;
@@ -152,16 +163,7 @@ bool Spawner::try_spawn_player_during_match(VehicleSpawner& spawner) {
     }
     auto shuffled_spawn_pts = shuffled_spawn_points();
     for (const auto& sp : shuffled_spawn_pts) {
-        if (!sp->team.empty() && (sp->team != spawner.get_team_name())) {
-            continue;
-        }
-        if (spawner.get_group_name() != sp->group) {
-            continue;
-        }
-        if (sp->type != SpawnPointType::SPAWN_LINE) {
-            continue;
-        }
-        if (occupied_spawn_points.contains(sp)) {
+        if (!spawn_point_matches_spawner(*sp, spawner, occupied_spawn_points)) {
             continue;
         }
         if (try_spawn_at_spawn_point(

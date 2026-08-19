@@ -3,8 +3,11 @@
 #include <Mlib/Geometry/Graph/Point_And_Flags.hpp>
 #include <Mlib/Initialization/Default_Uninitialized_Vector.hpp>
 #include <Mlib/Map/String_With_Hash_Unordered_Map.hpp>
+#include <Mlib/Map/Verbose_Unordered_Map.hpp>
 #include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/Misc/Source_Location.hpp>
+#include <Mlib/Players/Game_Logic/Game_Statistics.hpp>
+#include <Mlib/Scene_Config/Remote_Integers.hpp>
 #include <Mlib/Scene_Config/Scene_Precision.hpp>
 #include <list>
 #include <map>
@@ -53,10 +56,13 @@ public:
     void remove_player(const VariableAndHash<std::string>& name);
     DanglingBaseClassRef<Player> get_player(const VariableAndHash<std::string>& name, SourceLocation loc);
     DanglingBaseClassRef<const Player> get_player(const VariableAndHash<std::string>& name, SourceLocation loc) const;
-    DanglingBaseClassRef<Team> get_team(const std::string& name);
-    DanglingBaseClassRef<const Team> get_team(const std::string& name) const;
-    void remove_team(const std::string& name);
-    void set_team_waypoint(const std::string& team_name, const WaypointAndFlags& waypoint);
+    Team& add_team(NTeamCountType id, VariableAndHash<std::string> name);
+    DanglingBaseClassRef<Team> get_team(NTeamCountType id);
+    DanglingBaseClassRef<const Team> get_team(NTeamCountType id) const;
+    NTeamCountType get_team_id(const VariableAndHash<std::string>& name) const;
+    const VariableAndHash<std::string>& get_team_name(NTeamCountType id) const;
+    void remove_team(NTeamCountType id);
+    void set_team_waypoint(NTeamCountType id, const WaypointAndFlags& waypoint);
     const RaceIdentifier& race_identifier() const;
     void set_race_identifier_and_reload_history(const RaceIdentifier& race_identifier);
     void start_race(const RaceConfiguration& race_configuration);
@@ -72,12 +78,15 @@ public:
     std::string get_score_board(ScoreBoardConfiguration config) const;
     StringWithHashUnorderedMap<DestructionFunctionsTokensRef<Player>>& players();
     const StringWithHashUnorderedMap<DestructionFunctionsTokensRef<Player>>& players() const;
-    std::map<std::string, DestructionFunctionsTokensRef<Team>>& teams();
-    const std::map<std::string, DestructionFunctionsTokensRef<Team>>& teams() const;
+    VerboseUnorderedMap<NTeamCountType, DestructionFunctionsTokensRef<Team>>& teams();
+    const VerboseUnorderedMap<NTeamCountType, DestructionFunctionsTokensRef<Team>>& teams() const;
     size_t nactive() const;
+
+    GameStatistics statistics;
 private:
     StringWithHashUnorderedMap<DestructionFunctionsTokensRef<Player>> players_;
-    std::map<std::string, DestructionFunctionsTokensRef<Team>> teams_;
+    VerboseUnorderedMap<NTeamCountType, DestructionFunctionsTokensRef<Team>> teams_;
+    StringWithHashUnorderedMap<NTeamCountType> team_ids_;
     std::unique_ptr<RaceHistory> race_history_;
     std::shared_ptr<Translator> translator_;
     DanglingBaseClassRef<RemoteSites> remote_sites_;

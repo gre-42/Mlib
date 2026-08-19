@@ -4,6 +4,7 @@
 #include <Mlib/Memory/Destruction_Functions_Removeal_Tokens_Ref.hpp>
 #include <Mlib/Memory/Object_Pool.hpp>
 #include <Mlib/Memory/Recursive_Deletion.hpp>
+#include <Mlib/Misc/To_Underlying.hpp>
 #include <Mlib/Physics/Containers/Advance_Times.hpp>
 #include <Mlib/Physics/Containers/Race_History.hpp>
 #include <Mlib/Physics/Containers/Race_Identifier.hpp>
@@ -27,6 +28,8 @@ Players::Players(
     std::shared_ptr<Translator> translator,
     const DanglingBaseClassRef<RemoteSites>& remote_sites)
     : players_{"Player"}
+    , teams_{"Team", [](NTeamCountType id){ return std::to_string(to_underlying(id) + 0); }}
+    , team_ids_{"Team"}
     , race_history_{std::make_unique<RaceHistory>(
         max_tracks,
         save_playback,
@@ -47,6 +50,9 @@ Players::~Players() {
 }
 
 void Players::add_player(const DanglingBaseClassRef<Player>& player) {
+    if (!teams_.contains(player->team_id())) {
+        throw std::runtime_error("Unknown team: " + std::to_string(to_underlying(player->team_id()) + 0));
+    }
     auto player_id = player->id();
     {
         auto pit = players_.try_emplace(player_id, player, CURRENT_SOURCE_LOCATION);
@@ -55,16 +61,7 @@ void Players::add_player(const DanglingBaseClassRef<Player>& player) {
         }
         pit.first->second.on_destroy([this, player_id]() { remove_player(player_id); }, CURRENT_SOURCE_LOCATION);
     }
-
-    if (!teams_.contains(player->team_name())) {
-        DanglingBaseClassRef<Team> team{ global_object_pool.create<Team>(CURRENT_SOURCE_LOCATION, player->team_name()), CURRENT_SOURCE_LOCATION };
-        auto tit = teams_.try_emplace(player->team_name(), team, CURRENT_SOURCE_LOCATION);
-        if (!tit.second) {
-            verbose_abort("Could not insert team");
-        }
-        tit.first->second.on_destroy([this, team]() { remove_team(team->name()); }, CURRENT_SOURCE_LOCATION);
-    }
-    teams_.at(player->team_name())->add_player(player_id);
+    teams_.get(player->team_id())->add_player(player_id);
 }
 
 void Players::remove_player(const VariableAndHash<std::string>& name) {
@@ -85,27 +82,45 @@ DanglingBaseClassRef<const Player> Players::get_player(const VariableAndHash<std
     return const_cast<Players*>(this)->get_player(name, loc);
 }
 
-DanglingBaseClassRef<Team> Players::get_team(const std::string& name) {
-    auto it = teams_.find(name);
-    if (it == teams_.end()) {
-        throw std::runtime_error("No team with name \"" + name + "\" exists");
+Team& Players::add_team(NTeamCountType id, VariableAndHash<std::string> name) {
+    DanglingBaseClassRef<Team> team{ global_object_pool.create<Team>(CURRENT_SOURCE_LOCATION, id, std::move(name), statistics), CURRENT_SOURCE_LOCATION };
+    auto& tit = teams_.add(id, team, CURRENT_SOURCE_LOCATION);
+    tit.on_destroy([this, team]() { remove_team(team->id()); }, CURRENT_SOURCE_LOCATION);
+    team_ids_.add(std::move(name), id);
+    return tit.get();
+}
+
+DanglingBaseClassRef<Team> Players::get_team(NTeamCountType team_id) {
+    return teams_.get(team_id).object();
+}
+
+DanglingBaseClassRef<const Team> Players::get_team(NTeamCountType team_id) const {
+    return const_cast<Players*>(this)->get_team(team_id);
+}
+
+NTeamCountType Players::get_team_id(const VariableAndHash<std::string>& name) const {
+    return team_ids_.get(name);
+}
+
+const VariableAndHash<std::string>& Players::get_team_name(NTeamCountType id) const {
+    return teams_.get(id)->name();
+}
+
+void Players::remove_team(NTeamCountType team_id) {
+    {
+        auto team = get_team(team_id);
+        if (team_ids_.erase(team->name()) != 1) {
+            verbose_abort("Could not remove team ID \"" + std::to_string(to_underlying(team_id) + 0) + '"');
+        }
     }
-    return it->second.object();
-}
-
-DanglingBaseClassRef<const Team> Players::get_team(const std::string& name) const {
-    return const_cast<Players*>(this)->get_team(name);
-}
-
-void Players::remove_team(const std::string& name) {
-    if (teams_.erase(name) != 1) {
-        verbose_abort("Could not remove team \"" + name + '"');
+    if (teams_.erase(team_id) != 1) {
+        verbose_abort("Could not remove team \"" + std::to_string(to_underlying(team_id) + 0) + '"');
     }
 }
 
-void Players::set_team_waypoint(const std::string& team_name, const WaypointAndFlags& waypoint) {
+void Players::set_team_waypoint(NTeamCountType team_id, const WaypointAndFlags& waypoint) {
     for (auto& p : players_) {
-        if (p.second->team_name() == team_name) {
+        if (p.second->team_id() == team_id) {
             p.second->single_waypoint().set_waypoint(waypoint);
         }
     }
@@ -157,7 +172,7 @@ std::string Players::get_score_board(ScoreBoardConfiguration config) const {
     }
     for (const auto& [tname, team] : teams_) {
         if (any(config & ScoreBoardConfiguration::TEAM)) {
-            sstr << "Team: " << tname;
+            sstr << "Team: " << *team->name();
             if (any(config & ScoreBoardConfiguration::NWINS)) {
                 sstr << ", wins: " << team->nwins();
             }
@@ -182,7 +197,7 @@ std::string Players::get_score_board(ScoreBoardConfiguration config) const {
                 static const VariableAndHash<std::string> kills{ "kills" };
                 sstr << translator_->translate(Player) << ": " << p->title();
                 if (any(config & ScoreBoardConfiguration::TEAM)) {
-                    sstr << ", team: " << p->team_name();
+                    sstr << ", team: " << *team->name();
                 }
                 if (any(config & ScoreBoardConfiguration::BEST_LAP_TIME)) {
                     sstr << ", " << translator_->translate(best_lap_time) << ": " << format_minutes_seconds(p->stats().best_lap_time);
@@ -211,7 +226,7 @@ std::string Players::get_score_board(ScoreBoardConfiguration config) const {
                     sstr << ", " << translator_->translate(wins) << ": " << p->stats().nwins;
                 }
                 if (any(config & ScoreBoardConfiguration::NKILLS)) {
-                    sstr << ", " << translator_->translate(kills) << ": " << p->stats().nkills;
+                    sstr << ", " << translator_->translate(kills) << ": " << p->nkills();
                 }
                 sstr << std::endl;
             }
@@ -236,11 +251,11 @@ const StringWithHashUnorderedMap<DestructionFunctionsTokensRef<Player>>& Players
     return players_;
 }
 
-std::map<std::string, DestructionFunctionsTokensRef<Team>>& Players::teams() {
+VerboseUnorderedMap<NTeamCountType, DestructionFunctionsTokensRef<Team>>& Players::teams() {
     return teams_;
 }
 
-const std::map<std::string, DestructionFunctionsTokensRef<Team>>& Players::teams() const {
+const VerboseUnorderedMap<NTeamCountType, DestructionFunctionsTokensRef<Team>>& Players::teams() const {
     return teams_;
 }
 
