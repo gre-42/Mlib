@@ -11,8 +11,6 @@ public:
     JsonObjectFile();
     ~JsonObjectFile();
     void load_from_file(const Utf8Path& filename);
-private:
-    nlohmann::json j_;
 };
 
 using LockableJsonObjectFile = LockableObject<JsonObjectFile>;

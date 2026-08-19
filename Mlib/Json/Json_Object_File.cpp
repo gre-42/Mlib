@@ -21,5 +21,5 @@ void JsonObjectFile::load_from_file(const Utf8Path& filename) {
     if (j.type() != nlohmann::detail::value_t::object) {
         throw std::runtime_error("File is not a JSON object: \"" + filename.string() + '"');
     }
-    j_ = std::move(j);
+    json() = std::move(j);
 }
