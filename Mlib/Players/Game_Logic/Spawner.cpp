@@ -102,7 +102,8 @@ static bool spawn_point_matches_spawner(
     const VehicleSpawner& spawner,
     const std::set<const SpawnPoint*>& occupied_spawn_points)
 {
-    if (!sp.team->empty() && (sp.team != spawner.get_team_name_())) {
+    auto st = spawner.get_team_name();
+    if (sp.team.has_value() && st.has_value() && (*sp.team != *st)) {
         return false;
     }
     if (spawner.get_group_name() != sp.group) {
@@ -134,7 +135,9 @@ void Spawner::respawn_all_players() {
             }
             // lerr() << "Spawning \"" << name << "\" with team \"" << spawner->get_team_name() << '"';
             if (!try_spawn_at_spawn_point(*spawner, sp->trafo, AxisAlignedBoundingBox<CompressedScenePos, 3>::zero())) {
-                throw std::runtime_error("Could not spawn \"" + *name + "\" with team \"" + *spawner->get_team_name_() + '"');
+                throw std::runtime_error(
+                    "Could not spawn \"" + *name +
+                    "\" with team \"" + *spawner->get_team_name().value_or(VariableAndHash<std::string>("()")) + '"');
             }
             occupied_spawn_points.insert(sp);
             break;

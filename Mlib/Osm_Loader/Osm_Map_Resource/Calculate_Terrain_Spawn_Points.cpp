@@ -24,7 +24,10 @@ void Mlib::calculate_terrain_spawn_points(
         throw std::runtime_error("Inconsistent to-meters mapping and navmesh parameters");
     }
     for (const Building& bu : spawn_lines) {
-        auto team = VariableAndHash{bu.way.tags.get("spawn:team", "")};
+        std::optional<VariableAndHash<std::string>> team;
+        if (auto pteam = bu.way.tags.try_get("spawn:team"); pteam != nullptr) {
+            team.emplace(*pteam);
+        }
         auto group = bu.way.tags.get("spawn:group", "");
         for (auto it = bu.way.nd.begin(); it != bu.way.nd.end(); ++it) {
             auto next = it;

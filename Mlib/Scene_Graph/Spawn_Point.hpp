@@ -19,7 +19,7 @@ struct SpawnPoint {
     SpawnPointType type;
     WayPointLocation location;
     TransformationMatrix<SceneDir, CompressedScenePos, 3> trafo = uninitialized;
-    VariableAndHash<std::string> team;
+    std::optional<VariableAndHash<std::string>> team;
     std::string group;
     template <class Archive>
     void serialize(Archive& archiver) {

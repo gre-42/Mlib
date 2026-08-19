@@ -41,8 +41,8 @@ SpawnTrigger Mlib::spawn_trigger_from_string(const std::string& s) {
 VehicleSpawner::VehicleSpawner(
     Scene& scene,
     NodeSpawnArguments node_args,
-    NTeamCountType team_id,
-    VariableAndHash<std::string> team_name,
+    std::optional<NTeamCountType> team_id,
+    std::optional<VariableAndHash<std::string>> team_name,
     std::string group_name,
     SpawnTrigger spawn_trigger)
     : scene_{ scene }
@@ -70,11 +70,11 @@ DanglingBaseClassPtr<IPlayer> VehicleSpawner::player() {
     return player_;
 }
 
-NTeamCountType VehicleSpawner::get_team_id() const {
+std::optional<NTeamCountType> VehicleSpawner::get_team_id() const {
     return team_id_;
 }
 
-VariableAndHash<std::string> VehicleSpawner::get_team_name_() const {
+std::optional<VariableAndHash<std::string>> VehicleSpawner::get_team_name() const {
     return team_name_;
 }
 

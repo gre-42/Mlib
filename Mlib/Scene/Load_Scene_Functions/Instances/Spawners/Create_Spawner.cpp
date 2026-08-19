@@ -47,8 +47,11 @@ void CreateSpawner::execute(const LoadSceneJsonUserFunctionArgs& args) {
             jv.at<bool>(KnownNodeArgs::if_with_physics)
         };
     };
-    auto team_name = args.arguments.at<VariableAndHash<std::string>>(KnownArgs::team);
-    auto team_id = players.get_team_id(team_name);
+    auto team_name = args.arguments.try_at_non_null<VariableAndHash<std::string>>(KnownArgs::team);
+    std::optional<NTeamCountType> team_id;
+    if (team_name.has_value()) {
+        team_id.emplace(players.get_team_id(*team_name));
+    }
     vehicle_spawners.set(
         name,
         std::make_unique<VehicleSpawner>(

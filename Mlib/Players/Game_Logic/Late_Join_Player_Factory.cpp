@@ -6,6 +6,7 @@
 #include <Mlib/Macro_Executor/Macro_Keys.hpp>
 #include <Mlib/Macro_Executor/Macro_Line_Executor.hpp>
 #include <Mlib/Macro_Executor/Replacement_Parameter.hpp>
+#include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Misc/Argument_List.hpp>
 #include <Mlib/Players/Containers/Players.hpp>
 #include <Mlib/Players/Containers/Remote_Sites.hpp>
@@ -205,8 +206,10 @@ LateJoinPlayerFactory::LateJoinPlayerFactory(
                     "Could not find key \"" + join_arguments("/", path...) +
                     "\" in player or defaults. Player: \"" + spawner_name + '"');
             };
-            auto team = player.at<std::string>(PlayerKeys::team);
-            auto color = jv.resolve_t<UFixedArray<float, 3>>(ToplevelKeys::teams, team, TeamKeys::style, StyleKeys::color);
+            auto team = player.try_at_non_null<std::string>(PlayerKeys::team);
+            auto color = team.has_value()
+                ? jv.resolve_t<UFixedArray<float, 3>>(ToplevelKeys::teams, *team, TeamKeys::style, StyleKeys::color)
+                : fixed_ones<float, 3>();
             auto spawn_group = player.resolve_default<std::string>("", PlayerKeys::spawn, SpawnKeys::group);
             auto vehicle_name = player.resolve_t<std::string>(PlayerKeys::spawn, SpawnKeys::vehicle, SpawnedVehicleKeys::type);
             const auto& vars = asset_references["vehicles"].at(vehicle_name).rp;
@@ -214,7 +217,7 @@ LateJoinPlayerFactory::LateJoinPlayerFactory(
                 nlohmann::json let{
                     {"asset_id", vehicle_name},
                     {"spawn_group", spawn_group},
-                    {"team", team},
+                    {"team", team.has_value() ? nlohmann::json(*team) : nlohmann::json()},
                     {"player_role", get(PlayerKeys::player_role).get<std::string>()},
                     {"initial_behavior", get(PlayerKeys::behavior).get<std::string>()},
                     {"seat", get(PlayerKeys::seat).get<std::string>()},
@@ -298,7 +301,7 @@ LateJoinPlayerFactory::LateJoinPlayerFactory(
                     {"spawner_name", spawner_name},
                     {"asset_id", vehicle_name},
                     {"spawn_group", spawn_group},
-                    {"team", team},
+                    {"team", team.has_value() ? nlohmann::json(*team) : nlohmann::json()},
                     {"if_human_style", true},
                     {"if_car_body_renderable_style", true},
                     {"color", color},
