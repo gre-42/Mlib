@@ -163,7 +163,7 @@ LateJoinPlayerFactory::LateJoinPlayerFactory(
             players.add_team(team.at<NTeamCountType>(TeamKeys::id), VariableAndHash{name});
         }
         if (remote.config.game.has_value() && (remote.config.game->role == RemoteRole::CLIENT)) {
-            linfo() << "Creating players due to client mode";
+            linfo() << "Not creating players due to client mode";
             return;
         }
         auto prototypes = jv.at<std::map<std::string, nlohmann::json>>(ToplevelKeys::prototypes);
