@@ -38,7 +38,7 @@ void SetFps::sleep() {
             if (on_tick_) {
                 on_tick_();
             }
-            while (execute_oldest_func());
+            execute_oldest_funcs();
             Mlib::sleep_for(std::chrono::microseconds(100));
         }
         if (sleeper_ != nullptr) {
