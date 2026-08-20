@@ -898,46 +898,47 @@ void Scene::move(float dt, const SceneTime& time) {
     LOG_FUNCTION("Scene::move");
     ThrowingLockGuard delete_lock{ delete_node_mutex };
     {
-        std::unique_lock lock{mutex_};
+        NodeItemPtrs nodes{ CHUNK_SIZE };
         {
-            NodeItemPtrs nodes{ CHUNK_SIZE };
+            std::unique_lock lock{mutex_};
             for (const auto& it : root_nodes_.default_nodes()) {
                 nodes.emplace_back(&it);
             }
             for (const auto& it : root_physics_nodes_.default_nodes()) {
                 nodes.emplace_back(&it);
             }
-            for (const auto& it : nodes) {
-                if (it->second->shutdown_phase() != ShutdownPhase::NONE) {
-                    continue;
-                }
-                try {
-                    it->second->move(
-                        TransformationMatrix<float, ScenePos, 3>::identity(),
-                        dt,
-                        time,
-                        scene_node_resources_,
-                        nullptr);  // animation_state
-                } catch (const std::runtime_error& e) {
-                    throw std::runtime_error("Error moving node \"" + *it->first + "\": " + e.what());
-                }
-                if ((it->second->shutdown_phase() != ShutdownPhase::FINISHED) && it->second->to_be_deleted(time)) {
-                    UnlockGuard ug{lock};
-                    delete_root_node(it->first);
-                }
+        }
+        for (const auto& it : nodes) {
+            if (it->second->shutdown_phase() != ShutdownPhase::NONE) {
+                continue;
+            }
+            try {
+                it->second->move(
+                    TransformationMatrix<float, ScenePos, 3>::identity(),
+                    dt,
+                    time,
+                    scene_node_resources_,
+                    nullptr);  // animation_state
+            } catch (const std::runtime_error& e) {
+                throw std::runtime_error("Error moving node \"" + *it->first + "\": " + e.what());
             }
         }
-        if (dynamic_lights_ != nullptr) {
-            if (!any(time.type() & SceneTimeType::WITH_TIME)) {
-                if (!dynamic_lights_->empty()) {
-                    throw std::runtime_error("Dynamic lights require time");
-                }
-            } else {
-                dynamic_lights_->append_time(time.time());
+        for (const auto& it : nodes) {
+            if ((it->second->shutdown_phase() != ShutdownPhase::FINISHED) && it->second->to_be_deleted(time)) {
+                delete_root_node(it->first);
             }
         }
-        // times_.append(time);
     }
+    if (dynamic_lights_ != nullptr) {
+        if (!any(time.type() & SceneTimeType::WITH_TIME)) {
+            if (!dynamic_lights_->empty()) {
+                throw std::runtime_error("Dynamic lights require time");
+            }
+        } else {
+            dynamic_lights_->append_time(time.time());
+        }
+    }
+    // times_.append(time);
     try_empty_the_trash_can();
 }
 
