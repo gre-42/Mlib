@@ -209,7 +209,8 @@ void Bullet::cause_damage(
         for (const auto& rbm : rigid_bodies_.objects()) {
             const RigidBodyVehicle& rb = rbm.rigid_body.get();
             if ((rb.damageable_ == nullptr) ||
-                (rb.damageable_->health() <= 0.f))
+                (rb.damageable_->health() <= 0.f) ||
+                rb.is_deactivated())
             {
                 continue;
             }
