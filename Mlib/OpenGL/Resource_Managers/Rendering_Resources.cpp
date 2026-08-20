@@ -52,6 +52,7 @@
 #include <Mlib/OpenGL/Viewport_Guard.hpp>
 #include <Mlib/Os/Env.hpp>
 #include <Mlib/Os/Os.hpp>
+#include <Mlib/Os/Preload.hpp>
 #include <Mlib/Os/Threads/Recursion_Guard.hpp>
 #include <Mlib/Os/Threads/Thread_Local.hpp>
 #include <Mlib/Resource_Context/Rendering_Context.hpp>
@@ -1134,6 +1135,9 @@ std::shared_ptr<ITextureHandle> RenderingResources::get_texture(
     std::scoped_lock lock{ mutex_ };
     if (auto it = textures_.try_get(color); it != nullptr) {
         return it->handle;
+    }
+    if (get_not_preloaded_behavior() == NotPreloadedBehavior::WARN) {
+        lwarn() << this << " Texture not preloaded: " << color;
     }
     static THREAD_LOCAL(RecursionCounter) recursion_counter = RecursionCounter{};
     RecursionGuard rg{recursion_counter};
