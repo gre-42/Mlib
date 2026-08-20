@@ -35,3 +35,17 @@ void sleep_for(const std::chrono::duration<Rep, Period>& sleep_duration) {
 }
 
 #endif
+
+namespace Mlib {
+
+template <class Clock, class Duration>
+void sleep_until(const std::chrono::time_point<Clock, Duration>& end_time)
+{
+    auto total_duration = end_time - std::chrono::steady_clock::now();
+    auto sleep_duration = total_duration;
+    if (sleep_duration.count() > 0) {
+        sleep_for(sleep_duration);
+    }
+}
+
+}
