@@ -618,7 +618,7 @@ void Player::increment_external_forces(
     if (countdown_start_.counting()) {
         car_movement.step_on_brakes();
         car_movement.steer(0.f);
-        vehicle_->rb()->vehicle_controller(CURRENT_SOURCE_LOCATION)->apply();
+        vehicle_->rb()->vehicle_controller().apply();
         return;
     }
     bool unstucking = false;
@@ -682,8 +682,8 @@ bool Player::unstuck() {
             // }
             if (unstuck_mode_ == UnstuckMode::REVERSE) {
                 car_movement.drive_backwards();
-                vehicle_->rb()->vehicle_controller(CURRENT_SOURCE_LOCATION)->steer(0, 1.f);
-                vehicle_->rb()->vehicle_controller(CURRENT_SOURCE_LOCATION)->apply();
+                vehicle_->rb()->vehicle_controller().steer(0, 1.f);
+                vehicle_->rb()->vehicle_controller().apply();
             } else if (unstuck_mode_ == UnstuckMode::DELETE) {
                 // std::scoped_lock lock{ mutex_ };
                 // scene_.delete_root_node(vehicle_.scene_node_name);

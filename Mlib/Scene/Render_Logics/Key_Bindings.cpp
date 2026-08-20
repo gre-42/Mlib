@@ -515,7 +515,7 @@ void KeyBindings::increment_external_forces(
             if (!phase.group.rigid_bodies.contains(&rb->rbp_)) {
                 continue;
             }
-            rb->avatar_controller(CURRENT_SOURCE_LOCATION)->reset();
+            rb->avatar_controller().reset();
         }
     }
     for (auto& k : avatar_controller_key_bindings_) {
@@ -533,17 +533,17 @@ void KeyBindings::increment_external_forces(
             cfg,
             phase);
         if (enable_controls && !std::isnan(alpha)) {
-            auto avatar_controller = rb->avatar_controller(CURRENT_SOURCE_LOCATION);
+            auto& avatar_controller = rb->avatar_controller();
             if (k->surface_power.has_value()) {
-                avatar_controller->walk(*k->surface_power, alpha);
-                avatar_controller->increment_legs_z((*k->legs_z) * alpha);
+                avatar_controller.walk(*k->surface_power, alpha);
+                avatar_controller.increment_legs_z((*k->legs_z) * alpha);
             }
             if (k->angular_velocity.has_value()) {
                 if (k->yaw) {
-                    avatar_controller->increment_yaw((*k->angular_velocity) * cfg.dt_substeps(phase), alpha);
+                    avatar_controller.increment_yaw((*k->angular_velocity) * cfg.dt_substeps(phase), alpha);
                 }
                 if (k->pitch) {
-                    avatar_controller->increment_pitch((*k->angular_velocity) * cfg.dt_substeps(phase), alpha);
+                    avatar_controller.increment_pitch((*k->angular_velocity) * cfg.dt_substeps(phase), alpha);
                 }
             }
         }
@@ -554,7 +554,7 @@ void KeyBindings::increment_external_forces(
             if (!phase.group.rigid_bodies.contains(&rb->rbp_)) {
                 continue;
             }
-            rb->avatar_controller(CURRENT_SOURCE_LOCATION)->apply();
+            rb->avatar_controller().apply();
         }
     }
     // Vehicle controller
@@ -564,10 +564,10 @@ void KeyBindings::increment_external_forces(
             if (!phase.group.rigid_bodies.contains(&rb->rbp_)) {
                 continue;
             }
-            rb->vehicle_controller(CURRENT_SOURCE_LOCATION)->reset_parameters(
+            rb->vehicle_controller().reset_parameters(
                 k->surface_power,
                 k->steer_angle);
-            rb->vehicle_controller(CURRENT_SOURCE_LOCATION)->reset_relaxation(
+            rb->vehicle_controller().reset_relaxation(
                 k->drive_relaxation,
                 k->steer_relaxation);
         }
@@ -588,13 +588,13 @@ void KeyBindings::increment_external_forces(
             phase);
         if (enable_controls && !std::isnan(alpha)) {
             if (k->surface_power.has_value()) {
-                rb->vehicle_controller(CURRENT_SOURCE_LOCATION)->drive(*k->surface_power, alpha);
+                rb->vehicle_controller().drive(*k->surface_power, alpha);
             }
             if (k->steer_left_amount.has_value()) {
-                rb->vehicle_controller(CURRENT_SOURCE_LOCATION)->set_stearing_wheel_amount(*k->steer_left_amount, alpha);
+                rb->vehicle_controller().set_stearing_wheel_amount(*k->steer_left_amount, alpha);
             }
             if (k->ascend_velocity.has_value()) {
-                rb->vehicle_controller(CURRENT_SOURCE_LOCATION)->ascend_by((*k->ascend_velocity) * alpha * cfg.dt_substeps(phase));
+                rb->vehicle_controller().ascend_by((*k->ascend_velocity) * alpha * cfg.dt_substeps(phase));
             }
         }
     }
@@ -604,7 +604,7 @@ void KeyBindings::increment_external_forces(
             if (!phase.group.rigid_bodies.contains(&rb->rbp_)) {
                 continue;
             }
-            rb->vehicle_controller(CURRENT_SOURCE_LOCATION)->apply();
+            rb->vehicle_controller().apply();
         }
     }
     // Plane controller
@@ -614,8 +614,9 @@ void KeyBindings::increment_external_forces(
             if (!phase.group.rigid_bodies.contains(&rb->rbp_)) {
                 continue;
             }
-            rb->plane_controller(CURRENT_SOURCE_LOCATION)->reset_parameters(0.f, 0.f, 0.f, 0.f, 0.f);
-            rb->plane_controller(CURRENT_SOURCE_LOCATION)->reset_relaxation(0.f, 0.f, 0.f, 0.f);
+            auto& pc = rb->plane_controller();
+            pc.reset_parameters(0.f, 0.f, 0.f, 0.f, 0.f);
+            pc.reset_relaxation(0.f, 0.f, 0.f, 0.f);
         }
     }
     for (auto& k : plane_controller_key_bindings_) {
@@ -633,20 +634,21 @@ void KeyBindings::increment_external_forces(
             cfg,
             phase);
         if (enable_controls && !std::isnan(alpha)) {
+            auto& pc = rb->plane_controller();
             if (k->turbine_power.has_value()) {
-                rb->plane_controller(CURRENT_SOURCE_LOCATION)->accelerate(*k->turbine_power, alpha);
+                pc.accelerate(*k->turbine_power, alpha);
             }
             if (k->brake.has_value()) {
-                rb->plane_controller(CURRENT_SOURCE_LOCATION)->brake(*k->brake, alpha);
+                pc.brake(*k->brake, alpha);
             }
             if (k->pitch.has_value()) {
-                rb->plane_controller(CURRENT_SOURCE_LOCATION)->pitch(alpha * (*k->pitch), alpha);
+                pc.pitch(alpha * (*k->pitch), alpha);
             }
             if (k->yaw.has_value()) {
-                rb->plane_controller(CURRENT_SOURCE_LOCATION)->yaw(alpha * (*k->yaw), alpha);
+                pc.yaw(alpha * (*k->yaw), alpha);
             }
             if (k->roll.has_value()) {
-                rb->plane_controller(CURRENT_SOURCE_LOCATION)->roll(alpha * (*k->roll), alpha);
+                pc.roll(alpha * (*k->roll), alpha);
             }
         }
     }
@@ -656,7 +658,8 @@ void KeyBindings::increment_external_forces(
             if (!phase.group.rigid_bodies.contains(&rb->rbp_)) {
                 continue;
             }
-            rb->plane_controller(CURRENT_SOURCE_LOCATION)->apply();
+            auto& pc = rb->plane_controller();
+            pc.apply();
         }
     }
     // Weapon inventory

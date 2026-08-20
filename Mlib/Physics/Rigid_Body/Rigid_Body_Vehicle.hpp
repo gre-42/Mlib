@@ -289,10 +289,10 @@ public:
     bool has_plane_controller() const;
     bool has_missile_controller() const;
 
-    DanglingBaseClassRef<RigidBodyAvatarController> avatar_controller(SourceLocation loc);
-    DanglingBaseClassRef<RigidBodyPlaneController> plane_controller(SourceLocation loc);
-    DanglingBaseClassRef<RigidBodyVehicleController> vehicle_controller(SourceLocation loc);
-    DanglingBaseClassRef<RigidBodyMissileController> missile_controller(SourceLocation loc);
+    RigidBodyAvatarController& avatar_controller();
+    RigidBodyPlaneController& plane_controller();
+    RigidBodyVehicleController& vehicle_controller();
+    RigidBodyMissileController& missile_controller();
 
     void set_surface_normal(std::unique_ptr<ISurfaceNormal>&& surface_normal);
     bool has_surface_normal() const;

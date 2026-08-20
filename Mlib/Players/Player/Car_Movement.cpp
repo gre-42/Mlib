@@ -19,7 +19,7 @@ void CarMovement::step_on_brakes() {
     if (!player_->has_scene_vehicle()) {
         throw std::runtime_error("step_on_brakes despite nullptr");
     }
-    player_->rigid_body()->vehicle_controller(CURRENT_SOURCE_LOCATION)->step_on_brakes(1.f);
+    player_->rigid_body()->vehicle_controller().step_on_brakes(1.f);
 }
 
 void CarMovement::drive_forward() {
@@ -27,7 +27,7 @@ void CarMovement::drive_forward() {
     if (!player_->has_scene_vehicle()) {
         throw std::runtime_error("drive_forward despite nullptr");
     }
-    player_->rigid_body()->vehicle_controller(CURRENT_SOURCE_LOCATION)->drive(player_->vehicle_movement.surface_power_forward(), 1.f);
+    player_->rigid_body()->vehicle_controller().drive(player_->vehicle_movement.surface_power_forward(), 1.f);
 }
 
 void CarMovement::drive_backwards() {
@@ -35,7 +35,7 @@ void CarMovement::drive_backwards() {
     if (!player_->has_scene_vehicle()) {
         throw std::runtime_error("drive_backwards despite nullptr");
     }
-    player_->rigid_body()->vehicle_controller(CURRENT_SOURCE_LOCATION)->drive(player_->vehicle_movement.surface_power_backward(), 1.f);
+    player_->rigid_body()->vehicle_controller().drive(player_->vehicle_movement.surface_power_backward(), 1.f);
 }
 
 void CarMovement::roll_tires() {
@@ -43,7 +43,7 @@ void CarMovement::roll_tires() {
     if (!player_->has_scene_vehicle()) {
         throw std::runtime_error("roll despite nullptr");
     }
-    player_->rigid_body()->vehicle_controller(CURRENT_SOURCE_LOCATION)->roll_tires();
+    player_->rigid_body()->vehicle_controller().roll_tires();
 }
 
 void CarMovement::steer(float angle) {
@@ -56,7 +56,7 @@ void CarMovement::steer(float angle) {
     if (tire_angle_pid_.has_value()) {
         angle = (*tire_angle_pid_)(angle);
     }
-    player_->rigid_body()->vehicle_controller(CURRENT_SOURCE_LOCATION)->steer(angle, 1.f);
+    player_->rigid_body()->vehicle_controller().steer(angle, 1.f);
 }
 
 void CarMovement::steer_left_full() {

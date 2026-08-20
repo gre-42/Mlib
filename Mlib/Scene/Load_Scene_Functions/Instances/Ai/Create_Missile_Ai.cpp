@@ -54,7 +54,7 @@ void CreateMissileAi::execute(const LoadSceneJsonUserFunctionArgs& args) {
                 missile_vehicle,
                 std::move(dy),
                 args.arguments.at<float>(KnownArgs::eta_max) * seconds,
-                missile_vehicle->missile_controller(CURRENT_SOURCE_LOCATION),
+                DanglingBaseClassRef<RigidBodyMissileController>{missile_vehicle->missile_controller(), CURRENT_SOURCE_LOCATION},
                 args.arguments.at<float>(KnownArgs::waypoint_reached_radius) * meters,
                 args.arguments.at<float>(KnownArgs::resting_position_reached_radius) * meters,
                 args.arguments.at<float>(KnownArgs::maximum_velocity) * kph),

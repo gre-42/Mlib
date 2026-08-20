@@ -1208,32 +1208,32 @@ bool RigidBodyVehicle::has_missile_controller() const {
     return missile_controller_ != nullptr;
 }
 
-DanglingBaseClassRef<RigidBodyAvatarController> RigidBodyVehicle::avatar_controller(SourceLocation loc) {
+RigidBodyAvatarController& RigidBodyVehicle::avatar_controller() {
     if (avatar_controller_ == nullptr) {
         throw std::runtime_error("Rigid body \"" + name() + "\" has no avatar controller");
     }
-    return {*avatar_controller_, loc};
+    return *avatar_controller_;
 }
 
-DanglingBaseClassRef<RigidBodyPlaneController> RigidBodyVehicle::plane_controller(SourceLocation loc) {
+RigidBodyPlaneController& RigidBodyVehicle::plane_controller() {
     if (plane_controller_ == nullptr) {
         throw std::runtime_error("Rigid body \"" + name() + "\" has no plane controller");
     }
-    return {*plane_controller_, loc};
+    return *plane_controller_;
 }
 
-DanglingBaseClassRef<RigidBodyVehicleController> RigidBodyVehicle::vehicle_controller(SourceLocation loc) {
+RigidBodyVehicleController& RigidBodyVehicle::vehicle_controller() {
     if (vehicle_controller_ == nullptr) {
         throw std::runtime_error("Rigid body \"" + name() + "\" has no vehicle controller");
     }
-    return {*vehicle_controller_, loc};
+    return *vehicle_controller_;
 }
 
-DanglingBaseClassRef<RigidBodyMissileController> RigidBodyVehicle::missile_controller(SourceLocation loc) {
+RigidBodyMissileController& RigidBodyVehicle::missile_controller() {
     if (missile_controller_ == nullptr) {
         throw std::runtime_error("Rigid body \"" + name() + "\" has no missile controller");
     }
-    return {*missile_controller_, loc};
+    return *missile_controller_;
 }
 
 void RigidBodyVehicle::deactivate_avatar() {

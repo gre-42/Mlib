@@ -22,20 +22,20 @@ void AvatarMovement::run_move(
         throw std::runtime_error("run_move despite rigid body nullptr");
     }
 
-    auto ac = player_->rigid_body()->avatar_controller(CURRENT_SOURCE_LOCATION);
-    ac->reset();
+    auto& ac = player_->rigid_body()->avatar_controller();
+    ac.reset();
 
-    ac->set_target_yaw(yaw);
-    ac->set_target_pitch(pitch);
+    ac.set_target_yaw(yaw);
+    ac.set_target_pitch(pitch);
 
     FixedArray<float, 3> direction{ sidemove, 0.f, -forwardmove };
     float len2 = sum(squared(direction));
     if (len2 < 1e-12) {
-        ac->stop();
+        ac.stop();
     } else {
         float len = std::sqrt(len2);
-        ac->increment_legs_z(direction / len);
-        ac->walk(player_->vehicle_movement.surface_power_forward(), 1.f);
+        ac.increment_legs_z(direction / len);
+        ac.walk(player_->vehicle_movement.surface_power_forward(), 1.f);
     }
-    ac->apply();
+    ac.apply();
 }

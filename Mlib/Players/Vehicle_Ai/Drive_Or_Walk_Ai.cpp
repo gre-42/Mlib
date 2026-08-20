@@ -100,12 +100,12 @@ VehicleAiMoveToStatus DriveOrWalkAi::move_to(
     //     0.f, // surface_power
     //     0.f  // steer_angle
     // );
-    auto vehicle_controller = player_rb->vehicle_controller(CURRENT_SOURCE_LOCATION);
-    vehicle_controller->reset_relaxation(0.f, 0.f);
+    auto& vehicle_controller = player_rb->vehicle_controller();
+    vehicle_controller.reset_relaxation(0.f, 0.f);
     if (!ai_waypoint.has_position_of_destination()) {
         player_->car_movement.step_on_brakes();
         player_->car_movement.steer(0.f);
-        vehicle_controller->apply();
+        vehicle_controller.apply();
         return VehicleAiMoveToStatus::WAYPOINT_IS_NAN;
     }
     auto waypoint_flags = ai_waypoint.flags();
@@ -295,11 +295,11 @@ VehicleAiMoveToStatus DriveOrWalkAi::move_to(
                         // The waypoint is behind us => full, inverted steering.
                         if (wpt(0) < 0) {
                             player_->car_movement.steer_left_full();
-                            vehicle_controller->apply();
+                            vehicle_controller.apply();
                             return result;
                         } else {
                             player_->car_movement.steer_right_full();
-                            vehicle_controller->apply();
+                            vehicle_controller.apply();
                             return result;
                         }
                     } else {
@@ -307,11 +307,11 @@ VehicleAiMoveToStatus DriveOrWalkAi::move_to(
                         auto angle = (float)std::atan(std::abs(wpt(0) / wpt(1)));
                         if (wpt(0) < 0) {
                             player_->car_movement.steer_left_partial(angle);
-                            vehicle_controller->apply();
+                            vehicle_controller.apply();
                             return result;
                         } else {
                             player_->car_movement.steer_right_partial(angle);
-                            vehicle_controller->apply();
+                            vehicle_controller.apply();
                             return result;
                         }
                     }
@@ -323,7 +323,7 @@ VehicleAiMoveToStatus DriveOrWalkAi::move_to(
         player_rb->avatar_controller_->apply();
     } else {
         player_->car_movement.steer(0.f);
-        vehicle_controller->apply();
+        vehicle_controller.apply();
     }
     return result;
 }

@@ -241,7 +241,7 @@ void Mlib::handle_tire_triangle_intersection(
     rb.verify_tire_angular_velocity(tire_id);
 
     bool c;
-    switch (rb.vehicle_controller(CURRENT_SOURCE_LOCATION)->steering_type) {
+    switch (rb.vehicle_controller().steering_type) {
         case SteeringType::CAR:
             c = true;
             break;
