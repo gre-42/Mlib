@@ -1,8 +1,11 @@
 #pragma once
+#include <cstdint>
 #include <functional>
 #include <thread>
 
 namespace Mlib {
+
+void set_thread_limit(uint32_t nthreads);
 
 class StopToken {
 public:
@@ -24,6 +27,7 @@ public:
     bool joinable() const;
     void join();
 private:
+    void check_and_increase_thread_count() const;
     StopToken stop_token_;
     std::thread thread_;
 };

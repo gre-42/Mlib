@@ -75,8 +75,8 @@ ifeq ($(LIBCPP),1)
 endif
 # EMSDK64, EMSDK32
 EM_LDFLAGS_COMMON := -pthread --bind -sMODULARIZE=1 -sEXPORT_ES6=1 -sASYNCIFY=0 \
-    -sWASM_BIGINT -sSTACK_SIZE=1MB -sPTHREAD_POOL_SIZE=8 -sMALLOC=mimalloc \
-    -fwasm-exceptions --use-preload-cache
+    -sWASM_BIGINT -sSTACK_SIZE=1MB -sPTHREAD_POOL_SIZE=30 -sPTHREAD_POOL_SIZE_STRICT=2 \
+    -sMALLOC=mimalloc -fwasm-exceptions --use-preload-cache
 EM_COMPILEFLAGS_COMMON := -pthread
 ifneq (,$(filter $(CMAKE_BUILD_TYPE),Debug RelWithDebInfo))
     EM_LDFLAGS_COMMON := ${EM_LDFLAGS_COMMON} -sASSERTIONS=2

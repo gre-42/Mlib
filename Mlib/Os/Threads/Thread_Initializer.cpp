@@ -11,6 +11,7 @@ ThreadInitializer::ThreadInitializer(
     : malloc_guard_{ name }
     #endif
 {
+    linfo() << "Thread started: \"" << name << '"';
     set_thread_name(name);
     if (affinity == ThreadAffinity::DEDICATED) {
         rtg_.emplace();

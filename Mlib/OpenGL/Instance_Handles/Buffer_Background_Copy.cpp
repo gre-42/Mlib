@@ -10,6 +10,11 @@
 
 using namespace Mlib;
 
+std::future<void> copy_async(std::function<void()> task) {
+    static LaunchAsync launch_async{ "Buffer BG copy" };
+    return launch_async(std::move(task));
+}
+
 std::string Mlib::background_copy_state_to_string(BackgroundCopyState s) {
     switch (s) {
     case BackgroundCopyState::UNINITIALIZED:
@@ -97,8 +102,7 @@ void BufferGenericCopy::init_type_erased(
             state_ = BackgroundCopyState::AWAITED;
         } else {
             memory_map_ = (std::byte*)CHK_X(glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY));
-            static LaunchAsync launch_async{ "Buffer BG copy (init)" };
-            future_ = launch_async([this, begin, end]() {
+            future_ = copy_async([this, begin, end]() {
                 std::copy(begin, end, memory_map_);
                 });
             state_ = BackgroundCopyState::COPY_IN_PROGRESS;
@@ -163,8 +167,7 @@ void BufferGenericCopy::substitute_type_erased(
             throw std::runtime_error("Buffer already mapped");
         }
         memory_map_ = (std::byte*)CHK_X(glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY));
-        static LaunchAsync launch_async{ "Buffer BG copy (substitute)" };
-        future_ = launch_async([this, begin, end]() {
+        future_ = copy_async([this, begin, end]() {
             std::copy(begin, end, memory_map_);
             });
 #endif

@@ -430,8 +430,9 @@ int main(int argc, char** argv) {
         "    [--rgba_debug_image <name>]\n"
         "    [--window_title <title>]\n"
         #endif
-        "    [--print_remote_data\n"
-        "    [--print_remote_metadata\n"
+        "    [--print_remote_data]\n"
+        "    [--print_remote_metadata]\n"
+        "    [--thread_limit <n>]\n"
         "    [--verbose]";
     const ArgParser parser(
         help,
@@ -565,8 +566,9 @@ int main(int argc, char** argv) {
          "--show_only",
          "--show_only_file",
          "--rgba_debug_image",
-         "--window_title"
+         "--window_title",
          #endif
+         "--thread_limit",
         });
     try {
         const auto args = parser.parsed(argc, argv);
@@ -580,6 +582,9 @@ int main(int argc, char** argv) {
         }
 
         args.assert_num_unnamed(2);
+        if (args.has_named_value("--thread_limit")) {
+            set_thread_limit(safe_sto<uint32_t>(args.named_svalue("--thread_limit")));
+        }
         auto search_path = split_semicolon_separated_pathes(args.unnamed_value(0));
         auto initial_main_scene_filename = std::filesystem::absolute(args.unnamed_value(1)).string();
         auto main_scene_filename = initial_main_scene_filename;
