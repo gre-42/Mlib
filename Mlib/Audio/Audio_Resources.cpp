@@ -4,6 +4,8 @@
 #include <Mlib/Audio/Audio_Equalizer.hpp>
 #include <Mlib/Audio/Audio_File_Sequence.hpp>
 #include <Mlib/Audio/Audio_Lowpass.hpp>
+#include <Mlib/Os/Os.hpp>
+#include <Mlib/Os/Preload.hpp>
 #include <list>
 #include <mutex>
 #include <stdexcept>
@@ -55,6 +57,9 @@ const AudioMetaInformation& AudioResources::get_buffer_meta(const VariableAndHas
     if (auto it = buffer_meta_.try_get(name); it != nullptr) {
         return *it;
     }
+    if (get_not_preloaded_behavior() == NotPreloadedBehavior::WARN) {
+        lwarn() << "Audio meta not preloaded: \"" << *name << '"';
+    }
     const auto& file = buffer_filenames_.get(name);
 #ifndef USE_PCM_FILTERS
     std::shared_ptr<AudioLowpass> lowpass;
@@ -78,6 +83,9 @@ std::shared_ptr<AudioBuffer> AudioResources::get_buffer(const VariableAndHash<st
     if (auto it = buffers_.try_get(name); it != nullptr) {
         return *it;
     }
+    if (get_not_preloaded_behavior() == NotPreloadedBehavior::WARN) {
+        lwarn() << "Audio buffer not preloaded: \"" << *name << '"';
+    }
 #ifndef USE_PCM_FILTERS
     return buffers_.add(name, AudioBuffer::from_file(fit.filename));
 #else
@@ -93,6 +101,7 @@ std::shared_ptr<AudioBuffer> AudioResources::get_buffer(const VariableAndHash<st
 
 void AudioResources::preload_buffer(const VariableAndHash<std::string>& name) const {
     get_buffer(name);
+    get_buffer_meta(name);
 }
 
 void AudioResources::add_buffer_sequence(
@@ -128,6 +137,9 @@ std::shared_ptr<AudioBufferSequenceWithHysteresis> AudioResources::get_buffer_se
     if (auto it = buffer_sequences_.try_get(name); it != nullptr) {
         return *it;
     }
+    if (get_not_preloaded_behavior() == NotPreloadedBehavior::WARN) {
+        lwarn() << "Audio buffer sequence not preloaded: \"" << *name << '"';
+    }
     auto& it = buffer_sequence_filenames_.get(name);
     auto items = load_audio_file_sequence(it.filename);
     std::list<AudioBufferAndFrequency> buffers;
@@ -162,6 +174,9 @@ std::shared_ptr<AudioEqualizer>
     if (auto it = equalizers_.try_get(name); it != nullptr) {
         return *it;
     }
+    if (get_not_preloaded_behavior() == NotPreloadedBehavior::WARN) {
+        lwarn() << "Audio equalizer not preloaded: \"" << *name << '"';
+    }
     auto equalizer = AudioEqualizer::create(equalizer_parameters_.get(name));
     return equalizers_.add(name, equalizer);
 }
@@ -188,6 +203,9 @@ std::shared_ptr<AudioLowpass>
     std::unique_lock lock{mutex_};
     if (auto it = lowpasses_.try_get(name); it != nullptr) {
         return *it;
+    }
+    if (get_not_preloaded_behavior() == NotPreloadedBehavior::WARN) {
+        lwarn() << "Audio lowpass not preloaded: \"" << *name << '"';
     }
     auto lowpass = AudioLowpass::create(lowpass_parameters_.get(name));
     return lowpasses_.add(name, lowpass);
