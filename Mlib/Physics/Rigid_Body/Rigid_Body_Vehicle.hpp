@@ -180,7 +180,7 @@ public:
     FixedArray<float, 3> get_abs_tire_z(size_t id) const;
     float get_tire_angular_velocity(size_t id) const;
     void update_tire_angular_velocity(size_t id);
-    void verify_tire_angular_velocity(size_t id) const;
+    void maybe_verify_tire_angular_velocity(size_t id) const;
     void set_tire_angular_velocity(
         size_t id,
         float w,

@@ -60,6 +60,7 @@ enum class WheelVerticalConstraintType {
 static const float WHEEL_RADIUS = 0.25f;
 static const auto WHEEL_VERTICAL_CONSTRAINT_TYPE = WheelVerticalConstraintType::PAIR;
 // static const auto BEACON = VariableAndHash<std::string>{"beacon"};
+static const bool VERIFY_TIRE_ANGULAR_VELOCITY = false;
 
 RigidBodyVehicle::RigidBodyVehicle(
     const RigidBodyPulses& rbp,
@@ -692,14 +693,34 @@ void RigidBodyVehicle::set_wing_brake_angle(size_t id, float angle) {
 }
 
 FixedArray<float, 3> RigidBodyVehicle::get_abs_tire_z(size_t id) const {
-    FixedArray<float, 3> z{ tires_z_ };
     const auto& t = tires_.get(id);
-    z = dot1d(rodrigues2(t.vertical_line, t.angle_y), z);
-    return dot1d(rbp_.rotation_, z);
+    // FixedArray<float, 3> z{ tires_z_ };
+    // z = dot1d(rodrigues2(t.vertical_line, t.angle_y), z);
+    // return dot1d(rbp_.rotation_, z);
+    if (all(tires_z_ == FixedArray<float, 3>{0.f, 0.f, -1.f})) {
+        float cos_a = std::cos(t.angle_y);
+        float sin_a = std::sin(t.angle_y);
+        float omc = 1.f - cos_a;
+        auto z = FixedArray<float, 3>{
+            -t.vertical_line(0) * t.vertical_line(2) * omc - t.vertical_line(1) * sin_a,
+            -t.vertical_line(1) * t.vertical_line(2) * omc + t.vertical_line(0) * sin_a,
+            -cos_a - t.vertical_line(2) * t.vertical_line(2) * omc
+        };
+        return dot1d(rbp_.rotation_, z);
+    } else {
+        float cos_a = std::cos(t.angle_y);
+        float sin_a = std::sin(t.angle_y);
+
+        float dot_kz = dot0d(t.vertical_line, tires_z_);
+        auto cross_kz = cross(t.vertical_line, tires_z_);
+
+        auto z = tires_z_ * cos_a + cross_kz * sin_a + t.vertical_line * (dot_kz * (1.f - cos_a));
+        return dot1d(rbp_.rotation_, z);
+    }
 }
 
 float RigidBodyVehicle::get_tire_angular_velocity(size_t id) const {
-    verify_tire_angular_velocity(id);
+    maybe_verify_tire_angular_velocity(id);
     return get_tire(id).angular_velocity;
 }
 
@@ -712,7 +733,10 @@ void RigidBodyVehicle::update_tire_angular_velocity(size_t id) {
     tire.angular_velocity = dot0d(tire.rb->rbp_.w_, abs_rotation_axis);
 }
 
-void RigidBodyVehicle::verify_tire_angular_velocity(size_t id) const {
+void RigidBodyVehicle::maybe_verify_tire_angular_velocity(size_t id) const {
+    if (!VERIFY_TIRE_ANGULAR_VELOCITY) {
+        return;
+    }
     const auto& tire = get_tire(id);
     if (tire.rb != nullptr) {
         auto abs_rotation_axis = dot1d(rbp_.rotation_, tire.rotation_axis());

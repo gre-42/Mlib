@@ -238,7 +238,7 @@ void Mlib::handle_tire_triangle_intersection(
     float& force_min,
     float& force_max)
 {
-    rb.verify_tire_angular_velocity(tire_id);
+    rb.maybe_verify_tire_angular_velocity(tire_id);
 
     bool c;
     switch (rb.vehicle_controller().steering_type) {
@@ -285,5 +285,5 @@ void Mlib::handle_tire_triangle_intersection(
     if (force_min > force_max) {
         throw std::runtime_error("handle_tire_triangle_intersection: force_min > force_max");
     }
-    rb.verify_tire_angular_velocity(tire_id);
+    rb.maybe_verify_tire_angular_velocity(tire_id);
 }
