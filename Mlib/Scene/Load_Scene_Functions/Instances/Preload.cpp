@@ -1,6 +1,4 @@
 #include "Preload.hpp"
-#include <Mlib/Audio/Audio_Resource_Context.hpp>
-#include <Mlib/Audio/Audio_Resources.hpp>
 #include <Mlib/Geometry/Material/Particle_Type.hpp>
 #include <Mlib/Geometry/Mesh/Animated_Colored_Vertex_Arrays.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
@@ -21,6 +19,10 @@
 #include <Mlib/Scene_Graph/Resources/Renderable_Resource_Filter.hpp>
 #include <Mlib/Scene_Graph/Resources/Resource_Does_Not_Exist_Behavior.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
+#ifndef WITHOUT_AUDIO
+#include <Mlib/Audio/Audio_Resource_Context.hpp>
+#include <Mlib/Audio/Audio_Resources.hpp>
+#endif
 
 using namespace Mlib;
 
@@ -94,7 +96,8 @@ void Preload::execute(const LoadSceneJsonUserFunctionArgs& args) {
     auto e = args.arguments.at<bool>(KnownArgs::throw_if_file_resource_unknown, true)
         ? PreloadResourceDoesNotExistBehavior::THROW
         : PreloadResourceDoesNotExistBehavior::IGNORE;
-    
+
+#ifndef WITHOUT_AUDIO
     for (const auto& vec : get_names(args.arguments, files, KnownArgs::audio_buffers)) {
         for (const auto& r : vec) {
             AudioResourceContextStack::primary_resource_context().audio_resources->preload_buffer(r, e);
@@ -106,6 +109,7 @@ void Preload::execute(const LoadSceneJsonUserFunctionArgs& args) {
             AudioResourceContextStack::primary_resource_context().audio_resources->preload_buffer_sequence(r, e);
         }
     }
+#endif
 
     for (const auto& vec : get_names(args.arguments, files, KnownArgs::resources)) {
         for (const auto& r : vec) {
