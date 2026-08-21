@@ -23,7 +23,7 @@ using namespace Mlib;
 //     return EM_TRUE;
 // }
 
-void update_canvas_size() {
+static void update_canvas_size() {
     double css_width, css_height;
     emscripten_get_element_css_size("#canvas", &css_width, &css_height);
 
@@ -32,6 +32,28 @@ void update_canvas_size() {
 
     if (canvas_width != (int)css_width || canvas_height != (int)css_height) {
         emscripten_set_canvas_element_size("#canvas", (int)css_width, (int)css_height);
+    }
+}
+
+static bool request_pointerlock(const char* prefix) {
+    EmscriptenPointerlockChangeEvent status;
+    EMSCRIPTEN_RESULT result = emscripten_get_pointerlock_status(&status);
+    if (result == EMSCRIPTEN_RESULT_SUCCESS) {
+        return !status.isActive;
+    } else {
+        lwarn() << prefix << ": Failed to get pointer lock status";
+        return false;
+    }
+}
+
+static bool has_focus(const char* prefix) {
+    EmscriptenPointerlockChangeEvent status;
+    EMSCRIPTEN_RESULT result = emscripten_get_pointerlock_status(&status);
+    if (result == EMSCRIPTEN_RESULT_SUCCESS) {
+        return status.isActive;
+    } else {
+        lwarn() << prefix << ": Failed to get pointer lock status";
+        return false;
     }
 }
 
@@ -187,6 +209,9 @@ EM_BOOL AEngine::on_pointerlockchange(int eventType, const EmscriptenPointerlock
 }
 
 EM_BOOL AEngine::on_click(int eventType, const EmscriptenMouseEvent *mouseEvent, void *userData) {
+    if (!request_pointerlock("on_click")) {
+        return EM_TRUE;
+    }
     auto& engine = *(AEngine*)userData;
     auto now = std::chrono::steady_clock::now();
     if ((engine.last_pointerlock_time_ == std::chrono::steady_clock::time_point()) ||
@@ -207,6 +232,9 @@ EM_BOOL AEngine::on_click(int eventType, const EmscriptenMouseEvent *mouseEvent,
 }
 
 EM_BOOL AEngine::on_mouse_move(int eventType, const EmscriptenMouseEvent *mouseEvent, void *userData) {
+    if (!has_focus("on_mouse_move")) {
+        return EM_TRUE;
+    }
     int dx = mouseEvent->movementX;
     int dy = mouseEvent->movementY;
 
@@ -220,6 +248,9 @@ EM_BOOL AEngine::on_mouse_move(int eventType, const EmscriptenMouseEvent *mouseE
 }
 
 EM_BOOL AEngine::on_mouse_down(int eventType, const EmscriptenMouseEvent *mouseEvent, void *userData) {
+    if (!has_focus("on_mouse_down")) {
+        return EM_TRUE;
+    }
     auto& engine = *(AEngine*)userData;
     try {
         engine.button_states_.notify_mouse_button_event(mouseEvent->button, KEY_PRESS);
@@ -230,6 +261,9 @@ EM_BOOL AEngine::on_mouse_down(int eventType, const EmscriptenMouseEvent *mouseE
 }
 
 EM_BOOL AEngine::on_mouse_up(int eventType, const EmscriptenMouseEvent *mouseEvent, void *userData) {
+    if (!has_focus("on_mouse_up")) {
+        return EM_TRUE;
+    }
     auto& engine = *(AEngine*)userData;
     try {
         engine.button_states_.notify_mouse_button_event(mouseEvent->button, KEY_RELEASE);
@@ -240,6 +274,9 @@ EM_BOOL AEngine::on_mouse_up(int eventType, const EmscriptenMouseEvent *mouseEve
 }
 
 EM_BOOL AEngine::on_wheel_scroll(int eventType, const EmscriptenWheelEvent *wheelEvent, void *userData) {
+    if (!has_focus("on_wheel_scroll")) {
+        return EM_TRUE;
+    }
     double dx = wheelEvent->deltaX;
     double dy = wheelEvent->deltaY;
 
