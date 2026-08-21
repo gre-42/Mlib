@@ -67,6 +67,7 @@
 #include <Mlib/Remote/Incremental_Objects/Scene_Level.hpp>
 #include <Mlib/Remote/Remote_Params.hpp>
 #include <Mlib/Remote/Remote_Role.hpp>
+#include <Mlib/Remote/Statistics/Remote_Statistics_Verbosity.hpp>
 #include <Mlib/Resource_Context/Rendering_Context.hpp>
 #include <Mlib/Scene/Load_Scene.hpp>
 #include <Mlib/Scene/Physics_Scene.hpp>
@@ -511,6 +512,7 @@ void android_main(android_app* app)
         #endif
          "--print_remote_data",
          "--print_remote_metadata",
+         "--print_remote_stats",
          "--debug_vector_allocation",
          "--verbose"},
         {"--record_track_basename",
@@ -611,6 +613,9 @@ void android_main(android_app* app)
                 verbosity |= IoVerbosity::METADATA;
             }
             set_remote_io_verbosity(verbosity);
+        }
+        if (args.has_named("--print_remote_stats")) {
+            set_print_transmission_stastics(true);
         }
         if (args.has_named("--check_al_errors")) {
             check_al_errors(CheckAlErrors::ENABLED);

@@ -28,6 +28,7 @@
 #include <Mlib/Remote/Incremental_Objects/Scene_Level.hpp>
 #include <Mlib/Remote/Remote_Params.hpp>
 #include <Mlib/Remote/Remote_Role.hpp>
+#include <Mlib/Remote/Statistics/Remote_Statistics_Verbosity.hpp>
 #include <Mlib/Resource_Context/Rendering_Context.hpp>
 #include <Mlib/Scene/Load_Scene.hpp>
 #include <Mlib/Scene/Physics_Scene.hpp>
@@ -484,6 +485,7 @@ int main(int argc, char** argv) {
          #endif
          "--print_remote_data",
          "--print_remote_metadata",
+         "--print_remote_stats",
          "--verbose"},
         {"--app_reldir",
          "--record_track_basename",
@@ -597,6 +599,9 @@ int main(int argc, char** argv) {
                 verbosity |= IoVerbosity::METADATA;
             }
             set_remote_io_verbosity(verbosity);
+        }
+        if (args.has_named("--print_remote_stats")) {
+            set_print_transmission_stastics(true);
         }
         #ifndef WITHOUT_AUDIO
         if (args.has_named("--check_al_errors")) {

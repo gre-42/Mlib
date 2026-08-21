@@ -14,6 +14,7 @@
 #include <Mlib/Remote/Incremental_Objects/Transmission_History.hpp>
 #include <Mlib/Remote/Incremental_Objects/Transmitted_Fields.hpp>
 #include <Mlib/Remote/Session_Id.hpp>
+#include <Mlib/Remote/Statistics/Remote_Statistics_Verbosity.hpp>
 #include <chrono>
 #include <compare>
 
@@ -29,7 +30,8 @@ IncrementalCommunicatorProxy::IncrementalCommunicatorProxy(
     ProxyTasks tasks,
     RemoteSiteId home_site_id)
     : incremental_cache_proxy_token_{ proxy_objects_caches, home_site_id }
-    , datagram_counter_{ 0 }
+    , receive_datagram_counter_{ 0 }
+    , send_datagram_counter_{ 0 }
     , send_socket_{ std::move(send_socket) }
     , shared_object_factory_{ shared_object_factory }
     , objects_{ objects }
@@ -133,10 +135,17 @@ void IncrementalCommunicatorProxy::receive_from_home(std::istream& istr) {
         }
     }
     auto versions = reader.deserialize<IncrementalVersionsRead>("incremental versions");
-    if (is_newer(socket_versions_.remote_version, versions.remote_new_version)) {
+    stats_.notify_datagram(versions.remote_new_version);
+    if (get_print_transmission_stastics()) {
+        if (receive_datagram_counter_ % (5 * 60) == 0) {
+            linfo() << "Receive stats: " << stats_;
+        }
+    }
+    ++receive_datagram_counter_;
+    if (!is_older(socket_versions_.remote_version, versions.remote_new_version)) {
         if (any(verbosity_ & IoVerbosity::METADATA)) {
-            linfo() << "Detected outdated datagram. Stored: " << (socket_versions_.remote_version + 0) <<
-                ", received: " << versions.remote_base_version;
+            linfo() << "Detected outdated or duplicate datagram. Stored: " << (socket_versions_.remote_version + 0) <<
+                ", received: " << (versions.remote_base_version + 0);
         }
         return;
     }
@@ -367,7 +376,7 @@ void IncrementalCommunicatorProxy::send_home(
         }
         {
             bool new_object_sent = false;
-            auto transmission_history_writer = TransmissionHistoryWriter{objects_->local_time(), datagram_counter_};
+            auto transmission_history_writer = TransmissionHistoryWriter{objects_->local_time(), send_datagram_counter_};
             auto send_object = [&](RemoteObjectId i, const DestructionFunctionsTokensRef<IIncrementalObject>& o){
                 auto known_fields = (full_retransmission_age.at(i) != 0)
                     ? KnownFields::NONE
@@ -440,5 +449,5 @@ void IncrementalCommunicatorProxy::send_home(
     }
     writer.flush_partial("before send");
     send_socket_->send(iostr, status_code);
-    ++datagram_counter_;
+    ++send_datagram_counter_;
 }

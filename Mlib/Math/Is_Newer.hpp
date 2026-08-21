@@ -15,4 +15,9 @@ bool is_newer(T incoming, T newest) {
     return minus_modulo(incoming, newest) > 0;
 }
 
+template <std::unsigned_integral T>
+bool is_older(T incoming, T newest) {
+    return minus_modulo(incoming, newest) < 0;
+}
+
 }
