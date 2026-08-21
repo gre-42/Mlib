@@ -22,7 +22,9 @@ void RemoteTransmissionStatistics::notify_datagram(DatagramIndexType version) {
         ndropped_ -= 1;
         ++nout_of_order_;
     }
-    old_version_ = version;
+    if (distance > 0) {
+        old_version_ = version;
+    }
 }
 
 void RemoteTransmissionStatistics::print(std::ostream& ostr) const {
