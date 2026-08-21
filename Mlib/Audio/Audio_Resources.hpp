@@ -3,6 +3,7 @@
 #include <Mlib/Hashing/Variable_And_Hash.hpp>
 #include <Mlib/Map/String_With_Hash_Unordered_Map.hpp>
 #include <Mlib/Os/Threads/Recursive_Shared_Mutex.hpp>
+#include <Mlib/Scene_Graph/Resources/Resource_Does_Not_Exist_Behavior.hpp>
 #include <map>
 #include <memory>
 #include <string>
@@ -69,7 +70,9 @@ public:
         const std::optional<VariableAndHash<std::string>>& lowpass);
     const AudioMetaInformation& get_buffer_meta(const VariableAndHash<std::string>& name) const;
     std::shared_ptr<AudioBuffer> get_buffer(const VariableAndHash<std::string>& name) const;
-    void preload_buffer(const VariableAndHash<std::string>& name) const;
+    void preload_buffer(
+        const VariableAndHash<std::string>& name,
+        PreloadResourceDoesNotExistBehavior not_exists_behavior = PreloadResourceDoesNotExistBehavior::THROW) const;
 
     void add_buffer_sequence(
         const VariableAndHash<std::string>& name,
@@ -80,6 +83,9 @@ public:
     float get_buffer_sequence_gain(const VariableAndHash<std::string>& name) const;
     std::shared_ptr<AudioBufferSequenceWithHysteresis>
         get_buffer_sequence(const VariableAndHash<std::string>& name) const;
+    void preload_buffer_sequence(
+        const VariableAndHash<std::string>& name,
+        PreloadResourceDoesNotExistBehavior not_exists_behavior = PreloadResourceDoesNotExistBehavior::THROW) const;
 
     void add_equalizer(
         const VariableAndHash<std::string>& name,

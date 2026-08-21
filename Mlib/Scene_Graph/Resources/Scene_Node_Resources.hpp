@@ -68,7 +68,7 @@ public:
     void preload_single(
         const VariableAndHash<std::string>& name,
         const RenderableResourceFilter& filter,
-        ResourceDoesNotExistBehavior not_exists_behavior = ResourceDoesNotExistBehavior::THROW,
+        PreloadResourceDoesNotExistBehavior not_exists_behavior = PreloadResourceDoesNotExistBehavior::THROW,
         unsigned int recursion_depth = 0) const;
 
     // Misc

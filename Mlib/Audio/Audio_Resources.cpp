@@ -86,10 +86,10 @@ std::shared_ptr<AudioBuffer> AudioResources::get_buffer(const VariableAndHash<st
     if (get_not_preloaded_behavior() == NotPreloadedBehavior::WARN) {
         lwarn() << "Audio buffer not preloaded: \"" << *name << '"';
     }
+    auto& fit = buffer_filenames_.get(name);
 #ifndef USE_PCM_FILTERS
     return buffers_.add(name, AudioBuffer::from_file(fit.filename));
 #else
-    auto& fit = buffer_filenames_.get(name);
     if (fit.lowpass.has_value()) {
         const auto& lparams = lowpass_parameters_.get(*fit.lowpass);
         return buffers_.add(name, AudioBuffer::from_file(fit.filename, lparams));
@@ -99,7 +99,16 @@ std::shared_ptr<AudioBuffer> AudioResources::get_buffer(const VariableAndHash<st
 #endif
 }
 
-void AudioResources::preload_buffer(const VariableAndHash<std::string>& name) const {
+void AudioResources::preload_buffer(
+    const VariableAndHash<std::string>& name,
+    PreloadResourceDoesNotExistBehavior not_exists_behavior) const
+{
+    if (not_exists_behavior == PreloadResourceDoesNotExistBehavior::IGNORE) {
+        std::shared_lock lock{ mutex_ };
+        if (!buffer_filenames_.contains(name)) {
+            return;
+        }
+    }
     get_buffer(name);
     get_buffer_meta(name);
 }
@@ -150,6 +159,19 @@ std::shared_ptr<AudioBufferSequenceWithHysteresis> AudioResources::get_buffer_se
     }
     auto seq = std::make_shared<AudioBufferSequenceWithHysteresis>(std::vector(buffers.begin(), buffers.end()), it.hysteresis_step);
     return buffer_sequences_.add(name, seq);
+}
+
+void AudioResources::preload_buffer_sequence(
+    const VariableAndHash<std::string>& name,
+    PreloadResourceDoesNotExistBehavior not_exists_behavior) const
+{
+    if (not_exists_behavior == PreloadResourceDoesNotExistBehavior::IGNORE) {
+        std::shared_lock lock{ mutex_ };
+        if (!buffer_sequences_.contains(name)) {
+            return;
+        }
+    }
+    get_buffer_sequence(name);
 }
 
 void AudioResources::add_equalizer(

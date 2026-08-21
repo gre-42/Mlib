@@ -7,4 +7,9 @@ enum class ResourceDoesNotExistBehavior {
     RETURN_NULL
 };
 
+enum class PreloadResourceDoesNotExistBehavior {
+    THROW,
+    IGNORE
+};
+
 }

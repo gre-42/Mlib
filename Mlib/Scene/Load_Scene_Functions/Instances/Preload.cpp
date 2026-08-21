@@ -1,4 +1,6 @@
 #include "Preload.hpp"
+#include <Mlib/Audio/Audio_Resource_Context.hpp>
+#include <Mlib/Audio/Audio_Resources.hpp>
 #include <Mlib/Geometry/Material/Particle_Type.hpp>
 #include <Mlib/Geometry/Mesh/Animated_Colored_Vertex_Arrays.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
@@ -25,6 +27,8 @@ using namespace Mlib;
 namespace KnownArgs {
 BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(files);
+DECLARE_ARGUMENT(audio_buffers);
+DECLARE_ARGUMENT(audio_buffer_sequences);
 DECLARE_ARGUMENT(resources);
 DECLARE_ARGUMENT(tire_contacts);
 DECLARE_ARGUMENT(trails);
@@ -33,6 +37,8 @@ DECLARE_ARGUMENT(throw_if_file_resource_unknown);
 
 namespace FilesKnownArgs {
 BEGIN_ARGUMENT_LIST;
+DECLARE_ARGUMENT(audio_buffers);
+DECLARE_ARGUMENT(audio_buffer_sequences);
 DECLARE_ARGUMENT(resources);
 DECLARE_ARGUMENT(tire_contacts);
 DECLARE_ARGUMENT(trails);
@@ -86,8 +92,21 @@ void Preload::execute(const LoadSceneJsonUserFunctionArgs& args) {
     }
 
     auto e = args.arguments.at<bool>(KnownArgs::throw_if_file_resource_unknown, true)
-        ? ResourceDoesNotExistBehavior::THROW
-        : ResourceDoesNotExistBehavior::RETURN_NULL;
+        ? PreloadResourceDoesNotExistBehavior::THROW
+        : PreloadResourceDoesNotExistBehavior::IGNORE;
+    
+    for (const auto& vec : get_names(args.arguments, files, KnownArgs::audio_buffers)) {
+        for (const auto& r : vec) {
+            AudioResourceContextStack::primary_resource_context().audio_resources->preload_buffer(r, e);
+        }
+    }
+
+    for (const auto& vec : get_names(args.arguments, files, KnownArgs::audio_buffer_sequences)) {
+        for (const auto& r : vec) {
+            AudioResourceContextStack::primary_resource_context().audio_resources->preload_buffer_sequence(r, e);
+        }
+    }
+
     for (const auto& vec : get_names(args.arguments, files, KnownArgs::resources)) {
         for (const auto& r : vec) {
             RenderingContextStack::primary_scene_node_resources().preload_single(

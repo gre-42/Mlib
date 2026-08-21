@@ -74,18 +74,21 @@ void SceneNodeResources::write_loaded_resources(const Utf8Path& filename) const 
 void SceneNodeResources::preload_single(
     const VariableAndHash<std::string>& name,
     const RenderableResourceFilter& filter,
-    ResourceDoesNotExistBehavior not_exists_behavior,
+    PreloadResourceDoesNotExistBehavior not_exists_behavior,
     unsigned int recursion_depth) const
 {
     if (recursion_depth > 10) {
         throw std::runtime_error("preload_single exceeded its recursion depth");
     }
     {
-        auto resource = get_resource(name, not_exists_behavior);
-        if ((not_exists_behavior == ResourceDoesNotExistBehavior::RETURN_NULL) &&
-            (resource == nullptr))
-        {
-            return;
+        std::shared_ptr<ISceneNodeResource> resource = nullptr;
+        if (not_exists_behavior == PreloadResourceDoesNotExistBehavior::IGNORE) {
+            resource = get_resource(name, ResourceDoesNotExistBehavior::RETURN_NULL);
+            if (resource == nullptr) {
+                return;
+            }
+        } else {
+            resource = get_resource(name);
         }
         try {
             resource->preload(filter);
@@ -102,7 +105,7 @@ void SceneNodeResources::preload_single(
         auto cit = companions_.try_get(name);
         if (cit != nullptr) {
             for (const auto& [companion_name, filter] : *cit) {
-                preload_single(companion_name, filter, ResourceDoesNotExistBehavior::THROW, recursion_depth + 1);
+                preload_single(companion_name, filter, PreloadResourceDoesNotExistBehavior::THROW, recursion_depth + 1);
             }
         }
     }
