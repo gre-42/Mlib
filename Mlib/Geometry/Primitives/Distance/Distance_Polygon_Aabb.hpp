@@ -92,18 +92,17 @@ template <class TDir, class TPos>
     }
 
     // Line-line
-    auto line = FixedArray<TPos, 2, 3>{ ray.start, ray.stop() };
-    if (!aabb.for_each_edge([&](const auto& e1){
+    if (!aabb.template for_each_ray<TDir>([&](const auto& ray1){
         FixedArray<TPos, 3> p0 = uninitialized;
         FixedArray<TPos, 3> p1 = uninitialized;
-        TPos dist;
-        if (!distance_line_line(line, e1, dist)) {
-            return true;
-        }
-        if (dist >= closest_point.distance) {
-            return true;
-        }
-        if (distance_line_line(line, e1, p0, p1)) {
+        // TPos dist;
+        // if (!distance_line_line(line, e1, dist)) {
+        //     return true;
+        // }
+        // if (dist >= closest_point.distance) {
+        //     return true;
+        // }
+        if (distance_ray_ray(ray, ray1, p0, p1)) {
             try {
                 return (closest_point.update(p0, p1) == ClosestPointStatus::SUCCESS);
             } catch (const std::runtime_error& e) {
@@ -235,9 +234,9 @@ template <class TDir, class TPos>
         {
             return ClosestPointStatus::INTERSECT;
         }
-        if (!aabb1.for_each_edge([&](const auto& e){
-            auto te = trafo1.transform(e);
-            return (distance_line_aabb({te[0], te[1]}, aabb0, closest_point) == ClosestPointStatus::SUCCESS);
+        if (!aabb1.template for_each_ray<TDir>([&](const auto& ray){
+            auto te = ray.transformed(trafo1);
+            return (distance_line_aabb(te, aabb0, closest_point) == ClosestPointStatus::SUCCESS);
         }))
         {
             return ClosestPointStatus::INTERSECT;
