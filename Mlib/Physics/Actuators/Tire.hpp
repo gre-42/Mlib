@@ -3,6 +3,7 @@
 #include <Mlib/Math/Interp.hpp>
 #include <Mlib/Physics/Actuators/Base_Rotor.hpp>
 #include <Mlib/Physics/Collision/Pacejkas_Magic_Formula.hpp>
+#include <optional>
 #include <string>
 
 namespace Mlib {
@@ -50,6 +51,7 @@ public:
     FixedArray<float, 3> vertical_line;
     float radius;
     const NormalImpulse* normal_impulse;
+    mutable std::optional<FixedArray<float, 3>> abs_tire_z;
 };
 
 }

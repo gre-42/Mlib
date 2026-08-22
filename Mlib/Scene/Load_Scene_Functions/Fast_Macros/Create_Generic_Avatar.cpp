@@ -512,6 +512,7 @@ void CreateGenericAvatar::execute(const JsonView& args)
                     vehicle_mount_1,
                     wheel_radius);
             };
+        rb->tires_.resize(1, std::nullopt);
         create_wheel(
             0,
             engine,

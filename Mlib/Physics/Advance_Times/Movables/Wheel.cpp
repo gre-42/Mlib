@@ -53,7 +53,7 @@ TransformationMatrix<float, ScenePos, 3> Wheel::get_new_relative_model_matrix() 
 
 void Wheel::advance_time(float dt, const StaticWorld& world) {
     FixedArray<float, 3> tire_angles{fixed_zeros<float, 3>()};
-    if (auto t = rigid_body_->tires_.try_get(tire_id_); t != nullptr) {
+    if (auto& t = rigid_body_->tires_.get_optional(tire_id_); t.has_value()) {
         tire_angles(1) = t->angle_y;
         transformation_matrix_.t(1) = y0_ + t->shock_absorber_position;
         angle_x_ = t->angle_x;

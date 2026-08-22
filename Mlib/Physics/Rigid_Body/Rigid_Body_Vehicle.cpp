@@ -17,10 +17,7 @@
 #include <Mlib/Physics/Actuators/Engine_Power_Delta_Intent.hpp>
 #include <Mlib/Physics/Actuators/Rigid_Body_Delta_Engine.hpp>
 #include <Mlib/Physics/Actuators/Rigid_Body_Engine.hpp>
-#include <Mlib/Physics/Actuators/Rotor.hpp>
-#include <Mlib/Physics/Actuators/Tire.hpp>
 #include <Mlib/Physics/Actuators/Tire_Power_Intent.hpp>
-#include <Mlib/Physics/Actuators/Wing.hpp>
 #include <Mlib/Physics/Ai/Skill_Factor.hpp>
 #include <Mlib/Physics/Collision/Record/Collision_History.hpp>
 #include <Mlib/Physics/Collision/Resolve/Constraints.hpp>
@@ -71,9 +68,9 @@ RigidBodyVehicle::RigidBodyVehicle(
     , on_clear_scene_node_{ nullptr, CURRENT_SOURCE_LOCATION }
     , scene_node_{ nullptr }
     , max_velocity_{ INFINITY }
-    , tires_{ "Tire", [](size_t i) { return std::to_string(i); } }
-    , rotors_{ "Rotor", [](size_t i) { return std::to_string(i); } }
-    , wings_{ "Wing", [](size_t i) { return std::to_string(i); } }
+    , tires_{ "Tire" }
+    , rotors_{ "Rotor" }
+    , wings_{ "Wing" }
     , engines_{ "Engine" }
     , delta_engines_{ "Delta engine" }
     , flags_{ RigidBodyVehicleFlags::NONE }
@@ -238,36 +235,40 @@ void RigidBodyVehicle::collide_with_air(CollisionHistory& c)
     if (is_deactivated()) {
         throw std::runtime_error("Attempt to collide deactivated rigid body with air");
     }
-    for (auto& [rotor_id, rotor] : rotors_) {
+    for (auto&& [rotor_id, orotor] : cenumerate(rotors_)) {
+        if (!orotor.has_value()) {
+            throw std::runtime_error("Rotor " + std::to_string(+rotor_id) + " not initialized");
+        }
+        auto& rotor = *orotor;
         TirePowerIntent P = consume_rotor_surface_power(rotor_id);
         if (P.type == TirePowerIntentType::ACCELERATE) {
-            auto abs_location = rotor->rotated_location(rbp_.abs_transformation(), rbp_.v_com_, c.world);
+            auto abs_location = rotor.rotated_location(rbp_.abs_transformation(), rbp_.v_com_, c.world);
             // g_beacons.push_back(Beacon{ .location = abs_location, .resource_name = "flag_z" });
             integrate_force(
                 VectorAtPosition<float, ScenePos, 3>{
-                    .vector = z3_from_3x3(abs_location.R) * P.power * P.relaxation * rotor->power2lift,
+                    .vector = z3_from_3x3(abs_location.R) * P.power * P.relaxation * rotor.power2lift,
                     .position = abs_location.t },
                 c.cfg,
                 c.phase);
         }
-        set_rotor_angular_velocity(rotor_id, rotor->w, c.cfg, c.phase, P.power);
-        if (rotor->rb != nullptr) {
-            rotor->rb->rbp_.set_w(rotor->angular_velocity * z3_from_3x3(rotor->rb->rbp_.rotation_), c.cfg.dt_substeps(c.phase), 1.f, CURRENT_SOURCE_LOCATION);
+        set_rotor_angular_velocity(rotor_id, rotor.w, c.cfg, c.phase, P.power);
+        if (rotor.rb != nullptr) {
+            rotor.rb->rbp_.set_w(rotor.angular_velocity * z3_from_3x3(rotor.rb->rbp_.rotation_), c.cfg.dt_substeps(c.phase), 1.f, CURRENT_SOURCE_LOCATION);
             auto T0 = rbp_.abs_transformation();
-            auto T1 = rotor->rb->rbp_.abs_transformation();
+            auto T1 = rotor.rb->rbp_.abs_transformation();
             c.contact_infos.push_back(std::make_unique<PointContactInfo2>(
                 rbp_,
-                rotor->rb->rbp_,
+                rotor.rb->rbp_,
                 PointEqualityConstraint{
-                    .p0 = T0.transform(rotor->vehicle_mount_0.casted<ScenePos>()),
-                    .p1 = T1.transform(rotor->blades_mount_0.casted<ScenePos>()),
+                    .p0 = T0.transform(rotor.vehicle_mount_0.casted<ScenePos>()),
+                    .p1 = T1.transform(rotor.blades_mount_0.casted<ScenePos>()),
                     .beta = c.cfg.point_equality_beta}));
             c.contact_infos.push_back(std::make_unique<PointContactInfo2>(
                 rbp_,
-                rotor->rb->rbp_,
+                rotor.rb->rbp_,
                 PointEqualityConstraint{
-                    .p0 = T0.transform(rotor->vehicle_mount_1.casted<ScenePos>()),
-                    .p1 = T1.transform(rotor->blades_mount_1.casted<ScenePos>()),
+                    .p0 = T0.transform(rotor.vehicle_mount_1.casted<ScenePos>()),
+                    .p1 = T1.transform(rotor.blades_mount_1.casted<ScenePos>()),
                     .beta = c.cfg.point_equality_beta}));
         }
     }
@@ -279,16 +280,20 @@ void RigidBodyVehicle::collide_with_air(CollisionHistory& c)
             rbp_.set_w(fixed_zeros<SceneDir, 3>(), dt, relaxation, CURRENT_SOURCE_LOCATION);
         }
         auto rbp_orig = rbp_;
-        for (auto& [wing_id, wing] : wings_) {
+        for (auto&& [wing_id, owing] : cenumerate(wings_)) {
+            if (!owing.has_value()) {
+                throw std::runtime_error("Wing " + std::to_string(+wing_id) + " not initialized");
+            }
+            auto& wing = *owing;
             // Absolute location
-            auto abs_location = wing->absolute_location(rbp_.abs_transformation());
+            auto abs_location = wing.absolute_location(rbp_.abs_transformation());
             // Relative velocity
             auto vel = dot(rbp_orig.velocity_at_position(abs_location.t), abs_location.R);
             auto vel2 = squared(vel);
             auto lvel = std::sqrt(sum(vel2));
             auto svel2 = lvel * vel;
-            auto drag = -wing->drag_coefficients * svel2;
-            float fac = wing->fac(lvel);
+            auto drag = -wing.drag_coefficients * svel2;
+            float fac = wing.fac(lvel);
             auto thr = rbp_.mass_ * c.cfg.max_aerodynamic_acceleration;
             if (compute_real_physics) {
                 integrate_force(
@@ -297,16 +302,16 @@ void RigidBodyVehicle::collide_with_air(CollisionHistory& c)
                             clamped(
                                 fac * FixedArray<float, 3>{
                                     drag(0),
-                                    drag(1) - svel2(2) * wing->angle_of_attack * wing->angle_coefficient_yz + vel2(2) * wing->lift_coefficient,
-                                    drag(2) - svel2(2) * std::abs(wing->brake_angle) * wing->angle_coefficient_zz},
+                                    drag(1) - svel2(2) * wing.angle_of_attack * wing.angle_coefficient_yz + vel2(2) * wing.lift_coefficient,
+                                    drag(2) - svel2(2) * std::abs(wing.brake_angle) * wing.angle_coefficient_zz},
                                 -thr,
                                 thr)),
                         .position = abs_location.t },
                     c.cfg,
                     c.phase);
             }
-            if (wing->trail_source.has_value()) {
-                const auto& s = *wing->trail_source;
+            if (wing.trail_source.has_value()) {
+                const auto& s = *wing.trail_source;
                 if (std::abs(lvel) > s.minimum_velocity) {
                     TransformationMatrix<float, ScenePos, 3> trail_location{
                         abs_location.R,
@@ -334,7 +339,11 @@ void RigidBodyVehicle::collide_with_air(CollisionHistory& c)
                 c.phase);
         }
     }
-    for (auto& [tire_id, tire] : tires_) {
+    for (auto&& [tire_id, otire] : cenumerate(tires_)) {
+        if (!otire.has_value()) {
+            throw std::runtime_error("Tire " + std::to_string(+tire_id) + " not initialized");
+        }
+        auto& tire = *otire;
         if (tire.rb == nullptr) {
             continue;
         }
@@ -544,7 +553,11 @@ void RigidBodyVehicle::finalize_collisions(CollisionHistory& c) {
     if (is_deactivated()) {
         throw std::runtime_error("Attempt to finalize collisions of deactivated rigid body");
     }
-    for (auto& [tire_id, tire] : tires_) {
+    for (auto&& [tire_id, otire] : cenumerate(tires_)) {
+        if (!otire.has_value()) {
+            throw std::runtime_error("Tire " + std::to_string(+tire_id) + " not initialized");
+        }
+        auto& tire = *otire;
         if (tire.rb != nullptr) {
             update_tire_angular_velocity(tire_id);
         }
@@ -570,12 +583,17 @@ void RigidBodyVehicle::advance_time(
     auto dt_substeps = cfg.dt_substeps(phase);
     advance_time_skate(cfg, world);
     rbp_.advance_time(dt_substeps);
-    for (auto& [_, t] : tires_) {
+    for (auto&& [tire_id, otire] : cenumerate(tires_)) {
+        if (!otire.has_value()) {
+            throw std::runtime_error("Tire " + std::to_string(+tire_id) + " not initialized");
+        }
+        auto& t = *otire;
         t.advance_time(dt_substeps);
         if (t.rb != nullptr) {
             auto rel_tire_pos = rbp_.abs_transformation().itransform(t.rb->rbp_.abs_position()).casted<float>();
             t.shock_absorber_position = dot0d(rel_tire_pos - t.vehicle_mount_0, t.vertical_line);
         }
+        t.abs_tire_z.reset();
     }
     {
         auto frame = rbp_.rotating_frame();
@@ -694,29 +712,34 @@ void RigidBodyVehicle::set_wing_brake_angle(size_t id, float angle) {
 
 FixedArray<float, 3> RigidBodyVehicle::get_abs_tire_z(size_t id) const {
     const auto& t = tires_.get(id);
-    // FixedArray<float, 3> z{ tires_z_ };
-    // z = dot1d(rodrigues2(t.vertical_line, t.angle_y), z);
-    // return dot1d(rbp_.rotation_, z);
-    if (all(tires_z_ == FixedArray<float, 3>{0.f, 0.f, -1.f})) {
-        float cos_a = std::cos(t.angle_y);
-        float sin_a = std::sin(t.angle_y);
-        float omc = 1.f - cos_a;
-        auto z = FixedArray<float, 3>{
-            -t.vertical_line(0) * t.vertical_line(2) * omc - t.vertical_line(1) * sin_a,
-            -t.vertical_line(1) * t.vertical_line(2) * omc + t.vertical_line(0) * sin_a,
-            -cos_a - t.vertical_line(2) * t.vertical_line(2) * omc
-        };
-        return dot1d(rbp_.rotation_, z);
-    } else {
-        float cos_a = std::cos(t.angle_y);
-        float sin_a = std::sin(t.angle_y);
-
-        float dot_kz = dot0d(t.vertical_line, tires_z_);
-        auto cross_kz = cross(t.vertical_line, tires_z_);
-
-        auto z = tires_z_ * cos_a + cross_kz * sin_a + t.vertical_line * (dot_kz * (1.f - cos_a));
-        return dot1d(rbp_.rotation_, z);
+    if (t.abs_tire_z.has_value()) {
+        return *t.abs_tire_z;
     }
+    FixedArray<float, 3> z{ tires_z_ };
+    z = dot1d(rodrigues2(t.vertical_line, t.angle_y), z);
+    auto res = dot1d(rbp_.rotation_, z);
+    t.abs_tire_z.emplace(res);
+    return res;
+    // if (all(tires_z_ == FixedArray<float, 3>{0.f, 0.f, -1.f})) {
+    //     float cos_a = std::cos(t.angle_y);
+    //     float sin_a = std::sin(t.angle_y);
+    //     float omc = 1.f - cos_a;
+    //     auto z = FixedArray<float, 3>{
+    //         -t.vertical_line(0) * t.vertical_line(2) * omc - t.vertical_line(1) * sin_a,
+    //         -t.vertical_line(1) * t.vertical_line(2) * omc + t.vertical_line(0) * sin_a,
+    //         -cos_a - t.vertical_line(2) * t.vertical_line(2) * omc
+    //     };
+    //     return dot1d(rbp_.rotation_, z);
+    // } else {
+    //     float cos_a = std::cos(t.angle_y);
+    //     float sin_a = std::sin(t.angle_y);
+    //
+    //     float dot_kz = dot0d(t.vertical_line, tires_z_);
+    //     auto cross_kz = cross(t.vertical_line, tires_z_);
+    //
+    //     auto z = tires_z_ * cos_a + cross_kz * sin_a + t.vertical_line * (dot_kz * (1.f - cos_a));
+    //     return dot1d(rbp_.rotation_, z);
+    // }
 }
 
 float RigidBodyVehicle::get_tire_angular_velocity(size_t id) const {
@@ -962,7 +985,7 @@ const Rotor& RigidBodyVehicle::get_rotor(size_t id) const {
 }
 
 Rotor& RigidBodyVehicle::get_rotor(size_t id) {
-    return *rotors_.get(id);
+    return rotors_.get(id);
 }
 
 const Wing& RigidBodyVehicle::get_wing(size_t id) const {
@@ -970,7 +993,7 @@ const Wing& RigidBodyVehicle::get_wing(size_t id) const {
 }
 
 Wing& RigidBodyVehicle::get_wing(size_t id) {
-    return *wings_.get(id);
+    return wings_.get(id);
 }
 
 float RigidBodyVehicle::energy() const {
@@ -1404,14 +1427,22 @@ const ICollisionNormalModifier& RigidBodyVehicle::get_collision_normal_modifier(
 
 void RigidBodyVehicle::get_rigid_pulses(std::unordered_set<RigidBodyPulses*>& rbps) {
     rbps.insert(&rbp_);
-    for (auto& [_, t] : tires_) {
+    for (auto&& [tire_id, otire] : cenumerate(tires_)) {
+        if (!otire.has_value()) {
+            throw std::runtime_error("Tire " + std::to_string(+tire_id) + " not initialized");
+        }
+        auto& t = *otire;
         if (t.rb != nullptr) {
             rbps.insert(&t.rb->rbp_);
         }
     }
-    for (auto& [_, r] : rotors_) {
-        if (r->rb != nullptr) {
-            rbps.insert(&r->rb->rbp_);
+    for (auto&& [rotor_id, orotor] : cenumerate(rotors_)) {
+        if (!orotor.has_value()) {
+            throw std::runtime_error("Rotor " + std::to_string(+rotor_id) + " not initialized");
+        }
+        auto& r = *orotor;
+        if (r.rb != nullptr) {
+            rbps.insert(&r.rb->rbp_);
         }
     }
 }
@@ -1478,8 +1509,9 @@ void RigidBodyVehicle::set_scene_node(
         scene_ = nullptr;
         scene_node_ = nullptr;
         animation_state_updater_ = nullptr;
-        tires_.clear();
-        rotors_.clear();
+        tires_.reset();
+        rotors_.reset();
+        wings_.reset();
     }, loc);
     on_clear_scene_node_.late.add([this](){
         global_object_pool.remove(this);

@@ -105,28 +105,27 @@ void CreateRotor::execute(const LoadSceneJsonUserFunctionArgs& args) {
         pid_child.has_value() ? pid_child->at<float>(PidArgs::alpha) : NAN};
     vehicle_rb->rotors_.add(
         rotor_id,
-        std::make_unique<Rotor>(
-            engine,
-            delta_engine,
-            TransformationMatrix<float, ScenePos, 3>{ r, position },
-            power2lift,
-            w,
-            gravity_correction,
-            radius,
-            max_align_to_gravity,
-            pid,
-            pid,
-            args.arguments.contains(KnownArgs::drift_reduction_factor)
-                ? args.arguments.at<float>(KnownArgs::drift_reduction_factor)
-                : NAN,
-            args.arguments.contains(KnownArgs::drift_reduction_reference_velocity)
-                ? args.arguments.at<float>(KnownArgs::drift_reduction_reference_velocity) * kph
-                : NAN,
-            vehicle_mount_0,
-            vehicle_mount_1,
-            blades_mount_0,
-            blades_mount_1,
-            blades_rb));
+        engine,
+        delta_engine,
+        TransformationMatrix<float, ScenePos, 3>{ r, position },
+        power2lift,
+        w,
+        gravity_correction,
+        radius,
+        max_align_to_gravity,
+        pid,
+        pid,
+        args.arguments.contains(KnownArgs::drift_reduction_factor)
+            ? args.arguments.at<float>(KnownArgs::drift_reduction_factor)
+            : NAN,
+        args.arguments.contains(KnownArgs::drift_reduction_reference_velocity)
+            ? args.arguments.at<float>(KnownArgs::drift_reduction_reference_velocity) * kph
+            : NAN,
+        vehicle_mount_0,
+        vehicle_mount_1,
+        blades_mount_0,
+        blades_mount_1,
+        blades_rb);
 }
 
 namespace {

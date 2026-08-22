@@ -4,8 +4,8 @@
 #include <Mlib/Geometry/Graph/Point_And_Flags.hpp>
 #include <Mlib/Geometry/Primitives/Vector_At_Position.hpp>
 #include <Mlib/Hashing/Variable_And_Hash.hpp>
+#include <Mlib/Map/Contiguous_Integral_Map.hpp>
 #include <Mlib/Map/String_With_Hash_Unordered_Map.hpp>
-#include <Mlib/Map/Verbose_Unordered_Map.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
 #include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/Memory/Dangling_Map.hpp>
@@ -15,6 +15,9 @@
 #include <Mlib/Memory/Destruction_Notifier.hpp>
 #include <Mlib/Memory/Destruction_Observers.hpp>
 #include <Mlib/Os/Threads/Fast_Mutex.hpp>
+#include <Mlib/Physics/Actuators/Rotor.hpp>
+#include <Mlib/Physics/Actuators/Tire.hpp>
+#include <Mlib/Physics/Actuators/Wing.hpp>
 #include <Mlib/Physics/Ai/IVehicle_Ai.hpp>
 #include <Mlib/Physics/Containers/Rigid_Bodies.hpp>
 #include <Mlib/Physics/Interfaces/Collision_Observer.hpp>
@@ -53,10 +56,7 @@ class RigidBodyPlaneController;
 class RigidBodyVehicleController;
 class RigidBodyMissileController;
 struct BaseRotor;
-class Tire;
-class Rotor;
 class IContactInfo;
-class Wing;
 enum class VelocityClassification;
 enum class RigidBodyVehicleFlags: uint32_t;
 enum class RigidBodyVehicleFlagsLocal: uint32_t;
@@ -315,9 +315,9 @@ public:
     float power_;
     float energy_old_;
 #endif
-    VerboseUnorderedMap<size_t, Tire> tires_;
-    VerboseUnorderedMap<size_t, std::unique_ptr<Rotor>> rotors_;
-    VerboseUnorderedMap<size_t, std::unique_ptr<Wing>> wings_;
+    ContiguousIntegralMap<size_t, Tire> tires_;
+    ContiguousIntegralMap<size_t, Rotor> rotors_;
+    ContiguousIntegralMap<size_t, Wing> wings_;
     StringWithHashUnorderedMap<RigidBodyEngine> engines_;
     StringWithHashUnorderedMap<RigidBodyDeltaEngine> delta_engines_;
     RigidBodyVehicleFlags flags_;

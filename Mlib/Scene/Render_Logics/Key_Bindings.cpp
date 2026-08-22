@@ -314,9 +314,13 @@ void KeyBindings::increment_external_forces(
             rb->set_surface_power(main_name, EnginePowerIntent{.surface_power = 0});
             rb->set_surface_power(brakes_name, EnginePowerIntent{.surface_power = 0});
             rb->set_max_velocity(INFINITY);
-            for (auto& t : rb->tires_) {
-                t.second.angle_y = 0;
-                // t.second.accel_x = 0;
+            for (auto&& [tire_id, otire] : cenumerate(rb->tires_)) {
+                if (!otire.has_value()) {
+                    throw std::runtime_error("Tire " + std::to_string(+tire_id) + " not initialized");
+                }
+                auto& t = *otire;
+                t.angle_y = 0;
+                // t.accel_x = 0;
             }
             rb->tires_z_ = k->tires_z;
         }

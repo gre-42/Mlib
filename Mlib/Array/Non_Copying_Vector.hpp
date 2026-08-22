@@ -18,6 +18,11 @@ class NonCopyingVector {
     size_t capacity_;
     size_t size_;
 public:
+    inline NonCopyingVector()
+        : data_{ nullptr }
+        , capacity_{ 0 }
+        , size_{ 0 }
+    {}
     inline explicit NonCopyingVector(size_t capacity)
         : data_{ new ObjectBlob<T>[capacity] }
         , capacity_{ capacity }
@@ -38,6 +43,13 @@ public:
         delete [] data_;
         data_ = new ObjectBlob<T>[capacity];
         capacity_ = capacity;
+    }
+    template <class... Args>
+    void resize(size_t n, Args&&... args) {
+        clear_and_reserve(n);
+        for (size_t i = 0; i < n; ++i) {
+            emplace_back(std::forward<Args>(args)...);
+        }
     }
     template <class... Args>
     inline T& emplace_back(Args&&... args) {

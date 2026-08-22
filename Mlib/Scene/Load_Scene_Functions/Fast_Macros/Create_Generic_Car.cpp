@@ -438,6 +438,7 @@ void CreateGenericCar::execute(const JsonView& args)
                         wheel_radius);
                 }
             };
+        rb->tires_.resize(4, std::nullopt);
         create_wheel(
             0,
             VariableAndHash<std::string>{"wheel_left_front_node" + suffix},

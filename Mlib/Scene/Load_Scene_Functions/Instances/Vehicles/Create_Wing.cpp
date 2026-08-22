@@ -79,18 +79,17 @@ void CreateWing::execute(const LoadSceneJsonUserFunctionArgs& args) {
     }
     vehicle_rb->wings_.add(
         wing_id,
-        std::make_unique<Wing>(
-            angle_of_attack_node,
-            brake_angle_node,
-            TransformationMatrix<float, ScenePos, 3>{ r, position },
-            fac,
-            LIFT_COEFF_UNITS * args.arguments.at<float>(KnownArgs::lift_c),
-            ANGLE_COEFF_UNITS * args.arguments.at<float>(KnownArgs::angle_yz),
-            ANGLE_COEFF_UNITS * args.arguments.at<float>(KnownArgs::angle_zz),
-            DRAG_COEFF_UNITS * args.arguments.at<EFixedArray<float, 3>>(KnownArgs::drag),
-            0.f,
-            0.f,
-            std::move(trail_source)));
+        angle_of_attack_node,
+        brake_angle_node,
+        TransformationMatrix<float, ScenePos, 3>{ r, position },
+        fac,
+        LIFT_COEFF_UNITS * args.arguments.at<float>(KnownArgs::lift_c),
+        ANGLE_COEFF_UNITS * args.arguments.at<float>(KnownArgs::angle_yz),
+        ANGLE_COEFF_UNITS * args.arguments.at<float>(KnownArgs::angle_zz),
+        DRAG_COEFF_UNITS * args.arguments.at<EFixedArray<float, 3>>(KnownArgs::drag),
+        0.f,
+        0.f,
+        std::move(trail_source));
 }
 
 namespace {
