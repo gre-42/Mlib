@@ -92,7 +92,7 @@ struct Material {
         const std::string& name) const;
     std::string identifier() const;
     inline auto rendering_sorting_key() const {
-        return std::make_tuple(blend_mode, continuous_blending_z_order, depth_func);
+        return std::make_tuple(blend_mode, continuous_blending_z_order, depth_func, !depth_test);
     }
     std::partial_ordering operator <=> (const Material&) const = default;
     template <class Archive>
