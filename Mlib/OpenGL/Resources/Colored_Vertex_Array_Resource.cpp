@@ -193,8 +193,8 @@ void ColoredVertexArrayResource::preload(
     if (ContextQuery::is_initialized()) {
         if (triangles_res_ != nullptr) {
             for (const auto& cva : triangles_res_->scvas) {
-                if (!any(cva->meta.morphology.physics_material & PhysicsMaterial::ATTR_VISIBLE)) ||
-                    requires_aggregation(*cva)
+                if (!any(cva->meta.morphology.physics_material & PhysicsMaterial::ATTR_VISIBLE) ||
+                    requires_aggregation(*cva))
                 {
                     continue;
                 }
