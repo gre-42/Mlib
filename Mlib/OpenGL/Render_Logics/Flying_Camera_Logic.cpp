@@ -148,14 +148,14 @@ static void nofly_key_callback(
     if (user_object.button_states.key_down({.key = Keys::LEFT_CONTROL})) {
 #if !defined(__ANDROID__) && !defined(__EMSCRIPTEN__)
         if (keys.w.keys_pressed()) {
-            user_object.wire_frame = zapped(user_object.wire_frame);
+            user_object.wire_frame = zapped(user_object.wire_frame, "wireframe");
         }
 #endif
         if (keys.d.keys_pressed()) {
-            user_object.depth_test = zapped(user_object.depth_test);
+            user_object.depth_test = zapped(user_object.depth_test, "depth test");
         }
         if (keys.c.keys_pressed()) {
-            user_object.cull_faces = zapped(user_object.cull_faces);
+            user_object.cull_faces = zapped(user_object.cull_faces, "cull faces");
         }
         if (user_object.button_states.key_down({.key = Keys::LEFT_ALT})) {
             if (keys.e.keys_pressed()) {

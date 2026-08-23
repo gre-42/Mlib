@@ -3,9 +3,28 @@
 #include <Mlib/Geometry/Material/Render_Pass.hpp>
 #include <Mlib/Misc/Features.hpp>
 #include <Mlib/OpenGL/CHK.hpp>
+#include <Mlib/Os/Os.hpp>
 #include <Mlib/Scene_Graph/Render_Pass.hpp>
 
 using namespace Mlib;
+
+std::string Mlib::bool_render_option_to_string(BoolRenderOption o) {
+    switch (o) {
+    case BoolRenderOption::UNCHANGED:
+        return "unchanged";
+    case BoolRenderOption::OFF:
+        return "off";
+    case BoolRenderOption::ON:
+        return "on";
+    }
+    throw std::runtime_error("Unknown bool render option: " + std::to_string((int)o));
+}
+
+BoolRenderOption Mlib::zapped(BoolRenderOption option, std::string_view name) {
+    auto result = (BoolRenderOption)(((int)option + 1) % 3);
+    linfo() << "Set " << name << " = " << bool_render_option_to_string(result);
+    return result;
+}
 
 void RenderConfig::apply(ExternalRenderPassType external_render_pass_type) const {
     if (any(external_render_pass_type & ExternalRenderPassType::LIGHTMAP_ANY_MASK)) {

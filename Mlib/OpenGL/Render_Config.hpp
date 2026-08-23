@@ -22,9 +22,9 @@ enum class BoolRenderOption {
     ON = 2
 };
 
-inline BoolRenderOption zapped(BoolRenderOption option) {
-    return (BoolRenderOption)(((int)option + 1) % 3);
-}
+std::string bool_render_option_to_string(BoolRenderOption o);
+
+BoolRenderOption zapped(BoolRenderOption option, std::string_view name);
 
 struct RenderConfig {
     NoCopy no_copy;
