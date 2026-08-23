@@ -44,10 +44,10 @@ public:
             throw std::runtime_error(prefix_ + ": Index out of bounds during \"add\". Index: " +
                 std::to_string(+i) + ", size: " + std::to_string(elements_.size()));
         }
-        if (elements_.at(i).has_value()) {
+        if (elements_[i].has_value()) {
             throw std::runtime_error(prefix_ + ": Index already set");
         }
-        return elements_.at(i).emplace(std::forward<TArgs>(args)...);
+        return elements_[i].emplace(std::forward<TArgs>(args)...);
     }
     TValue& get(TIndex i) {
         if (i >= elements_.size()) {
