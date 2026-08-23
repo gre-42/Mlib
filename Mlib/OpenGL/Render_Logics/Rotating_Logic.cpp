@@ -27,6 +27,21 @@
 
 using S = Mlib::VariableAndHash<std::string>;
 
+namespace Keys {
+static const S LEFT_SHIFT{"LEFT_SHIFT"};
+static const S UP{"UP"};
+static const S DOWN{"DOWN"};
+static const S LEFT{"LEFT"};
+static const S RIGHT{"RIGHT"};
+static const S PAGE_UP{"PAGE_UP"};
+static const S PAGE_DOWN{"PAGE_DOWN"};
+static const S HOME{"HOME"};
+static const S END{"END"};
+static const S ESCAPE{"ESCAPE"};
+static const S KP_ADD{"KP_ADD"};
+static const S KP_SUBTRACT{"KP_SUBTRACT"};
+};
+
 namespace Mlib {
 class RotatingLogicKeys {
 public:
@@ -35,7 +50,7 @@ public:
     {
         key_configurations
             .lock_exclusive_for(std::chrono::seconds(2), "Key configurations")
-            ->insert(0, "escape", { {{{.key = S("ESCAPE")}}} });
+            ->insert(0, "escape", { {{{.key = Keys::ESCAPE}}} });
     }
     ButtonPress escape;
 private:
@@ -54,59 +69,59 @@ static void key_callback(
     if (keys.escape.keys_pressed()) {
         GLFW_CHK(glfwSetWindowShouldClose(&window, GLFW_TRUE));
     }
-    if (button_states.key_down({.key = S("LEFT_SHIFT")})) {
+    if (button_states.key_down({.key = Keys::LEFT_SHIFT})) {
         if ((user_object.beacon_locations != nullptr) &&
             !user_object.beacon_locations->empty())
         {
             user_object.beacon_index = std::clamp<size_t>(user_object.beacon_index, 0, user_object.beacon_locations->size() - 1);
-            if (button_states.key_down({.key = S("UP")})) {
+            if (button_states.key_down({.key = Keys::UP})) {
                 user_object.beacon_index += std::min<size_t>(1, user_object.beacon_locations->size() - 1 - user_object.beacon_index);
                 lerr() << "Beacon index: " << user_object.beacon_index;
             }
-            if (button_states.key_down({.key = S("DOWN")})) {
+            if (button_states.key_down({.key = Keys::DOWN})) {
                 user_object.beacon_index -= std::min<size_t>(1, user_object.beacon_index);
                 lerr() << "Beacon index: " << user_object.beacon_index;
             }
-            if (button_states.key_down({.key = S("PAGE_UP")})) {
+            if (button_states.key_down({.key = Keys::PAGE_UP})) {
                 user_object.beacon_index += std::min<size_t>(10, user_object.beacon_locations->size() - 1 - user_object.beacon_index);
                 lerr() << "Beacon index: " << user_object.beacon_index;
             }
-            if (button_states.key_down({.key = S("PAGE_DOWN")})) {
+            if (button_states.key_down({.key = Keys::PAGE_DOWN})) {
                 user_object.beacon_index -= std::min<size_t>(10, user_object.beacon_index);
                 lerr() << "Beacon index: " << user_object.beacon_index;
             }
-            if (button_states.key_down({.key = S("HOME")})) {
+            if (button_states.key_down({.key = Keys::HOME})) {
                 user_object.beacon_index += std::min<size_t>(100, user_object.beacon_locations->size() - 1 - user_object.beacon_index);
                 lerr() << "Beacon index: " << user_object.beacon_index;
             }
-            if (button_states.key_down({.key = S("END")})) {
+            if (button_states.key_down({.key = Keys::END})) {
                 user_object.beacon_index -= std::min<size_t>(100, user_object.beacon_index);
                 lerr() << "Beacon index: " << user_object.beacon_index;
             }
         }
     } else {
-        if (button_states.key_down({.key = S("UP")})) {
+        if (button_states.key_down({.key = Keys::UP})) {
             user_object.camera_z -= 0.1f;
         }
-        if (button_states.key_down({.key = S("DOWN")})) {
+        if (button_states.key_down({.key = Keys::DOWN})) {
             user_object.camera_z += 0.1f;
         }
-        if (button_states.key_down({.key = S("LEFT")})) {
+        if (button_states.key_down({.key = Keys::LEFT})) {
             user_object.angle_y += 0.004f;
         }
-        if (button_states.key_down({.key = S("RIGHT")})) {
+        if (button_states.key_down({.key = Keys::RIGHT})) {
             user_object.angle_y -= 0.004f;
         }
-        if (button_states.key_down({.key = S("PAGE_UP")})) {
+        if (button_states.key_down({.key = Keys::PAGE_UP})) {
             user_object.angle_x += 0.004f;
         }
-        if (button_states.key_down({.key = S("PAGE_DOWN")})) {
+        if (button_states.key_down({.key = Keys::PAGE_DOWN})) {
             user_object.angle_x -= 0.004f;
         }
-        if (button_states.key_down({.key = S("KP_ADD")})) {
+        if (button_states.key_down({.key = Keys::KP_ADD})) {
             user_object.scale += 0.04f;
         }
-        if (button_states.key_down({.key = S("KP_SUBTRACT")})) {
+        if (button_states.key_down({.key = Keys::KP_SUBTRACT})) {
             user_object.scale -= 0.04f;
         }
     }

@@ -145,7 +145,9 @@ static void nofly_key_callback(
     //         user_object.physics_set_fps->toggle_pause_resume();
     //     }
     // }
-    if (user_object.button_states.key_down({.key = Keys::LEFT_CONTROL})) {
+    if (user_object.button_states.key_down({.key = Keys::LEFT_CONTROL}) &&
+        user_object.button_states.key_down({.key = Keys::LEFT_ALT}))
+    {
 #if !defined(__ANDROID__) && !defined(__EMSCRIPTEN__)
         if (keys.w.keys_pressed()) {
             user_object.wire_frame = zapped(user_object.wire_frame, "wireframe");
@@ -157,14 +159,12 @@ static void nofly_key_callback(
         if (keys.c.keys_pressed()) {
             user_object.cull_faces = zapped(user_object.cull_faces, "cull faces");
         }
-        if (user_object.button_states.key_down({.key = Keys::LEFT_ALT})) {
-            if (keys.e.keys_pressed()) {
-                check_gl_errors((CheckGlErrors)!check_gl_errors());
-                if (check_gl_errors()) {
-                    linfo() << "OpenGL error check enabled";
-                } else {
-                    linfo() << "OpenGL error check disabled";
-                }
+        if (keys.e.keys_pressed()) {
+            check_gl_errors((CheckGlErrors)!check_gl_errors());
+            if (check_gl_errors()) {
+                linfo() << "OpenGL error check enabled";
+            } else {
+                linfo() << "OpenGL error check disabled";
             }
         }
     }
