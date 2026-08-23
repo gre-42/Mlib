@@ -6,6 +6,8 @@
 #include <Mlib/OpenGL/Renderables/Gpu_Renderable_Colored_Vertex_Array.hpp>
 #include <Mlib/OpenGL/Resources/Colored_Vertex_Array_Resource/Distant_Triangle_Hider.hpp>
 #include <Mlib/OpenGL/Resources/Colored_Vertex_Array_Resource/Static_Instance_Buffers.hpp>
+#include <Mlib/Os/Os.hpp>
+#include <Mlib/Os/Preload.hpp>
 #include <Mlib/Scene_Graph/Instances/Billboard_Container.hpp>
 #include <Mlib/Scene_Graph/Instances/Sorted_Vertex_Array_Instances.hpp>
 #include <Mlib/Scene_Graph/Render/Caching_Behavior.hpp>
@@ -29,6 +31,9 @@ std::shared_ptr<IGpuVertexData> OpenGLObjectFactory::create_vertex_data(
     CachingBehavior caching_behavior,
     TaskLocation task_location) const
 {
+    if (get_not_preloaded_behavior() == NotPreloadedBehavior::WARN) {
+        lwarn() << "Vertex data not preloaded: \"" << cva->meta.name.full_name() << '"';
+    }
     if (cva->triangles.empty()) {
         throw std::runtime_error("OpenGLObjectFactory::create_vertex_data on empty array \"" + cva->meta.name.full_name() + '"');
     }

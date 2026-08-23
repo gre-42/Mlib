@@ -699,6 +699,10 @@ const GpuVertexDatas& SceneNodeResources::get_gpu_vertex_data_group(
     if (auto it = gpu_vertex_data_groups_.try_get(name); it != nullptr) {
         return *it;
     }
+    if (get_not_preloaded_behavior() == NotPreloadedBehavior::WARN) {
+        std::scoped_lock lock{ mutex_ };
+        lwarn() << "GPU vertex data group not preloaded: \"" << *name << '"';
+    }
     auto acvas = get_rendering_arrays(name);
     std::unordered_set<TransformationMode> transformation_modes;
     for (const auto& acva : acvas) {
@@ -737,6 +741,9 @@ std::shared_ptr<IGpuVertexData> SceneNodeResources::get_gpu_vertex_data(
     std::scoped_lock lock{gpu_vertex_datas_mutex_};
     if (auto it = gpu_vertex_datas_.try_get(scva); it != nullptr) {
         return *it;
+    }
+    if (get_not_preloaded_behavior() == NotPreloadedBehavior::WARN) {
+        lwarn() << "GPU vertex data not preloaded: \"" << scva->meta.name.full_name() << '"';
     }
     return gpu_vertex_datas_.add(scva, gpu_object_factory_.create_vertex_data(scva, acvas, CachingBehavior::ENABLED, TaskLocation::BACKGROUND));
     #endif

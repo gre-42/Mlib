@@ -136,6 +136,7 @@ std::unique_ptr<JThread> render_thread(
                     }
                     if (load_scene.level_loaded()) {
                         execute_render_allocators();
+                        set_not_preloaded_behavior(NotPreloadedBehavior::WARN);
                         auto& rs = physics_scenes["primary_scene"];
                         rs.scene_.wait_for_cleanup();
                         renderable_scenes.render_toplevel(
@@ -256,7 +257,6 @@ JThread loader_thread(
                         }
                     }
                 }
-                set_not_preloaded_behavior(NotPreloadedBehavior::WARN);
                 load_scene.notify_level_loaded();
                 remote_sites.set_user_status(UserTypes::ALL_LOCAL, UserStatus::LEVEL_LOADED);
             }
@@ -877,6 +877,9 @@ int main(int argc, char** argv) {
                 j["hitbox_massbox_triangulation"] = (show_hitbox || show_massbox)
                     ? "delaunay"
                     : "disabled";
+                j["hitbox_massbox_material"] = (show_hitbox || show_massbox)
+                    ? "attr_visible|attr_collide|obj_hitbox|attr_convex|surface_base_metal"
+                    : "attr_collide|obj_hitbox|attr_convex|surface_base_metal";
             }
             external_json_macro_arguments.merge_and_notify(JsonMacroArguments{std::move(j)});
         }

@@ -58,6 +58,7 @@ void HeterogeneousResource::preload(const RenderableResourceFilter& filter) {
     preload_textures(acvas->scvas);
     preload_textures(acvas->dcvas);
     #endif
+    rcva().preload(filter);
 }
 
 void HeterogeneousResource::instantiate_root_renderables(const RootInstantiationOptions& options) const

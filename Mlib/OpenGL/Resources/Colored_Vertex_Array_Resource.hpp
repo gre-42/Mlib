@@ -103,6 +103,7 @@ private:
         std::list<std::shared_ptr<IGpuVertexData>> gpu_vertex_data,
         std::list<std::shared_ptr<IGpuVertexArray>> gpu_vertex_arrays);
     bool requires_aggregation(const ColoredVertexArray<float> &cva) const;
+    void preload(const RenderableResourceFilter& filter, bool recursive);
     SceneNodeResources& scene_node_resources_;
     #ifndef WITHOUT_GRAPHICS
     RenderingResources& rendering_resources_;

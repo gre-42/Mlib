@@ -26,6 +26,7 @@
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Transformation/Translation_Matrix.hpp>
 #include <Mlib/Memory/Integral_Cast.hpp>
+#include <Mlib/OpenGL/Deallocate/Render_Allocator.hpp>
 #include <Mlib/OpenGL/Renderables/Renderable_Colored_Vertex_Array.hpp>
 #include <Mlib/Resource_Context/Rendering_Context.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
@@ -154,6 +155,13 @@ ColoredVertexArrayResource::ColoredVertexArrayResource(
 ColoredVertexArrayResource::~ColoredVertexArrayResource() = default;
 
 void ColoredVertexArrayResource::preload(const RenderableResourceFilter& filter) {
+    preload(filter, false /* false = recursive*/);
+}
+
+void ColoredVertexArrayResource::preload(
+    const RenderableResourceFilter& filter,
+    bool recursive)
+{
     #ifndef WITHOUT_GRAPHICS
     if (triangles_res_ != nullptr) {
         auto preload_cvas = [&](const auto& cvas) {
@@ -170,10 +178,24 @@ void ColoredVertexArrayResource::preload(const RenderableResourceFilter& filter)
     for (auto& a : gpu_vertex_arrays_) {
         a->vertices()->preload();
     }
+    for (auto& a : gpu_vertex_data_) {
+        a->preload();
+    }
+    if (triangles_res_ != nullptr) {
+        for (const auto& cva : triangles_res_->scvas) {
+            if (any(cva->meta.morphology.physics_material & PhysicsMaterial::ATTR_VISIBLE) &&
+                cva->triangles.empty())
+            {
+                throw std::runtime_error("Visible resource contains no triangles");
+            }
+        }
+    }
     if (ContextQuery::is_initialized()) {
         if (triangles_res_ != nullptr) {
-            for (const auto &cva : triangles_res_->scvas) {
-                if (requires_aggregation(*cva)) {
+            for (const auto& cva : triangles_res_->scvas) {
+                if (!any(cva->meta.morphology.physics_material & PhysicsMaterial::ATTR_VISIBLE)) ||
+                    requires_aggregation(*cva)
+                {
                     continue;
                 }
                 scene_node_resources_.get_gpu_vertex_data(cva, triangles_res_)->wait();
@@ -182,6 +204,17 @@ void ColoredVertexArrayResource::preload(const RenderableResourceFilter& filter)
         for (const auto& a : gpu_vertex_arrays_) {
             a->preload();
         }
+    } else {
+        if (recursive) {
+            throw std::runtime_error("OpenGL context not initialized despite recursion");
+        }
+        append_render_allocator([w = weak_from_this(), filter]{
+            auto s = w.lock();
+            if (s == nullptr) {
+                return;
+            }
+            s->preload(filter, true /* true = recursive */);
+        });
     }
     #endif
 }

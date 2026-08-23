@@ -164,6 +164,7 @@ public:
         auto frame_id = rrsd_.next(render_config_.motion_interpolation, render_set_fps_.ft.frame_time());
         if (load_scene_->level_loaded()) {
             execute_render_allocators();
+            set_not_preloaded_behavior(NotPreloadedBehavior::WARN);
             auto& rs = (*physics_scenes_)["primary_scene"];
             rs.scene_.wait_for_cleanup();
             if (!last_load_scene_finished_ &&
@@ -289,7 +290,6 @@ JThread loader_thread(
                         }
                     }
                 }
-                set_not_preloaded_behavior(NotPreloadedBehavior::WARN);
                 load_scene.notify_level_loaded();
                 remote_sites.set_user_status(UserTypes::ALL_LOCAL, UserStatus::LEVEL_LOADED);
             }
@@ -856,6 +856,9 @@ void android_main(android_app* app)
                 j["hitbox_massbox_triangulation"] = (show_hitbox || show_massbox)
                     ? "delaunay"
                     : "disabled";
+                j["hitbox_massbox_material"] = (show_hitbox || show_massbox)
+                    ? "attr_visible|attr_collide|obj_hitbox|attr_convex|surface_base_metal"
+                    : "attr_collide|obj_hitbox|attr_convex|surface_base_metal";
             }
             external_json_macro_arguments.merge_and_notify(JsonMacroArguments{std::move(j)});
         }
