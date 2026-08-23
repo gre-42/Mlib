@@ -27,7 +27,7 @@ using S = Mlib::VariableAndHash<std::string>;
 
 namespace Keys {
 static const S LEFT_CONTROL{"LEFT_CONTROL"};
-static const S LEFT_ALT{"LEFT_ALT"};
+static const S LEFT_SHIFT{"LEFT_SHIFT"};
 static const S UP{"UP"};
 static const S DOWN{"DOWN"};
 static const S LEFT{"LEFT"};
@@ -146,7 +146,7 @@ static void nofly_key_callback(
     //     }
     // }
     if (user_object.button_states.key_down({.key = Keys::LEFT_CONTROL}) &&
-        user_object.button_states.key_down({.key = Keys::LEFT_ALT}))
+        user_object.button_states.key_down({.key = Keys::LEFT_SHIFT}))
     {
 #if !defined(__ANDROID__) && !defined(__EMSCRIPTEN__)
         if (keys.w.keys_pressed()) {
