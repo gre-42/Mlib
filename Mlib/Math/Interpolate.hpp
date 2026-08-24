@@ -26,21 +26,22 @@ Array<TData> interpolate(
         if (x == TData(y.length() - 1)) {
             return y(y.length() - 1);
         }
-        size_t left_id = float_to_integral<size_t>(std::floor(x));
-        size_t right_id = left_id + 1;
-        if ((right_id == y.length()) && (x <= TData(y.length() - 1))) {
-            return y(left_id);
-        } else if ((left_id < y.length()) && (right_id < y.length())) {
-            TData h = x - (TData)left_id;
-            return lerp(y(left_id), y(right_id), h);
-        } else {
-            if (out_of_range_behavior == OutOfRangeBehavior2::NAN_) {
-                return NAN;
-            } else {
-                throw std::runtime_error(
-                    (std::stringstream() << "Interpolation value out of range: x = " << x <<
-                    ", range = 0.." << (y.length() - 1)).str());
+        if (x >= 0) {
+            size_t left_id = float_to_integral<size_t>(std::floor(x));
+            size_t right_id = left_id + 1;
+            if ((right_id == y.length()) && (x <= TData(y.length() - 1))) {
+                return y(left_id);
+            } else if ((left_id < y.length()) && (right_id < y.length())) {
+                TData h = x - (TData)left_id;
+                return lerp(y(left_id), y(right_id), h);
             }
+        }
+        if (out_of_range_behavior == OutOfRangeBehavior2::NAN_) {
+            return NAN;
+        } else {
+            throw std::runtime_error(
+                (std::stringstream() << "Interpolation value out of range: x = " << x <<
+                ", range = 0.." << (y.length() - 1)).str());
         }
     });
 }

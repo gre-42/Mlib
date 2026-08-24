@@ -4,6 +4,7 @@
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Fixed_Test.hpp>
 #include <Mlib/Math/Gaussian_Elimination.hpp>
+#include <Mlib/Math/Grid_Search/Grid_Search.hpp>
 #include <Mlib/Math/Huber_Norm.hpp>
 #include <Mlib/Math/Interp.hpp>
 #include <Mlib/Math/Interpolate.hpp>
@@ -13,6 +14,7 @@
 #include <Mlib/Math/Math.hpp>
 #include <Mlib/Math/Non_Zero_Ids.hpp>
 #include <Mlib/Math/Optimize/Cg.hpp>
+#include <Mlib/Math/Orderable_Fixed_Array.hpp>
 #include <Mlib/Math/Power_Iteration/Cond.hpp>
 #include <Mlib/Math/Power_Iteration/Inverse_Iteration.hpp>
 #include <Mlib/Math/Power_Iteration/Pinv.hpp>
@@ -29,8 +31,42 @@
 #include <Mlib/Stats/Mean.hpp>
 #include <Mlib/Stats/Random_Arrays.hpp>
 #include <Mlib/Time/Time_Guard.hpp>
+#include <set>
 
 using namespace Mlib;
+
+void test_grid_search() {
+    {
+        linfo() << "grid begin";
+        FixedArray<uint32_t, 3> n{3u, 4u, 7u};
+        std::set<OrderableFixedArray<uint32_t, 3>> indices;
+        for (const auto& i : grid_search<3>(n, GridSearchMethod::LCG)) {
+            linfo() << i;
+            if (!indices.emplace(i).second) {
+                throw std::runtime_error("Duplicate index");
+            }
+        }
+        if (indices.size() != prod(n)) {
+            throw std::runtime_error("Unexpected number of indices");
+        }
+        linfo() << "grid end";
+    }
+    {
+        linfo() << "grid begin";
+        FixedArray<uint32_t, 3> n{3u, 4u, 7u};
+        std::set<OrderableFixedArray<uint32_t, 3>> indices;
+        for (const auto& i : grid_search<3>(n, GridSearchMethod::FEISTEL)) {
+            linfo() << i;
+            if (!indices.emplace(i).second) {
+                throw std::runtime_error("Duplicate index");
+            }
+        }
+        if (indices.size() != prod(n)) {
+            throw std::runtime_error("Unexpected number of indices");
+        }
+        linfo() << "grid end";
+    }
+}
 
 void test_blocking_transposed() {
     Array<float> a{ ArrayShape{ 640, 480 } };
@@ -285,7 +321,7 @@ void test_interpolate() {
     assert_allclose(
         interpolate(
             Array<float>{-0.1f, 0.5f, 2.1f},
-            Array<float>{10.f, 10.4f, 10.6f}, OutOfRangeBehavior2::THROW),
+            Array<float>{10.f, 10.4f, 10.6f}, OutOfRangeBehavior2::NAN_),
         Array<float>{NAN, 10.2f, NAN});
 }
 
@@ -536,6 +572,7 @@ void test_rls() {
 
 int main(int argc, const char** argv) {
     try {
+        test_grid_search();
         test_blocking_transposed();
         test_svd();
         test_svd_j();

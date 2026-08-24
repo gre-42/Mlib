@@ -44,6 +44,7 @@ template <class TDerivedA, class TDerivedB, class TData> auto operator + (const 
 template <class TDerivedA, class TDerivedB, class TData> auto operator - (const BaseDenseArray<TDerivedA, TData>& a, const BaseDenseArray<TDerivedB, TData>& b);
 template <class TDerivedA, class TDerivedB, class TData> auto operator * (const BaseDenseArray<TDerivedA, TData>& a, const BaseDenseArray<TDerivedB, TData>& b);
 template <class TDerivedA, class TDerivedB, class TData> auto operator / (const BaseDenseArray<TDerivedA, TData>& a, const BaseDenseArray<TDerivedA, TData>& b);
+template <class TDerivedA, class TDerivedB, class TData> auto operator % (const BaseDenseArray<TDerivedA, TData>& a, const BaseDenseArray<TDerivedA, TData>& b);
 template <class TDerivedA, class TDerivedB, class TData> auto operator < (const BaseDenseArray<TDerivedA, TData>& a, const BaseDenseArray<TDerivedB, TData>& b);
 template <class TDerivedA, class TDerivedB, class TData> auto operator > (const BaseDenseArray<TDerivedA, TData>& a, const BaseDenseArray<TDerivedB, TData>& b);
 template <class TDerivedA, class TDerivedB, class TData> auto operator <= (const BaseDenseArray<TDerivedA, TData>& a, const BaseDenseArray<TDerivedB, TData>& b);
@@ -58,6 +59,8 @@ template <class TDerived, class TData> auto operator * (const BaseDenseArray<TDe
 template <class TDerived, class TData> auto operator * (const TData& a, const BaseDenseArray<TDerived, TData>& b);
 template <class TDerived, class TData> auto operator / (const BaseDenseArray<TDerived, TData>& a, const TData& b);
 template <class TDerived, class TData> auto operator / (const TData& a, const BaseDenseArray<TDerived, TData>& b);
+template <class TDerived, class TData> auto operator % (const BaseDenseArray<TDerived, TData>& a, const TData& b);
+template <class TDerived, class TData> auto operator % (const TData& a, const BaseDenseArray<TDerived, TData>& b);
 template <class TDerived, class TData> auto operator < (const BaseDenseArray<TDerived, TData>& a, const TData& b);
 template <class TDerived, class TData> auto operator <= (const BaseDenseArray<TDerived, TData>& a, const TData& b);
 template <class TDerived, class TData> auto operator > (const BaseDenseArray<TDerived, TData>& a, const TData& b);
@@ -833,6 +836,11 @@ auto operator / (const BaseDenseArray<TDerivedA, TData>& a, const BaseDenseArray
 }
 
 template <class TDerivedA, class TDerivedB, class TData>
+auto operator % (const BaseDenseArray<TDerivedA, TData>& a, const BaseDenseArray<TDerivedB, TData>& b) {
+    return a->array_array_binop(*b, [](const TData& x, const TData& y) { return x % y; });
+}
+
+template <class TDerivedA, class TDerivedB, class TData>
 auto operator < (const BaseDenseArray<TDerivedA, TData>& a, const BaseDenseArray<TDerivedB, TData>& b) {
     return a->template array_array_binop<bool>(*b, [](const TData& x, const TData& y) { return x < y; });
 }
@@ -917,13 +925,8 @@ auto operator / (const BaseDenseArray<TDerived, TData>& a, const TData& b) {
     return a->applied([&](const TData& x){ return x / b; });
 }
 
-template <class TDerived, class TData, std::integral I>
-auto operator / (const BaseDenseArray<TDerived, TData>& a, I b) {
-    return a->applied([&](const TData& x){ return x / b; });
-}
-
-template <class TDerived, class TData, std::floating_point F>
-auto operator / (const BaseDenseArray<TDerived, TData>& a, F b) {
+template <class TDerived, class TData, Scalar S>
+auto operator / (const BaseDenseArray<TDerived, TData>& a, S b) {
     return a->applied([&](const TData& x){ return x / b; });
 }
 
@@ -940,6 +943,16 @@ Array<std::complex<TFloat>> operator / (const Array<std::complex<TFloat>>& a, co
 template <class TFloat>
 Array<std::complex<TFloat>> operator / (const std::complex<TFloat>& a, const Array<std::complex<TFloat>>& b) {
     return b.applied([&](const std::complex<TFloat>& x){ return a / x; });
+}
+
+template <class TDerived, class TData>
+auto operator % (const TData& a, const BaseDenseArray<TDerived, TData>& b) {
+    return b->applied([&](const TData& x){ return a % x; });
+}
+
+template <class TDerived, class TData>
+auto operator % (const BaseDenseArray<TDerived, TData>& a, const TData& b) {
+    return a->applied([&](const TData& x){ return x % b; });
 }
 
 template <class TDerived, class TData>
