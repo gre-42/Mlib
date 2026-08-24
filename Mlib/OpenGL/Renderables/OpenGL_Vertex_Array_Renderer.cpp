@@ -2809,9 +2809,16 @@ void OpenGLVertexArrayRenderer::render(
     }
     LOG_INFO("RenderableColoredVertexArray::render_cva glBindVertexArray");
     {
-        // AperiodicLagFinder lag_finder{ "draw " + meta.name + ": ", std::chrono::milliseconds{5} };
+        std::optional<AperiodicLagFinder> lag_finder;
+        if (lag_finders_enabled()) {
+            lag_finder.emplace("draw: ", std::chrono::milliseconds{5});
+        }
         MaterialRenderConfigGuard mrcf{ meta.material, render_pass.internal };
         if (has_instances) {
+            std::optional<AperiodicLagFinder> lag_finder;
+            if (lag_finders_enabled()) {
+                lag_finder.emplace("wait: ", std::chrono::milliseconds{5});
+            }
             if (any(render_pass.internal & InternalRenderPass::PRELOADED) &&
                 instances->copy_in_progress())
             {
@@ -2827,41 +2834,57 @@ void OpenGLVertexArrayRenderer::render(
             verbose_abort("Preloaded render pass has incomplete triangles: \"" + meta.name.full_name() + '"');
         }
         if (!cva->initialized()) {
+            std::optional<AperiodicLagFinder> lag_finder;
+            if (lag_finders_enabled()) {
+                lag_finder.emplace("initialize: ", std::chrono::milliseconds{5});
+            }
             cva->initialize();
         }
-        cva->update_legacy();
-        cva->bind();
-        LOG_INFO("RenderableColoredVertexArray::render_cva glDrawArrays");
-        if (has_instances) {
-            try {
-                notify_rendering(CURRENT_SOURCE_LOCATION);
-                TemporarilyIgnoreFloatingPointExeptions ignore_except;
-                CHK(glDrawArraysInstanced(GL_TRIANGLES, 0, integral_cast<GLsizei>(3 * vertices->ntriangles()), integral_cast<GLsizei>(instances->num_instances())));
-            } catch (const std::runtime_error& e) {
-                cva->print_stats(lerr(LogFlags::NO_APPEND_NEWLINE).ref());
-                throw std::runtime_error(
-                    (std::stringstream() <<
-                    "Could not render instanced triangles: " << e.what() << '\n' <<
-                    "  #triangles: " << vertices->ntriangles() << '\n' <<
-                    "  #instances: " << instances->num_instances() << '\n' <<
-                    "  name: " << meta.name << '\n' <<
-                    "  material: " << meta.material.identifier() << '\n' <<
-                    "  physics material: " << physics_material_to_string(meta.morphology.physics_material)).str());
+        {
+            std::optional<AperiodicLagFinder> lag_finder;
+            if (lag_finders_enabled()) {
+                lag_finder.emplace("bind: ", std::chrono::milliseconds{5});
             }
-        } else {
-            try {
-                notify_rendering(CURRENT_SOURCE_LOCATION);
-                TemporarilyIgnoreFloatingPointExeptions ignore_except;
-                CHK(glDrawArrays(GL_TRIANGLES, 0, integral_cast<GLsizei>(3 * vertices->ntriangles())));
-            } catch (const std::runtime_error& e) {
-                cva->print_stats(lerr(LogFlags::NO_APPEND_NEWLINE).ref());
-                throw std::runtime_error(
-                    (std::stringstream() <<
-                    "Could not render triangles: " << e.what() << '\n' <<
-                    "  #triangles: " << vertices->ntriangles() << '\n' <<
-                    "  name: " << meta.name << '\n' <<
-                    "  material: " << meta.material.identifier() << '\n' <<
-                    "  physics material: " << physics_material_to_string(meta.morphology.physics_material)).str());
+            cva->update_legacy();
+            cva->bind();
+        }
+        LOG_INFO("RenderableColoredVertexArray::render_cva glDrawArrays");
+        {
+            std::optional<AperiodicLagFinder> lag_finder;
+            if (lag_finders_enabled()) {
+                lag_finder.emplace("GL draw: ", std::chrono::milliseconds{5});
+            }
+            if (has_instances) {
+                try {
+                    notify_rendering(CURRENT_SOURCE_LOCATION);
+                    TemporarilyIgnoreFloatingPointExeptions ignore_except;
+                    CHK(glDrawArraysInstanced(GL_TRIANGLES, 0, integral_cast<GLsizei>(3 * vertices->ntriangles()), integral_cast<GLsizei>(instances->num_instances())));
+                } catch (const std::runtime_error& e) {
+                    cva->print_stats(lerr(LogFlags::NO_APPEND_NEWLINE).ref());
+                    throw std::runtime_error(
+                        (std::stringstream() <<
+                        "Could not render instanced triangles: " << e.what() << '\n' <<
+                        "  #triangles: " << vertices->ntriangles() << '\n' <<
+                        "  #instances: " << instances->num_instances() << '\n' <<
+                        "  name: " << meta.name << '\n' <<
+                        "  material: " << meta.material.identifier() << '\n' <<
+                        "  physics material: " << physics_material_to_string(meta.morphology.physics_material)).str());
+                }
+            } else {
+                try {
+                    notify_rendering(CURRENT_SOURCE_LOCATION);
+                    TemporarilyIgnoreFloatingPointExeptions ignore_except;
+                    CHK(glDrawArrays(GL_TRIANGLES, 0, integral_cast<GLsizei>(3 * vertices->ntriangles())));
+                } catch (const std::runtime_error& e) {
+                    cva->print_stats(lerr(LogFlags::NO_APPEND_NEWLINE).ref());
+                    throw std::runtime_error(
+                        (std::stringstream() <<
+                        "Could not render triangles: " << e.what() << '\n' <<
+                        "  #triangles: " << vertices->ntriangles() << '\n' <<
+                        "  name: " << meta.name << '\n' <<
+                        "  material: " << meta.material.identifier() << '\n' <<
+                        "  physics material: " << physics_material_to_string(meta.morphology.physics_material)).str());
+                }
             }
         }
         CHK(glBindVertexArray(0));
@@ -2883,6 +2906,10 @@ const ColoredRenderProgram& OpenGLVertexArrayRenderer::get_render_program(
     const std::vector<BlendMapTextureAndId>& textures_color,
     const std::vector<BlendMapTextureAndId>& textures_alpha) const
 {
+    std::optional<AperiodicLagFinder> lag_finder;
+    if (lag_finders_enabled()) {
+        lag_finder.emplace("Get render program: ", std::chrono::milliseconds{5});
+    }
     auto rps = primary_rendering_resources_.render_programs();
     if (auto it = rps.try_get(id); it != nullptr) {
         return **it;

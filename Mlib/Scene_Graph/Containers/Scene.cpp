@@ -29,7 +29,6 @@
 #include <Mlib/Scene_Graph/Render_Pass.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
 #include <Mlib/Time/Fps/Lag_Finder.hpp>
-#include <Mlib/Time/Fps/Lag_Finder.hpp>
 #include <mutex>
 #include <stdexcept>
 

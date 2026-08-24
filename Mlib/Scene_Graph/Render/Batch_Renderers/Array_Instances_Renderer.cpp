@@ -12,6 +12,8 @@
 #include <Mlib/Scene_Graph/Render_Pass.hpp>
 #include <Mlib/Scene_Graph/Resources/Renderable_Resource_Filter.hpp>
 #include <Mlib/Scene_Graph/Resources/Vertex_Arrays_With_Dynamic_Instances.hpp>
+#include <Mlib/Time/Fps/Lag_Finder.hpp>
+#include <optional>
 #include <unordered_map>
 
 using namespace Mlib;
@@ -67,6 +69,10 @@ void ArrayInstancesRenderer::render_instances(
         return;
     }
     if (next_instances_queue_.has_value() && (next_rcvai_ == nullptr)) {
+        std::optional<AperiodicLagFinder> lag_finder;
+        if (lag_finders_enabled()) {
+            lag_finder.emplace("Render array instances (initialize): ", std::chrono::milliseconds{5});
+        }
         next_rcvai_ = std::make_unique<std::list<std::shared_ptr<IGpuVertexArray>>>();
         for (const auto& instances : *next_instances_queue_) {
             auto r = next_rcvai_->emplace_back(next_rcva_->get(instances.vertex_data, instances.instances, MAX_INSTANCES, TaskLocation::BACKGROUND));
@@ -76,6 +82,10 @@ void ArrayInstancesRenderer::render_instances(
         }
     }
     if (next_rcvai_ != nullptr) {
+        std::optional<AperiodicLagFinder> lag_finder;
+        if (lag_finders_enabled()) {
+            lag_finder.emplace("Render array instances (swap): ", std::chrono::milliseconds{5});
+        }
         bool busy = false;
         if (next_task_location_ == TaskLocation::FOREGROUND) {
             for (const auto& r : *next_rcvai_) {
@@ -103,27 +113,33 @@ void ArrayInstancesRenderer::render_instances(
         verbose_abort("Offset is NAN");
     }
     lock_guard.unlock();
-    auto m = TransformationMatrix<float, ScenePos, 3>{fixed_identity_array<float, 3>(), offset_};
-    auto mvp = dot2d(vp, m.affine());
-    for (const auto& r : *rcvai_) {
-        if (r->instances() == nullptr) {
-            throw std::runtime_error("Vertex array has no instances");
+    {
+        std::optional<AperiodicLagFinder> lag_finder;
+        if (lag_finders_enabled()) {
+            lag_finder.emplace("Render array instances (render): ", std::chrono::milliseconds{5});
         }
-        gpu_renderer_.render(
-            r,
-            nullptr,    // acvas
-            {},         // bone transformations
-            mvp,
-            m,
-            iv,
-            nullptr,    // dynamic style
-            lights,
-            skidmarks,
-            scene_graph_config,
-            render_config,
-            { frame_id, InternalRenderPass::AGGREGATE },
-            nullptr,    // animation_state
-            nullptr);   // color_style
+        auto m = TransformationMatrix<float, ScenePos, 3>{fixed_identity_array<float, 3>(), offset_};
+        auto mvp = dot2d(vp, m.affine());
+        for (const auto& r : *rcvai_) {
+            if (r->instances() == nullptr) {
+                throw std::runtime_error("Vertex array has no instances");
+            }
+            gpu_renderer_.render(
+                r,
+                nullptr,    // acvas
+                {},         // bone transformations
+                mvp,
+                m,
+                iv,
+                nullptr,    // dynamic style
+                lights,
+                skidmarks,
+                scene_graph_config,
+                render_config,
+                { frame_id, InternalRenderPass::AGGREGATE },
+                nullptr,    // animation_state
+                nullptr);   // color_style
+        }
     }
 }
 
