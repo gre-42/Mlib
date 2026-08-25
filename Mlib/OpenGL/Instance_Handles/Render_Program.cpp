@@ -3,6 +3,8 @@
 #include <Mlib/OpenGL/Context_Query.hpp>
 #include <Mlib/OpenGL/Deallocate/Render_Deallocator.hpp>
 #include <Mlib/OpenGL/Deallocate/Render_Garbage_Collector.hpp>
+#include <Mlib/Os/Os.hpp>
+#include <Mlib/Os/Preload.hpp>
 #include <stdexcept>
 
 using namespace Mlib;
@@ -24,6 +26,9 @@ bool RenderProgram::allocated() const {
 }
 
 void RenderProgram::allocate(const char* vertex_shader_text, const char* fragment_shader_text) {
+    if (get_not_preloaded_behavior() == NotPreloadedBehavior::WARN) {
+        lwarn() << "Render program not preloaded";
+    }
     if (allocated()) {
         throw std::runtime_error("Multiple calls to RenderProgram::allocate");
     }
