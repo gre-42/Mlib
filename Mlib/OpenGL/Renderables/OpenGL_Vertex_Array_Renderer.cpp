@@ -2916,12 +2916,12 @@ const ColoredRenderProgram& OpenGLVertexArrayRenderer::get_render_program(
     if (lag_finders_enabled()) {
         lag_finder.emplace("Get render program: ", std::chrono::milliseconds{5});
     }
-    if (get_not_preloaded_behavior() == NotPreloadedBehavior::WARN) {
-        lwarn() << "Render program not preloaded: \"" << gva.identifier() << '"';
-    }
     auto rps = primary_rendering_resources_.render_programs();
     if (auto it = rps.try_get(id); it != nullptr) {
         return **it;
+    }
+    if (get_not_preloaded_behavior() == NotPreloadedBehavior::WARN) {
+        lwarn() << "Render program not preloaded: \"" << gva.identifier() << '"';
     }
     if (!(id == id)) {
         throw std::runtime_error("Render program identifier contains NAN values");
