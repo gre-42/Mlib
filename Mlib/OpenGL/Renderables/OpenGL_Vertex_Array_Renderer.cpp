@@ -24,6 +24,7 @@
 #include <Mlib/OpenGL/Shader_Version_3_0.hpp>
 #include <Mlib/OpenGL/Toggle_Benchmark_Rendering.hpp>
 #include <Mlib/Os/Env.hpp>
+#include <Mlib/Os/Preload.hpp>
 #include <Mlib/Scene_Graph/Culling/Frustum_Visibility_Check.hpp>
 #include <Mlib/Scene_Graph/Culling/Instances_Are_Visible.hpp>
 #include <Mlib/Scene_Graph/Culling/Visibility_Check.hpp>
@@ -2914,6 +2915,9 @@ const ColoredRenderProgram& OpenGLVertexArrayRenderer::get_render_program(
     std::optional<AperiodicLagFinder> lag_finder;
     if (lag_finders_enabled()) {
         lag_finder.emplace("Get render program: ", std::chrono::milliseconds{5});
+    }
+    if (get_not_preloaded_behavior() == NotPreloadedBehavior::WARN) {
+        lwarn() << "Render program not preloaded: \"" << gva.identifier() << '"';
     }
     auto rps = primary_rendering_resources_.render_programs();
     if (auto it = rps.try_get(id); it != nullptr) {
