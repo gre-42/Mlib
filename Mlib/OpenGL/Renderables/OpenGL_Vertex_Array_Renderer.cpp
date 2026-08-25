@@ -626,6 +626,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen = [](
     const NotSortedArray<std::vector<size_t>>& light_noshadow_indices,
     const NotSortedArray<std::vector<size_t>>& light_shadow_indices,
     const NotSortedArray<std::vector<size_t>>& black_shadow_indices,
+    const NotSortedStruct<ExternalRenderPassType>& render_pass_,
     const NotSortedStruct<AttributeIndices>& attr_ids,
     const NotSortedUvMap& uv_map,
     size_t nuv_indices,
@@ -668,7 +669,8 @@ static GenShaderText fragment_shader_text_textured_rgb_gen = [](
     const OrderableFixedArray<float, 4>& alpha_distances,
     const OrderableFixedArray<float, 2>& fog_distances,
     const OrderableFixedArray<float, 3>& fog_emissive,
-    ExternalRenderPassType render_pass,
+    bool is_lightmap_blobs_render_pass,
+    bool is_lightmap_color_render_pass,
     bool reorient_normals,
     bool reorient_uv0,
     bool orthographic,
@@ -1781,9 +1783,9 @@ static GenShaderText fragment_shader_text_textured_rgb_gen = [](
     } else {
         sstr << "    frag_color.rgb += frag_brightness_specular;" << std::endl;
     }
-    if (any(render_pass & ExternalRenderPassType::LIGHTMAP_BLOBS_MASK)) {
+    if (is_lightmap_blobs_render_pass) {
         // Do nothing (keep colors)
-    } else if (any(render_pass & ExternalRenderPassType::LIGHTMAP_COLOR_MASK)) {
+    } else if (is_lightmap_color_render_pass) {
         sstr << "    frag_color.r = 0.5;" << std::endl;
         sstr << "    frag_color.g = 0.5;" << std::endl;
         sstr << "    frag_color.b = 0.5;" << std::endl;
@@ -1807,7 +1809,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen = [](
         linfo();
         linfo();
         linfo() << "Fragment";
-        linfo() << external_render_pass_type_to_string(render_pass);
+        linfo() << external_render_pass_type_to_string(render_pass_);
         if (!textures_color.empty()) {
             linfo() << "Color: " + textures_color[0]->texture_descriptor.color.filename.string();
         }
@@ -2379,7 +2381,8 @@ void OpenGLVertexArrayRenderer::render(
     const ColoredRenderProgram& rp = get_render_program(
         RenderProgramIdentifier{
             .attr_idc = attr_idc,
-            .render_pass = render_pass.rsd.external_render_pass.pass,
+            .is_lightmap_blobs_render_pass = any(render_pass.rsd.external_render_pass.pass & ExternalRenderPassType::LIGHTMAP_BLOBS_MASK),
+            .is_lightmap_color_render_pass = any(render_pass.rsd.external_render_pass.pass & ExternalRenderPassType::LIGHTMAP_COLOR_MASK),
             .skidmarks_hash = skidmarks_hash,
             .nbones = (acvas == nullptr) ? 0 : acvas->bone_indices.size(),
             .blend_mode = any(render_pass.rsd.external_render_pass.pass & ExternalRenderPassType::LIGHTMAP_BLOBS_MASK)
@@ -2448,7 +2451,8 @@ void OpenGLVertexArrayRenderer::render(
         light_shadow_indices,
         black_shadow_indices,
         blended_textures_color,
-        blended_textures_alpha);
+        blended_textures_alpha,
+        render_pass.rsd.external_render_pass.pass);
     {
         static const char* json_filename = getenv("JSON_RENDER_CONFIG");
         if (json_filename != nullptr) {
@@ -2904,7 +2908,8 @@ const ColoredRenderProgram& OpenGLVertexArrayRenderer::get_render_program(
     const std::vector<size_t>& light_shadow_indices,
     const std::vector<size_t>& black_shadow_indices,
     const std::vector<BlendMapTextureAndId>& textures_color,
-    const std::vector<BlendMapTextureAndId>& textures_alpha) const
+    const std::vector<BlendMapTextureAndId>& textures_alpha,
+    ExternalRenderPassType render_pass) const
 {
     std::optional<AperiodicLagFinder> lag_finder;
     if (lag_finders_enabled()) {
@@ -2934,7 +2939,7 @@ const ColoredRenderProgram& OpenGLVertexArrayRenderer::get_render_program(
         NotSortedArray{ textures_color },
         NotSortedArray{ textures_alpha },
         NotSortedArray{ lightmap_indices },
-        NotSortedStruct{ id.render_pass },
+        NotSortedStruct{ render_pass },
         NotSortedStruct{ id.attr_idc },
         attr_ids,
         NotSortedUvMap{ uv_map },
@@ -2981,6 +2986,7 @@ const ColoredRenderProgram& OpenGLVertexArrayRenderer::get_render_program(
         NotSortedArray{ light_noshadow_indices },
         NotSortedArray{ light_shadow_indices },
         NotSortedArray{ black_shadow_indices },
+        NotSortedStruct{ render_pass },
         NotSortedStruct{ attr_ids },
         NotSortedUvMap{ uv_map },
         id.nuv_indices,
@@ -3035,7 +3041,8 @@ const ColoredRenderProgram& OpenGLVertexArrayRenderer::get_render_program(
         id.alpha_distances,
         id.fog_distances,
         id.fog_emissive,
-        id.render_pass,
+        id.is_lightmap_blobs_render_pass,
+        id.is_lightmap_color_render_pass,
         id.reorient_normals,
         id.reorient_uv0,
         id.orthographic,

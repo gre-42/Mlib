@@ -1,7 +1,7 @@
 #include "Transmission_Scheduler.hpp"
 #include <Mlib/Iterator/Enumerate.hpp>
-#include <Mlib/Math/Reverse_Bits.hpp>
 #include <Mlib/Memory/Integral_Cast.hpp>
+#include <Mlib/Misc/Reverse_Bits.hpp>
 #include <bit>
 #include <stdexcept>
 

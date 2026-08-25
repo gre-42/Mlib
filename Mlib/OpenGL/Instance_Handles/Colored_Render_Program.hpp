@@ -74,7 +74,8 @@ struct ColoredRenderProgram: public RenderProgram {
 
 struct RenderProgramIdentifier {
     AttributeIndexCalculator attr_idc;
-    ExternalRenderPassType render_pass;
+    bool is_lightmap_blobs_render_pass;
+    bool is_lightmap_color_render_pass;
     size_t skidmarks_hash;
     size_t nbones;
     BlendMode blend_mode;
