@@ -203,7 +203,6 @@ public:
             }
         } else if (auto rs = renderable_scenes_->try_get("loading"); rs != nullptr) {
             execute_render_allocators();
-            rs->physics_scene_->scene_.wait_for_cleanup();
             if (rs->selected_cameras_.camera_node_exists()) {
                 rs->render_toplevel(
                     lx,
