@@ -185,6 +185,7 @@ public:
                 }
                 last_load_scene_finished_ = true;
                 set_not_preloaded_behavior(NotPreloadedBehavior::WARN);
+                RenderingContextStack::primary_rendering_resources().prune();
             }
             renderable_scenes_->render_toplevel(
                 lx,

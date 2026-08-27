@@ -280,6 +280,8 @@ public:
         FlipMode flip_mode,
         TextureAlreadyExistsBehavior already_exists_behavior) override;
 
+    void prune();
+
 private:
     GLuint get_cubemap_unsafe(const VariableAndHash<std::string>& name) const;
     void preload(const ColormapWithModifiers& color, TextureRole role) const;

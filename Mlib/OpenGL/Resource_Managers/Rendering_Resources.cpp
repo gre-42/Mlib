@@ -53,6 +53,7 @@
 #include <Mlib/Os/Env.hpp>
 #include <Mlib/Os/Os.hpp>
 #include <Mlib/Os/Preload.hpp>
+#include <Mlib/Os/Threads/Malloc_Map.hpp>
 #include <Mlib/Os/Threads/Recursion_Guard.hpp>
 #include <Mlib/Os/Threads/Thread_Local.hpp>
 #include <Mlib/Resource_Context/Rendering_Context.hpp>
@@ -174,6 +175,7 @@ static StbInfo<uint8_t> stb_load_texture(
     CoefficientImageCache& coefficient_image_cache,
     const FPath& chrominance = FPath{})
 {
+    MALLOC_GUARD(malloc_guard, "stb_load_texture");
     StbInfo<uint8_t> result;
     if (filename.string().ends_with(".tiles.json")) {
         auto fa = load_fragment_assembly(filename);
@@ -2359,4 +2361,9 @@ std::shared_ptr<ITextureHandle> RenderingResources::initialize_dds_texture(
     } else {
         throw std::runtime_error("Unsupported flip mode");
     }
+}
+
+void RenderingResources::prune() {
+    preloaded_processed_texture_data_.clear();
+    preloaded_processed_texture_array_data_.clear();
 }

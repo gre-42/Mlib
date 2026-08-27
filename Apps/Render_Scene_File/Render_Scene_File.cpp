@@ -147,6 +147,7 @@ std::unique_ptr<JThread> render_thread(
                             }
                             level_initialized = true;
                             set_not_preloaded_behavior(NotPreloadedBehavior::WARN);
+                            RenderingContextStack::primary_rendering_resources().prune();
                         }
                         renderable_scenes.render_toplevel(
                             lx,
