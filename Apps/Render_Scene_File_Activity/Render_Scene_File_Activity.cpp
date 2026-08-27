@@ -281,9 +281,10 @@ JThread loader_thread(
     std::chrono::steady_clock::duration render_delay,
     std::chrono::steady_clock::duration velocity_dt)
 {
-    return JThread{[&, render_delay, velocity_dt](){
+    return JThread{
+        "Scene loader", ThreadAffinity::POOL,
+        [&, render_delay, velocity_dt](){
         try {
-            ThreadInitializer ti{"Scene loader", ThreadAffinity::POOL};
             AudioResourceContext arc;
             {
                 AudioResourceContextGuard arcg{ arc };
