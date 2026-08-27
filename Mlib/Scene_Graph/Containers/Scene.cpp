@@ -36,7 +36,7 @@ using namespace Mlib;
 
 using NodeRawPtrs = ChunkedArray<std::list<std::vector<const SceneNode*>>>;
 using NodeDanglingPtrs = ChunkedArray<std::list<std::vector<DanglingBaseClassPtr<const SceneNode>>>>;
-using NodeItemPtrs = ChunkedArray<std::list<std::vector<const RootNodes::DefaultNodeMapValueType*>>>;
+using NodeItemPtrs = ChunkedArray<std::list<std::vector<const RootNodes::DefaultNodeMapIteratedType*>>>;
 static const size_t CHUNK_SIZE = 1000;
 
 Scene::Scene(
@@ -60,7 +60,6 @@ Scene::Scene(
     , scene_node_resources_{ scene_node_resources }
     , trail_renderer_{ trail_renderer }
     , dynamic_lights_{ dynamic_lights }
-    , ncleanups_required_{ 0 }
 {}
 
 void Scene::add_moving_root_node(
@@ -501,9 +500,18 @@ void Scene::render(
         lag_finder.emplace("Render: ", std::chrono::milliseconds{50});
     }
     LOG_FUNCTION("Scene::render");
-    if (frame_id.external_render_pass.pass == ExternalRenderPassType::NONE) {
+    auto render_pass = frame_id.external_render_pass.pass & ~ExternalRenderPassType::PRELOAD_MASK;
+    bool preload = any(frame_id.external_render_pass.pass & ExternalRenderPassType::PRELOAD_MASK);
+    if (render_pass == ExternalRenderPassType::NONE) {
         throw std::runtime_error("Scene::render: External render pass is NONE");
     }
+    auto visit_nodes = [t=iv.t, preload](const auto& nodes, const auto& func) {
+        if (preload) {
+            nodes.visit_all(func);
+        } else {
+            nodes.visit(t, func);
+        }
+    };
     std::list<std::pair<TransformationMatrix<float, ScenePos, 3>, std::shared_ptr<Light>>> lights;
     std::list<std::pair<TransformationMatrix<float, ScenePos, 3>, std::shared_ptr<Skidmark>>> skidmarks;
     auto blended = std::make_unique<ListsOfBlended>();
@@ -518,7 +526,7 @@ void Scene::render(
         std::shared_lock lock{ mutex_ };
         animation_state = animation_state_;
     }
-    if (frame_id.external_render_pass.pass == ExternalRenderPassType::LIGHTMAP_BLACK_NODE) {
+    if (render_pass == ExternalRenderPassType::LIGHTMAP_BLACK_NODE) {
         DanglingBaseClassRef<SceneNode> node = [this, &frame_id](){
             std::shared_lock lock{ mutex_ };
             auto res = root_nodes_.try_get(frame_id.external_render_pass.black_node_name, CURRENT_SOURCE_LOCATION);
@@ -528,11 +536,11 @@ void Scene::render(
             return *res;
         }();
         node->render(vp, TransformationMatrix<float, ScenePos, 3>::identity(), iv, camera_node, nullptr, lights, skidmarks, *blended, render_config, scene_graph_config, frame_id, nullptr, color_styles);
-    } else if (frame_id.external_render_pass.pass == ExternalRenderPassType::LIGHTMAP_BLACK_MOVABLES) {
+    } else if (render_pass == ExternalRenderPassType::LIGHTMAP_BLACK_MOVABLES) {
         NodeDanglingPtrs nodes{ CHUNK_SIZE };
         {
             std::shared_lock lock{ mutex_ };
-            root_nodes_.visit(iv.t, [&](const auto& node) {
+            visit_nodes(root_nodes_, [&](const auto& node) {
                 if (node->is_visible_for_user(frame_id.external_render_pass.observer)) {
                     nodes.emplace_back(node.ptr());
                 }
@@ -556,13 +564,13 @@ void Scene::render(
         NodeRawPtrs local_static_root_nodes{ CHUNK_SIZE };
         {
             std::shared_lock lock{ mutex_ };
-            root_nodes_.visit(iv.t, [&](const auto& node) {
+            visit_nodes(root_nodes_, [&](const auto& node) {
                 if (node->is_visible_for_user(frame_id.external_render_pass.observer)) {
                     local_root_nodes.emplace_back(node.ptr());
                 }
                 return true;
             });
-            static_root_nodes_.visit(iv.t, [&](const auto& node) {
+            visit_nodes(static_root_nodes_, [&](const auto& node) {
                 if (node->is_visible_for_user(frame_id.external_render_pass.observer)) {
                     local_static_root_nodes.emplace_back(&node.get());
                 }
@@ -612,10 +620,14 @@ void Scene::render(
                 }
             }
             {
-                bool is_foreground_task = any(frame_id.external_render_pass.pass & (ExternalRenderPassType::IS_GLOBAL_MASK | ExternalRenderPassType::BILLBOARD_SCENE_MASK));
-                bool is_background_task = any(frame_id.external_render_pass.pass & ExternalRenderPassType::STANDARD_MASK);
+                bool is_foreground_task = any(render_pass & (ExternalRenderPassType::IS_GLOBAL_MASK | ExternalRenderPassType::BILLBOARD_SCENE_MASK));
+                bool is_background_task = any(render_pass & ExternalRenderPassType::STANDARD_MASK);
                 if (is_foreground_task && is_background_task) {
                     throw std::runtime_error("Scene::render has both foreground and background task");
+                }
+                if (preload && is_background_task) {
+                    is_foreground_task = true;
+                    is_background_task = false;
                 }
 
                 std::shared_ptr<IAggregateRenderer> large_aggregate_renderer = IAggregateRenderer::large_aggregate_renderer();
@@ -623,11 +635,11 @@ void Scene::render(
                     LOG_INFO("Scene::render large_aggregate_renderer");
                     auto large_aggregate_renderer_update_func = [&](TaskLocation task_location){
                         // copy "vp" and "scene_graph_config"
-                        return run_in_background([this, iv, scene_graph_config, external_render_pass=frame_id.external_render_pass, large_aggregate_renderer, task_location](){
+                        return run_in_background([this, iv, scene_graph_config, external_render_pass=frame_id.external_render_pass, large_aggregate_renderer, task_location, visit_nodes](){
                             NodeRawPtrs nodes{ CHUNK_SIZE };
                             {
                                 std::shared_lock lock{ mutex_ };
-                                root_aggregate_once_nodes_.visit(iv.t, [&nodes](const auto& node) { nodes.emplace_back(&node.get()); return true; });
+                                visit_nodes(root_aggregate_once_nodes_, [&nodes](const auto& node) { nodes.emplace_back(&node.get()); return true; });
                             }
                             std::list<std::shared_ptr<ColoredVertexArray<float>>> aggregate_queue;
                             for (const auto& node : nodes) {
@@ -675,16 +687,18 @@ void Scene::render(
                     auto large_instances_renderer_update_func = [&](TaskLocation task_location){
                         // copy "vp" and "scene_graph_config"
                         return run_in_background([this, vp, iv, scene_graph_config, external_render_pass_type=frame_id.external_render_pass.pass,
-                                                  large_instances_renderer, task_location]()
+                                                  large_instances_renderer, task_location, visit_nodes]()
                         {
                             NodeRawPtrs nodes{ CHUNK_SIZE };
                             {
                                 std::shared_lock lock{ mutex_ };
-                                root_instances_once_nodes_.visit(iv.t, [&nodes](const auto& node) { nodes.emplace_back(&node.get()); return true; });
+                                visit_nodes(root_instances_once_nodes_, [&nodes](const auto& node) { nodes.emplace_back(&node.get()); return true; });
                             }
                             LargeInstancesQueue instances_queue{external_render_pass_type};
                             for (const auto& node : nodes) {
-                                node->append_large_instances_to_queue(vp, TransformationMatrix<float, ScenePos, 3>::identity(), iv.t, PositionAndYAngleAndBillboardId{fixed_zeros<CompressedScenePos, 3>(), BILLBOARD_ID_NONE, 0.f}, instances_queue, scene_graph_config);
+                                node->append_large_instances_to_queue(
+                                    vp, TransformationMatrix<float, ScenePos, 3>::identity(), iv.t, PositionAndYAngleAndBillboardId{fixed_zeros<CompressedScenePos, 3>(), BILLBOARD_ID_NONE, 0.f},
+                                    instances_queue, scene_graph_config, external_render_pass_type);
                             }
                             large_instances_renderer->update_instances(iv.t, instances_queue.queue(), task_location);
                         });
@@ -733,11 +747,11 @@ void Scene::render(
                     LOG_INFO("Scene::render small_sorted_aggregate_renderer");
                     auto small_sorted_aggregate_renderer_update_func = [&](TaskLocation task_location){
                         // copy "vp" and "scene_graph_config"
-                        return run_in_background([this, vp, iv, scene_graph_config, external_render_pass=frame_id.external_render_pass, small_sorted_aggregate_renderer, task_location](){
+                        return run_in_background([this, vp, iv, scene_graph_config, external_render_pass=frame_id.external_render_pass, small_sorted_aggregate_renderer, task_location, visit_nodes](){
                             NodeRawPtrs nodes{ CHUNK_SIZE };
                             {
                                 std::shared_lock lock{ mutex_ };
-                                root_aggregate_always_nodes_.visit(iv.t, [&nodes](const auto& node) { nodes.emplace_back(&node.get()); return true; });
+                                visit_nodes(root_aggregate_always_nodes_, [&nodes](const auto& node) { nodes.emplace_back(&node.get()); return true; });
                             }
                             std::list<std::pair<float, std::shared_ptr<ColoredVertexArray<float>>>> aggregate_queue;
                             for (const auto& node : nodes) {
@@ -790,7 +804,7 @@ void Scene::render(
                 if (small_sorted_instances_renderers != nullptr) {
                     if (any(frame_id.external_render_pass.pass & ExternalRenderPassType::STANDARD_MASK) ||
                         any(frame_id.external_render_pass.pass & ExternalRenderPassType::IS_GLOBAL_MASK) ||
-                        (frame_id.external_render_pass.pass == ExternalRenderPassType::BILLBOARD_SCENE))
+                        (render_pass == ExternalRenderPassType::BILLBOARD_SCENE))
                     {
                         auto small_instances_renderer_update_func = [&](TaskLocation task_location){
                             std::set<ExternalRenderPassType> black_render_passes;
@@ -803,23 +817,29 @@ void Scene::render(
                             }
                             // copy "vp" and "scene_graph_config"
                             return run_in_background([this, vp, iv, scene_graph_config, external_render_pass_type=frame_id.external_render_pass.pass,
-                                                      small_sorted_instances_renderers, task_location,
+                                                      preload, small_sorted_instances_renderers, task_location, visit_nodes,
                                                       black_render_passes=std::move(black_render_passes)]()
                             {
                                 NodeRawPtrs nodes{ CHUNK_SIZE };
                                 {
                                     std::shared_lock lock{ mutex_ };
-                                    root_instances_always_nodes_.visit(iv.t, [&nodes](const auto& node) { nodes.emplace_back(&node.get()); return true; });
+                                    visit_nodes(root_instances_always_nodes_, [&nodes](const auto& node) { nodes.emplace_back(&node.get()); return true; });
                                 }
                                 // auto start_time = std::chrono::steady_clock::now();
-                                auto main_render_pass = black_render_passes.empty()
-                                    ? external_render_pass_type
-                                    : ExternalRenderPassType::STANDARD_AND_LOCAL_LIGHTMAP;
+                                auto main_render_pass = external_render_pass_type;
+                                if (!black_render_passes.empty()) {
+                                    main_render_pass = ExternalRenderPassType::STANDARD_AND_LOCAL_LIGHTMAP;
+                                    if (preload) {
+                                        main_render_pass |= ExternalRenderPassType::PRELOAD_MASK;
+                                    }
+                                }
                                 SmallInstancesQueues instances_queues{
                                     main_render_pass,
                                     black_render_passes};
                                 for (const auto& node : nodes) {
-                                    node->append_small_instances_to_queue(vp, TransformationMatrix<float, ScenePos, 3>::identity(), iv, iv.t, PositionAndYAngleAndBillboardId{fixed_zeros<CompressedScenePos, 3>(), BILLBOARD_ID_NONE, 0.f}, instances_queues, scene_graph_config);
+                                    node->append_small_instances_to_queue(
+                                        vp, TransformationMatrix<float, ScenePos, 3>::identity(), iv, iv.t, PositionAndYAngleAndBillboardId{fixed_zeros<CompressedScenePos, 3>(), BILLBOARD_ID_NONE, 0.f},
+                                        instances_queues, scene_graph_config, external_render_pass_type);
                                 }
                                 auto sorted_instances = instances_queues.sorted_instances();
                                 small_sorted_instances_renderers->get_instances_renderer(external_render_pass_type)->update_instances(
@@ -908,23 +928,23 @@ void Scene::move(float dt, const SceneTime& time) {
             }
         }
         for (const auto& it : nodes) {
-            if (it->second->shutdown_phase() != ShutdownPhase::NONE) {
+            if (it->value->shutdown_phase() != ShutdownPhase::NONE) {
                 continue;
             }
             try {
-                it->second->move(
+                it->value->move(
                     TransformationMatrix<float, ScenePos, 3>::identity(),
                     dt,
                     time,
                     scene_node_resources_,
                     nullptr);  // animation_state
             } catch (const std::runtime_error& e) {
-                throw std::runtime_error("Error moving node \"" + *it->first + "\": " + e.what());
+                throw std::runtime_error("Error moving node \"" + *it->key + "\": " + e.what());
             }
         }
         for (const auto& it : nodes) {
-            if ((it->second->shutdown_phase() != ShutdownPhase::FINISHED) && it->second->to_be_deleted(time)) {
-                delete_root_node(it->first);
+            if ((it->value->shutdown_phase() != ShutdownPhase::FINISHED) && it->value->to_be_deleted(time)) {
+                delete_root_node(it->key);
             }
         }
     }
@@ -1047,18 +1067,6 @@ void Scene::add_color_style(std::unique_ptr<ColorStyle>&& color_style) {
 
 void Scene::clear_color_styles() {
     color_styles_.clear();
-}
-
-void Scene::wait_for_cleanup() const {
-    while (ncleanups_required_ > 0);
-}
-
-void Scene::notify_cleanup_required() {
-    ++ncleanups_required_;
-}
-
-void Scene::notify_cleanup_done() {
-    --ncleanups_required_;
 }
 
 std::ostream& Mlib::operator << (std::ostream& ostr, const Scene& scene) {

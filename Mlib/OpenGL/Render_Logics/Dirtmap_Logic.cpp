@@ -46,7 +46,7 @@ void DirtmapLogic::render_without_setup(
     const RenderedSceneDescriptor& frame_id)
 {
     LOG_FUNCTION("DirtmapLogic::render");
-    if (frame_id.external_render_pass.pass == ExternalRenderPassType::DIRTMAP) {
+    if (any(frame_id.external_render_pass.pass & ExternalRenderPassType::DIRTMAP_MASK)) {
         throw std::runtime_error("DirtmapLogic received dirtmap rendering");
     }
     if (!rendering_resources_.contains_alias(dirtmap_)) {

@@ -3,6 +3,7 @@
 #include <Mlib/Geometry/Texture/ITexture_Handle.hpp>
 #include <Mlib/Scene_Config/Scene_Precision.hpp>
 #include <cstdint>
+#include <iosfwd>
 #include <memory>
 #include <optional>
 
@@ -22,6 +23,9 @@ struct Light {
     ExternalRenderPassType shadow_render_pass;
     bool emits_colors() const;
     size_t shading_hash() const;
+    void print(std::ostream& ostr) const;
 };
+
+std::ostream& operator << (std::ostream& ostr, const Light& light);
 
 }

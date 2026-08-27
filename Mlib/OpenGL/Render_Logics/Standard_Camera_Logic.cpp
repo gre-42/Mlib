@@ -43,25 +43,26 @@ std::optional<RenderSetup> StandardCameraLogic::try_render_setup(
         .camera = nullptr,
         .camera_node = nullptr
     };
-    if (any(frame_id.external_render_pass.pass & ExternalRenderPassType::LIGHTMAP_ANY_MASK)) {
+    auto render_pass = frame_id.external_render_pass.pass & ~ExternalRenderPassType::PRELOAD_MASK;
+    if (any(render_pass & ExternalRenderPassType::LIGHTMAP_ANY_MASK)) {
         if (frame_id.external_render_pass.nonstandard_camera_node == nullptr) {
             throw std::runtime_error("Lighting pass without camera node");
         }
         setup.camera_node = frame_id.external_render_pass.nonstandard_camera_node;
         setup.camera = setup.camera_node->get_camera(CURRENT_SOURCE_LOCATION)->copy();
-    } else if (frame_id.external_render_pass.pass == ExternalRenderPassType::DIRTMAP) {
+    } else if (render_pass == ExternalRenderPassType::DIRTMAP) {
         setup.camera_node = scene_.get_node(cameras_.dirtmap_node_name(), CURRENT_SOURCE_LOCATION).ptr();
         setup.camera = setup.camera_node->get_camera(CURRENT_SOURCE_LOCATION)->copy();
-    } else if (frame_id.external_render_pass.pass == ExternalRenderPassType::BILLBOARD_SCENE) {
+    } else if (render_pass == ExternalRenderPassType::BILLBOARD_SCENE) {
         setup.camera_node = frame_id.external_render_pass.nonstandard_camera_node;
         setup.camera = setup.camera_node->get_camera(CURRENT_SOURCE_LOCATION)->copy();
-    } else if (any(frame_id.external_render_pass.pass & ExternalRenderPassType::IMPOSTER_OR_ZOOM_NODE)) {
+    } else if (any(render_pass & ExternalRenderPassType::IMPOSTER_OR_ZOOM_NODE)) {
         if (frame_id.external_render_pass.nonstandard_camera_node == nullptr) {
             throw std::runtime_error("Imposter or singular node render pass without camera node");
         }
         setup.camera_node = frame_id.external_render_pass.nonstandard_camera_node;
         setup.camera = setup.camera_node->get_camera(CURRENT_SOURCE_LOCATION)->copy();
-    } else if (any(frame_id.external_render_pass.pass & ExternalRenderPassType::STANDARD_MASK)) {
+    } else if (any(render_pass & ExternalRenderPassType::STANDARD_MASK)) {
         auto can = cameras_.camera(CURRENT_SOURCE_LOCATION);
         setup.camera_node = can.node.ptr();
         setup.camera = can.camera->copy();

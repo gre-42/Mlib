@@ -5,6 +5,8 @@
 
 using namespace Mlib;
 
+Renderable::~Renderable() = default;
+
 int Renderable::continuous_blending_z_order() const {
     return 0;
 }

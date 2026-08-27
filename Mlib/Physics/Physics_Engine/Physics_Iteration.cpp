@@ -2,7 +2,6 @@
 #include <Mlib/Geometry/Instance/Rendering_Dynamics.hpp>
 #include <Mlib/Iterator/Enumerate.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
-#include <Mlib/Memory/Destruction_Guard.hpp>
 #include <Mlib/Physics/Containers/Collision_Group.hpp>
 #include <Mlib/Physics/Misc/Beacon.hpp>
 #include <Mlib/Physics/Physics_Engine/Beacons.hpp>
@@ -111,8 +110,6 @@ void PhysicsIteration::operator()(const TimeAndPause<std::chrono::steady_clock::
             if (lag_finders_enabled()) {
                 lag_finder.emplace("Physics cleanup and beacons: ", std::chrono::milliseconds{ 10 });
             }
-            scene_.notify_cleanup_required();
-            DestructionGuard dg{ [&]() { scene_.notify_cleanup_done(); } };
             // for(size_t i = 0; i < 32; ++i) {
             //     beacons.push_back(Beacon{.position = p_q2o(g_dest_origin[i]), .resource_name = "flag"});
             // }

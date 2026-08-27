@@ -20,3 +20,22 @@ size_t Light::shading_hash() const {
         vp.has_value() ? (int)VisibilityCheck{*vp}.orthographic() : 2,
         shadow_render_pass);
 }
+
+void Light::print(std::ostream& ostr) const {
+    ostr << "ambient: " << ambient << '\n';
+    ostr << "diffuse: " << diffuse << '\n';
+    ostr << "specular: " << specular << '\n';
+    ostr << "fresnel_ambient: " << fresnel_ambient << '\n';
+    ostr << "fog_ambient: " << fog_ambient << '\n';
+    ostr << "lightmap_color: " << (int)(lightmap_color != nullptr) << '\n';
+    ostr << "lightmap_depth: " << (int)(lightmap_depth != nullptr) << '\n';
+    ostr << "vp: " << (int)vp.has_value() << '\n';
+    ostr << "shadow_render_pass: " << external_render_pass_type_to_string(shadow_render_pass) << '\n';
+    ostr << "emits_colors: " << (int)emits_colors() << '\n';
+    ostr << "shading_hash: " << shading_hash() << '\n';
+}
+
+std::ostream& Mlib::operator << (std::ostream& ostr, const Light& light) {
+    light.print(ostr);
+    return ostr;
+}

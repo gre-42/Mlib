@@ -164,17 +164,27 @@ public:
         auto frame_id = rrsd_.next(render_config_.motion_interpolation, render_set_fps_.ft.frame_time());
         if (load_scene_->level_loaded()) {
             execute_render_allocators();
-            set_not_preloaded_behavior(NotPreloadedBehavior::WARN);
-            auto& rs = (*physics_scenes_)["primary_scene"];
-            rs.scene_.wait_for_cleanup();
-            if (!last_load_scene_finished_ &&
-                !args_.has_named("--no_physics") &&
-                !args_.has_named("--single_threaded"))
-            {
-                for (auto& [n, r] : physics_scenes_->guarded_iterable()) {
-                    r.start_physics_loop(("Phys_" + n).substr(0, 15), ThreadAffinity::POOL, [](){ return false; /*loading*/ });
+            if (!last_load_scene_finished_) {
+                if (!args_.has_named("--no_physics") &&
+                    !args_.has_named("--single_threaded"))
+                {
+                    for (auto& [n, r] : physics_scenes_->guarded_iterable()) {
+                        r.start_physics_loop(("Phys_" + n).substr(0, 15), ThreadAffinity::POOL, [](){ return false; /*loading*/ });
+                    }
+                }
+                for (size_t i = 0; i < 2; ++i) {
+                    auto preload_frame_id = frame_id;
+                    preload_frame_id.external_render_pass.pass |= ExternalRenderPassType::PRELOAD_MASK;
+                    renderable_scenes_->render_toplevel(
+                        lx,
+                        ly,
+                        render_config_,
+                        scene_graph_config_,
+                        render_results_,
+                        preload_frame_id);
                 }
                 last_load_scene_finished_ = true;
+                set_not_preloaded_behavior(NotPreloadedBehavior::WARN);
             }
             renderable_scenes_->render_toplevel(
                 lx,

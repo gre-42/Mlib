@@ -35,24 +35,29 @@ bool Mlib::is_visible(
         return false;
     }
     #endif
-    if (external_render_pass != ExternalRenderPassType::STANDARD_AND_LOCAL_LIGHTMAP)
+    auto rp = external_render_pass & ~ExternalRenderPassType::PRELOAD_MASK;
+    auto preload = any(external_render_pass & ExternalRenderPassType::PRELOAD_MASK);
+    if (rp != ExternalRenderPassType::STANDARD_AND_LOCAL_LIGHTMAP)
     {
-        if (any(external_render_pass & ExternalRenderPassType::LIGHTMAP_ANY_MASK) ||
-            any(external_render_pass & ExternalRenderPassType::DIRTMAP_MASK))
+        if (any(rp & ExternalRenderPassType::LIGHTMAP_ANY_MASK) ||
+            any(rp & ExternalRenderPassType::DIRTMAP_MASK))
         {
             ExternalRenderPassType occluder_pass = material.get_occluder_pass(billboard_id, *object_name);
-            return (occluder_pass & external_render_pass) == external_render_pass;
+            return (occluder_pass & rp) == rp;
         }
         if (material.blend_mode == BlendMode::INVISIBLE) {
             return false;
         }
     }
-    if (any(external_render_pass & ExternalRenderPassType::IMPOSTER_NODE)) {
+    if (preload) {
+        return true;
+    }
+    if (any(rp & ExternalRenderPassType::IMPOSTER_NODE)) {
         return morphology.center_distances2(1) == INFINITY;
-    } else if (any(external_render_pass & ExternalRenderPassType::ZOOM_NODE)) {
+    } else if (any(rp & ExternalRenderPassType::ZOOM_NODE)) {
         return morphology.center_distances2(0) == 0.f;
-    } else if (any(external_render_pass & ExternalRenderPassType::STANDARD_MASK) ||
-               (external_render_pass == ExternalRenderPassType::BILLBOARD_SCENE))
+    } else if (any(rp & ExternalRenderPassType::STANDARD_MASK) ||
+               (rp == ExternalRenderPassType::BILLBOARD_SCENE))
     {
         if (vc.orthographic()) {
             return true;

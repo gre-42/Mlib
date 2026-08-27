@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Geometry/Primitives/Bvh.hpp>
+#include <Mlib/Map/Ordered_Map.hpp>
 #include <Mlib/Map/String_With_Hash_Unordered_Map.hpp>
 #include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/Os/Threads/Fast_Mutex.hpp>
@@ -16,7 +17,7 @@ struct RootNodeInfo;
 enum class SceneNodeState;
 
 class RootNodes {
-    using DefaultNodesMap = StringWithHashUnorderedMap<DanglingBaseClassRef<SceneNode>>;
+    using DefaultNodesMap = OrderedUnaryMap<DanglingBaseClassRef<SceneNode>, StringWithHashUnorderedMap>;
     using SmallStaticNodesBvh = Bvh<ScenePos, 3, DanglingBaseClassRef<SceneNode>>;
     using NodeContainer = StringWithHashUnorderedMap<RootNodeInfo>;
     using TrashCan = std::list<RootNodeInfo>;
@@ -24,7 +25,7 @@ class RootNodes {
     RootNodes(const RootNodes&) = delete;
     RootNodes& operator = (const RootNodes&) = delete;
 public:
-    using DefaultNodeMapValueType = DefaultNodesMap::value_type;
+    using DefaultNodeMapIteratedType = DefaultNodesMap::iterated_type;
     explicit RootNodes(const DanglingBaseClassRef<Scene>& scene);
     ~RootNodes();
     DefaultNodesMap& default_nodes();

@@ -54,6 +54,10 @@ void ParticleRenderer::advance_time(float dt, const StaticWorld& world) {
     }
 }
 
+void ParticleRenderer::print_stats(std::ostream& ostr) const {
+    ostr << "ParticleRenderer";
+}
+
 PhysicsMaterial ParticleRenderer::physics_attributes() const {
     return PhysicsMaterial::ATTR_VISIBLE;
 }

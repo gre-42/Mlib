@@ -1,10 +1,11 @@
 #pragma once
 #include <Mlib/OpenGL/Any_Gl.hpp>
+#include <cstdint>
 
 namespace Mlib {
 
 class ITextureHandle;
-enum class TextureLayerProperties;
+enum class TextureLayerProperties: uint32_t;
 enum class InterpolationPolicy {
     AUTO,
     NEAREST_NEIGHBOR

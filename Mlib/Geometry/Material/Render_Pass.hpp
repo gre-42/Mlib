@@ -1,6 +1,8 @@
 #pragma once
+#include <Mlib/Hashing/Std_Hash.hpp>
 #include <cstdint>
 #include <iosfwd>
+#include <stdexcept>
 #include <string>
 
 namespace Mlib {
@@ -40,6 +42,8 @@ enum class ExternalRenderPassType: uint32_t {
     FOREGROUND_MASK                         = (1 << 20),
     BACKGROUND_MASK                         = (1 << 21),
 
+    PRELOAD_MASK                            = (1 << 22),
+
     STANDARD                                = STANDARD_MASK,
 
     DIRTMAP                                 = DIRTMAP_MASK | IS_GLOBAL_MASK,
@@ -65,16 +69,43 @@ enum class ExternalRenderPassType: uint32_t {
     STANDARD_BACKGROUND                     = STANDARD_MASK | BACKGROUND_MASK,
 };
 
+inline bool any(ExternalRenderPassType v) {
+    return (uint32_t)v != (uint32_t)ExternalRenderPassType::NONE;
+}
+
 inline ExternalRenderPassType operator & (ExternalRenderPassType a, ExternalRenderPassType b) {
-    return (ExternalRenderPassType)((int)a & (int)b);
+    return (ExternalRenderPassType)((uint32_t)a & (uint32_t)b);
 }
 
 inline ExternalRenderPassType operator | (ExternalRenderPassType a, ExternalRenderPassType b) {
-    return (ExternalRenderPassType)((int)a | (int)b);
+    return (ExternalRenderPassType)((uint32_t)a | (uint32_t)b);
 }
 
-inline bool any(ExternalRenderPassType v) {
-    return v != ExternalRenderPassType::NONE;
+inline ExternalRenderPassType& operator |= (ExternalRenderPassType& a, ExternalRenderPassType b) {
+    (uint32_t&)a |= (uint32_t)b;
+    return a;
+}
+
+inline ExternalRenderPassType operator ~ (ExternalRenderPassType a) {
+    return ExternalRenderPassType(~(uint32_t)a);
+}
+
+inline bool operator == (ExternalRenderPassType a, ExternalRenderPassType b) {
+    if (any(a & ExternalRenderPassType::PRELOAD_MASK) ||
+        any(b & ExternalRenderPassType::PRELOAD_MASK))
+    {
+        throw std::runtime_error("External render pass equality comparison with preload enabled");
+    }
+    return (uint32_t)a == (uint32_t)b;
+}
+
+inline bool operator != (ExternalRenderPassType a, ExternalRenderPassType b) {
+    if (any(a & ExternalRenderPassType::PRELOAD_MASK) ||
+        any(b & ExternalRenderPassType::PRELOAD_MASK))
+    {
+        throw std::runtime_error("External render pass equality comparison with preload enabled");
+    }
+    return (uint32_t)a != (uint32_t)b;
 }
 
 ExternalRenderPassType external_render_pass_type_from_string(const std::string& str);
@@ -83,3 +114,14 @@ std::string external_render_pass_type_to_string(ExternalRenderPassType pass);
 std::ostream& operator << (std::ostream& ostr, ExternalRenderPassType pass);
 
 }
+
+template <>
+struct std::hash<Mlib::ExternalRenderPassType>
+{
+    std::size_t operator() (const Mlib::ExternalRenderPassType& k) const {
+        if (Mlib::any(k & Mlib::ExternalRenderPassType::PRELOAD_MASK)) {
+            throw std::runtime_error("External render pass hash with preload enabled");
+        }
+        return std::hash<uint32_t>()((uint32_t)k);
+    }
+};

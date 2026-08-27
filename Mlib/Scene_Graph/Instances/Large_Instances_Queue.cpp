@@ -16,15 +16,15 @@
 using namespace Mlib;
 
 LargeInstancesQueue::LargeInstancesQueue(ExternalRenderPassType render_pass)
-    : render_pass_{ render_pass }
+    : render_pass_{ render_pass & ~ExternalRenderPassType::PRELOAD_MASK }
 {
     if ((render_pass_ != ExternalRenderPassType::LIGHTMAP_GLOBAL_STATIC) &&
         (render_pass_ != ExternalRenderPassType::LIGHTMAP_BLACK_GLOBAL_STATIC) &&
         (render_pass_ != ExternalRenderPassType::DIRTMAP) &&
         (render_pass_ != ExternalRenderPassType::BILLBOARD_SCENE) &&
-        !any(render_pass_ & ExternalRenderPassType::STANDARD_MASK))
+        !any(render_pass & ExternalRenderPassType::STANDARD_MASK))
     {
-        throw std::runtime_error("Unknown render pass");
+        throw std::runtime_error("Unknown render pass: \"" + external_render_pass_type_to_string(render_pass) + '"');
     }
 }
 

@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
+#include <Mlib/Geometry/Material/Render_Pass.hpp>
 #include <Mlib/Geometry/Primitives/Axis_Aligned_Bounding_Box.hpp>
 #include <Mlib/Geometry/Primitives/Bounding_Sphere.hpp>
 #include <Mlib/Initialization/Default_Uninitialized_Vector.hpp>
@@ -16,7 +17,6 @@ class OffsetAndQuaternion;
 class ColoredVertexArrayResource;
 struct RenderableResourceFilter;
 class RenderingResources;
-enum class ExternalRenderPassType: uint32_t;
 struct RenderPass;
 class IGpuVertexArray;
 class IGpuVertexData;
@@ -31,7 +31,8 @@ public:
         const std::shared_ptr<const ColoredVertexArrayResource>& rcva,
         CachingBehavior caching_behavior,
         const RenderableResourceFilter& renderable_resource_filter);
-    ~RenderableColoredVertexArray();
+    virtual ~RenderableColoredVertexArray() override;
+    virtual void print_stats(std::ostream& ostr) const override;
     virtual PhysicsMaterial physics_attributes() const override;
     virtual RenderingStrategies rendering_strategies() const override;
     virtual bool requires_render_pass(ExternalRenderPassType render_pass) const override;
@@ -86,7 +87,6 @@ public:
     virtual ExtremalAxisAlignedBoundingBox<CompressedScenePos, 3> aabb() const override;
     virtual ExtremalBoundingSphere<CompressedScenePos, 3> bounding_sphere(RenderableFilter filter) const override;
     virtual ScenePos max_center_distance2(BillboardId billboard_id) const override;
-    void print_stats(std::ostream& ostr) const;
     #ifndef WITHOUT_GRAPHICS
     void initialize_gpu_arrays();
     bool copy_in_progress() const;

@@ -83,6 +83,7 @@
 #include <Mlib/OpenGL/Ui/Renderable_Hider/Tty_Renderable_Hider.hpp>
 #include <Mlib/Scene/Renderable_Scene.hpp>
 #include <Mlib/Scene/Renderable_Scenes.hpp>
+#include <Mlib/Scene_Graph/Rendered_Scene_Descriptor.hpp>
 #else
 #include <Mlib/Remote/Config_Server/Config_Server.hpp>
 #endif
@@ -107,7 +108,7 @@ std::unique_ptr<JThread> render_thread(
     return std::make_unique<JThread>([&](){
         try {
             ThreadInitializer ti{ "Render", ThreadAffinity::POOL };
-            bool all_physics_loops_started = false;
+            bool level_initialized = false;
             LambdaRenderLogic lrl{
                 [&](const LayoutConstraintParameters& lx,
                     const LayoutConstraintParameters& ly,
@@ -120,25 +121,32 @@ std::unique_ptr<JThread> render_thread(
                         scene_graph_config.renderable_hider->process_input();
                     }
                     menu_logic.handle_events();
-                    if (!all_physics_loops_started && 
-                        !args.has_named("--no_physics") &&
-                        !args.has_named("--single_threaded"))
-                    {
-                        all_physics_loops_started = load_scene.level_loaded();
-                        for (auto& [n, r] : physics_scenes.guarded_iterable()) {
-                            if (r.physics_loop_started()) {
-                                continue;
-                            }
-                            r.start_physics_loop(
-                                ("Phys_" + n).substr(0, 15), ThreadAffinity::POOL,
-                                [&load_scene](){ return !load_scene.level_loaded(); });
-                        }
-                    }
                     if (load_scene.level_loaded()) {
                         execute_render_allocators();
-                        set_not_preloaded_behavior(NotPreloadedBehavior::WARN);
-                        auto& rs = physics_scenes["primary_scene"];
-                        rs.scene_.wait_for_cleanup();
+                        if (!level_initialized) {
+                            if (!args.has_named("--no_physics") &&
+                                !args.has_named("--single_threaded"))
+                            {
+                                for (auto& [n, r] : physics_scenes.guarded_iterable()) {
+                                    r.start_physics_loop(
+                                        ("Phys_" + n).substr(0, 15), ThreadAffinity::POOL,
+                                        [&load_scene](){ return !load_scene.level_loaded(); });
+                                }
+                            }
+                            for (size_t i = 0; i < 2; ++i) {
+                                auto preload_frame_id = frame_id;
+                                preload_frame_id.external_render_pass.pass |= ExternalRenderPassType::PRELOAD_MASK;
+                                renderable_scenes.render_toplevel(
+                                    lx,
+                                    ly,
+                                    render_config,
+                                    scene_graph_config,
+                                    render_results,
+                                    preload_frame_id);
+                            }
+                            level_initialized = true;
+                            set_not_preloaded_behavior(NotPreloadedBehavior::WARN);
+                        }
                         renderable_scenes.render_toplevel(
                             lx,
                             ly,
@@ -156,7 +164,6 @@ std::unique_ptr<JThread> render_thread(
                         }
                     } else if (auto rs = renderable_scenes.try_get("loading"); rs != nullptr) {
                         execute_render_allocators();
-                        rs->physics_scene_->scene_.wait_for_cleanup();
                         if (rs->selected_cameras_.camera_node_exists()) {
                             rs->render_toplevel(
                                 lx,

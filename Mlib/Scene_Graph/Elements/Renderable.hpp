@@ -4,6 +4,7 @@
 #include <Mlib/Geometry/Primitives/Extremal_Bounding_Sphere.hpp>
 #include <Mlib/Scene_Config/Scene_Precision.hpp>
 #include <cstdint>
+#include <iosfwd>
 #include <list>
 #include <memory>
 #include <type_traits>
@@ -42,6 +43,8 @@ class LargeInstancesQueue;
 
 class Renderable {
 public:
+    virtual ~Renderable();
+    virtual void print_stats(std::ostream& ostr) const = 0;
     virtual PhysicsMaterial physics_attributes() const = 0;
     virtual RenderingStrategies rendering_strategies() const = 0;
     virtual bool requires_render_pass(ExternalRenderPassType render_pass) const = 0;

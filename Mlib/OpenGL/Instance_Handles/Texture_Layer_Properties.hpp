@@ -3,7 +3,7 @@
 
 namespace Mlib {
 
-enum class TextureLayerProperties {
+enum class TextureLayerProperties: uint32_t {
     NONE = 0,
 
     DISCRETE = 1 << 0,
@@ -15,15 +15,15 @@ enum class TextureLayerProperties {
 };
 
 inline TextureLayerProperties operator & (TextureLayerProperties a, TextureLayerProperties b) {
-    return (TextureLayerProperties)((int)a & (int)b);
+    return (TextureLayerProperties)((uint32_t)a & (uint32_t)b);
 }
 
 inline TextureLayerProperties operator | (TextureLayerProperties a, TextureLayerProperties b) {
-    return (TextureLayerProperties)((int)a | (int)b);
+    return (TextureLayerProperties)((uint32_t)a | (uint32_t)b);
 }
 
 inline TextureLayerProperties& operator |= (TextureLayerProperties& a, TextureLayerProperties b) {
-    (int&)a |= (int)b;
+    (uint32_t&)a |= (uint32_t)b;
     return a;
 }
 

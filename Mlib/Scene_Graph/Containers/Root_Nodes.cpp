@@ -145,18 +145,18 @@ void RootNodes::move_node_to_bvh(const VariableAndHash<std::string>& name) {
     if (m.empty()) {
         throw std::runtime_error("Could not find non-BVH node with name \"" + *name + '"');
     }
-    if (m.mapped()->state() != SceneNodeState::STATIC) {
+    if (m.mapped().value->state() != SceneNodeState::STATIC) {
         invisible_static_nodes_.insert(std::move(m));
         throw std::runtime_error("Node \"" + *name + "\" is not static");
     }
-    auto md2 = m.mapped()->max_center_distance2(BILLBOARD_ID_NONE);
+    auto md2 = m.mapped().value->max_center_distance2(BILLBOARD_ID_NONE);
     if (md2 == 0.f) {
         invisible_static_nodes_.insert(std::move(m));
         throw std::runtime_error("Node \"" + *name + "\" has radius=0");
     }
     small_static_nodes_bvh_.insert(
-        AxisAlignedBoundingBox<ScenePos, 3>::from_center_and_radius(m.mapped()->position(), std::sqrt(md2)),
-        m.mapped());
+        AxisAlignedBoundingBox<ScenePos, 3>::from_center_and_radius(m.mapped().value->position(), std::sqrt(md2)),
+        m.mapped().value);
 }
 
 bool RootNodes::contains(const VariableAndHash<std::string>& name) const {

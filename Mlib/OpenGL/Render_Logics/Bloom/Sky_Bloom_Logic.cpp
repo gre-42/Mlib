@@ -118,7 +118,7 @@ bool SkyBloomLogic::render_optional_setup(
             frame_id,
             setup);
     } else {
-        if (frame_id.external_render_pass.pass != ExternalRenderPassType::STANDARD) {
+        if ((frame_id.external_render_pass.pass & ~ExternalRenderPassType::PRELOAD_MASK) != ExternalRenderPassType::STANDARD) {
             throw std::runtime_error("SkyBloomLogic did not receive standard rendering");
         }
         assert_true(render_config.nsamples_msaa > 0);

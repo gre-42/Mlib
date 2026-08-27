@@ -284,14 +284,16 @@ public:
         const FixedArray<ScenePos, 3>& offset,
         const PositionAndYAngleAndBillboardId<CompressedScenePos>& delta_pose,
         SmallInstancesQueues& instances_queues,
-        const SceneGraphConfig& scene_graph_config) const;
+        const SceneGraphConfig& scene_graph_config,
+        ExternalRenderPassType external_render_pass) const;
     void append_large_instances_to_queue(
         const FixedArray<ScenePos, 4, 4>& parent_mvp,
         const TransformationMatrix<float, ScenePos, 3>& parent_m,
         const FixedArray<ScenePos, 3>& offset,
         const PositionAndYAngleAndBillboardId<CompressedScenePos>& delta_pose,
         LargeInstancesQueue& instances_queue,
-        const SceneGraphConfig& scene_graph_config) const;
+        const SceneGraphConfig& scene_graph_config,
+        ExternalRenderPassType external_render_pass) const;
     void append_lights_to_queue(
         const TransformationMatrix<float, ScenePos, 3>& parent_m,
         std::list<std::pair<TransformationMatrix<float, ScenePos, 3>, std::shared_ptr<Light>>>& lights) const;

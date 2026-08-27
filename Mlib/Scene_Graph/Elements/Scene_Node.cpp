@@ -1307,7 +1307,8 @@ void SceneNode::append_small_instances_to_queue(
     const FixedArray<ScenePos, 3>& offset,
     const PositionAndYAngleAndBillboardId<CompressedScenePos>& delta_pose,
     SmallInstancesQueues& instances_queues,
-    const SceneGraphConfig& scene_graph_config) const
+    const SceneGraphConfig& scene_graph_config,
+    ExternalRenderPassType external_render_pass) const
 {
     TransformationMatrix<float, ScenePos, 3> rel = relative_model_matrix();
     std::shared_lock lock{ mutex_ };
@@ -1324,28 +1325,45 @@ void SceneNode::append_small_instances_to_queue(
         (*r)->append_sorted_instances_to_queue(mvp, m, iv, offset, delta_pose.billboard_id, scene_graph_config, instances_queues);
     }
     for (const auto& [_, c] : un_guarded_iterator(children_, lock)) {
-        c.scene_node->append_small_instances_to_queue(mvp, m, iv, offset, PositionAndYAngleAndBillboardId{ fixed_zeros<CompressedScenePos, 3>(), BILLBOARD_ID_NONE, 0.f }, instances_queues, scene_graph_config);
+        c.scene_node->append_small_instances_to_queue(
+            mvp, m, iv, offset, PositionAndYAngleAndBillboardId{ fixed_zeros<CompressedScenePos, 3>(), BILLBOARD_ID_NONE, 0.f },
+            instances_queues, scene_graph_config, external_render_pass);
     }
     for (const auto& [_, i] : un_guarded_iterator(instances_children_, lock)) {
         std::shared_lock ilock{ i.mutex };
+        auto preload = any(external_render_pass & ExternalRenderPassType::PRELOAD_MASK);
         // The transformation is swapped, meaning
         // y = P * V * M * INSTANCE * NODE * x.
         for (const auto& j : un_guarded_iterator(i.large_instances, ilock)) {
-            i.scene_node->append_small_instances_to_queue(mvp, m, iv, offset, j, instances_queues, scene_graph_config);
+            i.scene_node->append_small_instances_to_queue(mvp, m, iv, offset, j, instances_queues, scene_graph_config, external_render_pass);
+            if (preload) {
+                break;
+            }
         }
         if (!i.small_instances.empty()) {
-            auto camera_position = m.inverted_scaled().transform(iv.t);
-            i.small_instances.visit(
-                AxisAlignedBoundingBox<CompressedScenePos, 3>::from_center_and_radius(camera_position.casted<CompressedScenePos>(), i.max_center_distance),
+            auto visit_nodes = [&](const auto& func1, const auto& func2) {
+                if (preload) {
+                    i.small_instances.visit_all(func1, func2);
+                } else {
+                    auto camera_position = m.inverted_scaled().transform(iv.t);
+                    i.small_instances.visit(
+                        AxisAlignedBoundingBox<CompressedScenePos, 3>::from_center_and_radius(camera_position.casted<CompressedScenePos>(), i.max_center_distance),
+                        func1,
+                        func2);
+                }
+            };
+            visit_nodes(
                 [&, &i = i](const PositionAndYAngleAndBillboardId<CompressedScenePos>& j) {
                     UnlockGuard ulock{ ilock };
-                    i.scene_node->append_small_instances_to_queue(mvp, m, iv, offset, j, instances_queues, scene_graph_config);
-                    return true;
+                    i.scene_node->append_small_instances_to_queue(mvp, m, iv, offset, j, instances_queues, scene_graph_config, external_render_pass);
+                    return !preload;
                 },
                 [&, &i = i](const PositionAndBillboardId<CompressedScenePos>& j) {
                     UnlockGuard ulock{ ilock };
-                    i.scene_node->append_small_instances_to_queue(mvp, m, iv, offset, {j.position, j.billboard_id, 0.f}, instances_queues, scene_graph_config);
-                    return true;
+                    i.scene_node->append_small_instances_to_queue(
+                        mvp, m, iv, offset, {j.position, j.billboard_id, 0.f},
+                        instances_queues, scene_graph_config, external_render_pass);
+                    return !preload;
                 });
         }
     }
@@ -1357,7 +1375,8 @@ void SceneNode::append_large_instances_to_queue(
     const FixedArray<ScenePos, 3>& offset,
     const PositionAndYAngleAndBillboardId<CompressedScenePos>& delta_pose,
     LargeInstancesQueue& instances_queue,
-    const SceneGraphConfig& scene_graph_config) const
+    const SceneGraphConfig& scene_graph_config,
+    ExternalRenderPassType external_render_pass) const
 {
     TransformationMatrix<float, ScenePos, 3> rel = relative_model_matrix();
     std::shared_lock lock{ mutex_ };
@@ -1374,26 +1393,36 @@ void SceneNode::append_large_instances_to_queue(
         (*r)->append_large_instances_to_queue(mvp, m, offset, delta_pose.billboard_id, scene_graph_config, instances_queue);
     }
     for (const auto& [_, c] : un_guarded_iterator(children_, lock)) {
-        c.scene_node->append_large_instances_to_queue(mvp, m, offset, PositionAndYAngleAndBillboardId{fixed_zeros<CompressedScenePos, 3>(), BILLBOARD_ID_NONE, 0.f}, instances_queue, scene_graph_config);
+        c.scene_node->append_large_instances_to_queue(
+            mvp, m, offset, PositionAndYAngleAndBillboardId{fixed_zeros<CompressedScenePos, 3>(),
+            BILLBOARD_ID_NONE, 0.f}, instances_queue, scene_graph_config, external_render_pass);
     }
     for (const auto& [_, i] : un_guarded_iterator(instances_children_, lock)) {
         std::shared_lock ilock{ i.mutex };
+        auto preload = any(external_render_pass & ExternalRenderPassType::PRELOAD_MASK);
         // The transformation is swapped, meaning
         // y = P * V * M * INSTANCE * NODE * x.
         for (const auto& j : un_guarded_iterator(i.large_instances, ilock)) {
-            i.scene_node->append_large_instances_to_queue(mvp, m, offset, j, instances_queue, scene_graph_config);
+            i.scene_node->append_large_instances_to_queue(mvp, m, offset, j, instances_queue, scene_graph_config, external_render_pass);
+            if (preload) {
+                break;
+            }
         }
         i.small_instances.visit_all(
             [&, &i=i](const auto& j){
                 UnlockGuard ulock{ ilock };
-                i.scene_node->append_large_instances_to_queue(mvp, m, offset, j.payload(), instances_queue, scene_graph_config);
-                return true;
+                i.scene_node->append_large_instances_to_queue(
+                    mvp, m, offset, j.payload(),
+                    instances_queue, scene_graph_config, external_render_pass);
+                return !preload;
             },
             [&, &i=i](const auto& j){
                 UnlockGuard ulock{ ilock };
                 const auto& J = j.payload();
-                i.scene_node->append_large_instances_to_queue(mvp, m, offset, {J.position, J.billboard_id, 0.f}, instances_queue, scene_graph_config);
-                return true;
+                i.scene_node->append_large_instances_to_queue(
+                    mvp, m, offset, {J.position, J.billboard_id, 0.f},
+                    instances_queue, scene_graph_config, external_render_pass);
+                return !preload;
             });
     }
 }
@@ -1768,8 +1797,9 @@ void SceneNode::print(std::ostream& ostr, size_t recursion_depth) const {
     ostr << " " << ind1 << " Rotation " << rotation() << '\n';
     if (!renderables_.empty()) {
         ostr << " " << ind1 << " Renderables (" << renderables_.size() << ")\n";
-        for (const auto& [n, _] : renderables_) {
+        for (const auto& [n, r] : renderables_) {
             ostr << " " << ind2 << " " << *n << '\n';
+            (*r)->print_stats(ostr);
         }
     }
     if (!children_.empty()) {

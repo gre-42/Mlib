@@ -48,18 +48,19 @@ void StandardRenderLogic::render_with_setup(
 {
     LOG_FUNCTION("StandardRenderLogic::render");
 
+    auto render_pass = frame_id.external_render_pass.pass & ~ExternalRenderPassType::PRELOAD_MASK;
     if (any(frame_id.external_render_pass.pass & ExternalRenderPassType::LIGHTMAP_BLOBS_MASK)) {
         clear_color_and_depth({0.f, 0.f, 0.f, 1.f});
     } else if (any(frame_id.external_render_pass.pass & ExternalRenderPassType::LIGHTMAP_ANY_MASK)) {
         clear_color_and_depth({1.f, 1.f, 1.f, 1.f});
-    } else if ((frame_id.external_render_pass.pass == ExternalRenderPassType::IMPOSTER_NODE) ||
-               (frame_id.external_render_pass.pass == ExternalRenderPassType::BILLBOARD_SCENE)) {
+    } else if ((render_pass == ExternalRenderPassType::IMPOSTER_NODE) ||
+               (render_pass == ExternalRenderPassType::BILLBOARD_SCENE)) {
         clear_color_and_depth({
             background_color_(0),
             background_color_(1),
             background_color_(2),
             0.f});
-    } else if (frame_id.external_render_pass.pass == ExternalRenderPassType::ZOOM_NODE) {
+    } else if (render_pass == ExternalRenderPassType::ZOOM_NODE) {
         if (all(isnan(background_color_))) {
             clear_depth(ClearBackend::SHADER);
         } else {
@@ -105,7 +106,7 @@ void StandardRenderLogic::render_with_setup(
             frame_id,
             setup);
             
-        if (frame_id.external_render_pass.pass == ExternalRenderPassType::STANDARD_BACKGROUND) {
+        if (render_pass == ExternalRenderPassType::STANDARD_BACKGROUND) {
             return;
         }
 

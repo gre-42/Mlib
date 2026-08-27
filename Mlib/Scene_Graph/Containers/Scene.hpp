@@ -143,9 +143,6 @@ public:
         AnimationStateAlreadyExistsBehavior already_exists_behavior);
     void add_color_style(std::unique_ptr<ColorStyle>&& color_style);
     void clear_color_styles();
-    void wait_for_cleanup() const;
-    void notify_cleanup_required();
-    void notify_cleanup_done();
     SafeAtomicRecursiveSharedMutex delete_node_mutex;
     SafeAtomicRecursiveSharedMutex render_mutex;
 private:
@@ -181,7 +178,6 @@ private:
     SceneNodeResources* scene_node_resources_;
     ITrailRenderer* trail_renderer_;
     IDynamicLights* dynamic_lights_;
-    mutable std::atomic<std::uint32_t> ncleanups_required_;
     std::list<std::unique_ptr<DanglingBaseClass>> trash_can_obj_;
     std::list<std::unique_ptr<SceneNode>> trash_can_child_nodes_;
     mutable FastMutex trash_can_blended_mutex_;

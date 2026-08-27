@@ -8,7 +8,8 @@ bool Mlib::instances_are_visible(
     ExternalRenderPassType external_render_pass)
 {
     if (any(external_render_pass & ExternalRenderPassType::LIGHTMAP_ANY_MASK)) {
-        return (m.occluder_pass & external_render_pass) == external_render_pass;
+        auto rp = external_render_pass & ~ExternalRenderPassType::PRELOAD_MASK;
+        return (m.occluder_pass & rp) == rp;
     } else {
         return true;
     }

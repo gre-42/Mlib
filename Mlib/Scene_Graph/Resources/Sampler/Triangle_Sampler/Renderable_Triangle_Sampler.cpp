@@ -46,6 +46,10 @@ RenderableTriangleSampler::RenderableTriangleSampler(
 RenderableTriangleSampler::~RenderableTriangleSampler()
 {}
 
+void RenderableTriangleSampler::print_stats(std::ostream& ostr) const {
+    ostr << "RenderableTriangleSampler";
+}
+
 PhysicsMaterial RenderableTriangleSampler::physics_attributes() const {
     return PhysicsMaterial::ATTR_VISIBLE;
 }

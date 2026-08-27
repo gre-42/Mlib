@@ -84,9 +84,13 @@ void LightmapLogic::render_without_setup(
         throw std::runtime_error("LightmapLogic received wrong rendering");
     }
     if ((!fbs_[0]->is_configured() && !fbs_[1]->is_configured()) || any(render_pass_type_ & ExternalRenderPassType::LIGHTMAP_IS_DYNAMIC_MASK)) {
+        auto tpe = render_pass_type_;
+        if (any(frame_id.external_render_pass.pass & ExternalRenderPassType::PRELOAD_MASK)) {
+            tpe |= ExternalRenderPassType::PRELOAD_MASK;
+        }
         ViewportGuard vg{ lightmap_width_, lightmap_height_ };
         RenderedSceneDescriptor light_rsd{
-            .external_render_pass = {frame_id.external_render_pass.observer, render_pass_type_, frame_id.external_render_pass.time, black_node_name_, nullptr, light_node_.ptr()},
+            .external_render_pass = {frame_id.external_render_pass.observer, tpe, frame_id.external_render_pass.time, black_node_name_, nullptr, light_node_.ptr()},
             .time_id = 0};
         size_t target_id = 0;
         // WebGL does not support border color.

@@ -33,6 +33,7 @@ public:
         ScenePos scale,
         UpAxis up_axis);
     virtual ~RenderableTriangleSampler();
+    virtual void print_stats(std::ostream& ostr) const override;
     virtual PhysicsMaterial physics_attributes() const override;
     virtual RenderingStrategies rendering_strategies() const override;
     virtual bool requires_render_pass(ExternalRenderPassType render_pass) const override;

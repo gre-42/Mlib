@@ -2042,9 +2042,11 @@ void OpenGLVertexArrayRenderer::render(
         }
     }
     std::vector<BlendMapTextureAndId> blended_textures_color(meta.material.textures_color.size());
+    std::vector<BlendMapTextureAndId> blended_textures_alpha(meta.material.textures_alpha.size());
     OrderedUnorderedMap<ColormapPtr, IdAndTexture> texture_ids_color;
     OrderedUnorderedMap<ColormapPtr, IdAndTexture> texture_ids_specular;
     OrderedUnorderedMap<ColormapPtr, IdAndTexture> texture_ids_normal;
+    OrderedUnorderedMap<ColormapPtr, IdAndTexture> texture_ids_alpha;
     for (size_t i = 0; i < blended_textures_color.size(); ++i) {
         const auto& c = meta.material.textures_color[i];
         auto& b = blended_textures_color[i];
@@ -2053,7 +2055,7 @@ void OpenGLVertexArrayRenderer::render(
                 ? *secondary_rendering_resources_.get_texture(c.texture_descriptor.color)
                 : *primary_rendering_resources_.get_texture(c.texture_descriptor.color);
             auto it = texture_ids_color.try_emplace(c.texture_descriptor.color, texture_ids_color.size(), texture);
-            b.id_color = it.first->second.id;
+            b.id_color = it.first.id;
             b.tex_color = &texture;
         } else {
             b.id_color = SIZE_MAX;
@@ -2062,7 +2064,7 @@ void OpenGLVertexArrayRenderer::render(
         if (!c.texture_descriptor.specular.filename.empty()) {
             const auto& texture = *primary_rendering_resources_.get_texture(c.texture_descriptor.specular);
             auto it = texture_ids_specular.try_emplace(c.texture_descriptor.specular, texture_ids_specular.size(), texture);
-            b.id_specular = it.first->second.id;
+            b.id_specular = it.first.id;
             b.tex_specular = &texture;
         } else {
             b.id_specular = SIZE_MAX;
@@ -2071,7 +2073,7 @@ void OpenGLVertexArrayRenderer::render(
         if (!c.texture_descriptor.normal.filename.empty()) {
             const auto& texture = *primary_rendering_resources_.get_texture(c.texture_descriptor.normal);
             auto it = texture_ids_normal.try_emplace(c.texture_descriptor.normal, texture_ids_normal.size(), texture);
-            b.id_normal = it.first->second.id;
+            b.id_normal = it.first.id;
             b.tex_normal = &texture;
         } else {
             b.id_normal = SIZE_MAX;
@@ -2079,8 +2081,6 @@ void OpenGLVertexArrayRenderer::render(
         }
         b.ops = &c;
     }
-    std::vector<BlendMapTextureAndId> blended_textures_alpha(meta.material.textures_alpha.size());
-    std::unordered_map<ColormapPtr, IdAndTexture> texture_ids_alpha;
     for (size_t i = 0; i < blended_textures_alpha.size(); ++i) {
         const auto& c = meta.material.textures_alpha[i];
         auto& b = blended_textures_alpha[i];
@@ -2089,7 +2089,7 @@ void OpenGLVertexArrayRenderer::render(
             ? *secondary_rendering_resources_.get_texture(c.texture_descriptor.color, TextureRole::COLOR_FROM_DB)
             : *primary_rendering_resources_.get_texture(c.texture_descriptor.color, TextureRole::COLOR_FROM_DB);
         auto it = texture_ids_alpha.try_emplace(c.texture_descriptor.color, texture_ids_alpha.size(), texture);
-        b.id_color = it.first->second.id;
+        b.id_color = it.first.id;
         b.id_specular = SIZE_MAX;
         b.id_normal = SIZE_MAX;
         b.tex_color = &texture;
@@ -2188,7 +2188,7 @@ void OpenGLVertexArrayRenderer::render(
                 assert_true(b.tex_color != nullptr);
                 blended_textures_color.resize(1);
                 texture_ids_color.clear();
-                texture_ids_color.try_emplace(b.ops->texture_descriptor.color, 0, *b.tex_color);
+                texture_ids_color.try_emplace(b.ops->texture_descriptor.color, 0u, *b.tex_color);
             }
             texture_ids_specular.clear();
             texture_ids_normal.clear();
@@ -2785,7 +2785,7 @@ void OpenGLVertexArrayRenderer::render(
         const auto& texture = *primary_rendering_resources_.get_texture(desc.specular);
         tb.bind(rp.texture_specularmap_location, texture, InterpolationPolicy::AUTO, TextureLayerProperties::NONE);
     }
-    if ((render_pass.rsd.external_render_pass.pass != ExternalRenderPassType::DIRTMAP) &&
+    if (!any(render_pass.rsd.external_render_pass.pass & ExternalRenderPassType::DIRTMAP_MASK) &&
         !is_lightmap &&
         (meta.material.draw_distance_noperations > 0) &&
         (
@@ -2921,7 +2921,7 @@ const ColoredRenderProgram& OpenGLVertexArrayRenderer::get_render_program(
         return **it;
     }
     if (get_not_preloaded_behavior() == NotPreloadedBehavior::WARN) {
-        lwarn() << "Render program not preloaded: \"" << gva.identifier() << '"';
+        lwarn() << "Render program not preloaded: \"" << gva.identifier() << "\", " + external_render_pass_type_to_string(render_pass);
     }
     if (!(id == id)) {
         throw std::runtime_error("Render program identifier contains NAN values");

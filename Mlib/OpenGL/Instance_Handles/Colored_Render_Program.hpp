@@ -9,6 +9,7 @@
 #include <Mlib/OpenGL/Instance_Handles/Render_Program.hpp>
 #include <Mlib/OpenGL/Instance_Handles/Texture_Layer_Properties.hpp>
 #include <Mlib/Scene_Graph/Render/Attribute_Index_Calculator.hpp>
+#include <iosfwd>
 #include <map>
 #include <string>
 
@@ -130,7 +131,10 @@ struct RenderProgramIdentifier {
     float dirt_scale;
     size_t texture_modifiers_hash;
     size_t lights_hash;
+    void print(std::ostream& ostr) const;
     std::partial_ordering operator <=> (const RenderProgramIdentifier&) const = default;
 };
+
+std::ostream& operator << (std::ostream& ostr, const RenderProgramIdentifier& id);
 
 }

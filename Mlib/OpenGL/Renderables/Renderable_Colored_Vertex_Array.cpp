@@ -354,7 +354,7 @@ void RenderableColoredVertexArray::render(
     const ColorStyle* color_style) const
 {
     LOG_FUNCTION("RenderableColoredVertexArray::render");
-    if (render_pass.rsd.external_render_pass.pass == ExternalRenderPassType::DIRTMAP) {
+    if (any(render_pass.rsd.external_render_pass.pass & ExternalRenderPassType::DIRTMAP_MASK)) {
         return;
     }
     #ifdef DEBUG
@@ -457,7 +457,7 @@ bool RenderableColoredVertexArray::requires_render_pass(ExternalRenderPassType r
         return false;
     }
     if (any(render_pass & ExternalRenderPassType::LIGHTMAP_ANY_MASK)) {
-        return required_occluder_passes_.contains(render_pass);
+        return required_occluder_passes_.contains(render_pass & ~ExternalRenderPassType::PRELOAD_MASK);
     }
     return true;
     #endif
@@ -471,7 +471,7 @@ BlendingPassType RenderableColoredVertexArray::required_blending_passes(External
         return BlendingPassType::NONE;
     }
     if (any(render_pass & ExternalRenderPassType::LIGHTMAP_ANY_MASK) &&
-        !required_occluder_passes_.contains(render_pass))
+        !required_occluder_passes_.contains(render_pass & ~ExternalRenderPassType::PRELOAD_MASK))
     {
         return BlendingPassType::NONE;
     }
@@ -686,8 +686,8 @@ void RenderableColoredVertexArray::print_stats(std::ostream& ostr) const {
     print_list(instances_once_, "instances_once");
     print_list(instances_sorted_continuously_, "instances_sorted_continuously");
     #endif
-    print_list(sphysics_, "sphysics_");
-    print_list(dphysics_, "dphysics_");
+    print_list(sphysics_, "sphysics");
+    print_list(dphysics_, "dphysics");
 }
 
 #ifndef WITHOUT_GRAPHICS
