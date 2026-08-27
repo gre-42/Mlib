@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 3.22.1)
 
 project(Mlib C CXX)
 
+include(CheckLinkerFlag)
+
 enable_testing()
 include(CMakeCommands.cmake)
 print_environment()

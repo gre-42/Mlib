@@ -443,6 +443,9 @@ int main(int argc, char** argv) {
         "    [--print_remote_data]\n"
         "    [--print_remote_metadata]\n"
         "    [--thread_limit <n>]\n"
+        #ifdef MALLOC_WRAPPING_ENABLED
+        "    [--wrap_malloc]\n"
+        #endif
         "    [--verbose]";
     const ArgParser parser(
         help,
@@ -495,6 +498,7 @@ int main(int argc, char** argv) {
          "--print_remote_data",
          "--print_remote_metadata",
          "--print_remote_stats",
+         "--wrap_malloc",
          "--verbose"},
         {"--app_reldir",
          "--record_track_basename",
@@ -612,6 +616,11 @@ int main(int argc, char** argv) {
         if (args.has_named("--print_remote_stats")) {
             set_print_transmission_stastics(true);
         }
+        #ifdef MALLOC_WRAPPING_ENABLED
+        if (args.has_named("--wrap_malloc")) {
+            enable_wrap_malloc();
+        }
+        #endif
         #ifndef WITHOUT_AUDIO
         if (args.has_named("--check_al_errors")) {
             check_al_errors(CheckAlErrors::ENABLED);

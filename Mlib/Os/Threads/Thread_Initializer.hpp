@@ -17,7 +17,7 @@ public:
 private:
     std::optional<RealtimeThreadGuard> rtg_;
     #ifdef MALLOC_WRAPPING_ENABLED
-    MallocGuard malloc_guard_;
+    std::optional<MallocGuard> malloc_guard_;
     #endif
 };
 

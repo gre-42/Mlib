@@ -10,5 +10,3 @@ my_add_library(
 target_include_directories(MlibMemory PUBLIC ${Mlib_INCLUDE_DIR})
 
 target_link_libraries(MlibMemory PUBLIC MlibOs MlibMisc MlibTime)
-
-# wrap_allocations(MlibMemory)

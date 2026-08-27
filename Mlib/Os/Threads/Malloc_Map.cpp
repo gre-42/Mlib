@@ -11,9 +11,18 @@
 
 using namespace Mlib;
 
-static THREAD_LOCAL(const std::string*) current_;
+static bool wrap_malloc_enabled_ = false;
+static THREAD_LOCAL(const std::string*) current_ = nullptr;
 static std::map<std::string, size_t> allocated_;
 static FastMutex allocated_mutex_;
+
+void Mlib::enable_wrap_malloc() {
+    wrap_malloc_enabled_ = true;
+}
+
+bool Mlib::wrap_malloc_enabled() {
+    return wrap_malloc_enabled_;
+}
 
 MallocGuard::MallocGuard(std::string name)
     : name_{std::move(name)}

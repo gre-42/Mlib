@@ -421,10 +421,13 @@ macro(ddebug)
     endif()
 endmacro()
 
-macro(wrap_allocations target)
-    target_link_options(${target} PUBLIC -Wl,--wrap=malloc
-        -Wl,--wrap=_Znwm -Wl,--wrap=_Znam -Wl,--wrap=_ZnwmSt11align_val_t)
-    target_compile_options(${target} PUBLIC -DMALLOC_WRAPPING_ENABLED)
+macro(try_wrap_allocations target)
+    check_linker_flag(CXX "-Wl,--wrap=malloc" LINKER_SUPPORTS_WRAP_MALLOC)
+    if (LINKER_SUPPORTS_WRAP_MALLOC)
+        target_link_options(${target} PUBLIC -Wl,--wrap=malloc
+            -Wl,--wrap=_Znwm -Wl,--wrap=_Znam -Wl,--wrap=_ZnwmSt11align_val_t)
+        target_compile_options(${target} PUBLIC -DMALLOC_WRAPPING_ENABLED)
+    endif()
 endmacro()
 
 macro(set_stack_size)

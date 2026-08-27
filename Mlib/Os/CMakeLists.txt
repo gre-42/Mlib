@@ -46,3 +46,5 @@ endif()
 target_link_libraries(MlibOs
     PUBLIC
         MlibStrings)
+
+try_wrap_allocations(MlibOs)
