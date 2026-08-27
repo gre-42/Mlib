@@ -8,7 +8,7 @@ namespace Mlib {
 
 class LaunchAsync {
 public:
-    explicit LaunchAsync(const std::string& thread_name);
+    explicit LaunchAsync(std::string thread_name);
     ~LaunchAsync();
     std::future<void> operator () (std::function<void()> task);
 private:

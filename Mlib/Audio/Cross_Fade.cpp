@@ -2,8 +2,6 @@
 #include <Mlib/Audio/Audio_Scene.hpp>
 #include <Mlib/Memory/Event_Emitter.hpp>
 #include <Mlib/Os/Os.hpp>
-#include <Mlib/Os/Threads/Thread_Affinity.hpp>
-#include <Mlib/Os/Threads/Thread_Initializer.hpp>
 #include <Mlib/Time/Sleep.hpp>
 #include <mutex>
 
@@ -36,9 +34,10 @@ void CrossFade::start_background_thread(float dt) {
     if (fader_.has_value()) {
         throw std::runtime_error("CrossFade background thread already started");
     }
-    fader_.emplace([this, dt]() {
+    fader_.emplace(
+        "Audio CrossFade", ThreadAffinity::POOL,
+        [this, dt]() {
         try {
-            ThreadInitializer ti{"Audio CrossFade", ThreadAffinity::POOL};
             while (!fader_->get_stop_token().stop_requested()) {
                 advance_time(dt);
                 Mlib::sleep_for(std::chrono::duration<float>(dt));

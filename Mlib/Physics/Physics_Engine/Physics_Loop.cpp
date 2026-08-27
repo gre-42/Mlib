@@ -1,6 +1,5 @@
 #include "Physics_Loop.hpp"
 #include <Mlib/Os/Threads/Termination_Manager.hpp>
-#include <Mlib/Os/Threads/Thread_Initializer.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Iteration.hpp>
 #include <Mlib/Scene_Config/Physics_Engine_Config.hpp>
 #include <Mlib/Time/Fps/Lag_Finder.hpp>
@@ -21,11 +20,12 @@ PhysicsLoop::PhysicsLoop(
     const std::function<std::function<void()>(std::function<void()>)>& run_in_background)
     : set_fps_{set_fps}
     , physics_iteration_{physics_iteration}
-    , physics_thread_{run_in_background(
-        [this, tn=std::move(thread_name), thread_affinity, nframes, ll=std::move(level_loading)]()
+    , physics_thread_{
+        std::move(thread_name),
+        thread_affinity,
+        run_in_background([this, nframes, ll=std::move(level_loading)]()
         {
             try {
-                ThreadInitializer ti{ tn, thread_affinity };
                 size_t nframes2 = nframes;
                 auto simulated_time = set_fps_.simulated_time();
                 std::optional<PeriodicLagFinder> lag_finder;

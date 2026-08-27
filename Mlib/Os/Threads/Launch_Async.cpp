@@ -1,14 +1,14 @@
 #include "Launch_Async.hpp"
 #include <Mlib/Os/Os.hpp>
-#include <Mlib/Os/Threads/Thread_Affinity.hpp>
-#include <Mlib/Os/Threads/Thread_Initializer.hpp>
 #include <mutex>
 
 using namespace Mlib;
 
-LaunchAsync::LaunchAsync(const std::string& thread_name)
-    : thread_ { [this, tn=thread_name](){
-        ThreadInitializer init{ tn, ThreadAffinity::POOL };
+LaunchAsync::LaunchAsync(std::string thread_name)
+    : thread_ {
+        std::move(thread_name),
+        ThreadAffinity::POOL,
+        [this](){
         for (size_t i = 0; i < 2; ++i) {
             do {
                 std::list<std::pair<std::promise<void>, std::function<void()>>> tasks;

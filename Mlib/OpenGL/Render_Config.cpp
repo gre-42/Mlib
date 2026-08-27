@@ -79,6 +79,7 @@ void RenderConfig::apply_material(
     InternalRenderPass internal_render_pass,
     const Material& material) const
 {
+    auto render_pass = external_render_pass_type & ~ExternalRenderPassType::PRELOAD_MASK;
     if ((cull_faces != BoolRenderOption::OFF) && material.cull_faces) {
         CHK(glEnable(GL_CULL_FACE));
     }
@@ -109,9 +110,9 @@ void RenderConfig::apply_material(
                 case BlendMode::SEMI_CONTINUOUS_02:
                 case BlendMode::SEMI_CONTINUOUS_08:
                     CHK(glEnable(GL_BLEND));
-                    if ((external_render_pass_type == ExternalRenderPassType::IMPOSTER_NODE) ||
-                        (external_render_pass_type == ExternalRenderPassType::BILLBOARD_SCENE) ||
-                        (external_render_pass_type == ExternalRenderPassType::STANDARD_FOREGROUND))
+                    if ((render_pass == ExternalRenderPassType::IMPOSTER_NODE) ||
+                        (render_pass == ExternalRenderPassType::BILLBOARD_SCENE) ||
+                        (render_pass == ExternalRenderPassType::STANDARD_FOREGROUND))
                     {
                         // From: https://stackoverflow.com/questions/2171085/opengl-blending-with-previous-contents-of-framebuffer
                         CHK(glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA));
@@ -121,9 +122,9 @@ void RenderConfig::apply_material(
                     break;
                 case BlendMode::CONTINUOUS:
                     CHK(glEnable(GL_BLEND));
-                    if ((external_render_pass_type == ExternalRenderPassType::IMPOSTER_NODE) ||
-                        (external_render_pass_type == ExternalRenderPassType::BILLBOARD_SCENE) ||
-                        (external_render_pass_type == ExternalRenderPassType::STANDARD_FOREGROUND))
+                    if ((render_pass == ExternalRenderPassType::IMPOSTER_NODE) ||
+                        (render_pass == ExternalRenderPassType::BILLBOARD_SCENE) ||
+                        (render_pass == ExternalRenderPassType::STANDARD_FOREGROUND))
                     {
                         // From: https://stackoverflow.com/questions/2171085/opengl-blending-with-previous-contents-of-framebuffer
                         CHK(glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA));

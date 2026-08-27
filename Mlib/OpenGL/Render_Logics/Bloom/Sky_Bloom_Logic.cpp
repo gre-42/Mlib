@@ -158,6 +158,9 @@ bool SkyBloomLogic::render_optional_setup(
 
             auto fcp = frame_id;
             fcp.external_render_pass.pass = ExternalRenderPassType::STANDARD_FOREGROUND;
+            if (any(frame_id.external_render_pass.pass & ExternalRenderPassType::PRELOAD_MASK)) {
+                fcp.external_render_pass.pass |= ExternalRenderPassType::PRELOAD_MASK;
+            }
             child_logic_.render_auto_setup(
                 vlx,
                 vly,
@@ -175,6 +178,9 @@ bool SkyBloomLogic::render_optional_setup(
 
             auto fcp = frame_id;
             fcp.external_render_pass.pass = ExternalRenderPassType::STANDARD_BACKGROUND;
+            if (any(frame_id.external_render_pass.pass & ExternalRenderPassType::PRELOAD_MASK)) {
+                fcp.external_render_pass.pass |= ExternalRenderPassType::PRELOAD_MASK;
+            }
             child_logic_.render_auto_setup(
                 vlx,
                 vly,

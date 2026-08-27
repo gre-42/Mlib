@@ -3,8 +3,6 @@
 #include <Mlib/Os/Env.hpp>
 #include <Mlib/Os/Io/Binary.hpp>
 #include <Mlib/Os/Threads/Termination_Manager.cpp>
-#include <Mlib/Os/Threads/Thread_Affinity.hpp>
-#include <Mlib/Os/Threads/Thread_Initializer.hpp>
 #include <Mlib/Remote/Network_Transmission_Status.hpp>
 #include <Mlib/Remote/Remote_Socket.hpp>
 #include <Mlib/Remote/Sockets/IDatagram_Socket.hpp>
@@ -22,8 +20,9 @@ void ThreadedDatagramNode::start_receive_thread(uint32_t max_stored_received_mes
     if (receive_thread_.has_value()) {
         throw std::runtime_error("UDP receive-thread already started");
     }
-    receive_thread_.emplace([&, max_stored_received_messages](const StopToken& stop_token){
-        ThreadInitializer ti{"ThreadedDatagramNode", ThreadAffinity::POOL};
+    receive_thread_.emplace(
+        "ThreadedDatagramNode", ThreadAffinity::POOL,
+        [&, max_stored_received_messages](const StopToken& stop_token){
         std::vector<std::byte> receive_buffer(1024 * 1024);
         while (!stop_token.stop_requested() && !unhandled_exceptions_occured()) {
             try {

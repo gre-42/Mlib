@@ -54,7 +54,7 @@ void SmallInstancesQueues::insert(
                 standard_queue_[key].insert(m_shifted_i, (float)vc.sorting_key(meta.material), billboard_id);
             }
             for (auto& [rp, instances] : black_queues_) {
-                assert_true(rp != main_render_pass_);
+                assert_true(rp != (main_render_pass_ & ~ExternalRenderPassType::PRELOAD_MASK));
                 if (vc.black_is_visible(
                     meta.name.full_name_and_hash(),
                     meta.material,
@@ -73,7 +73,7 @@ std::map<ExternalRenderPassType, VertexDatasAndSortedInstances> SmallInstancesQu
 {
     std::map<ExternalRenderPassType, VertexDatasAndSortedInstances> results;
     for (auto& [rp, lst] : black_queues_) {
-        assert_true(rp != main_render_pass_);
+        assert_true(rp != (main_render_pass_ & ~ExternalRenderPassType::PRELOAD_MASK));
         auto& dlst = results[rp];
         for (const auto& [a, instances] : lst) {
             auto& darray = dlst.emplace_back(a);

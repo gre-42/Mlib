@@ -1,7 +1,5 @@
 #include "Background_Loop.hpp"
 #include <Mlib/Os/Os.hpp>
-#include <Mlib/Os/Threads/Thread_Affinity.hpp>
-#include <Mlib/Os/Threads/Thread_Initializer.hpp>
 #include <Mlib/Time/Sleep.hpp>
 #include <stdexcept>
 
@@ -10,9 +8,11 @@ using namespace Mlib;
 BackgroundLoop::BackgroundLoop(std::string thread_name)
     : i_{ SIZE_MAX }
     , done_{ true }
-    , thread_{ [this, tn = std::move(thread_name)](){
+    , thread_{
+        std::move(thread_name),
+        ThreadAffinity::POOL,
+        [this, tn = std::move(thread_name)](){
         try {
-            ThreadInitializer ti{ tn, ThreadAffinity::POOL };
             while (true) {
                 {
                     std::unique_lock lck{ mutex_ };

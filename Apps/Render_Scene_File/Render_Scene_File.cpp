@@ -105,9 +105,10 @@ std::unique_ptr<JThread> render_thread(
     const SceneConfig& scene_config,
     MenuLogic& menu_logic)
 {
-    return std::make_unique<JThread>([&](){
+    return std::make_unique<JThread>(
+        "Render", ThreadAffinity::POOL,
+        [&](){
         try {
-            ThreadInitializer ti{ "Render", ThreadAffinity::POOL };
             bool level_initialized = false;
             LambdaRenderLogic lrl{
                 [&](const LayoutConstraintParameters& lx,
@@ -229,13 +230,14 @@ JThread loader_thread(
     LoadScene& load_scene
 )
 {
-    return JThread{[&
+    return JThread{
+        "Scene loader", ThreadAffinity::POOL,
+        [&
         #ifndef WITHOUT_AUDIO
         , render_delay, velocity_dt
         #endif
-    ](){
+        ](){
         try {
-            ThreadInitializer ti{"Scene loader", ThreadAffinity::POOL};
             #ifndef WITHOUT_AUDIO
             AudioResourceContext arc;
             #endif

@@ -1,5 +1,6 @@
 #include "J_Thread.hpp"
 #include <Mlib/Os/Os.hpp>
+#include <Mlib/Os/Threads/Thread_Initializer.hpp>
 #include <atomic>
 
 using namespace Mlib;
@@ -12,25 +13,43 @@ void Mlib::set_thread_limit(uint32_t nthreads) {
 }
 
 StopToken::StopToken()
-    : stop_requested_{false}
+    : stop_requested_{std::make_shared<std::atomic_bool>(false)}
 {}
 
 void StopToken::request_stop() {
-    stop_requested_ = true;
+    *stop_requested_ = true;
 }
 
 bool StopToken::stop_requested() const {
-    return stop_requested_;
+    return *stop_requested_;
 }
 
-JThread::JThread(std::function<void()> f) {
-    check_and_increase_thread_count();
-    thread_ = std::thread{std::move(f)};
+JThread::JThread(
+    std::string name,
+    ThreadAffinity affinity,
+    std::function<void()> f)
+    : name_{ std::move(name) }
+{
+    thread_number_ = check_and_increase_thread_count();
+    linfo() << "Starting thread #" << thread_number_ << ": \"" << name_ << '"';
+    thread_ = std::thread{[name=name_, affinity, f=std::move(f)](){
+        ThreadInitializer ti{std::move(name), affinity};
+        f();
+    }};
 }
 
-JThread::JThread(std::function<void(const StopToken& stop_token)> f) {
-    check_and_increase_thread_count();
-    thread_ = std::thread{[this, f=std::move(f)](){ f(stop_token_); }};
+JThread::JThread(
+    std::string name,
+    ThreadAffinity affinity,
+    std::function<void(StopToken stop_token)> f)
+    : name_{ std::move(name) }
+{
+    thread_number_ = check_and_increase_thread_count();
+    linfo() << "Starting thread #" << thread_number_ << ": \"" << name_ << '"';
+    thread_ = std::thread{[st=stop_token_, name=name_, affinity, f=std::move(f)](){
+        ThreadInitializer ti{std::move(name), affinity};
+        f(std::move(st));
+    }};
 }
 
 JThread::~JThread() {
@@ -38,23 +57,32 @@ JThread::~JThread() {
     if (thread_.joinable()) {
         join();
     }
-    --g_nthreads;
+    g_nthreads.fetch_sub(1, std::memory_order_relaxed);
 }
 
-void JThread::check_and_increase_thread_count() const {
-    if ((g_thread_limit != 0) && (g_nthreads >= g_thread_limit)) {
-        throw std::runtime_error("Maximum number of threads exceeded");
-    } else {
-        linfo() << "Starting thread #" << g_nthreads;
+uint32_t JThread::check_and_increase_thread_count() const {
+    uint32_t current = g_nthreads.load(std::memory_order_relaxed);
+    uint32_t limit = g_thread_limit.load(std::memory_order_relaxed);
+
+    while (true) {
+        if ((limit != 0) && (current >= limit)) {
+            throw std::runtime_error("Maximum number of threads exceeded");
+        }
+        if (g_nthreads.compare_exchange_weak(current, current + 1, 
+                                             std::memory_order_relaxed, 
+                                             std::memory_order_relaxed)) {
+            break; 
+        }
+        // If exchange failed, 'current' is updated automatically with the new actual value
     }
-    ++g_nthreads;
+    return current;
 }
 
-StopToken& JThread::get_stop_token() {
+StopToken JThread::get_stop_token() {
     return stop_token_;
 }
 
-const StopToken& JThread::get_stop_token() const {
+const StopToken JThread::get_stop_token() const {
     return stop_token_;
 }
 
@@ -67,5 +95,7 @@ bool JThread::joinable() const {
 }
 
 void JThread::join() {
+    linfo() << "Joining thread #" << thread_number_ << ": \"" << name_ << '"';
     thread_.join();
+    linfo() << "Joined thread #" << thread_number_ << ": \"" << name_ << '"';
 }

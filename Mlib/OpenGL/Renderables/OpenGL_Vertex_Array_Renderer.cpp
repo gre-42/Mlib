@@ -2921,7 +2921,7 @@ const ColoredRenderProgram& OpenGLVertexArrayRenderer::get_render_program(
         return **it;
     }
     if (get_not_preloaded_behavior() == NotPreloadedBehavior::WARN) {
-        lwarn() << "Render program not preloaded: \"" << gva.identifier() << "\", " + external_render_pass_type_to_string(render_pass);
+        lwarn() << "Render program not preloaded: \"" << gva.identifier() << "\", " + external_render_pass_type_to_string(render_pass) << ", " << physics_material_to_string(gva.vertices()->mesh_meta().morphology.physics_material);
     }
     if (!(id == id)) {
         throw std::runtime_error("Render program identifier contains NAN values");

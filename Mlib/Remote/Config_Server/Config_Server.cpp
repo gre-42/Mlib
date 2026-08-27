@@ -57,7 +57,9 @@ ConfigServer::ConfigServer(
     , response_generators_{std::move(response_generators)}
     , error_generator_{std::move(error_generator)}
     , ioc_{1}
-    , http_thread_{[this, remote_socket](){
+    , http_thread_{
+        "HTTP server", ThreadAffinity::POOL,
+        [this, remote_socket](){
         auto const address = asio::ip::make_address(remote_socket.hostname);
         
         auto acceptor = std::make_shared<tcp::acceptor>(ioc_, tcp::endpoint{address, remote_socket.port});

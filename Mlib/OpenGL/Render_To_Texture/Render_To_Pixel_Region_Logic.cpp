@@ -45,7 +45,8 @@ bool RenderToPixelRegionLogic::render_optional_setup(
     const RenderSetup* setup)
 {
     LOG_FUNCTION("RenderToPixelRegionLogic::render");
-    if ((frame_id.external_render_pass.pass != ExternalRenderPassType::STANDARD) &&
+    auto render_pass = frame_id.external_render_pass.pass & ~ExternalRenderPassType::PRELOAD_MASK;
+    if ((render_pass != ExternalRenderPassType::STANDARD) &&
         !any(frame_id.external_render_pass.pass & ExternalRenderPassType::FOREGROUND_MASK))
     {
         return true;
