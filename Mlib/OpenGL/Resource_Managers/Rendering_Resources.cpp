@@ -1123,6 +1123,7 @@ std::shared_ptr<ITextureHandle> RenderingResources::get_texture(
     TextureRole role,
     CallerType caller_type) const
 {
+    MALLOC_GUARD(malloc_guard, "get_texture");
     if (role == TextureRole::COLOR_FROM_DB) {
         return get_texture(colormap(color), TextureRole::COLOR, caller_type);
     }

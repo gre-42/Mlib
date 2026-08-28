@@ -13,6 +13,7 @@
 #include <Mlib/Memory/Integral_Cast.hpp>
 #include <Mlib/Misc/Log.hpp>
 #include <Mlib/OpenGL/Resources/Colored_Vertex_Array_Resource.hpp>
+#include <Mlib/Os/Threads/Malloc_Map.hpp>
 #include <Mlib/Resource_Context/Rendering_Context.hpp>
 #include <Mlib/Scene_Config/Scene_Graph_Config.hpp>
 #include <Mlib/Scene_Graph/Culling/Visibility_Check.hpp>
@@ -353,6 +354,7 @@ void RenderableColoredVertexArray::render(
     const AnimationState* animation_state,
     const ColorStyle* color_style) const
 {
+    MALLOC_GUARD(malloc_guard, "RenderableColoredVertexArray::render");
     LOG_FUNCTION("RenderableColoredVertexArray::render");
     if (any(render_pass.rsd.external_render_pass.pass & ExternalRenderPassType::DIRTMAP_MASK)) {
         return;

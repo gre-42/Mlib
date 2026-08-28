@@ -25,6 +25,7 @@
 #include <Mlib/OpenGL/Toggle_Benchmark_Rendering.hpp>
 #include <Mlib/Os/Env.hpp>
 #include <Mlib/Os/Preload.hpp>
+#include <Mlib/Os/Threads/Malloc_Map.hpp>
 #include <Mlib/Scene_Graph/Culling/Frustum_Visibility_Check.hpp>
 #include <Mlib/Scene_Graph/Culling/Instances_Are_Visible.hpp>
 #include <Mlib/Scene_Graph/Culling/Visibility_Check.hpp>
@@ -1845,6 +1846,7 @@ void OpenGLVertexArrayRenderer::render(
     const AnimationState* animation_state,
     const ColorStyle* color_style) const
 {
+    MALLOC_GUARD(malloc_guard, "OpenGLVertexArrayRenderer::render");
     std::optional<AperiodicLagFinder> lag_finder;
     if (lag_finders_enabled()) {
         lag_finder.emplace("render_cva " + cva->identifier() + ": ", std::chrono::milliseconds{5});

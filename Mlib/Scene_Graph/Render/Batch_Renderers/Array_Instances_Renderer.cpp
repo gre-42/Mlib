@@ -4,6 +4,7 @@
 #include <Mlib/Math/Transformation/Quaternion.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
 #include <Mlib/Memory/Integral_Cast.hpp>
+#include <Mlib/Os/Threads/Malloc_Map.hpp>
 #include <Mlib/Scene_Graph/Instances/Vertex_Data_And_Sorted_Instances.hpp>
 #include <Mlib/Scene_Graph/Render/Batch_Renderers/Task_Location.hpp>
 #include <Mlib/Scene_Graph/Render/IGpu_Vertex_Array.hpp>
@@ -18,7 +19,7 @@
 
 using namespace Mlib;
 
-static const size_t MAX_INSTANCES = 400'000;
+static const size_t MAX_INSTANCES = 40'000;
 
 ArrayInstancesRenderer::ArrayInstancesRenderer(
     const IGpuObjectFactory& gpu_object_factory,
@@ -69,6 +70,7 @@ void ArrayInstancesRenderer::render_instances(
         return;
     }
     if (next_instances_queue_.has_value() && (next_rcvai_ == nullptr)) {
+        MALLOC_GUARD(malloc_guard, "Render array instances (initialize)");
         std::optional<AperiodicLagFinder> lag_finder;
         if (lag_finders_enabled()) {
             lag_finder.emplace("Render array instances (initialize): ", std::chrono::milliseconds{5});
@@ -82,6 +84,7 @@ void ArrayInstancesRenderer::render_instances(
         }
     }
     if (next_rcvai_ != nullptr) {
+        MALLOC_GUARD(malloc_guard, "Render array instances (swap)");
         std::optional<AperiodicLagFinder> lag_finder;
         if (lag_finders_enabled()) {
             lag_finder.emplace("Render array instances (swap): ", std::chrono::milliseconds{5});
@@ -114,6 +117,7 @@ void ArrayInstancesRenderer::render_instances(
     }
     lock_guard.unlock();
     {
+        MALLOC_GUARD(malloc_guard, "Render array instances (render)");
         std::optional<AperiodicLagFinder> lag_finder;
         if (lag_finders_enabled()) {
             lag_finder.emplace("Render array instances (render): ", std::chrono::milliseconds{5});

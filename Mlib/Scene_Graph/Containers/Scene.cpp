@@ -7,6 +7,7 @@
 #include <Mlib/Memory/Recursive_Deletion.hpp>
 #include <Mlib/Misc/Log.hpp>
 #include <Mlib/Os/Threads/Background_Loop.hpp>
+#include <Mlib/Os/Threads/Malloc_Map.hpp>
 #include <Mlib/Os/Threads/Throwing_Lock_Guard.hpp>
 #include <Mlib/Os/Threads/Unlock_Guard.hpp>
 #include <Mlib/Scene_Config/Scene_Graph_Config.hpp>
@@ -495,6 +496,7 @@ void Scene::render(
     const RenderedSceneDescriptor& frame_id,
     const std::function<std::function<void()>(std::function<void()>)>& run_in_background) const
 {
+    MALLOC_GUARD(malloc_guard, "Scene::render");
     std::optional<AperiodicLagFinder> lag_finder;
     if (lag_finders_enabled()) {
         lag_finder.emplace("Render: ", std::chrono::milliseconds{50});
@@ -527,6 +529,7 @@ void Scene::render(
         animation_state = animation_state_;
     }
     if (render_pass == ExternalRenderPassType::LIGHTMAP_BLACK_NODE) {
+        MALLOC_GUARD(malloc_guard, "Scene::render LIGHTMAP_BLACK_NODE");
         DanglingBaseClassRef<SceneNode> node = [this, &frame_id](){
             std::shared_lock lock{ mutex_ };
             auto res = root_nodes_.try_get(frame_id.external_render_pass.black_node_name, CURRENT_SOURCE_LOCATION);
@@ -537,6 +540,7 @@ void Scene::render(
         }();
         node->render(vp, TransformationMatrix<float, ScenePos, 3>::identity(), iv, camera_node, nullptr, lights, skidmarks, *blended, render_config, scene_graph_config, frame_id, nullptr, color_styles);
     } else if (render_pass == ExternalRenderPassType::LIGHTMAP_BLACK_MOVABLES) {
+        MALLOC_GUARD(malloc_guard, "Scene::render LIGHTMAP_BLACK_MOVABLES");
         NodeDanglingPtrs nodes{ CHUNK_SIZE };
         {
             std::shared_lock lock{ mutex_ };
@@ -551,6 +555,7 @@ void Scene::render(
             node->render(vp, TransformationMatrix<float, ScenePos, 3>::identity(), iv, camera_node, {}, lights, skidmarks, *blended, render_config, scene_graph_config, frame_id, nullptr, color_styles);
         }
     } else {
+        MALLOC_GUARD(malloc_guard, "Scene::render DEFAULT");
         if (!frame_id.external_render_pass.black_node_name->empty()) {
             throw std::runtime_error("Expected empty black node");
         }
@@ -563,6 +568,7 @@ void Scene::render(
         NodeDanglingPtrs local_root_nodes{ CHUNK_SIZE };
         NodeRawPtrs local_static_root_nodes{ CHUNK_SIZE };
         {
+            MALLOC_GUARD(malloc_guard, "Scene::render DEFAULT gather local");
             std::shared_lock lock{ mutex_ };
             visit_nodes(root_nodes_, [&](const auto& node) {
                 if (node->is_visible_for_user(frame_id.external_render_pass.observer)) {
@@ -585,6 +591,7 @@ void Scene::render(
             node->append_lights_to_queue(TransformationMatrix<float, ScenePos, 3>::identity(), lights);
         }
         if (any(frame_id.external_render_pass.pass & ExternalRenderPassType::IMPOSTER_OR_ZOOM_NODE)) {
+            MALLOC_GUARD(malloc_guard, "Scene::render DEFAULT IMPOSTER_OR_ZOOM_NODE");
             if (frame_id.external_render_pass.singular_node == nullptr) {
                 throw std::runtime_error("Imposter or singular node pass without a singular node");
             }
@@ -594,6 +601,7 @@ void Scene::render(
             auto parent_mvp = dot2d(vp, parent_m.affine());
             frame_id.external_render_pass.singular_node->render(parent_mvp, parent_m, iv, camera_node, {}, lights, skidmarks, *blended, render_config, scene_graph_config, frame_id, nullptr, color_styles);
         } else {
+            MALLOC_GUARD(malloc_guard, "Scene::render DEFAULT no IMPOSTER_OR_ZOOM_NODE");
             if (dynamic_lights_ != nullptr) {
                 dynamic_lights_->set_time(frame_id.external_render_pass.time);
             }
@@ -605,6 +613,7 @@ void Scene::render(
                 node->render(vp, TransformationMatrix<float, ScenePos, 3>::identity(), iv, nullptr, dynamic_lights_, lights, skidmarks, *blended, render_config, scene_graph_config, frame_id, nullptr, color_styles);
             }
             {
+                MALLOC_GUARD(malloc_guard, "Scene::render imposters");
                 NodeDanglingPtrs cached_imposter_nodes{ CHUNK_SIZE };
                 {
                     std::shared_lock lock{ mutex_ };
@@ -620,6 +629,7 @@ void Scene::render(
                 }
             }
             {
+                MALLOC_GUARD(malloc_guard, "Scene::render FG/BG");
                 bool is_foreground_task = any(render_pass & (ExternalRenderPassType::IS_GLOBAL_MASK | ExternalRenderPassType::BILLBOARD_SCENE_MASK));
                 bool is_background_task = any(render_pass & ExternalRenderPassType::STANDARD_MASK);
                 if (is_foreground_task && is_background_task) {
@@ -632,6 +642,7 @@ void Scene::render(
 
                 std::shared_ptr<IAggregateRenderer> large_aggregate_renderer = IAggregateRenderer::large_aggregate_renderer();
                 if (large_aggregate_renderer != nullptr) {
+                    MALLOC_GUARD(malloc_guard, "Scene::render large_aggregate_renderer");
                     LOG_INFO("Scene::render large_aggregate_renderer");
                     auto large_aggregate_renderer_update_func = [&](TaskLocation task_location){
                         // copy "vp" and "scene_graph_config"
@@ -683,6 +694,7 @@ void Scene::render(
 
                 std::shared_ptr<IInstancesRenderer> large_instances_renderer = IInstancesRenderer::large_instances_renderer();
                 if (large_instances_renderer != nullptr) {
+                    MALLOC_GUARD(malloc_guard, "Scene::render large_instances_renderer");
                     LOG_INFO("Scene::render large_instances_renderer");
                     auto large_instances_renderer_update_func = [&](TaskLocation task_location){
                         // copy "vp" and "scene_graph_config"
@@ -727,6 +739,7 @@ void Scene::render(
                     large_instances_renderer->render_instances(vp, iv, lights, skidmarks, scene_graph_config, render_config, frame_id);
                 }
                 {
+                    MALLOC_GUARD(malloc_guard, "Scene::render blended early");
                     std::optional<AperiodicLagFinder> lag_finder;
                     if (lag_finders_enabled()) {
                         lag_finder.emplace("blended early: ", std::chrono::milliseconds{5});
@@ -743,6 +756,7 @@ void Scene::render(
                 }
                 std::shared_ptr<IAggregateRenderer> small_sorted_aggregate_renderer = IAggregateRenderer::small_sorted_aggregate_renderer();
                 if (small_sorted_aggregate_renderer != nullptr) {
+                    MALLOC_GUARD(malloc_guard, "Scene::render small_sorted_aggregate_renderer");
                     // Contains continuous alpha and must therefore be rendered late.
                     LOG_INFO("Scene::render small_sorted_aggregate_renderer");
                     auto small_sorted_aggregate_renderer_update_func = [&](TaskLocation task_location){
@@ -802,6 +816,7 @@ void Scene::render(
                 LOG_INFO("Scene::render instances_renderer");
                 std::shared_ptr<IInstancesRenderers> small_sorted_instances_renderers = IInstancesRenderer::small_sorted_instances_renderers();
                 if (small_sorted_instances_renderers != nullptr) {
+                    MALLOC_GUARD(malloc_guard, (preload ? "Scene::render small_sorted_instances_renderers [preload]" : "Scene::render small_sorted_instances_renderers"));
                     if (any(frame_id.external_render_pass.pass & ExternalRenderPassType::STANDARD_MASK) ||
                         any(frame_id.external_render_pass.pass & ExternalRenderPassType::IS_GLOBAL_MASK) ||
                         (render_pass == ExternalRenderPassType::BILLBOARD_SCENE))
@@ -836,21 +851,27 @@ void Scene::render(
                                 SmallInstancesQueues instances_queues{
                                     main_render_pass,
                                     black_render_passes};
-                                for (const auto& node : nodes) {
-                                    node->append_small_instances_to_queue(
-                                        vp, TransformationMatrix<float, ScenePos, 3>::identity(), iv, iv.t, PositionAndYAngleAndBillboardId{fixed_zeros<CompressedScenePos, 3>(), BILLBOARD_ID_NONE, 0.f},
-                                        instances_queues, scene_graph_config, external_render_pass_type);
+                                {
+                                    MALLOC_GUARD(malloc_guard, "Scene::render append_small_instances_to_queue");
+                                    for (const auto& node : nodes) {
+                                        node->append_small_instances_to_queue(
+                                            vp, TransformationMatrix<float, ScenePos, 3>::identity(), iv, iv.t, PositionAndYAngleAndBillboardId{fixed_zeros<CompressedScenePos, 3>(), BILLBOARD_ID_NONE, 0.f},
+                                            instances_queues, scene_graph_config, external_render_pass_type);
+                                    }
                                 }
-                                auto sorted_instances = instances_queues.sorted_instances();
-                                small_sorted_instances_renderers->get_instances_renderer(external_render_pass_type)->update_instances(
-                                    iv.t,
-                                    std::move(sorted_instances.at(main_render_pass)),
-                                    task_location);
-                                for (auto rp : black_render_passes) {
-                                    small_sorted_instances_renderers->get_instances_renderer(rp)->update_instances(
+                                {
+                                    MALLOC_GUARD(malloc_guard, "Scene::render get_instances_renderer");
+                                    auto sorted_instances = instances_queues.sorted_instances();
+                                    small_sorted_instances_renderers->get_instances_renderer(external_render_pass_type)->update_instances(
                                         iv.t,
-                                        std::move(sorted_instances.at(rp)),
+                                        std::move(sorted_instances.at(main_render_pass)),
                                         task_location);
+                                    for (auto rp : black_render_passes) {
+                                        small_sorted_instances_renderers->get_instances_renderer(rp)->update_instances(
+                                            iv.t,
+                                            std::move(sorted_instances.at(rp)),
+                                            task_location);
+                                    }
                                 }
                                 // lerr() << this << " " << external_render_pass_type << ", elapsed time: " << std::chrono::duration<float>(std::chrono::steady_clock::now() - start_time).count() << " s";
                             });
@@ -873,16 +894,20 @@ void Scene::render(
                             }
                         }
                     }
-                    std::optional<AperiodicLagFinder> lag_finder;
-                    if (lag_finders_enabled()) {
-                        lag_finder.emplace("Small sorted instances: ", std::chrono::milliseconds{5});
+                    {
+                        MALLOC_GUARD(malloc_guard, "Scene::render render small instances");
+                        std::optional<AperiodicLagFinder> lag_finder;
+                        if (lag_finders_enabled()) {
+                            lag_finder.emplace("Small sorted instances: ", std::chrono::milliseconds{5});
+                        }
+                        small_sorted_instances_renderers->get_instances_renderer(frame_id.external_render_pass.pass)->render_instances(
+                            vp, iv, lights, skidmarks, scene_graph_config, render_config, frame_id);
                     }
-                    small_sorted_instances_renderers->get_instances_renderer(frame_id.external_render_pass.pass)->render_instances(
-                        vp, iv, lights, skidmarks, scene_graph_config, render_config, frame_id);
                 }
             }
             if (any(frame_id.external_render_pass.pass & ExternalRenderPassType::STANDARD_MASK)) {
                 if (trail_renderer_ != nullptr) {
+                    MALLOC_GUARD(malloc_guard, "Scene::render trail");
                     trail_renderer_->render(
                         vp,
                         iv,
@@ -896,6 +921,7 @@ void Scene::render(
         }
     }
     {
+        MALLOC_GUARD(malloc_guard, "Scene::render blended late");
         std::optional<AperiodicLagFinder> lag_finder;
         if (lag_finders_enabled()) {
             lag_finder.emplace("blended late: ", std::chrono::milliseconds{5});
