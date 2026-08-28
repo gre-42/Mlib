@@ -2,6 +2,7 @@
 #include <Mlib/OpenGL/Instance_Handles/Buffer_Background_Copy.hpp>
 #include <Mlib/Scene_Graph/Instances/Sorted_Vertex_Array_Instances.hpp>
 #include <cstdint>
+#include <optional>
 #include <vector>
 
 namespace Mlib {
@@ -26,10 +27,14 @@ public:
     size_t size() const;
 
 private:
+    void allocate(
+        const SortedLookatInstances& instances,
+        size_t capacity);
+    void allocate(const SortedLookatInstances& instances);
     void wait_and_assign(const SortedLookatInstances& instances);
     size_t capacity_;
     using Position = FixedArray<float, 3>;
-    mutable BufferForegroundCopy buffer_;
+    mutable std::optional<BufferForegroundCopy> buffer_;
     std::vector<Position> positions_;
 };
 

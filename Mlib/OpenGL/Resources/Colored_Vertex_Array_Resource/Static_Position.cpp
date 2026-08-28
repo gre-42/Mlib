@@ -11,32 +11,47 @@ StaticPosition::StaticPosition(
     size_t capacity)
     // : buffer_{(capacity != 0) ? TaskLocation::BACKGROUND : TaskLocation::FOREGROUND}
 {
-    if (capacity != 0) {
-        capacity_ = capacity;
-        positions_.reserve(capacity);
-        buffer_.reserve<Position>(capacity);
-        wait_and_assign(instances);
-        buffer_.substitute(positions_);
+    if (capacity > instances.size()) {
+        allocate(instances, capacity);
     } else {
-        capacity_ = instances.size();
-        positions_.reserve(instances.size());
-        wait_and_assign(instances);
-        buffer_.init(positions_);
+        allocate(instances);
     }
 }
 
 StaticPosition::~StaticPosition() = default;
 
-void StaticPosition::update(const SortedLookatInstances& instances) {
+void StaticPosition::allocate(
+    const SortedLookatInstances& instances,
+    size_t capacity)
+{
+    capacity_ = capacity;
+    positions_.reserve(capacity);
+    buffer_.emplace().reserve<Position>(capacity);
     wait_and_assign(instances);
-    buffer_.substitute(positions_);
+    buffer_->substitute(positions_);
+}
+
+void StaticPosition::allocate(const SortedLookatInstances& instances) {
+    capacity_ = instances.size();
+    positions_.reserve(instances.size());
+    wait_and_assign(instances);
+    buffer_.emplace().init(positions_);
+}
+
+void StaticPosition::update(const SortedLookatInstances& instances) {
+    if (instances.size() > capacity_) {
+        allocate(instances, instances.size() * 2);
+    } else {
+        wait_and_assign(instances);
+        buffer_->substitute(positions_);
+    }
 }
 
 void StaticPosition::wait_and_assign(const SortedLookatInstances& instances) {
     if (instances.size() > capacity_) {
         throw std::runtime_error("StaticPosition::wait_and_assign capacity exceeded");
     }
-    buffer_.wait();
+    buffer_->wait();
     positions_.clear();
     for (const PositionAndBillboardId<float>& m : instances) {
         positions_.push_back(m.position);
@@ -44,22 +59,22 @@ void StaticPosition::wait_and_assign(const SortedLookatInstances& instances) {
 }
 
 bool StaticPosition::copy_in_progress() const {
-    return buffer_.copy_in_progress();
+    return buffer_->copy_in_progress();
 }
 
 void StaticPosition::wait() const {
-    buffer_.wait();
+    buffer_->wait();
 }
 
 void StaticPosition::bind(GLuint attribute_index) const {
     CHK(glEnableVertexAttribArray(attribute_index));
-    buffer_.bind();
+    buffer_->bind();
     CHK(glVertexAttribPointer(attribute_index, 3, GL_FLOAT, GL_FALSE, sizeof(Position), nullptr));
     CHK(glVertexAttribDivisor(attribute_index, 1));
 }
 
 BackgroundCopyState StaticPosition::state() const {
-    return buffer_.state();
+    return buffer_->state();
 }
 
 size_t StaticPosition::size() const {

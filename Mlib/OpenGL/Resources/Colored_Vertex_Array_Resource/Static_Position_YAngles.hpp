@@ -2,6 +2,7 @@
 #include <Mlib/OpenGL/Instance_Handles/Buffer_Background_Copy.hpp>
 #include <Mlib/Scene_Graph/Instances/Sorted_Vertex_Array_Instances.hpp>
 #include <cstdint>
+#include <optional>
 #include <vector>
 
 namespace Mlib {
@@ -15,7 +16,7 @@ class StaticPositionYAngles {
     StaticPositionYAngles &operator=(const StaticPositionYAngles &) = delete;
 
 public:
-    explicit StaticPositionYAngles(
+    StaticPositionYAngles(
         const SortedYAngleInstances& instances,
         size_t capacity);
     ~StaticPositionYAngles();
@@ -27,10 +28,14 @@ public:
     size_t size() const;
 
 private:
+    void allocate(
+        const SortedYAngleInstances& instances,
+        size_t capacity);
+    void allocate(const SortedYAngleInstances& instances);
     void wait_and_assign(const SortedYAngleInstances& instances);
     size_t capacity_;
     using Position = FixedArray<float, 4>;
-    mutable BufferForegroundCopy buffer_;
+    mutable std::optional<BufferForegroundCopy> buffer_;
     std::vector<Position> positions_;
 };
 

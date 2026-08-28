@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/OpenGL/Instance_Handles/Buffer_Background_Copy.hpp>
 #include <Mlib/Scene_Graph/Instances/Sorted_Vertex_Array_Instances.hpp>
+#include <optional>
 #include <vector>
 
 namespace Mlib {
@@ -26,10 +27,14 @@ public:
     size_t size() const;
 
 private:
+    void allocate(
+        const SortedTransformedInstances& instances,
+        size_t capacity);
+    void allocate(const SortedTransformedInstances& instances);
     void wait_and_assign(const SortedTransformedInstances& instances);
     size_t capacity_;
     using RotationQuaternion = Quaternion<float>;
-    mutable BufferForegroundCopy buffer_;
+    mutable std::optional<BufferForegroundCopy> buffer_;
     std::vector<RotationQuaternion> quaternions_;
 };
 

@@ -2,6 +2,7 @@
 #include <Mlib/Geometry/Billboard_Id.hpp>
 #include <Mlib/OpenGL/Instance_Handles/Buffer_Background_Copy.hpp>
 #include <Mlib/Scene_Graph/Instances/Sorted_Vertex_Array_Instances.hpp>
+#include <optional>
 #include <vector>
 
 namespace Mlib {
@@ -27,12 +28,16 @@ public:
     size_t size() const;
 
 private:
+    void allocate(
+        const SortedVertexArrayInstances& instances,
+        size_t capacity);
+    void allocate(const SortedVertexArrayInstances& instances);
     void wait_and_assign(const SortedVertexArrayInstances& instances);
     TransformationMode transformation_mode_;
     BillboardId num_billboard_atlas_components_;
     size_t capacity_;
+    mutable std::optional<BufferForegroundCopy> buffer_;
     std::vector<BillboardId> billboard_ids_;
-    mutable BufferForegroundCopy buffer_;
 };
 
 }
