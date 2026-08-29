@@ -40,6 +40,7 @@ void StaticPosition::allocate(const SortedLookatInstances& instances) {
 
 void StaticPosition::update(const SortedLookatInstances& instances) {
     if (instances.size() > capacity_) {
+        buffer_->wait();
         allocate(instances, instances.size() * 2);
     } else {
         wait_and_assign(instances);
@@ -51,7 +52,9 @@ void StaticPosition::wait_and_assign(const SortedLookatInstances& instances) {
     if (instances.size() > capacity_) {
         throw std::runtime_error("StaticPosition::wait_and_assign capacity exceeded");
     }
-    buffer_->wait();
+    if (buffer_.has_value()) {
+        buffer_->wait();
+    }
     positions_.clear();
     for (const PositionAndBillboardId<float>& m : instances) {
         positions_.push_back(m.position);

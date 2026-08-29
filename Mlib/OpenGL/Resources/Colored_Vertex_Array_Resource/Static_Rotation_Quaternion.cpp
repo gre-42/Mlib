@@ -41,6 +41,7 @@ void StaticRotationQuaternion::allocate(const SortedTransformedInstances& instan
 
 void StaticRotationQuaternion::update(const SortedTransformedInstances& instances) {
     if (instances.size() > capacity_) {
+        buffer_->wait();
         allocate(instances, instances.size() * 2);
     } else {
         wait_and_assign(instances);
@@ -52,7 +53,9 @@ void StaticRotationQuaternion::wait_and_assign(const SortedTransformedInstances&
     if (instances.size() > capacity_) {
         throw std::runtime_error("StaticRotationQuaternion::assign capacity exceeded");
     }
-    buffer_->wait();
+    if (buffer_.has_value()) {
+        buffer_->wait();
+    }
     quaternions_.clear();
     for (const TransformationMatrix<float, float, 3>& m : instances) {
         quaternions_.push_back(RotationQuaternion{ m.R });
