@@ -996,7 +996,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen = [](
                 sstr << "}" << std::endl;
             }
         }
-        if (mip2_normal) {
+        if (mip2_normal && has_normalmap) {
             for (const auto& [i, t] : enumerate(textures_color)) {
                 if (t->texture_descriptor.normal.filename.empty()) {
                     continue;
@@ -2394,7 +2394,6 @@ void OpenGLVertexArrayRenderer::render(
             .alpha_distances = alpha_distances_common,
             .fog_distances = fog_distances,
             .fog_emissive = make_orderable(fog_emissive),
-            .has_normalmap = has_normalmap(meta.material.textures_color),
             .ntextures_color = texture_ids_color.size(),
             .ntextures_normal = texture_ids_normal.size(),
             .ntextures_alpha = texture_ids_alpha.size(),

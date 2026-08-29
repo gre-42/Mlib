@@ -14,7 +14,6 @@ void RenderProgramIdentifier::print(std::ostream& ostr) const {
     ostr << "alpha_distances: " << alpha_distances << '\n';
     ostr << "fog_distances: " << fog_distances << '\n';
     ostr << "fog_emissive: " << fog_emissive << '\n';
-    ostr << "has_normalmap: " << (int)has_normalmap << '\n';
     ostr << "ntextures_color: " << ntextures_color << '\n';
     ostr << "ntextures_normal: " << ntextures_normal << '\n';
     ostr << "ntextures_alpha: " << ntextures_alpha << '\n';
