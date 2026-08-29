@@ -35,9 +35,13 @@
 
 using namespace Mlib;
 
+// Raw pointers can only be used for non-deletable nodes.
+// The garbage collector relies on a correct reference counter.
 using NodeRawPtrs = ChunkedArray<std::list<std::vector<const SceneNode*>>>;
 using NodeDanglingPtrs = ChunkedArray<std::list<std::vector<DanglingBaseClassPtr<const SceneNode>>>>;
+// Used only in Scene::move, which is executed by the deleter thread.
 using NodeItemPtrs = ChunkedArray<std::list<std::vector<const RootNodes::DefaultNodeMapIteratedType*>>>;
+using NodeKeyPtrs = ChunkedArray<std::list<std::vector<const VariableAndHash<std::string>*>>>;
 static const size_t CHUNK_SIZE = 1000;
 
 Scene::Scene(
@@ -968,9 +972,15 @@ void Scene::move(float dt, const SceneTime& time) {
                 throw std::runtime_error("Error moving node \"" + *it->key + "\": " + e.what());
             }
         }
-        for (const auto& it : nodes) {
-            if ((it->value->shutdown_phase() != ShutdownPhase::FINISHED) && it->value->to_be_deleted(time)) {
-                delete_root_node(it->key);
+        {
+            NodeKeyPtrs nodes_to_be_deleted{ CHUNK_SIZE };
+            for (const auto& it : nodes) {
+                if ((it->value->shutdown_phase() != ShutdownPhase::FINISHED) && it->value->to_be_deleted(time)) {
+                    nodes_to_be_deleted.emplace_back(&it->key);
+                }
+            }
+            for (const auto& k : nodes_to_be_deleted) {
+                try_delete_root_node(*k);
             }
         }
     }
