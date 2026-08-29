@@ -11,47 +11,32 @@ StaticPositionYAngles::StaticPositionYAngles(
     size_t capacity)
     // : buffer_{(capacity != 0) ? TaskLocation::BACKGROUND : TaskLocation::FOREGROUND}
 {
-    if (capacity > instances.size()) {
-        allocate(instances, capacity);
+    if (capacity != 0) {
+        capacity_ = capacity;
+        positions_.reserve(capacity);
+        buffer_.reserve<Position>(capacity);
+        wait_and_assign(instances);
+        buffer_.substitute(positions_);
     } else {
-        allocate(instances);
+        capacity_ = instances.size();
+        positions_.reserve(instances.size());
+        wait_and_assign(instances);
+        buffer_.init(positions_);
     }
 }
 
 StaticPositionYAngles::~StaticPositionYAngles() = default;
 
-void StaticPositionYAngles::allocate(
-    const SortedYAngleInstances& instances,
-    size_t capacity)
-{
-    capacity_ = capacity;
-    positions_.reserve(capacity);
-    buffer_.emplace().reserve<Position>(capacity);
-    wait_and_assign(instances);
-    buffer_->substitute(positions_);
-}
-
-void StaticPositionYAngles::allocate(const SortedYAngleInstances& instances) {
-    capacity_ = instances.size();
-    positions_.reserve(instances.size());
-    wait_and_assign(instances);
-    buffer_.emplace().init(positions_);
-}
-
 void StaticPositionYAngles::update(const SortedYAngleInstances& instances) {
-    if (instances.size() > capacity_) {
-        allocate(instances, instances.size() * 2);
-    } else {
-        wait_and_assign(instances);
-        buffer_->substitute(positions_);
-    }
+    wait_and_assign(instances);
+    buffer_.substitute(positions_);
 }
 
 void StaticPositionYAngles::wait_and_assign(const SortedYAngleInstances& instances) {
     if (instances.size() > capacity_) {
         throw std::runtime_error("StaticPositionYAngles::wait_and_assign capacity exceeded");
     }
-    buffer_->wait();
+    buffer_.wait();
     positions_.clear();
     for (const PositionAndYAngleAndBillboardId<float>& m : instances) {
         positions_.emplace_back(
@@ -63,22 +48,22 @@ void StaticPositionYAngles::wait_and_assign(const SortedYAngleInstances& instanc
 }
 
 bool StaticPositionYAngles::copy_in_progress() const {
-    return buffer_->copy_in_progress();
+    return buffer_.copy_in_progress();
 }
 
 void StaticPositionYAngles::wait() const {
-    buffer_->wait();
+    buffer_.wait();
 }
 
 void StaticPositionYAngles::bind(GLuint attribute_index) const {
     CHK(glEnableVertexAttribArray(attribute_index));
-    buffer_->bind();
+    buffer_.bind();
     CHK(glVertexAttribPointer(attribute_index, 4, GL_FLOAT, GL_FALSE, sizeof(Position), nullptr));
     CHK(glVertexAttribDivisor(attribute_index, 1));
 }
 
 BackgroundCopyState StaticPositionYAngles::state() const {
-    return buffer_->state();
+    return buffer_.state();
 }
 
 size_t StaticPositionYAngles::size() const {

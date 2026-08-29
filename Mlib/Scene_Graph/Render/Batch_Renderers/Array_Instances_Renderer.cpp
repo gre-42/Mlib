@@ -19,7 +19,7 @@
 
 using namespace Mlib;
 
-static const size_t INITIAL_NINSTANCES = 1'000;
+static const size_t MAX_INSTANCES = 40'000;
 
 ArrayInstancesRenderer::ArrayInstancesRenderer(
     const IGpuObjectFactory& gpu_object_factory,
@@ -77,7 +77,7 @@ void ArrayInstancesRenderer::render_instances(
         }
         next_rcvai_ = std::make_unique<std::list<std::shared_ptr<IGpuVertexArray>>>();
         for (const auto& instances : *next_instances_queue_) {
-            auto r = next_rcvai_->emplace_back(next_rcva_->get(instances.vertex_data, instances.instances, INITIAL_NINSTANCES, TaskLocation::BACKGROUND));
+            auto r = next_rcvai_->emplace_back(next_rcva_->get(instances.vertex_data, instances.instances, MAX_INSTANCES, TaskLocation::BACKGROUND));
             if (!r->initialized()) {
                 r->initialize();
             }

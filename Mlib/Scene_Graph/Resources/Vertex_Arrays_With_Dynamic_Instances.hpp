@@ -19,7 +19,7 @@ public:
     std::shared_ptr<IGpuVertexArray> get(
         const std::shared_ptr<IGpuVertexData>& data,
         const SortedVertexArrayInstances& host_instances,
-        size_t initial_ninstances,
+        size_t max_instances,
         TaskLocation task_location);
     void clear();
 private:

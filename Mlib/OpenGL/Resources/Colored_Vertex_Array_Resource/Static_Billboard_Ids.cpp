@@ -16,81 +16,40 @@ StaticBillboardIds::StaticBillboardIds(
     , num_billboard_atlas_components_{ num_billboard_atlas_components }
     // , buffer_{(capacity != 0) ? TaskLocation::BACKGROUND : TaskLocation::FOREGROUND}
 {
-    size_t size = [&](){
-        switch (transformation_mode_) {
-        case TransformationMode::ALL:
-            throw std::runtime_error("TransformationMode::ALL does not support billboards");
-        case TransformationMode::POSITION_FLAT:
-        case TransformationMode::POSITION_LOOKAT:
-        case TransformationMode::POSITION:
-            return instances.lookat.size();
-        case TransformationMode::POSITION_YANGLE:
-            return instances.yangle.size();
-        }
-        throw std::runtime_error("Unsupported transformation mode for instances");
-    }();
-    if (capacity > size) {
-        allocate(instances, capacity);
+    if (capacity != 0) {
+        capacity_ = capacity;
+        billboard_ids_.reserve(capacity);
+        buffer_.reserve<BillboardId>(capacity);
+        wait_and_assign(instances);
+        buffer_.substitute(billboard_ids_);
     } else {
-        allocate(instances);
+        [&](){
+            switch (transformation_mode_) {
+            case TransformationMode::ALL:
+                throw std::runtime_error("TransformationMode::ALL does not support billboards");
+            case TransformationMode::POSITION_FLAT:
+            case TransformationMode::POSITION_LOOKAT:
+            case TransformationMode::POSITION:
+                capacity_ = instances.lookat.size();
+                billboard_ids_.reserve(instances.lookat.size());
+                return;
+            case TransformationMode::POSITION_YANGLE:
+                capacity_ = instances.yangle.size();
+                billboard_ids_.reserve(instances.yangle.size());
+                return;
+            }
+            throw std::runtime_error("Unsupported transformation mode for instances");
+        }();
+        wait_and_assign(instances);
+        buffer_.init(billboard_ids_);
     }
 }
 
 StaticBillboardIds::~StaticBillboardIds() = default;
 
-void StaticBillboardIds::allocate(
-    const SortedVertexArrayInstances& instances,
-    size_t capacity)
-{
-    capacity_ = capacity;
-    billboard_ids_.reserve(capacity);
-    buffer_.emplace().reserve<BillboardId>(capacity);
-    wait_and_assign(instances);
-    buffer_->substitute(billboard_ids_);
-}
-
-void StaticBillboardIds::allocate(const SortedVertexArrayInstances& instances) {
-    [&](){
-        switch (transformation_mode_) {
-        case TransformationMode::ALL:
-            throw std::runtime_error("TransformationMode::ALL does not support billboards");
-        case TransformationMode::POSITION_FLAT:
-        case TransformationMode::POSITION_LOOKAT:
-        case TransformationMode::POSITION:
-            capacity_ = instances.lookat.size();
-            billboard_ids_.reserve(instances.lookat.size());
-            return;
-        case TransformationMode::POSITION_YANGLE:
-            capacity_ = instances.yangle.size();
-            billboard_ids_.reserve(instances.yangle.size());
-            return;
-        }
-        throw std::runtime_error("Unsupported transformation mode for instances");
-    }();
-    wait_and_assign(instances);
-    buffer_.emplace().init(billboard_ids_);
-}
-
 void StaticBillboardIds::update(const SortedVertexArrayInstances& instances) {
-    size_t size = [&](){
-        switch (transformation_mode_) {
-        case TransformationMode::ALL:
-            throw std::runtime_error("TransformationMode::ALL does not support billboards");
-        case TransformationMode::POSITION_FLAT:
-        case TransformationMode::POSITION_LOOKAT:
-        case TransformationMode::POSITION:
-            return instances.lookat.size();
-        case TransformationMode::POSITION_YANGLE:
-            return instances.yangle.size();
-        }
-        throw std::runtime_error("Unsupported transformation mode for instances");
-    }();
-    if (size > capacity_) {
-        allocate(instances, size * 2);
-    } else {
-        wait_and_assign(instances);
-        buffer_->substitute(billboard_ids_);
-    }
+    wait_and_assign(instances);
+    buffer_.substitute(billboard_ids_);
 }
 
 void StaticBillboardIds::wait_and_assign(const SortedVertexArrayInstances& instances) {
@@ -101,7 +60,7 @@ void StaticBillboardIds::wait_and_assign(const SortedVertexArrayInstances& insta
         if (instances.size() > capacity_) {
             throw std::runtime_error("StaticBillboardIds::wait_and_assign capacity exceeded");
         }
-        buffer_->wait();
+        buffer_.wait();
         billboard_ids_.clear();
         for (const auto& m : instances) {
             if (m.billboard_id >= num_billboard_atlas_components_) {
@@ -129,11 +88,11 @@ bool StaticBillboardIds::copy_in_progress() const {
     if (num_billboard_atlas_components_ == 0) {
         return false;
     }
-    return buffer_->copy_in_progress();
+    return buffer_.copy_in_progress();
 }
 
 void StaticBillboardIds::wait() const {
-    buffer_->wait();
+    buffer_.wait();
 }
 
 void StaticBillboardIds::bind(GLuint attribute_index) const
@@ -142,14 +101,14 @@ void StaticBillboardIds::bind(GLuint attribute_index) const
         throw std::runtime_error("Attempt to bind zero billboard-IDs");
     }
     CHK(glEnableVertexAttribArray(attribute_index));
-    buffer_->bind();
+    buffer_.bind();
     static_assert(std::is_same_v<BillboardId, uint16_t>);
     CHK(glVertexAttribIPointer(attribute_index, 1, GL_UNSIGNED_SHORT, sizeof(BillboardId), nullptr));
     CHK(glVertexAttribDivisor(attribute_index, 1));
 }
 
 BackgroundCopyState StaticBillboardIds::state() const {
-    return buffer_->state();
+    return buffer_.state();
 }
 
 size_t StaticBillboardIds::size() const {
