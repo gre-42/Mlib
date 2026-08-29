@@ -22,7 +22,7 @@ public:
         BillboardId num_billboard_atlas_components,
         const std::string& name);
     virtual ~StaticInstanceBuffers() override;
-    virtual void update(const SortedVertexArrayInstances& instances) override;
+    [[nodiscard]] virtual BufferUpdateResult update(const SortedVertexArrayInstances& host_instances) override;
     virtual bool copy_in_progress() const override;
     virtual void wait() const override;
     virtual void bind(
@@ -40,6 +40,7 @@ private:
     std::optional<StaticBillboardIds> billboard_ids_;
     BillboardId num_billboard_atlas_components_;
     TransformationMode transformation_mode_;
+    size_t capacity_;
 };
 
 }

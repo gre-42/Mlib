@@ -195,7 +195,7 @@ bool DynamicInstanceBuffers::tmp_empty() const {
     return tmp_num_instances_ == 0;
 }
 
-void DynamicInstanceBuffers::update(const SortedVertexArrayInstances& host_instances) {
+BufferUpdateResult DynamicInstanceBuffers::update(const SortedVertexArrayInstances& host_instances) {
     throw std::runtime_error("DynamicInstanceBuffers cannot update array instances");
 }
 

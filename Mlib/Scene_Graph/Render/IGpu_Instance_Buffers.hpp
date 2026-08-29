@@ -6,11 +6,15 @@
 namespace Mlib {
 
 struct SortedVertexArrayInstances;
+enum class BufferUpdateResult {
+    SUCCESS,
+    CAPACITY_EXCEEDED
+};
 
 class IGpuInstanceBuffers {
 public:
     virtual ~IGpuInstanceBuffers() = default;
-    virtual void update(const SortedVertexArrayInstances& host_instances) = 0;
+    [[nodiscard]] virtual BufferUpdateResult update(const SortedVertexArrayInstances& host_instances) = 0;
     virtual bool copy_in_progress() const = 0;
     virtual void wait() const = 0;
     virtual void bind(

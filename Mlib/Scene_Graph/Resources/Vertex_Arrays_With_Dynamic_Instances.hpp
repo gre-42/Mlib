@@ -1,7 +1,7 @@
 #pragma once
 #include <Mlib/Geometry/Billboard_Id.hpp>
 #include <Mlib/Map/Unordered_Map.hpp>
-#include <Mlib/Os/Threads/Safe_Atomic_Shared_Mutex.hpp>
+#include <Mlib/Os/Threads/Fast_Mutex.hpp>
 #include <memory>
 
 namespace Mlib {
@@ -25,7 +25,7 @@ public:
 private:
     const IGpuObjectFactory& gpu_object_factory_;
     UnorderedMap<std::shared_ptr<IGpuVertexData>, std::shared_ptr<IGpuVertexArray>> vertex_arrays_;
-    mutable SafeAtomicSharedMutex mutex_;
+    mutable FastMutex mutex_;
 
 };
 

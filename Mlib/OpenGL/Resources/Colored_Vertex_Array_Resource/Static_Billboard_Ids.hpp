@@ -31,8 +31,8 @@ private:
     TransformationMode transformation_mode_;
     BillboardId num_billboard_atlas_components_;
     size_t capacity_;
-    std::vector<BillboardId> billboard_ids_;
     mutable BufferForegroundCopy buffer_;
+    std::vector<BillboardId> billboard_ids_;
 };
 
 }

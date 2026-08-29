@@ -1,8 +1,10 @@
 #include "Vertex_Arrays_With_Dynamic_Instances.hpp"
+#include <Mlib/Geometry/Mesh/Mesh_Meta.hpp>
+#include <Mlib/Os/Threads/Throwing_Lock_Guard.hpp>
 #include <Mlib/Scene_Graph/Render/IGpu_Instance_Buffers.hpp>
 #include <Mlib/Scene_Graph/Render/IGpu_Object_Factory.hpp>
 #include <Mlib/Scene_Graph/Render/IGpu_Vertex_Array.hpp>
-#include <shared_mutex>
+#include <Mlib/Scene_Graph/Render/IGpu_Vertex_Data.hpp>
 
 using namespace Mlib;
 
@@ -19,26 +21,30 @@ std::shared_ptr<IGpuVertexArray> VertexArraysWithDynamicInstances::get(
     size_t max_instances,
     TaskLocation task_location)
 {
-    const auto& res = [&]() -> const std::shared_ptr<IGpuVertexArray>&
-    {
-        {
-            std::shared_lock lock{ mutex_ };
-            if (auto it = vertex_arrays_.try_get(data); it != nullptr) {
-                return *it;
-            }
+    ThrowingLockGuard lock{ mutex_ };
+    std::shared_ptr<IGpuVertexArray> result;
+    if (auto it = vertex_arrays_.try_get(data); it != nullptr) {
+        result = *it;
+    }
+    if (result != nullptr) {
+        if (result->instances()->update(host_instances) == BufferUpdateResult::CAPACITY_EXCEEDED) {
+            vertex_arrays_.remove(data);
+            result = nullptr;
+            const auto& meta = data->mesh_meta();
+            max_instances = host_instances.size(meta.material.transformation_mode) * 2;
         }
-        std::scoped_lock lock{ mutex_ };
-        if (auto it = vertex_arrays_.try_get(data); it != nullptr) {
-            return *it;
-        }
+    }
+    if (result == nullptr) {
         if (vertex_arrays_.size() > 10'000) {
             throw std::runtime_error("Vertex data array is full, please do not dynamically instantiate vertex data");
         }
-        return vertex_arrays_.add(data, gpu_object_factory_.create_vertex_array_with_dynamic_instances(
-            data, max_instances, task_location));
-    }();
-    res->instances()->update(host_instances);
-    return res;
+        result = vertex_arrays_.add(data, gpu_object_factory_.create_vertex_array_with_dynamic_instances(
+                data, max_instances, task_location));
+    }
+    if (result->instances()->update(host_instances) == BufferUpdateResult::CAPACITY_EXCEEDED) {
+        verbose_abort("Buffer capacity unexpectedly exceeded");
+    }
+    return result;
 }
 
 void VertexArraysWithDynamicInstances::clear() {

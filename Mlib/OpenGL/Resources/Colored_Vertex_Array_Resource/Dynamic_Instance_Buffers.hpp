@@ -58,7 +58,7 @@ public:
     void update(
         std::chrono::steady_clock::time_point time,
         RenderTimeId time_id);
-    virtual void update(const SortedVertexArrayInstances& host_instances) override;
+    [[nodiscard]] virtual BufferUpdateResult update(const SortedVertexArrayInstances& host_instances) override;
     virtual bool copy_in_progress() const override;
     virtual void wait() const override;
     virtual void bind(

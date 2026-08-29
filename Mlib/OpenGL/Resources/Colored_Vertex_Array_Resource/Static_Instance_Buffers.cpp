@@ -1,5 +1,6 @@
 #include "Static_Instance_Buffers.hpp"
 #include <Mlib/Geometry/Material/Transformation_Mode.hpp>
+#include <Mlib/Scene_Graph/Instances/Billboard_Container.hpp>
 #include <stdexcept>
 #include <unordered_set>
 
@@ -13,6 +14,7 @@ StaticInstanceBuffers::StaticInstanceBuffers(
     const std::string& name)
     : num_billboard_atlas_components_{ num_billboard_atlas_components }
     , transformation_mode_{ transformation_mode }
+    , capacity_{ capacity }
 {
     [&](){
         switch (transformation_mode_) {
@@ -108,24 +110,31 @@ void StaticInstanceBuffers::wait() const {
     }
 }
 
-void StaticInstanceBuffers::update(const SortedVertexArrayInstances& instances) {
+BufferUpdateResult StaticInstanceBuffers::update(const SortedVertexArrayInstances& host_instances) {
     if (transformation_mode_ == TransformationMode::POSITION_YANGLE) {
-        position_yangles_.value().update(instances.yangle);
+        if (host_instances.yangle.size() > capacity_) {
+            return BufferUpdateResult::CAPACITY_EXCEEDED;
+        }
+        position_yangles_.value().update(host_instances.yangle);
     } else if ((transformation_mode_ == TransformationMode::POSITION) ||
                (transformation_mode_ == TransformationMode::POSITION_FLAT) ||
                (transformation_mode_ == TransformationMode::POSITION_LOOKAT) ||
                (transformation_mode_ == TransformationMode::ALL))
     {
-        position_.value().update(instances.lookat);
+        if (host_instances.lookat.size() > capacity_) {
+            return BufferUpdateResult::CAPACITY_EXCEEDED;
+        }
+        position_.value().update(host_instances.lookat);
     } else {
         throw std::runtime_error("Unsupported transformation mode for instances");
     }
     if (transformation_mode_ == TransformationMode::ALL) {
-        rotation_quaternion_.value().update(instances.transformed);
+        rotation_quaternion_.value().update(host_instances.transformed);
     }
     if (num_billboard_atlas_components_ != 0) {
-        billboard_ids_.value().update(instances);
+        billboard_ids_.value().update(host_instances);
     }
+    return BufferUpdateResult::SUCCESS;
 }
 
 void StaticInstanceBuffers::bind(
