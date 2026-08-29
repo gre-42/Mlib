@@ -86,7 +86,6 @@ void StaticBillboardIds::update(const SortedVertexArrayInstances& instances) {
         throw std::runtime_error("Unsupported transformation mode for instances");
     }();
     if (size > capacity_) {
-        buffer_->wait();
         allocate(instances, size * 2);
     } else {
         wait_and_assign(instances);
@@ -102,9 +101,7 @@ void StaticBillboardIds::wait_and_assign(const SortedVertexArrayInstances& insta
         if (instances.size() > capacity_) {
             throw std::runtime_error("StaticBillboardIds::wait_and_assign capacity exceeded");
         }
-        if (buffer_.has_value()) {
-            buffer_->wait();
-        }
+        buffer_->wait();
         billboard_ids_.clear();
         for (const auto& m : instances) {
             if (m.billboard_id >= num_billboard_atlas_components_) {

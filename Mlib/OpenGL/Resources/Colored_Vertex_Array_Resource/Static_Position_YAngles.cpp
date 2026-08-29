@@ -40,7 +40,6 @@ void StaticPositionYAngles::allocate(const SortedYAngleInstances& instances) {
 
 void StaticPositionYAngles::update(const SortedYAngleInstances& instances) {
     if (instances.size() > capacity_) {
-        buffer_->wait();
         allocate(instances, instances.size() * 2);
     } else {
         wait_and_assign(instances);
@@ -52,9 +51,7 @@ void StaticPositionYAngles::wait_and_assign(const SortedYAngleInstances& instanc
     if (instances.size() > capacity_) {
         throw std::runtime_error("StaticPositionYAngles::wait_and_assign capacity exceeded");
     }
-    if (buffer_.has_value()) {
-        buffer_->wait();
-    }
+    buffer_->wait();
     positions_.clear();
     for (const PositionAndYAngleAndBillboardId<float>& m : instances) {
         positions_.emplace_back(
