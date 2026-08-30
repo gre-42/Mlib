@@ -93,7 +93,7 @@ static nlohmann::json eval_recursion(
             throw std::runtime_error("Received empty substitution variable");
         }
         if (s[0] == '$') {
-            static const auto query_re = seq(adot, NSL, sl, NSL, sl, NSL, opt(seq(sl, NSL)), Mlib::eof);
+            static const auto query_re = seq(adot, NSL, sl, NSL, sl, NSL, opt(seq(sl, NSL)), TemplateRegex::eof);
             SMatch<5> match;
             if (!regex_match(s, match, query_re)) {
                 throw std::runtime_error("Could not parse asset path: \"" + std::string{ s } + '"');
@@ -121,7 +121,7 @@ static nlohmann::json eval_recursion(
             }
         } else if (s[0] == '/') {
             // static const DECLARE_REGEX(query_re, "^.([^/]+)/([^/]+)$");
-            static const auto query_re = seq(adot, NSL, sl, NSL, Mlib::eof);
+            static const auto query_re = seq(adot, NSL, sl, NSL, TemplateRegex::eof);
             SMatch<3> match;
             if (!regex_match(s, match, query_re)) {
                 throw std::runtime_error("Could not parse asset path: \"" + std::string{ s } + '"');
@@ -153,7 +153,7 @@ static nlohmann::json eval_recursion(
             chr(' '),
             group(plus(no_chr(')'))),
             chr(')'),
-            Mlib::eof);
+            TemplateRegex::eof);
         if (SMatch<4> match; regex_match(expression, match, comparison_re)) {
             std::string_view left = match[1].str();
             auto op = match[2].parallel_index;
@@ -213,7 +213,7 @@ static nlohmann::json eval_recursion(
     {
         // static const DECLARE_REGEX(string_re, "^'(.*)'$");
         // // Disabled this code because "group(star(adot))" is greedy and eats away the trailing "'"
-        // static const auto string_re = seq(chr('\''), group(star(adot)), chr('\''), Mlib::eof);
+        // static const auto string_re = seq(chr('\''), group(star(adot)), chr('\''), TemplateRegex::eof);
         // if (SMatch<2> match; regex_match(expression, match, string_re)) {
         //     return match[1].str();
         // }
@@ -223,21 +223,21 @@ static nlohmann::json eval_recursion(
     }
     {
         // static const DECLARE_REGEX(int_re, "^(\\d+)$");
-        static const auto int_re = seq(plus(digit), Mlib::eof);
+        static const auto int_re = seq(plus(digit), TemplateRegex::eof);
         if (SMatch<1> match; regex_match(expression, match, int_re)) {
             return safe_stoi(match[0].str());
         }
     }
     {
         // static const DECLARE_REGEX(float_re, "^(\\d+\\.\\d+f)$");
-        static const auto float_re = seq(plus(digit), chr('.'), plus(digit), chr('f'), Mlib::eof);
+        static const auto float_re = seq(plus(digit), chr('.'), plus(digit), chr('f'), TemplateRegex::eof);
         if (SMatch<1> match; regex_match(expression, match, float_re)) {
             return safe_stof(match[0].str());
         }
     }
     {
         // static const DECLARE_REGEX(double_re, "^(\\d+\\.\\d+)$");
-        static const auto double_re = seq(plus(digit), chr('.'), plus(digit), Mlib::eof);
+        static const auto double_re = seq(plus(digit), chr('.'), plus(digit), TemplateRegex::eof);
         if (SMatch<1> match; regex_match(expression, match, double_re)) {
             return safe_stod(match[0].str());
         }
@@ -246,7 +246,7 @@ static nlohmann::json eval_recursion(
         nlohmann::json var;
         if ((expression.length() > 1) && (expression[1] == '%')) {
             // static const DECLARE_REGEX(query_re, "^..([^/]+)/([^/]+)/(\\w+)$");
-            static const auto query_re = seq(adot, adot, NSL, sl, NSL, sl, NSL, opt(seq(sl, NSL)), Mlib::eof);
+            static const auto query_re = seq(adot, adot, NSL, sl, NSL, sl, NSL, opt(seq(sl, NSL)), TemplateRegex::eof);
             SMatch<5> match;
             if (!regex_match(expression, match, query_re)) {
                 throw std::runtime_error("Could not parse asset path: \"" + std::string{ expression } + '"');
@@ -277,7 +277,7 @@ static nlohmann::json eval_recursion(
             }
         } else if ((expression.length() > 1) && (expression[1] == '/')) {
             // static const DECLARE_REGEX(query_re, "^..([^/]+)/([^/]+)$");
-            static const auto query_re = seq(adot, adot, NSL, sl, NSL, Mlib::eof);
+            static const auto query_re = seq(adot, adot, NSL, sl, NSL, TemplateRegex::eof);
             SMatch<3> match;
             if (!regex_match(expression, match, query_re)) {
                 throw std::runtime_error("Could not parse asset path: \"" + std::string{ expression } + '"');
