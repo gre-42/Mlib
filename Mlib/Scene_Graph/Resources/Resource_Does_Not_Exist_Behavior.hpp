@@ -1,5 +1,7 @@
 #pragma once
 
+#undef IGNORE
+
 namespace Mlib {
 
 enum class ResourceDoesNotExistBehavior {
