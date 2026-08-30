@@ -4,6 +4,7 @@
 #include <Mlib/Geometry/Mesh/Cleanup/Remove_Degenerate_Triangles.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>
+#include <Mlib/Os/Threads/Malloc_Map.hpp>
 
 using namespace Mlib;
 
@@ -22,6 +23,7 @@ void CleanupMesh<TPos>::operator () (
     const TPos& min_vertex_distance,
     bool modulo_uv)
 {
+    MALLOC_GUARD(malloc_guard, "cleanup mesh");
     if ((min_vertex_distance != (TPos)0.f) &&
         ((cva.meta.morphology.physics_material & min_distance_material_filter) == min_distance_material_filter))
     {

@@ -1001,6 +1001,7 @@ void Scene::append_physics_to_queue(
     std::list<std::pair<TransformationMatrix<float, ScenePos, 3>, std::shared_ptr<ColoredVertexArray<float>>>>& float_queue,
     std::list<std::pair<TransformationMatrix<float, ScenePos, 3>, std::shared_ptr<ColoredVertexArray<CompressedScenePos>>>>& double_queue) const
 {
+    MALLOC_GUARD(malloc_guard, "Scene::append_physics_to_queue");
     LOG_FUNCTION("Scene::append_physics_to_queue");
     std::shared_lock lock{ mutex_ };
     auto zero = PositionAndYAngleAndBillboardId{fixed_zeros<CompressedScenePos, 3>(), BILLBOARD_ID_NONE, 0.f};
