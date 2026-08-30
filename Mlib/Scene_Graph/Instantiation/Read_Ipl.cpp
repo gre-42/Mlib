@@ -77,7 +77,7 @@ std::list<InstanceInformation<ScenePos>> Mlib::read_ipl(
         }
         static const auto c = str(", ");
         static const auto n = group(plus(CharPredicate{[](char c){return c != ',';}}));
-        static const auto reg = seq(n, c, n, c, n, c, n, c, n, c, n, c, n, c, n, c, n, c, n, c, n, c, n, eof);
+        static const auto reg = seq(n, c, n, c, n, c, n, c, n, c, n, c, n, c, n, c, n, c, n, c, n, c, n, TemplateRegex::eof);
 
         SMatch<13> match;
         if (!regex_match(line, match, reg)) {

@@ -84,9 +84,9 @@ void DrawDistanceDb::add_ide(const std::string& filename) {
         if (section == "objs") {
             // From: https://gtamods.com/wiki/OBJS
             // Type 1
-            static const auto reg6 = seq(n, c, n, c, n, c, n, c, n, c, n, eof);
-            static const auto reg7 = seq(n, c, n, c, n, c, n, c, n, c, n, c, n, eof);
-            static const auto reg8 = seq(n, c, n, c, n, c, n, c, n, c, n, c, n, c, n, eof);
+            static const auto reg6 = seq(n, c, n, c, n, c, n, c, n, c, n, TemplateRegex::eof);
+            static const auto reg7 = seq(n, c, n, c, n, c, n, c, n, c, n, c, n, TemplateRegex::eof);
+            static const auto reg8 = seq(n, c, n, c, n, c, n, c, n, c, n, c, n, c, n, TemplateRegex::eof);
 
             if (SMatch<7> match6; regex_match(line, match6, reg6)) {
                 if (match6[4].str() != "1") {
@@ -115,7 +115,7 @@ void DrawDistanceDb::add_ide(const std::string& filename) {
         } else if (section == "tobj") {
             // From: https://gtamods.com/wiki/OBJS
             // Type 1
-            static const auto reg8 = seq(n, c, n, c, n, c, n, c, n, c, n, c, n, c, n, eof);
+            static const auto reg8 = seq(n, c, n, c, n, c, n, c, n, c, n, c, n, c, n, TemplateRegex::eof);
 
             if (SMatch<9> match8; regex_match(line, match8, reg8)) {
                 if (match8[4].str() != "1") {
