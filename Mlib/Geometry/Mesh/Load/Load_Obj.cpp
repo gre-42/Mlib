@@ -119,36 +119,36 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_obj(
         Sp, sp,
         Sp, sp,
         Sp, opt(seq(sp, Sp, sp, Sp, sp, Sp, sp, Sp)),
-        eof);
+        TemplateRegex::eof);
     static const auto vertex_normal_reg = seq(
         str("vn"), sp,
         Sp, sp,
         Sp, sp,
-        Sp, eof);
+        Sp, TemplateRegex::eof);
     static const auto line_reg = seq(
         chr('l'), sp,
         dp, sp,
-        dp, ss, eof);
+        dp, ss, TemplateRegex::eof);
     static const auto face3_reg = seq(
         chr('f'), sp,
         dp, opt(seq(sl, ds, opt(seq(sl, dp)))), sp,
         dp, opt(seq(sl, ds, opt(seq(sl, dp)))), sp,
-        dp, opt(seq(sl, ds, opt(seq(sl, dp)))), ss, eof);
+        dp, opt(seq(sl, ds, opt(seq(sl, dp)))), ss, TemplateRegex::eof);
     static const auto face4_reg = seq(
         chr('f'), sp,
         dp, opt(seq(sl, ds, opt(seq(sl, dp)))), sp,
         dp, opt(seq(sl, ds, opt(seq(sl, dp)))), sp,
         dp, opt(seq(sl, ds, opt(seq(sl, dp)))), sp,
-        dp, opt(seq(sl, ds, opt(seq(sl, dp)))), ss, eof);
+        dp, opt(seq(sl, ds, opt(seq(sl, dp)))), ss, TemplateRegex::eof);
     static const auto vertex_uv_texture_reg = seq(
         str("vt"), sp,
         Sp, sp,
-        Sp, eof);
+        Sp, TemplateRegex::eof);
     static const auto vertex_uvw_texture_reg = seq(
         str("vt"), sp,
         Sp, sp,
         Sp, sp,
-        Sp, eof);
+        Sp, TemplateRegex::eof);
     static const auto comment_reg = chr('#');
     static const auto mtllib_reg = seq(str("mtllib"), sp, Dotp);
     static const auto usemtl_reg = seq(str("usemtl"), sp, Dotp);
