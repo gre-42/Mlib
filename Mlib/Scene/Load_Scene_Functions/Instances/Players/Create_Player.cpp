@@ -26,7 +26,7 @@ using namespace Mlib;
 
 CreatePlayer::CreatePlayer(
     PhysicsScene& physics_scene,
-    const MacroLineExecutor& macro_line_executor) 
+    const MacroLineExecutor& macro_line_executor)
     : LoadPhysicsSceneInstanceFunction{ physics_scene, &macro_line_executor }
 {}
 

@@ -1,4 +1,5 @@
 #include "Vertex_Arrays_With_Dynamic_Instances.hpp"
+#include <Mlib/Geometry/Material/Transformation_Mode.hpp>
 #include <Mlib/Geometry/Mesh/Mesh_Meta.hpp>
 #include <Mlib/Os/Threads/Throwing_Lock_Guard.hpp>
 #include <Mlib/Scene_Graph/Render/IGpu_Instance_Buffers.hpp>
@@ -33,6 +34,9 @@ std::shared_ptr<IGpuVertexArray> VertexArraysWithDynamicInstances::get(
             const auto& meta = data->mesh_meta();
             max_instances = host_instances.size(meta.material.transformation_mode) * 2;
         }
+    } else {
+        const auto& meta = data->mesh_meta();
+        max_instances = std::max(max_instances, host_instances.size(meta.material.transformation_mode));
     }
     if (result == nullptr) {
         if (vertex_arrays_.size() > 10'000) {
@@ -42,7 +46,10 @@ std::shared_ptr<IGpuVertexArray> VertexArraysWithDynamicInstances::get(
                 data, max_instances, task_location));
     }
     if (result->instances()->update(host_instances) == BufferUpdateResult::CAPACITY_EXCEEDED) {
-        verbose_abort("Buffer capacity unexpectedly exceeded");
+        const auto& meta = data->mesh_meta();
+        verbose_abort(
+            "Buffer capacity unexpectedly exceeded. Transformation mode: " +
+            transformation_mode_to_string(meta.material.transformation_mode));
     }
     return result;
 }
