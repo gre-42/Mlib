@@ -33,9 +33,9 @@ void Mlib::set_shader_platform(ShaderPlatform platform) {
 std::string Mlib::vertex_shader_preamble() {
     switch (platform_) {
     case ShaderPlatform::ANDROID:
-        return "#version 300 es\n";
+        return "#version 310 es\n";
     case ShaderPlatform::EMSCRIPTEN:
-        return "#version 300 es\n";
+        return "#version 310 es\n";
     case ShaderPlatform::DESKTOP:
         return "#version 460 core\n";
     }
@@ -45,10 +45,10 @@ std::string Mlib::vertex_shader_preamble() {
 std::string Mlib::fragment_shader_preamble() {
     switch (platform_) {
     case ShaderPlatform::ANDROID:
-        return "#version 300 es\n"
+        return "#version 310 es\n"
                "precision mediump float;\nprecision mediump int;\n";
     case ShaderPlatform::EMSCRIPTEN:
-        return "#version 300 es\n"
+        return "#version 310 es\n"
                "precision mediump float;\nprecision mediump int;\n";
     case ShaderPlatform::DESKTOP:
         return "#version 460 core\n";
