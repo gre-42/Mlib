@@ -1056,9 +1056,11 @@ static GenShaderText fragment_shader_text_textured_rgb_gen = [](
         }
     }
     if (any(interior_texture_set)) {
-        sstr << "const int WINDOWS_X = 4;" << std::endl;
-        sstr << "const int WINDOWS_Y = 3;" << std::endl;
-        sstr << "float window_lights[WINDOWS_Y * WINDOWS_X] = {" << std::endl;
+        const int WINDOWS_X = 4;
+        const int WINDOWS_Y = 3;
+        sstr << "const int WINDOWS_X = " << WINDOWS_X << ";" << std::endl;
+        sstr << "const int WINDOWS_Y = " << WINDOWS_Y << ";" << std::endl;
+        sstr << "float window_lights[" << (WINDOWS_Y * WINDOWS_X) << "] = {" << std::endl;
         sstr << "    0.5, 1.0, 1.0, 1.0," << std::endl;
         sstr << "    0.5, 0.5, 1.0, 0.5," << std::endl;
         sstr << "    1.0, 1.0, 1.0, 0.5};" << std::endl;
