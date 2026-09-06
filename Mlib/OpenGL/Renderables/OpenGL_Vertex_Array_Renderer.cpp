@@ -1058,10 +1058,10 @@ static GenShaderText fragment_shader_text_textured_rgb_gen = [](
     if (any(interior_texture_set)) {
         sstr << "const int WINDOWS_X = 4;" << std::endl;
         sstr << "const int WINDOWS_Y = 3;" << std::endl;
-        sstr << "float window_lights[WINDOWS_Y][WINDOWS_X] = {" << std::endl;
-        sstr << "    { 0.5, 1.0, 1.0, 1.0 }," << std::endl;
-        sstr << "    { 0.5, 0.5, 1.0, 0.5 }," << std::endl;
-        sstr << "    { 1.0, 1.0, 1.0, 0.5 }};" << std::endl;
+        sstr << "float window_lights[WINDOWS_Y * WINDOWS_X] = {" << std::endl;
+        sstr << "    0.5, 1.0, 1.0, 1.0," << std::endl;
+        sstr << "    0.5, 0.5, 1.0, 0.5," << std::endl;
+        sstr << "    1.0, 1.0, 1.0, 0.5};" << std::endl;
         sstr << "bool is_in_interior(mat3 TBN, float alpha_fac) {" << std::endl;
         if (!orthographic) {
             sstr << "    vec3 viewDir = normalize(viewPos - FragPos);" << std::endl;
@@ -1143,7 +1143,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen = [](
         sstr << "    frag_color = texture(texture_interior[2 * best_axis + int(best_sign)], best_uv);" << std::endl;
 #endif
         sstr << "    ivec2 id_bottom = ivec2(fid_bottom);" << std::endl;
-        sstr << "    frag_color.rgb *= window_lights[id_bottom.y % WINDOWS_Y][id_bottom.x % WINDOWS_X];" << std::endl;
+        sstr << "    frag_color.rgb *= window_lights[(id_bottom.y % WINDOWS_Y) * WINDOWS_X + (id_bottom.x % WINDOWS_X)];" << std::endl;
         if (any(interior_texture_set & InteriorTextureSet::BACK_SPECULAR)) {
             if (!has_reflection_map) {
                 throw std::runtime_error("Back specular texture requires reflection map");
