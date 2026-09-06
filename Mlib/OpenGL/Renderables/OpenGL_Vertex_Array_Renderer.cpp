@@ -1058,12 +1058,13 @@ static GenShaderText fragment_shader_text_textured_rgb_gen = [](
     if (any(interior_texture_set)) {
         const int WINDOWS_X = 4;
         const int WINDOWS_Y = 3;
+        const int WINDOWS_N = WINDOWS_Y * WINDOWS_X;
         sstr << "const int WINDOWS_X = " << WINDOWS_X << ";" << std::endl;
         sstr << "const int WINDOWS_Y = " << WINDOWS_Y << ";" << std::endl;
-        sstr << "float window_lights[" << (WINDOWS_Y * WINDOWS_X) << "] = {" << std::endl;
+        sstr << "float window_lights[" << WINDOWS_N << "] = float[" << WINDOWS_N << "](" << std::endl;
         sstr << "    0.5, 1.0, 1.0, 1.0," << std::endl;
         sstr << "    0.5, 0.5, 1.0, 0.5," << std::endl;
-        sstr << "    1.0, 1.0, 1.0, 0.5};" << std::endl;
+        sstr << "    1.0, 1.0, 1.0, 0.5);" << std::endl;
         sstr << "bool is_in_interior(mat3 TBN, float alpha_fac) {" << std::endl;
         if (!orthographic) {
             sstr << "    vec3 viewDir = normalize(viewPos - FragPos);" << std::endl;
