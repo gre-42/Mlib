@@ -26,6 +26,9 @@ void ColorStyle::insert(const ColorStyle& other) {
     if (other.reflection_strength != -1.f) {
         this->reflection_strength = other.reflection_strength;
     }
+    for (const auto& [key, value] : other.window_lights_ambient) {
+        this->window_lights_ambient[key] = value;
+    }
     for (const auto& [key, value] : other.reflection_maps) {
         this->reflection_maps[key] = value;
     }
@@ -57,6 +60,10 @@ ColorStyle& ColorStyle::compute_hash() {
         fresnel_ambient,
         fresnel,
         reflection_strength);
+    hasher.combine(window_lights_ambient.size());
+    for (const auto& [k, v] : window_lights_ambient) {
+        hasher.combine(k, v.array());
+    }
     hasher.combine(reflection_maps.size());
     for (const auto& [k, v] : reflection_maps) {
         hasher.combine(k, v);

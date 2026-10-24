@@ -27,8 +27,9 @@ struct ColorStyle {
         .max = -1.f,
         .exponent = -1.f
     };
-    std::unordered_map<VariableAndHash<std::string>, VariableAndHash<std::string>> reflection_maps;
     float reflection_strength = 1.f;
+    std::unordered_map<VariableAndHash<std::string>, EOrderableFixedArray<float, 2>> window_lights_ambient;
+    std::unordered_map<VariableAndHash<std::string>, VariableAndHash<std::string>> reflection_maps;
     mutable FastMutex parameter_mutex_;
     CachedHash hash_;
     mutable FastMutex hash_mutex_;

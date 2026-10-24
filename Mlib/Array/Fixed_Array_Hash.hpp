@@ -17,6 +17,14 @@ std::size_t fixed_array_hash(const FixedArray<TData, tshape...>& s) noexcept
 }
 
 template<>
+struct std::hash<Mlib::FixedArray<float, 2>>
+{
+    std::size_t operator()(const Mlib::FixedArray<float, 2>& s) const noexcept {
+        return Mlib::fixed_array_hash(s);
+    }
+};
+
+template<>
 struct std::hash<Mlib::FixedArray<float, 3>>
 {
     std::size_t operator()(const Mlib::FixedArray<float, 3>& s) const noexcept {

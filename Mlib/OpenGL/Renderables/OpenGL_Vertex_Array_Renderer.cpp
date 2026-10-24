@@ -792,6 +792,9 @@ static GenShaderText fragment_shader_text_textured_rgb_gen = [](
     if (!reflectance.all_equal(0.f) || any(interior_texture_set & InteriorTextureSet::ANY_SPECULAR)) {
         sstr << "uniform mat3 R;" << std::endl;
     }
+    if (any(interior_texture_set)) {
+        sstr << "uniform vec2 window_light_ambient;" << std::endl;
+    }
     if (!textures_color.empty()) {
         auto cont = any(texture_layer_properties & TextureLayerProperties::CONTINUOUS);
         auto disc = any(texture_layer_properties & TextureLayerProperties::DISCRETE);
@@ -1057,14 +1060,21 @@ static GenShaderText fragment_shader_text_textured_rgb_gen = [](
     }
     if (any(interior_texture_set)) {
         const int WINDOWS_X = 4;
-        const int WINDOWS_Y = 3;
+        const int WINDOWS_Y = 10;
         const int WINDOWS_N = WINDOWS_Y * WINDOWS_X;
         sstr << "const int WINDOWS_X = " << WINDOWS_X << ";" << std::endl;
         sstr << "const int WINDOWS_Y = " << WINDOWS_Y << ";" << std::endl;
-        sstr << "float window_lights[" << WINDOWS_N << "] = float[" << WINDOWS_N << "](" << std::endl;
-        sstr << "    0.5, 1.0, 1.0, 1.0," << std::endl;
-        sstr << "    0.5, 0.5, 1.0, 0.5," << std::endl;
-        sstr << "    1.0, 1.0, 1.0, 0.5);" << std::endl;
+        sstr << "int window_lights[" << WINDOWS_N << "] = int[" << WINDOWS_N << "](" << std::endl;
+        sstr << "    0, 1, 1, 1," << std::endl;
+        sstr << "    0, 0, 1, 0," << std::endl;
+        sstr << "    0, 1, 1, 0," << std::endl;
+        sstr << "    1, 1, 1, 1," << std::endl;
+        sstr << "    0, 1, 1, 0," << std::endl;
+        sstr << "    0, 0, 1, 0," << std::endl;
+        sstr << "    0, 1, 0, 0," << std::endl;
+        sstr << "    0, 0, 0, 0," << std::endl;
+        sstr << "    0, 0, 1, 1," << std::endl;
+        sstr << "    1, 1, 1, 0);" << std::endl;
         sstr << "bool is_in_interior(mat3 TBN, float alpha_fac) {" << std::endl;
         if (!orthographic) {
             sstr << "    vec3 viewDir = normalize(viewPos - FragPos);" << std::endl;
@@ -1146,7 +1156,8 @@ static GenShaderText fragment_shader_text_textured_rgb_gen = [](
         sstr << "    frag_color = texture(texture_interior[2 * best_axis + int(best_sign)], best_uv);" << std::endl;
 #endif
         sstr << "    ivec2 id_bottom = ivec2(fid_bottom);" << std::endl;
-        sstr << "    frag_color.rgb *= window_lights[(id_bottom.y % WINDOWS_Y) * WINDOWS_X + (id_bottom.x % WINDOWS_X)];" << std::endl;
+        sstr << "    int window_light = window_lights[(id_bottom.y % WINDOWS_Y) * WINDOWS_X + (id_bottom.x % WINDOWS_X)];" << std::endl;
+        sstr << "    frag_color.rgb *= (window_light == 0) ? window_light_ambient[0] : window_light_ambient[1];" << std::endl;
         if (any(interior_texture_set & InteriorTextureSet::BACK_SPECULAR)) {
             if (!has_reflection_map) {
                 throw std::runtime_error("Back specular texture requires reflection map");
@@ -2492,6 +2503,23 @@ void OpenGLVertexArrayRenderer::render(
     LOG_INFO("RenderableColoredVertexArray::render_cva glUseProgram");
     rp.use();
     LOG_INFO("RenderableColoredVertexArray::render_cva mvp");
+    if (any(interior_texture_set)) {
+        if (color_style == nullptr) {
+            throw std::runtime_error("cva \"" + meta.name.full_name() + "\": Material with interior texture has no style");
+        }
+        auto it = color_style->window_lights_ambient.find(meta.material.interior_textures.window_light_ambient);
+        if (it == color_style->window_lights_ambient.end()) {
+            throw std::runtime_error(
+                "cva \"" + meta.name.full_name() + "\": Could not find ambient window lights map \""
+                + *meta.material.interior_textures.window_light_ambient
+                + "\" in style with keys:"
+                + join(", ", color_style->window_lights_ambient, [](const auto& s){return *s.first;}));
+        }
+        if (any(it->second.array() < 0.f)) {
+            throw std::runtime_error("cva \"" + meta.name.full_name() + "\": Material with interior texture has invalid ambient window light");
+        }
+        CHK(glUniform2fv(rp.window_light_ambient_location, 1, it->second.flat_begin()));
+    }
     CHK(glUniformMatrix4fv(rp.mvp_location, 1, GL_TRUE, mvp.casted<float>().flat_begin()));
     if (meta.material.number_of_frames != 1) {
         float uv_offset_u;
@@ -3193,6 +3221,11 @@ const ColoredRenderProgram& OpenGLVertexArrayRenderer::get_render_program(
             rp->r_location = rp->get_uniform_location("R");
         } else {
             rp->r_location = -1;
+        }
+        if (any(id.interior_texture_set)) {
+            rp->window_light_ambient_location = rp->get_uniform_location("window_light_ambient");
+        } else {
+            rp->window_light_ambient_location = -1;
         }
         {
             bool light_dir_required = !id.diffuse.all_equal(0) || !id.specular.all_equal(0);

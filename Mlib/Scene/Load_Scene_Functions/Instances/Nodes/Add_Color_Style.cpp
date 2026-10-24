@@ -19,6 +19,7 @@ DECLARE_ARGUMENT(node);
 DECLARE_ARGUMENT(ambient);
 DECLARE_ARGUMENT(diffuse);
 DECLARE_ARGUMENT(specular);
+DECLARE_ARGUMENT(window_lights_ambient);
 DECLARE_ARGUMENT(reflection_strength);
 DECLARE_ARGUMENT(reflection_maps);
 }
@@ -30,6 +31,11 @@ AddColorStyle::AddColorStyle(PhysicsScene& physics_scene)
 void AddColorStyle::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     args.arguments.validate(KnownArgs::options);
+    using WindowLightsAmbient = junordered_map<VariableAndHash<std::string>, EOrderableFixedArray<float, 2>>;
+    WindowLightsAmbient parsed_window_lights_ambient;
+    if (auto wa = args.arguments.try_at<WindowLightsAmbient>(KnownArgs::window_lights_ambient)) {
+        parsed_window_lights_ambient = *wa;
+    }
     using ReflectionMaps = junordered_map<VariableAndHash<std::string>, VariableAndHash<std::string>>;
     ReflectionMaps parsed_reflection_maps;
     if (auto rm = args.arguments.try_at<ReflectionMaps>(KnownArgs::reflection_maps)) {
@@ -48,8 +54,9 @@ void AddColorStyle::execute(const LoadSceneJsonUserFunctionArgs& args)
         .specular = args.arguments.contains(KnownArgs::specular)
             ? args.arguments.at<EOrderableFixedArray<float, 3>>(KnownArgs::specular)
             : make_orderable(fixed_full<float, 3>(-1)),
-        .reflection_maps = std::move(parsed_reflection_maps),
-        .reflection_strength = args.arguments.at<float>(KnownArgs::reflection_strength, -1.f)});
+        .reflection_strength = args.arguments.at<float>(KnownArgs::reflection_strength, -1.f),
+        .window_lights_ambient = std::move(parsed_window_lights_ambient),
+        .reflection_maps = std::move(parsed_reflection_maps)});
     if (auto node = args.arguments.try_at<VariableAndHash<std::string>>(KnownArgs::node); node.has_value()) {
         DanglingBaseClassRef<SceneNode> n = scene.get_node(*node, CURRENT_SOURCE_LOCATION);
         n->add_color_style(std::move(style));

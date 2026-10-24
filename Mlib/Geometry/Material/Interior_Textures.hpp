@@ -36,12 +36,14 @@ struct InteriorTextures {
     template <class Archive>
     void serialize(Archive& archiver) {
         SafeArchiver archive{archiver};
+        archive(window_light_ambient);
         archive(facade_edge_size);
         archive(facade_inner_size);
         archive(interior_size);
         archive(names);
         archive(set);
     }
+    VariableAndHash<std::string> window_light_ambient;
     OrderableFixedArray<float, 2> facade_edge_size{ 0.f, 0.f };
     OrderableFixedArray<float, 2> facade_inner_size{ 0.f, 0.f };
     OrderableFixedArray<float, 3> interior_size{ 0.f, 0.f, 0.f };

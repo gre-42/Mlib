@@ -20,6 +20,7 @@ DECLARE_ARGUMENT(interior);
 
 namespace InteriorArgs {
 BEGIN_ARGUMENT_LIST;
+DECLARE_ARGUMENT(window_light_ambient);
 DECLARE_ARGUMENT(facade_edge_size);
 DECLARE_ARGUMENT(facade_inner_size);
 DECLARE_ARGUMENT(interior_size);
@@ -42,6 +43,7 @@ FacadeTexture Mlib::parse_facade_texture(const JsonMacroArguments& args) {
     if (interior.has_value()) {
         const auto& i = interior.value();
         i.validate(InteriorArgs::options);
+        itx.window_light_ambient = i.at<VariableAndHash<std::string>>(InteriorArgs::window_light_ambient);
         itx.facade_edge_size = i.at<EOrderableFixedArray<float, 2>>(InteriorArgs::facade_edge_size);
         itx.facade_inner_size = i.at<EOrderableFixedArray<float, 2>>(InteriorArgs::facade_inner_size);
         itx.interior_size = i.at<EOrderableFixedArray<float, 3>>(InteriorArgs::interior_size);
