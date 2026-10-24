@@ -11,6 +11,12 @@
 
 namespace Mlib {
 
+struct WindowAmbient {
+    OrderableFixedArray<float, 2> side = uninitialized;
+    OrderableFixedArray<float, 2> back = uninitialized;
+    size_t hash() const;
+};
+
 /**
  * Don't forget to update the "insert" function when adding new fields.
  */
@@ -28,7 +34,7 @@ struct ColorStyle {
         .exponent = -1.f
     };
     float reflection_strength = 1.f;
-    std::unordered_map<VariableAndHash<std::string>, EOrderableFixedArray<float, 2>> window_lights_ambient;
+    std::unordered_map<VariableAndHash<std::string>, WindowAmbient> window_lights_ambient;
     std::unordered_map<VariableAndHash<std::string>, VariableAndHash<std::string>> reflection_maps;
     mutable FastMutex parameter_mutex_;
     CachedHash hash_;

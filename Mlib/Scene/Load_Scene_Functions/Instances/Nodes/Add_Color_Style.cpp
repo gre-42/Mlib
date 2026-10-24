@@ -10,6 +10,23 @@
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
 #include <stdexcept>
 
+namespace Mlib {
+
+namespace WindowAmbientArgs {
+BEGIN_ARGUMENT_LIST;
+DECLARE_ARGUMENT(side);
+DECLARE_ARGUMENT(back);
+}
+
+void from_json(const nlohmann::json& j, WindowAmbient& w) {
+    JsonView jv{j};
+    jv.validate(WindowAmbientArgs::options);
+    w.side = jv.at<EOrderableFixedArray<float, 2>>(WindowAmbientArgs::side);
+    w.back = jv.at<EOrderableFixedArray<float, 2>>(WindowAmbientArgs::back);
+}
+
+}
+
 using namespace Mlib;
 
 namespace KnownArgs {
@@ -31,7 +48,7 @@ AddColorStyle::AddColorStyle(PhysicsScene& physics_scene)
 void AddColorStyle::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     args.arguments.validate(KnownArgs::options);
-    using WindowLightsAmbient = junordered_map<VariableAndHash<std::string>, EOrderableFixedArray<float, 2>>;
+    using WindowLightsAmbient = junordered_map<VariableAndHash<std::string>, WindowAmbient>;
     WindowLightsAmbient parsed_window_lights_ambient;
     if (auto wa = args.arguments.try_at<WindowLightsAmbient>(KnownArgs::window_lights_ambient)) {
         parsed_window_lights_ambient = *wa;

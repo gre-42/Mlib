@@ -793,7 +793,8 @@ static GenShaderText fragment_shader_text_textured_rgb_gen = [](
         sstr << "uniform mat3 R;" << std::endl;
     }
     if (any(interior_texture_set)) {
-        sstr << "uniform vec2 window_light_ambient;" << std::endl;
+        sstr << "uniform vec2 window_light_side_ambient;" << std::endl;
+        sstr << "uniform vec2 window_light_back_ambient;" << std::endl;
     }
     if (!textures_color.empty()) {
         auto cont = any(texture_layer_properties & TextureLayerProperties::CONTINUOUS);
@@ -1157,7 +1158,11 @@ static GenShaderText fragment_shader_text_textured_rgb_gen = [](
 #endif
         sstr << "    ivec2 id_bottom = ivec2(fid_bottom);" << std::endl;
         sstr << "    int window_light = window_lights[(id_bottom.y % WINDOWS_Y) * WINDOWS_X + (id_bottom.x % WINDOWS_X)];" << std::endl;
-        sstr << "    frag_color.rgb *= (window_light == 0) ? window_light_ambient[0] : window_light_ambient[1];" << std::endl;
+        sstr << "    if (best_axis == 2) {" << std::endl;
+        sstr << "        frag_color.rgb *= (window_light == 0) ? window_light_back_ambient[0] : window_light_back_ambient[1];" << std::endl;
+        sstr << "    } else {" << std::endl;
+        sstr << "        frag_color.rgb *= (window_light == 0) ? window_light_side_ambient[0] : window_light_side_ambient[1];" << std::endl;
+        sstr << "    }" << std::endl;
         if (any(interior_texture_set & InteriorTextureSet::BACK_SPECULAR)) {
             if (!has_reflection_map) {
                 throw std::runtime_error("Back specular texture requires reflection map");
@@ -2244,7 +2249,7 @@ void OpenGLVertexArrayRenderer::render(
             throw std::runtime_error(
                 "cva \"" + meta.name.full_name() + "\": Could not find reflection map \""
                 + meta.material.reflection_map.string()
-                + "\" in style with keys:"
+                + "\" in style with keys: "
                 + join(", ", color_style->reflection_maps, [](const auto& s){return *s.first;}));
         }
         if (!it->second->empty()) {
@@ -2512,13 +2517,17 @@ void OpenGLVertexArrayRenderer::render(
             throw std::runtime_error(
                 "cva \"" + meta.name.full_name() + "\": Could not find ambient window lights map \""
                 + *meta.material.interior_textures.window_light_ambient
-                + "\" in style with keys:"
+                + "\" in style with keys: "
                 + join(", ", color_style->window_lights_ambient, [](const auto& s){return *s.first;}));
         }
-        if (any(it->second.array() < 0.f)) {
-            throw std::runtime_error("cva \"" + meta.name.full_name() + "\": Material with interior texture has invalid ambient window light");
+        if (any(it->second.side.array() < 0.f)) {
+            throw std::runtime_error("cva \"" + meta.name.full_name() + "\": Material with interior texture has invalid ambient window side light");
         }
-        CHK(glUniform2fv(rp.window_light_ambient_location, 1, it->second.flat_begin()));
+        CHK(glUniform2fv(rp.window_light_ambient_side_location, 1, it->second.side.flat_begin()));
+        if (any(it->second.back.array() < 0.f)) {
+            throw std::runtime_error("cva \"" + meta.name.full_name() + "\": Material with interior texture has invalid ambient window back light");
+        }
+        CHK(glUniform2fv(rp.window_light_ambient_back_location, 1, it->second.back.flat_begin()));
     }
     CHK(glUniformMatrix4fv(rp.mvp_location, 1, GL_TRUE, mvp.casted<float>().flat_begin()));
     if (meta.material.number_of_frames != 1) {
@@ -3223,9 +3232,11 @@ const ColoredRenderProgram& OpenGLVertexArrayRenderer::get_render_program(
             rp->r_location = -1;
         }
         if (any(id.interior_texture_set)) {
-            rp->window_light_ambient_location = rp->get_uniform_location("window_light_ambient");
+            rp->window_light_ambient_side_location = rp->get_uniform_location("window_light_side_ambient");
+            rp->window_light_ambient_back_location = rp->get_uniform_location("window_light_back_ambient");
         } else {
-            rp->window_light_ambient_location = -1;
+            rp->window_light_ambient_side_location = -1;
+            rp->window_light_ambient_back_location = -1;
         }
         {
             bool light_dir_required = !id.diffuse.all_equal(0) || !id.specular.all_equal(0);

@@ -3,6 +3,10 @@
 
 using namespace Mlib;
 
+size_t WindowAmbient::hash() const {
+    return hash_combine(side.array(), back.array());
+}
+
 void ColorStyle::insert(const ColorStyle& other) {
     std::scoped_lock lock{ parameter_mutex_ };
     if (!other.emissive.all_equal(-1.f)) {
@@ -62,7 +66,7 @@ ColorStyle& ColorStyle::compute_hash() {
         reflection_strength);
     hasher.combine(window_lights_ambient.size());
     for (const auto& [k, v] : window_lights_ambient) {
-        hasher.combine(k, v.array());
+        hasher.combine(k, v.hash());
     }
     hasher.combine(reflection_maps.size());
     for (const auto& [k, v] : reflection_maps) {
