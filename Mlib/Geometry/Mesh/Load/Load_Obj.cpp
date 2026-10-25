@@ -81,7 +81,7 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_obj(
     auto ifs_p = compressed_file.decompressed_ifstream();
     auto& ifs = *ifs_p;
     if (ifs.fail()) {
-        throw std::runtime_error("Could not open OBJ file \"" + filename + '"');
+        throw std::runtime_error("Could not open OBJ file for read: \"" + filename + '"');
     }
 
     static const auto sl = chr('/');

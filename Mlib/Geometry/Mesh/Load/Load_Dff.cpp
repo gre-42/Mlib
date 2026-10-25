@@ -1361,7 +1361,7 @@ TexDictionary Mlib::Dff::read_txd(
 {
     auto istr = create_ifstream(path, std::ios::binary);
     if (istr->fail()) {
-        throw std::runtime_error("Could not open \"" + path.string() + '"');
+        throw std::runtime_error("Could not open for read: \"" + path.string() + '"');
     }
     return read_txd(*istr, raster_factory, raster_config, verbosity);
 }

@@ -91,7 +91,7 @@ int main(int argc, char** argv) {
             if (args.has_named("--explode")) {
                 auto o = create_ofstream(*png_name, std::ios::binary);
                 if (o->fail()) {
-                    throw std::runtime_error("Could not open \"" + *png_name + '"');
+                    throw std::runtime_error("Could not open for write: \"" + *png_name + '"');
                 }
                 o->write((const char*)dest.data.data(), integral_cast<std::streamsize>(dest.data.size()));
                 o->flush();

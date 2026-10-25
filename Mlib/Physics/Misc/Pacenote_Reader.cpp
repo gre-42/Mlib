@@ -40,7 +40,7 @@ PacenoteReader::PacenoteReader(
     }
     auto ifstr = create_ifstream(filename);
     if (ifstr->fail()) {
-        throw std::runtime_error("Could not open pacenote reader file \"" + filename + '"');
+        throw std::runtime_error("Could not open pacenote reader file for read: \"" + filename + '"');
     }
     nlohmann::json j;
     *ifstr >> j;

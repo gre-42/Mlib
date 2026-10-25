@@ -12,9 +12,9 @@ TrackElementFile::TrackElementFile(
 {
     if (istr_->fail()) {
         if (filename_.empty()) {
-            throw std::runtime_error("Could not open track stream");
+            throw std::runtime_error("Could not open track stream for read");
         } else {
-            throw std::runtime_error("Could not open track reader file \"" + filename_ + '"');
+            throw std::runtime_error("Could not open track reader file for read: \"" + filename_ + '"');
         }
     }
 }

@@ -41,7 +41,7 @@ void KeyDescriptions::load(const std::string& filename)
     {
         auto f = create_ifstream(filename);
         if (f->fail()) {
-            throw std::runtime_error("Could not open file " + filename);
+            throw std::runtime_error("Could not open file for read: " + filename);
         }
         *f >> j;
         if (f->fail()) {

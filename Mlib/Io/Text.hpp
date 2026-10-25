@@ -10,7 +10,7 @@ std::list<std::string> read_lines_from_file(const std::string& filename) {
     std::list<std::string> result;
     std::ifstream ifs(filename);
     if (ifs.fail()) {
-        throw std::runtime_error("Could not open " + filename);
+        throw std::runtime_error("Could not open for read: " + filename);
     }
     while (ifs.peek() != EOF) {
         std::string line;

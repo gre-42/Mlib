@@ -29,7 +29,7 @@ std::list<InstanceInformation<ScenePos>> Mlib::read_ipl(
 {
     auto istr = create_ifstream(filename, std::ios::binary);
     if (istr->fail()) {
-        throw std::runtime_error("Could not open \"" + filename.string() + '"');
+        throw std::runtime_error("Could not open for read: \"" + filename.string() + '"');
     }
     try {
         return read_ipl(*istr, rendering_dynamics);

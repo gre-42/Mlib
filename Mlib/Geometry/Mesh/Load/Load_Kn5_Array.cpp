@@ -739,7 +739,7 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
         if (path_exists(settings_json_filename)) {
             auto f = create_ifstream(settings_json_filename);
             if (f->fail()) {
-                throw std::runtime_error("Could not open \"" + settings_json_filename.string() + '"');
+                throw std::runtime_error("Could not open for read: \"" + settings_json_filename.string() + '"');
             }
             nlohmann::json j;
             *f >> j;

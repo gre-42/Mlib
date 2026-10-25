@@ -20,7 +20,7 @@ std::vector<AudioFileSequenceItem> Mlib::load_audio_file_sequence(
 {
     auto ifs = create_ifstream(filename);
     if (ifs->fail()) {
-        throw std::runtime_error("Could not open file \"" + filename + '"');
+        throw std::runtime_error("Could not open file for read: \"" + filename + '"');
     }
     nlohmann::json j;
     *ifs >> j;

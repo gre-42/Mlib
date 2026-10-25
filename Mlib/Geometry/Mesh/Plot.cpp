@@ -323,7 +323,7 @@ void Mlib::plot_mesh_svg(
     std::ofstream ofstr{filename};
     Svg<double> svg{ ofstr, width, height };
     if (ofstr.fail()) {
-        throw std::runtime_error("Could not open file \"" + filename + '"');
+        throw std::runtime_error("Could not open file for write: \"" + filename + '"');
     }
     ofstr.precision(15);
     plot_mesh(svg, triangles, contour, highlighted_nodes, line_width);
@@ -347,7 +347,7 @@ void Mlib::plot_mesh_svg(
     std::ofstream ofstr{filename};
     Svg<double> svg{ ofstr, width, height };
     if (ofstr.fail()) {
-        throw std::runtime_error("Could not open file \"" + filename + '"');
+        throw std::runtime_error("Could not open file for write: \"" + filename + '"');
     }
     ofstr.precision(15);
     plot_mesh(svg, triangles, edges, contours, highlighted_nodes, line_width);
@@ -376,7 +376,7 @@ void Mlib::plot_mesh_svg(
     std::ofstream ofstr{ filename };
     Svg<double> svg{ ofstr, width, height };
     if (ofstr.fail()) {
-        throw std::runtime_error("Could not open file \"" + filename + '"');
+        throw std::runtime_error("Could not open file for write: \"" + filename + '"');
     }
     ofstr.precision(15);
     plot_mesh(
@@ -411,7 +411,7 @@ void Mlib::plot_mesh_svg(
     std::ofstream ofstr{ filename };
     Svg<double> svg{ ofstr, width, height };
     if (ofstr.fail()) {
-        throw std::runtime_error("Could not open file \"" + filename + '"');
+        throw std::runtime_error("Could not open file for write: \"" + filename + '"');
     }
     ofstr.precision(15);
     plot_mesh(

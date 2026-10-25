@@ -15,7 +15,7 @@ std::map<std::string, ObjMaterial> Mlib::load_mtllib(const std::string& filename
     auto ifs_p = CompressedFile{filename}.decompressed_ifstream();
     auto& ifs = *ifs_p;
     if (ifs.fail()) {
-        throw std::runtime_error("Could not open material file \"" + filename + '"');
+        throw std::runtime_error("Could not open material file for read: \"" + filename + '"');
     }
 
     static const DECLARE_REGEX(newmtl_reg, "^newmtl (.+)$");

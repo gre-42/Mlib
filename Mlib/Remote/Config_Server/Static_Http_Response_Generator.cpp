@@ -37,7 +37,7 @@ IHttpResponseGenerator::ResponseVariant StaticHttpResponseGenerator::reply(
     
     body.open(request.public_path.string().c_str(), beast::file_mode::scan, ec);
     if (ec.failed()) {
-        lerr() << "Could not open file \"" << request.public_path.string() << '"';
+        lerr() << "Could not open file for read: \"" << request.public_path.string() << '"';
         return http::status::not_found;
     }
     

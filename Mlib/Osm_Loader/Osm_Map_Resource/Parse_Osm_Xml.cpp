@@ -74,7 +74,7 @@ void Mlib::parse_osm_xml(
     auto compressed_file = CompressedFile{filename};
     auto ifs = compressed_file.decompressed_ifstream();
     if (ifs->fail()) {
-        throw std::runtime_error("Could not open OSM XML-file \"" + filename + '"');
+        throw std::runtime_error("Could not open OSM XML-file for read: \"" + filename + '"');
     }
     static const DECLARE_REGEX(node_reg, "^ +<node id=[\"'](-?\\w+)[\"'](?: action=[\"']([^\"']+)[\"'])? .*visible=[\"'](true|false)[\"'].* lat=[\"']([\\w.-]+)[\"'] lon=[\"']([\\w.-]+)[\"'].*>$");
     static const DECLARE_REGEX(node_end_reg, " +</node>");

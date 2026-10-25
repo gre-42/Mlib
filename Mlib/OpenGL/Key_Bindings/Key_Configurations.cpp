@@ -130,7 +130,7 @@ void KeyConfigurations::load(
     {
         auto f = create_ifstream(fn);
         if (f->fail()) {
-            throw std::runtime_error("Could not open file " + fn);
+            throw std::runtime_error("Could not open file for read: " + fn);
         }
         *f >> j;
         if (f->fail()) {

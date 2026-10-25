@@ -1813,7 +1813,7 @@ OsmMapResource::OsmMapResource(
     fg.update("Load OSM resource from cache");
     auto ifstr = create_ifstream(level_filename, std::ios::binary);
     if (ifstr->fail()) {
-        throw std::runtime_error("Could not open input OSM-map binary file \"" + level_filename + '"');
+        throw std::runtime_error("Could not open input OSM-map binary file for read: \"" + level_filename + '"');
     }
     {
         SerializationContextRead ctx;
@@ -1859,7 +1859,7 @@ void OsmMapResource::save_to_file(
 {
     auto ofstr = create_ofstream(filename, std::ios::binary, file_storage_type);
     if (ofstr->fail()) {
-        throw std::runtime_error("Could not open output OSM-map binary file \"" + filename + '"');
+        throw std::runtime_error("Could not open output OSM-map binary file for write: \"" + filename + '"');
     }
     {
         SerializationContextWrite ctx;

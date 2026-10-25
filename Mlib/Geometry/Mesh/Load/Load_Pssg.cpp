@@ -17,7 +17,7 @@ using namespace Mlib;
 PssgModel Mlib::load_pssg(const Utf8Path& filename, IoVerbosity verbosity) {
     auto f = create_ifstream(filename, std::ios::binary);
     if (f->fail()) {
-        throw std::runtime_error("Could not open file \"" + filename.string() + '"');
+        throw std::runtime_error("Could not open file for read: \"" + filename.string() + '"');
     }
     try {
         return load_pssg(*f, filename, std::numeric_limits<std::streamoff>::max(), verbosity);

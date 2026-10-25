@@ -126,7 +126,7 @@ std::shared_ptr<AudioBuffer> AudioBuffer::from_mp3(
     auto file_data = read_file_bytes(filename);
     mp3dec_ex_t dec;
     if (mp3dec_ex_open_buf(&dec, (uint8_t*)file_data.data(), file_data.size(), MP3D_SEEK_TO_SAMPLE) != 0) {
-        throw std::runtime_error("Could not open mp3: \"" + filename.string() + '"');
+        throw std::runtime_error("Could not open mp3 for read: \"" + filename.string() + '"');
     }
     DestructionGuard dg{[&dec](){ mp3dec_ex_close(&dec); }};
     if (dec.info.channels != 1) {

@@ -108,7 +108,7 @@ static void skip_comments(std::istream& istr) {
 
 PgmImage PgmImage::load_from_stream(std::istream& istream, const Utf8Path& name) {
     if (istream.fail()) {
-        throw std::runtime_error(name + "Could not open");
+        throw std::runtime_error(name + "Could not open for read");
     }
     PgmImage result;
     std::string header;

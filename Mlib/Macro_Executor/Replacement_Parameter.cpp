@@ -34,7 +34,7 @@ ReplacementParameterAndFilename ReplacementParameterAndFilename::from_json(const
         auto ifs_p = create_ifstream(filename);
         auto& ifs = *ifs_p;
         if (ifs.fail()) {
-            throw std::runtime_error("Could not open replacement parameter entry file \"" + filename.string() + '"');
+            throw std::runtime_error("Could not open replacement parameter entry file for read: \"" + filename.string() + '"');
         }
         ifs >> j;
         if (!ifs.eof() && ifs.fail()) {

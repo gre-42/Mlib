@@ -29,7 +29,7 @@ std::list<ReplacementParameterAndFilename> LoadAcLevel::try_load(const Utf8Path&
         {
             auto f = create_ifstream(ui_track_filename);
             if (f->fail()) {
-                throw std::runtime_error("Could not open file \"" + ui_track_filename.string() + '"');
+                throw std::runtime_error("Could not open file for read: \"" + ui_track_filename.string() + '"');
             }
             *f >> j;
             if (f->fail()) {

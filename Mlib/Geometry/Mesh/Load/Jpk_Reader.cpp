@@ -80,7 +80,7 @@ std::shared_ptr<IIStreamDictionary> JpkReader::load_from_file(
 {
     auto f = create_ifstream(filename, std::ios::binary);
     if (f->fail()) {
-        throw std::runtime_error("Could not open \"" + filename.string() + '"');
+        throw std::runtime_error("Could not open for read: \"" + filename.string() + '"');
     }
     return std::make_shared<JpkReader>(std::move(f), verbosity);
 }

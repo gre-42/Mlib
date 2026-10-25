@@ -993,7 +993,7 @@ public:
         assert(ndim() == 2);
         std::ofstream ofs(filename);
         if (ofs.fail()) {
-            throw std::runtime_error("Could not open file \"" + filename.string() + '"');
+            throw std::runtime_error("Could not open file for write: \"" + filename.string() + '"');
         }
         ofs.setf(std::ios_base::scientific);
         ofs.precision(10);
@@ -1017,7 +1017,7 @@ public:
         auto ifs_p = create_ifstream(filename);
         auto& ifs = *ifs_p;
         if (ifs.fail()) {
-            throw std::runtime_error("Could not open file \"" + filename.string() + '"');
+            throw std::runtime_error("Could not open file for read: \"" + filename.string() + '"');
         }
         std::string line;
         while(std::getline(ifs, line)) {
@@ -1048,7 +1048,7 @@ public:
     void save_binary(const Utf8Path& filename) const {
         std::ofstream ofs(filename, std::ios::binary);
         if (ofs.fail()) {
-            throw std::runtime_error("Could not open file \"" + filename.string() + '"');
+            throw std::runtime_error("Could not open file for write: \"" + filename.string() + '"');
         }
         ofs << "BinaryArray\n" << ndim();
         for (size_t i = 0; i < ndim(); ++i) {
@@ -1066,7 +1066,7 @@ public:
         auto ifs_p = create_ifstream(filename, std::ios::binary);
         auto& ifs = *ifs_p;
         if (ifs.fail()) {
-            throw std::runtime_error("Could not open file \"" + filename.string() + '"');
+            throw std::runtime_error("Could not open file for read: \"" + filename.string() + '"');
         }
         std::string first_line;
         ifs >> first_line;

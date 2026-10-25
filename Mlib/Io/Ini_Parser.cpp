@@ -9,7 +9,7 @@ using namespace Mlib;
 IniParser::IniParser(const Utf8Path& filename) {
     auto f = create_ifstream(filename);
     if (f->fail()) {
-        throw std::runtime_error("Could not open file \"" + filename.string() + '"');
+        throw std::runtime_error("Could not open file for read: \"" + filename.string() + '"');
     }
     std::map<std::string, std::string>* section = &sections_.try_emplace("default", std::map<std::string, std::string>{}).first->second;
     std::string line;

@@ -260,7 +260,7 @@ kn5Model Mlib::load_kn5(
 {
     auto binStream = create_ifstream(filename, std::ios::binary);
     if (binStream->fail()) {
-        throw std::runtime_error("Could not open file \"" + filename.string() + '"');
+        throw std::runtime_error("Could not open file for read: \"" + filename.string() + '"');
     }
     return load_kn5(*binStream, verbose, opts);
 }

@@ -28,7 +28,7 @@ void TimeGuard::write_svg(const std::thread::id& tid, const std::string& filenam
     }
     std::ofstream ostr{ filename };
     if (ostr.fail()) {
-        throw std::runtime_error("Could not open file " + filename);
+        throw std::runtime_error("Could not open file for write: " + filename);
     }
     Svg<double> svg{ ostr, 800, 600 };
     // if (false) {

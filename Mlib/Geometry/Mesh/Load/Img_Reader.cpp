@@ -40,12 +40,12 @@ std::shared_ptr<IIStreamDictionary> ImgReader::load_from_file(const std::string&
 
     auto dir = create_ifstream(dir_filename, std::ios::binary);
     if (dir->fail()) {
-        throw std::runtime_error("Could not open \"" + dir_filename + '"');
+        throw std::runtime_error("Could not open for read: \"" + dir_filename + '"');
     }
 
     auto img = create_ifstream(img_filename, std::ios::binary);
     if (img->fail()) {
-        throw std::runtime_error("Could not open \"" + img_filename + '"');
+        throw std::runtime_error("Could not open for read: \"" + img_filename + '"');
     }
     return std::make_shared<ImgReader>(*dir, std::move(img));
 }

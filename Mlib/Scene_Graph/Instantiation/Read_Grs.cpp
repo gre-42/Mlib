@@ -126,7 +126,7 @@ Model Mlib::Grs::load_grs(std::istream& istr, IoVerbosity verbosity) {
 Model Mlib::Grs::load_grs(const Utf8Path& filename, IoVerbosity verbosity) {
     auto f = create_ifstream(filename, std::ios::binary);
     if (f->fail()) {
-        throw std::runtime_error("Could not open \"" + filename.string() + '"');
+        throw std::runtime_error("Could not open for read: \"" + filename.string() + '"');
     }
     try {
         return load_grs(*f, verbosity);

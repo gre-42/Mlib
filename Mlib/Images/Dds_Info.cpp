@@ -11,7 +11,7 @@ using namespace Mlib;
 DdsInfo DdsInfo::load_from_file(const std::string& filename) {
     auto ifstr = create_ifstream(filename, std::ios_base::binary);
     if (ifstr->fail()) {
-        throw std::runtime_error("Could not open file \"" + filename + "'");
+        throw std::runtime_error("Could not open file for read: \"" + filename + "'");
     }
     try {
         return load_from_stream(*ifstr);

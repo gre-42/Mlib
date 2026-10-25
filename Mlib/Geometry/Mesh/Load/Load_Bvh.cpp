@@ -35,7 +35,7 @@ BvhLoader::BvhLoader(
     }
     auto file = create_ifstream(filename);
     if (file->fail()) {
-        throw std::runtime_error("Could not open \"" + filename + '"');
+        throw std::runtime_error("Could not open for read: \"" + filename + '"');
     }
     std::vector<StringWithHashUnorderedMap<FixedArray<float, 2, 3>>> raw_frames;
     std::string line;

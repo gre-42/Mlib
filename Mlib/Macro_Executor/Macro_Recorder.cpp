@@ -25,7 +25,7 @@ void MacroRecorder::operator()(const MacroLineExecutor& macro_line_executor)
         }
         auto ifs = create_ifstream(macro_line_executor.script_filename_);
         if (ifs->fail()) {
-            throw std::runtime_error("Could not open script file \"" + macro_line_executor.script_filename_.string() + '"');
+            throw std::runtime_error("Could not open script file for read: \"" + macro_line_executor.script_filename_.string() + '"');
         }
         if (any(macro_line_executor.verbosity_)) {
             linfo() << "Processing JSON scene file \"" << macro_line_executor.script_filename_ << '"';
