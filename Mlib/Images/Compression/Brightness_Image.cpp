@@ -13,7 +13,7 @@
 using namespace Mlib;
 
 static const float SCALE = 1.f;
-static const float OFFSET = 1e-6f;
+static const float DEFAULT = 1.f;
 
 BrightnessImage::BrightnessImage(
     const Array<float>& color,
@@ -21,14 +21,14 @@ BrightnessImage::BrightnessImage(
     : color(color)
     , brightness_and_alpha(brightness_and_alpha)
 {}
-    
+
 BrightnessImage::BrightnessImage(
-        const Array<float>& source,
-        size_t color_width,
-        size_t color_height,
-        size_t structure_width,
-        size_t structure_height,
-        TargetShapeMode target_shape_mode)
+    const Array<float>& source,
+    size_t color_width,
+    size_t color_height,
+    size_t structure_width,
+    size_t structure_height,
+    TargetShapeMode target_shape_mode)
 {
     if (source.ndim() != 3) {
         throw std::runtime_error("Image does not have 3 dimensions");
@@ -36,7 +36,9 @@ BrightnessImage::BrightnessImage(
     auto xp3 = (source.shape(0) == 3) ? source : extrapolate_rgba_colors(source, 3.f, 99999).row_range(0, 3);
     auto brightness = max(xp3, 0);
     for (size_t h = 0; h < 3; ++h) {
-        xp3[h] /= (SCALE * brightness + OFFSET);
+        xp3[h] = xp3[h].array_array_binop(brightness, [](const auto& a, const auto& b){
+            return (b == 0) ? DEFAULT : SCALE * a / b;
+        });
     }
     color = resized_multichannel(xp3, ArrayShape{color_height, color_width}, target_shape_mode);
     if (source.shape(0) == 3) {
@@ -73,7 +75,7 @@ Array<float> BrightnessImage::reconstructed(
         auto result = resized_multichannel(color, ArrayShape{height, width}, TargetShapeMode::DEST);
         auto brightness = resized_singlechannel(brightness_and_alpha, ArrayShape{height, width}, TargetShapeMode::DEST);
         for (size_t h = 0; h < color.shape(0); ++h) {
-            result[h] *= (SCALE * brightness + OFFSET);
+            result[h] *= SCALE * brightness;
         }
         return clipped(result, 0.f, 1.f);
     } else if (brightness_and_alpha.ndim() == 3) {
@@ -86,7 +88,7 @@ Array<float> BrightnessImage::reconstructed(
         result.row_range(0, 3) = resized_multichannel(color, ArrayShape{height, width}, TargetShapeMode::DEST);
         auto ba = resized_multichannel(brightness_and_alpha, ArrayShape{height, width}, TargetShapeMode::DEST);
         for (size_t h = 0; h < 3; ++h) {
-            result[h] *= (SCALE * ba[0] + OFFSET);
+            result[h] *= SCALE * ba[0];
         }
         result[3] = ba[1];
         return clipped(result, 0.f, 1.f);
