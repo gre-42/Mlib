@@ -3,6 +3,7 @@
 #include <Mlib/Math/Positive_Modulo.hpp>
 #include <Mlib/Os/Os.hpp>
 #include <algorithm>
+#include <chrono>
 #include <stdexcept>
 
 namespace Mlib {
