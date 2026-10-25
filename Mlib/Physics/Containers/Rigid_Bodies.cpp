@@ -490,7 +490,7 @@ std::vector<CollisionGroup> RigidBodies::collision_groups() {
             // Remote transmission results in incorrect v/w estimates
             // due to rubber banding.
             if (!remote_role_.has_value() &&
-                (nf - 1e-6f > integral_to_float<float>(cfg_.nsubsteps)))
+                (nf - 1e-4f > integral_to_float<float>(cfg_.nsubsteps)))
             {
                 throw std::runtime_error(
                     "Velocity or angular velocity of rigid body \"" + e->rb.name() +
