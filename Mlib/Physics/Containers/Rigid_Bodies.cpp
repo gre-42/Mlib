@@ -494,7 +494,7 @@ std::vector<CollisionGroup> RigidBodies::collision_groups() {
             {
                 throw std::runtime_error(
                     "Velocity or angular velocity of rigid body \"" + e->rb.name() +
-                    "\" out of bounds. " +
+                    "\" out of bounds. "
                     "n (float): " + std::to_string(nf));
             }
             auto ni = p2d.greatest_divider(
