@@ -1,4 +1,5 @@
 #include "Audio_Buffer_Sequence_With_Hysteresis.hpp"
+#include <cmath>
 #include <stdexcept>
 
 using namespace Mlib;
