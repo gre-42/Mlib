@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Os/Threads/Thread_Affinity.hpp>
+#include <atomic>
 #include <cstdint>
 #include <functional>
 #include <memory>
