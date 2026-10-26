@@ -31,7 +31,7 @@ void load(
 {
     uint32_t size;
     load(reader, size, "vector size");
-    if (size > 100'000) {
+    if (size > 500'000) {
         throw std::runtime_error((std::stringstream() <<
             "Vector size too large: " << size << ", " << message).str());
     }
