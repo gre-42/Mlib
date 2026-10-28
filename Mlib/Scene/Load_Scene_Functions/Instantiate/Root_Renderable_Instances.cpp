@@ -53,6 +53,9 @@ void RootRenderableInstances::execute(const LoadSceneJsonUserFunctionArgs& args)
             .scene = scene,
             .renderable_resource_filter = RenderableResourceFilter {
                 .cva_filter = {
+                    #ifdef WITHOUT_GRAPHICS
+                    .included_tags = PhysicsMaterial::ATTR_COLLIDE,
+                    #endif
                     .included_names = Mlib::compile_regex(args.arguments.at<std::string>(KnownArgs::included_names, "")),
                     .excluded_names = Mlib::compile_regex(args.arguments.at<std::string>(KnownArgs::excluded_names, "$ ^"))}}});
     

@@ -672,7 +672,7 @@ void RemoteRigidBodyVehicle::write(
                 writer.write_binary(jv.at<EFixedArray<float, 3>>(CarParameters::velocity), "velocity");
                 writer.write_binary(jv.at<EFixedArray<float, 3>>(CarParameters::angular_velocity), "angular_velocity");
                 writer.write_binary(jv.at<float>(CarParameters::velocity_error_std), "velocity_error_std");
-                writer.write_binary(jv.at<float>(CarParameters::error_alpha), "error_alpha");
+                writer.write_binary(jv.at_non_null<float>(CarParameters::error_alpha, 1.f), "error_alpha");
                 writer.write_binary(jv.at<float>(CarParameters::yaw_error_std), "yaw_error_std");
                 writer.write_binary(jv.at<float>(CarParameters::pitch_error_std), "pitch_error_std");
                 return;
@@ -686,7 +686,7 @@ void RemoteRigidBodyVehicle::write(
                 writer.write_binary(jv.at<EFixedArray<float, 3>>(AvatarParameters::velocity), "velocity");
                 writer.write_binary(jv.at<EFixedArray<float, 3>>(AvatarParameters::angular_velocity), "angular_velocity");
                 writer.write_binary(jv.at<float>(AvatarParameters::velocity_error_std), "velocity_error_std");
-                writer.write_binary(jv.at<float>(AvatarParameters::error_alpha), "error_alpha");
+                writer.write_binary(jv.at_non_null<float>(AvatarParameters::error_alpha, 1.f), "error_alpha");
                 writer.write_binary(jv.at<float>(AvatarParameters::locked_on_angle), "locked_on_angle");
                 writer.write_binary(jv.at<float>(AvatarParameters::yaw_error_std), "yaw_error_std");
                 writer.write_binary(jv.at<float>(AvatarParameters::pitch_error_std), "pitch_error_std");

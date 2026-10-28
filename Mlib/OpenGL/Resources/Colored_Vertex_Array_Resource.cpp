@@ -231,13 +231,17 @@ void ColoredVertexArrayResource::instantiate_child_renderable(const ChildInstant
         throw std::runtime_error("ColoredVertexArrayResource::instantiate_child_renderable: rendering-resources is null");
     }
     #endif
-    options.scene_node->add_renderable(options.instance_name, std::make_shared<RenderableColoredVertexArray>(
-        #ifndef WITHOUT_GRAPHICS
-        *options.rendering_resources,
-        #endif
-        shared_from_this(),
-        CachingBehavior::ENABLED,
-        options.renderable_resource_filter));
+    try {
+        options.scene_node->add_renderable(options.instance_name, std::make_shared<RenderableColoredVertexArray>(
+            #ifndef WITHOUT_GRAPHICS
+            *options.rendering_resources,
+            #endif
+            shared_from_this(),
+            CachingBehavior::ENABLED,
+            options.renderable_resource_filter));
+    } catch (const std::runtime_error& e) {
+        throw std::runtime_error("Could not create instance \"" + *options.instance_name + "\": " + e.what());
+    }
 }
 
 void ColoredVertexArrayResource::instantiate_root_renderables(const RootInstantiationOptions& options) const {
@@ -248,6 +252,9 @@ void ColoredVertexArrayResource::instantiate_root_renderables(const RootInstanti
     std::list<std::shared_ptr<ColoredVertexArray<CompressedScenePos>>> dcvas_node_object;
     auto dcvas_default = triangles_res_->dcvas;
     dcvas_default.remove_if([&](auto& cva){
+        if (!options.renderable_resource_filter.cva_filter.matches(*cva)) {
+            return true;
+        }
         switch (cva->meta.material.aggregate_mode) {
         case AggregateMode::NODE_TRIANGLES:
             dcvas_node_triangles.push_back(cva);
@@ -327,7 +334,7 @@ void ColoredVertexArrayResource::instantiate_root_renderables(const RootInstanti
             *options.instance_name + "_split")))
         {
             instantiate_position_and_meshes(
-                "_triangle_cluster" + std::to_string(triangle_cluster_width) + '_' + std::to_string(i),
+                "_triangle_cluster_" + std::to_string(triangle_cluster_width) + '_' + std::to_string(i),
                 cs);
         }
     }
@@ -345,7 +352,7 @@ void ColoredVertexArrayResource::instantiate_root_renderables(const RootInstanti
             *options.instance_name + "_mesh_cluster")))
         {
             instantiate_position_and_meshes(
-                "_mesh_cluster" + std::to_string(object_cluster_width) + '_' + std::to_string(i),
+                "_mesh_cluster_" + std::to_string(object_cluster_width) + '_' + std::to_string(i),
                 cs);
         }
     }

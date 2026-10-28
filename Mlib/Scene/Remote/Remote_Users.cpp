@@ -194,6 +194,10 @@ void RemoteUsers::read_data(
                         args->set(key, reader.read_binary<EFixedArray<float, 3>>("selected vehicle color"));
                     }
                     {
+                        auto key = "if_selected_pacenotes_" + suffix;
+                        args->set(key, reader.read_binary<bool>("selected pacenotes"));
+                    }
+                    {
                         auto account = nlohmann::json::object();
                         account["name"] = reader.read_string<StringLengthType>("account name");
                         auto key = "account_" + suffix;
@@ -260,6 +264,10 @@ void RemoteUsers::write(
                     {
                         auto key = "selected_vehicle_color_" + suffix;
                         writer.write_binary(args->at<EFixedArray<float, 3>>(key), "selected vehicle color");
+                    }
+                    {
+                        auto key = "if_selected_pacenotes_" + suffix;
+                        writer.write_binary(args->at<bool>(key), "selected pacenotes");
                     }
                     {
                         auto key = "account_" + suffix;

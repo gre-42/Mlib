@@ -271,9 +271,25 @@ RenderableColoredVertexArray::RenderableColoredVertexArray(
         sphysics_.empty() &&
         dphysics_.empty())
     {
+        std::string msg;
+        auto append_names = [&]<typename TArray>(const std::list<std::shared_ptr<TArray>>& cvas)
+        {
+            for (const auto& t : cvas) {
+                const auto& meta = get_meta(t);
+                if (msg.empty()) {
+                    msg = meta.name.full_name();
+                } else {
+                    msg += ", " + meta.name.full_name();
+                }
+                msg += " (" + physics_material_to_string(meta.morphology.physics_material) + ')';
+            }
+        };
+        append_names(rcva->triangles_res_->scvas);
+        append_names(rcva->triangles_res_->dcvas);
         throw std::runtime_error(
-            "Filter did not match a single array.\n" +
-            (std::stringstream() << renderable_resource_filter).str());
+            (std::stringstream() <<
+                "Filter did not match a single array.\n" << renderable_resource_filter <<
+                "\nAvailable: " << msg).str());
     }
 
     #ifndef WITHOUT_GRAPHICS

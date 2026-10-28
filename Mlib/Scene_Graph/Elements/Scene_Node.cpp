@@ -644,8 +644,11 @@ void SceneNode::add_instances_child(
     };
     auto nref = DanglingBaseClassRef<SceneNode>{*node, CURRENT_SOURCE_LOCATION};
     auto pm = node->physics_attributes();
-    if (any(pm & PhysicsMaterial::ATTR_COLLIDE) &&
-        !any(pm & PhysicsMaterial::ATTR_VISIBLE))
+    if (any(pm & PhysicsMaterial::ATTR_COLLIDE)
+        #ifndef WITHOUT_GRAPHICS
+        && !any(pm & PhysicsMaterial::ATTR_VISIBLE)
+        #endif
+    )
     {
         emplace_instances_child(collide_only_instances_children_);
     } else {
