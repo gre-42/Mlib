@@ -140,8 +140,6 @@ private:
     DanglingValueUnorderedMap<VariableAndHash<std::string>, UserInfo> named_users_;
     SiteInfo local_site_;
     VerboseMap<RemoteSiteId, SiteInfo> remote_sites_;
-    std::function<void(const UserInfo& user)> on_user_loaded_level_;
-    std::function<void()> on_all_users_loaded_level_;
     size_t users_total_;
     size_t users_with_loaded_level_;
     bool deny_modify_local_user_count_;
