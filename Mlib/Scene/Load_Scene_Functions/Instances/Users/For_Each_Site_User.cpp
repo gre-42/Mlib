@@ -98,6 +98,17 @@ struct RegisterJsonUserFunctionAll {
     }
 } obj_all;
 
+struct RegisterJsonUserFunctionAllLoaded {
+    RegisterJsonUserFunctionAllLoaded() {
+        LoadSceneFuncs::register_json_user_function(
+            "for_each_loaded_site_user",
+            [](const LoadSceneJsonUserFunctionArgs& args)
+            {
+                ForEachSiteUser(UserTypes::ALL_LOADED).execute(args);
+            });
+    }
+} obj_all_loaded;
+
 struct RegisterJsonUserFunctionLocal {
     RegisterJsonUserFunctionLocal() {
         LoadSceneFuncs::register_json_user_function(
