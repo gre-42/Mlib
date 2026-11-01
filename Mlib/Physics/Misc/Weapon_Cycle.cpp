@@ -66,7 +66,10 @@ void WeaponCycle::set_desired_weapon(
     }
 }
 
-void WeaponCycle::equip_next_weapon(std::optional<VariableAndHash<std::string>> player_name) {
+void WeaponCycle::equip_next_weapon(
+    std::optional<VariableAndHash<std::string>> player_name,
+    WeaponCyclePeriodicity periodicity)
+{
     if (weapon_infos_.empty()) {
         return;
     }
@@ -76,23 +79,35 @@ void WeaponCycle::equip_next_weapon(std::optional<VariableAndHash<std::string>> 
     } else {
         ++it;
         if (it == weapon_infos_.end()) {
-            return;
+            if (periodicity == WeaponCyclePeriodicity::PERIODIC) {
+                desired_.weapon_name = weapon_infos_.begin()->first;
+            }
+        } else {
+            desired_.weapon_name = it->first;
         }
-        desired_.weapon_name = it->first;
     }
     desired_.player_name = std::move(player_name);
 }
 
-void WeaponCycle::equip_previous_weapon(std::optional<VariableAndHash<std::string>> player_name) {
+void WeaponCycle::equip_previous_weapon(
+    std::optional<VariableAndHash<std::string>> player_name,
+    WeaponCyclePeriodicity periodicity)
+{
     if (weapon_infos_.empty()) {
         return;
     }
     auto it = weapon_infos_.find(desired_.weapon_name);
     if (it == weapon_infos_.end()) {
         desired_.weapon_name = weapon_infos_.rbegin()->first;
-    } else if (it != weapon_infos_.begin()) {
-        --it;
-        desired_.weapon_name = it->first;
+    } else {
+        if (it == weapon_infos_.begin()) {
+            if (periodicity == WeaponCyclePeriodicity::PERIODIC) {
+                desired_.weapon_name = weapon_infos_.rbegin()->first;
+            }
+        } else {
+            --it;
+            desired_.weapon_name = it->first;
+        }
     }
     desired_.player_name = std::move(player_name);
 }

@@ -15,6 +15,10 @@ class Inventory;
 enum class RigidBodyVehicleFlags: uint32_t;
 struct BulletProperties;
 enum class WhenToEquip;
+enum class WeaponCyclePeriodicity {
+    PERIODIC,
+    APERIODIC
+};
 
 struct WeaponInfo {
     std::function<void()> create_weapon;
@@ -48,8 +52,12 @@ public:
         std::optional<VariableAndHash<std::string>> player_name,
         std::string weapon_name,
         WhenToEquip when_to_equip);
-    void equip_next_weapon(std::optional<VariableAndHash<std::string>> player_name);
-    void equip_previous_weapon(std::optional<VariableAndHash<std::string>> player_name);
+    void equip_next_weapon(
+        std::optional<VariableAndHash<std::string>> player_name,
+        WeaponCyclePeriodicity periodicity);
+    void equip_previous_weapon(
+        std::optional<VariableAndHash<std::string>> player_name,
+        WeaponCyclePeriodicity periodicity);
     // InventoryItem ammo_type() const;
     const std::string& weapon_name() const;
     const std::map<std::string, WeaponInfo>& weapon_infos() const;

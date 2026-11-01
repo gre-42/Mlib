@@ -678,12 +678,16 @@ void KeyBindings::increment_external_forces(
             phase);
         if (pressed && enable_controls) {
             auto wc = k->player->weapon_cycle();
-            if (k->direction == 1) {
-                wc->equip_next_weapon(k->player->id());
+            if (k->direction == 2) {
+                wc->equip_next_weapon(k->player->id(), WeaponCyclePeriodicity::PERIODIC);
+            } else if (k->direction == -2) {
+                wc->equip_previous_weapon(k->player->id(), WeaponCyclePeriodicity::PERIODIC);
+            } else if (k->direction == 1) {
+                wc->equip_next_weapon(k->player->id(), WeaponCyclePeriodicity::APERIODIC);
             } else if (k->direction == -1) {
-                wc->equip_previous_weapon(k->player->id());
+                wc->equip_previous_weapon(k->player->id(), WeaponCyclePeriodicity::APERIODIC);
             } else {
-                throw std::runtime_error("Weapon cycle direction not -1 or 1");
+                throw std::runtime_error("Weapon cycle direction not in {-2, -1, 1, 2}");
             }
         }
     }
