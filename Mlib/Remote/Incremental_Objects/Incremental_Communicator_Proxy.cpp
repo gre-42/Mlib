@@ -254,11 +254,11 @@ void IncrementalCommunicatorProxy::receive_from_home(std::istream& istr) {
     delete_unknown_objects(objects_->public_remote_objects());
 }
 
-struct MatchedAndPriority {
+struct MatchedPriorityAge {
     bool matched;
     int32_t priority;
     FullRetransmissionAge age;
-    std::strong_ordering operator <=> (const MatchedAndPriority&) const = default;
+    std::strong_ordering operator <=> (const MatchedPriorityAge&) const = default;
 };
 
 void IncrementalCommunicatorProxy::send_home(
@@ -283,12 +283,12 @@ void IncrementalCommunicatorProxy::send_home(
         linfo() << "Full transmission mask: " << full_transmission_mask;
     }
     {
-        std::optional<MatchedAndPriority> highest_priority;
+        std::optional<MatchedPriorityAge> highest_priority;
         auto update_common = [&, compute_full_transmission_age](const RemoteObjectId& i, const IIncrementalObject& o){
             compute_full_transmission_age(i, o);
             auto age = full_retransmission_age.at(i);
             auto matched = bool(o.full_transmission_mask() & full_transmission_mask);
-            auto op = MatchedAndPriority{matched, o.priority(), age};
+            auto op = MatchedPriorityAge{matched, o.priority(), age};
             if (!object_to_send_completely.has_value() || (op > *highest_priority)) {
                 object_to_send_completely.emplace(i);
                 highest_priority.emplace(op);
