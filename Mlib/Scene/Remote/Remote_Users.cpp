@@ -186,22 +186,34 @@ void RemoteUsers::read_data(
                 for (auto user_id : users_transmitted) {
                     auto suffix = std::to_string(site_id_) + '_' + std::to_string(user_id);
                     {
-                        auto key = "selected_vehicle_id_" + suffix;
-                        args->set(key, reader.read_string<StringLengthType>("selected vehicle ID"));
+                        auto value = reader.read_string<StringLengthType>("selected vehicle ID");
+                        if (site_id_ != local_site_id) {
+                            auto key = "selected_vehicle_id_" + suffix;
+                            args->set(key, value);
+                        }
                     }
                     {
-                        auto key = "selected_vehicle_color_" + suffix;
-                        args->set(key, reader.read_binary<EFixedArray<float, 3>>("selected vehicle color"));
+                        auto value = reader.read_binary<EFixedArray<float, 3>>("selected vehicle color");
+                        if (site_id_ != local_site_id) {
+                            auto key = "selected_vehicle_color_" + suffix;
+                            args->set(key, value);
+                        }
                     }
                     {
-                        auto key = "if_selected_pacenotes_" + suffix;
-                        args->set(key, reader.read_binary<bool>("selected pacenotes"));
+                        auto value = reader.read_binary<bool>("selected pacenotes");
+                        if (site_id_ != local_site_id) {
+                            auto key = "if_selected_pacenotes_" + suffix;
+                            args->set(key, value);
+                        }
                     }
                     {
-                        auto account = nlohmann::json::object();
-                        account["name"] = reader.read_string<StringLengthType>("account name");
-                        auto key = "account_" + suffix;
-                        args->set(key, account);
+                        auto account_name = reader.read_string<StringLengthType>("account name");
+                        if (site_id_ != local_site_id) {
+                            auto account = nlohmann::json::object();
+                            account["name"] = account_name;
+                            auto key = "account_" + suffix;
+                            args->set(key, account);
+                        }
                     }
                 }
                 args.unlock_and_notify();
