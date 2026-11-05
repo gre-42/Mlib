@@ -42,6 +42,7 @@ static void visit_user(
 
 namespace KnownArgs {
 BEGIN_ARGUMENT_LIST;
+DECLARE_ARGUMENT(max_users);
 DECLARE_ARGUMENT(content);
 }
 
@@ -53,10 +54,17 @@ ForEachSiteUser::~ForEachSiteUser() = default;
 
 void ForEachSiteUser::execute(const LoadSceneJsonUserFunctionArgs& args) {
     args.arguments.validate(KnownArgs::options);
+    auto max_users = args.arguments.try_at<NUserCountType>(KnownArgs::max_users);
     auto content = args.arguments.at(KnownArgs::content);
     args.remote_config_and_sites.sites.for_each_site_user(
         [&](const UserInfo& user)
         {
+            if (max_users.has_value() &&
+                user.random_rank.has_value() &&
+                (*user.random_rank >= *max_users))
+            {
+                return true;
+            }
             visit_user(args.macro_line_executor, args.remote_config_and_sites.sites, args.local_json_macro_arguments, content, user);
             return true;
         }, user_types_);

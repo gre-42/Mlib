@@ -5,9 +5,9 @@ namespace Mlib {
 
 struct LoadSceneJsonUserFunctionArgs;
 
-class DefineWinnerConditionals: public LoadPhysicsSceneInstanceFunction {
+class ForEachWinner: public LoadPhysicsSceneInstanceFunction {
 public:
-    explicit DefineWinnerConditionals(PhysicsScene& physics_scene);
+    explicit ForEachWinner(PhysicsScene& physics_scene);
     void execute(const LoadSceneJsonUserFunctionArgs& args);
 };
 
