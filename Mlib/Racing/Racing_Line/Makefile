@@ -1,2 +1,2 @@
 build:
-	docker build . -t racing_line
+	podman build . -t racing_line
