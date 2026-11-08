@@ -26,9 +26,8 @@ void load(
     TUniquePtr& result,
     std::string_view message)
 {
-    if (result == nullptr) {
-        throw std::runtime_error("unique_ptr is null");
-    }
+    using T = TUniquePtr::element_type;
+    result = std::make_unique<T>();
     load(reader, *result, message);
 }
 

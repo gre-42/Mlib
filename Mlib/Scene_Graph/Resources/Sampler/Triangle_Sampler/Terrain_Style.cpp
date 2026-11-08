@@ -18,7 +18,7 @@ bool TerrainStyleConfig::is_visible() const {
             (much_near_distance != INFINITY);
 }
 
-TerrainStyle::TerrainStyle(const TerrainStyleConfig &config)
+TerrainStyle::TerrainStyle(const TerrainStyleConfig& config)
     : config{ config }
 {}
 

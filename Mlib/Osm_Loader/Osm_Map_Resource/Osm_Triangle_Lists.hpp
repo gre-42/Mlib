@@ -2,6 +2,7 @@
 #include <Mlib/Misc/Object.hpp>
 #include <Mlib/Os/Io/Safe_Archiver.hpp>
 #include <Mlib/Scene_Config/Scene_Precision.hpp>
+#include <cstdint>
 #include <list>
 #include <map>
 #include <memory>
@@ -25,7 +26,7 @@ template <typename TData, size_t... tshape>
 class FixedArray;
 struct StyledRoad;
 struct StyledRoadEntry;
-enum class TerrainType;
+enum class TerrainType: uint32_t;
 enum class WaterType;
 
 class RoadPropertiesTriangleList {

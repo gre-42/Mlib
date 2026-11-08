@@ -3,7 +3,7 @@
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Ground_Bvh.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Osm_Map_Resource_Helpers.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Steiner_Point_Info.hpp>
-#include <Mlib/Osm_Loader/Osm_Map_Resource/Street_Bvh.hpp>
+#include <Mlib/Osm_Loader/Osm_Map_Resource/Street_Bvh_2d.hpp>
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Regex/Regex_Select.hpp>
 #include <Mlib/Scene_Graph/Resources/Batch_Resource_Instantiator.hpp>

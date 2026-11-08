@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Scene_Config/Scene_Precision.hpp>
+#include <cstdint>
 #include <list>
 #include <map>
 #include <memory>
@@ -19,7 +20,7 @@ template <typename TData, size_t... tshape>
 class FixedArray;
 template <class TData, size_t... tshape>
 class OrderableFixedArray;
-enum class TerrainType;
+enum class TerrainType: uint32_t;
 template <class EntityType>
 class EntityTypeTriangleList;
 using TerrainTypeTriangleList = EntityTypeTriangleList<TerrainType>;

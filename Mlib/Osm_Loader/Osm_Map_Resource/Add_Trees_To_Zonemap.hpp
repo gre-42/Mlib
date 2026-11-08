@@ -7,7 +7,7 @@ namespace Mlib {
 
 class ResourceNameCycle;
 class BatchResourceInstantiator;
-class StreetBvh;
+class StreetBvh2d;
 class GroundBvh;
 struct BoundingInfo;
 template <class TData>
@@ -18,7 +18,7 @@ void add_trees_to_zonemap(
     ResourceNameCycle& rnc,
     const BoundingInfo& bounding_info,
     double min_dist_to_road,
-    const StreetBvh& street_bvh,
+    const StreetBvh2d& street_bvh,
     const GroundBvh& ground_bvh,
     const Array<double>& tree_density,
     double tree_density_width,

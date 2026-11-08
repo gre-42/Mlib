@@ -8,10 +8,10 @@ namespace Mlib {
 template <class TPos>
 struct ColoredVertex;
 
-class StreetBvh {
-    typedef FixedArray<CompressedScenePos, 3, 2> Triangle2d;
+class StreetBvh2d {
+    using Triangle2d = FixedArray<CompressedScenePos, 3, 2>;
 public:
-    explicit StreetBvh(const std::list<FixedArray<ColoredVertex<CompressedScenePos>, 3>>& triangles);
+    explicit StreetBvh2d(const std::list<FixedArray<ColoredVertex<CompressedScenePos>, 3>>& triangles);
     std::optional<CompressedScenePos> min_dist(
         const FixedArray<CompressedScenePos, 2>& pt,
         CompressedScenePos max_dist,

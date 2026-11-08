@@ -7,7 +7,7 @@
 
 namespace Mlib {
 
-class StreetBvh;
+class StreetBvh2d;
 template <class TPos>
 class TriangleList;
 template <class TData>
@@ -23,8 +23,8 @@ class FixedArray;
 
 void apply_displacement_map(
     std::map<OrderableFixedArray<CompressedScenePos, 2>, FixedArray<CompressedScenePos, 3>>& displacements,
-    const StreetBvh& ground_bvh,
-    const StreetBvh& air_bvh,
+    const StreetBvh2d& ground_bvh,
+    const StreetBvh2d& air_bvh,
     const std::list<std::shared_ptr<TriangleList<CompressedScenePos>>>& triangles,
     std::unordered_map<FixedArray<CompressedScenePos, 3>*, VertexHeightBinding<CompressedScenePos>>& vertex_height_bindings,
     const Array<double>& displacementmap,

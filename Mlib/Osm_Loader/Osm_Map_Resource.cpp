@@ -90,7 +90,8 @@
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Road_Type.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Smoothen_Ways.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Steiner_Point_Info.hpp>
-#include <Mlib/Osm_Loader/Osm_Map_Resource/Street_Bvh.hpp>
+#include <Mlib/Osm_Loader/Osm_Map_Resource/Street_Bvh_2d.hpp>
+#include <Mlib/Osm_Loader/Osm_Map_Resource/Street_Bvh_3d.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Street_Rectangle.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Street_Way_Point.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Styled_Road.hpp>
@@ -405,10 +406,10 @@ OsmMapResource::OsmMapResource(
     auto street_hole_triangles = osm_triangle_lists.street_hole_triangles();
     auto building_hole_triangles = osm_triangle_lists.building_hole_triangles();
     auto ocean_ground_triangles = osm_triangle_lists.ocean_ground_triangles();
-    StreetBvh all_holes_bvh{all_hole_triangles};
-    StreetBvh ground_street_bvh{street_hole_triangles};
-    StreetBvh air_bvh{air_triangle_lists.street_hole_triangles()};
-    StreetBvh entrance_bvh{ osm_triangle_lists.entrance_triangles() };
+    StreetBvh2d all_holes_bvh{all_hole_triangles};
+    StreetBvh2d ground_street_bvh{street_hole_triangles};
+    StreetBvh2d air_bvh{air_triangle_lists.street_hole_triangles()};
+    StreetBvh2d entrance_bvh{ osm_triangle_lists.entrance_triangles() };
 
     // if (forest_outline_tree_distance != INFINITY) {
     //     add_grass_outlines(
@@ -632,7 +633,7 @@ OsmMapResource::OsmMapResource(
             add_grass_on_steiner_points(
                 *hri_.bri,
                 rnc,
-                StreetBvh{ osm_triangle_lists.no_trees_triangles() },
+                StreetBvh2d{ osm_triangle_lists.no_trees_triangles() },
                 air_bvh,
                 steiner_points,
                 config.scale,
@@ -1486,7 +1487,16 @@ OsmMapResource::OsmMapResource(
     //     }
     // }
 
-    tls_no_grass_ = osm_triangle_lists.tls_no_grass();
+    street_bvh_3d_ = std::make_unique<StreetBvh3d>();
+    for (const auto& lst : osm_triangle_lists.tls_no_grass()) {
+        for (const auto& t : lst->triangles) {
+            FixedArray<CompressedScenePos, 3, 3> tri{
+                t(0).position,
+                t(1).position,
+                t(2).position};
+            street_bvh_3d_->bvh.insert(AxisAlignedBoundingBox<CompressedScenePos, 3>::from_points(tri), tri);
+        }
+    }
 
     fg.update("Calculate normals");
     // Normals are invalid after "apply_heightmap"
@@ -1625,10 +1635,11 @@ OsmMapResource::OsmMapResource(
     {
         CollidableTriangleSampler cts{terrain_styles_, scale_, UpAxis::Z};
         fg.update("Add near hitboxes");
-        cts.add_near_hitboxes(terrain_triangles(), street_bvh(), hri_);
+        cts.add_near_hitboxes(terrain_triangles(), street_bvh().bvh, hri_);
         fg.update("Add far instances");
-        cts.add_far_hitboxes(terrain_triangles(), street_bvh(), hri_);
+        cts.add_far_hitboxes(terrain_triangles(), street_bvh().bvh, hri_);
     }
+    tls_no_grass_ = osm_triangle_lists.tls_no_grass();
     fg.update("Save obj files if requested");
     save_to_obj_file_if_requested(debug_prefix);
     save_bad_triangles_to_obj_file_if_requested(debug_prefix);
@@ -1829,28 +1840,11 @@ OsmMapResource::OsmMapResource(
     save_bad_triangles_to_obj_file_if_requested(debug_prefix);
 }
 
-const Bvh<CompressedScenePos, 3, FixedArray<CompressedScenePos, 3, 3>>& OsmMapResource::street_bvh() const {
-    {
-        std::shared_lock lock{street_bvh_mutex_};
-        if (street_bvh_ != nullptr) {
-            return *street_bvh_;
-        }
+const StreetBvh3d& OsmMapResource::street_bvh() const {
+    if (street_bvh_3d_ == nullptr) {
+        throw std::runtime_error("3D street BVH not set");
     }
-    if (street_bvh_ == nullptr) {
-        std::scoped_lock lock{street_bvh_mutex_};
-        street_bvh_.reset(new Bvh<CompressedScenePos, 3, FixedArray<CompressedScenePos, 3, 3>>{
-            {(CompressedScenePos)0.1, (CompressedScenePos)0.1, (CompressedScenePos)0.1}, 10 });
-        for (const auto& lst : tls_no_grass_) {
-            for (const auto& t : lst->triangles) {
-                FixedArray<CompressedScenePos, 3, 3> tri{
-                    t(0).position,
-                    t(1).position,
-                    t(2).position};
-                street_bvh_->insert(AxisAlignedBoundingBox<CompressedScenePos, 3>::from_points(tri), tri);
-            }
-        }
-    }
-    return *street_bvh_;
+    return *street_bvh_3d_;
 }
 
 void OsmMapResource::save_to_file(
@@ -2074,7 +2068,7 @@ void OsmMapResource::instantiate_root_renderables(const RootInstantiationOptions
             terrain_styles_,
             terrain_triangles(),
             no_grass(),
-            &street_bvh(),
+            &street_bvh().bvh,
             scale_,
             UpAxis::Z));
         options.scene.auto_add_root_node(

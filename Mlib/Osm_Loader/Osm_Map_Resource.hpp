@@ -11,6 +11,7 @@
 #include <Mlib/Scene_Graph/Resources/Sampler/Triangle_Sampler/Terrain_Styles.hpp>
 #include <Mlib/Scene_Graph/Resources/Sampler/Triangle_Sampler/Terrain_Triangles.hpp>
 #include <chrono>
+#include <cstdint>
 #include <list>
 
 namespace p2t {
@@ -38,12 +39,13 @@ class Renderable;
 class RenderingResources;
 class SceneNodeResources;
 struct OsmResourceConfig;
-enum class TerrainType;
+enum class TerrainType: uint32_t;
 template <class EntityType>
 class EntityTypeTriangleList;
 typedef EntityTypeTriangleList<TerrainType> TerrainTypeTriangleList;
 class GroundBvh;
 class ColoredVertexArrayResource;
+class StreetBvh3d;
 enum class JoinedWayPointSandbox;
 enum class FileStorageType;
 
@@ -112,6 +114,7 @@ public:
         archive(triangulation_normalization_matrix_);
         archive(tl_terrain_);
         archive(tls_no_grass_);
+        archive(street_bvh_3d_);
         archive(tl_mud_street_visuals_);
         archive(tl_mud_path_visuals_);
         archive(terrain_styles_);
@@ -122,7 +125,7 @@ private:
     void print_waypoints_if_requested(const std::string& debug_prefix) const;
     void save_to_obj_file_if_requested(const std::string& debug_prefix) const;
     void save_bad_triangles_to_obj_file_if_requested(const std::string& debug_prefix) const;
-    const Bvh<CompressedScenePos, 3, FixedArray<CompressedScenePos, 3, 3>>& street_bvh() const;
+    const StreetBvh3d& street_bvh() const;
 
     void handle_point_exception3(const PointException<CompressedScenePos, 3>& e, const std::string& message) const;
     void handle_point_exception2(const PointException<CompressedScenePos, 2>& e, const std::string& message) const;
@@ -152,8 +155,7 @@ private:
     std::shared_ptr<TriangleList<CompressedScenePos>> tl_mud_street_visuals_;
     std::shared_ptr<TriangleList<CompressedScenePos>> tl_mud_path_visuals_;
 
-    mutable std::unique_ptr<Bvh<CompressedScenePos, 3, FixedArray<CompressedScenePos, 3, 3>>> street_bvh_;
-    mutable SafeAtomicRecursiveSharedMutex street_bvh_mutex_;
+    std::unique_ptr<StreetBvh3d> street_bvh_3d_;
 
     TerrainStyles terrain_styles_;
 };

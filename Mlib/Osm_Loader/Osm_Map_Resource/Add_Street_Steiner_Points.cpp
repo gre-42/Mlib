@@ -5,7 +5,7 @@
 #include <Mlib/Math/Interp.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Bounding_Info.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Steiner_Point_Info.hpp>
-#include <Mlib/Osm_Loader/Osm_Map_Resource/Street_Bvh.hpp>
+#include <Mlib/Osm_Loader/Osm_Map_Resource/Street_Bvh_2d.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Way_Bvh.hpp>
 #include <Mlib/Stats/Fast_Random_Number_Generators.hpp>
 
@@ -13,7 +13,7 @@ using namespace Mlib;
 
 void Mlib::add_street_steiner_points(
     std::list<SteinerPointInfo>& steiner_points,
-    const StreetBvh& ground_street_bvh,
+    const StreetBvh2d& ground_street_bvh,
     const WayBvh& terrain_region_contours_bvh,
     const BoundingInfo& bounding_info,
     double scale,

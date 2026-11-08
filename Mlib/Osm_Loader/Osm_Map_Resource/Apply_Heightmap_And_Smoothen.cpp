@@ -15,7 +15,7 @@
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Osm_Resource_Config.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Osm_Triangle_Lists.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Steiner_Point_Info.hpp>
-#include <Mlib/Osm_Loader/Osm_Map_Resource/Street_Bvh.hpp>
+#include <Mlib/Osm_Loader/Osm_Map_Resource/Street_Bvh_2d.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Street_Rectangle.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Street_Way_Point.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Vertex_Height_Binding.hpp>
@@ -33,8 +33,8 @@ enum class SmoothingClass {
 
 void Mlib::apply_heightmap_and_smoothen(
     const OsmResourceConfig& config,
-    const StreetBvh& ground_street_bvh,
-    const StreetBvh& air_bvh,
+    const StreetBvh2d& ground_street_bvh,
+    const StreetBvh2d& air_bvh,
     const std::map<OrderableFixedArray<CompressedScenePos, 2>, NodeHeightBinding>& node_height_bindings,
     std::unordered_map<FixedArray<CompressedScenePos, 3>*, VertexHeightBinding<CompressedScenePos>>& vertex_height_bindings,
     const std::map<std::string, Node>& nodes,

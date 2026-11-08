@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Scene_Config/Scene_Precision.hpp>
+#include <cstdint>
 #include <list>
 #include <map>
 #include <string>
@@ -8,7 +9,7 @@ namespace Mlib {
 
 struct Node;
 struct Way;
-enum class TerrainType;
+enum class TerrainType: uint32_t;
 template <typename TData, size_t... tshape>
 class FixedArray;
 template <class TRegionType, class TGeometry>

@@ -1,6 +1,6 @@
 #include "Add_Grass_on_Steiner_Points.hpp"
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Steiner_Point_Info.hpp>
-#include <Mlib/Osm_Loader/Osm_Map_Resource/Street_Bvh.hpp>
+#include <Mlib/Osm_Loader/Osm_Map_Resource/Street_Bvh_2d.hpp>
 #include <Mlib/Scene_Graph/Resources/Batch_Resource_Instantiator.hpp>
 #include <Mlib/Scene_Graph/Resources/Parsed_Resource_Name.hpp>
 #include <Mlib/Scene_Graph/Resources/Sampler/Triangle_Sampler/Resource_Name_Cycle.hpp>
@@ -11,8 +11,8 @@ using namespace Mlib;
 void Mlib::add_grass_on_steiner_points(
     BatchResourceInstantiator& bri,
     ResourceNameCycle& rnc,
-    const StreetBvh& ground_bvh,
-    const StreetBvh& air_bvh,
+    const StreetBvh2d& ground_bvh,
+    const StreetBvh2d& air_bvh,
     const std::list<SteinerPointInfo>& steiner_points,
     float scale,
     float dmin,

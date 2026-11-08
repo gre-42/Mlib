@@ -215,7 +215,7 @@ PRAGMA_GCC_O3_END
 
 template <class TPos>
 inline std::ostream& operator << (std::ostream& ostr, const ColoredVertex<TPos>& v) {
-    ostr << "p " << v.position << " n " << v.normal << " c " << v.color.template casted<uint16_t>() << " t " << v.uv;
+    ostr << "p " << v.position << " n " << v.normal << " c " << v.color.template casted<uint16_t>() << " uv " << v.uv << " t " << v.tangent;
     return ostr;
 }
 

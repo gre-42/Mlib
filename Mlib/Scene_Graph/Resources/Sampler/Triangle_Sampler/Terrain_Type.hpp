@@ -1,10 +1,11 @@
 #pragma once
+#include <cstdint>
 #include <nlohmann/json_fwd.hpp>
 #include <string>
 
 namespace Mlib {
 
-enum class TerrainType {
+enum class TerrainType: uint32_t {
     GRASS,
     WAYSIDE1_GRASS,
     WAYSIDE2_GRASS,

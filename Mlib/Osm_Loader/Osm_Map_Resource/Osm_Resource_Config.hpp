@@ -40,7 +40,7 @@ enum class DrivingDirection: uint32_t;
 struct WaysideResourceNamesSurface;
 struct WaysideResourceNamesVertex;
 struct RoadProperties;
-enum class TerrainType;
+enum class TerrainType: uint32_t;
 enum class WrapMode;
 enum class PhysicsMaterial: uint32_t;
 class FPath;

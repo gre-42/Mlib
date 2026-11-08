@@ -2,7 +2,7 @@
 #include <Mlib/Geometry/Mesh/Triangle_List.hpp>
 #include <Mlib/Images/Bilinear_Interpolation.hpp>
 #include <Mlib/Math/Interp.hpp>
-#include <Mlib/Osm_Loader/Osm_Map_Resource/Street_Bvh.hpp>
+#include <Mlib/Osm_Loader/Osm_Map_Resource/Street_Bvh_2d.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Vertex_Height_Binding.hpp>
 #include <map>
 
@@ -10,8 +10,8 @@ using namespace Mlib;
 
 void Mlib::apply_displacement_map(
     std::map<OrderableFixedArray<CompressedScenePos, 2>, FixedArray<CompressedScenePos, 3>>& displacements,
-    const StreetBvh& ground_street_bvh,
-    const StreetBvh& air_bvh,
+    const StreetBvh2d& ground_street_bvh,
+    const StreetBvh2d& air_bvh,
     const std::list<std::shared_ptr<TriangleList<CompressedScenePos>>>& triangles,
     std::unordered_map<FixedArray<CompressedScenePos, 3>*, VertexHeightBinding<CompressedScenePos>>& vertex_height_bindings,
     const Array<double>& displacementmap,

@@ -4,6 +4,9 @@
 
 namespace Mlib {
 
+template <typename T>
+concept NotInt64 = !std::is_same_v<T, int64_t> && !std::is_same_v<T, uint64_t>;
+
 template <class Archive>
 class SafeArchiver {
 public:
@@ -13,13 +16,14 @@ public:
     struct is_saving {
         static const bool value = Archive::is_saving;
     };
-    template <class TElement>
+    template <NotInt64 TElement>
     void operator () (TElement& element) {
-        static_assert(!std::is_same_v<TElement, int64_t>);
-        static_assert(!std::is_same_v<TElement, uint64_t>);
         archive_(element);
     }
-
+    template <NotInt64 TElement>
+    void operator () (const TElement& element) {
+        archive_(element);
+    }
 private:
     Archive& archive_;
 };

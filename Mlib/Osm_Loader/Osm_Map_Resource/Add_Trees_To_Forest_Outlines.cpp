@@ -3,7 +3,7 @@
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Ground_Bvh.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Osm_Map_Resource_Helpers.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Steiner_Point_Info.hpp>
-#include <Mlib/Osm_Loader/Osm_Map_Resource/Street_Bvh.hpp>
+#include <Mlib/Osm_Loader/Osm_Map_Resource/Street_Bvh_2d.hpp>
 #include <Mlib/Scene_Graph/Resources/Batch_Resource_Instantiator.hpp>
 #include <Mlib/Scene_Graph/Resources/Parsed_Resource_Name.hpp>
 #include <Mlib/Scene_Graph/Resources/Sampler/Triangle_Sampler/Resource_Name_Cycle.hpp>
@@ -17,7 +17,7 @@ void Mlib::add_trees_to_forest_outlines(
     // std::list<SteinerPointInfo>& steiner_points,
     ResourceNameCycle& rnc,
     double min_dist_to_road,
-    const StreetBvh& street_bvh,
+    const StreetBvh2d& street_bvh,
     const GroundBvh& ground_bvh,
     const std::map<std::string, Node>& nodes,
     const std::map<std::string, Way>& ways,

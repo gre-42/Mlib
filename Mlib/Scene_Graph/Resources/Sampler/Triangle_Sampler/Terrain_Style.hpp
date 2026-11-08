@@ -4,13 +4,14 @@
 #include <Mlib/Os/Threads/Recursive_Shared_Mutex.hpp>
 #include <Mlib/Scene_Config/Scene_Precision.hpp>
 #include <Mlib/Scene_Graph/Resources/Parsed_Resource_Name.hpp>
+#include <cstdint>
 #include <vector>
 
 namespace Mlib {
 
 class SceneNodeResources;
 
-enum class SizeClassification {
+enum class SizeClassification: uint32_t {
     SMALL,
     LARGE
 };
@@ -49,7 +50,7 @@ struct TerrainStyleDistancesToBdry {
 
 class TerrainStyle {
 public:
-    explicit TerrainStyle(const TerrainStyleConfig &config);
+    explicit TerrainStyle(const TerrainStyleConfig& config);
     TerrainStyleConfig config;
     const Array<float>& foliagemap() const;
     const Array<float>& mudmap() const;

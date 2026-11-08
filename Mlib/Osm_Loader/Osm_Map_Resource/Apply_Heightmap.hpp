@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/Math/Interp_Fwd.hpp>
 #include <Mlib/Scene_Config/Scene_Precision.hpp>
+#include <cstdint>
 #include <list>
 #include <map>
 #include <memory>
@@ -22,7 +23,7 @@ enum class EntranceType;
 class NodeHeightBinding;
 template <class TPos>
 class VertexHeightBinding;
-enum class TerrainType;
+enum class TerrainType: uint32_t;
 template <class EntityType>
 class EntityTypeTriangleList;
 using TerrainTypeTriangleList = EntityTypeTriangleList<TerrainType>;

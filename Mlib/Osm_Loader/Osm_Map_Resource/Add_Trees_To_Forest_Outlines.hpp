@@ -8,7 +8,7 @@ class ResourceNameCycle;
 class BatchResourceInstantiator;
 struct Node;
 struct Way;
-class StreetBvh;
+class StreetBvh2d;
 class GroundBvh;
 
 void add_trees_to_forest_outlines(
@@ -16,7 +16,7 @@ void add_trees_to_forest_outlines(
     // std::list<SteinerPointInfo>& steiner_points,
     ResourceNameCycle& rnc,
     double min_dist_to_road,
-    const StreetBvh& street_bvh,
+    const StreetBvh2d& street_bvh,
     const GroundBvh& ground_bvh,
     const std::map<std::string, Node>& nodes,
     const std::map<std::string, Way>& ways,

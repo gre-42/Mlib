@@ -1,11 +1,11 @@
-#include "Street_Bvh.hpp"
+#include "Street_Bvh_2d.hpp"
 #include <Mlib/Geometry/Colored_Vertex.hpp>
 #include <Mlib/Geometry/Primitives/Point_Triangle_Intersection.hpp>
 #include <Mlib/Geometry/Triangle_Is_Right_Handed.hpp>
 
 using namespace Mlib;
 
-StreetBvh::StreetBvh(const std::list<FixedArray<ColoredVertex<CompressedScenePos>, 3>>& triangles)
+StreetBvh2d::StreetBvh2d(const std::list<FixedArray<ColoredVertex<CompressedScenePos>, 3>>& triangles)
     : bvh_{ {(CompressedScenePos)100.f, (CompressedScenePos)100.f}, 10 }
 {
     for (const auto& t : triangles) {
@@ -19,7 +19,7 @@ StreetBvh::StreetBvh(const std::list<FixedArray<ColoredVertex<CompressedScenePos
     }
 }
 
-std::optional<CompressedScenePos> StreetBvh::min_dist(
+std::optional<CompressedScenePos> StreetBvh2d::min_dist(
     const FixedArray<CompressedScenePos, 2>& pt,
     CompressedScenePos max_dist,
     FixedArray<CompressedScenePos, 2>* closest_pt) const
@@ -42,7 +42,7 @@ std::optional<CompressedScenePos> StreetBvh::min_dist(
     return dist;
 }
 
-bool StreetBvh::has_neighbor(const FixedArray<CompressedScenePos, 2>& pt, CompressedScenePos max_dist) const
+bool StreetBvh2d::has_neighbor(const FixedArray<CompressedScenePos, 2>& pt, CompressedScenePos max_dist) const
 {
     return bvh_.has_neighbor(pt, max_dist, [&pt](const Triangle2d& tri) {
         return (CompressedScenePos)distance_point_to_triangle(funpack(pt), funpack(tri));

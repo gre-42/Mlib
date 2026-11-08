@@ -9,13 +9,13 @@ class ResourceNameCycle;
 struct SteinerPointInfo;
 template <typename TData, size_t... tshape>
 class FixedArray;
-class StreetBvh;
+class StreetBvh2d;
 
 void add_grass_on_steiner_points(
     BatchResourceInstantiator& bri,
     ResourceNameCycle& rnc,
-    const StreetBvh& ground_bvh,
-    const StreetBvh& air_bvh,
+    const StreetBvh2d& ground_bvh,
+    const StreetBvh2d& air_bvh,
     const std::list<SteinerPointInfo>& steiner_points,
     float scale,
     float dmin,

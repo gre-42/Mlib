@@ -2,7 +2,7 @@
 #include <Mlib/Geometry/Mesh/Contour.hpp>
 #include <Mlib/Math/Interp.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Ground_Bvh.hpp>
-#include <Mlib/Osm_Loader/Osm_Map_Resource/Street_Bvh.hpp>
+#include <Mlib/Osm_Loader/Osm_Map_Resource/Street_Bvh_2d.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Subdivided_Contour.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Waysides_Surface.hpp>
 #include <Mlib/Scene_Graph/Resources/Batch_Resource_Instantiator.hpp>
@@ -19,7 +19,7 @@ void Mlib::draw_waysides(
     BatchResourceInstantiator& bri,
     const std::list<FixedArray<ColoredVertex<CompressedScenePos>, 3>>& inner_triangles,
     const GroundBvh& ground_bvh,
-    const StreetBvh& entrance_bvh,
+    const StreetBvh2d& entrance_bvh,
     double scale,
     const WaysideResourceNamesSurface& distances,
     ContourDetectionStrategy contour_detection_strategy)

@@ -33,7 +33,7 @@ class BatchResourceInstantiator;
 struct OsmTriangleLists;
 struct BoundingInfo;
 struct SteinerPointInfo;
-class StreetBvh;
+class StreetBvh2d;
 template <class TPos>
 class VertexHeightBinding;
 struct BarrierStyle;

@@ -6,12 +6,12 @@ namespace Mlib {
 
 struct SteinerPointInfo;
 struct BoundingInfo;
-class StreetBvh;
+class StreetBvh2d;
 class WayBvh;
 
 void add_street_steiner_points(
     std::list<SteinerPointInfo>& steiner_points,
-    const StreetBvh& ground_street_bvh,
+    const StreetBvh2d& ground_street_bvh,
     const WayBvh& terrain_region_contours_bvh,
     const BoundingInfo& bounding_info,
     double scale,
