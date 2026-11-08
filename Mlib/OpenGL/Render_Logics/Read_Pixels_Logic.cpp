@@ -1,6 +1,7 @@
 #include "Read_Pixels_Logic.hpp"
 #include <Mlib/Geometry/Cameras/Camera.hpp>
 #include <Mlib/Images/Revert_Axis.hpp>
+#include <Mlib/Images/StbImage3.hpp>
 #include <Mlib/Images/Vectorial_Pixels.hpp>
 #include <Mlib/Layout/Layout_Constraint_Parameters.hpp>
 #include <Mlib/Misc/Log.hpp>
@@ -15,6 +16,7 @@
 #include <Mlib/OpenGL/Ui/Button_Press.hpp>
 #include <Mlib/OpenGL/Viewport_Guard.hpp>
 #include <Mlib/Scene_Graph/Rendered_Scene_Descriptor.hpp>
+#include <chrono>
 #include <stb/stb_image_write.h>
 #include <stb_cpp/stb_image_load.hpp>
 #include <stdexcept>
@@ -128,10 +130,9 @@ bool ReadPixelsLogic::render_optional_setup(
                 frame_id,
                 setup);
         }
-        auto im = fbs->color_to_stb_image(3);
-        if (!stbi_write_png("screenshot.png", im.width, im.height, im.nrChannels, im.data(), 0)) {
-            throw std::runtime_error("Could not save screenshot");
-        }
+        auto now = std::chrono::system_clock::now();
+        auto filename = std::format("Screenshot-{:%Y-%m-%d-%H-%M-%S}.png", now);
+        StbImage3(fbs->color_to_stb_image(3)).save_to_file(filename);
     }
     child_logic_.render_auto_setup(
         lx,
