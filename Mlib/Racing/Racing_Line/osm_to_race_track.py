@@ -28,7 +28,8 @@ def run(args):
             fieldnames=[
                 '# x_m', 'y_m', 'w_tr_right_m', 'w_tr_left_m'])
         writer.writeheader()
-        while osm.successors[start] != args.start_node_id:
+        while ((start in osm.successors.keys()) and
+                (osm.successors[start] != args.start_node_id)):
             coords = trafo.transformed(osm.coordinates[start])
             writer.writerow({
                 '# x_m': str(coords[0]),
