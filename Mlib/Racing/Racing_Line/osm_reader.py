@@ -20,16 +20,22 @@ class OsmReader:
     coordinates: Dict[str, np.ndarray]
     successors: Dict[str, str]
 
-    def __init__(self, filename: str, only_raceways: bool) -> None:
+    def __init__(self, filename: str, only_raceways: bool, only_name: str) -> None:
         tree = ET.parse(filename)
         root = tree.getroot()
         self.coordinates = {
             node.attrib['id']: np.array((node.attrib['lat'], node.attrib['lon']),
                                         dtype=float)
             for node in root.iter('node')}
-        ways = (way for way in root.iter('way')
-                if ((not only_raceways) or
-                    way.attrib.get('raceway', 'no') == 'yes'))
+        def _include(way):
+            tags = {tag.attrib['k']: tag.attrib['v']
+                    for tag in way.findall('tag')}
+            if only_raceways and tags.get('raceway', 'no') != 'yes':
+                return False
+            if (only_name is not None) and (tags.get('name', None) != only_name):
+                return False
+            return True
+        ways = filter(_include, root.iter('way'))
         successors_list = [
             (n0.attrib['ref'], n1.attrib['ref'])
             for way in ways

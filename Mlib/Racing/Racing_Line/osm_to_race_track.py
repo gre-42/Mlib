@@ -15,7 +15,7 @@ from osm_reader import OsmReader
 
 
 def run(args):
-    osm = OsmReader(args.osm, args.only_raceways)
+    osm = OsmReader(args.osm, args.only_raceways, args.only_name)
 
     start = args.start_node_id
     trafo = latitude_longitude_2_meters_mapping(
@@ -48,5 +48,6 @@ if __name__ == '__main__':
     parser.add_argument('--start_node_id', required=True)
     parser.add_argument('--street_width', type=float, required=True)
     parser.add_argument('--only_raceways', action='store_true')
+    parser.add_argument('--only_name')
 
     run(parser.parse_args())
