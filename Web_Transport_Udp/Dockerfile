@@ -1,12 +1,12 @@
 # 1. Planer stage: Creates the recipe for the dependencies
-FROM rust:1.95-bullseye AS planner
+FROM rust:latest AS planner
 WORKDIR /app
 RUN cargo install cargo-chef
 COPY . .
 RUN cargo chef prepare --recipe-path recipe.json
 
 # 2. Cacher stage: Builds on the dependencies based on the recipe
-FROM rust:1.95-bullseye AS cacher
+FROM rust:latest AS cacher
 WORKDIR /app
 RUN cargo install cargo-chef
 RUN apt-get update && apt-get install -y pkg-config libssl-dev && rm -rf /var/lib/apt/lists/*
@@ -14,7 +14,7 @@ COPY --from=planner /app/recipe.json recipe.json
 RUN cargo chef cook --release --recipe-path recipe.json
 
 # 3. Builder stage: Copies the real source code and uses the cache from stage 2
-FROM rust:1.95-bullseye AS builder
+FROM rust:latest AS builder
 WORKDIR /app
 RUN apt-get update && apt-get install -y pkg-config libssl-dev && rm -rf /var/lib/apt/lists/*
 COPY . .

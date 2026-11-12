@@ -4,9 +4,9 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-anyhow = "1.0.103"
+anyhow = "1.0.104"
 form_urlencoded = "1.2"
 pretty-hex = "0.4.2"
-tokio = { version = "1.52.3", features = ["full"] }
+tokio = { version = "1.54.1", features = ["full"] }
 url = "2.5.8"
-wtransport = "0.7.1"
+wtransport = "0.7.2"
