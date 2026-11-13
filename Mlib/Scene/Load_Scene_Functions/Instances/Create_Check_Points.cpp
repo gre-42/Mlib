@@ -93,8 +93,7 @@ void CreateCheckPoints::execute(const LoadSceneJsonUserFunctionArgs& args)
     }
     #ifndef WITHOUT_GRAPHICS
     RenderableScene* renderable_scene = nullptr;
-    auto user_is_local = args.arguments.at<bool>(KnownArgs::user_is_local);
-    if (user_is_local) {
+    if (args.arguments.at<bool>(KnownArgs::user_is_local)) {
         auto renderable_scene_name = args.arguments.at<std::string>(KnownArgs::renderable_scene);
         renderable_scene = &args.renderable_scenes[renderable_scene_name];
     }
@@ -175,7 +174,7 @@ void CreateCheckPoints::execute(const LoadSceneJsonUserFunctionArgs& args)
             args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::pacenotes_picture_bottom)),
             args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::pacenotes_picture_top)));
         #endif
-            auto& renderable_pace_notes = global_object_pool.create<CheckPointsPacenotes>(
+        auto& renderable_pace_notes = global_object_pool.create<CheckPointsPacenotes>(
             CURRENT_SOURCE_LOCATION,
             std::move(pacenotes_filename),
             DanglingBaseClassRef<const CheckPoints>{ check_points, CURRENT_SOURCE_LOCATION },
