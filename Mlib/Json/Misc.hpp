@@ -80,8 +80,7 @@ void to_json(nlohmann::json& j, const VariableAndHash<TData>& v) {
 
 template <class TInt, std::intmax_t denominator>
 void from_json(const nlohmann::json& j, FixedPointNumber<TInt, denominator>& v) {
-    intermediate_float<TInt> vv;
-    from_json(j, vv);
+    auto vv = j.get<intermediate_float<TInt>>();
     v = FixedPointNumber<TInt, denominator>::from_float_safe(vv);
 }
 
