@@ -51,7 +51,8 @@ CheckPoints::CheckPoints(
     const FixedArray<float, 3>& selection_emissive,
     const FixedArray<float, 3>& deselection_emissive,
     const RespawnConfig& respawn_config,
-    const std::function<void()>& on_finish)
+    std::function<void()> on_finish,
+    std::function<void()> on_finish2)
     : track_reader_{
         std::move(sequence),
         nframes,
@@ -87,7 +88,8 @@ CheckPoints::CheckPoints(
     , selection_emissive_{ selection_emissive }
     , deselection_emissive_{ deselection_emissive }
     , respawn_config_{ respawn_config }
-    , on_finish_{ on_finish }
+    , on_finish_{ std::move(on_finish) }
+    , on_finish2_{ std::move(on_finish2) }
 {
     if (nbeacons == 0) {
         throw std::runtime_error("Need at least one beacon node");
@@ -297,6 +299,7 @@ void CheckPoints::advance_time_only(float dt, const SceneTime& time) {
             } else if (race_state_ == RaceState::FINISHED) {
                 last_reached_checkpoint_.reset();
                 on_finish_();
+                on_finish2_();
             } else {
                 throw std::runtime_error("Unknown race state");
             }

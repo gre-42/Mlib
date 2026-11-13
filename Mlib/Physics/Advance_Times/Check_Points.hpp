@@ -71,7 +71,8 @@ public:
         const FixedArray<float, 3>& selection_emissive = { -1.f, -1.f, -1.f },
         const FixedArray<float, 3>& deselection_emissive = { -1.f, -1.f, -1.f },
         const RespawnConfig& respawn_config = RespawnConfig{},
-        const std::function<void()>& on_finish = [](){});
+        std::function<void()> on_finish = [](){},
+        std::function<void()> on_finish2 = [](){});
     ~CheckPoints();
     virtual void advance_time(float dt, const StaticWorld& world) override;
     virtual void notify_destroyed(SceneNode& destroyed_object) override;
@@ -120,6 +121,7 @@ private:
     FixedArray<float, 3> deselection_emissive_;
     RespawnConfig respawn_config_;
     std::function<void()> on_finish_;
+    std::function<void()> on_finish2_;
 };
 
 }

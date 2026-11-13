@@ -77,6 +77,7 @@ DECLARE_ARGUMENT(selection_emissivity);
 DECLARE_ARGUMENT(deselection_emissivity);
 DECLARE_ARGUMENT(respawn_config);
 DECLARE_ARGUMENT(on_finish);
+DECLARE_ARGUMENT(on_finish2);
 DECLARE_ARGUMENT(focus_mask);
 DECLARE_ARGUMENT(submenus);
 }
@@ -101,6 +102,7 @@ void CreateCheckPoints::execute(const LoadSceneJsonUserFunctionArgs& args)
 
     auto moving_asset_id = args.arguments.at<std::string>(KnownArgs::moving_asset_id);
     auto on_finish = args.arguments.at(KnownArgs::on_finish);
+    auto on_finish2 = args.arguments.at(KnownArgs::on_finish2);
     size_t nframes = args.arguments.at<bool>(KnownArgs::circular) ? 1 : 0;
     size_t nlaps = args.arguments.at<size_t>(KnownArgs::laps);
     if (args.arguments.contains_non_null(KnownArgs::track_filename) ==
@@ -151,6 +153,9 @@ void CreateCheckPoints::execute(const LoadSceneJsonUserFunctionArgs& args)
         args.arguments.at<RespawnConfig>(KnownArgs::respawn_config),
         [on_finish, mle = args.macro_line_executor]() {
             mle(on_finish, nullptr);
+        },
+        [on_finish2, mle = args.macro_line_executor]() {
+            mle(on_finish2, nullptr);
         });
     std::string pacenotes_filename;
     if (args.arguments.at<bool>(KnownArgs::pacenotes_enabled)) {
