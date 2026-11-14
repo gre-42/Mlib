@@ -1077,7 +1077,7 @@ void android_main(android_app* app)
         lerr() << "Command-line error: " << e.what();
 #endif
         AUi::ShowMessage("Command-line error", e.what());
-        std::this_thread::sleep_for(std::chrono::seconds(5));
+        std::this_thread::sleep_for(std::chrono::seconds(15));
         std::abort();
     } catch (const std::runtime_error& e) {
 #ifndef __EMSCRIPTEN__
@@ -1087,7 +1087,7 @@ void android_main(android_app* app)
         }
 #endif
         AUi::ShowMessage("Runtime error", e.what());
-        std::this_thread::sleep_for(std::chrono::seconds(5));
+        std::this_thread::sleep_for(std::chrono::seconds(15));
         std::abort();
     }
     if (unhandled_exceptions_occured()) {
@@ -1100,7 +1100,7 @@ void android_main(android_app* app)
         }
 #endif
         AUi::ShowMessage("Unhandled exception(s)", sstr.str());
-        std::this_thread::sleep_for(std::chrono::seconds(5));
+        std::this_thread::sleep_for(std::chrono::seconds(15));
         std::abort();
     }
 #ifdef __EMSCRIPTEN__

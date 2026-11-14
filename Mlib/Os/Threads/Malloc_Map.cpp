@@ -16,6 +16,16 @@ static THREAD_LOCAL(const std::string*) current_ = nullptr;
 static std::map<std::string, size_t> allocated_;
 static FastMutex allocated_mutex_;
 
+StackGuard::StackGuard()
+    : tl_{current_}
+{
+    current_ = nullptr;
+}
+
+StackGuard::~StackGuard() {
+    current_ = tl_;
+}
+
 void Mlib::enable_wrap_malloc() {
     wrap_malloc_enabled_ = true;
 }
@@ -38,9 +48,9 @@ MallocGuard::~MallocGuard() {
 extern "C" void* __real_malloc(size_t size);
 
 extern "C" void* __wrap_malloc(size_t size) {
-    if (current_ != nullptr) {
-        auto c = current_;
-        MallocGuard malloc_guard{""};
+    const std::string* c = current_;
+    if (c != nullptr) {
+        StackGuard stack_guard;
         std::scoped_lock lock{allocated_mutex_};
         allocated_[*c] += size;
     }
@@ -51,9 +61,9 @@ extern "C" {
     // operator new(size_t)
     void* __real__Znwm(std::size_t size);
     void* __wrap__Znwm(std::size_t size) {
-        if ((current_ != nullptr) && !current_->empty()) {
-            auto c = current_;
-            MallocGuard malloc_guard{""};
+        const std::string* c = current_;
+        if (c != nullptr) {
+            StackGuard stack_guard;
             std::scoped_lock lock{allocated_mutex_};
             allocated_[*c] += size;
         }
@@ -62,9 +72,9 @@ extern "C" {
     // operator new[](size_t)
     void* __real__Znam(std::size_t size);
     void* __wrap__Znam(std::size_t size) {
-        if ((current_ != nullptr) && !current_->empty()) {
-            auto c = current_;
-            MallocGuard malloc_guard{""};
+        const std::string* c = current_;
+        if (c != nullptr) {
+            StackGuard stack_guard;
             std::scoped_lock lock{allocated_mutex_};
             allocated_[*c] += size;
         }
@@ -73,9 +83,9 @@ extern "C" {
     // operator new(size_t, std::align_val_t)
     void* __real__ZnwmSt11align_val_t(size_t size, std::align_val_t align);
     void* __wrap__ZnwmSt11align_val_t(size_t size, std::align_val_t align) {
-        if ((current_ != nullptr) && !current_->empty()) {
-            auto c = current_;
-            MallocGuard malloc_guard{""};
+        const std::string* c = current_;
+        if (c != nullptr) {
+            StackGuard stack_guard;
             std::scoped_lock lock{allocated_mutex_};
             allocated_[*c] += size;
         }
@@ -105,7 +115,7 @@ std::ostream& operator << (std::ostream& ostr, const SizePrinter& p) {
 }
 
 void Mlib::print_allocated() {
-    MallocGuard malloc_guard{""};
+    StackGuard stack_guard;
     size_t sum = 0;
     linfo() << "Allocated begin";
     std::scoped_lock lock{allocated_mutex_};

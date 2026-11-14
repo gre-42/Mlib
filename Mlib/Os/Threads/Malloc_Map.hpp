@@ -18,11 +18,21 @@ private:
     const std::string* parent_;
 };
 
+class StackGuard {
+public:
+    StackGuard();
+    ~StackGuard();
+private:
+    const std::string* tl_;
+};
+
 void print_allocated();
 
+#define STACK_GUARD(var) StackGuard var
 #define MALLOC_GUARD(var, name) std::optional<MallocGuard> var; if (wrap_malloc_enabled()) var.emplace(name)
 #define PRINT_ALLOCATED() if (wrap_malloc_enabled()) print_allocated()
 #else
+#define STACK_GUARD(var)
 #define MALLOC_GUARD(var, name)
 #define PRINT_ALLOCATED()
 #endif

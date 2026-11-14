@@ -422,11 +422,15 @@ macro(ddebug)
 endmacro()
 
 macro(try_wrap_allocations target)
-    check_linker_flag(CXX "-Wl,--wrap=malloc" LINKER_SUPPORTS_WRAP_MALLOC)
-    if (LINKER_SUPPORTS_WRAP_MALLOC)
-        target_link_options(${target} PUBLIC -Wl,--wrap=malloc
-            -Wl,--wrap=_Znwm -Wl,--wrap=_Znam -Wl,--wrap=_ZnwmSt11align_val_t)
-        target_compile_options(${target} PUBLIC -DMALLOC_WRAPPING_ENABLED)
+    # ANDROID has no native thread_local keyword, and performs memory
+    # allocations during the initialization of "ThreadLocal::get()".
+    if (NOT ANDROID)
+        check_linker_flag(CXX "-Wl,--wrap=malloc" LINKER_SUPPORTS_WRAP_MALLOC)
+        if (LINKER_SUPPORTS_WRAP_MALLOC)
+            target_link_options(${target} PUBLIC -Wl,--wrap=malloc
+                -Wl,--wrap=_Znwm -Wl,--wrap=_Znam -Wl,--wrap=_ZnwmSt11align_val_t)
+            target_compile_options(${target} PUBLIC -DMALLOC_WRAPPING_ENABLED)
+        endif()
     endif()
 endmacro()
 
