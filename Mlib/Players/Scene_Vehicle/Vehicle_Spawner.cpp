@@ -79,13 +79,13 @@ std::optional<NTeamCountType> VehicleSpawner::get_team_id() const {
     return team_id_;
 }
 
-std::optional<VariableAndHash<std::string>> VehicleSpawner::get_team_name() const {
+const std::optional<VariableAndHash<std::string>>& VehicleSpawner::get_team_name() const {
     return team_name_;
 }
 
 bool VehicleSpawner::wants_to_idle(SpawnTrigger spawn_trigger) const {
     if (spawn_trigger_ != spawn_trigger) {
-        return false;
+        return true;
     }
     if (!replacement_rank_.has_value()) {
         return false;
@@ -93,7 +93,7 @@ bool VehicleSpawner::wants_to_idle(SpawnTrigger spawn_trigger) const {
     return remote_sites_.try_get_user_by_rank(*replacement_rank_) != nullptr;
 }
 
-std::string VehicleSpawner::get_group_name() const {
+const std::string& VehicleSpawner::get_group_name() const {
     return group_name_;
 }
 

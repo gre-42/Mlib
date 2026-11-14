@@ -69,8 +69,8 @@ public:
     float get_time_since_deletion() const;
 
     std::optional<NTeamCountType> get_team_id() const;
-    std::optional<VariableAndHash<std::string>> get_team_name() const;
-    std::string get_group_name() const;
+    const std::optional<VariableAndHash<std::string>>& get_team_name() const;
+    const std::string& get_group_name() const;
     
     bool has_player() const;
     void set_player(

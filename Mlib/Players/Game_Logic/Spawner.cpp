@@ -102,7 +102,7 @@ static bool spawn_point_matches_spawner(
     const VehicleSpawner& spawner,
     const std::set<const SpawnPoint*>& occupied_spawn_points)
 {
-    auto st = spawner.get_team_name();
+    const auto& st = spawner.get_team_name();
     if (sp.team.has_value() && st.has_value() && (*sp.team != *st)) {
         return false;
     }
