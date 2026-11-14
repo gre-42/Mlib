@@ -1,6 +1,5 @@
 #include "Remote_Countdown.hpp"
 #include <Mlib/Array/Fixed_Array.hpp>
-#include <Mlib/Misc/To_Underlying.hpp>
 #include <Mlib/Os/Io/Binary_Bitwise_Words_Reader.hpp>
 #include <Mlib/Os/Io/Binary_Bitwise_Words_Writer.hpp>
 #include <Mlib/Physics/Advance_Times/Countdown_Physics.hpp>
@@ -12,6 +11,7 @@
 #include <Mlib/Scene/Remote/Remote_Scene.hpp>
 #include <Mlib/Scene/Remote/Remote_Scene_Object_Priority.hpp>
 #include <Mlib/Scene/Remote/Remote_Scene_Object_Type.hpp>
+#include <utility>
 
 using namespace Mlib;
 
@@ -84,7 +84,7 @@ void RemoteCountdown::read(
     if (type != RemoteSceneObjectType::COUNTDOWN) {
         throw std::runtime_error((std::stringstream() <<
             "RemoteCountdown::read: Unexpected scene object type. Object ID = " <<
-            remote_object_id << ", type = 0x" << std::hex << (to_underlying(type) + 0)).str());
+            remote_object_id << ", type = 0x" << std::hex << (std::to_underlying(type) + 0)).str());
     }
     read_data(reader, remote_object_id);
 }

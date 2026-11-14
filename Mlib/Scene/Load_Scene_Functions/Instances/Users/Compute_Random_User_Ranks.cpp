@@ -28,8 +28,8 @@ void ComputeRandomUserRanks::execute(const LoadSceneJsonUserFunctionArgs& args) 
                 if (!user.random_rank.has_value()) {
                     throw std::runtime_error("User \"" + user.full_name + "\" has no rank after random rank computation");
                 }
-                vars.set("random_rank_" + user.full_name, *user.random_rank);
-                vars.set("random_rank_str_" + user.full_name, std::to_string(*user.random_rank));
+                vars.set("random_rank_" + user.full_name, *user.random_rank + 0);
+                vars.set("random_rank_str_" + user.full_name, std::to_string(*user.random_rank + 0));
                 return true;
             }, UserTypes::ALL);
     }

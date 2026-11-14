@@ -18,6 +18,7 @@ BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(name);
 DECLARE_ARGUMENT(node);
 DECLARE_ARGUMENT(team);
+DECLARE_ARGUMENT(replacement_rank);
 DECLARE_ARGUMENT(group);
 DECLARE_ARGUMENT(trigger);
 }
@@ -52,13 +53,16 @@ void CreateSpawner::execute(const LoadSceneJsonUserFunctionArgs& args) {
     if (team_name.has_value()) {
         team_id.emplace(players.get_team_id(*team_name));
     }
+    auto replacement_rank = args.arguments.try_at_non_null<NUserCountType>(KnownArgs::replacement_rank);
     vehicle_spawners.set(
         name,
         std::make_unique<VehicleSpawner>(
+            remote_sites,
             scene,
             get_node(),
             team_id,
             team_name,
+            replacement_rank,
             args.arguments.at<std::string>(KnownArgs::group),
             spawn_trigger_from_string(args.arguments.at<std::string>(KnownArgs::trigger))));
 }

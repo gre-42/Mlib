@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Scene_Config/Remote_Integers.hpp>
 #include <Mlib/Scene_Config/Scene_Precision.hpp>
 #include <cstddef>
 #include <cstdint>
@@ -16,7 +17,7 @@ public:
         const TransformationMatrix<float, ScenePos, 3>& pose,
         const FixedArray<float, 3>& velocity,
         const FixedArray<float, 3>& angular_velocity,
-        uint32_t rank) = 0;
+        NUserCountType rank) = 0;
     virtual void set_checkpoints(
         const std::vector<TransformationMatrix<float, ScenePos, 3>>& checkpoints) = 0;
     virtual void set_circularity(bool is_circular) = 0;

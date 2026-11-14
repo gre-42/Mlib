@@ -55,7 +55,7 @@ public:
         const TransformationMatrix<SceneDir, ScenePos, 3>& pose,
         const FixedArray<SceneDir, 3>& velocity,
         const FixedArray<SceneDir, 3>& angular_velocity,
-        uint32_t rank) override
+        NUserCountType rank) override
     {
         nlohmann::json j{
             {"car_node_position", pose.t},
@@ -64,7 +64,7 @@ public:
             {"vehicle_angular_velocity", angular_velocity}};
         asset_references_["levels"].merge_into_database(
             asset_id_,
-            JsonMacroArguments{{{std::to_string(rank), std::move(j)}}});
+            JsonMacroArguments{{{std::to_string(rank + 0), std::move(j)}}});
     }
     void set_checkpoints(
         const std::vector<TransformationMatrix<SceneDir, ScenePos, 3>>& checkpoints) override

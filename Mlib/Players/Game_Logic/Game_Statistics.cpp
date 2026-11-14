@@ -1,9 +1,9 @@
 #include "Game_Statistics.hpp"
 #include <Mlib/Math/Saturating_Increment.hpp>
-#include <Mlib/Misc/To_Underlying.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Players/Advance_Times/Player.hpp>
 #include <Mlib/Players/Team/Team.hpp>
+#include <utility>
 
 using namespace Mlib;
 
@@ -23,7 +23,7 @@ std::optional<NTeamCountType> get_id(Team* team) {
 
 GameStatistics::GameStatistics()
     : player_nkills_{"Player #kills"}
-    , team_nkills_{"Team #kills", [](NTeamCountType id){ return std::to_string(to_underlying(id) + 0); }}
+    , team_nkills_{"Team #kills", [](NTeamCountType id){ return std::to_string(std::to_underlying(id) + 0); }}
 {}
 
 GameStatistics::~GameStatistics() = default;

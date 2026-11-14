@@ -1,6 +1,5 @@
 #include "Remote_Game_Statistics.hpp"
 #include <Mlib/Math/Saturating_Increment.hpp>
-#include <Mlib/Misc/To_Underlying.hpp>
 #include <Mlib/Os/Io/Binary_Bitwise_Words_Reader.hpp>
 #include <Mlib/Os/Io/Binary_Bitwise_Words_Writer.hpp>
 #include <Mlib/Players/Containers/Remote_Sites.hpp>
@@ -12,6 +11,7 @@
 #include <Mlib/Scene/Remote/Remote_Scene.hpp>
 #include <Mlib/Scene/Remote/Remote_Scene_Object_Priority.hpp>
 #include <Mlib/Scene/Remote/Remote_Scene_Object_Type.hpp>
+#include <utility>
 
 using namespace Mlib;
 
@@ -109,7 +109,7 @@ void RemoteGameStatistics::read(
     if (type != RemoteSceneObjectType::GAME_STATISTICS) {
         throw std::runtime_error((std::stringstream() <<
             "RemoteGameStatistics::read: Unexpected scene object type. Object ID = " <<
-            remote_object_id << ", type = 0x" << std::hex << (to_underlying(type) + 0)).str());
+            remote_object_id << ", type = 0x" << std::hex << (std::to_underlying(type) + 0)).str());
     }
     if (any(transmitted_fields & ~(
         TransmittedFields::SITE_ID |

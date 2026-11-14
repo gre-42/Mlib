@@ -248,7 +248,7 @@ void Bystanders::handle_bystanders() {
     std::vector<VehicleSpawner*> spawners;
     spawners.reserve(vehicle_spawners_.spawners().size());
     for (auto& [_, spawner] : vehicle_spawners_.spawners()) {
-        if (spawner->get_spawn_trigger() != SpawnTrigger::BYSTANDERS) {
+        if (spawner->wants_to_idle(SpawnTrigger::BYSTANDERS)) {
             continue;
         }
         if (!spawner->has_scene_vehicle() && !spawner->dependencies_are_met()) {

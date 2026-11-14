@@ -1,6 +1,7 @@
 #include "Vehicle_Spawner.hpp"
 #include <Mlib/Os/Threads/Throwing_Lock_Guard.hpp>
 #include <Mlib/Players/Advance_Times/Player.hpp>
+#include <Mlib/Players/Containers/Remote_Sites.hpp>
 #include <Mlib/Players/Scene_Vehicle/Scene_Vehicle.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
@@ -39,19 +40,23 @@ SpawnTrigger Mlib::spawn_trigger_from_string(const std::string& s) {
 }
 
 VehicleSpawner::VehicleSpawner(
+    RemoteSites& remote_sites,
     Scene& scene,
     NodeSpawnArguments node_args,
     std::optional<NTeamCountType> team_id,
     std::optional<VariableAndHash<std::string>> team_name,
+    std::optional<NUserCountType> replacement_rank,
     std::string group_name,
     SpawnTrigger spawn_trigger)
-    : scene_{ scene }
+    : remote_sites_{ remote_sites }
+    , scene_{ scene }
     , player_{ nullptr }
     , on_player_destroy_{ nullptr, CURRENT_SOURCE_LOCATION }
     , on_primary_scene_vehicle_node_destroy_{ nullptr, CURRENT_SOURCE_LOCATION }
     , node_args_{ std::move(node_args) }
     , team_id_{ team_id }
     , team_name_{ std::move(team_name) }
+    , replacement_rank_{ replacement_rank }
     , group_name_{ std::move(group_name) }
     , spawn_trigger_{ spawn_trigger }
     , time_since_spawn_{ NAN }
@@ -76,6 +81,16 @@ std::optional<NTeamCountType> VehicleSpawner::get_team_id() const {
 
 std::optional<VariableAndHash<std::string>> VehicleSpawner::get_team_name() const {
     return team_name_;
+}
+
+bool VehicleSpawner::wants_to_idle(SpawnTrigger spawn_trigger) const {
+    if (spawn_trigger_ != spawn_trigger) {
+        return false;
+    }
+    if (!replacement_rank_.has_value()) {
+        return false;
+    }
+    return remote_sites_.try_get_user_by_rank(*replacement_rank_) != nullptr;
 }
 
 std::string VehicleSpawner::get_group_name() const {
@@ -293,10 +308,6 @@ float VehicleSpawner::get_time_since_spotted_by_vip() const {
 void VehicleSpawner::notify_spotted_by_vip() {
     ThrowingLockGuard delete_lock{scene_.delete_node_mutex};
     time_since_spotted_by_vip_ = 0.f;
-}
-
-SpawnTrigger VehicleSpawner::get_spawn_trigger() const {
-    return spawn_trigger_;
 }
 
 void VehicleSpawner::advance_time(float dt) {

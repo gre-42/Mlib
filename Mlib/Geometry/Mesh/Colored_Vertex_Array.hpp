@@ -6,7 +6,6 @@
 #include <Mlib/Geometry/Primitives/Primitive_Dimensions.hpp>
 #include <Mlib/Initialization/Default_Uninitialized_Vector.hpp>
 #include <Mlib/Misc/Object.hpp>
-#include <Mlib/Misc/To_Underlying.hpp>
 #include <Mlib/Os/Io/Safe_Archiver.hpp>
 #include <Mlib/Os/Io/Serialize/Serialize.hpp>
 #include <Mlib/Os/Threads/Recursive_Shared_Mutex.hpp>
@@ -15,6 +14,7 @@
 #include <cstdint>
 #include <iosfwd>
 #include <memory>
+#include <utility>
 #include <vector>
 
 namespace Mlib {
@@ -64,9 +64,9 @@ public:
         const ExtremalBoundingSphere<TPos, 3>* bounding_sphere = nullptr);
     ~ColoredVertexArray();
     MeshMeta meta;
-    UUVector<FixedArray<ColoredVertex<TPos>, to_underlying(PrimitiveDimensions::QUAD)>> quads;
-    UUVector<FixedArray<ColoredVertex<TPos>, to_underlying(PrimitiveDimensions::TRIANGLE)>> triangles;
-    UUVector<FixedArray<ColoredVertex<TPos>, to_underlying(PrimitiveDimensions::LINE)>> lines;
+    UUVector<FixedArray<ColoredVertex<TPos>, std::to_underlying(PrimitiveDimensions::QUAD)>> quads;
+    UUVector<FixedArray<ColoredVertex<TPos>, std::to_underlying(PrimitiveDimensions::TRIANGLE)>> triangles;
+    UUVector<FixedArray<ColoredVertex<TPos>, std::to_underlying(PrimitiveDimensions::LINE)>> lines;
     UUVector<FixedArray<std::vector<BoneWeight>, 3>> triangle_bone_weights;
     UUVector<FixedArray<float, 3>> continuous_triangle_texture_layers;
     UUVector<FixedArray<uint8_t, 3>> discrete_triangle_texture_layers;
@@ -76,7 +76,7 @@ public:
     UUVector<FixedArray<float, 4>> interiormap_uvmaps;
     
     template <PrimitiveDimensions tdims>
-    UUVector<FixedArray<ColoredVertex<TPos>, to_underlying(tdims)>>& primitives() {
+    UUVector<FixedArray<ColoredVertex<TPos>, std::to_underlying(tdims)>>& primitives() {
         if constexpr (tdims == PrimitiveDimensions::QUAD) {
             return quads;
         } else if constexpr (tdims == PrimitiveDimensions::TRIANGLE) {
@@ -88,7 +88,7 @@ public:
         }
     }
     template <PrimitiveDimensions tdims>
-    const UUVector<FixedArray<ColoredVertex<TPos>, to_underlying(tdims)>>& primitives() const {
+    const UUVector<FixedArray<ColoredVertex<TPos>, std::to_underlying(tdims)>>& primitives() const {
         return const_cast<ColoredVertexArray*>(this)->primitives<tdims>();
     }
     size_t nelements() const;

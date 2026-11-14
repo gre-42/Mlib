@@ -251,7 +251,7 @@ LateJoinPlayerFactory::LateJoinPlayerFactory(
                     locals0 = std::move(locals),
                     spawner_name0=std::move(spawner_name),
                     let0=std::move(let),
-                    &remote]() -> std::optional<uint32_t>
+                    &remote]() -> std::optional<NUserCountType>
                 {
                     auto locals = locals0;
                     auto spawner_name = spawner_name0;
@@ -261,7 +261,7 @@ LateJoinPlayerFactory::LateJoinPlayerFactory(
                         if (!user.has_value()) {
                             throw std::runtime_error("\"pc\" controller requires \"user\"");
                         }
-                        auto rank = JsonView{*user}.at<uint32_t>(PlayerUserKeys::rank);
+                        auto rank = JsonView{*user}.at<NUserCountType>(PlayerUserKeys::rank);
                         u = remote.sites.try_get_user_by_rank(rank);
                         if ((u == nullptr) || ((u->type == UserType::REMOTE) && (u->get_status() != UserStatus::LEVEL_LOADED))) {
                             return rank;
@@ -274,7 +274,14 @@ LateJoinPlayerFactory::LateJoinPlayerFactory(
                         } else {
                             let["user_is_local"] = false;
                         }
-                    } else if (controller != "npc") {
+                    } else if (controller == "npc") {
+                        if (user.has_value()) {
+                            auto rank = JsonView{*user}.at<NUserCountType>(PlayerUserKeys::rank);
+                            let["replacement_rank"] = rank;
+                        } else {
+                            let["replacement_rank"] = nlohmann::json();
+                        }
+                    } else {
                         throw std::runtime_error("Unknown controller: \"" + controller + "\". Known controllers: \"pc\", \"npc\"");
                     }
                     let["spawner_name"] = spawner_name;
@@ -293,7 +300,7 @@ LateJoinPlayerFactory::LateJoinPlayerFactory(
                 auto deferred_rank = create_player();
                 if (deferred_rank.has_value()) {
                     if (!create_rank_player_.try_emplace(*deferred_rank, std::move(create_player)).second) {
-                        throw std::runtime_error("Player with rank \"" + std::to_string(*deferred_rank) + "\" already exists");
+                        throw std::runtime_error("Player with rank \"" + std::to_string(*deferred_rank + 0) + "\" already exists");
                     }
                 }
             } else {

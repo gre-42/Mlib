@@ -4,7 +4,6 @@
 #include <Mlib/Memory/Destruction_Functions_Removeal_Tokens_Ref.hpp>
 #include <Mlib/Memory/Object_Pool.hpp>
 #include <Mlib/Memory/Recursive_Deletion.hpp>
-#include <Mlib/Misc/To_Underlying.hpp>
 #include <Mlib/Physics/Containers/Advance_Times.hpp>
 #include <Mlib/Physics/Containers/Race_History.hpp>
 #include <Mlib/Physics/Containers/Race_Identifier.hpp>
@@ -15,6 +14,7 @@
 #include <Mlib/Time/Format.hpp>
 #include <filesystem>
 #include <stdexcept>
+#include <utility>
 
 namespace fs = std::filesystem;
 
@@ -28,7 +28,7 @@ Players::Players(
     std::shared_ptr<Translator> translator,
     const DanglingBaseClassRef<RemoteSites>& remote_sites)
     : players_{"Player"}
-    , teams_{"Team", [](NTeamCountType id){ return std::to_string(to_underlying(id) + 0); }}
+    , teams_{"Team", [](NTeamCountType id){ return std::to_string(std::to_underlying(id) + 0); }}
     , team_ids_{"Team"}
     , race_history_{std::make_unique<RaceHistory>(
         max_tracks,
@@ -51,7 +51,7 @@ Players::~Players() {
 
 void Players::add_player(const DanglingBaseClassRef<Player>& player) {
     if (!teams_.contains(player->team_id())) {
-        throw std::runtime_error("Unknown team: " + std::to_string(to_underlying(player->team_id()) + 0));
+        throw std::runtime_error("Unknown team: " + std::to_string(std::to_underlying(player->team_id()) + 0));
     }
     auto player_id = player->id();
     {
@@ -110,11 +110,11 @@ void Players::remove_team(NTeamCountType team_id) {
     {
         auto team = get_team(team_id);
         if (team_ids_.erase(team->name()) != 1) {
-            verbose_abort("Could not remove team ID \"" + std::to_string(to_underlying(team_id) + 0) + '"');
+            verbose_abort("Could not remove team ID \"" + std::to_string(std::to_underlying(team_id) + 0) + '"');
         }
     }
     if (teams_.erase(team_id) != 1) {
-        verbose_abort("Could not remove team \"" + std::to_string(to_underlying(team_id) + 0) + '"');
+        verbose_abort("Could not remove team \"" + std::to_string(std::to_underlying(team_id) + 0) + '"');
     }
 }
 

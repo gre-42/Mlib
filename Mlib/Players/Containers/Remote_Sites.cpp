@@ -7,6 +7,7 @@
 #include <mutex>
 #include <random>
 #include <stdexcept>
+#include <utility>
 
 using namespace Mlib;
 
@@ -81,8 +82,12 @@ std::ostream& Mlib::operator << (std::ostream& ostr, const UserInfo& user_info) 
         ", name: \"" << user_info.name << '"' <<
         ", full name: \"" << user_info.full_name << '"' <<
         ", type: " << "0x" << std::hex << (int)user_info.type <<
-        ", random rank: " << user_info.random_rank <<
         ", status: " << "0x" << std::hex << (int)user_info.get_status();
+    if (user_info.random_rank.has_value()) {
+        ostr << ", random rank: " << (*user_info.random_rank + 0);
+    } else {
+        ostr << ", random rank: none";
+    }
     return ostr;
 }
 
@@ -327,7 +332,7 @@ void RemoteSites::print(std::ostream& ostr) const {
 DanglingBaseClassRef<const UserInfo> RemoteSites::get_user_by_rank(NUserCountType rank) const {
     auto result = try_get_user_by_rank(rank);
     if (result == nullptr) {
-        throw std::runtime_error("Could not find user with rank " + std::to_string(rank));
+        throw std::runtime_error("Could not find user with rank " + std::to_string(rank + 0));
     }
     return *result;
 }

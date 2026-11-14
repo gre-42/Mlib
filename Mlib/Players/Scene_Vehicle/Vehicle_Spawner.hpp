@@ -17,6 +17,7 @@
 
 namespace Mlib {
 
+class RemoteSites;
 class Scene;
 template <class TDir, class TPos, size_t n>
 class TransformationMatrix;
@@ -49,10 +50,12 @@ public:
         const NodeSpawnArguments* node)>;
 
     VehicleSpawner(
+        RemoteSites& remote_sites,
         Scene& scene,
         NodeSpawnArguments node_args,
         std::optional<NTeamCountType> team_id,
         std::optional<VariableAndHash<std::string>> team_name,
+        std::optional<NUserCountType> replacement_rank,
         std::string group_name,
         SpawnTrigger spawn_trigger);
     ~VehicleSpawner();
@@ -89,17 +92,18 @@ public:
     bool try_spawn(const GeometrySpawnArguments& geometry);
     void delete_vehicle();
 
+    bool wants_to_idle(SpawnTrigger trigger) const;
+
     float get_time_since_spawn() const;
     float get_time_since_spotted_by_vip() const;
     void notify_spotted_by_vip();
-
-    SpawnTrigger get_spawn_trigger() const;
 
     void advance_time(float dt);
 
     void check_consistency() const;
 private:
     void notify_spawn();
+    RemoteSites& remote_sites_;
     Scene& scene_;
     DependenciesAreMet dependencies_are_met_;
     TrySpawnVehicle try_spawn_vehicle_;
@@ -111,6 +115,7 @@ private:
     NodeSpawnArguments node_args_;
     std::optional<NTeamCountType> team_id_;
     std::optional<VariableAndHash<std::string>> team_name_;
+    std::optional<NUserCountType> replacement_rank_;
     std::string group_name_;
     SpawnTrigger spawn_trigger_;
     float time_since_spawn_;

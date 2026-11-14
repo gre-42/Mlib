@@ -50,7 +50,7 @@ void TeamDeathmatch::handle_respawn() {
 
 void TeamDeathmatch::respawn_individually() {
     for (auto& [_, p] : spawners_.spawners()) {
-        if (p->get_spawn_trigger() != SpawnTrigger::TEAM_DEATHMATCH) {
+        if (p->wants_to_idle(SpawnTrigger::TEAM_DEATHMATCH)) {
             continue;
         }
         if (!p->has_scene_vehicle() && (p->get_time_since_deletion() >= p->get_respawn_cooldown_time())) {
