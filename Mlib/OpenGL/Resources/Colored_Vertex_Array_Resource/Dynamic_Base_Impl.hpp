@@ -4,9 +4,9 @@
 #include <Mlib/Memory/Integral_Cast.hpp>
 #include <Mlib/OpenGL/CHK.hpp>
 #include <Mlib/OpenGL/Context_Query.hpp>
-#include <Mlib/OpenGL/Deallocate/Render_Deallocator.hpp>
 #include <Mlib/OpenGL/Deallocate/Render_Garbage_Collector.hpp>
 #include <Mlib/OpenGL/Deallocate/Render_Try_Delete.hpp>
+#include <Mlib/Scene_Graph/Render/Render_Deallocator.hpp>
 
 namespace Mlib {
 

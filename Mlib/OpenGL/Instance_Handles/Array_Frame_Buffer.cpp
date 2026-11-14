@@ -1,6 +1,6 @@
 #include "Array_Frame_Buffer.hpp"
 #include <Mlib/OpenGL/CHK.hpp>
-#include <Mlib/OpenGL/Deallocate/Render_Deallocator.hpp>
+#include <Mlib/Scene_Graph/Render/Render_Deallocator.hpp>
 #include <stdexcept>
 
 using namespace Mlib;

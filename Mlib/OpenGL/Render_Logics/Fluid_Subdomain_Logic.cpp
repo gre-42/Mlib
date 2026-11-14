@@ -8,7 +8,6 @@
 #include <Mlib/Misc/Log.hpp>
 #include <Mlib/OpenGL/CHK.hpp>
 #include <Mlib/OpenGL/Clear_Wrapper.hpp>
-#include <Mlib/OpenGL/Deallocate/Render_Deallocator.hpp>
 #include <Mlib/OpenGL/Instance_Handles/Frame_Buffer.hpp>
 #include <Mlib/OpenGL/Instance_Handles/Render_Guards.hpp>
 #include <Mlib/OpenGL/Instance_Handles/Texture_Binder.hpp>
@@ -21,6 +20,7 @@
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Elements/Skidmark.hpp>
+#include <Mlib/Scene_Graph/Render/Render_Deallocator.hpp>
 #include <Mlib/Scene_Graph/Rendered_Scene_Descriptor.hpp>
 #include <stb_cpp/stb_image_load.hpp>
 #include <stdexcept>

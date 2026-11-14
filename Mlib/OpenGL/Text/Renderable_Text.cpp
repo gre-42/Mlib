@@ -7,7 +7,6 @@
 #include <Mlib/Memory/Integral_Cast.hpp>
 #include <Mlib/Misc/Floating_Point_Exceptions.hpp>
 #include <Mlib/OpenGL/CHK.hpp>
-#include <Mlib/OpenGL/Deallocate/Render_Deallocator.hpp>
 #include <Mlib/OpenGL/Gen_Shader_Text.hpp>
 #include <Mlib/OpenGL/Instance_Handles/Render_Guards.hpp>
 #include <Mlib/OpenGL/Instance_Handles/Render_Program.hpp>
@@ -21,6 +20,7 @@
 #include <Mlib/OpenGL/linmath.hpp>
 #include <Mlib/Os/Os.hpp>
 #include <Mlib/Resource_Context/Rendering_Context.hpp>
+#include <Mlib/Scene_Graph/Render/Render_Deallocator.hpp>
 #include <Mlib/Strings/Encoding.hpp>
 #include <sstream>
 #include <stb/stb_truetype.h>

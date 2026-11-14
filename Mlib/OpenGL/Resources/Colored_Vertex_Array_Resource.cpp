@@ -54,7 +54,7 @@
 #include <mutex>
 #ifndef WITHOUT_GRAPHICS
 #include <Mlib/OpenGL/Context_Query.hpp>
-#include <Mlib/OpenGL/Deallocate/Render_Deallocator.hpp>
+#include <Mlib/Scene_Graph/Render/Render_Deallocator.hpp>
 #include <Mlib/OpenGL/Instance_Handles/Colored_Render_Program.hpp>
 #include <Mlib/OpenGL/Instance_Handles/IArray_Buffer.hpp>
 #include <Mlib/OpenGL/Resource_Managers/Rendering_Resources.hpp>

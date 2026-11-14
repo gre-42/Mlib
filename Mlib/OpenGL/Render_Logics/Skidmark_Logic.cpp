@@ -6,7 +6,6 @@
 #include <Mlib/Math/Transformation/Bijection.hpp>
 #include <Mlib/Misc/Log.hpp>
 #include <Mlib/OpenGL/Clear_Wrapper.hpp>
-#include <Mlib/OpenGL/Deallocate/Render_Deallocator.hpp>
 #include <Mlib/OpenGL/Instance_Handles/Frame_Buffer.hpp>
 #include <Mlib/OpenGL/Instance_Handles/Render_Guards.hpp>
 #include <Mlib/OpenGL/Render_Config.hpp>
@@ -16,6 +15,7 @@
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Elements/Skidmark.hpp>
 #include <Mlib/Scene_Graph/Interfaces/IParticle_Renderer.hpp>
+#include <Mlib/Scene_Graph/Render/Render_Deallocator.hpp>
 #include <Mlib/Scene_Graph/Render_Pass.hpp>
 #include <stb_cpp/stb_image_load.hpp>
 #include <stdexcept>

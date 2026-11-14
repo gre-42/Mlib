@@ -30,7 +30,6 @@
 #include <Mlib/OpenGL/CHK.hpp>
 #include <Mlib/OpenGL/Context_Query.hpp>
 #include <Mlib/OpenGL/Deallocate/Render_Allocator.hpp>
-#include <Mlib/OpenGL/Deallocate/Render_Deallocator.hpp>
 #include <Mlib/OpenGL/Deallocate/Render_Garbage_Collector.hpp>
 #include <Mlib/OpenGL/Gl_Extensions.hpp>
 #include <Mlib/OpenGL/Instance_Handles/Bind_Texture_Guard.hpp>
@@ -57,6 +56,7 @@
 #include <Mlib/Os/Threads/Recursion_Guard.hpp>
 #include <Mlib/Os/Threads/Thread_Local.hpp>
 #include <Mlib/Resource_Context/Rendering_Context.hpp>
+#include <Mlib/Scene_Graph/Render/Render_Deallocator.hpp>
 #include <Mlib/Strings/Utf8_Path.hpp>
 #include <Mlib/Testing/Assert.hpp>
 #include <iostream>

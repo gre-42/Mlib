@@ -4,12 +4,12 @@
 #include <Mlib/Geometry/Material/Texture_Target.hpp>
 #include <Mlib/OpenGL/CHK.hpp>
 #include <Mlib/OpenGL/Context_Query.hpp>
-#include <Mlib/OpenGL/Deallocate/Render_Deallocator.hpp>
 #include <Mlib/OpenGL/Deallocate/Render_Garbage_Collector.hpp>
 #include <Mlib/OpenGL/Download/Download_As_Stb_Image.hpp>
 #include <Mlib/OpenGL/Instance_Handles/Texture.hpp>
 #include <Mlib/OpenGL/Instance_Handles/Wrap_Mode.hpp>
 #include <Mlib/Os/Os.hpp>
+#include <Mlib/Scene_Graph/Render/Render_Deallocator.hpp>
 #include <stb_cpp/stb_image_load.hpp>
 #include <stdexcept>
 

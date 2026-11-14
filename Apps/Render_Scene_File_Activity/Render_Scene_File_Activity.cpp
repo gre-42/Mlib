@@ -20,7 +20,6 @@
 #include <Mlib/OpenGL/Clear_Wrapper.hpp>
 #include <Mlib/OpenGL/Context_Query.hpp>
 #include <Mlib/OpenGL/Deallocate/Render_Allocator.hpp>
-#include <Mlib/OpenGL/Deallocate/Render_Deallocator.hpp>
 #include <Mlib/OpenGL/Deallocate/Render_Garbage_Collector.hpp>
 #include <Mlib/OpenGL/Gl_Context_Guard.hpp>
 #include <Mlib/OpenGL/IRenderer.hpp>
@@ -79,6 +78,7 @@
 #include <Mlib/Scene/Scene_Config.hpp>
 #include <Mlib/Scene_Config/Scene_Graph_Config.hpp>
 #include <Mlib/Scene_Graph/Render/Caching_Gpu_Object_Factory.hpp>
+#include <Mlib/Scene_Graph/Render/Render_Deallocator.hpp>
 #include <Mlib/Scene_Graph/Rendered_Scene_Descriptor.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
 #include <Mlib/Strings/Base64.hpp>

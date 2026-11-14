@@ -1,6 +1,6 @@
 #include "Lazy_Texture.hpp"
-#include <Mlib/OpenGL/Deallocate/Render_Deallocator.hpp>
 #include <Mlib/OpenGL/Resource_Managers/Rendering_Resources.hpp>
+#include <Mlib/Scene_Graph/Render/Render_Deallocator.hpp>
 
 using namespace Mlib;
 

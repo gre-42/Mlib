@@ -3,10 +3,10 @@
 #include <Mlib/OpenGL/CHK.hpp>
 #include <Mlib/OpenGL/Context_Query.hpp>
 #include <Mlib/OpenGL/Deallocate/Deallocation_Mode.hpp>
-#include <Mlib/OpenGL/Deallocate/Render_Deallocator.hpp>
 #include <Mlib/OpenGL/Deallocate/Render_Garbage_Collector.hpp>
 #include <Mlib/Os/Os.hpp>
 #include <Mlib/Os/Threads/Launch_Async.hpp>
+#include <Mlib/Scene_Graph/Render/Render_Deallocator.hpp>
 
 using namespace Mlib;
 

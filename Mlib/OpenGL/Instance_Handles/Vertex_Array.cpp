@@ -2,11 +2,11 @@
 #include <Mlib/OpenGL/CHK.hpp>
 #include <Mlib/OpenGL/Context_Query.hpp>
 #include <Mlib/OpenGL/Deallocate/Deallocation_Mode.hpp>
-#include <Mlib/OpenGL/Deallocate/Render_Deallocator.hpp>
 #include <Mlib/OpenGL/Deallocate/Render_Garbage_Collector.hpp>
 #include <Mlib/OpenGL/Instance_Handles/IArray_Buffer.hpp>
 #include <Mlib/Os/Os.hpp>
 #include <Mlib/Scene_Graph/Render/IGpu_Instance_Buffers.hpp>
+#include <Mlib/Scene_Graph/Render/Render_Deallocator.hpp>
 #include <iostream>
 
 using namespace Mlib;

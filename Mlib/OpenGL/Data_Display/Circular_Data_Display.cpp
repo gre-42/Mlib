@@ -1,11 +1,11 @@
 #include "Circular_Data_Display.hpp"
 #include <Mlib/Layout/IWidget.hpp>
 #include <Mlib/OpenGL/Data_Display/Pointer_Image_Logic.hpp>
-#include <Mlib/OpenGL/Deallocate/Render_Deallocator.hpp>
 #include <Mlib/OpenGL/Text/Align_Text.hpp>
 #include <Mlib/OpenGL/Text/Renderable_Text.hpp>
 #include <Mlib/OpenGL/Text/Text_And_Position.hpp>
 #include <Mlib/OpenGL/Viewport_Guard.hpp>
+#include <Mlib/Scene_Graph/Render/Render_Deallocator.hpp>
 #include <algorithm>
 
 using namespace Mlib;

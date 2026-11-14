@@ -4,13 +4,13 @@
 #include <Mlib/Math/Transformation/Quaternion.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
 #include <Mlib/Memory/Integral_Cast.hpp>
-#include <Mlib/OpenGL/Deallocate/Render_Deallocator.hpp>
 #include <Mlib/Os/Threads/Malloc_Map.hpp>
 #include <Mlib/Scene_Graph/Instances/Vertex_Data_And_Sorted_Instances.hpp>
 #include <Mlib/Scene_Graph/Render/Batch_Renderers/Task_Location.hpp>
 #include <Mlib/Scene_Graph/Render/IGpu_Vertex_Array.hpp>
 #include <Mlib/Scene_Graph/Render/IGpu_Vertex_Array_Renderer.hpp>
 #include <Mlib/Scene_Graph/Render/IGpu_Vertex_Data.hpp>
+#include <Mlib/Scene_Graph/Render/Render_Deallocator.hpp>
 #include <Mlib/Scene_Graph/Render_Pass.hpp>
 #include <Mlib/Scene_Graph/Resources/Renderable_Resource_Filter.hpp>
 #include <Mlib/Scene_Graph/Resources/Vertex_Arrays_With_Dynamic_Instances.hpp>

@@ -1,10 +1,10 @@
 #include "Render_Program.hpp"
 #include <Mlib/OpenGL/CHK.hpp>
 #include <Mlib/OpenGL/Context_Query.hpp>
-#include <Mlib/OpenGL/Deallocate/Render_Deallocator.hpp>
 #include <Mlib/OpenGL/Deallocate/Render_Garbage_Collector.hpp>
 #include <Mlib/Os/Os.hpp>
 #include <Mlib/Os/Preload.hpp>
+#include <Mlib/Scene_Graph/Render/Render_Deallocator.hpp>
 #include <stdexcept>
 
 using namespace Mlib;

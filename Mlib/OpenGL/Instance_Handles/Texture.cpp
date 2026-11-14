@@ -3,9 +3,9 @@
 #include <Mlib/Geometry/Material/Mipmap_Mode.hpp>
 #include <Mlib/Geometry/Material/Wrap_Mode.hpp>
 #include <Mlib/OpenGL/CHK.hpp>
-#include <Mlib/OpenGL/Deallocate/Render_Deallocator.hpp>
 #include <Mlib/OpenGL/Deallocate/Render_Try_Delete.hpp>
 #include <Mlib/OpenGL/Instance_Handles/Wrap_Mode.hpp>
+#include <Mlib/Scene_Graph/Render/Render_Deallocator.hpp>
 #include <stdexcept>
 
 using namespace Mlib;

@@ -9,7 +9,6 @@
 #include <Mlib/OpenGL/Batch_Renderers/Optional_Material_Hider.hpp>
 #include <Mlib/OpenGL/Batch_Renderers/Optional_Mesh_Hider.hpp>
 #include <Mlib/OpenGL/Batch_Renderers/Special_Renderable_Names.hpp>
-#include <Mlib/OpenGL/Deallocate/Render_Deallocator.hpp>
 #include <Mlib/OpenGL/Renderables/Renderable_Colored_Vertex_Array.hpp>
 #include <Mlib/OpenGL/Resource_Managers/Rendering_Resources.hpp>
 #include <Mlib/OpenGL/Resources/Colored_Vertex_Array_Resource.hpp>
@@ -17,6 +16,7 @@
 #include <Mlib/Scene_Graph/Elements/Color_Style.hpp>
 #include <Mlib/Scene_Graph/Render/Batch_Renderers/Task_Location.hpp>
 #include <Mlib/Scene_Graph/Render/Caching_Behavior.hpp>
+#include <Mlib/Scene_Graph/Render/Render_Deallocator.hpp>
 #include <Mlib/Scene_Graph/Render_Pass.hpp>
 #include <Mlib/Scene_Graph/Resources/Renderable_Resource_Filter.hpp>
 #include <Mlib/Testing/Assert.hpp>
