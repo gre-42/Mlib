@@ -9,6 +9,7 @@
 #include <Mlib/OpenGL/Batch_Renderers/Optional_Material_Hider.hpp>
 #include <Mlib/OpenGL/Batch_Renderers/Optional_Mesh_Hider.hpp>
 #include <Mlib/OpenGL/Batch_Renderers/Special_Renderable_Names.hpp>
+#include <Mlib/OpenGL/Deallocate/Render_Deallocator.hpp>
 #include <Mlib/OpenGL/Renderables/Renderable_Colored_Vertex_Array.hpp>
 #include <Mlib/OpenGL/Resource_Managers/Rendering_Resources.hpp>
 #include <Mlib/OpenGL/Resources/Colored_Vertex_Array_Resource.hpp>
@@ -285,6 +286,7 @@ AggregateArrayRenderer::AggregateArrayRenderer(RenderingResources& rendering_res
     , offset_((ScenePos)NAN)
     , next_offset_((ScenePos)NAN)
     , is_initialized_{false}
+    , deallocation_token_{ render_deallocator.insert([this]() { invalidate(); }) }
 {}
 
 AggregateArrayRenderer::~AggregateArrayRenderer() = default;

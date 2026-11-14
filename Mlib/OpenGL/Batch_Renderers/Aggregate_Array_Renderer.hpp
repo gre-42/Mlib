@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
+#include <Mlib/Memory/Deallocation_Token.hpp>
 #include <Mlib/Os/Threads/Fast_Mutex.hpp>
 #include <Mlib/Scene_Config/Scene_Precision.hpp>
 #include <Mlib/Scene_Graph/Render/Batch_Renderers/IAggregate_Renderer.hpp>
@@ -45,6 +46,7 @@ private:
     FixedArray<ScenePos, 3> next_offset_;
     mutable FastMutex mutex_;
     bool is_initialized_;
+    DeallocationToken deallocation_token_;
 };
 
 }

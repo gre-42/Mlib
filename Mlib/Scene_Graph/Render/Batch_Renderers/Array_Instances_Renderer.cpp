@@ -4,6 +4,7 @@
 #include <Mlib/Math/Transformation/Quaternion.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
 #include <Mlib/Memory/Integral_Cast.hpp>
+#include <Mlib/OpenGL/Deallocate/Render_Deallocator.hpp>
 #include <Mlib/Os/Threads/Malloc_Map.hpp>
 #include <Mlib/Scene_Graph/Instances/Vertex_Data_And_Sorted_Instances.hpp>
 #include <Mlib/Scene_Graph/Render/Batch_Renderers/Task_Location.hpp>
@@ -30,6 +31,7 @@ ArrayInstancesRenderer::ArrayInstancesRenderer(
     , next_offset_((ScenePos)NAN)
     , is_initialized_{false}
     , gpu_renderer_{gpu_renderer}
+    , deallocation_token_{ render_deallocator.insert([this]() { invalidate(); }) }
 {}
 
 ArrayInstancesRenderer::~ArrayInstancesRenderer() = default;

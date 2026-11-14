@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
+#include <Mlib/Memory/Deallocation_Token.hpp>
 #include <Mlib/Os/Threads/Fast_Mutex.hpp>
 #include <Mlib/Scene_Graph/Instances/Billboard_Container.hpp>
 #include <Mlib/Scene_Graph/Instances/Deferred_Vertex_Arrays_And_Instances.hpp>
@@ -51,6 +52,7 @@ private:
     mutable FastMutex mutex_;
     bool is_initialized_;
     IGpuVertexArrayRenderer& gpu_renderer_;
+    DeallocationToken deallocation_token_;
 };
 
 }
