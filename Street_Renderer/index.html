@@ -63,8 +63,7 @@
 
     // Map size: 100m x 100m (-50 to +50)
     const MAP_SIZE = 100.0;
-    const HALF_MAP = MAP_SIZE * 0.5;
-    const TEX_RES = 2048; // 5cm per pixel
+    const TEX_RES = 2048;
     const LENGTH_SCALE = 100.0;
     const ROAD_HALF_WIDTH = 3.5;
     const SIDEWALK_WIDTH = 2.0;
@@ -79,9 +78,6 @@
     });
 
     const dataScene = new THREE.Scene();
-    const orthoCam = new THREE.OrthographicCamera(-HALF_MAP, HALF_MAP, HALF_MAP, -HALF_MAP, 0.1, 100);
-    orthoCam.position.set(0, 50, 0);
-    orthoCam.lookAt(0, 0, 0);
 
     const roadMaterial = new THREE.ShaderMaterial({
       uniforms: {
@@ -118,10 +114,10 @@
 
           float distToStart = -alongSeg;
           float distToEnd = -(vSegLen - alongSeg);
-          float signedLongDist = max(0.0, max(distToStart, distToEnd));
+          float signedLongDistOuter = max(0.0, max(distToStart, distToEnd));
 
-          float roundedDist = length(vec2(lateral, signedLongDist));
-          gl_FragDepth = roundedDist / totalHalfWidth;
+          float roundedDist = length(vec2(lateral, signedLongDistOuter));
+          gl_FragDepth = 0.5*(gl_FragCoord.z + roundedDist / totalHalfWidth);
 
           gl_FragColor = vec4(
             (totalAlong + totalHalfWidth) / lengthScale,
@@ -205,16 +201,10 @@
     dataScene.add(createRoadDataMesh(mainRoad));
     dataScene.add(createRoadDataMesh(sideRoad));
 
-    renderer.setRenderTarget(dataRenderTarget);
-    renderer.setClearColor(new THREE.Color(0, 999.0, 999.0), 1.0);
-    renderer.clear();
-    renderer.render(dataScene, orthoCam);
-    renderer.setRenderTarget(null);
-
     const groundMaterial = new THREE.ShaderMaterial({
       uniforms: {
+        u_resolution: { value: new THREE.Vector2() },
         uRoadDataTex: { value: dataRenderTarget.texture },
-        uMapBounds: { value: new THREE.Vector4(-HALF_MAP, -HALF_MAP, MAP_SIZE, MAP_SIZE) },
         lengthScale: { value: LENGTH_SCALE },
         roadHalfWidth: { value: ROAD_HALF_WIDTH },
         sidewalkWidth: { value: SIDEWALK_WIDTH },
@@ -230,18 +220,20 @@
       `,
       fragmentShader: `
         varying vec2 vWorldPosXZ;
+        uniform vec2 u_resolution;
         uniform sampler2D uRoadDataTex;
-        uniform vec4 uMapBounds;
         uniform float lengthScale;
         uniform float roadHalfWidth;
         uniform float sidewalkWidth;
         uniform float curbWidth;
 
-        void main() {
-          vec2 mapUV = (vWorldPosXZ - uMapBounds.xy) / uMapBounds.zw;
-          mapUV.y = 1.0 - mapUV.y;
+        float aaStep(float edge, float x) {
+          float width = clamp(fwidth(x), 0.01, 0.3);
+          return smoothstep(edge - width, edge + width, x);
+        }
 
-          vec4 roadData = texture2D(uRoadDataTex, mapUV).rgba;
+        void main() {
+          vec4 roadData = texture2D(uRoadDataTex, gl_FragCoord.xy / u_resolution).rgba;
 
           float totalHalfWidth = roadHalfWidth + sidewalkWidth;
           float alongDist = roadData.r * lengthScale - totalHalfWidth;
@@ -251,9 +243,10 @@
           float absLateral = abs(lateralDist);
           float distToStart = -alongSeg;
           float distToEnd = -(segLen - alongSeg);
-          float signedLongDist = max(0.0, max(distToStart, distToEnd));
+          float signedLongDist = max(distToStart, distToEnd);
+          float signedLongDistG0 = max(0.0, signedLongDist);
 
-          float roundedEdgeDist = length(vec2(absLateral, signedLongDist));
+          float roundedEdgeDist = length(vec2(absLateral, signedLongDistG0));
 
           if (roundedEdgeDist > totalHalfWidth) {
             float grassNoise = fract(sin(dot(floor(vWorldPosXZ * 2.0), vec2(12.9898, 78.233))) * 43758.5453);
@@ -265,41 +258,16 @@
           vec3 asphaltColor  = vec3(0.17, 0.18, 0.20);
           vec3 curbColor     = vec3(0.60, 0.60, 0.63);
           vec3 sidewalkColor = vec3(0.46, 0.45, 0.43);
-          vec3 lineColor     = vec3(0.93, 0.93, 0.90);
 
-          float isSidewalk = step(roadHalfWidth + curbWidth, roundedEdgeDist);
-          float isCurb     = step(roadHalfWidth, roundedEdgeDist) - isSidewalk;
-          float isRoad     = 1.0 - step(roadHalfWidth, roundedEdgeDist);
+          float isSidewalk = aaStep(roadHalfWidth + curbWidth, roundedEdgeDist);
+          float isCurb     = aaStep(roadHalfWidth, roundedEdgeDist) - isSidewalk;
+          float isRoad     = 1.0 - aaStep(roadHalfWidth, roundedEdgeDist);
 
           vec3 finalColor = asphaltColor * isRoad + curbColor * isCurb + sidewalkColor * isSidewalk;
-          if (isRoad > 0.01) {
-            float markings = 0.0;
-            // A) Side lines
-            float sideLinePos = roadHalfWidth - 0.25;
-            float sideLine = step(sideLinePos - 0.06, roundedEdgeDist) * (1.0 - step(sideLinePos + 0.06, roundedEdgeDist));
-            sideLine *= step(2.5, alongSeg);
-            markings = max(markings, sideLine);
-            // B) Dashed center line
-            float dashCycle = mod(alongDist, 6.0);
-            float isDash = 1.0 - step(3.0, dashCycle);
-            float centerLine = (1.0 - step(0.06, absLateral)) * isDash;
-            centerLine *= step(4.5, alongSeg);
-            markings = max(markings, centerLine);
-            // C) Zebra stripes
-            float inCrosswalkZone = step(1.5, alongSeg) * (1.0 - step(3.5, alongSeg));
-            float zebraPattern = 1.0 - step(0.4, mod(absLateral, 0.8));
-            float zebraWidthMask = 1.0 - step(roadHalfWidth - 0.4, absLateral);
-            markings = max(markings, inCrosswalkZone * zebraPattern * zebraWidthMask);
-            // D) Stop line
-            if (alongSeg > 0.0 && lateralDist > 0.0) {
-            float stopLine = step(3.85, alongSeg) * (1.0 - step(4.15, alongSeg));
-            stopLine *= (1.0 - step(roadHalfWidth - 0.3, lateralDist));
-            markings = max(markings, stopLine);
-          }
-          finalColor = mix(finalColor, lineColor, markings * isRoad);
-        }
-        gl_FragColor = vec4(finalColor, 1.0);
-      }`
+          float distToJoints = aaStep(1.5, length(vec2(absLateral, min(abs(distToStart), abs(distToEnd)))));
+          finalColor.r += sin(alongSeg) * distToJoints * (1.0 - aaStep(1.0, absLateral)) * (1.0 - aaStep(-1.2, signedLongDist));
+          gl_FragColor = vec4(finalColor, 1.0);
+        }`
     });
     const groundGeo = new THREE.PlaneGeometry(MAP_SIZE, MAP_SIZE);
     groundGeo.rotateX(-Math.PI / 2);
@@ -328,7 +296,19 @@
     });
     function animate() {
       requestAnimationFrame(animate);
-      renderer.render(scene, camera);
+
+      if (true) {
+        renderer.setRenderTarget(dataRenderTarget);
+        renderer.setClearColor(new THREE.Color(0, 999.0, 999.0), 1.0);
+        renderer.clear();
+        renderer.getDrawingBufferSize(groundMaterial.uniforms.u_resolution.value);
+        renderer.render(dataScene, camera);
+        renderer.setRenderTarget(null);
+
+        renderer.render(scene, camera);
+      } else {
+        renderer.render(dataScene, camera);
+      }
     }
     animate();
   </script>
