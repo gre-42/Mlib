@@ -248,13 +248,6 @@
 
           float roundedEdgeDist = length(vec2(absLateral, signedLongDistG0));
 
-          if (roundedEdgeDist > totalHalfWidth) {
-            float grassNoise = fract(sin(dot(floor(vWorldPosXZ * 2.0), vec2(12.9898, 78.233))) * 43758.5453);
-            vec3 grass = mix(vec3(0.20, 0.34, 0.16), vec3(0.24, 0.39, 0.19), grassNoise);
-            gl_FragColor = vec4(grass, 1.0);
-            return;
-          }
-
           vec3 asphaltColor  = vec3(0.17, 0.18, 0.20);
           vec3 curbColor     = vec3(0.60, 0.60, 0.63);
           vec3 sidewalkColor = vec3(0.46, 0.45, 0.43);
@@ -262,8 +255,11 @@
           float isSidewalk = aaStep(roadHalfWidth + curbWidth, roundedEdgeDist);
           float isCurb     = aaStep(roadHalfWidth, roundedEdgeDist) - isSidewalk;
           float isRoad     = 1.0 - aaStep(roadHalfWidth, roundedEdgeDist);
+          float isGrass    = aaStep(totalHalfWidth, roundedEdgeDist);
 
-          vec3 finalColor = asphaltColor * isRoad + curbColor * isCurb + sidewalkColor * isSidewalk;
+          float grassNoise = fract(sin(dot(floor(vWorldPosXZ * 2.0), vec2(12.9898, 78.233))) * 43758.5453);
+          vec3 grass = mix(vec3(0.20, 0.34, 0.16), vec3(0.24, 0.39, 0.19), grassNoise);
+          vec3 finalColor = mix(asphaltColor * isRoad + curbColor * isCurb + sidewalkColor * isSidewalk, grass, isGrass);
           float distToJoints = aaStep(1.5, length(vec2(absLateral, min(abs(distToStart), abs(distToEnd)))));
           finalColor.r += sin(alongSeg) * distToJoints * (1.0 - aaStep(1.0, absLateral)) * (1.0 - aaStep(-1.2, signedLongDist));
           gl_FragColor = vec4(finalColor, 1.0);
