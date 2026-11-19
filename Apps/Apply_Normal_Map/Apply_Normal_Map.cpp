@@ -130,14 +130,14 @@ int main(int argc, char** argv) {
             TriangleList<float> tl{
                 "tl",
                 Material{
-                    .textures_color{ BlendMapTexture{.texture_descriptor = TextureDescriptor{
+                    .textures_color{{BlendMapTexture{.texture_descriptor = TextureDescriptor{
                         .color = ColormapWithModifiers{
                             .filename = FPath::from_local_path(args.named_value("--color")),
                             .histogram = histogram ? FPath::from_local_path(*histogram) : FPath{},
                             .color_mode = ColorMode::RGB}.compute_hash(),
                         .normal = ColormapWithModifiers{
                             .filename = FPath::from_local_path(args.named_value("--normal")),
-                            .color_mode = ColorMode::RGB}.compute_hash()}}}
+                            .color_mode = ColorMode::RGB}.compute_hash()}}}}
                     },
                 Morphology{ .physics_material = PhysicsMaterial::ATTR_VISIBLE },
                 ModifierBacklog{}};

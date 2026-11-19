@@ -56,14 +56,14 @@ ProctreeFileResource::ProctreeFileResource(
         .magnifying_interpolation_mode = InterpolationMode::LINEAR,
         .anisotropic_filtering_level = cfg.anisotropic_filtering_level}.compute_hash();
     auto trunk_material = Material{
-        .textures_color = {BlendMapTexture{
+        .textures_color = {{BlendMapTexture{
             .texture_descriptor = {
-                .color = primary_rendering_resources.colormap(trunk_color)}}}};
+                .color = primary_rendering_resources.colormap(trunk_color)}}}}};
     auto twig_material = Material{
         .blend_mode = BlendMode::CONTINUOUS,
-        .textures_color = {BlendMapTexture{
+        .textures_color = {{BlendMapTexture{
             .texture_descriptor = {
-                .color = primary_rendering_resources.colormap(twig_color)}}}};
+                .color = primary_rendering_resources.colormap(twig_color)}}}}};
     auto cvas = proctree_to_cvas(tree, trunk_material, twig_material);
     #else
     auto cvas = proctree_to_cvas(tree, Material{}, Material{});

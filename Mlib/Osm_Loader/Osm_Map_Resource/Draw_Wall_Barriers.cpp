@@ -79,7 +79,7 @@ PRAGMA_GCC_DIAGNOSTIC_POP
                 tl.meta.morphology += PhysicsMaterial::ATTR_TWO_SIDED;
             }
             #ifndef WITHOUT_GRAPHICS
-            tl.meta.material.textures_color = { primary_rendering_resources.get_blend_map_texture(bs.texture) };
+            tl.meta.material.textures_color = {{primary_rendering_resources.get_blend_map_texture(bs.texture)}};
             #endif
             tl.meta.material.blend_mode = bs.blend_mode;
             tl.meta.material.cull_faces = bs.cull_faces;

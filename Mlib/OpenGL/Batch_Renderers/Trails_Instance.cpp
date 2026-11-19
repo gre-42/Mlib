@@ -26,12 +26,12 @@ static MeshMeta gen_meta(
         "trails meta",
         Material{
             .blend_mode = BlendMode::CONTINUOUS,
-            .textures_color = {BlendMapTexture{.texture_descriptor = {.color = ColormapWithModifiers{
+            .textures_color = {{BlendMapTexture{.texture_descriptor = {.color = ColormapWithModifiers{
                 .filename = texture,
                 .color_mode = ColorMode::RGBA,
                 .mipmap_mode = MipmapMode::WITH_MIPMAPS_2D,
                 .magnifying_interpolation_mode = InterpolationMode::LINEAR,
-                .depth_interpolation = InterpolationMode::LINEAR}.compute_hash()}}},
+                .depth_interpolation = InterpolationMode::LINEAR}.compute_hash()}}}},
             .continuous_layer_x = continuous_layer_x,
             .continuous_layer_y = continuous_layer_y,
             .cull_faces = false,

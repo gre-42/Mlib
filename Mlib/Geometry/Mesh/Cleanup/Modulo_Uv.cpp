@@ -14,10 +14,10 @@ void Mlib::modulo_uv(ColoredVertexArray<TPos>& cva) {
     }
     std::vector<const BlendMapTexture*> textures;
     textures.reserve(cva.meta.material.textures_color.size() + cva.meta.material.textures_alpha.size());
-    for (const auto& t : cva.meta.material.textures_color) {
+    for (const auto& t : flat_iterable(cva.meta.material.textures_color)) {
         textures.push_back(&t);
     }
-    for (const auto& t : cva.meta.material.textures_alpha) {
+    for (const auto& t : flat_iterable(cva.meta.material.textures_alpha)) {
         textures.push_back(&t);
     }
     std::vector<float> lcm_world_args;

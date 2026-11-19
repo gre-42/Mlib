@@ -46,11 +46,7 @@ void Mlib::replace_terrain_material(
                     }
                     cva->meta.material.textures_color.clear();
                     #ifndef WITHOUT_GRAPHICS
-                    cva->meta.material.textures_color.reserve(textures.size());
-                    for (auto& t : textures) {
-                        BlendMapTexture bt = rendering_resources.get_blend_map_texture(t);
-                        cva->meta.material.textures_color.push_back(bt);
-                    }
+                    cva->meta.material.textures_color = rendering_resources.get_blend_map_textures({textures});
                     #endif
                     cva->meta.material.blend_mode = BlendMode::OFF;
                     for (auto& t : cva->triangles) {

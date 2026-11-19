@@ -142,7 +142,7 @@ static void exec(
     #ifndef WITHOUT_GRAPHICS
     if (auto c = args.arguments.try_path_or_variable(KnownArgs::texture); !c.empty()) {
         auto& rr = RenderingContextStack::primary_rendering_resources();
-        cfg->textures = { rr.get_blend_map_texture(c) };
+        cfg->textures = {{rr.get_blend_map_texture(c)}};
     }
     #endif
     for (const auto& s : args.arguments.try_pathes_or_variables(KnownArgs::rw_resource_files)) {

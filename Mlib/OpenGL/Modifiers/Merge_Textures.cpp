@@ -159,7 +159,7 @@ PRAGMA_GCC_DIAGNOSTIC_POP
                     Material{
                         .blend_mode = merged_materials_config.blend_mode,
                         .continuous_blending_z_order = merged_materials_config.continuous_blending_z_order,
-                        .textures_color = {{.texture_descriptor = {.color = merged_materials_config.texture_name}}},
+                        .textures_color = {{{.texture_descriptor = {.color = merged_materials_config.texture_name}}}},
                         .occluded_pass = merged_materials_config.occluded_pass,
                         .occluder_pass = merged_materials_config.occluder_pass,
                         .aggregate_mode = merged_materials_config.aggregate_mode,

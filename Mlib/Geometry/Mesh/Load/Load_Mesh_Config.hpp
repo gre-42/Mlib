@@ -7,6 +7,7 @@
 #include <Mlib/Geometry/Material/Interpolation_Mode.hpp>
 #include <Mlib/Geometry/Material/Mipmap_Mode.hpp>
 #include <Mlib/Geometry/Material/Shading.hpp>
+#include <Mlib/Geometry/Material/Texture_Expression.hpp>
 #include <Mlib/Geometry/Rectangle_Triangulation_Mode.hpp>
 #include <Mlib/Geometry/Triangle_Tangent_Error_Behavior.hpp>
 #include <Mlib/Misc/FPath.hpp>
@@ -54,7 +55,7 @@ struct LoadMeshConfig {
     float desaturation_exponent = 0.f;
     FPath histogram;
     FixedArray<float, 3> lighten = FixedArray<float, 3>(0.f);
-    std::vector<BlendMapTexture> textures;
+    TextureExpression2<BlendMapTexture> textures;
     float period_world;
     TriangleTangentErrorBehavior triangle_tangent_error_behavior = TriangleTangentErrorBehavior::THROW;
     bool apply_static_lighting;

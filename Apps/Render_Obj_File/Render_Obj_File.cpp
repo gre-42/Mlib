@@ -173,15 +173,15 @@ struct LightAndNode {
 
 template <class TPos>
 static LoadMeshConfig<TPos> cfg(const ParsedArgs& args, const std::string& light_configuration) {
-    std::vector<BlendMapTexture> textures;
+    TextureExpression2<BlendMapTexture> textures;
     float period_world = 0.f;
     if (args.has_named_value("--multilayer_diffuse")) {
-        textures = {BlendMapTexture{
+        textures = {{BlendMapTexture{
             .texture_descriptor = {
                 .color = {.filename = FPath::from_variable_and_hash(VariableAndHash{args.named_svalue("--multilayer_diffuse")}), .mipmap_mode = MipmapMode::WITH_MIPMAPS},
                 .normal = {.filename = FPath::from_variable_and_hash(VariableAndHash{args.named_svalue("--multilayer_normal", "")}), .color_mode = ColorMode::RGB, .mipmap_mode = MipmapMode::WITH_MIPMAPS}},
             .role = BlendMapRole::DETAIL_BASE,
-            .reweight_mode = BlendMapReweightMode::DISABLED}};
+            .reweight_mode = BlendMapReweightMode::DISABLED}}};
         std::vector<float> lcm_world_args;
         for (uint32_t i = 0; i < 4; ++i) {
             auto detail = args.named_svalue("--multilayer_detail" + std::to_string(i), "");
@@ -190,12 +190,12 @@ static LoadMeshConfig<TPos> cfg(const ParsedArgs& args, const std::string& light
             }
             float multilayer_scale = safe_stof(args.named_svalue("--multilayer_scale" + std::to_string(i)));
             if (args.has_named_value("--multilayer_mask")) {
-                textures.push_back(BlendMapTexture{
+                textures[0].push_back(BlendMapTexture{
                     .texture_descriptor = {
                         .color = {.filename = FPath::from_variable_and_hash(VariableAndHash{args.named_svalue("--multilayer_mask")}), .mipmap_mode = MipmapMode::WITH_MIPMAPS}},
                     .role = BlendMapRole::DETAIL_MASK_R + i});
             }
-            textures.push_back(BlendMapTexture{
+            textures[0].push_back(BlendMapTexture{
                 .texture_descriptor = {
                     .color = {.filename = FPath::from_variable_and_hash(VariableAndHash{detail}), .mipmap_mode = MipmapMode::WITH_MIPMAPS},
                     .normal = {

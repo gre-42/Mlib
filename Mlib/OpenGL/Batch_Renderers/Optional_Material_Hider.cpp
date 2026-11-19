@@ -27,8 +27,11 @@ bool OptionalMaterialHider::is_hidden(const Material& material) const {
     if (material.textures_color.empty()) {
         return false;
     }
+    if (material.textures_color[0].empty()) {
+        throw std::runtime_error("Empty material lane");
+    }
     bool result = hidden_names_->contains(
-        material.textures_color[0].texture_descriptor.color.filename.string_and_hash());
+        material.textures_color[0][0].texture_descriptor.color.filename.string_and_hash());
     if (print_materials_ && !result) {
         linfo() << "Drawing material " << material.identifier();
     }

@@ -38,7 +38,7 @@ void Mlib::draw_ceilings(
         &displacements,
         Material{
             #ifndef WITHOUT_GRAPHICS
-            .textures_color = { { primary_rendering_resources.get_texture_descriptor(config.ceiling_texture.variable_and_hash()) } },
+            .textures_color = {{{primary_rendering_resources.get_texture_descriptor(config.ceiling_texture.variable_and_hash())}}},
             #endif
             .occluder_pass = ExternalRenderPassType::LIGHTMAP_BLACK_GLOBAL_STATIC,
             .aggregate_mode = (config.object_cluster_width == 0)

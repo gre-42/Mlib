@@ -552,7 +552,7 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                     !material->txDiffuse->empty() &&
                     !material->txVariation->empty())
                 {
-                    tl.meta.material.textures_color = {BlendMapTexture{
+                    tl.meta.material.textures_color = {{BlendMapTexture{
                         .texture_descriptor = {
                             .color = {
                                 .filename = FPath::from_variable_and_hash(material->txDiffuse),
@@ -567,8 +567,8 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                                 .magnifying_interpolation_mode = InterpolationMode::LINEAR,
                                 .anisotropic_filtering_level = cfg.anisotropic_filtering_level}},
                         .role = BlendMapRole::DETAIL_BASE,
-                        .reweight_mode = BlendMapReweightMode::DISABLED}};
-                    tl.meta.material.textures_color.push_back(BlendMapTexture{
+                        .reweight_mode = BlendMapReweightMode::DISABLED}}};
+                    tl.meta.material.textures_color[0].push_back(BlendMapTexture{
                         .texture_descriptor = {
                             .color = {
                                 .filename = FPath::from_variable_and_hash(material->txVariation),
@@ -587,7 +587,7 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                     !material->txDiffuse->empty() &&
                     !material->txDetail1->empty())
                 {
-                    tl.meta.material.textures_color = {BlendMapTexture{
+                    tl.meta.material.textures_color = {{BlendMapTexture{
                         .texture_descriptor = {
                             .color = {
                                 .filename = FPath::from_variable_and_hash(material->txDiffuse),
@@ -602,8 +602,8 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                                 .magnifying_interpolation_mode = InterpolationMode::LINEAR,
                                 .anisotropic_filtering_level = cfg.anisotropic_filtering_level}},
                         .role = BlendMapRole::DETAIL_BASE,
-                        .reweight_mode = BlendMapReweightMode::DISABLED}};
-                    tl.meta.material.textures_color.push_back(BlendMapTexture{
+                        .reweight_mode = BlendMapReweightMode::DISABLED}}};
+                    tl.meta.material.textures_color[0].push_back(BlendMapTexture{
                         .texture_descriptor = {
                             .color = {
                                 .filename = FPath::from_variable_and_hash(material->txDetail1),
@@ -625,7 +625,7 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                      (material->shader == "ksMultilayer_fresnel_nm") ||
                      (material->shader == "ksMultilayer_objsp")))
                 {
-                    tl.meta.material.textures_color = {BlendMapTexture{
+                    tl.meta.material.textures_color = {{BlendMapTexture{
                         .texture_descriptor = {
                             .color = {
                                 .filename = FPath::from_variable_and_hash(material->txDiffuse),
@@ -641,14 +641,14 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                                 .anisotropic_filtering_level = cfg.anisotropic_filtering_level}},
                         .weight = material->magicMult.value_or_default(),
                         .role = BlendMapRole::DETAIL_BASE,
-                        .reweight_mode = BlendMapReweightMode::DISABLED}};
+                        .reweight_mode = BlendMapReweightMode::DISABLED}}};
                     for (uint32_t i = 0; i < 4; ++i) {
                         if (material->txDetail4(i)->empty()) // ||
                             // (material->mult(i)->value_or_default() == 0.f))
                         {
                             continue;
                         }
-                        tl.meta.material.textures_color.push_back(BlendMapTexture{
+                        tl.meta.material.textures_color[0].push_back(BlendMapTexture{
                             .texture_descriptor = {
                                 .color = {
                                     .filename = FPath::from_variable_and_hash(material->txMask),
@@ -661,7 +661,7 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                             .min_detail_weight = 0.01f,
                             .role = BlendMapRole::DETAIL_MASK_R + i,
                             .reduction = BlendMapReductionOperation::TIMES});
-                        tl.meta.material.textures_color.push_back(BlendMapTexture{
+                        tl.meta.material.textures_color[0].push_back(BlendMapTexture{
                             .texture_descriptor = {
                                 .color = {
                                     .filename = FPath::from_variable_and_hash(material->txDetail4(i)),
@@ -680,7 +680,7 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                     }
                 } else {
                     if (!material->txDiffuse->empty()) {
-                        tl.meta.material.textures_color = {BlendMapTexture{
+                        tl.meta.material.textures_color = {{BlendMapTexture{
                             .texture_descriptor = {
                                 .color = {
                                     .filename = FPath::from_variable_and_hash(material->txDiffuse),
@@ -693,7 +693,7 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                                     .color_mode = ColorMode::RGB,
                                     .mipmap_mode = MipmapMode::WITH_MIPMAPS,
                                     .magnifying_interpolation_mode = InterpolationMode::LINEAR,
-                                    .anisotropic_filtering_level = cfg.anisotropic_filtering_level}}}};
+                                    .anisotropic_filtering_level = cfg.anisotropic_filtering_level}}}}};
                     }
                 }
             }
@@ -799,7 +799,7 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
         std::unordered_map<VariableAndHash<std::string>, ColorMode> color_modes;
         for (const auto& cva : result) {
             cva->meta.material.compute_color_mode();
-            for (const auto& t : cva->meta.material.textures_color) {
+            for (const auto& t : flat_iterable(cva->meta.material.textures_color)) {
                 auto cmax = [&color_modes](const auto& colormap){
                     if (!colormap.filename.empty()) {
                         color_modes[colormap.filename.variable_and_hash()] |= colormap.color_mode;
@@ -811,7 +811,7 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
             }
         }
         for (const auto& cva : result) {
-            for (auto& t : cva->meta.material.textures_color) {
+            for (auto& t : flat_iterable(cva->meta.material.textures_color)) {
                 auto cset = [&color_modes](auto& colormap){
                     if (!colormap.filename.empty()) {
                         colormap.color_mode = color_modes.at(colormap.filename.variable_and_hash());
@@ -833,7 +833,7 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                 }
                 #endif
                 };
-            for (auto& t : cva->meta.material.textures_color) {
+            for (auto& t : flat_iterable(cva->meta.material.textures_color)) {
                 t.texture_descriptor.color.compute_hash();
                 t.texture_descriptor.specular.compute_hash();
                 t.texture_descriptor.normal.compute_hash();

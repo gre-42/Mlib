@@ -664,9 +664,9 @@ PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
                     node_id,
                     Shader{
                         .render_material = Material{
-                            .textures_color = std::vector<BlendMapTexture>(
+                            .textures_color = {TextureExpression1<BlendMapTexture>(
                                 textures_color.begin(),
-                                textures_color.end()),
+                                textures_color.end())},
                             .occluded_pass = ExternalRenderPassType::LIGHTMAP_BLACK_NODE,
                             .shading = {
                                 .fog_distances = make_orderable(cfg.shading.fog_distances),
@@ -787,9 +787,9 @@ PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
                     node_id,
                     Shader{
                         .render_material = Material{
-                            .textures_color = std::vector<BlendMapTexture>(
+                            .textures_color = {TextureExpression1<BlendMapTexture>(
                                 textures_color.begin(),
-                                textures_color.end()),
+                                textures_color.end())},
                             .occluded_pass = ExternalRenderPassType::LIGHTMAP_BLACK_NODE,
                             .shading = {
                                 .fog_distances = make_orderable(cfg.shading.fog_distances),
@@ -812,7 +812,7 @@ PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
                     Shader{
                         .render_material = Material{
                             .blend_mode = BlendMode::CONTINUOUS,
-                            .textures_color = {
+                            .textures_color = {{
                                 BlendMapTexture{
                                     .texture_descriptor = TextureDescriptor{
                                         .color = ColormapWithModifiers{
@@ -838,7 +838,7 @@ PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
                                         }.compute_hash()
                                     }
                                 }
-                            },
+                            }},
                             .occluded_pass = ExternalRenderPassType::LIGHTMAP_BLACK_NODE,
                             .shading = {
                                 .fog_distances = make_orderable(cfg.shading.fog_distances),
@@ -856,7 +856,7 @@ PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
                     node_id,
                     Shader{
                         .render_material = Material{
-                            .textures_color = std::vector<BlendMapTexture>{{
+                            .textures_color = {TextureExpression1<BlendMapTexture>{{
                                 .texture_descriptor = TextureDescriptor{
                                     .color = ColormapWithModifiers{
                                         .filename = FPath::from_variable(diffuse),
@@ -865,7 +865,7 @@ PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
                                         .magnifying_interpolation_mode = InterpolationMode::LINEAR,
                                         .anisotropic_filtering_level = cfg.anisotropic_filtering_level
                                     }.compute_hash()
-                                }}},
+                                }}}},
                             .shading = {
                                 .fog_distances = make_orderable(cfg.shading.fog_distances),
                                 .fog_ambient = make_orderable(cfg.shading.fog_ambient)}}});

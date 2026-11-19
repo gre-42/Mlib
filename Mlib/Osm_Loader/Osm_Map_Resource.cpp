@@ -780,7 +780,7 @@ OsmMapResource::OsmMapResource(
             displacements,
             Material{
                 #ifndef WITHOUT_GRAPHICS
-                .textures_color = { primary_rendering_resources.get_blend_map_texture(config.roof_texture) },
+                .textures_color = {{primary_rendering_resources.get_blend_map_texture(config.roof_texture)}},
                 #endif
                 .occluder_pass = ExternalRenderPassType::LIGHTMAP_BLACK_GLOBAL_STATIC,
                 .aggregate_mode = (config.object_cluster_width == 0)
@@ -790,7 +790,7 @@ OsmMapResource::OsmMapResource(
                 .draw_distance_noperations = 1000}.compute_color_mode(),
             Material{
                 #ifndef WITHOUT_GRAPHICS
-                .textures_color = { primary_rendering_resources.get_blend_map_texture(config.roof_rail_texture) },
+                .textures_color = {{primary_rendering_resources.get_blend_map_texture(config.roof_rail_texture)}},
                 #endif
                 .occluder_pass = ExternalRenderPassType::LIGHTMAP_BLACK_GLOBAL_STATIC,
                 .aggregate_mode = (config.object_cluster_width == 0)
@@ -1323,13 +1323,11 @@ OsmMapResource::OsmMapResource(
         if (config.bridge_pier_textures.empty()) {
             throw std::runtime_error("Bridge pier texture not set");
         }
-        std::vector<BlendMapTexture> textures_color;
+        TextureExpression2<BlendMapTexture> textures_color;
         #ifndef WITHOUT_GRAPHICS
-        textures_color.reserve(config.bridge_pier_textures.size());
-        auto& primary_rendering_resources = RenderingContextStack::primary_rendering_resources();
-        for (const auto& t : config.bridge_pier_textures) {
-            BlendMapTexture bt = primary_rendering_resources.get_blend_map_texture(t);
-            textures_color.push_back(bt);
+        if (!config.bridge_pier_textures.empty()) {
+            auto& primary_rendering_resources = RenderingContextStack::primary_rendering_resources();
+            textures_color = primary_rendering_resources.get_blend_map_textures({config.bridge_pier_textures});
         }
         #endif
         try {
@@ -1911,7 +1909,10 @@ void OsmMapResource::save_to_obj_file(
                 .diffuse = m.shading.diffuse,
                 .specular = m.shading.specular};
             if (!m.textures_color.empty()) {
-                const auto& desc = m.textures_color[0].texture_descriptor;
+                if (m.textures_color[0].empty()) {
+                    throw std::runtime_error("Texture lane is empty");
+                }
+                const auto& desc = m.textures_color[0][0].texture_descriptor;
                 result.diffuse_texture = get_filename(desc.color, TextureRole::COLOR_FROM_DB);
                 result.bump_texture = get_filename(desc.normal, TextureRole::NORMAL);
                 result.has_alpha_texture = any(desc.color.color_mode & ColorMode::RGBA);

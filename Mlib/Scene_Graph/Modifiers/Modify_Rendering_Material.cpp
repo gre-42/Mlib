@@ -46,13 +46,13 @@ void Mlib::modify_rendering_material(
                             cva->meta.material.occluder_pass = *occluder_pass;
                         }
                         if (magnifying_interpolation_mode.has_value()) {
-                            for (auto& texture : cva->meta.material.textures_color) {
+                            for (auto& texture : flat_iterable(cva->meta.material.textures_color)) {
                                 texture.texture_descriptor.color.magnifying_interpolation_mode = *magnifying_interpolation_mode;
                                 texture.texture_descriptor.color.compute_hash();
                             }
                         }
                         if (!histogram.empty()) {
-                            for (auto& texture : cva->meta.material.textures_color) {
+                            for (auto& texture : flat_iterable(cva->meta.material.textures_color)) {
                                 texture.texture_descriptor.color.histogram = histogram;
                                 texture.texture_descriptor.color.hash.reset();
                                 texture.texture_descriptor.color.compute_hash();

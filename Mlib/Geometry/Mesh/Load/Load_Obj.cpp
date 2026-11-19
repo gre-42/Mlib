@@ -158,7 +158,7 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_obj(
 
     ObjMaterial current_mtl;
     bool cfg_has_alpha_texture = false;
-    for (const auto& t : cfg.textures) {
+    for (const auto& t : flat_iterable(cfg.textures)) {
         if (any(t.texture_descriptor.color.color_mode & ColorMode::RGBA)) {
             cfg_has_alpha_texture = true;
             break;
@@ -386,7 +386,7 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_obj(
                         .anisotropic_filtering_level = cfg.anisotropic_filtering_level}.compute_hash();
                 }
                 if (!td.color.filename.empty() || !td.specular.filename.empty() || !td.normal.filename.empty()) {
-                    tl.meta.material.textures_color = { {.texture_descriptor = td } };
+                    tl.meta.material.textures_color = {{{.texture_descriptor = td }}};
                     has_alpha_texture = current_mtl.has_alpha_texture;
                 } else {
                     tl.meta.material.textures_color = cfg.textures;

@@ -155,8 +155,8 @@ enum class ReductionTarget {
 static GenShaderText vertex_shader_text_gen = [](
     const NotSortedArray<std::vector<std::pair<TransformationMatrix<float, ScenePos, 3>, std::shared_ptr<Light>>>>& lights,
     const NotSortedArray<std::vector<std::pair<TransformationMatrix<float, ScenePos, 3>, std::shared_ptr<Skidmark>>>>& skidmarks,
-    const NotSortedArray<std::vector<BlendMapTextureAndId>>& textures_color,
-    const NotSortedArray<std::vector<BlendMapTextureAndId>>& textures_alpha,
+    const NotSortedArray<TextureExpression2<BlendMapTextureAndId>>& textures_color,
+    const NotSortedArray<TextureExpression2<BlendMapTextureAndId>>& textures_alpha,
     const NotSortedArray<std::vector<size_t>>& lightmap_indices,
     const NotSortedStruct<ExternalRenderPassType>& render_pass,
     const NotSortedStruct<AttributeIndexCalculator>& attr_idc,
@@ -573,8 +573,8 @@ static GenShaderText vertex_shader_text_gen = [](
         linfo();
         linfo() << "Vertex";
         linfo() << external_render_pass_type_to_string(*render_pass);
-        if (!textures_color.empty()) {
-            linfo() << "Color: " + textures_color[0]->texture_descriptor.color.filename.string();
+        if (!textures_color.empty() && !textures_color[0].empty()) {
+            linfo() << "Color: " + textures_color[0][0]->texture_descriptor.color.filename.string();
         }
         std::string line;
         for (size_t i = 1; std::getline(sstr, line); ++i) {
@@ -622,8 +622,8 @@ static void bisect_texture_layer(
 static GenShaderText fragment_shader_text_textured_rgb_gen = [](
     const NotSortedArray<std::vector<std::pair<TransformationMatrix<float, ScenePos, 3>, std::shared_ptr<Light>>>>& lights,
     const NotSortedArray<std::vector<std::pair<TransformationMatrix<float, ScenePos, 3>, std::shared_ptr<Skidmark>>>>& skidmarks,
-    const NotSortedArray<std::vector<BlendMapTextureAndId>>& textures_color,
-    const NotSortedArray<std::vector<BlendMapTextureAndId>>& textures_alpha,
+    const NotSortedArray<TextureExpression2<BlendMapTextureAndId>>& textures_color,
+    const NotSortedArray<TextureExpression2<BlendMapTextureAndId>>& textures_alpha,
     const NotSortedArray<std::vector<size_t>>& lightmap_indices,
     const NotSortedArray<std::vector<size_t>>& light_noshadow_indices,
     const NotSortedArray<std::vector<size_t>>& light_shadow_indices,
@@ -700,14 +700,14 @@ static GenShaderText fragment_shader_text_textured_rgb_gen = [](
         sstr << tex_coord << uv_map[t];
         return sstr.str();
     };
-    auto sample_color = [&](size_t i)
+    auto sample_color = [&](size_t i, size_t j)
     {
-        const auto& t = textures_color.at(i);
+        const auto& t = textures_color.at(i).at(j);
         assert_true(t.id_color != SIZE_MAX);
         assert_true(t.tex_color != nullptr);
         if (any(texture_layer_properties)) {
             if (t->texture_descriptor.color.mipmap_mode == MipmapMode::WITH_MIPMAPS_2D) {
-                return "array_texture_blend_color" + std::to_string(i) + "(texture_layer_fs_transformed)";
+                return std::format("array_texture_blend_color{}_{}(texture_layer_fs_transformed)", i, j);
             } else {
                 return
                     "texture(textures_color[" + std::to_string(t.id_color) +
@@ -719,22 +719,22 @@ static GenShaderText fragment_shader_text_textured_rgb_gen = [](
     };
     auto sample_specularmap = [&]()
     {
-        if (textures_color.size() != 1) {
+        if ((textures_color.size() != 1) || (textures_color[0].size() != 1)) {
             throw std::runtime_error("Specular maps not supported for blended textures");
         }
-        const auto& t = textures_color.at(0);
+        const auto& t = textures_color.at(0).at(0);
         assert_true(t.id_specular == 0);
         assert_true(t.tex_specular != nullptr);
         return "texture(texture_specularmap, " + tex_coords(*t) + ')';
     };
-    auto sample_normalmap_ = [&](size_t i)
+    auto sample_normalmap_ = [&](size_t i, size_t j)
     {
-        const auto& t = textures_color.at(i);
+        const auto& t = textures_color.at(i).at(j);
         assert_true(t.id_normal != SIZE_MAX);
         assert_true(t.tex_normal != nullptr);
         if (any(texture_layer_properties)) {
             if (t->texture_descriptor.normal.mipmap_mode == MipmapMode::WITH_MIPMAPS_2D) {
-                return "array_texture_blend_normal" + std::to_string(i) + "(texture_layer_fs_transformed)";
+                return std::format("array_texture_blend_normal{}_{}(texture_layer_fs_transformed)", i, j);
             } else {
                 return
                     "texture(texture_normalmap[" + std::to_string(t.id_normal) +
@@ -744,25 +744,25 @@ static GenShaderText fragment_shader_text_textured_rgb_gen = [](
             return "texture(texture_normalmap[" + std::to_string(t.id_normal) + "], " + tex_coords(*t) + ')';
         }
     };
-    auto normalmap_coords = [&](size_t i) {
-        const auto& t = textures_color.at(i);
+    auto normalmap_coords = [&](size_t i, size_t j) {
+        const auto& t = textures_color.at(i).at(j);
         assert_true(t.id_normal != SIZE_MAX);
         assert_true(t.tex_normal != nullptr);
         std::stringstream sstr;
         if (any(t->texture_descriptor.normal.color_mode & ColorMode::AGR_NORMAL)) {
-            sstr << "(2.0 * " << sample_normalmap_(i) << ".agr - 1.0)";
+            sstr << "(2.0 * " << sample_normalmap_(i, j) << ".agr - 1.0)";
         } else {
-            sstr << "(2.0 * " << sample_normalmap_(i) << ".rgb - 1.0)";
+            sstr << "(2.0 * " << sample_normalmap_(i, j) << ".rgb - 1.0)";
         }
         return sstr.str();
     };
-    auto sample_alpha = [&](size_t i) {
-        const auto& t = textures_alpha.at(i);
+    auto sample_alpha = [&](size_t i, size_t j) {
+        const auto& t = textures_alpha.at(i).at(j);
         assert_true(t.id_color != SIZE_MAX);
         assert_true(t.tex_color != nullptr);
         if (any(texture_layer_properties)) {
             if (t->texture_descriptor.color.mipmap_mode == MipmapMode::WITH_MIPMAPS_2D) {
-                return "array_texture_blend_alpha" + std::to_string(i) + "(texture_layer_fs_transformed)";
+                return std::format("array_texture_blend_alpha{}_{}(texture_layer_fs_transformed)", i, j);
             } else {
                 return
                     "texture(textures_alpha[" + std::to_string(t.id_color) +
@@ -797,11 +797,14 @@ static GenShaderText fragment_shader_text_textured_rgb_gen = [](
         sstr << "uniform vec2 window_light_back_ambient;" << std::endl;
     }
     if (!textures_color.empty()) {
+        if (textures_color[0].empty()) {
+            throw std::runtime_error("Texture lane is empty");
+        }
         auto cont = any(texture_layer_properties & TextureLayerProperties::CONTINUOUS);
         auto disc = any(texture_layer_properties & TextureLayerProperties::DISCRETE);
-        auto mip2 = (textures_color[0]->texture_descriptor.color.mipmap_mode == MipmapMode::WITH_MIPMAPS_2D);
+        auto mip2 = (textures_color[0][0]->texture_descriptor.color.mipmap_mode == MipmapMode::WITH_MIPMAPS_2D);
         if (cont || disc) {
-            for (const auto& t : textures_color) {
+            for (const auto& t : flat_iterable(*textures_color)) {
                 auto cmip2 = (t->texture_descriptor.color.mipmap_mode == MipmapMode::WITH_MIPMAPS_2D);
                 if (cmip2 != mip2) {
                     throw std::runtime_error("Unsupported mipmap modes in texture \"" + t->texture_descriptor.color.filename.string() + '"');
@@ -810,7 +813,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen = [](
         } else if (mip2) {
             throw std::runtime_error(
                 "Color: 2D mipmaps require a texture layer: \"" +
-                textures_color[0]->texture_descriptor.color.filename.string() + '"');
+                textures_color[0][0]->texture_descriptor.color.filename.string() + '"');
         }
         const char* sampler_type = (cont && !mip2)
             ? "sampler3D"
@@ -820,11 +823,14 @@ static GenShaderText fragment_shader_text_textured_rgb_gen = [](
         sstr << "uniform lowp " << sampler_type << " textures_color[" << ntextures_color << "];" << std::endl;
     }
     if (!textures_alpha.empty()) {
+        if (textures_alpha[0].empty()) {
+            throw std::runtime_error("Texture lane is empty");
+        }
         auto cont = any(texture_layer_properties & TextureLayerProperties::CONTINUOUS);
         auto disc = any(texture_layer_properties & TextureLayerProperties::DISCRETE);
-        auto mip2 = (textures_alpha[0]->texture_descriptor.color.mipmap_mode == MipmapMode::WITH_MIPMAPS_2D);
+        auto mip2 = (textures_alpha[0][0]->texture_descriptor.color.mipmap_mode == MipmapMode::WITH_MIPMAPS_2D);
         if (cont || disc) {
-            for (const auto& t : textures_alpha) {
+            for (const auto& t : flat_iterable(*textures_alpha)) {
                 auto cmip2 = (t->texture_descriptor.color.mipmap_mode == MipmapMode::WITH_MIPMAPS_2D);
                 if (cmip2 != mip2) {
                     throw std::runtime_error("Unsupported mipmap modes in texture \"" + t->texture_descriptor.color.filename.string() + '"');
@@ -833,7 +839,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen = [](
         } else if (mip2) {
             throw std::runtime_error(
                 "Alpha: 2D mipmaps require a texture layer: \"" +
-                textures_alpha[0]->texture_descriptor.color.filename.string() + '"');
+                textures_alpha[0][0]->texture_descriptor.color.filename.string() + '"');
         }
         const char* sampler_type = (cont && !mip2)
             ? "sampler3D"
@@ -883,11 +889,17 @@ static GenShaderText fragment_shader_text_textured_rgb_gen = [](
         sstr << "in vec3 bitangent;" << std::endl;
     }
     if (has_normalmap) {
+        if (textures_color.empty()) {
+            throw std::runtime_error("Texture lanes are empty");
+        }
+        if (textures_color[0].empty()) {
+            throw std::runtime_error("Texture lane is empty");
+        }
         auto cont = any(texture_layer_properties & TextureLayerProperties::CONTINUOUS);
         auto disc = any(texture_layer_properties & TextureLayerProperties::DISCRETE);
-        auto mip2 = (textures_color[0]->texture_descriptor.normal.mipmap_mode == MipmapMode::WITH_MIPMAPS_2D);
+        auto mip2 = (textures_color[0][0]->texture_descriptor.normal.mipmap_mode == MipmapMode::WITH_MIPMAPS_2D);
         if (cont || disc) {
-            for (const auto& t : textures_color) {
+            for (const auto& t : flat_iterable(*textures_color)) {
                 auto cmip2 = (t->texture_descriptor.normal.mipmap_mode == MipmapMode::WITH_MIPMAPS_2D);
                 if (cmip2 != mip2) {
                     throw std::runtime_error("Unsupported mipmap modes in texture \"" + t->texture_descriptor.normal.filename.string() + '"');
@@ -896,7 +908,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen = [](
         } else if (mip2) {
             throw std::runtime_error(
                 "Normalmap: 2D mipmaps require a texture layer: \"" +
-                textures_color[0]->texture_descriptor.normal.filename.string() + '"');
+                textures_color[0][0]->texture_descriptor.normal.filename.string() + '"');
         }
         const char* sampler_type = (cont && !mip2)
             ? "sampler3D"
@@ -983,55 +995,97 @@ static GenShaderText fragment_shader_text_textured_rgb_gen = [](
         sstr << "}" << std::endl;
     }
     if (!textures_color.empty()) {
-        auto mip2_color = (textures_color[0]->texture_descriptor.color.mipmap_mode == MipmapMode::WITH_MIPMAPS_2D);
-        auto mip2_normal = (textures_color[0]->texture_descriptor.normal.mipmap_mode == MipmapMode::WITH_MIPMAPS_2D);
+        if (textures_color[0].empty()) {
+            throw std::runtime_error("Texture lane is empty");
+        }
+        auto mip2_color = (textures_color[0][0]->texture_descriptor.color.mipmap_mode == MipmapMode::WITH_MIPMAPS_2D);
+        auto mip2_normal = (textures_color[0][0]->texture_descriptor.normal.mipmap_mode == MipmapMode::WITH_MIPMAPS_2D);
         if (mip2_color) {
-            for (const auto& [i, t] : enumerate(textures_color)) {
-                if (t->texture_descriptor.color.filename.empty()) {
-                    continue;
+            for (const auto& [i, textures_color1] : enumerate(textures_color)) {
+                for (const auto& [j, t] : enumerate(textures_color1)) {
+                    if (t->texture_descriptor.color.filename.empty()) {
+                        continue;
+                    }
+                    sstr << "vec4 array_texture_blend_color" << i << '_' << j << "(in float z) {" << std::endl;
+                    sstr << "    float layers = " << t.tex_color->layers() << ".0;" << std::endl;
+                    sstr << "    float frac = fract(z * (layers - 1.0));" << std::endl;
+                    sstr << "    float fz = floor(z * (layers - 1.0));" << std::endl;
+                    sstr << "    vec4 top = texture(textures_color[" << t.id_color << "], vec3(" << tex_coord << uv_map[*t] << ", fz));" << std::endl;
+                    sstr << "    vec4 bottom = texture(textures_color[" << t.id_color << "], vec3(" << tex_coord << uv_map[*t] << ", fz + 1.0));" << std::endl;
+                    sstr << "    return mix(top, bottom, frac);" << std::endl;
+                    sstr << "}" << std::endl;
                 }
-                sstr << "vec4 array_texture_blend_color" << i << "(in float z) {" << std::endl;
-                sstr << "    float layers = " << t.tex_color->layers() << ".0;" << std::endl;
-                sstr << "    float frac = fract(z * (layers - 1.0));" << std::endl;
-                sstr << "    float fz = floor(z * (layers - 1.0));" << std::endl;
-                sstr << "    vec4 top = texture(textures_color[" << t.id_color << "], vec3(" << tex_coord << uv_map[*t] << ", fz));" << std::endl;
-                sstr << "    vec4 bottom = texture(textures_color[" << t.id_color << "], vec3(" << tex_coord << uv_map[*t] << ", fz + 1.0));" << std::endl;
-                sstr << "    return mix(top, bottom, frac);" << std::endl;
-                sstr << "}" << std::endl;
             }
         }
         if (mip2_normal && has_normalmap) {
-            for (const auto& [i, t] : enumerate(textures_color)) {
-                if (t->texture_descriptor.normal.filename.empty()) {
-                    continue;
+            for (const auto& [i, textures_color1] : enumerate(textures_color)) {
+                for (const auto& [j, t] : enumerate(textures_color1)) {
+                    if (t->texture_descriptor.normal.filename.empty()) {
+                        continue;
+                    }
+                    sstr << "vec4 array_texture_blend_normal" << i << '_' << j << "(in float z) {" << std::endl;
+                    sstr << "    float layers = " << t.tex_normal->layers() << ".0;" << std::endl;
+                    sstr << "    float frac = fract(z * (layers - 1.0));" << std::endl;
+                    sstr << "    float fz = floor(z * (layers - 1.0));" << std::endl;
+                    sstr << "    vec4 top = texture(texture_normalmap[" << t.id_normal << "], vec3(" << tex_coord << uv_map[*t] << ", fz));" << std::endl;
+                    sstr << "    vec4 bottom = texture(texture_normalmap[" << t.id_normal << "], vec3(" << tex_coord << uv_map[*t] << ", fz + 1.0));" << std::endl;
+                    sstr << "    return mix(top, bottom, frac);" << std::endl;
+                    sstr << "}" << std::endl;
                 }
-                sstr << "vec4 array_texture_blend_normal" << i << "(in float z) {" << std::endl;
-                sstr << "    float layers = " << t.tex_normal->layers() << ".0;" << std::endl;
-                sstr << "    float frac = fract(z * (layers - 1.0));" << std::endl;
-                sstr << "    float fz = floor(z * (layers - 1.0));" << std::endl;
-                sstr << "    vec4 top = texture(texture_normalmap[" << t.id_normal << "], vec3(" << tex_coord << uv_map[*t] << ", fz));" << std::endl;
-                sstr << "    vec4 bottom = texture(texture_normalmap[" << t.id_normal << "], vec3(" << tex_coord << uv_map[*t] << ", fz + 1.0));" << std::endl;
-                sstr << "    return mix(top, bottom, frac);" << std::endl;
-                sstr << "}" << std::endl;
             }
         }
     }
     if (!textures_alpha.empty()) {
-        auto mip2_alpha = (textures_alpha[0]->texture_descriptor.color.mipmap_mode == MipmapMode::WITH_MIPMAPS_2D);
+        if (textures_alpha[0].empty()) {
+            throw std::runtime_error("Texture lane is empty");
+        }
+        auto mip2_alpha = (textures_alpha[0][0]->texture_descriptor.color.mipmap_mode == MipmapMode::WITH_MIPMAPS_2D);
         if (mip2_alpha) {
-            for (const auto& [i, t] : enumerate(textures_alpha)) {
-                if (t->texture_descriptor.color.filename.empty()) {
-                    continue;
+            for (const auto& [i, textures_alpha1] : enumerate(textures_alpha)) {
+                for (const auto& [j, t] : enumerate(textures_alpha1)) {
+                    if (t->texture_descriptor.color.filename.empty()) {
+                        continue;
+                    }
+                    sstr << "vec4 array_texture_blend_alpha" << i << '_' << j << "(in float z) {" << std::endl;
+                    sstr << "    float layers = " << t.tex_color->layers() << ".0;" << std::endl;
+                    sstr << "    float frac = fract(z * (layers - 1.0));" << std::endl;
+                    sstr << "    float fz = floor(z * (layers - 1.0));" << std::endl;
+                    sstr << "    vec4 top = texture(textures_alpha[" << t.id_color << "], vec3(" << tex_coord << uv_map[*t] << ", fz));" << std::endl;
+                    sstr << "    vec4 bottom = texture(textures_alpha[" << t.id_color << "], vec3(" << tex_coord << uv_map[*t] << ", fz + 1.0));" << std::endl;
+                    sstr << "    return mix(top, bottom, frac);" << std::endl;
+                    sstr << "}" << std::endl;
                 }
-                sstr << "vec4 array_texture_blend_alpha" << i << "(in float z) {" << std::endl;
-                sstr << "    float layers = " << t.tex_color->layers() << ".0;" << std::endl;
-                sstr << "    float frac = fract(z * (layers - 1.0));" << std::endl;
-                sstr << "    float fz = floor(z * (layers - 1.0));" << std::endl;
-                sstr << "    vec4 top = texture(textures_alpha[" << t.id_color << "], vec3(" << tex_coord << uv_map[*t] << ", fz));" << std::endl;
-                sstr << "    vec4 bottom = texture(textures_alpha[" << t.id_color << "], vec3(" << tex_coord << uv_map[*t] << ", fz + 1.0));" << std::endl;
-                sstr << "    return mix(top, bottom, frac);" << std::endl;
-                sstr << "}" << std::endl;
             }
+        }
+    }
+    if (!textures_color.empty()) {
+        for (const auto& [i, texture_color_lane] : enumerate(textures_color)) {
+            if (texture_color_lane.empty()) {
+                throw std::runtime_error("Texture lane is empty");
+            }
+            if (any(texture_layer_properties)) {
+                sstr << "vec4 sample_base_texture" << i << "(in float alpha_fac, float texture_layer_fs_transformed) {" << std::endl;
+            } else {
+                sstr << "vec4 sample_base_texture" << i << "(in float alpha_fac) {" << std::endl;
+            }
+            if (texture_color_lane.size() == 1) {
+                sstr << "    vec4 result = " << sample_color(i, 0) << ';' << std::endl;
+                if (textures_alpha.empty()) {
+                    sstr << "    result.a *= alpha_fac;" << std::endl;
+                }
+                sstr << "    return result;" << std::endl;
+            } else if (texture_color_lane.size() > 1) {
+                if (texture_color_lane[0]->role == BlendMapRole::SUMMAND) {
+                    sstr << "    return vec4(0.0, 0.0, 0.0, " << sample_color(i, 0) << ".a);" << std::endl;
+                } else if (texture_color_lane[0]->role == BlendMapRole::DETAIL_BASE) {
+                    sstr << "    return " << sample_color(i, 0) << ';' << std::endl;
+                } else if (any(texture_color_lane[0]->role & BlendMapRole::ANY_DETAIL_MASK)) {
+                    // Do nothing
+                } else {
+                    throw std::runtime_error("Unsupported base blend map role (0)");
+                }
+            }
+            sstr << "}" << std::endl;
         }
     }
     if (!lights.empty()) {
@@ -1301,52 +1355,57 @@ static GenShaderText fragment_shader_text_textured_rgb_gen = [](
     } else if (any(texture_layer_properties & TextureLayerProperties::DISCRETE)) {
         sstr << "    lowp uint texture_layer_fs_transformed = texture_layer_fs;" << std::endl;
     }
-    if (textures_color.size() == 1) {
-        sstr << "    vec4 texture_color_ambient_diffuse = " << sample_color(0) << ';' << std::endl;
-        if (textures_alpha.empty()) {
-            sstr << "    texture_color_ambient_diffuse.a *= alpha_fac;" << std::endl;
-        }
-    } else if (textures_color.size() > 1) {
-        if (textures_color[0]->role == BlendMapRole::SUMMAND) {
-            sstr << "    vec4 texture_color_ambient_diffuse = vec4(0.0, 0.0, 0.0, " << sample_color(0) << ".a);" << std::endl;
-        } else if (textures_color[0]->role == BlendMapRole::DETAIL_BASE) {
-            sstr << "    vec4 texture_color_ambient_diffuse = " << sample_color(0) << ';' << std::endl;
-            sstr << "    vec3 sum_of_details = vec3(0.0, 0.0, 0.0);" << std::endl;
-        } else if (any(textures_color[0]->role & BlendMapRole::ANY_DETAIL_MASK)) {
-            sstr << "    vec4 texture_color_ambient_diffuse = vec4(0.0, 0.0, 0.0, 0.0);" << std::endl;
-            sstr << "    vec3 sum_of_details = vec3(0.0, 0.0, 0.0);" << std::endl;
+    auto sample_base_texture = [&](size_t i) {
+        if (any(texture_layer_properties)) {
+            return std::format("sample_base_texture{}(alpha_fac, texture_layer_fs_transformed)", i);
         } else {
-            throw std::runtime_error("Unsupported base blend map role (0)");
+            return std::format("sample_base_texture{}(alpha_fac)", i);
         }
-    }
-    if (alpha_threshold != 0) {
+    };
+    if (!textures_color.empty()) {
         if (textures_color.empty()) {
             throw std::runtime_error("Alpha threshold requires texture");
         }
-        sstr << "    if (texture_color_ambient_diffuse.a < " << alpha_threshold << ") {" << std::endl;
+        sstr << "    vec4 texture_color_0_0 = " << sample_base_texture(0) << ';' << std::endl;
+    } else {
+        sstr << "    vec4 texture_color_0_0 = vec4(0.0, 0.0, 0.0, 0.0);" << std::endl;
+    }
+    if (alpha_threshold != 0) {
+        sstr << "    if (texture_color_0_0.a < " << alpha_threshold << ") {" << std::endl;
         sstr << "        discard;" << std::endl;
         sstr << "    }" << std::endl;
     }
+    sstr << "    float sum_weights;" << std::endl;
+    sstr << "    vec3 tnorm;" << std::endl;
+    sstr << "    vec4 texture_color_ambient_diffuse;" << std::endl;
+    sstr << "    vec4 texture_color_ambient_diffuse_lane;" << std::endl;
+    sstr << "    vec3 sum_of_details;" << std::endl;
     sstr << "    float weight;" << std::endl;
-    auto sample_textures = [&](const std::vector<BlendMapTextureAndId>& textures, ReductionTarget target) {
+    auto sample_textures = [&](size_t i, const TextureExpression1<BlendMapTextureAndId>& textures, ReductionTarget target) {
+        if (i == 0) {
+            sstr << "    texture_color_ambient_diffuse_lane = texture_color_0_0;" << std::endl;
+        } else {
+            sstr << "    texture_color_ambient_diffuse_lane = " << sample_base_texture(i) << ';' << std::endl;
+        }
+        sstr << "    sum_of_details = vec3(0.0, 0.0, 0.0);" << std::endl;
         sstr << "    weight = 1.0;" << std::endl;
         if (target == ReductionTarget::COLOR) {
-            sstr << "    float sum_weights = 0.0;" << std::endl;
+            sstr << "    sum_weights = 0.0;" << std::endl;
             if (has_normalmap) {
-                if (textures_color[0]->texture_descriptor.normal.filename.empty()) {
-                    sstr << "    vec3 tnorm = vec3(0.0, 0.0, 1.0);" << std::endl;
-                } else if (textures_color[0]->role != BlendMapRole::DETAIL_BASE) {
-                    sstr << "    vec3 tnorm = vec3(0.0, 0.0, 0.0);" << std::endl;
+                if (textures_color[i][0]->texture_descriptor.normal.filename.empty()) {
+                    sstr << "    tnorm = vec3(0.0, 0.0, 1.0);" << std::endl;
+                } else if (textures_color[i][0]->role != BlendMapRole::DETAIL_BASE) {
+                    sstr << "    tnorm = vec3(0.0, 0.0, 0.0);" << std::endl;
                 } else {
-                    sstr << "    vec3 tnorm = " << normalmap_coords(0) << ';' << std::endl;
+                    sstr << "    tnorm = " << normalmap_coords(i, 0) << ';' << std::endl;
                 }
             }
         }
         if (target == ReductionTarget::ALPHA) {
             if (has_alpha) {
-                sstr << "    texture_color_ambient_diffuse.a = clamp(alpha_fac, 0.0, 1.0);" << std::endl;
+                sstr << "    texture_color_ambient_diffuse_lane.a = clamp(alpha_fac, 0.0, 1.0);" << std::endl;
             } else {
-                sstr << "    texture_color_ambient_diffuse.a = 0.0;" << std::endl;
+                sstr << "    texture_color_ambient_diffuse_lane.a = 0.0;" << std::endl;
             }
         }
         if (alpha_distances == default_linear_distances) {
@@ -1361,8 +1420,8 @@ static GenShaderText fragment_shader_text_textured_rgb_gen = [](
                 }
             }
         }
-        for (const auto& [i, t] : enumerate(textures)) {
-            if ((i == 0) && (t->role == BlendMapRole::DETAIL_BASE)) {
+        for (const auto& [j, t] : enumerate(textures)) {
+            if ((j == 0) && (t->role == BlendMapRole::DETAIL_BASE)) {
                 continue;
             }
             sstr << "    {" << std::endl;
@@ -1436,7 +1495,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen = [](
                         default: throw std::runtime_error("Unknown detail mask");
                     }
                 }();
-                sstr << "            float w = " << sample_color(i) << '.' << c << ';' << std::endl;
+                sstr << "            float w = " << sample_color(i, j) << '.' << c << ';' << std::endl;
                 if (t->reduction == BlendMapReductionOperation::TIMES) {
                     sstr << "            weight *= w;" << std::endl;
                 } else if (t->reduction == BlendMapReductionOperation::FEATHER) {
@@ -1454,20 +1513,20 @@ static GenShaderText fragment_shader_text_textured_rgb_gen = [](
                     sstr << "            weight = max(weight, " << t->min_detail_weight << ");" << std::endl;
                 }
             } else if (any(t->texture_descriptor.color.color_mode & ColorMode::RGBA) && (t->discreteness != 0)) {
-                sstr << "            vec4 bcolor = " << sample_color(i) << ".rgba;" << std::endl;
+                sstr << "            vec4 bcolor = " << sample_color(i, j) << ".rgba;" << std::endl;
                 sstr << "            float final_weight = weight * clamp(0.5 + " << t->discreteness << " * (bcolor.a - 0.5), 0.0, 1.0);" << std::endl;
                 // sstr << "            weight *= bcolor.a;" << std::endl;
             } else if (
                 any(t->texture_descriptor.color.color_mode & ColorMode::RGB) ||
                 (any(t->texture_descriptor.color.color_mode & ColorMode::RGBA) && (t->discreteness == 0)))
             {
-                sstr << "            vec3 bcolor = " << sample_color(i) << ".rgb;" << std::endl;
+                sstr << "            vec3 bcolor = " << sample_color(i, j) << ".rgb;" << std::endl;
                 sstr << "            float final_weight = weight;" << std::endl;
             } else if (target == ReductionTarget::ALPHA) {
                 if (t->texture_descriptor.color.color_mode != ColorMode::GRAYSCALE) {
                     throw std::runtime_error("Alpha-texture not loaded as grayscale");
                 }
-                sstr << "            float intensity = " << sample_alpha(i) << ".r;" << std::endl;
+                sstr << "            float intensity = " << sample_alpha(i, j) << ".r;" << std::endl;
                 sstr << "            float final_weight = weight;" << std::endl;
             } else {
                 throw std::runtime_error("Texture: \"" + t->texture_descriptor.color.filename.string() + "\". Unsupported color mode: \"" + color_mode_to_string(t->texture_descriptor.color.color_mode) + '"');
@@ -1490,25 +1549,25 @@ static GenShaderText fragment_shader_text_textured_rgb_gen = [](
                 } else if (t->role == BlendMapRole::SUMMAND) {
                     if (target == ReductionTarget::COLOR) {
                         if (t->reduction == BlendMapReductionOperation::REPLACE_COLOR) {
-                            sstr << "            float brightness = dot(texture_color_ambient_diffuse.rgb, vec3(0.2989, 0.5870, 0.1140));" << std::endl;
-                            sstr << "            texture_color_ambient_diffuse.rgb *= (1.0 - final_weight);" << std::endl;
-                            sstr << "            texture_color_ambient_diffuse.rgb += bcolor.rgb * (final_weight * brightness * " << t->discreteness << ");" << std::endl;
+                            sstr << "            float brightness = dot(texture_color_ambient_diffuse_lane.rgb, vec3(0.2989, 0.5870, 0.1140));" << std::endl;
+                            sstr << "            texture_color_ambient_diffuse_lane.rgb *= (1.0 - final_weight);" << std::endl;
+                            sstr << "            texture_color_ambient_diffuse_lane.rgb += bcolor.rgb * (final_weight * brightness * " << t->discreteness << ");" << std::endl;
                         } else if (t->reduction == BlendMapReductionOperation::COLORIZE) {
-                            sstr << "            texture_color_ambient_diffuse.rgb *= (1.0 - final_weight) + bcolor.rgb * (final_weight * " << t->discreteness << ");" << std::endl;
+                            sstr << "            texture_color_ambient_diffuse_lane.rgb *= (1.0 - final_weight) + bcolor.rgb * (final_weight * " << t->discreteness << ");" << std::endl;
                         } else {
                             if (t->reduction == BlendMapReductionOperation::BLEND) {
-                                sstr << "            texture_color_ambient_diffuse.rgb *= (1.0 - final_weight);" << std::endl;
+                                sstr << "            texture_color_ambient_diffuse_lane.rgb *= (1.0 - final_weight);" << std::endl;
                             }
-                            sstr << "            texture_color_ambient_diffuse.rgb " << rop << "= final_weight * bcolor.rgb;" << std::endl;
+                            sstr << "            texture_color_ambient_diffuse_lane.rgb " << rop << "= final_weight * bcolor.rgb;" << std::endl;
                         }
                     } else if (target == ReductionTarget::ALPHA) {
                         if (t->reduction == BlendMapReductionOperation::FEATHER) {
-                            sstr << "            float h = (0.5 - abs(texture_color_ambient_diffuse.a - 0.5)) * 2.0;" << std::endl;
+                            sstr << "            float h = (0.5 - abs(texture_color_ambient_diffuse_lane.a - 0.5)) * 2.0;" << std::endl;
                             sstr << "            h = clamp(h, 0.0, 1.0);" << std::endl;
                             sstr << "            float intens = clamp((intensity + " << + t->plus << ") * " << t->discreteness << ", 0.0, 1.0);" << std::endl;
-                            sstr << "            texture_color_ambient_diffuse.a = mix(texture_color_ambient_diffuse.a, intens, h);" << std::endl;
+                            sstr << "            texture_color_ambient_diffuse_lane.a = mix(texture_color_ambient_diffuse_lane.a, intens, h);" << std::endl;
                         } else {
-                            sstr << "            texture_color_ambient_diffuse.a " << rop << "= final_weight * intensity + " << t->plus << ";" << std::endl;
+                            sstr << "            texture_color_ambient_diffuse_lane.a " << rop << "= final_weight * intensity + " << t->plus << ";" << std::endl;
                         }
                     } else {
                         throw std::runtime_error("Unknown reduction target (1)");
@@ -1521,7 +1580,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen = [](
                         if (t->texture_descriptor.normal.filename.empty()) {
                             sstr << "            tnorm.z += final_weight;" << std::endl;
                         } else {
-                            sstr << "            tnorm += final_weight * " << normalmap_coords(i) << ';' << std::endl;
+                            sstr << "            tnorm += final_weight * " << normalmap_coords(i, j) << ';' << std::endl;
                         }
                     }
                     sstr << "            sum_weights += final_weight;" << std::endl;
@@ -1536,17 +1595,19 @@ static GenShaderText fragment_shader_text_textured_rgb_gen = [](
             }
             sstr << "    }" << std::endl;
         }
-        if ((target == ReductionTarget::ALPHA) && (textures[0]->reweight_mode != BlendMapReweightMode::UNDEFINED)) {
-            throw std::runtime_error("Target is alpha and reweighting is not undefined in texture \"" + textures[0]->texture_descriptor.color.filename.string() + '"');
-        }
-        if ((target == ReductionTarget::COLOR) && (textures[0]->reweight_mode == BlendMapReweightMode::UNDEFINED)) {
-            throw std::runtime_error("Target is color and reweighting is undefined in texture \"" + textures[0]->texture_descriptor.color.filename.string() + '"');
+        if (i != 0) {
+            if ((target == ReductionTarget::ALPHA) && (textures[0]->reweight_mode != BlendMapReweightMode::UNDEFINED)) {
+                throw std::runtime_error("Target is alpha and reweighting is not undefined in texture \"" + textures[0]->texture_descriptor.color.filename.string() + '"');
+            }
+            if ((target == ReductionTarget::COLOR) && (textures[0]->reweight_mode == BlendMapReweightMode::UNDEFINED)) {
+                throw std::runtime_error("Target is color and reweighting is undefined in texture \"" + textures[0]->texture_descriptor.color.filename.string() + '"');
+            }
         }
         if ((target == ReductionTarget::COLOR) && (textures[0]->reweight_mode == BlendMapReweightMode::ENABLED)) {
             sstr << "    if (sum_weights < 1e-3) {" << std::endl;
-            sstr << "        texture_color_ambient_diffuse.rgb = vec3(1.0, 0.0, 1.0);" << std::endl;
+            sstr << "        texture_color_ambient_diffuse_lane.rgb = vec3(1.0, 0.0, 1.0);" << std::endl;
             sstr << "    } else {" << std::endl;
-            sstr << "        texture_color_ambient_diffuse.rgb /= sum_weights;" << std::endl;
+            sstr << "        texture_color_ambient_diffuse_lane.rgb /= sum_weights;" << std::endl;
         } else {
             sstr << "    {" << std::endl;
         }
@@ -1555,22 +1616,36 @@ static GenShaderText fragment_shader_text_textured_rgb_gen = [](
         {
             // Do nothing
         } else if (textures[0]->role == BlendMapRole::DETAIL_BASE) {
-            sstr << "        texture_color_ambient_diffuse.rgb *= " << textures[0]->weight << " * sum_of_details;" << std::endl;
+            sstr << "        texture_color_ambient_diffuse_lane.rgb *= " << textures[0]->weight << " * sum_of_details;" << std::endl;
         } else {
             throw std::runtime_error("Unsupported base blend map role (1)");
         }
+        if (target == ReductionTarget::COLOR) {
+            sstr << "        texture_color_ambient_diffuse.rgb += texture_color_ambient_diffuse_lane.rgb;" << std::endl;
+        } else {
+            sstr << "        texture_color_ambient_diffuse.a += texture_color_ambient_diffuse_lane.a;" << std::endl;
+        }
         sstr << "    }" << std::endl;
     };
-    if (textures_color.size() > 1) {
-        sample_textures(textures_color, ReductionTarget::COLOR);
-        // sstr << "    texture_color_ambient_diffuse.rgb /= max(1e-6, sum_weights);" << std::endl;
+    if (textures_color.empty()) {
+        // Do nothing
+    } else if (textures_color[0].size() > 1) {
+        for (const auto& [i, textures_color1] : enumerate(textures_color)) {
+            sample_textures(i, textures_color1, ReductionTarget::COLOR);
+            // sstr << "    texture_color_ambient_diffuse_lane.rgb /= max(1e-6, sum_weights);" << std::endl;
+        }
+    } else {
+        sstr << "    texture_color_ambient_diffuse = texture_color_0_0;" << std::endl;
     }
-    if (!textures_alpha.empty()) {
-        sample_textures(textures_alpha, ReductionTarget::ALPHA);
+    for (const auto& [i, textures_alpha1] : enumerate(textures_alpha)) {
+        sample_textures(i, textures_alpha1, ReductionTarget::ALPHA);
     }
     if (has_normalmap) {
-        if (textures_color.size() == 1) {
-            sstr << "    vec3 tnorm = " << normalmap_coords(0) << ';' << std::endl;
+        if (textures_color.empty()) {
+            throw std::runtime_error("Normalmap requires color texture");
+        }
+        if (textures_color[0].size() == 1) {
+            sstr << "    tnorm = " << normalmap_coords(0, 0) << ';' << std::endl;
         }
         if (!any(interior_texture_set)) {
             compute_TBN();
@@ -1840,8 +1915,8 @@ static GenShaderText fragment_shader_text_textured_rgb_gen = [](
         linfo();
         linfo() << "Fragment";
         linfo() << external_render_pass_type_to_string(render_pass_);
-        if (!textures_color.empty()) {
-            linfo() << "Color: " + textures_color[0]->texture_descriptor.color.filename.string();
+        if (!textures_color.empty() && !textures_color[0].empty()) {
+            linfo() << "Color: " + textures_color[0][0]->texture_descriptor.color.filename.string();
         }
         std::string line;
         for (size_t i = 1; std::getline(sstr, line); ++i) {
@@ -2071,64 +2146,70 @@ void OpenGLVertexArrayRenderer::render(
             }
         }
     }
-    std::vector<BlendMapTextureAndId> blended_textures_color(meta.material.textures_color.size());
-    std::vector<BlendMapTextureAndId> blended_textures_alpha(meta.material.textures_alpha.size());
+    TextureExpression2<BlendMapTextureAndId> blended_textures_color(meta.material.textures_color.size());
+    TextureExpression2<BlendMapTextureAndId> blended_textures_alpha(meta.material.textures_alpha.size());
     OrderedUnorderedMap<ColormapPtr, IdAndTexture> texture_ids_color;
     OrderedUnorderedMap<ColormapPtr, IdAndTexture> texture_ids_specular;
     OrderedUnorderedMap<ColormapPtr, IdAndTexture> texture_ids_normal;
     OrderedUnorderedMap<ColormapPtr, IdAndTexture> texture_ids_alpha;
     for (size_t i = 0; i < blended_textures_color.size(); ++i) {
-        const auto& c = meta.material.textures_color[i];
-        auto& b = blended_textures_color[i];
-        if (!c.texture_descriptor.color.filename.empty()) {
-            const auto& texture = secondary_rendering_resources_.contains_texture(c.texture_descriptor.color)
-                ? *secondary_rendering_resources_.get_texture(c.texture_descriptor.color)
-                : *primary_rendering_resources_.get_texture(c.texture_descriptor.color);
-            auto it = texture_ids_color.try_emplace(c.texture_descriptor.color, texture_ids_color.size(), texture);
-            b.id_color = it.first.id;
-            b.tex_color = &texture;
-        } else {
-            b.id_color = SIZE_MAX;
-            b.tex_color = nullptr;
+        blended_textures_color[i].resize(meta.material.textures_color[i].size());
+        for (size_t j = 0; j < meta.material.textures_color[i].size(); ++j) {
+            const auto& c = meta.material.textures_color[i][j];
+            auto& b = blended_textures_color[i][j];
+            if (!c.texture_descriptor.color.filename.empty()) {
+                const auto& texture = secondary_rendering_resources_.contains_texture(c.texture_descriptor.color)
+                    ? *secondary_rendering_resources_.get_texture(c.texture_descriptor.color)
+                    : *primary_rendering_resources_.get_texture(c.texture_descriptor.color);
+                auto it = texture_ids_color.try_emplace(c.texture_descriptor.color, texture_ids_color.size(), texture);
+                b.id_color = it.first.id;
+                b.tex_color = &texture;
+            } else {
+                b.id_color = SIZE_MAX;
+                b.tex_color = nullptr;
+            }
+            if (!c.texture_descriptor.specular.filename.empty()) {
+                const auto& texture = *primary_rendering_resources_.get_texture(c.texture_descriptor.specular);
+                auto it = texture_ids_specular.try_emplace(c.texture_descriptor.specular, texture_ids_specular.size(), texture);
+                b.id_specular = it.first.id;
+                b.tex_specular = &texture;
+            } else {
+                b.id_specular = SIZE_MAX;
+                b.tex_specular = nullptr;
+            }
+            if (!c.texture_descriptor.normal.filename.empty()) {
+                const auto& texture = *primary_rendering_resources_.get_texture(c.texture_descriptor.normal);
+                auto it = texture_ids_normal.try_emplace(c.texture_descriptor.normal, texture_ids_normal.size(), texture);
+                b.id_normal = it.first.id;
+                b.tex_normal = &texture;
+            } else {
+                b.id_normal = SIZE_MAX;
+                b.tex_normal = nullptr;
+            }
+            b.ops = &c;
         }
-        if (!c.texture_descriptor.specular.filename.empty()) {
-            const auto& texture = *primary_rendering_resources_.get_texture(c.texture_descriptor.specular);
-            auto it = texture_ids_specular.try_emplace(c.texture_descriptor.specular, texture_ids_specular.size(), texture);
-            b.id_specular = it.first.id;
-            b.tex_specular = &texture;
-        } else {
-            b.id_specular = SIZE_MAX;
-            b.tex_specular = nullptr;
-        }
-        if (!c.texture_descriptor.normal.filename.empty()) {
-            const auto& texture = *primary_rendering_resources_.get_texture(c.texture_descriptor.normal);
-            auto it = texture_ids_normal.try_emplace(c.texture_descriptor.normal, texture_ids_normal.size(), texture);
-            b.id_normal = it.first.id;
-            b.tex_normal = &texture;
-        } else {
-            b.id_normal = SIZE_MAX;
-            b.tex_normal = nullptr;
-        }
-        b.ops = &c;
     }
     for (size_t i = 0; i < blended_textures_alpha.size(); ++i) {
-        const auto& c = meta.material.textures_alpha[i];
-        auto& b = blended_textures_alpha[i];
-        assert_true(!c.texture_descriptor.color.filename.empty());
-        const auto& texture = secondary_rendering_resources_.contains_texture(c.texture_descriptor.color)
-            ? *secondary_rendering_resources_.get_texture(c.texture_descriptor.color, TextureRole::COLOR_FROM_DB)
-            : *primary_rendering_resources_.get_texture(c.texture_descriptor.color, TextureRole::COLOR_FROM_DB);
-        auto it = texture_ids_alpha.try_emplace(c.texture_descriptor.color, texture_ids_alpha.size(), texture);
-        b.id_color = it.first.id;
-        b.id_specular = SIZE_MAX;
-        b.id_normal = SIZE_MAX;
-        b.tex_color = &texture;
-        b.tex_specular = nullptr;
-        b.tex_normal = nullptr;
-        b.ops = &c;
+        blended_textures_alpha[i].resize(meta.material.textures_alpha[i].size());
+        for (size_t j = 0; j < meta.material.textures_alpha[i].size(); ++j) {
+            const auto& c = meta.material.textures_alpha[i][j];
+            auto& b = blended_textures_alpha[i][j];
+            assert_true(!c.texture_descriptor.color.filename.empty());
+            const auto& texture = secondary_rendering_resources_.contains_texture(c.texture_descriptor.color)
+                ? *secondary_rendering_resources_.get_texture(c.texture_descriptor.color, TextureRole::COLOR_FROM_DB)
+                : *primary_rendering_resources_.get_texture(c.texture_descriptor.color, TextureRole::COLOR_FROM_DB);
+            auto it = texture_ids_alpha.try_emplace(c.texture_descriptor.color, texture_ids_alpha.size(), texture);
+            b.id_color = it.first.id;
+            b.id_specular = SIZE_MAX;
+            b.id_normal = SIZE_MAX;
+            b.tex_color = &texture;
+            b.tex_specular = nullptr;
+            b.tex_normal = nullptr;
+            b.ops = &c;
+        }
     }
-    auto check_sanity_common = [&meta](const std::vector<BlendMapTexture>& textures){
-        for (const auto& t : textures) {
+    auto check_sanity_common = [&meta](const TextureExpression2<BlendMapTexture>& textures){
+        for (const auto& t : flat_iterable(textures)) {
             if (t.texture_descriptor.color.filename.empty()) {
                 throw std::runtime_error("Empty color or alpha texture not supported, cva: " + meta.name.full_name());
             }
@@ -2139,17 +2220,19 @@ void OpenGLVertexArrayRenderer::render(
     };
     check_sanity_common(meta.material.textures_color);
     if (meta.material.textures_alpha.empty()) {
-        for (const auto& [i, t] : enumerate(meta.material.textures_color)) {
-            if (i == 0) {
-                auto alpha_required =
-                    (meta.material.blend_mode != BlendMode::OFF) &&
-                    !any(meta.material.blend_mode & BlendMode::ADD_MASK) &&
-                    !vertices->has_alpha();
-                if (!alpha_required && !any(t.texture_descriptor.color.color_mode & ColorMode::RGB)) {
-                    throw std::runtime_error("Opaque material's color texture \"" + t.texture_descriptor.color.filename.string() + "\" was not loaded as RGB");
-                }
-                if (alpha_required && !any(t.texture_descriptor.color.color_mode & ColorMode::RGBA)) {
-                    throw std::runtime_error("Transparent material's color texture \"" + t.texture_descriptor.color.filename.string() + "\" was not loaded as RGBA");
+        for (const auto& [i, ts] : enumerate(meta.material.textures_color)) {
+            for (const auto& [j, t] : enumerate(ts)) {
+                if (j == 0) {
+                    auto alpha_required =
+                        (meta.material.blend_mode != BlendMode::OFF) &&
+                        !any(meta.material.blend_mode & BlendMode::ADD_MASK) &&
+                        !vertices->has_alpha();
+                    if (!alpha_required && !any(t.texture_descriptor.color.color_mode & ColorMode::RGB)) {
+                        throw std::runtime_error("Opaque material's color texture \"" + t.texture_descriptor.color.filename.string() + "\" was not loaded as RGB");
+                    }
+                    if (alpha_required && !any(t.texture_descriptor.color.color_mode & ColorMode::RGBA)) {
+                        throw std::runtime_error("Transparent material's color texture \"" + t.texture_descriptor.color.filename.string() + "\" was not loaded as RGBA");
+                    }
                 }
             }
         }
@@ -2158,12 +2241,12 @@ void OpenGLVertexArrayRenderer::render(
         if (meta.material.blend_mode == BlendMode::OFF) {
             throw std::runtime_error("Blend-mode is off despite alpha texture, cva: " + meta.name.full_name() + ", material: " + meta.material.identifier());
         }
-        for (const auto& t : meta.material.textures_color) {
+        for (const auto& t : flat_iterable(meta.material.textures_color)) {
             if (t.texture_descriptor.color.color_mode != ColorMode::RGB) {
                 throw std::runtime_error("Color-texture \"" + t.texture_descriptor.color.filename.string() + "\" was not loaded as RGB, but an alpha-texture was set");
             }
         }
-        for (const auto& t : meta.material.textures_alpha) {
+        for (const auto& t : flat_iterable(meta.material.textures_alpha)) {
             if (t.texture_descriptor.color.color_mode != ColorMode::GRAYSCALE) {
                 throw std::runtime_error("Alpha-texture \"" + t.texture_descriptor.color.filename.string() + "\" was not loaded as grayscale");
             }
@@ -2212,13 +2295,15 @@ void OpenGLVertexArrayRenderer::render(
         if ((meta.material.blend_mode != BlendMode::OFF) && (meta.material.depth_func != DepthFunc::EQUAL))
         {
             if (!texture_ids_color.empty()) {
-                assert_true(!blended_textures_color.empty());
-                auto& b = blended_textures_color[0];
-                assert_true(b.id_color == 0);
-                assert_true(b.tex_color != nullptr);
-                blended_textures_color.resize(1);
-                texture_ids_color.clear();
-                texture_ids_color.try_emplace(b.ops->texture_descriptor.color, 0u, *b.tex_color);
+                for (auto& blended_textures_color1 : blended_textures_color) {
+                    assert_true(!blended_textures_color1.empty());
+                    auto& b = blended_textures_color1[0];
+                    assert_true(b.id_color == 0);
+                    assert_true(b.tex_color != nullptr);
+                    blended_textures_color1.resize(1);
+                    texture_ids_color.clear();
+                    texture_ids_color.try_emplace(b.ops->texture_descriptor.color, 0u, *b.tex_color);
+                }
             }
             texture_ids_specular.clear();
             texture_ids_normal.clear();
@@ -2275,9 +2360,11 @@ void OpenGLVertexArrayRenderer::render(
     std::vector<size_t> lightmap_indices_color = any(meta.material.occluded_pass & ExternalRenderPassType::LIGHTMAP_COLOR_MASK) ? lightmap_indices : std::vector<size_t>{};
     std::vector<size_t> lightmap_indices_depth = any(meta.material.occluded_pass & ExternalRenderPassType::LIGHTMAP_DEPTH_MASK) ? lightmap_indices : std::vector<size_t>{};
     assert_true(lightmap_indices_color.empty() || lightmap_indices_depth.empty());
-    for (const auto& [i, t] : enumerate(meta.material.textures_color)) {
-        if ((i != 0) && !t.texture_descriptor.specular.filename.empty()) {
-            throw std::runtime_error("Only the first texture can have a specularmap");
+    for (const auto& [i, textures_color1] : enumerate(meta.material.textures_color)) {
+        for (const auto& [j, t] : enumerate(textures_color1)) {
+            if ((j != 0) && !t.texture_descriptor.specular.filename.empty()) {
+                throw std::runtime_error("Only the first texture can have a specularmap");
+            }
         }
     }
     size_t ntextures_reflection = (size_t)(!is_lightmap && (reflection_map != nullptr) && !(*reflection_map)->empty());
@@ -2317,7 +2404,7 @@ void OpenGLVertexArrayRenderer::render(
     if (texture_ids_color.empty() && (ntextures_dirt != 0)) {
         throw std::runtime_error(
             "Combination of ((ntextures_color == 0) && (ntextures_dirt != 0)) is not supported. Textures: " +
-            join(" ", meta.material.textures_color, [](const auto& v) { return v.texture_descriptor.color.filename.string(); }));
+            join(" ", flat_iterable(meta.material.textures_color), [](const auto& v) { return v.texture_descriptor.color.filename.string(); }));
     }
     bool reorient_normals = !meta.material.cull_faces && (any(diffuse != 0.f) || any(specular != 0.f));
     if (meta.material.cull_faces && meta.material.reorient_uv0) {
@@ -2329,24 +2416,30 @@ void OpenGLVertexArrayRenderer::render(
     assert_true(meta.material.number_of_frames > 0);
     Hasher texture_modifiers_hash;
     texture_modifiers_hash.combine(blended_textures_color.size());
-    for (const auto& t : blended_textures_color) {
-        texture_modifiers_hash.combine(t.ops->modifiers_hash());
-        texture_modifiers_hash.combine(t.id_color);
-        texture_modifiers_hash.combine(t.id_normal);
-        texture_modifiers_hash.combine(t.id_specular);
-        texture_modifiers_hash.combine(t.tex_color == nullptr ? UINT32_MAX : t.tex_color->layers());
-        texture_modifiers_hash.combine(t.tex_normal == nullptr ? UINT32_MAX : t.tex_normal->layers());
-        texture_modifiers_hash.combine(t.tex_specular == nullptr ? UINT32_MAX : t.tex_specular->layers());
+    for (const auto& blended_textures_color1 : blended_textures_color) {
+        texture_modifiers_hash.combine(blended_textures_color1.size());
+        for (const auto& t : blended_textures_color1) {
+            texture_modifiers_hash.combine(t.ops->modifiers_hash());
+            texture_modifiers_hash.combine(t.id_color);
+            texture_modifiers_hash.combine(t.id_normal);
+            texture_modifiers_hash.combine(t.id_specular);
+            texture_modifiers_hash.combine(t.tex_color == nullptr ? UINT32_MAX : t.tex_color->layers());
+            texture_modifiers_hash.combine(t.tex_normal == nullptr ? UINT32_MAX : t.tex_normal->layers());
+            texture_modifiers_hash.combine(t.tex_specular == nullptr ? UINT32_MAX : t.tex_specular->layers());
+        }
     }
     texture_modifiers_hash.combine(blended_textures_alpha.size());
-    for (const auto& t : blended_textures_alpha) {
-        texture_modifiers_hash.combine(t.ops->modifiers_hash());
-        texture_modifiers_hash.combine(t.id_color);
-        texture_modifiers_hash.combine(t.id_normal);
-        texture_modifiers_hash.combine(t.id_specular);
-        texture_modifiers_hash.combine(t.tex_color == nullptr ? UINT32_MAX : t.tex_color->layers());
-        texture_modifiers_hash.combine(t.tex_normal == nullptr ? UINT32_MAX : t.tex_normal->layers());
-        texture_modifiers_hash.combine(t.tex_specular == nullptr ? UINT32_MAX : t.tex_specular->layers());
+    for (const auto& blended_textures_alpha1 : blended_textures_alpha) {
+        texture_modifiers_hash.combine(blended_textures_alpha1.size());
+        for (const auto& t : blended_textures_alpha1) {
+            texture_modifiers_hash.combine(t.ops->modifiers_hash());
+            texture_modifiers_hash.combine(t.id_color);
+            texture_modifiers_hash.combine(t.id_normal);
+            texture_modifiers_hash.combine(t.id_specular);
+            texture_modifiers_hash.combine(t.tex_color == nullptr ? UINT32_MAX : t.tex_color->layers());
+            texture_modifiers_hash.combine(t.tex_normal == nullptr ? UINT32_MAX : t.tex_normal->layers());
+            texture_modifiers_hash.combine(t.tex_specular == nullptr ? UINT32_MAX : t.tex_specular->layers());
+        }
     }
     Hasher lights_hash;
     lights_hash.combine(filtered_lights.size());
@@ -2360,15 +2453,17 @@ void OpenGLVertexArrayRenderer::render(
     }
     bool has_discrete_atlas_texture_layer = get_has_discrete_atlas_texture_layer(meta);
     if (has_discrete_atlas_texture_layer) {
-        if (meta.material.textures_color.size() != 1) {
-            throw std::runtime_error("Unexpected number of color textures");
-        }
-        const auto& t = meta.material.textures_color[0];
-        auto ttype = secondary_rendering_resources_.contains_texture(t.texture_descriptor.color)
-            ? secondary_rendering_resources_.texture_target(t.texture_descriptor.color, TextureRole::COLOR_FROM_DB)
-            : primary_rendering_resources_.texture_target(t.texture_descriptor.color, TextureRole::COLOR_FROM_DB);
-        if (ttype != TextureTarget::TEXTURE_2D_ARRAY) {
-            throw std::runtime_error("Unexpected texture type (expected a 2D array)");
+        for (const auto& textures_color1 : meta.material.textures_color) {
+            if (textures_color1.size() != 1) {
+                throw std::runtime_error("Unexpected number of color textures");
+            }
+            const auto& t = textures_color1[0];
+            auto ttype = secondary_rendering_resources_.contains_texture(t.texture_descriptor.color)
+                ? secondary_rendering_resources_.texture_target(t.texture_descriptor.color, TextureRole::COLOR_FROM_DB)
+                : primary_rendering_resources_.texture_target(t.texture_descriptor.color, TextureRole::COLOR_FROM_DB);
+            if (ttype != TextureTarget::TEXTURE_2D_ARRAY) {
+                throw std::runtime_error("Unexpected texture type (expected a 2D array)");
+            }
         }
     }
     if (vertices->has_discrete_triangle_texture_layers() &&
@@ -2828,12 +2923,14 @@ void OpenGLVertexArrayRenderer::render(
         tb.bind(rp.texture_interiormap_location(i), h, InterpolationPolicy::AUTO, TextureLayerProperties::NONE);
     }
     if (texture_ids_specular.size() != 0) {
-        assert_true(texture_ids_specular.size() == 1);
-        assert_true(!meta.material.textures_color.empty());
-        const auto& desc = meta.material.textures_color[0].texture_descriptor;
-        assert_true(!desc.specular.filename.empty());
-        const auto& texture = *primary_rendering_resources_.get_texture(desc.specular);
-        tb.bind(rp.texture_specularmap_location, texture, InterpolationPolicy::AUTO, TextureLayerProperties::NONE);
+        for (const auto& textures_color1 : meta.material.textures_color) {
+            assert_true(texture_ids_specular.size() == 1);
+            assert_true(!textures_color1.empty());
+            const auto& desc = textures_color1[0].texture_descriptor;
+            assert_true(!desc.specular.filename.empty());
+            const auto& texture = *primary_rendering_resources_.get_texture(desc.specular);
+            tb.bind(rp.texture_specularmap_location, texture, InterpolationPolicy::AUTO, TextureLayerProperties::NONE);
+        }
     }
     if (!any(render_pass.rsd.external_render_pass.pass & ExternalRenderPassType::DIRTMAP_MASK) &&
         !is_lightmap &&
@@ -2958,8 +3055,8 @@ const ColoredRenderProgram& OpenGLVertexArrayRenderer::get_render_program(
     const std::vector<size_t>& light_noshadow_indices,
     const std::vector<size_t>& light_shadow_indices,
     const std::vector<size_t>& black_shadow_indices,
-    const std::vector<BlendMapTextureAndId>& textures_color,
-    const std::vector<BlendMapTextureAndId>& textures_alpha,
+    const TextureExpression2<BlendMapTextureAndId>& textures_color,
+    const TextureExpression2<BlendMapTextureAndId>& textures_alpha,
     ExternalRenderPassType render_pass) const
 {
     std::optional<AperiodicLagFinder> lag_finder;
@@ -2981,10 +3078,10 @@ const ColoredRenderProgram& OpenGLVertexArrayRenderer::get_render_program(
     }
     auto attr_ids = id.attr_idc.build();
     OrderedStandardMap<UvMapKey, size_t> uv_map;
-    for (const auto& t : textures_color) {
+    for (const auto& t : flat_iterable(textures_color)) {
         NotSortedUvMap{ uv_map }.insert(*t);
     }
-    for (const auto& t : textures_alpha) {
+    for (const auto& t : flat_iterable(textures_alpha)) {
         NotSortedUvMap{ uv_map }.insert(*t);
     }
     const char* vs_text = vertex_shader_text_gen(
@@ -3190,7 +3287,7 @@ const ColoredRenderProgram& OpenGLVertexArrayRenderer::get_render_program(
             // rp->texture_lightmap_depth_location = -1;
         }
         if (id.ntextures_normal != 0) {
-            for (const auto& r : textures_color) {
+            for (const auto& r : flat_iterable(textures_color)) {
                 if (!r->texture_descriptor.normal.filename.empty()) {
                     rp->texture_normalmap_locations[r.id_normal] = rp->get_uniform_location(("texture_normalmap[" + std::to_string(r.id_normal) + "]").c_str());
                 }
@@ -3313,8 +3410,8 @@ const ColoredRenderProgram& OpenGLVertexArrayRenderer::get_render_program(
         return *rps.add(id, std::move(rp));
     } catch (const std::runtime_error& e) {
         std::string identifier;
-        if (!textures_color.empty()) {
-            identifier = "\nAmbient+diffuse: " + textures_color[0]->texture_descriptor.color.filename.string();
+        if (!textures_color.empty() && !textures_color[0].empty()) {
+            identifier = "\nAmbient+diffuse: " + textures_color[0][0]->texture_descriptor.color.filename.string();
         }
         throw std::runtime_error(
             std::string("Could not generate render program.\n") +

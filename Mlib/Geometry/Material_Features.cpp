@@ -6,8 +6,8 @@
 using namespace Mlib;
 
 
-bool Mlib::has_normalmap(const std::vector<BlendMapTexture>& textures_color) {
-    for (const auto& t : textures_color) {
+bool Mlib::has_normalmap(const TextureExpression2<BlendMapTexture>& textures_color) {
+    for (const auto& t : flat_iterable(textures_color)) {
         if (!t.texture_descriptor.normal.filename.empty()) {
             return true;
         }
@@ -18,7 +18,7 @@ bool Mlib::has_normalmap(const std::vector<BlendMapTexture>& textures_color) {
 bool Mlib::fragments_depend_on_distance(
     const FixedArray<float, 2>& fog_distances,
     const FixedArray<float, 4>& alpha_distances,
-    const std::vector<BlendMapTextureAndId>& textures_color)
+    const TextureExpression2<BlendMapTextureAndId>& textures_color)
 {
     if (any(fog_distances != default_step_distances)) {
         return true;
@@ -26,7 +26,7 @@ bool Mlib::fragments_depend_on_distance(
     if (any(alpha_distances != default_linear_distances)) {
         return true;
     }
-    for (const auto& t : textures_color) {
+    for (const auto& t : flat_iterable(textures_color)) {
         if (t.ops->distances != default_linear_distances) {
             return true;
         }
@@ -34,9 +34,9 @@ bool Mlib::fragments_depend_on_distance(
     return false;
 }
 
-bool Mlib::fragments_depend_on_normal(const std::vector<BlendMapTexture>& textures_color)
+bool Mlib::fragments_depend_on_normal(const TextureExpression2<BlendMapTexture>& textures_color)
 {
-    for (const auto& t : textures_color) {
+    for (const auto& t : flat_iterable(textures_color)) {
         if (t.cosines != default_linear_cosines) {
             return true;
         }
@@ -44,9 +44,9 @@ bool Mlib::fragments_depend_on_normal(const std::vector<BlendMapTexture>& textur
     return false;
 }
 
-bool Mlib::fragments_depend_on_normal(const std::vector<BlendMapTextureAndId>& textures_color)
+bool Mlib::fragments_depend_on_normal(const TextureExpression2<BlendMapTextureAndId>& textures_color)
 {
-    for (const auto& t : textures_color) {
+    for (const auto& t : flat_iterable(textures_color)) {
         if (t.ops->cosines != default_linear_cosines) {
             return true;
         }
@@ -54,9 +54,9 @@ bool Mlib::fragments_depend_on_normal(const std::vector<BlendMapTextureAndId>& t
     return false;
 }
 
-bool Mlib::has_horizontal_detailmap(const std::vector<BlendMapTextureAndId>& textures)
+bool Mlib::has_horizontal_detailmap(const TextureExpression2<BlendMapTextureAndId>& textures)
 {
-    for (const auto& t : textures) {
+    for (const auto& t : flat_iterable(textures)) {
         if (any(t.ops->uv_source & BlendMapUvSource::ANY_HORIZONTAL)) {
             return true;
         }

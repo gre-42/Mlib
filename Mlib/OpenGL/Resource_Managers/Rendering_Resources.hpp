@@ -4,6 +4,7 @@
 #include <Mlib/Geometry/Interfaces/IDds_Resources.hpp>
 #include <Mlib/Geometry/Material/Colormap_With_Modifiers.hpp>
 #include <Mlib/Geometry/Material/Colormap_With_Modifiers_Hash.hpp>
+#include <Mlib/Geometry/Material/Texture_Expression.hpp>
 #include <Mlib/Geometry/Texture/Uv_Tile.hpp>
 #include <Mlib/Hashing/Variable_And_Hash.hpp>
 #include <Mlib/Images/Transform/Coefficient_Image_Cache.hpp>
@@ -233,6 +234,7 @@ public:
         const std::string& default_filename) const;
 
     BlendMapTexture get_blend_map_texture(const FPath& name) const;
+    TextureExpression2<BlendMapTexture> get_blend_map_textures(const TextureExpression2<FPath>& names2) const;
     void set_blend_map_texture(const VariableAndHash<std::string>& name, const BlendMapTexture& bmt);
 
     void set_suppressed_warnings(FPath name, TextureWarnFlags warn_flags);

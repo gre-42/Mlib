@@ -4,10 +4,10 @@
 using namespace Mlib;
 
 bool Mlib::get_has_per_instance_continuous_texture_layer(const MeshMeta& mesh_meta) {
-    if (mesh_meta.material.textures_color.empty()) {
+    if (mesh_meta.material.textures_color.empty() || mesh_meta.material.textures_color[0].empty()) {
         throw std::runtime_error("Array \"" + mesh_meta.name.full_name() + "\" has no textures");
     }
-    return (mesh_meta.material.textures_color[0].texture_descriptor.color.depth_interpolation == InterpolationMode::LINEAR);
+    return (mesh_meta.material.textures_color[0][0].texture_descriptor.color.depth_interpolation == InterpolationMode::LINEAR);
 }
 
 bool Mlib::get_has_discrete_atlas_texture_layer(const MeshMeta& mesh_meta) {

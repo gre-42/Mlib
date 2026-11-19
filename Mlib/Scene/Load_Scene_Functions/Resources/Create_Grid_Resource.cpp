@@ -96,8 +96,8 @@ struct RegisterJsonUserFunction {
                             .depth_func = args.arguments.contains(KnownArgs::depth_func)
                                 ? depth_func_from_string(args.arguments.at<std::string>(KnownArgs::depth_func))
                                 : DepthFunc::LESS,
-                            .textures_color = args.arguments.pathes_or_variables(KnownArgs::textures_color, get_texture),
-                            .textures_alpha = args.arguments.try_pathes_or_variables(KnownArgs::textures_alpha, get_texture),
+                            .textures_color = {args.arguments.pathes_or_variables(KnownArgs::textures_color, get_texture)},
+                            .textures_alpha = {args.arguments.try_pathes_or_variables(KnownArgs::textures_alpha, get_texture)},
                             .occluded_pass = external_render_pass_type_from_string(args.arguments.at<std::string>(KnownArgs::occluded_pass)),
                             .occluder_pass = external_render_pass_type_from_string(args.arguments.at<std::string>(KnownArgs::occluder_pass)),
                             .skidmarks = material_skidmarks(physics_material),

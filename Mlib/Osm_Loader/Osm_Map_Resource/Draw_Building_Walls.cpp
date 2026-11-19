@@ -86,9 +86,12 @@ void Mlib::draw_building_walls(
                 bottom_ambient_occlusion = 0.f;
             }
 #ifndef WITHOUT_GRAPHICS
-            tl->meta.material.textures_color.reserve(bl.facade_texture_descriptor.names.size());
-            for (const auto& name : bl.facade_texture_descriptor.names) {
-                tl->meta.material.textures_color.push_back(primary_rendering_resources.get_blend_map_texture(name));
+            {
+                auto& tc = tl->meta.material.textures_color.emplace_back();
+                tc.reserve(bl.facade_texture_descriptor.names.size());
+                for (const auto& name : bl.facade_texture_descriptor.names) {
+                    tc.push_back(primary_rendering_resources.get_blend_map_texture(name));
+                }
             }
 #endif
             tl->meta.material.interior_textures = bl.facade_texture_descriptor.interior_textures;

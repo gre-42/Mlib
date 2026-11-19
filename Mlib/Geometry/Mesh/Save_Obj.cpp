@@ -23,7 +23,11 @@ void save_obj_with_materials(
     for (const std::shared_ptr<TContainer>& cva : cvas) {
         if (cva->meta.name.empty()) {
             if (!cva->meta.material.textures_color.empty()) {
-                throw std::runtime_error("Empty name, material: \"" + cva->meta.material.textures_color.front().texture_descriptor.color.filename.string());
+                if (cva->meta.material.textures_color[0].empty()) {
+                    throw std::runtime_error("Empty name, material: {}");
+                } else {
+                    throw std::runtime_error("Empty name, material: \"" + cva->meta.material.textures_color[0][0].texture_descriptor.color.filename.string() + '"');
+                }
             } else {
                 throw std::runtime_error("Empty name, no material color texture");
             }

@@ -4,10 +4,10 @@
 using namespace Mlib;
 
 static const ColormapWithModifiers& get_name(const Material& material) {
-    if (material.textures_color.size() != 1) {
+    if ((material.textures_color.size() != 1) || (material.textures_color[0].size() != 1)) {
         throw std::runtime_error("Material \"" + material.identifier() + "\" does not have exactly one texture");
     }
-    return material.textures_color[0].texture_descriptor.color;
+    return material.textures_color[0][0].texture_descriptor.color;
 }
 
 MergedTextureName::MergedTextureName(const Material& material)

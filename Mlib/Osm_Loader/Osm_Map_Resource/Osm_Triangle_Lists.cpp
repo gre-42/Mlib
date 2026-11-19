@@ -205,6 +205,11 @@ OsmTriangleLists::OsmTriangleLists(
             },
             ModifierBacklog{}));
 #ifndef WITHOUT_GRAPHICS
+        if (!ttt.empty()) {
+            (*tl_terrain)[tt]->meta.material.textures_color.emplace_back().reserve(ttt.size());
+            tl_terrain_visuals[tt]->meta.material.textures_color.emplace_back().reserve(ttt.size());
+            tl_terrain_extrusion[tt]->meta.material.textures_color.emplace_back().reserve(ttt.size());
+        }
         for (auto& t : ttt) {
             // BlendMapTexture bt{ .texture_descriptor = {.color = t, .normal = primary_rendering_resources.get_normalmap(t), .anisotropic_filtering_level = anisotropic_filtering_level } };
             BlendMapTexture bt = primary_rendering_resources.get_blend_map_texture(t);
@@ -213,9 +218,9 @@ OsmTriangleLists::OsmTriangleLists(
                 tl_terrain_visuals[tt]->meta.material.has_animated_textures = true;
                 tl_terrain_extrusion[tt]->meta.material.has_animated_textures = true;
             }
-            (*tl_terrain)[tt]->meta.material.textures_color.push_back(bt);
-            tl_terrain_visuals[tt]->meta.material.textures_color.push_back(bt);
-            tl_terrain_extrusion[tt]->meta.material.textures_color.push_back(bt);
+            (*tl_terrain)[tt]->meta.material.textures_color[0].push_back(bt);
+            tl_terrain_visuals[tt]->meta.material.textures_color[0].push_back(bt);
+            tl_terrain_extrusion[tt]->meta.material.textures_color[0].push_back(bt);
         }
         (*tl_terrain)[tt]->meta.material.compute_color_mode();
         tl_terrain_visuals[tt]->meta.material.compute_color_mode();
@@ -228,11 +233,13 @@ OsmTriangleLists::OsmTriangleLists(
             throw std::runtime_error("Could not find physics material for type \"" + road_type_to_string(tpe) + '"');
         }
         auto rit = config.street_reflection_map.find(tpe);
-        std::vector<BlendMapTexture> blend_textures;
+        TextureExpression2<BlendMapTexture> blend_textures;
 #ifndef WITHOUT_GRAPHICS
-        blend_textures.reserve(textures.size());
-        for (const FPath& texture : textures) {
-            blend_textures.push_back(primary_rendering_resources.get_blend_map_texture(texture));
+        if (!textures.empty()) {
+            blend_textures.emplace_back().reserve(textures.size());
+            for (const FPath& texture : textures) {
+                blend_textures[0].push_back(primary_rendering_resources.get_blend_map_texture(texture));
+            }
         }
 #endif
         tl_street_crossing.insert(tpe, std::make_shared<TriangleList<CompressedScenePos>>(
@@ -268,18 +275,22 @@ OsmTriangleLists::OsmTriangleLists(
             auto alpha_texture_names = config.street_alpha_textures.contains(road_properties.type)
                 ? config.street_alpha_textures.at(road_properties.type)
                 : std::vector<FPath>{};
-            std::vector<BlendMapTexture> textures_color;
+            TextureExpression2<BlendMapTexture> textures_color;
 #ifndef WITHOUT_GRAPHICS
-            textures_color.reserve(road_style.textures.size());
-            for (const FPath& texture : road_style.textures) {
-                textures_color.push_back(primary_rendering_resources.get_blend_map_texture(texture));
+            if (!road_style.textures.empty()) {
+                textures_color.emplace_back().reserve(road_style.textures.size());
+                for (const FPath& texture : road_style.textures) {
+                    textures_color[0].push_back(primary_rendering_resources.get_blend_map_texture(texture));
+                }
             }
 #endif
-            std::vector<BlendMapTexture> textures_alpha;
+            TextureExpression2<BlendMapTexture> textures_alpha;
 #ifndef WITHOUT_GRAPHICS
-            textures_alpha.reserve(alpha_texture_names.size());
-            for (const FPath& texture : alpha_texture_names) {
-                textures_alpha.push_back(primary_rendering_resources.get_blend_map_texture(texture));
+            if (!alpha_texture_names.empty()) {
+                textures_alpha.emplace_back().reserve(alpha_texture_names.size());
+                for (const FPath& texture : alpha_texture_names) {
+                    textures_alpha[0].push_back(primary_rendering_resources.get_blend_map_texture(texture));
+                }
             }
 #endif
             auto rit = config.street_reflection_map.find(road_properties.type);
@@ -324,18 +335,22 @@ OsmTriangleLists::OsmTriangleLists(
             auto alpha_texture_names = config.street_mud_alpha_textures.contains(road_properties.type)
                 ? config.street_mud_alpha_textures.at(road_properties.type)
                 : std::vector<FPath>{};
-            std::vector<BlendMapTexture> textures_color;
+            TextureExpression2<BlendMapTexture> textures_color;
 #ifndef WITHOUT_GRAPHICS
-            textures_color.reserve(config.street_mud_textures.at(road_properties.type).size());
-            for (const FPath& texture : config.street_mud_textures.at(road_properties.type)) {
-                textures_color.push_back(primary_rendering_resources.get_blend_map_texture(texture));
+            if (!config.street_mud_textures.at(road_properties.type).empty()) {
+                textures_color.emplace_back().reserve(config.street_mud_textures.at(road_properties.type).size());
+                for (const FPath& texture : config.street_mud_textures.at(road_properties.type)) {
+                    textures_color[0].push_back(primary_rendering_resources.get_blend_map_texture(texture));
+                }
             }
 #endif
-            std::vector<BlendMapTexture> textures_alpha;
+            TextureExpression2<BlendMapTexture> textures_alpha;
 #ifndef WITHOUT_GRAPHICS
-            textures_alpha.reserve(alpha_texture_names.size());
-            for (const FPath& texture : alpha_texture_names) {
-                textures_alpha.push_back(primary_rendering_resources.get_blend_map_texture(texture));
+            if (!alpha_texture_names.empty()) {
+                textures_alpha.emplace_back().reserve(alpha_texture_names.size());
+                for (const FPath& texture : alpha_texture_names) {
+                    textures_alpha[0].push_back(primary_rendering_resources.get_blend_map_texture(texture));
+                }
             }
 #endif
             tl_street_mud_visuals.insert(road_properties.type, std::make_shared<TriangleList<CompressedScenePos>>(
@@ -375,7 +390,7 @@ OsmTriangleLists::OsmTriangleLists(
             "curb_" + road_type_to_string(tpe) + name_suffix,
             Material{
                 #ifndef WITHOUT_GRAPHICS
-                .textures_color = {primary_rendering_resources.get_blend_map_texture(texture)},
+                .textures_color = {{primary_rendering_resources.get_blend_map_texture(texture)}},
                 #endif
                 .reflection_map = (rit != config.street_reflection_map.end())
                     ? rit->second
@@ -403,7 +418,7 @@ OsmTriangleLists::OsmTriangleLists(
             "curb2_" + road_type_to_string(tpe) + name_suffix,
             Material{
                 #ifndef WITHOUT_GRAPHICS
-                .textures_color = {primary_rendering_resources.get_blend_map_texture(texture)},
+                .textures_color = {{primary_rendering_resources.get_blend_map_texture(texture)}},
                 #endif
                 .reflection_map = (rit != config.street_reflection_map.end())
                     ? rit->second
@@ -430,7 +445,7 @@ OsmTriangleLists::OsmTriangleLists(
             "air_curb_" + road_type_to_string(tpe) + name_suffix,
             Material{
                 #ifndef WITHOUT_GRAPHICS
-                .textures_color = {primary_rendering_resources.get_blend_map_texture(texture)},
+                .textures_color = {{primary_rendering_resources.get_blend_map_texture(texture)}},
                 #endif
                 .reflection_map = (rit != config.street_reflection_map.end())
                     ? rit->second
@@ -462,7 +477,7 @@ OsmTriangleLists::OsmTriangleLists(
                 .depth_func = DepthFunc::EQUAL,
                 .blending_pass = BlendingPassType::EARLY,
                 #ifndef WITHOUT_GRAPHICS
-                .textures_color = {primary_rendering_resources.get_blend_map_texture(config.racing_line_texture)},
+                .textures_color = {{primary_rendering_resources.get_blend_map_texture(config.racing_line_texture)}},
                 #endif
                 // .wrap_mode_s = WrapMode::CLAMP_TO_EDGE,
                 // .wrap_mode_t = WrapMode::REPEAT,
@@ -492,7 +507,7 @@ OsmTriangleLists::OsmTriangleLists(
             "air_support" + name_suffix,
             Material{
                 #ifndef WITHOUT_GRAPHICS
-                .textures_color = {primary_rendering_resources.get_blend_map_texture(config.air_support_texture)},
+                .textures_color = {{primary_rendering_resources.get_blend_map_texture(config.air_support_texture)}},
                 #endif
                 .occluded_pass = ExternalRenderPassType::LIGHTMAP_BLACK_NODE,
                 .occluder_pass = ExternalRenderPassType::NONE,
@@ -521,7 +536,7 @@ OsmTriangleLists::OsmTriangleLists(
             "tunnel_crossing" + name_suffix,
             Material{
                 #ifndef WITHOUT_GRAPHICS
-                .textures_color = {primary_rendering_resources.get_blend_map_texture(config.tunnel_pipe_texture)},
+                .textures_color = {{primary_rendering_resources.get_blend_map_texture(config.tunnel_pipe_texture)}},
                 #endif
                 .occluded_pass = ExternalRenderPassType::LIGHTMAP_BLACK_NODE,
                 .occluder_pass = ExternalRenderPassType::NONE,
@@ -537,7 +552,7 @@ OsmTriangleLists::OsmTriangleLists(
             "tunnel_pipe" + name_suffix,
             Material{
                 #ifndef WITHOUT_GRAPHICS
-                .textures_color = {primary_rendering_resources.get_blend_map_texture(config.tunnel_pipe_texture)},
+                .textures_color = {{primary_rendering_resources.get_blend_map_texture(config.tunnel_pipe_texture)}},
                 #endif
                 .occluded_pass = ExternalRenderPassType::LIGHTMAP_BLACK_NODE,
                 .occluder_pass = ExternalRenderPassType::NONE,
@@ -571,18 +586,22 @@ OsmTriangleLists::OsmTriangleLists(
     entrances[EntranceType::TUNNEL];
     entrances[EntranceType::BRIDGE];
     if (config.water.has_value()) {
-        std::vector<BlendMapTexture> blend_textures_color;
+        TextureExpression2<BlendMapTexture> blend_textures_color;
 #ifndef WITHOUT_GRAPHICS
-        blend_textures_color.reserve(config.water->textures.color.size());
-        for (const FPath& texture : config.water->textures.color) {
-            blend_textures_color.push_back(primary_rendering_resources.get_blend_map_texture(texture));
+        if (!config.water->textures.color.empty()) {
+            blend_textures_color.emplace_back().reserve(config.water->textures.color.size());
+            for (const FPath& texture : config.water->textures.color) {
+                blend_textures_color[0].push_back(primary_rendering_resources.get_blend_map_texture(texture));
+            }
         }
 #endif
-        std::vector<BlendMapTexture> blend_textures_alpha;
+        TextureExpression2<BlendMapTexture> blend_textures_alpha;
 #ifndef WITHOUT_GRAPHICS
-        blend_textures_alpha.reserve(config.water->textures.alpha.size());
-        for (const FPath& texture : config.water->textures.alpha) {
-            blend_textures_alpha.push_back(primary_rendering_resources.get_blend_map_texture(texture));
+        if (!config.water->textures.alpha.empty()) {
+            blend_textures_alpha.emplace_back().reserve(config.water->textures.alpha.size());
+            for (const FPath& texture : config.water->textures.alpha) {
+                blend_textures_alpha[0].push_back(primary_rendering_resources.get_blend_map_texture(texture));
+            }
         }
 #endif
         for (const auto& wt : { WaterType::SHALLOW_LAKE, WaterType::UNDEFINED }) {

@@ -51,7 +51,7 @@ void Mlib::draw_boundary_barriers(
     //     {});
 
     #ifndef WITHOUT_GRAPHICS
-    tl->meta.material.textures_color = { primary_rendering_resources.get_blend_map_texture(barrier_style.texture) };
+    tl->meta.material.textures_color = {{ primary_rendering_resources.get_blend_map_texture(barrier_style.texture) }};
     #endif
     tl->meta.material.blend_mode = barrier_style.blend_mode;
     tl->meta.material.cull_faces = barrier_style.cull_faces;

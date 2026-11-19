@@ -18,12 +18,12 @@ inline const std::string& identity_(const std::string& v) {
 template <class TContainer, class TOperation = decltype(identity_)>
 std::string join(
     const std::string& delimiter,
-    const TContainer& lst,
+    TContainer&& lst,
     const TOperation& op = identity_)
 #else
 template <class TContainer, class TOperation = std::identity>
 requires std::ranges::range<TContainer>
-std::string join(const std::string& delimiter, const TContainer& lst, const TOperation& op = {})
+std::string join(const std::string& delimiter, TContainer&& lst, const TOperation& op = {})
 #endif
 {
     std::string res;

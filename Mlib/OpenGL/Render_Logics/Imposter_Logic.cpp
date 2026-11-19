@@ -151,7 +151,7 @@ void ImposterLogic::add_imposter(
     Material material{
         // .blend_mode = BlendMode::SEMI_CONTINUOUS_08,  // does not work with vegetation
         .blend_mode = BlendMode::BINARY_08,
-        .textures_color = { {.texture_descriptor = TextureDescriptor{.color = texture_}} },
+        .textures_color = {{{.texture_descriptor = TextureDescriptor{.color = texture_}}}},
         .shading{
             .emissive = OrderableFixedArray<float, 3>{1.f, 1.f, 1.f},
             .ambient = OrderableFixedArray<float, 3>{0.f, 0.f, 0.f},

@@ -5,7 +5,7 @@
 using namespace Mlib;
 
 Material& Material::compute_color_mode() {
-    for (auto& t : textures_color) {
+    for (auto& t : flat_iterable(textures_color)) {
         if (t.texture_descriptor.color.color_mode == ColorMode::UNDEFINED) {
             t.texture_descriptor.color.color_mode = (blend_mode == BlendMode::OFF)
                 ? ColorMode::RGB
@@ -16,8 +16,8 @@ Material& Material::compute_color_mode() {
 }
 
 std::string Material::identifier() const {
-    if (textures_color.size() > 0) {
-        return "color: " + textures_color.front().texture_descriptor.color.filename.string();
+    if ((textures_color.size() > 0) && (textures_color[0].size() > 0)) {
+        return "color: " + textures_color[0][0].texture_descriptor.color.filename.string();
     } else {
         return "<no texture>";
     }

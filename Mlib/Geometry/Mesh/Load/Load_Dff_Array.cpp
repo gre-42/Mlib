@@ -119,13 +119,13 @@ DffArrays<TPosition> Mlib::load_dff(
             if ((material.texture != nullptr) && cfg.textures.empty()) {
                 auto filename_lower = ide.texture_dictionary + ".txd_" + *material.texture->name;
                 std::transform(filename_lower.begin(), filename_lower.end(), filename_lower.begin(), ::tolower);
-                tl.meta.material.textures_color = { {.texture_descriptor = TextureDescriptor{
+                tl.meta.material.textures_color = {{{.texture_descriptor = TextureDescriptor{
                     .color = ColormapWithModifiers{
                         .filename = FPath::from_variable(filename_lower),
                         .color_mode = ColorMode::RGB | ColorMode::RGBA,
                         .mipmap_mode = cfg.mipmap_mode,
                         .magnifying_interpolation_mode = cfg.magnifying_interpolation_mode
-                    }.compute_hash()}} };
+                    }.compute_hash()}}}};
                 // linfo() << "Texture: " << tex->name;
             }
         }

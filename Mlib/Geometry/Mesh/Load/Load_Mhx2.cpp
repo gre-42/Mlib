@@ -194,7 +194,7 @@ std::shared_ptr<AnimatedColoredVertexArrays> Mlib::load_mhx2(
         // "viewPortColor" : [0.75089,0.57281,0.45185],
         // "viewPortAlpha" : 1
         if (!materials.insert({material.at("name"), Material{
-            .textures_color{
+            .textures_color{{
                 BlendMapTexture{.texture_descriptor = {
                     .color = ColormapWithModifiers{
                         .filename = gen_filename(filename, material.at("diffuse_texture")),
@@ -204,7 +204,7 @@ std::shared_ptr<AnimatedColoredVertexArrays> Mlib::load_mhx2(
                         .lighten = make_orderable(cfg.lighten),
                         .mipmap_mode = cfg.mipmap_mode,
                         .magnifying_interpolation_mode = cfg.magnifying_interpolation_mode,
-                        .anisotropic_filtering_level = cfg.anisotropic_filtering_level}.compute_hash()}}
+                        .anisotropic_filtering_level = cfg.anisotropic_filtering_level}.compute_hash()}}}
             },
             .shading {
                 .emissive = make_orderable(cfg.emissive_factor * material.at("emissive_color").get<UFixedArray<float, 3>>()),

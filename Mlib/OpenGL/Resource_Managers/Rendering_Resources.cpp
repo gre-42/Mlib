@@ -791,11 +791,11 @@ void RenderingResources::preload(const FPath& name) const {
 }
 
 void RenderingResources::preload(Material& material) const {
-    for (auto& t : material.textures_color) {
+    for (auto& t : flat_iterable(material.textures_color)) {
         resolve_aliases(t.texture_descriptor);
         preload(t.texture_descriptor);
     }
-    for (auto& t : material.textures_alpha) {
+    for (auto& t : flat_iterable(material.textures_alpha)) {
         resolve_aliases(t.texture_descriptor);
         preload(t.texture_descriptor);
     }
@@ -1794,6 +1794,21 @@ BlendMapTexture RenderingResources::get_blend_map_texture(const FPath& name) con
                 .mipmap_mode = MipmapMode::WITH_MIPMAPS}.compute_hash()} };
     }
     throw std::runtime_error("Could not find blend map texture: \"" + name.string() + '"');
+}
+
+TextureExpression2<BlendMapTexture> RenderingResources::get_blend_map_textures(
+    const TextureExpression2<FPath>& names2) const
+{
+    TextureExpression2<BlendMapTexture> result2;
+    result2.reserve(names2.size());
+    for (const auto& names : names2) {
+        auto& r1 = result2.emplace_back();
+        r1.reserve(names.size());
+        for (const auto& name : names) {
+            r1.push_back(get_blend_map_texture(name));
+        }
+    }
+    return result2;
 }
 
 void RenderingResources::set_blend_map_texture(const VariableAndHash<std::string>& name, const BlendMapTexture& bmt) {

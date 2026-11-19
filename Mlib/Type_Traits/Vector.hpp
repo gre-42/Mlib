@@ -14,4 +14,7 @@ struct is_std_vector<std::vector<T, Allocator>> : std::true_type {};
 template <typename T>
 concept StdVector = is_std_vector<std::remove_cvref_t<T>>::value;
 
+template <typename T>
+concept NotStdVector = !is_std_vector<std::remove_cvref_t<T>>::value;
+
 }

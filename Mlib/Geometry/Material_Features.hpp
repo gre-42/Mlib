@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Geometry/Material/Texture_Expression.hpp>
 #include <Mlib/Hashing/Std_Hash.hpp>
 #include <cstddef>
 #include <unordered_map>
@@ -43,14 +44,14 @@ private:
     const ColormapWithModifiers* cm_;
 };
 
-bool has_normalmap(const std::vector<BlendMapTexture>& textures_color);
+bool has_normalmap(const TextureExpression2<BlendMapTexture>& textures_color);
 bool fragments_depend_on_distance(
     const FixedArray<float, 2>& fog_distances,
     const FixedArray<float, 4>& alpha_distances,
-    const std::vector<BlendMapTextureAndId>& textures_color);
-bool fragments_depend_on_normal(const std::vector<BlendMapTexture>& textures_color);
-bool fragments_depend_on_normal(const std::vector<BlendMapTextureAndId>& textures_color);
-bool has_horizontal_detailmap(const std::vector<BlendMapTextureAndId>& textures);
+    const TextureExpression2<BlendMapTextureAndId>& textures_color);
+bool fragments_depend_on_normal(const TextureExpression2<BlendMapTexture>& textures_color);
+bool fragments_depend_on_normal(const TextureExpression2<BlendMapTextureAndId>& textures_color);
+bool has_horizontal_detailmap(const TextureExpression2<BlendMapTextureAndId>& textures);
 
 }
 
