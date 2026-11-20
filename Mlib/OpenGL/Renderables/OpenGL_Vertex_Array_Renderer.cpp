@@ -155,8 +155,8 @@ enum class ReductionTarget {
 static GenShaderText vertex_shader_text_gen = [](
     const NotSortedArray<std::vector<std::pair<TransformationMatrix<float, ScenePos, 3>, std::shared_ptr<Light>>>>& lights,
     const NotSortedArray<std::vector<std::pair<TransformationMatrix<float, ScenePos, 3>, std::shared_ptr<Skidmark>>>>& skidmarks,
-    const NotSortedArray<std::vector<BlendMapTextureAndId>>& textures_color,
-    const NotSortedArray<std::vector<BlendMapTextureAndId>>& textures_alpha,
+    const NotSortedArray<TextureExpression<BlendMapTextureAndId>>& textures_color,
+    const NotSortedArray<TextureExpression<BlendMapTextureAndId>>& textures_alpha,
     const NotSortedArray<std::vector<size_t>>& lightmap_indices,
     const NotSortedStruct<ExternalRenderPassType>& render_pass,
     const NotSortedStruct<AttributeIndexCalculator>& attr_idc,
@@ -622,8 +622,8 @@ static void bisect_texture_layer(
 static GenShaderText fragment_shader_text_textured_rgb_gen = [](
     const NotSortedArray<std::vector<std::pair<TransformationMatrix<float, ScenePos, 3>, std::shared_ptr<Light>>>>& lights,
     const NotSortedArray<std::vector<std::pair<TransformationMatrix<float, ScenePos, 3>, std::shared_ptr<Skidmark>>>>& skidmarks,
-    const NotSortedArray<std::vector<BlendMapTextureAndId>>& textures_color,
-    const NotSortedArray<std::vector<BlendMapTextureAndId>>& textures_alpha,
+    const NotSortedArray<TextureExpression<BlendMapTextureAndId>>& textures_color,
+    const NotSortedArray<TextureExpression<BlendMapTextureAndId>>& textures_alpha,
     const NotSortedArray<std::vector<size_t>>& lightmap_indices,
     const NotSortedArray<std::vector<size_t>>& light_noshadow_indices,
     const NotSortedArray<std::vector<size_t>>& light_shadow_indices,
@@ -1328,7 +1328,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen = [](
         sstr << "    }" << std::endl;
     }
     sstr << "    float weight;" << std::endl;
-    auto sample_textures = [&](const std::vector<BlendMapTextureAndId>& textures, ReductionTarget target) {
+    auto sample_textures = [&](const TextureExpression<BlendMapTextureAndId>& textures, ReductionTarget target) {
         sstr << "    weight = 1.0;" << std::endl;
         if (target == ReductionTarget::COLOR) {
             sstr << "    float sum_weights = 0.0;" << std::endl;
@@ -2071,8 +2071,8 @@ void OpenGLVertexArrayRenderer::render(
             }
         }
     }
-    std::vector<BlendMapTextureAndId> blended_textures_color(meta.material.textures_color.size());
-    std::vector<BlendMapTextureAndId> blended_textures_alpha(meta.material.textures_alpha.size());
+    TextureExpression<BlendMapTextureAndId> blended_textures_color(meta.material.textures_color.size());
+    TextureExpression<BlendMapTextureAndId> blended_textures_alpha(meta.material.textures_alpha.size());
     OrderedUnorderedMap<ColormapPtr, IdAndTexture> texture_ids_color;
     OrderedUnorderedMap<ColormapPtr, IdAndTexture> texture_ids_specular;
     OrderedUnorderedMap<ColormapPtr, IdAndTexture> texture_ids_normal;
@@ -2958,8 +2958,8 @@ const ColoredRenderProgram& OpenGLVertexArrayRenderer::get_render_program(
     const std::vector<size_t>& light_noshadow_indices,
     const std::vector<size_t>& light_shadow_indices,
     const std::vector<size_t>& black_shadow_indices,
-    const std::vector<BlendMapTextureAndId>& textures_color,
-    const std::vector<BlendMapTextureAndId>& textures_alpha,
+    const TextureExpression<BlendMapTextureAndId>& textures_color,
+    const TextureExpression<BlendMapTextureAndId>& textures_alpha,
     ExternalRenderPassType render_pass) const
 {
     std::optional<AperiodicLagFinder> lag_finder;

@@ -54,7 +54,7 @@ BlendMapTexture Mlib::blend_map_texture_from_json(const JsonMacroArguments& j)
     };
 }
 
-std::vector<BlendMapTexture> Mlib::blend_map_textures_from_json(
+TextureExpression<BlendMapTexture> Mlib::blend_map_textures_from_json(
     const JsonMacroArguments& j,
     std::string_view name)
 {
@@ -68,7 +68,7 @@ std::vector<BlendMapTexture> Mlib::blend_map_textures_from_json(
     });
 }
 
-std::vector<BlendMapTexture> Mlib::try_blend_map_textures_from_json(
+TextureExpression<BlendMapTexture> Mlib::try_blend_map_textures_from_json(
     const JsonMacroArguments& j,
     std::string_view name)
 {

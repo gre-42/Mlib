@@ -173,7 +173,7 @@ struct LightAndNode {
 
 template <class TPos>
 static LoadMeshConfig<TPos> cfg(const ParsedArgs& args, const std::string& light_configuration) {
-    std::vector<BlendMapTexture> textures;
+    TextureExpression<BlendMapTexture> textures;
     float period_world = 0.f;
     if (args.has_named_value("--multilayer_diffuse")) {
         textures = {BlendMapTexture{

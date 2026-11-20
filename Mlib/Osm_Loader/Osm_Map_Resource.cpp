@@ -1323,7 +1323,7 @@ OsmMapResource::OsmMapResource(
         if (config.bridge_pier_textures.empty()) {
             throw std::runtime_error("Bridge pier texture not set");
         }
-        std::vector<BlendMapTexture> textures_color;
+        TextureExpression<BlendMapTexture> textures_color;
         #ifndef WITHOUT_GRAPHICS
         textures_color.reserve(config.bridge_pier_textures.size());
         auto& primary_rendering_resources = RenderingContextStack::primary_rendering_resources();

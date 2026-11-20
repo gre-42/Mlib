@@ -11,6 +11,7 @@
 #include <Mlib/Geometry/Material/Render_Pass.hpp>
 #include <Mlib/Geometry/Material/Shading.hpp>
 #include <Mlib/Geometry/Material/Texture_Descriptor.hpp>
+#include <Mlib/Geometry/Material/Texture_Expression.hpp>
 #include <Mlib/Geometry/Material/Transformation_Mode.hpp>
 #include <Mlib/Math/Orderable_Fixed_Array.hpp>
 #include <Mlib/Misc/FPath.hpp>
@@ -53,8 +54,8 @@ struct Material {
     DepthFunc depth_func = DepthFunc::LESS;
     bool depth_test = true;
     BlendingPassType blending_pass = BlendingPassType::LATE;
-    std::vector<BlendMapTexture> textures_color;
-    std::vector<BlendMapTexture> textures_alpha;
+    TextureExpression<BlendMapTexture> textures_color;
+    TextureExpression<BlendMapTexture> textures_alpha;
     float period_world = 0.f;
     FPath reflection_map;
     FPath dirt_texture;

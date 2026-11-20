@@ -1796,6 +1796,17 @@ BlendMapTexture RenderingResources::get_blend_map_texture(const FPath& name) con
     throw std::runtime_error("Could not find blend map texture: \"" + name.string() + '"');
 }
 
+TextureExpression<BlendMapTexture> RenderingResources::get_blend_map_textures(
+    const TextureExpression<FPath>& names) const
+{
+    TextureExpression<BlendMapTexture> result;
+    result.reserve(names.size());
+    for (const auto& name : names) {
+        result.push_back(get_blend_map_texture(name));
+    }
+    return result;
+}
+
 void RenderingResources::set_blend_map_texture(const VariableAndHash<std::string>& name, const BlendMapTexture& bmt) {
     LOG_FUNCTION("RenderingResources::set_blend_map_texture " + *name);
     std::scoped_lock lock{ mutex_ };

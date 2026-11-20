@@ -4,6 +4,7 @@
 #include <Mlib/Math/Fixed_Point_Number.hpp>
 #include <Mlib/Math/Orderable_Fixed_Array.hpp>
 #include <Mlib/Strings/Utf8_Path.hpp>
+#include <Mlib/Type_Traits/Vector.hpp>
 #include <map>
 #include <string_view>
 #include <unordered_map>
@@ -84,15 +85,29 @@ void from_json(const nlohmann::json& j, FixedPointNumber<TInt, denominator>& v) 
     v = FixedPointNumber<TInt, denominator>::from_float_safe(vv);
 }
 
-template <class TData, class TOperation>
+template <NotStdVector TData, class TOperation>
 auto get_vector(const nlohmann::json& j, const TOperation& op) {
     if (j.type() != nlohmann::detail::value_t::array) {
         throw std::runtime_error("JSON -> vector received non-array type");
     }
     std::vector<decltype(op(j.get<TData>()))> result;
     result.reserve(j.size());
-    for (auto& e : j) {
+    for (const auto& e : j) {
         result.push_back(op(json_get<TData>(e)));
+    }
+    return result;
+}
+
+template <StdVector TData, class TOperation>
+auto get_vector(const nlohmann::json& j, const TOperation& op) {
+    using Element = typename TData::value_type;
+    if (j.type() != nlohmann::detail::value_t::array) {
+        throw std::runtime_error("JSON -> vector received non-array type");
+    }
+    std::vector<decltype(get_vector<Element>(j[0], op))> result;
+    result.reserve(j.size());
+    for (const auto& e : j) {
+        result.push_back(get_vector<Element>(e, op));
     }
     return result;
 }

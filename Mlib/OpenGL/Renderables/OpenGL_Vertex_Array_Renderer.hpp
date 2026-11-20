@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Geometry/Material/Texture_Expression.hpp>
 #include <Mlib/Initialization/Default_Uninitialized_Vector.hpp>
 #include <Mlib/Scene_Config/Scene_Precision.hpp>
 #include <Mlib/Scene_Graph/Render/IGpu_Vertex_Array_Renderer.hpp>
@@ -61,8 +62,8 @@ private:
         const std::vector<size_t>& light_noshadow_indices,
         const std::vector<size_t>& light_shadow_indices,
         const std::vector<size_t>& black_shadow_indices,
-        const std::vector<BlendMapTextureAndId>& textures_color,
-        const std::vector<BlendMapTextureAndId>& textures_alpha,
+        const TextureExpression<BlendMapTextureAndId>& textures_color,
+        const TextureExpression<BlendMapTextureAndId>& textures_alpha,
         ExternalRenderPassType render_pass) const;
     RenderingResources& primary_rendering_resources_;
     RenderingResources& secondary_rendering_resources_;
