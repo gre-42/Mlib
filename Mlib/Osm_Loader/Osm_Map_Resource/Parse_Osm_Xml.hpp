@@ -14,6 +14,11 @@ class TransformationMatrix;
 struct Node;
 struct Way;
 
+enum class NodeOutOfBoundsBehavior {
+    IGNORE,
+    THROW
+};
+
 class OsmBounds {
 public:
     explicit OsmBounds(double scale);
@@ -38,6 +43,7 @@ void parse_osm_xml(
     const std::string& filename,
     OsmBounds& bounds,
     std::map<std::string, Node>& nodes,
-    std::map<std::string, Way>& ways);
+    std::map<std::string, Way>& ways,
+    NodeOutOfBoundsBehavior node_out_of_bounds_behavior);
 
 }

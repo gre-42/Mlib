@@ -61,6 +61,7 @@ std::list<std::list<FixedArray<TPos, 3>>> Mlib::find_contours(
     ContourDetectionStrategy strategy)
 {
     using O = OrderableFixedArray<TPos, 3>;
+    using E = EdgeException<TPos>;
 
     if (strategy == ContourDetectionStrategy::TRIANGLE) {
         std::list<std::list<FixedArray<TPos, 3>>> result;
@@ -158,19 +159,19 @@ std::list<std::list<FixedArray<TPos, 3>>> Mlib::find_contours(
                         }
                         auto p_ab = parent_edges.find(ei_ab);
                         if (p_ab == parent_edges.end()) {
-                            throw std::runtime_error("Could not find parent edge");
+                            throw E(ei_ab.first, ei_ab.second, "Could not find parent edge");
                         }
                         if (edge_neighbors.insert_or_assign(p_ab->second, O((*t)(c).position)).second) {
-                            throw std::runtime_error("Expected edge (5)");
+                            throw E(p_ab->second.first, p_ab->second.second, "Expected edge (5)");
                         }
                         if (!edge_neighbors.try_emplace(e_bc, O((*t)(a).position)).second) {
-                            throw std::runtime_error("Detected duplicate edge (2)");
+                            throw E(e_bc.first, e_bc.second, "Detected duplicate edge (2)");
                         }
                         if (!parent_edges.try_emplace(e_bc, p_ab->second).second) {
-                            throw std::runtime_error("Detected duplicate edge (3)");
+                            throw E(e_bc.first, e_bc.second, "Detected duplicate edge (3)");
                         }
                         if (!edge_neighbors.try_emplace(e_ca, O(z)).second) {
-                            throw std::runtime_error("Detected duplicate edge (4)");
+                            throw E(e_ca.first, e_ca.second, "Detected duplicate edge (4)");
                         }
                         parent_edges.try_emplace(e_ca, e_bc);
                         parent_edges.erase(p_ab);
@@ -305,6 +306,14 @@ std::list<std::list<FixedArray<TPos, 3>>> Mlib::find_contours(
                     safe_erase(1, 2, 0);
                     safe_erase(2, 0, 1);
                     C_DEBUG(check_consistency());
+                }
+            } catch (const EdgeException<TPos>& e) {
+                auto debug_filename = try_getenv("CONTOUR_DEBUG_FILENAME");
+                if (debug_filename.has_value()) {
+                    plot_mesh(FixedArray<size_t, 2>{8000u, 8000u}, 1, 4, triangles, {}, {}, {(*t)(0).position, (*t)(1).position, (*t)(2).position}).T().reversed(0).save_to_file(*debug_filename);
+                    throw EdgeException(e.a, e.b, std::string(e.what()) + ", debug image saved");
+                } else {
+                    throw EdgeException(e.a, e.b, std::string(e.what()) + ", consider setting the CONTOUR_DEBUG_FILENAME environment variable");
                 }
             } catch (const std::runtime_error& e) {
                 auto debug_filename = try_getenv("CONTOUR_DEBUG_FILENAME");

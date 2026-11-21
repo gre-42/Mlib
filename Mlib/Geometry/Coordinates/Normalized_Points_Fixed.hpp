@@ -1,5 +1,5 @@
 #pragma once
-#include <Mlib/Array/Fixed_Array.hpp>
+#include <Mlib/Geometry/Primitives/Axis_Aligned_Bounding_Box.hpp>
 
 namespace Mlib {
 
@@ -28,9 +28,9 @@ public:
     NormalizedPointsFixed chained(ScaleMode scale_mode, OffsetMode offset_mode) const;
     const FixedArray<TData, 2>& min() const;
     const FixedArray<TData, 2>& max() const;
+    const AxisAlignedBoundingBox<TData, 2>& aabb() const;
 private:
-    FixedArray<TData, 2> min_{TData(INFINITY), TData(INFINITY)};
-    FixedArray<TData, 2> max_{-TData(INFINITY), -TData(INFINITY)};
+    AxisAlignedBoundingBox<TData, 2> aabb_;
     ScaleMode scale_mode_;
     OffsetMode offset_mode_;
 };

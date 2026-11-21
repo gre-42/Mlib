@@ -8,13 +8,9 @@
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Stats/Min_Max.hpp>
 #include <Mlib/Strings/String_View_To_Number.hpp>
+#include <cpp-httplib/httplib.h>
 #include <stb/stb_image_write.h>
 #include <stb_cpp/stb_image_load.hpp>
-
-PRAGMA_CLANG_DIAGNOSTIC_PUSH
-PRAGMA_CLANG_DIAGNOSTIC_IGNORED(-Wsign-conversion)
-#include <cpp-httplib/httplib.h>
-PRAGMA_CLANG_DIAGNOSTIC_POP
 
 using namespace Mlib;
 
@@ -39,7 +35,7 @@ StbInfo<uint8_t> download_tile(
         << y
         << ".png?api_key="
         << api_key;
-    lerr() << "Get: " << sstr.str();
+    linfo() << "Get: " << sstr.str();
     auto res = cli.Get(sstr.str().c_str());
     if (res->status != 200) {
         throw std::runtime_error("Error status: " + std::to_string(res->status) + "\n" + res->body);
@@ -166,9 +162,9 @@ int main(int argc, char** argv) {
         size_t tiles_max_x = (size_t)std::ceil ((max_lon + 180) / tile_len_x);
         size_t ntiles_y = (tiles_max_y - tiles_min_y) + 1;
         size_t ntiles_x = (tiles_max_x - tiles_min_x) + 1;
-        lerr() << "ntiles_y " << ntiles_y;
-        lerr() << "ntiles_x " << ntiles_x;
-        lerr() <<
+        linfo() << "ntiles_y " << ntiles_y;
+        linfo() << "ntiles_x " << ntiles_x;
+        linfo() <<
             tiles_min_x << '/' <<
             tiles_min_y << " - " <<
             tiles_max_x << '/' <<

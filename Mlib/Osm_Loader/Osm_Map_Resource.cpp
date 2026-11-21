@@ -98,6 +98,7 @@
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Terrain_Way_Points.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Triangulate_Terrain_Or_Ceilings.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Triangulate_Water.hpp>
+#include <Mlib/Osm_Loader/Osm_Map_Resource/Truncate_Out_Of_Bounds.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Vertex_Height_Binding.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Water_Type.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Way_Bvh.hpp>
@@ -172,11 +173,18 @@ OsmMapResource::OsmMapResource(
             layer,
             osm_bounds,
             naws.nodes,
-            naws.ways);
+            naws.ways,
+            config.truncate_out_of_bounds
+                ? NodeOutOfBoundsBehavior::IGNORE
+                : NodeOutOfBoundsBehavior::THROW);
     }
     normalization_matrix_ = osm_bounds.normalization_matrix();
     triangulation_normalization_matrix_ = normalization_matrix_.pre_scaled(config.triangulation_scale);
     
+    if (config.truncate_out_of_bounds) {
+        truncate_out_of_bounds(naws, osm_bounds.normalized_points().aabb().casted<CompressedScenePos>());
+    }
+
     fg.update("Smoothen ways");
     naws = smoothen_ways(
         naws,
@@ -203,7 +211,10 @@ OsmMapResource::OsmMapResource(
     std::unordered_map<FixedArray<CompressedScenePos, 3>*, VertexHeightBinding<CompressedScenePos>> vertex_height_bindings;
     std::list<SteinerPointInfo> steiner_points;
     std::list<StreetRectangle> street_rectangles;
-    std::map<WayPointSandbox, std::list<std::pair<StreetWayPoint, StreetWayPoint>>> way_point_edge_descriptors;
+    VerboseMap<WayPointSandbox, std::list<std::pair<StreetWayPoint, StreetWayPoint>>> way_point_edge_descriptors{
+        "WayPointSandbox",
+        [](auto k){ return way_point_sandbox_to_string(k); }
+    };
     {
         auto model_triangles = [&scene_node_resources](const VariableAndHash<std::string>& resource_name) -> UUVector<FixedArray<ColoredVertex<float>, 3>>& {
             auto scvas = scene_node_resources.get_arrays(resource_name, ColoredVertexArrayFilter{})->scvas;

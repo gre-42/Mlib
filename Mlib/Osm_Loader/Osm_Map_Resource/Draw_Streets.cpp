@@ -134,6 +134,10 @@ static void get_neighbors(
 
 DrawStreets::DrawStreets(const DrawStreetsInput& in)
     : DrawStreetsInput{ in }
+    , node_hole_waypoints{
+        "WayPointSandbox",
+        [](auto k){ return way_point_sandbox_to_string(k); }
+    }
 {
     check_curb_validity(in.curb_alpha_, in.curb2_alpha_);
     initialize_arrays();
@@ -509,9 +513,9 @@ void DrawStreets::draw_holes() {
                 }
             }
         };
-        connect(node_hole_waypoints.at(WayPointSandbox::STREET), way_point_edge_descriptors[WayPointSandbox::STREET]);
-        connect(node_hole_waypoints.at(WayPointSandbox::RUNWAY_OR_TAXIWAY), way_point_edge_descriptors[WayPointSandbox::RUNWAY_OR_TAXIWAY]);
-        connect(node_hole_waypoints.at(WayPointSandbox::SIDEWALK), way_point_edge_descriptors[WayPointSandbox::SIDEWALK]);
+        connect(node_hole_waypoints.get(WayPointSandbox::STREET), way_point_edge_descriptors[WayPointSandbox::STREET]);
+        connect(node_hole_waypoints.get(WayPointSandbox::RUNWAY_OR_TAXIWAY), way_point_edge_descriptors[WayPointSandbox::RUNWAY_OR_TAXIWAY]);
+        connect(node_hole_waypoints.get(WayPointSandbox::SIDEWALK), way_point_edge_descriptors[WayPointSandbox::SIDEWALK]);
     } else if (driving_direction != DrivingDirection::CENTER) {
         throw std::runtime_error("Only 1 or 2 lanes are supported");
     }
@@ -534,7 +538,7 @@ void DrawStreets::draw_holes() {
                     // Draw center fan
                     draw_terrain_fan_hole(nodes.at(n), hv, way_infos, *hole_triangles);
                 } else {
-                    throw std::runtime_error("Unexpected air hole size: \"" + n + '"');
+                    throw std::runtime_error(std::format("Unexpected air hole size {} at \"{}\"", nh.size(), n));
                 }
             }
         };
@@ -1518,9 +1522,9 @@ void DrawStreets::draw_streets_find_hole_waypoints(
         if (is_centered) {
             CurbedStreet c5{ rect, -curb_alpha, curb_alpha };
             if (angle_way.neighbor_is_second) {
-                node_hole_waypoints.at(street_waypoint_sandbox).at(node_id).out.push_back(NodeHoleWaypoint{.node=angle_way.neighbor_id, .alpha{0.5f, 0.5f}, .edge{c5.s[0][0], c5.s[0][1]}});
+                node_hole_waypoints.get(street_waypoint_sandbox).at(node_id).out.push_back(NodeHoleWaypoint{.node=angle_way.neighbor_id, .alpha{0.5f, 0.5f}, .edge{c5.s[0][0], c5.s[0][1]}});
             } else {
-                node_hole_waypoints.at(street_waypoint_sandbox).at(node_id).in.push_back(NodeHoleWaypoint{.node=angle_way.neighbor_id, .alpha{0.5f, 0.5f}, .edge{c5.s[0][0], c5.s[0][1]}});
+                node_hole_waypoints.get(street_waypoint_sandbox).at(node_id).in.push_back(NodeHoleWaypoint{.node=angle_way.neighbor_id, .alpha{0.5f, 0.5f}, .edge{c5.s[0][0], c5.s[0][1]}});
             }
         }
         if (driving_direction == DrivingDirection::LEFT) {
@@ -1530,11 +1534,11 @@ void DrawStreets::draw_streets_find_hole_waypoints(
                 node_hole_waypoints.at(node_id).in.push_back(NodeHoleWaypoint{.node=angle_way.neighbor_id, .alpha{0.25f + shift, 0.75f - shift}, .edge{c5.s[0][0], c5.s[0][1]}});
                 };
             if (!is_centered) {
-                add(-curb_alpha, curb_alpha, lane_shift, node_hole_waypoints.at(WayPointSandbox::STREET));
+                add(-curb_alpha, curb_alpha, lane_shift, node_hole_waypoints.get(WayPointSandbox::STREET));
             }
             if (curb2_alpha != 1) {
-                add(curb2_alpha, 1.f, 0.f, node_hole_waypoints.at(WayPointSandbox::SIDEWALK));
-                add(-1.f, -curb2_alpha, 0.f, node_hole_waypoints.at(WayPointSandbox::SIDEWALK));
+                add(curb2_alpha, 1.f, 0.f, node_hole_waypoints.get(WayPointSandbox::SIDEWALK));
+                add(-1.f, -curb2_alpha, 0.f, node_hole_waypoints.get(WayPointSandbox::SIDEWALK));
             }
         } else if (driving_direction == DrivingDirection::RIGHT) {
             auto add = [&rect, &node_id, &angle_way](float start, float stop, float shift, std::map<std::string, HoleWaypoint>& node_hole_waypoints){
@@ -1542,10 +1546,10 @@ void DrawStreets::draw_streets_find_hole_waypoints(
                 node_hole_waypoints.at(node_id).in.push_back(NodeHoleWaypoint{.node=angle_way.neighbor_id, .alpha{0.75f - shift, 0.25f + shift}, .edge{c5.s[0][0], c5.s[0][1]}});
                 node_hole_waypoints.at(node_id).out.push_back(NodeHoleWaypoint{.node=angle_way.neighbor_id, .alpha{0.25f + shift, 0.75f - shift}, .edge{c5.s[0][0], c5.s[0][1]}});
             };
-            add(-curb_alpha, curb_alpha, lane_shift, node_hole_waypoints.at(WayPointSandbox::STREET));
+            add(-curb_alpha, curb_alpha, lane_shift, node_hole_waypoints.get(WayPointSandbox::STREET));
             if (curb2_alpha != 1) {
-                add(curb2_alpha, 1.f, 0.f, node_hole_waypoints.at(WayPointSandbox::SIDEWALK));
-                add(-1.f, -curb2_alpha, 0.f, node_hole_waypoints.at(WayPointSandbox::SIDEWALK));
+                add(curb2_alpha, 1.f, 0.f, node_hole_waypoints.get(WayPointSandbox::SIDEWALK));
+                add(-1.f, -curb2_alpha, 0.f, node_hole_waypoints.get(WayPointSandbox::SIDEWALK));
             }
         } else if (driving_direction != DrivingDirection::CENTER) {
             throw std::runtime_error("Unknown driving direction");
@@ -1556,9 +1560,9 @@ void DrawStreets::draw_streets_find_hole_waypoints(
         if (is_centered) {
             CurbedStreet c5{ rect, -curb_alpha, curb_alpha };
             if (!angle_way.neighbor_is_second) {
-                node_hole_waypoints.at(street_waypoint_sandbox).at(angle_way.neighbor_id).out.push_back(NodeHoleWaypoint{.node=node_id, .alpha{0.5f, 0.5f}, .edge{c5.s[1][0], c5.s[1][1]}});
+                node_hole_waypoints.get(street_waypoint_sandbox).at(angle_way.neighbor_id).out.push_back(NodeHoleWaypoint{.node=node_id, .alpha{0.5f, 0.5f}, .edge{c5.s[1][0], c5.s[1][1]}});
             } else {
-                node_hole_waypoints.at(street_waypoint_sandbox).at(angle_way.neighbor_id).in.push_back(NodeHoleWaypoint{.node=node_id, .alpha{0.5f, 0.5f}, .edge{c5.s[1][0], c5.s[1][1]}});
+                node_hole_waypoints.get(street_waypoint_sandbox).at(angle_way.neighbor_id).in.push_back(NodeHoleWaypoint{.node=node_id, .alpha{0.5f, 0.5f}, .edge{c5.s[1][0], c5.s[1][1]}});
             }
         }
         if (driving_direction == DrivingDirection::LEFT) {
@@ -1568,11 +1572,11 @@ void DrawStreets::draw_streets_find_hole_waypoints(
                 node_hole_waypoints.at(angle_way.neighbor_id).in.push_back(NodeHoleWaypoint{.node=node_id, .alpha{0.75f - shift, 0.25f + shift}, .edge{c5.s[1][0], c5.s[1][1]}});
             };
             if (!is_centered) {
-                add(-curb_alpha, curb_alpha, lane_shift, node_hole_waypoints.at(WayPointSandbox::STREET));
+                add(-curb_alpha, curb_alpha, lane_shift, node_hole_waypoints.get(WayPointSandbox::STREET));
             }
             if (curb2_alpha != 1) {
-                add(curb2_alpha, 1.f, 0.f, node_hole_waypoints.at(WayPointSandbox::SIDEWALK));
-                add(-1.f, -curb2_alpha, 0.f, node_hole_waypoints.at(WayPointSandbox::SIDEWALK));
+                add(curb2_alpha, 1.f, 0.f, node_hole_waypoints.get(WayPointSandbox::SIDEWALK));
+                add(-1.f, -curb2_alpha, 0.f, node_hole_waypoints.get(WayPointSandbox::SIDEWALK));
             }
         } else if (driving_direction == DrivingDirection::RIGHT) {
             auto add = [&rect, &angle_way, &node_id](float start, float stop, float shift, std::map<std::string, HoleWaypoint>& node_hole_waypoints){
@@ -1580,10 +1584,10 @@ void DrawStreets::draw_streets_find_hole_waypoints(
                 node_hole_waypoints.at(angle_way.neighbor_id).in.push_back(NodeHoleWaypoint{.node=node_id, .alpha{0.25f + shift, 0.75f - shift}, .edge{c5.s[1][0], c5.s[1][1]}});
                 node_hole_waypoints.at(angle_way.neighbor_id).out.push_back(NodeHoleWaypoint{.node=node_id, .alpha{0.75f - shift, 0.25f + shift}, .edge{c5.s[1][0], c5.s[1][1]}});
             };
-            add(-curb_alpha, curb_alpha, lane_shift, node_hole_waypoints.at(WayPointSandbox::STREET));
+            add(-curb_alpha, curb_alpha, lane_shift, node_hole_waypoints.get(WayPointSandbox::STREET));
             if (curb2_alpha != 1) {
-                add(curb2_alpha, 1.f, 0.f, node_hole_waypoints.at(WayPointSandbox::SIDEWALK));
-                add(-1.f, -curb2_alpha, 0.f, node_hole_waypoints.at(WayPointSandbox::SIDEWALK));
+                add(curb2_alpha, 1.f, 0.f, node_hole_waypoints.get(WayPointSandbox::SIDEWALK));
+                add(-1.f, -curb2_alpha, 0.f, node_hole_waypoints.get(WayPointSandbox::SIDEWALK));
             }
         } else if (driving_direction != DrivingDirection::CENTER) {
             throw std::runtime_error("Unknown driving direction");

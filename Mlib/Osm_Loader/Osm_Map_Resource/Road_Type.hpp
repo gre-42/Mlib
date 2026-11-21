@@ -1,6 +1,7 @@
 #pragma once
 #include <compare>
 #include <string>
+#include <string_view>
 
 namespace Mlib {
 
@@ -24,6 +25,7 @@ static inline RoadType operator & (RoadType a, RoadType b) {
 }
 
 std::string road_type_to_string(RoadType st);
+RoadType road_type_from_string(std::string_view s);
 
 std::string to_string(RoadType st);
 

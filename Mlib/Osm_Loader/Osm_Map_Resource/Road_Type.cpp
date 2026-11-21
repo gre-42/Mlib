@@ -1,6 +1,7 @@
 #include "Road_Type.hpp"
 #include <stdexcept>
 
+using namespace std::string_view_literals;
 using namespace Mlib;
 
 std::string Mlib::road_type_to_string(RoadType st) {
@@ -23,6 +24,22 @@ std::string Mlib::road_type_to_string(RoadType st) {
         return "any_plane_road";
     }
     throw std::runtime_error("Unknown street type");
+}
+
+RoadType Mlib::road_type_from_string(std::string_view s) {
+    static const std::unordered_map<std::string_view, RoadType> m{
+        {"path"sv, RoadType::PATH},
+        {"street"sv, RoadType::STREET},
+        {"taxiway"sv, RoadType::TAXIWAY},
+        {"runway"sv, RoadType::RUNWAY},
+        {"runway_displacement_threshold"sv, RoadType::RUNWAY_DISPLACEMENT_THRESHOLD},
+        {"wall"sv, RoadType::WALL},
+        {"any_plane_road"sv, RoadType::ANY_PLANE_ROAD}};
+    auto it = m.find(s);
+    if (it == m.end()) {
+        throw std::runtime_error("Unknown road type: \"" + std::string{ s } + '"');
+    }
+    return it->second;
 }
 
 std::string Mlib::to_string(RoadType st) {

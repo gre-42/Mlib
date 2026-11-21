@@ -84,6 +84,7 @@ struct OsmResourceConfig {
     OsmResourceConfig();
     ~OsmResourceConfig();
     std::vector<Utf8Path> filenames;
+    bool truncate_out_of_bounds = false;
     std::string heightmap;
     std::string heightmap_mask;
     size_t heightmap_extension = 0;

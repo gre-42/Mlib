@@ -36,6 +36,7 @@ BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(name);
 DECLARE_ARGUMENT(filenames);
 DECLARE_ARGUMENT(cache_filename);
+DECLARE_ARGUMENT(truncate_out_of_bounds);
 DECLARE_ARGUMENT(heightmap);
 DECLARE_ARGUMENT(heightmap_mask);
 DECLARE_ARGUMENT(heightmap_extension);
@@ -71,10 +72,7 @@ DECLARE_ARGUMENT(trees_dirt_texture);
 DECLARE_ARGUMENT(street_dirt_texture);
 DECLARE_ARGUMENT(street_reflection_map);
 DECLARE_ARGUMENT(path_reflection_map);
-DECLARE_ARGUMENT(street_crossing_textures);
-DECLARE_ARGUMENT(taxiway_crossing_textures);
-DECLARE_ARGUMENT(runway_crossing_textures);
-DECLARE_ARGUMENT(runway_displacement_threshold_crossing_textures);
+DECLARE_ARGUMENT(crossing_textures);
 DECLARE_ARGUMENT(street_alpha_textures);
 DECLARE_ARGUMENT(path_alpha_textures);
 DECLARE_ARGUMENT(taxiway_alpha_textures);
@@ -85,21 +83,15 @@ DECLARE_ARGUMENT(path_mud_alpha_textures);
 DECLARE_ARGUMENT(street_mud_textures);
 DECLARE_ARGUMENT(street_texture);
 DECLARE_ARGUMENT(street_textures);
-DECLARE_ARGUMENT(path_crossing_textures);
 DECLARE_ARGUMENT(path_texture);
 DECLARE_ARGUMENT(path_textures);
 DECLARE_ARGUMENT(taxiway_textures);
 DECLARE_ARGUMENT(runway_textures);
 DECLARE_ARGUMENT(runway_displacement_threshold_textures);
 DECLARE_ARGUMENT(wall_textures);
-DECLARE_ARGUMENT(curb_street_texture);
-DECLARE_ARGUMENT(curb_path_texture);
-DECLARE_ARGUMENT(curb_wall_texture);
-DECLARE_ARGUMENT(curb2_street_texture);
-DECLARE_ARGUMENT(curb2_path_texture);
-DECLARE_ARGUMENT(curb2_wall_texture);
-DECLARE_ARGUMENT(air_curb_street_texture);
-DECLARE_ARGUMENT(air_curb_path_texture);
+DECLARE_ARGUMENT(curb_textures);
+DECLARE_ARGUMENT(curb2_textures);
+DECLARE_ARGUMENT(air_curb_textures);
 DECLARE_ARGUMENT(air_support_texture);
 DECLARE_ARGUMENT(racing_line_texture);
 DECLARE_ARGUMENT(racing_line_track);
@@ -508,17 +500,10 @@ static void load_osm_resource(const LoadSceneJsonUserFunctionArgs& args) {
         if (args.arguments.contains(KnownArgs::path_reflection_map)) {
             config.street_reflection_map[RoadType::PATH] = args.arguments.path_or_variable(KnownArgs::path_reflection_map);
         }
-        if (args.arguments.contains(KnownArgs::street_crossing_textures)) {
-            config.street_crossing_textures[RoadType::STREET] = fpathps(KnownArgs::street_crossing_textures);
-        }
-        if (args.arguments.contains(KnownArgs::taxiway_crossing_textures)) {
-            config.street_crossing_textures[RoadType::TAXIWAY] = fpathps(KnownArgs::taxiway_crossing_textures);
-        }
-        if (args.arguments.contains(KnownArgs::runway_crossing_textures)) {
-            config.street_crossing_textures[RoadType::RUNWAY] = fpathps(KnownArgs::runway_crossing_textures);
-        }
-        if (args.arguments.contains(KnownArgs::runway_displacement_threshold_crossing_textures)) {
-            config.street_crossing_textures[RoadType::RUNWAY_DISPLACEMENT_THRESHOLD] = fpathps(KnownArgs::runway_displacement_threshold_crossing_textures);
+        if (auto ts = args.arguments.try_get_child(KnownArgs::crossing_textures); ts.has_value()) {
+            for (const auto& [t, _] : ts->items()) {
+                config.street_crossing_textures[road_type_from_string(t)] = ts->pathes_or_variables(t);
+            }
         }
         if (args.arguments.contains(KnownArgs::street_alpha_textures)) {
             config.street_alpha_textures[RoadType::STREET] = fpathps(KnownArgs::street_alpha_textures);
@@ -552,9 +537,6 @@ static void load_osm_resource(const LoadSceneJsonUserFunctionArgs& args) {
         if (args.arguments.contains_non_null(KnownArgs::street_textures)) {
             add_street_textures(RoadType::STREET, args.arguments.children(KnownArgs::street_textures));
         }
-        if (args.arguments.contains(KnownArgs::path_crossing_textures)) {
-            config.street_crossing_textures[RoadType::PATH] = fpathps(KnownArgs::path_crossing_textures);
-        }
         if (args.arguments.contains(KnownArgs::path_texture)) {
             RoadProperties rp{.type=RoadType::PATH, .nlanes = 1};
             RoadStyle rs{ .textures = { args.arguments.path_or_variable(KnownArgs::path_texture) }, .uvx = 1.f };
@@ -575,29 +557,20 @@ static void load_osm_resource(const LoadSceneJsonUserFunctionArgs& args) {
         if (args.arguments.contains_non_null(KnownArgs::wall_textures)) {
             add_street_textures(RoadType::WALL, args.arguments.children(KnownArgs::wall_textures));
         }
-        if (auto t = args.arguments.try_path_or_variable(KnownArgs::curb_street_texture); !t.empty()) {
-            config.curb_street_texture[RoadType::STREET] = t;
+        if (auto ts = args.arguments.try_get_child(KnownArgs::curb_textures); ts.has_value()) {
+            for (const auto& [t, _] : ts->items()) {
+                config.curb_street_texture[road_type_from_string(t)] = ts->path_or_variable(t);
+            }
         }
-        if (auto t = args.arguments.try_path_or_variable(KnownArgs::curb_path_texture); !t.empty()) {
-            config.curb_street_texture[RoadType::PATH] = t;
+        if (auto ts = args.arguments.try_get_child(KnownArgs::curb2_textures); ts.has_value()) {
+            for (const auto& [t, _] : ts->items()) {
+                config.curb2_street_texture[road_type_from_string(t)] = ts->path_or_variable(t);
+            }
         }
-        if (auto t = args.arguments.try_path_or_variable(KnownArgs::curb_wall_texture); !t.empty()) {
-            config.curb_street_texture[RoadType::WALL] = t;
-        }
-        if (auto t = args.arguments.try_path_or_variable(KnownArgs::curb2_street_texture); !t.empty()) {
-            config.curb2_street_texture[RoadType::STREET] = t;
-        }
-        if (auto t = args.arguments.try_path_or_variable(KnownArgs::curb2_path_texture); !t.empty()) {
-            config.curb2_street_texture[RoadType::PATH] = t;
-        }
-        if (auto t = args.arguments.try_path_or_variable(KnownArgs::curb2_wall_texture); !t.empty()) {
-            config.curb2_street_texture[RoadType::WALL] = t;
-        }
-        if (auto t = args.arguments.try_path_or_variable(KnownArgs::air_curb_street_texture); !t.empty()) {
-            config.air_curb_street_texture[RoadType::STREET] = t;
-        }
-        if (auto t = args.arguments.try_path_or_variable(KnownArgs::air_curb_path_texture); !t.empty()) {
-            config.air_curb_street_texture[RoadType::PATH] = t;
+        if (auto ts = args.arguments.try_get_child(KnownArgs::air_curb_textures); ts.has_value()) {
+            for (const auto& [t, _] : ts->items()) {
+                config.air_curb_street_texture[road_type_from_string(t)] = ts->path_or_variable(t);
+            }
         }
         if (auto t = args.arguments.try_path_or_variable(KnownArgs::air_support_texture); !t.empty()) {
             config.air_support_texture = t;
@@ -1187,6 +1160,9 @@ static void load_osm_resource(const LoadSceneJsonUserFunctionArgs& args) {
         }
         if (args.arguments.contains(KnownArgs::agent_radius)) {
             config.agent_radius = args.arguments.at<float>(KnownArgs::agent_radius) * meters;
+        }
+        if (args.arguments.contains(KnownArgs::truncate_out_of_bounds)) {
+            config.truncate_out_of_bounds = args.arguments.at<bool>(KnownArgs::truncate_out_of_bounds);
         }
         if (args.arguments.contains(KnownArgs::refine_explicit_waypoints)) {
             config.refine_explicit_waypoints = args.arguments.at<bool>(KnownArgs::refine_explicit_waypoints);

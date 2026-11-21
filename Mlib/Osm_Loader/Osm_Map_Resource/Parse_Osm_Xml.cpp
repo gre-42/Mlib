@@ -69,7 +69,8 @@ void Mlib::parse_osm_xml(
     const std::string& filename,
     OsmBounds& bounds,
     std::map<std::string, Node>& nodes,
-    std::map<std::string, Way>& ways)
+    std::map<std::string, Way>& ways,
+    NodeOutOfBoundsBehavior node_out_of_bounds_behavior)
 {
     auto compressed_file = CompressedFile{filename};
     auto ifs = compressed_file.decompressed_ifstream();
@@ -161,17 +162,20 @@ void Mlib::parse_osm_xml(
                 if (any(isnan(current_node_position))) {
                     throw std::runtime_error("Closing node tag with NAN position");
                 }
-                if (any(current_node_position < bounds.aabb().min - FixedArray<double, 2>{0.01, 0.01})) {
-                    std::stringstream sstr;
-                    sstr << "Node with ID " << current_node << " and coordinates " << current_node_position << " is out of minimum bounds " << bounds.aabb().min;
-                    throw std::runtime_error(sstr.str());
-                }
-                if (any(current_node_position > bounds.aabb().max + FixedArray<double, 2>{0.01, 0.01})) {
-                    std::stringstream sstr;
-                    sstr << "Node with ID " << current_node << " and coordinates " << current_node_position << " is out of maximum bounds " << bounds.aabb().max;
-                    throw std::runtime_error(sstr.str());
+                if (node_out_of_bounds_behavior == NodeOutOfBoundsBehavior::THROW) {
+                    if (any(current_node_position < bounds.aabb().min - FixedArray<double, 2>{0.01, 0.01})) {
+                        std::stringstream sstr;
+                        sstr << "Node with ID " << current_node << " and coordinates " << current_node_position << " is out of minimum bounds " << bounds.aabb().min;
+                        throw std::runtime_error(sstr.str());
+                    }
+                    if (any(current_node_position > bounds.aabb().max + FixedArray<double, 2>{0.01, 0.01})) {
+                        std::stringstream sstr;
+                        sstr << "Node with ID " << current_node << " and coordinates " << current_node_position << " is out of maximum bounds " << bounds.aabb().max;
+                        throw std::runtime_error(sstr.str());
+                    }
                 }
             }
+            current_node_position = fixed_nans<double, 2>();
         } else if (Mlib::re::regex_match(line, match, way_reg)) {
             current_node = "<none>";
             std::string action = match[2].str();

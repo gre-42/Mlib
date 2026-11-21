@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Map/Verbose_Map.hpp>
 #include <Mlib/Scene_Config/Scene_Precision.hpp>
 #include <list>
 #include <map>
@@ -55,6 +56,6 @@ void apply_heightmap_and_smoothen(
     std::list<SteinerPointInfo>& steiner_points,
     std::list<FixedArray<CompressedScenePos, 3>>& map_outer_contour3,
     std::list<StreetRectangle>& street_rectangles,
-    std::map<WayPointSandbox, std::list<std::pair<StreetWayPoint, StreetWayPoint>>>& way_point_edge_descriptors);
+    VerboseMap<WayPointSandbox, std::list<std::pair<StreetWayPoint, StreetWayPoint>>>& way_point_edge_descriptors);
 
 }

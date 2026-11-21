@@ -2,6 +2,7 @@
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Initialization/Default_Uninitialized_Vector.hpp>
 #include <Mlib/Map/Map.hpp>
+#include <Mlib/Map/Verbose_Map.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Interp.hpp>
 #include <Mlib/Scene_Config/Scene_Precision.hpp>
@@ -57,7 +58,7 @@ struct DrawStreetsInput {
     BatchResourceInstantiator& bri;
     std::list<StreetRectangle>& street_rectangles;
     std::map<OrderableFixedArray<CompressedScenePos, 2>, NodeHeightBinding>& node_height_bindings;
-    std::map<WayPointSandbox, std::list<std::pair<StreetWayPoint, StreetWayPoint>>>& way_point_edge_descriptors;
+    VerboseMap<WayPointSandbox, std::list<std::pair<StreetWayPoint, StreetWayPoint>>>& way_point_edge_descriptors;
     UUVector<FixedArray<ColoredVertex<float>, 3>>& tunnel_pipe_triangles;
     UUVector<FixedArray<ColoredVertex<float>, 3>>& tunnel_bdry_triangles;
     std::list<FixedArray<CompressedScenePos, 2, 2>>& way_segments;
@@ -141,7 +142,7 @@ private:
     std::map<std::string, std::map<AngleCurb, NodeHoleVertex>> node_hole_contours;
     std::map<std::string, std::map<AngleCurb, NodeHoleVertex>> air_support_node_hole_contours;
     std::map<std::string, std::map<AngleCurb, NodeHoleVertex>> tunnel_node_hole_contours;
-    std::map<WayPointSandbox, std::map<std::string, HoleWaypoint>> node_hole_waypoints;
+    VerboseMap<WayPointSandbox, std::map<std::string, HoleWaypoint>> node_hole_waypoints;
     std::map<std::string, NodeWayInfo> node_way_info;
 };
 
