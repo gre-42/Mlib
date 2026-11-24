@@ -9,33 +9,30 @@ using namespace Mlib;
 BoundingInfo::BoundingInfo(
     const std::vector<FixedArray<CompressedScenePos, 2>>& bounding_contour,
     const std::map<std::string, Node>& nodes,
-    CompressedScenePos border_width,
+    CompressedScenePos border_width_explicit,
+    CompressedScenePos border_width_auto,
     CompressedScenePos segment_length)
-    : boundary_min{ fixed_full<CompressedScenePos, 2>(std::numeric_limits<CompressedScenePos>::max()) }
-    , boundary_max{ fixed_full<CompressedScenePos, 2>(std::numeric_limits<CompressedScenePos>::lowest()) }
-    , border_width{ border_width }
+    : aabb{ AxisAlignedBoundingBox<CompressedScenePos, 2>::empty() }
     , segment_length{ segment_length }
 {
     if (bounding_contour.empty()) {
+        border_width = border_width_auto;
         for (const auto& [_, node] : nodes) {
-            boundary_min = minimum(boundary_min, node.position);
-            boundary_max = maximum(boundary_max, node.position);
+            aabb.extend(node.position);
         }
     } else {
+        border_width = border_width_explicit;
         for (const auto& p : bounding_contour) {
-            boundary_min = minimum(boundary_min, p);
-            boundary_max = maximum(boundary_max, p);
+            aabb.extend(p);
         }
     }
 }
 
 BoundingInfo::BoundingInfo(
-    const FixedArray<CompressedScenePos, 2>& boundary_min,
-    const FixedArray<CompressedScenePos, 2>& boundary_max,
+    const AxisAlignedBoundingBox<CompressedScenePos, 2>& aabb,
     CompressedScenePos border_width,
     CompressedScenePos segment_length)
-    : boundary_min{ boundary_min }
-    , boundary_max{ boundary_max }
+    : aabb{ aabb }
     , border_width{ border_width }
     , segment_length { segment_length }
 {}

@@ -2,6 +2,7 @@
 #include <Mlib/Geometry/Exceptions/Triangle_Exception.hpp>
 #include <Mlib/Geometry/Material.hpp>
 #include <Mlib/Geometry/Material_Configuration/Base_Materials.hpp>
+#include <Mlib/Geometry/Mesh/Compute_Area.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_List.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Bounding_Info.hpp>
@@ -49,9 +50,13 @@ void Mlib::draw_buildings_ceiling_or_ground(
         if (bu.way.nd.front() != bu.way.nd.back()) {
             throw std::runtime_error("Cannot draw ceiling or ground of building " + bu.id + ": outline not closed");
         }
-        if ((tpe == DrawBuildingPartType::GROUND) &&
-            bu.way.tags.contains("layer") &&
+        if (bu.way.tags.contains("layer") &&
             (safe_stoi(bu.way.tags.at("layer")) != 0))
+        {
+            continue;
+        }
+        if ((tpe == DrawBuildingPartType::GROUND) &&
+            (bu.min_level != 0))
         {
             continue;
         }
@@ -107,10 +112,15 @@ void Mlib::draw_buildings_ceiling_or_ground(
         TerrainTypeTriangleList tl_terrain;
         tl_terrain.insert(TerrainType::UNDEFINED, tl_undefined);
         tl_terrain.insert(TerrainType::FLOWERS, tl);
-        BoundingInfo bounding_info{ outline, {}, (CompressedScenePos)5.f, (CompressedScenePos)2.f };
+        BoundingInfo bounding_info{
+            outline,
+            {},
+            (CompressedScenePos)5.f,    // border_width_explicit
+            (CompressedScenePos)42.f,   // border_width_auto
+            (CompressedScenePos)2.f };  // segment_length
         auto loutline = std::list<FixedArray<CompressedScenePos, 2>>(
             outline.begin(), outline.end());
-        if (compute_area_ccw(loutline, scale) < 0.f) {
+        if (compute_area_ccw(loutline, scale) < 0.) {
             loutline.reverse();
         }
         try {

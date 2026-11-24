@@ -11,6 +11,7 @@
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Socle_Texture.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Vertical_Subdivision.hpp>
 #include <Mlib/Strings/String_View_To_Number.hpp>
+#include <ranges>
 #include <stdexcept>
 
 using namespace Mlib;
@@ -21,6 +22,7 @@ std::list<Building> Mlib::get_buildings_or_wall_barriers(
     BuildingType building_type,
     const std::map<std::string, Node>& nodes,
     const std::map<std::string, Way>& ways,
+    const std::map<std::string, Relation>& relations,
     double scale,
     double max_length,
     float building_bottom,
@@ -35,6 +37,28 @@ std::list<Building> Mlib::get_buildings_or_wall_barriers(
     FacadeTextureCycle& middle_ftc,
     VerticalSubdivision default_vertical_subdivision)
 {
+    std::map<std::string, std::string> child_2_parent;
+    std::map<std::string, Building*> id_2_building;
+    std::map<Building*, std::string> building_2_id;
+    if (building_type == BuildingType::BUILDING) {
+        for (const auto& [rid, relation] : relations) {
+            if (relation.tags.contains("type", "building")) {
+                auto is_outline = [](const Member& e){ return e.role == "outline"; };
+                auto outlines =
+                    relation.members |
+                    std::views::filter(is_outline) |
+                    std::ranges::to<std::vector>();
+                if (outlines.size() != 1) {
+                    throw std::runtime_error(std::format("Could not find unique outline in relation \"{}\"", rid));
+                }
+                for (const auto& member : relation.members) {
+                    if (member.role == "part") {
+                        child_2_parent[member.ref] = outlines[0].ref;
+                    }
+                }
+            }
+        }
+    }
     size_t bid = 0;
     std::list<Building> result;
     for (const auto& [id, w] : ways) {
@@ -42,7 +66,11 @@ std::list<Building> Mlib::get_buildings_or_wall_barriers(
             (safe_stoi(w.tags.at("layer")) != 0)) {
             continue;
         }
-        if (w.tags.find("building") != w.tags.end()) {
+        if (w.tags.contains("aeroway", "terminal")) {
+            if ((building_type != BuildingType::BUILDING) || excluded_buildings.contains("terminal")) {
+                continue;
+            }
+        } else if (w.tags.find("building") != w.tags.end()) {
             if ((building_type != BuildingType::BUILDING) || excluded_buildings.contains(w.tags.at("building"))) {
                 continue;
             }
@@ -212,11 +240,15 @@ std::list<Building> Mlib::get_buildings_or_wall_barriers(
             .id = id,
             .way = w,
             .levels = std::move(levels),
+            .min_level = safe_sto<uint32_t>(w.tags.get("building:min_level", "0")),
             .roof_9_2 = roof_9_2,
             .area = (building_type == BuildingType::BUILDING)
                 ? (float)compute_area_clockwise(w.nd, nodes, scale)
                 : NAN,
-            .style = middle_style});
+            .style = middle_style,
+            .parent = nullptr});
+        id_2_building[id] = &bu;
+        building_2_id[&bu] = id;
         if (bu.roof_9_2.has_value()) {
             auto sw = smooth_building_level_outline(
                 bu,
@@ -236,6 +268,21 @@ std::list<Building> Mlib::get_buildings_or_wall_barriers(
             }
         }
         ++bid;
+    }
+    for (auto& c : result) {
+        auto cid = building_2_id.find(&c);
+        if (cid == building_2_id.end()) {
+            continue;
+        }
+        auto pid = child_2_parent.find(cid->second);
+        if (pid == child_2_parent.end()) {
+            continue;
+        }
+        auto pd = id_2_building.find(pid->second);
+        if (pd == id_2_building.end()) {
+            throw std::runtime_error(std::format("Could not find building for ID \"{}\"", pid->second));
+        }
+        c.parent = pd->second;
     }
     return result;
 }

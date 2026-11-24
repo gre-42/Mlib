@@ -29,8 +29,9 @@ public:
             BoundingInfo bounding_info{
                 std::vector(contour.geometry.begin(), contour.geometry.end()),
                 {},
-                (CompressedScenePos)5.f,
-                (CompressedScenePos)2.f };
+                (CompressedScenePos)5.f,    // border_width_explicit
+                (CompressedScenePos)42.f,   // border_width_auto
+                (CompressedScenePos)2.f };  // segment_length
             WaterTypeTriangleList tl_holes;
             auto tl_steep_holes = std::make_shared<TriangleList<CompressedScenePos>>(
                 "steep_holes",
@@ -122,7 +123,7 @@ void Mlib::find_coast_contours(
             }
         }
         for (auto& c : hc.get_contours_and_clear()) {
-            if (compute_area_ccw(c, 1.) > 0) {
+            if (compute_area_ccw(c, 1.) > 0.) {
                 contours.emplace_back(WaterType::UNDEFINED, WaterType::UNDEFINED, (CompressedScenePos)0.f, c);
             } else {
                 c.reverse();
@@ -140,7 +141,7 @@ void Mlib::find_coast_contours(
             }
         }
         for (auto& c : hc.get_contours_and_clear()) {
-            if (compute_area_ccw(c, 1.) > 0) {
+            if (compute_area_ccw(c, 1.) > 0.) {
                 contours.emplace_back(WaterType::SHALLOW_HOLE, WaterType::UNDEFINED, (CompressedScenePos)0.f, c);
             } else {
                 c.reverse();

@@ -1,6 +1,8 @@
 #pragma once
 #include <Mlib/Geometry/Colored_Vertex.hpp>
 #include <Mlib/Geometry/Exceptions/Edge_Exception.hpp>
+#include <Mlib/Geometry/Exceptions/Point_Exception.hpp>
+#include <Mlib/Geometry/Mesh/Compute_Area.hpp>
 #include <Mlib/Geometry/Mesh/Plot.hpp>
 #include <Mlib/Hashing/Hash_Of_Pair.hpp>
 #include <Mlib/Images/StbImage3.hpp>
@@ -89,11 +91,15 @@ void extract_triangles_inside_contours(
 
     inner_triangles.resize(contours.size());
 
+    std::unordered_set<std::pair<O, O>> covered_contour_edges;
     std::unordered_map<std::pair<O, O>, size_t> contour_edges;
     std::unordered_map<std::pair<O, O>, size_t> inner_edges;
     // Convert contour pathes to edges, asserting that the contours are closed.
     for (size_t contour_id = 0; contour_id < contours.size(); ++contour_id) {
         const auto& contour = contours[contour_id];
+        if (compute_area_ccw(contour, 1.) < 0.) {
+            throw std::runtime_error("Contour is not counterclockwise");
+        }
         for (auto it = contour.begin(); it != contour.end(); ++it) {
             auto s = it;
             ++s;
@@ -102,29 +108,48 @@ void extract_triangles_inside_contours(
             {
                 throw std::runtime_error("delete_triangles_outside_contour: Contour is closed");
             }
-            if (!contour_edges.insert(
-                std::make_pair(
-                    std::make_pair(O{*it}, O{s == contour.end() ? contour.front() : *s}),
-                    contour_id)).second)
+            auto a = O{*it};
+            auto b = O{s == contour.end() ? contour.front() : *s};
+            if (!contour_edges.insert(std::make_pair(std::make_pair(a, b), contour_id)).second)
             {
-                throw std::runtime_error("Could not insert contour edge");
+                throw edge_exception(a, b, "Could not insert contour edge");
             }
         }
     }
+    std::list<TTriangle> removed_triangles;
+    auto remove_triangle_if = [&](const std::function<bool(const TTriangle& t)>& predicate) {
+        for (auto it = triangles.begin(); it != triangles.end();) {
+            if (predicate(*it)) {
+                removed_triangles.splice(removed_triangles.end(), triangles, it++);
+            } else {
+                ++it;
+            }
+        }
+    };
     // Delete inside triangles having a contour edge,
     // and add their inner edges to the "inner_edges" set.
-    triangles.remove_if([&contour_edges, &inner_edges, &inner_triangles](const TTriangle& t){
+    remove_triangle_if([&](const TTriangle& t){
         for (size_t i = 0; i < 3; ++i) {
             const auto& a = t[i];
             const auto& b = t[(i + 1) % 3];
             const auto& c = t[(i + 2) % 3];
-            auto it = contour_edges.find(std::make_pair(O{a}, O{b}));
+            auto ab = std::make_pair(O{a}, O{b});
+            auto it = contour_edges.find(ab);
             if (it != contour_edges.end()) {
-                if (auto bc = std::make_pair(O{b}, O{c}); contour_edges.find(bc) == contour_edges.end()) {
-                    inner_edges.insert(std::make_pair(bc, it->second));
+                if (!covered_contour_edges.insert(ab).second) {
+                    throw edge_exception(a, b, "Could not insert contour edge");
                 }
-                if (auto ca = std::make_pair(O{c}, O{a}); contour_edges.find(ca) == contour_edges.end()) {
-                    inner_edges.insert(std::make_pair(ca, it->second));
+                if (auto bc = std::make_pair(O{b}, O{c}); !contour_edges.contains(bc)) {
+                    auto bcr = inner_edges.insert(std::make_pair(bc, it->second));
+                    if (!bcr.second && (bcr.first->second != it->second)) {
+                        throw edge_exception(b, c, std::format("Conflicting contour IDs: {} vs. {}", it->second, bcr.first->second));
+                    }
+                }
+                if (auto ca = std::make_pair(O{c}, O{a}); !contour_edges.contains(ca)) {
+                    auto car = inner_edges.insert(std::make_pair(ca, it->second));
+                    if (!car.second && (car.first->second != it->second)) {
+                        throw edge_exception(c, a, std::format("Conflicting contour IDs: {} vs. {}", it->second, car.first->second));
+                    }
                 }
                 inner_triangles[it->second].push_back(t);
                 return true;
@@ -137,52 +162,58 @@ void extract_triangles_inside_contours(
     // and loop until nothing changes.
     while(true) {
         size_t old_size = inner_edges.size();
-        triangles.remove_if([&inner_edges, &inner_triangles, &contour_edges, &triangles, &contours](const TTriangle& t){
+        remove_triangle_if([&](const TTriangle& t){
             size_t contour_id = SIZE_MAX;
             for (size_t i = 0; i < 3; ++i) {
                 const auto& a = t[i];
                 const auto& b = t[(i + 1) % 3];
                 auto ba = std::make_pair(O{b}, O{a});
                 auto it = inner_edges.find(ba);
-                if (it != inner_edges.end()) {
-                    if (contour_id == SIZE_MAX) {
-                        contour_id = it->second;
-                    } else {
-                        if (contour_id != it->second) {
-                            if (true) {
-                                const auto& c = t[(i + 2) % 3];
-                                auto debug_filename = try_getenv("CONTOUR_DEBUG_FILENAME");
-                                if (debug_filename.has_value()) {
-                                    const auto& dbf = *debug_filename;
-                                    if (dbf.ends_with(".png")) {
-                                        plot_mesh(
-                                            FixedArray<size_t, 2>{ 8000u, 8000u },
-                                            1,                                  // thickness
-                                            4,                                  // point size
-                                            triangles,
-                                            { contours[contour_id], contours[it->second] },
-                                            { O{a}, O{b}, O{c} },
-                                            {}).T().reversed(0).save_to_file(dbf);
-                                    } else if (dbf.ends_with(".svg")) {
-                                        plot_mesh_svg(
-                                            dbf,
-                                            600.,
-                                            600.,
-                                            triangles,
-                                            {},
-                                            { contours[contour_id], contours[it->second] },
-                                            { O{a}, O{b}, O{c} });
-                                    } else {
-                                        throw std::runtime_error("Unknown file extension: " + dbf);
-                                    }
-                                    throw edge_exception(a, b, "Could not determine contour ID (" + std::to_string(contour_id) + " vs. " + std::to_string(it->second) + "), debug image saved");
+                if (it == inner_edges.end()) {
+                    continue;
+                }
+                if (contour_id == SIZE_MAX) {
+                    contour_id = it->second;
+                } else {
+                    if (contour_id != it->second) {
+                        if (true) {
+                            const auto& c = t[(i + 2) % 3];
+                            auto debug_filename = try_getenv("CONTOUR_DEBUG_FILENAME");
+                            if (debug_filename.has_value()) {
+                                const auto& dbf = *debug_filename;
+                                triangles.splice(triangles.end(), std::move(removed_triangles));
+                                if (dbf.ends_with(".png")) {
+                                    plot_mesh(
+                                        FixedArray<size_t, 2>{ 12000u, 12000u },
+                                        0,                                  // thickness
+                                        2,                                  // point size
+                                        triangles,
+                                        { contours[contour_id], contours[it->second] },
+                                        { O{a}, O{b}, O{c} },
+                                        {}).T().reversed(0).save_to_file(dbf);
+                                } else if (dbf.ends_with(".svg")) {
+                                    plot_mesh_svg(
+                                        dbf,
+                                        600.,
+                                        600.,
+                                        triangles,
+                                        {},
+                                        { contours[contour_id], contours[it->second] },
+                                        { O{a}, O{b}, O{c} });
                                 } else {
-                                    throw edge_exception(a, b, "Could not determine contour ID (" + std::to_string(contour_id) + " vs. " + std::to_string(it->second) + "), consider setting the CONTOUR_DEBUG_FILENAME environment variable");
+                                    throw std::runtime_error("Unknown file extension: " + dbf);
                                 }
+                                throw edge_exception(a, b,
+                                    std::format("Could not determine contour ID ({} vs. {}), debug image saved", contour_id, it->second));
                             } else {
-                                lerr() << "Could not determine contour ID";
-                                return false;
+                                throw edge_exception(a, b,
+                                    std::format(
+                                        "Could not determine contour ID ({} vs. {}), "
+                                        "consider setting the CONTOUR_DEBUG_FILENAME environment variable", contour_id, it->second));
                             }
+                        } else {
+                            lerr() << "Could not determine contour ID";
+                            return false;
                         }
                     }
                 }

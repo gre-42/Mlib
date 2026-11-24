@@ -8,10 +8,12 @@ namespace Mlib {
 
 struct Node;
 struct Way;
+struct Relation;
 
 struct NodesAndWays {
     Map<std::string, Node> nodes;
     Map<std::string, Way> ways;
+    Map<std::string, Relation> relations;
 };
 
 }

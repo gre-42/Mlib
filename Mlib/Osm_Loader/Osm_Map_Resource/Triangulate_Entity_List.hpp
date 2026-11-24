@@ -72,16 +72,16 @@ void triangulate_entity_list(
     };
     if (bounding_contour.empty()) {
         std::list<FixedArray<CompressedScenePos, 2>> bc0 = {
-            {bounding_info.boundary_min(0) - bounding_info.border_width, bounding_info.boundary_min(1) - bounding_info.border_width},
-            {bounding_info.boundary_min(0) - bounding_info.border_width, bounding_info.boundary_max(1) + bounding_info.border_width},
-            {bounding_info.boundary_max(0) + bounding_info.border_width, bounding_info.boundary_max(1) + bounding_info.border_width},
-            {bounding_info.boundary_max(0) + bounding_info.border_width, bounding_info.boundary_min(1) - bounding_info.border_width}};
+            {bounding_info.aabb.min(0) - bounding_info.border_width, bounding_info.aabb.min(1) - bounding_info.border_width},
+            {bounding_info.aabb.min(0) - bounding_info.border_width, bounding_info.aabb.max(1) + bounding_info.border_width},
+            {bounding_info.aabb.max(0) + bounding_info.border_width, bounding_info.aabb.max(1) + bounding_info.border_width},
+            {bounding_info.aabb.max(0) + bounding_info.border_width, bounding_info.aabb.min(1) - bounding_info.border_width}};
         auto bc1 = subdivided_contour(bc0, 1.f, bounding_info.segment_length);
         compute_final_bounding_contour(bc1);
     } else {
         compute_final_bounding_contour(bounding_contour);
     }
-    if (compute_area_ccw(final_bounding_contour, scale) < 0.f) {
+    if (compute_area_ccw(final_bounding_contour, scale) < 0.) {
         std::reverse(final_bounding_contour.begin(), final_bounding_contour.end());
     }
     // for (const auto& p : final_bounding_contour) {
@@ -179,7 +179,7 @@ void triangulate_entity_list(
     for (auto& hc : hole_contours) {
         for (std::list<FixedArray<CompressedScenePos, 2>>& c : hc.geometry) {
             try {
-                if (compute_area_ccw(c, scale) > 0) {
+                if (compute_area_ccw(c, scale) > 0.) {
                     add_contour(hc.hole_type, c);
                     if (hc.margin != (CompressedScenePos)0.f) {
                         add_margin_contour(hc.margin_type, hc.margin, c);

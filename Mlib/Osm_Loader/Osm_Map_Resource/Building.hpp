@@ -1,5 +1,7 @@
 #pragma once
+#include <Mlib/Osm_Loader/Osm_Map_Resource/Elements.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Facade_Texture.hpp>
+#include <cstdint>
 #include <list>
 #include <nlohmann/json_fwd.hpp>
 #include <optional>
@@ -41,9 +43,11 @@ struct Building {
     std::string id;
     const Way& way;
     std::list<BuildingLevel> levels;
+    uint32_t min_level;
     std::optional<Roof9_2> roof_9_2;
     float area;
     std::string style;
+    Building* parent;
 };
 
 void from_json(const nlohmann::json& j, Roof9_2& roof9_2);

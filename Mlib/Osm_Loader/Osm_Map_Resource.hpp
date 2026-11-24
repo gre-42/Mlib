@@ -128,7 +128,9 @@ private:
     const StreetBvh3d& street_bvh() const;
 
     void handle_point_exception3(const PointException<CompressedScenePos, 3>& e, const std::string& message) const;
+    void handle_point_exception3(const PointException<double, 3>& e, const std::string& message) const;
     void handle_point_exception2(const PointException<CompressedScenePos, 2>& e, const std::string& message) const;
+    void handle_point_exception2(const PointException<double, 2>& e, const std::string& message) const;
     void handle_point_exception(const p2t::PointException& e, const std::string& message) const;
     void handle_edge_exception(const EdgeException<CompressedScenePos>& e, const std::string& message) const;
     void handle_edge_exception(const EdgeException<double>& e, const std::string& message) const;

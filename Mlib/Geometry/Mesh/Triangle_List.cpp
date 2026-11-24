@@ -493,7 +493,8 @@ void TriangleList<TPos>::delete_backfacing_triangles(
 {
     using I = funpack_t<TPos>;
     triangles.remove_if([deleted_triangles](const FixedArray<ColoredVertex<TPos>, 3>& t) -> bool{
-        bool erase = dot0d(scaled_triangle_normal<I>({
+        bool erase = dot0d(
+            scaled_triangle_normal<I>({
                 funpack(t(0).position),
                 funpack(t(1).position),
                 funpack(t(2).position)}),

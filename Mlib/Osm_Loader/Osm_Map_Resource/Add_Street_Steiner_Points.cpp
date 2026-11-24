@@ -35,9 +35,9 @@ void Mlib::add_street_steiner_points(
     }
     size_t ix = 0;
     FastNormalRandomNumberGenerator<double> rng2{ 0, 0.f, 1.2f };
-    for (CompressedScenePos x = bounding_info.boundary_min(0) + bounding_info.border_width / 2; x < bounding_info.boundary_max(0) - bounding_info.border_width / 2; x += dist0) {
+    for (CompressedScenePos x = bounding_info.aabb.min(0) + bounding_info.border_width / 2; x < bounding_info.aabb.max(0) - bounding_info.border_width / 2; x += dist0) {
         size_t iy = 0;
-        for (CompressedScenePos y = bounding_info.boundary_min(1) + bounding_info.border_width / 2; y < bounding_info.boundary_max(1) - bounding_info.border_width / 2; y += dist0) {
+        for (CompressedScenePos y = bounding_info.aabb.min(1) + bounding_info.border_width / 2; y < bounding_info.aabb.max(1) - bounding_info.border_width / 2; y += dist0) {
             FixedArray<CompressedScenePos, 2> pt{
                 x + (CompressedScenePos)(rng2() * scale),
                 y + (CompressedScenePos)(rng2() * scale) };

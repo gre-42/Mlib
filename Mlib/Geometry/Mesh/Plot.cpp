@@ -154,8 +154,14 @@ StbImage3 Mlib::plot_mesh(
             im.draw_line(trafo(*it0), trafo(*it), 1, (i % 2 == 0) ? Rgb24::red() : Rgb24::orange(), rvalue_address(Rgb24::nan()));
         }
         if (!c.empty()) {
-            auto a = trafo(c.front());
-            im.draw_fill_rect(FixedArray<size_t, 2>{a2i(a(0)), a2i(a(1))}, point_size, Rgb24::green());
+            {
+                auto a = trafo(c.front());
+                im.draw_fill_rect(FixedArray<size_t, 2>{a2i(a(0)), a2i(a(1))}, point_size, Rgb24::green());
+            }
+            {
+                auto a = trafo(c.back());
+                im.draw_fill_rect(FixedArray<size_t, 2>{a2i(a(0)), a2i(a(1))}, point_size, Rgb24::orange());
+            }
         }
         ++i;
     }

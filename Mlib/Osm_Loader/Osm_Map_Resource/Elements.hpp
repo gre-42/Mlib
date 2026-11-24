@@ -16,4 +16,15 @@ struct Way {
     Map<std::string, std::string> tags;
 };
 
+struct Member {
+    std::string type;
+    std::string ref;
+    std::string role;
+};
+
+struct Relation {
+    std::list<Member> members;
+    Map<std::string, std::string> tags;
+};
+
 }

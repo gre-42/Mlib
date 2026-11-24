@@ -199,6 +199,7 @@ OsmMapResource::OsmMapResource(
         config.indent_buildings_amount);
     const std::map<std::string, Node>& nodes = naws.nodes;
     const std::map<std::string, Way>& ways = naws.ways;
+    const std::map<std::string, Relation>& relations = naws.relations;
     std::map<std::string, Node>& mnodes = naws.nodes;
 
     OsmTriangleLists osm_triangle_lists{config, ""};
@@ -310,6 +311,7 @@ OsmMapResource::OsmMapResource(
             BuildingType::BUILDING,
             nodes,
             ways,
+            relations,
             config.scale,
             config.max_wall_width,
             config.building_bottom,
@@ -333,6 +335,7 @@ OsmMapResource::OsmMapResource(
             BuildingType::WALL_BARRIER,
             {},         // nodes
             ways,
+            {},         // relations
             NAN,        // scale
             NAN,        // max_wall_width,
             config.building_bottom,
@@ -495,7 +498,11 @@ OsmMapResource::OsmMapResource(
     std::vector<FixedArray<CompressedScenePos, 2>> map_outer_contour = get_map_outer_contour(
         nodes,
         ways);
-    BoundingInfo bounding_info{ map_outer_contour, nodes, (CompressedScenePos)100.f, (CompressedScenePos)50.f };
+    BoundingInfo bounding_info{
+        map_outer_contour, nodes,
+        (CompressedScenePos)100.,   // border_width_explicit
+        (CompressedScenePos)10.,    // border_width_auto
+        (CompressedScenePos)50. };
 
     auto draw_terrain_triangles = [&config](TriangleList<CompressedScenePos>& dest, const std::list<FixedArray<ColoredVertex<CompressedScenePos>, 3>>& source){
         for (const auto& t : source) {
@@ -626,6 +633,8 @@ OsmMapResource::OsmMapResource(
                 config.contour_detection_strategy,
                 garden_margin);
         } catch (const PointException<CompressedScenePos, 2>& e) {
+            handle_point_exception2(e, "Could not triangulate terrain (TERRAIN_{CONTOUR_TRIANGLES|CONTOUR|TRIANGLE}_FILENAME environment variables for debugging)");
+        } catch (const PointException<double, 2>& e) {
             handle_point_exception2(e, "Could not triangulate terrain (TERRAIN_{CONTOUR_TRIANGLES|CONTOUR|TRIANGLE}_FILENAME environment variables for debugging)");
         } catch (const p2t::PointException& e) {
             handle_point_exception(e, "Could not triangulate terrain (TERRAIN_{CONTOUR_TRIANGLES|CONTOUR|TRIANGLE}_FILENAME environment variables for debugging)");
@@ -1219,8 +1228,7 @@ OsmMapResource::OsmMapResource(
             triangulate_water(
                 osm_triangle_lists.tl_water,
                 BoundingInfo{
-                    config.water->aabb.min,
-                    config.water->aabb.max,
+                    config.water->aabb,
                     (CompressedScenePos)100.f,
                     (CompressedScenePos)500.f},
                 water_steiner_points,
@@ -1590,6 +1598,7 @@ OsmMapResource::OsmMapResource(
             BuildingType::SPAWN_LINE,
             {},         // nodes
             ways,       // ways
+            {},         // relations
             NAN,        // scale,
             NAN,        // max_wall_width,
             0,          // building_bottom
@@ -2245,12 +2254,27 @@ void OsmMapResource::handle_point_exception3(
     throw std::runtime_error(e.str(message, &m));
 }
 
+void OsmMapResource::handle_point_exception3(
+    const PointException<double, 3>& e,
+    const std::string& message) const
+{
+    auto m = get_geographic_mapping(TransformationMatrix<double, double, 3>::identity());
+    throw std::runtime_error(e.str(message, &m));
+}
+
 void OsmMapResource::handle_point_exception2(
     const PointException<CompressedScenePos, 2>& e,
     const std::string& message) const
 {
     using C = CompressedScenePos;
     handle_point_exception3(PointException<C, 3>{FixedArray<C, 3>{ e.point(0), e.point(1), (C)0. }, e.what()}, message);
+}
+
+void OsmMapResource::handle_point_exception2(
+    const PointException<ScenePos, 2>& e,
+    const std::string& message) const
+{
+    handle_point_exception3(PointException<double, 3>{FixedArray<double, 3>{ e.point(0), e.point(1), 0. }, e.what()}, message);
 }
 
 void OsmMapResource::handle_point_exception(

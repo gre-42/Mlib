@@ -31,8 +31,8 @@ void Mlib::add_trees_to_zonemap(
     FastUniformRandomNumberGenerator<double> prob_rng{ 0 };
     FastNormalRandomNumberGenerator<float> scale_rng{ 0, 1.f, 0.2f };
     FastNormalRandomNumberGenerator<float> jitter_rng{ 0, 0.f, jitter };
-    for (CompressedScenePos x = bounding_info.boundary_min(0); x < bounding_info.boundary_max(0); x += (CompressedScenePos)(step_size * position_scale)) {
-        for (CompressedScenePos y = bounding_info.boundary_min(1); y < bounding_info.boundary_max(1); y += (CompressedScenePos)(step_size * position_scale)) {
+    for (CompressedScenePos x = bounding_info.aabb.min(0); x < bounding_info.aabb.max(0); x += (CompressedScenePos)(step_size * position_scale)) {
+        for (CompressedScenePos y = bounding_info.aabb.min(1); y < bounding_info.aabb.max(1); y += (CompressedScenePos)(step_size * position_scale)) {
             FixedArray<CompressedScenePos, 2> pos{
                 x + (CompressedScenePos)(position_scale * (double)jitter_rng()),
                 y + (CompressedScenePos)(position_scale * (double)jitter_rng()) };

@@ -106,12 +106,15 @@ void Mlib::plot_contours(const std::string& filename, const std::vector<std::vec
 }
 
 void Mlib::check_contour(const std::vector<p2t::Point*>& contour) {
+    if (contour.empty()) {
+        throw std::runtime_error("Contour is empty");
+    }
     if ((contour.front()->x == contour.back()->x) &&
         (contour.front()->y == contour.back()->y))
     {
         throw std::runtime_error("Triangulation boundary contour is closed");
     }
-    if (compute_area_ccw(contour, 1.f) < 0.f) {
+    if (compute_area_ccw(contour, 1.) < 0.) {
         throw std::runtime_error("Contour is not counterclockwise");
     }
 }

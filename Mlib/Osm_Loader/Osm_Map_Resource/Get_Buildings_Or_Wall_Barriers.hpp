@@ -9,6 +9,7 @@ namespace Mlib {
 struct Building;
 struct Node;
 struct Way;
+struct Relation;
 class FacadeTextureCycle;
 struct SocleTexture;
 enum class VerticalSubdivision;
@@ -24,6 +25,7 @@ std::list<Building> get_buildings_or_wall_barriers(
     BuildingType building_type,
     const std::map<std::string, Node>& nodes,
     const std::map<std::string, Way>& ways,
+    const std::map<std::string, Relation>& relations,
     double scale,
     double max_length,
     float building_bottom,

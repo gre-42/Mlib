@@ -43,7 +43,7 @@ void Mlib::truncate_out_of_bounds(
             if (nd.size() == 1) {
                 continue;
             }
-            new_ways.add(std::format("split_{}_{}", i, way.first), Way{std::move(nd), way.second.tags});
+            new_ways.add(std::format("split_{}_{}", way.first, i), Way{std::move(nd), way.second.tags});
         }
         return true;
     });
