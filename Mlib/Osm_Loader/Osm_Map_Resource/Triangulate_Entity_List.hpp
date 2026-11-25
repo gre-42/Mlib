@@ -229,12 +229,12 @@ void triangulate_entity_list(
         if (!triangle_filename.empty()) {
             plot_tris(triangle_filename, tris);
         }
-        std::list<PTri>* wrapped_tris = reinterpret_cast<std::list<PTri>*>(&tris);
-        std::vector<std::list<PTri>>* wrapped_itris = reinterpret_cast<std::vector<std::list<PTri>>*>(&inner_triangles);
+        auto& wrapped_tris = reinterpret_cast<std::list<PTri>&>(tris);
+        auto& wrapped_itris = reinterpret_cast<std::vector<std::list<PTri>>&>(inner_triangles);
         extract_triangles_inside_contours(
             all_contours,
-            *wrapped_tris,
-            *wrapped_itris,
+            wrapped_tris,
+            wrapped_itris,
             make_orderable_default,
             contour_assignment_conflict_behavior);
         // plot_tris("/tmp/wrapped_tris1.obj", tris);
