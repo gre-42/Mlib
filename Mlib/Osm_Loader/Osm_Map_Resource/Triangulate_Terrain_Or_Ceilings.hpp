@@ -25,6 +25,7 @@ template <class EntityType>
 class EntityTypeTriangleList;
 using TerrainTypeTriangleList = EntityTypeTriangleList<TerrainType>;
 enum class ContourDetectionStrategy;
+enum class ContourAssignmentConflictBehavior;
 template <class TRegionType, class TGeometry>
 struct RegionWithMargin;
 
@@ -48,6 +49,7 @@ void triangulate_terrain_or_ceilings(
     TerrainType default_terrain_type,
     const std::set<TerrainType>& excluded_terrain_types,
     ContourDetectionStrategy contour_detection_strategy,
+    ContourAssignmentConflictBehavior contour_assignment_conflict_behavior,
     const std::map<OrderableFixedArray<CompressedScenePos, 2>, CompressedScenePos>& garden_margin);
 
 }

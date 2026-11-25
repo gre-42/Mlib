@@ -3,6 +3,7 @@
 #include <Mlib/Geometry/Exceptions/Edge_Exception.hpp>
 #include <Mlib/Geometry/Exceptions/Point_Exception.hpp>
 #include <Mlib/Geometry/Mesh/Compute_Area.hpp>
+#include <Mlib/Geometry/Mesh/Contour_Assignment_Conflict_Behavior.hpp>
 #include <Mlib/Geometry/Mesh/Plot.hpp>
 #include <Mlib/Hashing/Hash_Of_Pair.hpp>
 #include <Mlib/Images/StbImage3.hpp>
@@ -85,7 +86,8 @@ void extract_triangles_inside_contours(
     const std::vector<std::vector<TPoint>>& contours,
     std::list<TTriangle>& triangles,
     std::vector<std::list<TTriangle>>& inner_triangles,
-    const TMakeOrderable& make_orderable = make_orderable_default)
+    const TMakeOrderable& make_orderable = make_orderable_default,
+    ContourAssignmentConflictBehavior contour_assignment_conflict_behavior = ContourAssignmentConflictBehavior::THROW)
 {
     using O = std::remove_cvref_t<decltype(make_orderable(*(TPoint*)nullptr))>;
 
@@ -176,7 +178,7 @@ void extract_triangles_inside_contours(
                     contour_id = it->second;
                 } else {
                     if (contour_id != it->second) {
-                        if (true) {
+                        auto maybe_save_debug_image_and_throw = [&][[noreturn]](){
                             const auto& c = t[(i + 2) % 3];
                             auto debug_filename = try_getenv("CONTOUR_DEBUG_FILENAME");
                             if (debug_filename.has_value()) {
@@ -211,10 +213,17 @@ void extract_triangles_inside_contours(
                                         "Could not determine contour ID ({} vs. {}), "
                                         "consider setting the CONTOUR_DEBUG_FILENAME environment variable", contour_id, it->second));
                             }
-                        } else {
-                            lerr() << "Could not determine contour ID";
-                            return false;
+                        };
+                        switch (contour_assignment_conflict_behavior) {
+                            case ContourAssignmentConflictBehavior::THROW:
+                                maybe_save_debug_image_and_throw();
+                            case ContourAssignmentConflictBehavior::WARN:
+                                lwarn() << std::format("Could not determine contour ID ({} vs. {})", contour_id, it->second);
+                                return true;
+                            case ContourAssignmentConflictBehavior::IGNORE:
+                                return true;
                         }
+                        throw std::runtime_error("Unknown contour assignment conflict behavior");
                     }
                 }
             }
