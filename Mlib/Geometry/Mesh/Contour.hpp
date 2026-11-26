@@ -3,7 +3,6 @@
 #include <Mlib/Geometry/Exceptions/Edge_Exception.hpp>
 #include <Mlib/Geometry/Exceptions/Point_Exception.hpp>
 #include <Mlib/Geometry/Mesh/Compute_Area.hpp>
-#include <Mlib/Geometry/Mesh/Contour_Assignment_Conflict_Behavior.hpp>
 #include <Mlib/Geometry/Mesh/Plot.hpp>
 #include <Mlib/Hashing/Hash_Of_Pair.hpp>
 #include <Mlib/Images/StbImage3.hpp>
@@ -81,13 +80,14 @@ static const auto make_orderable_array = []<class T>(const T& v) {
     return make_orderable(v);
 };
 
-template <class TPoint, class TTriangle, class TMakeOrderable = decltype(make_orderable_default)>
+template <class TPoint, class TTriangle, class TMakeOrderable = decltype(make_orderable_default), class TRegionBvh = std::nullptr_t>
 void extract_triangles_inside_contours(
     const std::vector<std::vector<TPoint>>& contours,
     std::list<TTriangle>& triangles,
     std::vector<std::list<TTriangle>>& inner_triangles,
     const TMakeOrderable& make_orderable = make_orderable_default,
-    ContourAssignmentConflictBehavior contour_assignment_conflict_behavior = ContourAssignmentConflictBehavior::THROW)
+    const std::function<void(const TTriangle& tri, size_t contour_id)>& assert_triangle_compatible =
+        [](const TTriangle& tri, size_t contour_id){})
 {
     using O = std::remove_cvref_t<decltype(make_orderable(*(TPoint*)nullptr))>;
 
@@ -177,53 +177,46 @@ void extract_triangles_inside_contours(
                 if (contour_id == SIZE_MAX) {
                     contour_id = it->second;
                 } else {
-                    if (contour_id != it->second) {
-                        auto maybe_save_debug_image_and_throw = [&][[noreturn]](){
-                            const auto& c = t[(i + 2) % 3];
-                            auto debug_filename = try_getenv("CONTOUR_DEBUG_FILENAME");
-                            if (debug_filename.has_value()) {
-                                const auto& dbf = *debug_filename;
-                                triangles.splice(triangles.end(), std::move(removed_triangles));
-                                if (dbf.ends_with(".png")) {
-                                    plot_mesh(
-                                        FixedArray<size_t, 2>{ 12000u, 12000u },
-                                        0,                                  // thickness
-                                        2,                                  // point size
-                                        triangles,
-                                        { contours[contour_id], contours[it->second] },
-                                        { O{a}, O{b}, O{c} },
-                                        {}).T().reversed(0).save_to_file(dbf);
-                                } else if (dbf.ends_with(".svg")) {
-                                    plot_mesh_svg(
-                                        dbf,
-                                        600.,
-                                        600.,
-                                        triangles,
-                                        {},
-                                        { contours[contour_id], contours[it->second] },
-                                        { O{a}, O{b}, O{c} });
-                                } else {
-                                    throw std::runtime_error("Unknown file extension: " + dbf);
-                                }
-                                throw edge_exception(a, b,
-                                    std::format("Could not determine contour ID ({} vs. {}), debug image saved", contour_id, it->second));
-                            } else {
-                                throw edge_exception(a, b,
-                                    std::format(
-                                        "Could not determine contour ID ({} vs. {}), "
-                                        "consider setting the CONTOUR_DEBUG_FILENAME environment variable", contour_id, it->second));
-                            }
-                        };
-                        switch (contour_assignment_conflict_behavior) {
-                            case ContourAssignmentConflictBehavior::THROW:
-                                maybe_save_debug_image_and_throw();
-                            case ContourAssignmentConflictBehavior::WARN:
-                                lwarn() << std::format("Could not determine contour ID ({} vs. {})", contour_id, it->second);
-                                return true;
-                            case ContourAssignmentConflictBehavior::IGNORE:
-                                return true;
+                    try {
+                        assert_triangle_compatible(t, contour_id);
+                        if (contour_id != it->second) {
+                            throw std::runtime_error(std::format("{}", contour_id, it->second));
                         }
-                        throw std::runtime_error("Unknown contour assignment conflict behavior");
+                    } catch (const std::runtime_error& e) {
+                        const auto& c = t[(i + 2) % 3];
+                        auto debug_filename = try_getenv("CONTOUR_DEBUG_FILENAME");
+                        if (debug_filename.has_value()) {
+                            const auto& dbf = *debug_filename;
+                            triangles.splice(triangles.end(), std::move(removed_triangles));
+                            if (dbf.ends_with(".png")) {
+                                plot_mesh(
+                                    FixedArray<size_t, 2>{ 12000u, 12000u },
+                                    0,                                  // thickness
+                                    2,                                  // point size
+                                    triangles,
+                                    { contours[contour_id], contours[it->second] },
+                                    { O{a}, O{b}, O{c} },
+                                    {}).T().reversed(0).save_to_file(dbf);
+                            } else if (dbf.ends_with(".svg")) {
+                                plot_mesh_svg(
+                                    dbf,
+                                    600.,
+                                    600.,
+                                    triangles,
+                                    {},
+                                    { contours[contour_id], contours[it->second] },
+                                    { O{a}, O{b}, O{c} });
+                            } else {
+                                throw std::runtime_error("Unknown file extension: " + dbf);
+                            }
+                            throw edge_exception(a, b,
+                                std::format("{}, debug image saved", e.what(), contour_id, it->second));
+                        } else {
+                            throw edge_exception(a, b,
+                                std::format(
+                                    "{}, consider setting the CONTOUR_DEBUG_FILENAME environment variable",
+                                    e.what(), contour_id, it->second));
+                        }
                     }
                 }
             }

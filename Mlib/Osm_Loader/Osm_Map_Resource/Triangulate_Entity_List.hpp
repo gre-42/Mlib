@@ -13,6 +13,7 @@
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Get_Region_Margin_Contour.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Osm_Triangle_Lists.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/PTri.hpp>
+#include <Mlib/Osm_Loader/Osm_Map_Resource/Region_Bvh.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Region_With_Margin.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Steiner_Point_Info.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Subdivided_Contour.hpp>
@@ -35,6 +36,11 @@ void plot_contours(const std::string& filename, const std::vector<std::vector<p2
 
 void check_contour(const std::vector<p2t::Point*>& contour);
 
+struct HoleContourAndTriangles {
+    std::list<std::list<FixedArray<CompressedScenePos, 2>>> contours;
+    const std::list<FixedArray<ColoredVertex<CompressedScenePos>, 3>>& triangles;
+};
+
 template <class EntityType>
 void triangulate_entity_list(
     EntityTypeTriangleList<EntityType>& tl_terrain,
@@ -56,7 +62,6 @@ void triangulate_entity_list(
     EntityType default_terrain_type,
     const std::set<EntityType>& excluded_entitities,
     ContourDetectionStrategy contour_detection_strategy,
-    ContourAssignmentConflictBehavior contour_assignment_conflict_behavior,
     const std::map<OrderableFixedArray<CompressedScenePos, 2>, CompressedScenePos>& garden_margin)
 {
     std::list<FixedArray<CompressedScenePos, 2>> steiner_point_positions;
@@ -77,7 +82,7 @@ void triangulate_entity_list(
             {bounding_info.aabb.min(0) - bounding_info.border_width, bounding_info.aabb.max(1) + bounding_info.border_width},
             {bounding_info.aabb.max(0) + bounding_info.border_width, bounding_info.aabb.max(1) + bounding_info.border_width},
             {bounding_info.aabb.max(0) + bounding_info.border_width, bounding_info.aabb.min(1) - bounding_info.border_width}};
-        auto bc1 = subdivided_contour(bc0, 1.f, bounding_info.segment_length);
+        auto bc1 = subdivided_contour(bc0, 1.f, bounding_info.segment_length, ContourClosedness::CLOSED_WO_LAST_ELEMENT);
         compute_final_bounding_contour(bc1);
     } else {
         compute_final_bounding_contour(bounding_contour);
@@ -95,7 +100,7 @@ void triangulate_entity_list(
     }
 
     size_t ncontours = region_contours.size();
-    std::list<RegionWithMargin<EntityType, std::list<std::list<FixedArray<CompressedScenePos, 2>>>>> hole_contours;
+    std::list<RegionWithMargin<EntityType, HoleContourAndTriangles>> hole_contours;
     CloseNeighborDetector<CompressedScenePos, 2> close_neighbor_detector{{(CompressedScenePos)10., (CompressedScenePos)10.}, 10};
     for (const auto& hole : hole_triangles) {
         // save_obj("/tmp/" + to_string(e) + ".obj", IndexedFaceSet<float, CompressedScenePos, size_t>{t}, nullptr);
@@ -136,14 +141,17 @@ void triangulate_entity_list(
         }
         try {
             auto cs3 = find_contours(hole.geometry, contour_detection_strategy);
-            auto& cs2 = hole_contours.emplace_back(hole.hole_type, hole.margin_type, hole.margin);
+            auto& cs2 = hole_contours.emplace_back(hole.hole_type, hole.margin_type, hole.margin, HoleContourAndTriangles{{}, hole.geometry});
             for (const auto& c3 : cs3) {
-                auto& c2 = cs2.geometry.emplace_back();
+                auto& c2 = cs2.geometry.contours.emplace_back();
                 for (const auto& p : c3) {
                     c2.push_back({p(0), p(1)});
                 }
             }
-            ncontours += cs2.geometry.size();
+            ncontours += cs2.geometry.contours.size();
+            if (cs2.margin != (CompressedScenePos)0.f) {
+                ncontours += cs2.geometry.contours.size();
+            }
         } catch (const EdgeException<CompressedScenePos>& ex) {
             if (!contour_triangles_filename.empty()) {
                 plot_tris(contour_triangles_filename, hole.geometry, { make_orderable(ex.a), make_orderable(ex.b) });
@@ -153,11 +161,15 @@ void triangulate_entity_list(
     }
     std::vector<std::vector<p2t::Point*>> p2t_hole_contours;
     std::vector<EntityType> p2t_region_types;
-    p2t_hole_contours.reserve(ncontours + 1);  // include bounding contour
+    p2t_hole_contours.reserve(ncontours + 1);   // include bounding contour
     p2t_region_types.reserve(ncontours);
 
+    RegionBvh<EntityType> region_bvh;
     p2t::CDT cdt{final_bounding_contour};
-    auto add_contour = [&](EntityType region_type, const std::list<FixedArray<CompressedScenePos, 2>>& contour){
+    auto add_contour = [&](
+        EntityType region_type,
+        const std::list<FixedArray<CompressedScenePos, 2>>& contour)
+    {
         p2t_region_types.push_back(region_type);
         auto& cnt = p2t_hole_contours.emplace_back();
         cnt.reserve(contour.size());
@@ -178,7 +190,7 @@ void triangulate_entity_list(
         add_contour(region_type, get_region_margin_contour(contour, margin, garden_margin));
     };
     for (auto& hc : hole_contours) {
-        for (std::list<FixedArray<CompressedScenePos, 2>>& c : hc.geometry) {
+        for (auto& c : hc.geometry.contours) {
             try {
                 if (compute_area_ccw(c, scale) > 0.) {
                     add_contour(hc.hole_type, c);
@@ -194,6 +206,15 @@ void triangulate_entity_list(
             } catch (const std::runtime_error& e) {
                 throw std::runtime_error("Could not add hole contour: " + std::string(e.what()));
             }
+        }
+        for (const auto& tri : hc.geometry.triangles) {
+            region_bvh.add(
+                {
+                    FixedArray<CompressedScenePos, 2>{tri(0).position(0), tri(0).position(1)},
+                    FixedArray<CompressedScenePos, 2>{tri(1).position(0), tri(1).position(1)},
+                    FixedArray<CompressedScenePos, 2>{tri(2).position(0), tri(2).position(1)}
+                },
+                hc.hole_type);
         }
     }
     for (const auto& contour : region_contours) {
@@ -231,12 +252,38 @@ void triangulate_entity_list(
         }
         auto& wrapped_tris = reinterpret_cast<std::list<PTri>&>(tris);
         auto& wrapped_itris = reinterpret_cast<std::vector<std::list<PTri>>&>(inner_triangles);
+        std::function<void(const PTri&, size_t)> assert_triangle_compatible =
+        [&](const PTri& tri, size_t contour_id){
+            auto triangle_type = region_bvh.entity_type(tri);
+            if (!triangle_type.has_value()) {
+                return;
+            }
+            if (contour_id == inner_triangles.size() - 1) {
+                if (*triangle_type != bounding_terrain_type) {
+                    throw std::runtime_error(std::format(
+                        "Triangle type: {}, bounding terrain type: {}",
+                        (uint32_t)(*triangle_type),
+                        (uint32_t)bounding_terrain_type));
+                }
+                return;
+            }
+            auto contour_type = p2t_region_types.at(contour_id);
+            if (*triangle_type != contour_type) {
+                throw std::runtime_error(std::format(
+                    "Triangle type: {}, contour type: {}",
+                    (uint32_t)(*triangle_type),
+                    (uint32_t)contour_type));
+            }
+        };
+        // wrapped_tris.remove_if([&](const auto& tri){
+        //     return region_bvh.entity_type(tri).has_value();
+        // });
         extract_triangles_inside_contours(
             all_contours,
             wrapped_tris,
             wrapped_itris,
             make_orderable_default,
-            contour_assignment_conflict_behavior);
+            assert_triangle_compatible);
         // plot_tris("/tmp/wrapped_tris1.obj", tris);
         // save_obj("/tmp/holes.obj", IndexedFaceSet<float, size_t>{hole_triangles});
         // lerr() << "nresidual " << wrapped_tris.size();

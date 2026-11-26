@@ -3,7 +3,7 @@
 
 namespace Mlib {
 
-enum class WaterType {
+enum class WaterType: uint32_t {
     NONE = 0,
     UNDEFINED = 1 << 0,
     STEEP_HOLE = 1 << 1,

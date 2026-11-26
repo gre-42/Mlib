@@ -27,7 +27,7 @@ class FixedArray;
 struct StyledRoad;
 struct StyledRoadEntry;
 enum class TerrainType: uint32_t;
-enum class WaterType;
+enum class WaterType: uint32_t;
 
 class RoadPropertiesTriangleList {
 public:

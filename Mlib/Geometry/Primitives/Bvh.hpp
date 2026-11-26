@@ -280,17 +280,21 @@ public:
         const TPayload** nearest_payload = nullptr) const
     {
         using TDistance = decltype(compute_distance(*(TPayload*)nullptr));
-
+        auto max_dist = (TDistance)max_distance;
         std::optional<TDistance> min_distance;
         visit(AxisAlignedBoundingBox<TPosition, tndim>::from_center_and_radius(p, max_distance),
-            [&min_distance, &compute_distance, nearest_payload](const TPayload& payload)
+            [&](const TPayload& payload)
             {
                 TDistance dist = compute_distance(payload);
-                if (!min_distance.has_value() || (dist < *min_distance)) {
-                    min_distance = dist;
-                    if (nearest_payload != nullptr) {
-                        *nearest_payload = &payload;
-                    }
+                if (dist > max_dist) {
+                    return true;
+                }
+                if (min_distance.has_value() && (dist >= *min_distance)) {
+                    return true;
+                }
+                min_distance = dist;
+                if (nearest_payload != nullptr) {
+                    *nearest_payload = &payload;
                 }
                 return true;
             });

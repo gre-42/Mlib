@@ -29,7 +29,7 @@ void Mlib::draw_waysides(
     auto contours = find_contours(inner_triangles, contour_detection_strategy);
 
     for (const auto& contour_coarse : contours) {
-        auto interp = interpolated_contour(contour_coarse);
+        auto interp = interpolated_contour(contour_coarse, ContourClosedness::OPEN_OR_CLOSED_WITH_LAST_ELEMENT);
         for (auto t = 2 * scale * DX; t <= interp.xmax() - 2 * scale * DX; t += scale * distances.tangential_distance) {
             auto d3 = funpack(interp(t + scale * DX) - interp(t - scale * DX));
             auto p3 = funpack(interp(t));

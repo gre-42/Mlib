@@ -24,7 +24,6 @@ void Mlib::triangulate_terrain_or_ceilings(
     TerrainType default_terrain_type,
     const std::set<TerrainType>& excluded_terrain_types,
     ContourDetectionStrategy contour_detection_strategy,
-    ContourAssignmentConflictBehavior contour_assignment_conflict_behavior,
     const std::map<OrderableFixedArray<CompressedScenePos, 2>, CompressedScenePos>& garden_margin)
 {
     triangulate_entity_list(
@@ -47,6 +46,5 @@ void Mlib::triangulate_terrain_or_ceilings(
         default_terrain_type,
         excluded_terrain_types,
         contour_detection_strategy,
-        contour_assignment_conflict_behavior,
         garden_margin);
 }

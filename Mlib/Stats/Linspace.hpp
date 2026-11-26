@@ -18,8 +18,11 @@ class LinspaceIterator;
 template <class TData>
 class Linspace {
 public:
-    Linspace(const TData& from, const TData& to, size_t count)
-    : from_{from}, to_{to}, count_{count}
+    Linspace(const TData& from, const TData& to, size_t count, size_t truncate = 0)
+        : from_{from}
+        , to_{to}
+        , count_{count}
+        , truncate_{truncate}
     {}
     TData operator [] (size_t i) const {
         if (count_ == 0) {
@@ -41,12 +44,13 @@ PRAGMA_GCC_DIAGNOSTIC_POP
         return LinspaceIterator<TData>{*this, 0};
     }
     LinspaceIterator<TData> end() const {
-        return LinspaceIterator<TData>{*this, count_};
+        return LinspaceIterator<TData>{*this, count_ - truncate_};
     }
 private:
     TData from_;
     TData to_;
     size_t count_;
+    size_t truncate_;
 };
 
 template <class TData>

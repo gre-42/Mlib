@@ -66,7 +66,6 @@ public:
                 WaterType::UNDEFINED,                           // default_terrain_type
                 {},                                             // excluded_terrain_types
                 ContourDetectionStrategy::EDGE_NEIGHBOR,
-                ContourAssignmentConflictBehavior::THROW,
                 {});                                            // garden_margin
             for (const auto& t : tl_holes[WaterType::STEEP_HOLE]->triangles) {
                 auto t2 = Triangle2d{
@@ -240,7 +239,6 @@ void Mlib::triangulate_water(
         default_water_type,
         { WaterType::SHALLOW_HOLE, WaterType::STEEP_HOLE }, // excluded_entitities
         contour_detection_strategy,
-        ContourAssignmentConflictBehavior::THROW,
         {});                                                // garden_margin
 }
 

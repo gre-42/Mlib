@@ -13,7 +13,6 @@
 #include <Mlib/Geometry/Mesh/Cleanup/Modulo_Uv.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array_Filter.hpp>
-#include <Mlib/Geometry/Mesh/Contour_Assignment_Conflict_Behavior.hpp>
 #include <Mlib/Geometry/Mesh/Modifiers/Cluster_Meshes.hpp>
 #include <Mlib/Geometry/Mesh/Modifiers/Position_And_Meshes.hpp>
 #include <Mlib/Geometry/Mesh/Plot.hpp>
@@ -632,7 +631,6 @@ OsmMapResource::OsmMapResource(
                 // used for terrain smoothing.
                 { TerrainType::STREET_HOLE },
                 config.contour_detection_strategy,
-                ContourAssignmentConflictBehavior::WARN,
                 garden_margin);
         } catch (const PointException<CompressedScenePos, 2>& e) {
             handle_point_exception2(e, "Could not triangulate terrain (TERRAIN_{CONTOUR_TRIANGLES|CONTOUR|TRIANGLE}_FILENAME environment variables for debugging)");

@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/Scene_Config/Scene_Precision.hpp>
 #include <cstddef>
+#include <cstdint>
 #include <list>
 #include <map>
 #include <memory>
@@ -17,7 +18,7 @@ template <typename TData, size_t... tshape>
 class FixedArray;
 template <class TData, size_t... tshape>
 class OrderableFixedArray;
-enum class WaterType;
+enum class WaterType: uint32_t;
 template <class EntityType>
 class EntityTypeTriangleList;
 using WaterTypeTriangleList = EntityTypeTriangleList<WaterType>;
